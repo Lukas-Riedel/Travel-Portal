@@ -1,0 +1,17 @@
+on: push
+name: Deploy web
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4    
+    - name: Upload files
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: 254146.w46.wedos.net
+        username: w254146
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./Web/
+        server-dir: www/domains/lriedel.cz/

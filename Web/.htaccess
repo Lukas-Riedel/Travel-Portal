@@ -1,0 +1,63 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+
+# API
+RewriteRule ^api/(.+)/?$ php/api.php?path=/$1 [L,QSA]
+RewriteCond %{QUERY_STRING} ^(.*)$
+
+# Pages with arguments
+RewriteRule ^year/([^/]+)/?$ year.php?name=$1 [L,QSA]
+RewriteRule ^year/(.+)$ $1 [L,QSA]
+
+RewriteRule ^trip/([^/]+)/?$ trip.php?name=$1 [L,QSA]
+RewriteRule ^trip/(.+)$ $1 [L,QSA]
+
+RewriteRule ^category/([^/]+)/?$ category.php?name=$1 [L,QSA]
+RewriteRule ^category/(.+)$ $1 [L,QSA]
+
+RewriteRule ^plan/trip/([^/]+)/?$ plans_trip.php?name=$1 [L,QSA]
+RewriteRule ^plan/trip/(.+)$ $1 [L,QSA]
+RewriteRule ^plan/trip/?$ plans_trips.php [L,QSA]
+RewriteRule ^plan/trip/(.+)$ $1 [L,QSA]
+RewriteRule ^plan/([^/]+)/?$ plans.php?country=$1 [L,QSA]
+RewriteRule ^plan/(.+)$ $1 [L,QSA]
+
+RewriteRule ^place/([^/]+),([^/]+)/?$ place.php?name=$1&country=$2 [L,QSA]
+RewriteRule ^place/(.+)$ $1 [L,QSA]
+
+RewriteRule ^point/([^/]+),([^/]+)/?$ points.php?name=$1&country=$2 [L,QSA]
+RewriteRule ^point/(.+)$ $1 [L,QSA]
+
+RewriteRule ^acp/([^/]+)/?$ acp.php?authToken=$1 [L,QSA]
+RewriteRule ^acp/(.+)$ $1 [L,QSA]
+
+# Pages without arguments
+RewriteRule ^place/?$ places.php [L,QSA]
+RewriteRule ^place/(.+)$ $1 [L,QSA]
+
+RewriteRule ^plan/?$ plans.php [L,QSA]
+RewriteRule ^plan/(.+)$ $1 [L,QSA]
+
+RewriteRule ^trip/?$ trips.php [L,QSA]
+RewriteRule ^trip/(.+)$ $1 [L,QSA]
+
+RewriteRule ^stats/?$ stats.php [L,QSA]
+RewriteRule ^stats/(.+)$ $1 [L,QSA]
+
+RewriteRule ^flight/?$ flights.php [L,QSA]
+RewriteRule ^flight/(.+)$ $1 [L,QSA]
+
+RewriteRule ^acp/?$ acp.php [L,QSA]
+RewriteRule ^acp/(.+)$ $1 [L,QSA]
+
+RewriteRule ^tracking/?$ time_tracking.php [L,QSA]
+RewriteRule ^tracking/(.+)$ $1 [L,QSA]
+
+RewriteRule ^login/?$ login.php [L,QSA]
+RewriteRule ^login/(.+)$ $1 [L,QSA]
+
+RewriteRule ^swagger/?$ swagger.php [L,QSA]
+RewriteRule ^swagger/(.+)$ $1 [L,QSA]

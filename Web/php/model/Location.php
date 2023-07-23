@@ -1,0 +1,36 @@
+<?php
+    class Location implements JsonSerializable {        
+        private $country;
+        private $latitude;
+        private $longitude;
+        private $timezone;
+
+        public function __construct($country, $latitude, $longitude, $timezone) {
+            $this->country = $country;
+            $this->latitude = $latitude;
+            $this->longitude = $longitude;
+            $this->timezone = $timezone;
+        }
+
+        public function getCountry() {
+            return $this->country;
+        }
+
+        public function getLatitude() {
+            return $this->latitude;
+        }
+
+        public function getLongitude() {
+            return $this->longitude;
+        }
+
+        public function getTimezone() {
+            return $this->timezone;
+        }
+
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize() {
+            return get_object_vars($this);
+        }
+    }
+?>

@@ -1,0 +1,24 @@
+package cz.lriedel.photo.uploader.fetcher;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
+import cz.lriedel.photo.uploader.fetcher.PhotoFetcher;
+
+@Component
+@ConditionalOnProperty(value = "output.quality", havingValue = "1")
+public class StandardPhotoFetcher implements PhotoFetcher {
+
+    @Override
+    public byte[] fetch(Path path) throws IOException {
+        try (InputStream inputStream = new FileInputStream(path.toFile())) {
+            return inputStream.readAllBytes();
+        }
+    }
+}

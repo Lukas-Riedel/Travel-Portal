@@ -1,0 +1,30 @@
+<?php
+    class PublicHoliday implements JsonSerializable {        
+        private $name;
+        private $country;
+        private $date;
+
+        public function __construct($name, $country, $date) {
+            $this->name = $name;
+            $this->country = $country;
+            $this->date = $date;
+        }
+
+        public function getName() {
+            return $this->name;
+        }
+
+        public function getCountry() {
+            return $this->country;
+        }
+
+        public function getDate() {
+            return $this->date;
+        }
+
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize() {
+            return get_object_vars($this);
+        }
+    }
+?>
