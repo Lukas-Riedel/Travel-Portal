@@ -1,6 +1,6 @@
 async function init(category, isLoggedIn) {
     const places = await getPlacesForCategory(category, !isLoggedIn);
-    const stats = await getStatsForCategory(category);
+    const stats = (await getCategory(category)).stats;
 
     // Title.
     document.title = getDocumentTitle(getCategoryPrettyName(category), places);

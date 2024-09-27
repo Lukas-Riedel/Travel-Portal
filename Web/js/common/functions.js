@@ -79,9 +79,9 @@ async function getStats() {
     return await getResponse("GetStats", { type: "all" });
 }
 
-async function getStatsForCategory(category) {
+async function getCategory(category) {
     const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: category });
-    return await getResponse("GetStats", { id: categoryIdentifier.id, type: "category" });
+    return getOnlyElement(await getResponse("GetCategories", { categoryId: categoryIdentifier.id }));
 }
 
 async function getYear(year) {
