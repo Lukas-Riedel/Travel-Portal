@@ -27,7 +27,7 @@
 
         public function getParameters() {
             return array(
-                $this->createQueryParameter("yearId", "integer", 2024),
+                $this->createQueryParameter("year", "integer", 2024),
                 $this->createQueryParameter("tripId", "integer", 128),
                 $this->createQueryParameter("categoryId", "integer", 2),
                 $this->createQueryParameter("minStart", "integer", 1716154060),

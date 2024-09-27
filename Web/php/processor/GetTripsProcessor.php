@@ -18,8 +18,8 @@
             $result = array();
 
             $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if (isset($input["yearId"])) {
-                $whereClauseBuilder->withClause("year = ?", $input["yearId"]);
+            if (isset($input["year"])) {
+                $whereClauseBuilder->withClause("year = ?", $input["year"]);
             }
             if (isset($input["tripId"])) {
                 $whereClauseBuilder->withClause("trip_id = ?", $input["tripId"]);

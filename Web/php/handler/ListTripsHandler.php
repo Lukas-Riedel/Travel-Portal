@@ -27,7 +27,7 @@
 
         public function getParameters() {
             return array(
-                $this->createQueryParameter("yearId", "integer", 2024),
+                $this->createQueryParameter("year", "integer", 2024),
                 $this->createQueryParameter("type", "string", array("regular", "candidate")),
                 $this->createQueryParameter("includeExpenses", "boolean", "false"),
                 $this->createQueryParameter("includeStays", "boolean", "false"),

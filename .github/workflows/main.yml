@@ -7,7 +7,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4    
-    - name: Upload files
+    - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: 254146.w46.wedos.net
@@ -16,7 +16,7 @@ jobs:
         local-dir: ./Web/
         server-dir: www/domains/lriedel.cz/
   maven-verify:
-    name: Verify Photo Uploader
+    name: Build Photo Uploader
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,5 +26,5 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Run verification
+      - name: Run Verification
         run: mvn verify -f PhotoUploader/pom.xml

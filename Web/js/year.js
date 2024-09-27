@@ -1,7 +1,7 @@
 async function init(year, isLoggedIn) {  
     const trips = await getTripsForYear(year);
     const places = await getPlacesForYear(year, !isLoggedIn);
-    const stats = await getStatsForYear(year);
+    const stats = (await getYear(year)).stats;
 
     // Title.        
     document.title = getDocumentTitle(year);

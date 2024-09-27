@@ -8,8 +8,8 @@
                 $response = $processorProvider->run("GetStats", array("type" => "all"));
             }
             else {
-                if (isset($input["yearId"])) {
-                    $response = $processorProvider->run("GetStats", array("type" => "year", "id" => $input["yearId"]));
+                if (isset($input["year"])) {
+                    $response = $processorProvider->run("GetStats", array("type" => "year", "id" => $input["year"]));
                 }
                 else if (isset($input["tripId"])) {
                     $response = $processorProvider->run("GetStats", array("type" => "trip", "id" => $input["tripId"]));
@@ -35,7 +35,7 @@
 
         public function getParameters() {
             return array(
-                $this->createQueryParameter("yearId", "integer", 2024),
+                $this->createQueryParameter("year", "integer", 2024),
                 $this->createQueryParameter("tripId", "integer", 128),
                 $this->createQueryParameter("categoryId", "integer", 1));
         }

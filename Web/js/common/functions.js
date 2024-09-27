@@ -79,18 +79,13 @@ async function getStats() {
     return await getResponse("GetStats", { type: "all" });
 }
 
-async function getStatsForYear(year) {
-    return await getResponse("GetStats", { id: year, type: "year" });
-}
-
 async function getStatsForCategory(category) {
     const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: category });
     return await getResponse("GetStats", { id: categoryIdentifier.id, type: "category" });
 }
 
-async function getStatsForTrip(tripName) {
-    const tripIdentifier = await getResponse("GetTripIdentifier", decomposeFullyQualifiedTripName(tripName));
-    return await getResponse("GetStats", { id: tripIdentifier.id, type: "trip" });
+async function getYear(year) {
+    return getOnlyElement(await getResponse("GetYears", { year: year }));
 }
 
 async function getTrips() {
@@ -98,7 +93,7 @@ async function getTrips() {
 }
 
 async function getTripsForYear(year) {
-    return await getResponse("GetTrips", { yearId: year, includeExpenses: true });
+    return await getResponse("GetTrips", { year: year, includeExpenses: true });
 }
 
 async function getTrip(tripName) {
@@ -139,7 +134,7 @@ async function getPlacesForCategory(category, onlyPast) {
 }
 
 async function getPlacesForYear(year, onlyPast) {
-    return await getResponse("GetPlaces", { yearId: year, maxEnd: onlyPast ? now : Number.MAX_SAFE_INTEGER });
+    return await getResponse("GetPlaces", { year: year, maxEnd: onlyPast ? now : Number.MAX_SAFE_INTEGER });
 }
 
 async function getLoggedFlights() {

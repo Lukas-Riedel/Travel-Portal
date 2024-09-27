@@ -20,8 +20,8 @@
             if (isset($input["placeId"])) {
                 $whereClauseBuilder->withClause("place_id = ?", $input["placeId"]);
             }
-            if (isset($input["yearId"])) {
-                $whereClauseBuilder->withClause("DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?", $input["yearId"]);
+            if (isset($input["year"])) {
+                $whereClauseBuilder->withClause("DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?", $input["year"]);
             }
             if (isset($input["tripId"])) {
                 $whereClauseBuilder->withClause("trip_id = ?", $input["tripId"]);
