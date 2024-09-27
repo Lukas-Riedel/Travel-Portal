@@ -2,7 +2,7 @@ on: push
 name: Deploy web
 jobs:
   web-deploy:
-    name: Deploy
+    name: Deploy Web
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -15,3 +15,16 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./Web/
         server-dir: www/domains/lriedel.cz/
+  maven-verify:
+    name: Verify Photo Uploader
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4    
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Run verification
+        run: mvn verify -f PhotoUploader/pom.xml
