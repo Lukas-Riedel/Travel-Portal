@@ -11,7 +11,7 @@ async function init(isLoggedIn) {
     initializeMap("map", places);
 
     // Albums.
-    $('#albums').html(getAlbumsComponentForCountries(places));
+    $('#albums').html(getAlbumsComponentForCountries(await getCountryCategories(), places));
 
     // Footer.
     $('#footer').html(getFooter(isLoggedIn));

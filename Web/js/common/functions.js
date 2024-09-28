@@ -84,6 +84,10 @@ async function getCategory(category) {
     return getOnlyElement(await getResponse("GetCategories", { categoryId: categoryIdentifier.id }));
 }
 
+async function getCountryCategories() {
+    return await getResponse("GetCategories", { categories: "COUNTRY" });
+}
+
 async function getYear(year) {
     return getOnlyElement(await getResponse("GetYears", { year: year }));
 }

@@ -79,13 +79,12 @@ function getAlbumsComponentForCategory(places) {
     places = sorted(places
         .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
         .map(place => {     
-            const mainAlbumForPlace = place.dates.map(date => date.album).filter(album => album != null).find(album => album.isMainForPlace);
             return {
                 name: place.name,
                 country: place.country,
                 imagesCount: place.imagesCount,
                 imagesScore: place.imagesScore,
-                imageUrl: mainAlbumForPlace === undefined ? place.dates.map(date => date.album).filter(album => album != null)[0].mainImageUrl : mainAlbumForPlace.mainImageUrl
+                imageUrl: place.mainHighlight.url.thumbnail
             }
         }).filter(place => place.imagesScore > 0), (a, b) => b.imagesScore - a.imagesScore);
     places.forEach(place => console.log(place.name + " - " + place.imagesScore + " (" + place.imagesCount + ")"));
@@ -102,14 +101,13 @@ function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
     places = sorted(places
         .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
         .map(place => {     
-            const mainAlbumForPlace = place.dates.map(date => date.album).filter(album => album != null).find(album => album.isMainForPlace);
             return {
                 name: place.name,
                 country: place.country,
                 distance: Math.round(getDistance(referencePlace, place)),
                 imagesCount: place.imagesCount,
                 imagesScore: place.imagesScore,
-                imageUrl: mainAlbumForPlace === undefined ? place.dates.map(date => date.album).filter(album => album != null)[0].mainImageUrl : mainAlbumForPlace.mainImageUrl
+                imageUrl: place.mainHighlight.url.thumbnail
             }
         }).filter(place => place.imagesScore > 0).filter(place => place.distance > 0), (a, b) => a.distance - b.distance).slice(0, Math.max(configuration.minimumNearbyPlacesCount, configuration.albumsPerRow));
     return getAlbumsComponent(places.map(place => {
@@ -126,24 +124,24 @@ function getAlbumsComponentForTrips(trips) {
         return {
             nameTokens: isDayTrips(trip) ? [ getTripFlagImages(trip), getFullyQualifiedTripName(trip) ] : [ getTripFlagImages(trip), trip.name, getFromDateToDateString(trip.start, trip.end, true, true) ],
             action: "href=\"https://" + configuration.hostName + "/trip/" + getFullyQualifiedTripName(trip) + "\"",
-            imageUrl: trip.imageUrl
+            imageUrl: trip.mainHighlight.url.thumbnail
         }
     }), undefined);
 }
 
-function getAlbumsComponentForCountries(places) {
+function getAlbumsComponentForCountries(countryCategories, places) {
+    const countryImages = countryCategories.filter(c => c.mainHighlight != null).reduce(function(map, obj) {
+        map[obj.name] = obj.mainHighlight.url.thumbnail;
+        return map;
+    }, {});
     places = sorted(places
         .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
-        .map(place => {     
-            const mainAlbumForCountry = place.dates.map(date => date.album).filter(album => album != null).find(album => album.isMainForCountry);
-            const mainAlbumForPlace = place.dates.map(date => date.album).filter(album => album != null).find(album => album.isMainForPlace);
+        .map(place => {
             return {
                 name: place.name,
                 country: place.country,
                 imagesCount: place.imagesCount,
-                imagesScore: place.imagesScore,
-                isMainForCountry: mainAlbumForCountry !== undefined,
-                imageUrl: mainAlbumForCountry === undefined ? (mainAlbumForPlace === undefined ? place.dates.map(date => date.album).filter(album => album != null)[0].mainImageUrl : mainAlbumForPlace.mainImageUrl) : mainAlbumForCountry.mainImageUrl
+                imagesScore: place.imagesScore
             };
         }).filter(place => place.imagesScore > 0), (a, b) => b.imagesScore - a.imagesScore);
     const countriesMap = {};
@@ -152,14 +150,10 @@ function getAlbumsComponentForCountries(places) {
             countriesMap[place.country] = {
                 name: place.country,
                 imagesCount: place.imagesCount,
-                imagesScore: place.imagesScore,
-                imageUrl: place.imageUrl
+                imagesScore: place.imagesScore
             };
         }
         else {
-            if (place.isMainForCountry) {
-                countriesMap[place.country].imageUrl = place.imageUrl;
-            }
             countriesMap[place.country].imagesCount += place.imagesCount;
             countriesMap[place.country].imagesScore += place.imagesScore;
         }
@@ -173,7 +167,7 @@ function getAlbumsComponentForCountries(places) {
             place: undefined,
             nameTokens: [ getFlagImage(country.name), country.name ],
             action: "href=\"https://" + configuration.hostName + "/category/" + country.name + "\"",            
-            imageUrl: country.imageUrl
+            imageUrl: countryImages[country.name]
         };
      }), undefined);
 }
@@ -196,7 +190,7 @@ function getAlbumsComponent(albums, buttonsSupplier) {
         }
 
         const overlay = "<div class=\"overlay\"><ul>" + album.nameTokens.map(nameToken => "<li>" + nameToken + "</li>").join("") + "</ul></div>";
-        const innerRows = [ "<div style=\"width: " + configuration.albumThumbnailImageSize.width + "px;\" class=\"albumWrapper\"><a " + album.action + "\"><img style=\"width: " + configuration.albumThumbnailImageSize.width + "px; height: " + configuration.albumThumbnailImageSize.height + "px;\" src=\"" + album.imageUrl + "\">" + (album.nameTokens.length == 0 ? "" : overlay) + "</a></div>" ];
+        const innerRows = [ "<div style=\"width: " + configuration.highlightThumbnailImageSize.width + "px;\" class=\"albumWrapper\"><a " + album.action + "\"><img style=\"width: " + configuration.highlightThumbnailImageSize.width + "px; height: " + configuration.highlightThumbnailImageSize.height + "px;\" src=\"" + album.imageUrl + "\">" + (album.nameTokens.length == 0 ? "" : overlay) + "</a></div>" ];
         
         if (buttonsSupplier !== undefined) {            
             innerRows.push("<div class=\"utilitiesColumn\">" + buttonsSupplier(album).map(button => "<a onclick=\"" + button.action + "\"><img style=\"width: 24px;\" src=\"" + button.image + "\"></a>").join("") + "</div>");
