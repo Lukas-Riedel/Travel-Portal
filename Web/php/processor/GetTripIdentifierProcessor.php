@@ -1,5 +1,6 @@
 <?php 
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
 
     class GetTripIdentifierProcessor extends Processor {        
         public function process($input) {
