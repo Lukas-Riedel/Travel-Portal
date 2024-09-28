@@ -48,6 +48,7 @@
                 $expenses = array();
                 $fitness = array();
                 $notes = array();
+                $highlights = array();
                 $stats = array();
                 $publicHolidays = array();
                 
@@ -86,6 +87,11 @@
                     $notes = $this->getNotes($tripRow);                      
                 }
 
+                $includeHighlights = isset($input["includeHighlights"]) && $input["includeHighlights"] == "true";
+                if ($includeHighlights || isset($input["tripId"])) {
+                    $highlights = $this->getHighlights($tripRow);                      
+                }
+
                 $includeStats = isset($input["includeStats"]) && $input["includeStats"] == "true";
                 if ($includeStats || isset($input["tripId"])) {
                     $stats = $this->getStats($tripRow);                      
@@ -96,9 +102,9 @@
                     $publicHolidays = $this->getPublicHolidays($tripRow);                               
                 }
 
-                $result[] = new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $tripRow["start"], $tripRow["end"], $countries, $imageUrl,
+                $result[] = new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"], $tripRow["end"], $countries, $imageUrl,
                     $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL,
-                    isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $stats, $publicHolidays);
+                    isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays);
             }
 
             return $result;
@@ -246,6 +252,30 @@
             }
     
             return $result;
+        }
+
+        private function getHighlights($tripRow) {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_trip ht INNER JOIN highlight_identifier hi ON ht.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE ht.id = ?")
+                ->withParameters($tripRow["trip_id"])
+                ->getMappedResultSet(function ($highlightRow) { 
+                    return new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
+                        $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
+                });
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $mainHighlightIdentifierRow = $databaseProvider
+            ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+            ->withParameters($highlightId)
+            ->getSingleRow();
+            
+           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+                $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }
 ?>

@@ -31,7 +31,7 @@
 
             // Some fields are omitted, supply values if needed.
             // Vacation data may be inaccurate until the next calendar update.
-            return new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $tripRow["start"] + $offset, $tripRow["end"] + $offset, NULL, NULL,
+            return new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"] + $offset, $tripRow["end"] + $offset, NULL, NULL,
                 $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, 
                 isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL, isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL,
                 array(), array(), array(), array(), array(), array(), array(), array(), array());
@@ -80,6 +80,18 @@
             $dateTimeAtHome = new DateTime("now", new DateTimeZone($configuration["homeLocation"]["timezone"]));
             $dateTimeAtHome->setTimestamp($timestamp);
             return $timezone->getOffset($dateTimeAtHome) - (new DateTimeZone($configuration["homeLocation"]["timezone"]))->getOffset($dateTimeAtHome);
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $mainHighlightIdentifierRow = $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+                ->withParameters($highlightId)
+                ->getSingleRow();
+            
+           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+                $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }
 ?>

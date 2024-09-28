@@ -17,6 +17,7 @@
 
         public function getParameters() {
             return array(
+                $this->createQueryParameter("includeHighlights", "boolean", "false"),
                 $this->createQueryParameter("includeStats", "boolean", "false"));
         }
 

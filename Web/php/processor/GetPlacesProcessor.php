@@ -3,6 +3,7 @@
     require_once(dirname(__FILE__) . "/../model/Date.php");
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Weather.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
 
@@ -37,52 +38,58 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
-            $places = $databaseProvider
+            $placeRows = $databaseProvider
                 ->statementBuilder("SELECT * FROM place_summary {{WHERE CLAUSE}} ORDER BY start", $whereClause)
                 ->getResultSet();
 
-            foreach ($places as &$place) {
-                if (!isset($tempPlaces[$place["place_id"]])) {    
-                    $categories = array();        
+            foreach ($placeRows as &$placeRow) {
+                if (!isset($tempPlaces[$placeRow["place_id"]])) {    
+                    $categories = array();  
+                    $highlights = array();      
                     
-                    foreach (explode(",", $place["category_ids"]) as &$categoryId) {
+                    foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
                         $categoryRow = $databaseProvider
-                            ->statementBuilder("SELECT id, name, category FROM category_identifier WHERE id = ?")
+                            ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
                             ->withParameters($categoryId)
                             ->getSingleRow();
 
                         if ($categoryRow != NULL) {
-                            $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"]);
+                            $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));
                         }
+                    }                    
+
+                    $includeHighlights = isset($input["includeHighlights"]) && $input["includeHighlights"] == "true";
+                    if ($includeHighlights || isset($input["placeId"])) {
+                        $highlights = $this->getHighlights($placeRow);                      
                     }
 
-                    $tempPlaces[$place["place_id"]] = new Place($place["place_id"], $place["name"], $place["country"], $place["latitude"], $place["longitude"], $place["timezone"], $categories, array());
+                    $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), $categories, $highlights, array());
                 }
                 
                 $weather = NULL;
-                if ($place["end"] > time()) {
-                    if ($place["temperature"] !== NULL && $place["wind"] !== NULL && $place["precipitation"] !== NULL && $place["sunrise"] !== NULL && $place["sunset"] !== NULL) {
-                        $weather = new Weather($place["temperature"], $place["clouds"], $place["wind"], $place["precipitation"], $place["symbol"], $place["sunrise"], $place["sunset"], $place["last_update"]);
+                if ($placeRow["end"] > time()) {
+                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL && $placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL) {
+                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["sunrise"], $placeRow["sunset"], $placeRow["last_update"]);
                     }
                 }
 
                 $album = NULL;
-                if ($place["album_id"] != NULL) {                    
-                    $album = new Album($place["album_id"], $place["name"] . " " . date("j.n.Y", $place["start"]), $place["album_main_image_url"], $place["album_permalink"], $place["album_images_count"], $place["album_indoor_images_count"], $place["album_images_count"] == 0, 
-                        $place["is_main_album_for_place"] == 1, $place["is_main_album_for_country"] == 1, $place["is_main_album_for_trip"] == 1, $place["is_low_quality_album"] == 1, $place["is_bad_weather_album"] == 1);
+                if ($placeRow["album_id"] != NULL) {                    
+                    $album = new Album($placeRow["album_id"], $placeRow["name"] . " " . date("j.n.Y", $placeRow["start"]), $placeRow["album_main_image_url"], $placeRow["album_permalink"], $placeRow["album_images_count"], $placeRow["album_indoor_images_count"], $placeRow["album_images_count"] == 0, 
+                        $placeRow["is_main_album_for_place"] == 1, $placeRow["is_main_album_for_country"] == 1, $placeRow["is_main_album_for_trip"] == 1, $placeRow["is_low_quality_album"] == 1, $placeRow["is_bad_weather_album"] == 1);
                 }
 
                 $trip = NULL;
-                if ($place["trip_id"] != NULL) {
+                if ($placeRow["trip_id"] != NULL) {
                     $tripRow = $databaseProvider
                         ->statementBuilder("SELECT * FROM trip_identifier WHERE id = ?")
-                        ->withParameters($place["trip_id"])
+                        ->withParameters($placeRow["trip_id"])
                         ->getSingleRow();
 
-                    $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"]);
+                    $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]));
                 }
                 
-                $tempPlaces[$place["place_id"]]->addDate(new Date($place["start"], $place["end"], $weather, $album, $trip));  
+                $tempPlaces[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $weather, $album, $trip));  
             }
 
             return array_values($tempPlaces);
@@ -100,6 +107,30 @@
             return $album->getImagesCount() == 0 || $album->getIndoorImagesCount() / $album->getImagesCount() > 0.7
                 ? $album->getImagesCount() // This is an indoor-only location.
                 : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
+        }
+
+        private function getHighlights($placeRow) {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_place hp INNER JOIN highlight_identifier hi ON hp.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE hp.id = ?")
+                ->withParameters($placeRow["place_id"])
+                ->getMappedResultSet(function ($highlightRow) { 
+                    return new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
+                        $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
+                });
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $highlightRow = $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+                ->withParameters($highlightId)
+                ->getSingleRow();
+            
+           return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
+                $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
         }
     }
 ?>

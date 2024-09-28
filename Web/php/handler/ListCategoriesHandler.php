@@ -18,6 +18,7 @@
         public function getParameters() {
             return array(
                 $this->createQueryParameter("categories", "string", "COUNTRY"),
+                $this->createQueryParameter("includeHighlights", "boolean", "false"),
                 $this->createQueryParameter("includeStats", "boolean", "false"));
         }
 

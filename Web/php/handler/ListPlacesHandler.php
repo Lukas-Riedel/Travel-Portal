@@ -32,7 +32,8 @@
                 $this->createQueryParameter("categoryId", "integer", 2),
                 $this->createQueryParameter("minStart", "integer", 1716154060),
                 $this->createQueryParameter("maxEnd", "integer", 1716154060),
-                $this->createQueryParameter("type", "string", array("regular", "candidate")));
+                $this->createQueryParameter("type", "string", array("regular", "candidate")),
+                $this->createQueryParameter("includeHighlights", "boolean", "false"));
         }
 
         public function getMethod() {
@@ -48,7 +49,7 @@
         }
         
         public function getLongDescription() {
-            return "Retrieves a collection of places matching the specified filters. If the `type` filter is not specified, the value `regular` will be used as a default. For a retrieval of proposed dates for a trip candidate, it is necessary to specify the `tripId` filter. If not specified, the `dates` array is always empty for candidate places.";
+            return "Retrieves a collection of places matching the specified filters. If the `type` filter is not specified, the value `regular` will be used as a default. For a retrieval of proposed dates for a trip candidate, it is necessary to specify the `tripId` filter. If not specified, the `dates` array is always empty for candidate places. Some fields in the result may be omitted due to performance reasons, these can be enabled by various include filters.";
         }
         
         public function getRequestExamples() {

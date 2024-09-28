@@ -38,10 +38,10 @@
                 ->execute();
             
             // Some fields are omitted, supply values if needed.
-            return new Trip($targetTripRow["trip_id"], $targetTripRow["name"], $targetTripRow["year"], $targetTripRow["start"], $targetTripRow["end"], NULL, NULL,
+            return new Trip($targetTripRow["trip_id"], $targetTripRow["name"], $targetTripRow["year"], $this->getHighlight($targetTripRow["main_highlight_id"], $targetTripRow["start"], $targetTripRow["end"], NULL, NULL,
                 $targetTripRow["cost"], $targetTripRow["days"], isset($targetTripRow["working_days"]) ? $targetTripRow["working_days"] : NULL, 
                 isset($targetTripRow["expected_vacation"]) ? $targetTripRow["expected_vacation"] : NULL, isset($targetTripRow["max_vacation"]) ? $targetTripRow["max_vacation"] : NULL,
-                array(), array(), array(), array(), array(), array(), array(), array(), array());
+                array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
         }
 
         public function getRequiredArguments() {
@@ -74,6 +74,18 @@
                     "method" => "POST",
                     "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events", 
                     "payload" => json_encode($payload)));
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $mainHighlightIdentifierRow = $databaseProvider
+            ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+            ->withParameters($highlightId)
+            ->getSingleRow();
+            
+           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+                $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }
 ?>

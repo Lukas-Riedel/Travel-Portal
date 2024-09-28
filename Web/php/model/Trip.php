@@ -3,6 +3,7 @@
         private $id;
         private $name;
         private $year;
+        private $mainHighlight;
         private $start;
         private $end;
         private $countries;
@@ -17,14 +18,16 @@
         private $layovers;
         private $fitness;
         private $notes;
+        private $highlights;
         private $stats;
         private $publicHolidays;
 
-        public function __construct($id, $name, $year, $start, $end, $countries, $imageUrl, $cost, $totalDays, $workingDays,
-            $expectedVacation, $maximumVacation, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $stats, $publicHolidays) {
+        public function __construct($id, $name, $year, $mainHighlight, $start, $end, $countries, $imageUrl, $cost, $totalDays, $workingDays,
+            $expectedVacation, $maximumVacation, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays) {
             $this->id = $id;
             $this->name = $name;
             $this->year = $year;
+            $this->mainHighlight = $mainHighlight;
             $this->start = $start;
             $this->end = $end;
             $this->countries = $countries;
@@ -39,6 +42,7 @@
             $this->layovers = $layovers;
             $this->fitness = $fitness;
             $this->notes = $notes;
+            $this->highlights = $highlights;
             $this->stats = $stats;
             $this->publicHolidays = $publicHolidays;
         }
@@ -53,6 +57,10 @@
 
         public function getYear() {
             return $this->year;
+        }
+
+        public function getMainHighlight() {
+            return $this->mainHighlight;
         }
 
         public function getStart() {
@@ -109,6 +117,10 @@
 
         public function getNotes() {
             return $this->notes;
+        }
+
+        public function getHighlights() {
+            return $this->highlights;
         }
 
         public function getStats() {

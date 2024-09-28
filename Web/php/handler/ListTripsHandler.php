@@ -36,6 +36,7 @@
                 $this->createQueryParameter("includeLayovers", "boolean", "false"),
                 $this->createQueryParameter("includeFitness", "boolean", "false"),
                 $this->createQueryParameter("includeNotes", "boolean", "false"),
+                $this->createQueryParameter("includeHighlights", "boolean", "false"),
                 $this->createQueryParameter("includeStats", "boolean", "false"),
                 $this->createQueryParameter("includePublicHolidays", "boolean", "false"));
         }

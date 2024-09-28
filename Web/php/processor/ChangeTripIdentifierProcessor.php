@@ -42,7 +42,7 @@
                 ->withParameters($input["tripId"])
                 ->getSingleRow();
 
-            return new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"]);
+            return new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]));
         }
 
         public function getRequiredArguments() {
@@ -51,6 +51,18 @@
         
         public function requiresAuthentication() {
             return TRUE;
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $mainHighlightIdentifierRow = $databaseProvider
+            ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+            ->withParameters($highlightId)
+            ->getSingleRow();
+            
+           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+                $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }
 ?>

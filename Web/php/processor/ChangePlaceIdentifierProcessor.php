@@ -1,5 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/UpdateAlbumProcessor.php");
@@ -88,7 +89,7 @@
                 ->getSingleRow();
             
             return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], 
-                $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"]);
+                $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"], $this->getHighlight($placeIdentifierRow["main_highlight_id"]));
         }
 
         public function getRequiredArguments() {
@@ -97,6 +98,18 @@
         
         public function requiresAuthentication() {
             return TRUE;
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $highlightRow = $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+                ->withParameters($highlightId)
+                ->getSingleRow();
+            
+           return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
+                $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
         }
     }
 ?> 

@@ -6,17 +6,21 @@
         private $latitude;
         private $longitude;
         private $timezone;
+        private $mainHighlight;
         private $categories;
+        private $highlights;
         private $dates;
 
-        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $categories, $dates) {
+        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight, $categories, $highlights, $dates) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
             $this->latitude = $latitude;
             $this->longitude = $longitude;
             $this->timezone = $timezone;
+            $this->mainHighlight = $mainHighlight;
             $this->categories = $categories;
+            $this->highlights = $highlights;
             $this->dates = $dates;
         }
 
@@ -44,8 +48,16 @@
             return $this->timezone;
         }
 
+        public function getMainHighlight() {
+            return $this->mainHighlight;
+        }
+
         public function getCategories() {
             return $this->categories;
+        }
+
+        public function getHighlights() {
+            return $this->highlights;
         }
 
         public function getDates() {

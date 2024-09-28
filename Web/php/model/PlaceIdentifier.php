@@ -6,14 +6,16 @@
         private $latitude;
         private $longitude;
         private $timezone;
+        private $mainHighlight;
 
-        public function __construct($id, $name, $country, $latitude, $longitude, $timezone) {
+        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
             $this->latitude = $latitude;
             $this->longitude = $longitude;
             $this->timezone = $timezone;
+            $this->mainHighlight = $mainHighlight;
         }
 
         public function getId() {
@@ -38,6 +40,10 @@
 
         public function getTimezone() {
             return $this->timezone;
+        }
+
+        public function getMainHighlight() {
+            return $this->mainHighlight;
         }
 
         #[\ReturnTypeWillChange]

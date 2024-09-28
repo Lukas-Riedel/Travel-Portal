@@ -1,5 +1,6 @@
 <?php 
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
 
     class GetPlaceIdentifierProcessor extends Processor {   
@@ -12,7 +13,7 @@
                 ->getFirstRow();
 
             if ($placeIdentifierRow != NULL) {
-                return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"]);
+                return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"], $this->getHighlight($placeIdentifierRow["main_highlight_id"]));
             }
 
             if ($input["country"] == $configuration["countryNames"]["UNKNOWN"]) {
@@ -42,7 +43,7 @@
                 ->scheduleJobExecution("UpdateCategories", array(
                     "placeId" => $placeIdentifierRow["id"]), NULL);
 
-            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"]);
+            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"], $this->getHighlight($placeIdentifierRow["main_highlight_row"]));
         }
 
         public function getRequiredArguments() {
@@ -51,6 +52,18 @@
 
         public function requiresAuthentication() {
             return FALSE;
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $highlightRow = $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+                ->withParameters($highlightId)
+                ->getSingleRow();
+            
+           return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
+                $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
         }
     }
 ?>

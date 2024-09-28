@@ -3,11 +3,13 @@
         private $id;
         private $name;
         private $category;
+        private $mainHighlight;
 
-        public function __construct($id, $name, $category) {
+        public function __construct($id, $name, $category, $mainHighlight) {
             $this->id = $id;
             $this->name = $name;
             $this->category = $category;
+            $this->mainHighlight = $mainHighlight;
         }
 
         public function getId() {
@@ -20,6 +22,10 @@
 
         public function getCategory() {
             return $this->category;
+        }
+
+        public function getMainHighlight() {
+            return $this->mainHighlight;
         }
 
         #[\ReturnTypeWillChange]

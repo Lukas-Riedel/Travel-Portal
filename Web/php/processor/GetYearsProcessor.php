@@ -19,6 +19,7 @@
             $result = array();
 
             foreach ($years as &$year) {
+                $highlights = array();
                 $stats = array();
 
                 $includeStats = isset($input["includeStats"]) && $input["includeStats"] == "true";
@@ -26,7 +27,13 @@
                     $stats = $this->getStats($year);                      
                 }
 
-                $result[] = new Year($year, $stats);
+                $includeHighlights = isset($input["includeHighlights"]) && $input["includeHighlights"] == "true";
+                if ($includeHighlights || isset($input["year"])) {
+                    $highlights = $this->getHighlights($year);                      
+                }
+
+                // TODO: Main highlight for year.
+                $result[] = new Year($year, count($highlights) > 0 ? $highlights[0] : NULL, $highlights, $stats);
             }
 
             return $result;
@@ -45,6 +52,30 @@
                 ->process(array(
                     "type" => "year", 
                     "id" => $year));
+        }
+
+        private function getHighlights($year) {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_year hy INNER JOIN highlight_identifier hi ON hy.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE hy.id = ?")
+                ->withParameters($year)
+                ->getMappedResultSet(function ($highlightRow) { 
+                    return new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
+                        $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
+                });
+        }
+
+        private function getHighlight($highlightId) {
+            global $databaseProvider;            
+                
+            $mainHighlightIdentifierRow = $databaseProvider
+            ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_identifier hi LEFT JOIN photo p ON hi.photo_id = p.id WHERE hi.id = ?")
+            ->withParameters($highlightId)
+            ->getSingleRow();
+            
+           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+                $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }
 ?>
