@@ -196,7 +196,7 @@ function getAlbumsComponent(albums, buttonsSupplier) {
         }
 
         const overlay = "<div class=\"overlay\"><ul>" + album.nameTokens.map(nameToken => "<li>" + nameToken + "</li>").join("") + "</ul></div>";
-        const innerRows = [ "<div style=\"width: " + configuration.mainAlbumImageSize.width + "px;\" class=\"albumWrapper\"><a " + album.action + "\"><img style=\"width: " + configuration.mainAlbumImageSize.width + "px; height: " + configuration.mainAlbumImageSize.height + "px;\" src=\"" + album.imageUrl + "\">" + (album.nameTokens.length == 0 ? "" : overlay) + "</a></div>" ];
+        const innerRows = [ "<div style=\"width: " + configuration.albumThumbnailImageSize.width + "px;\" class=\"albumWrapper\"><a " + album.action + "\"><img style=\"width: " + configuration.albumThumbnailImageSize.width + "px; height: " + configuration.albumThumbnailImageSize.height + "px;\" src=\"" + album.imageUrl + "\">" + (album.nameTokens.length == 0 ? "" : overlay) + "</a></div>" ];
         
         if (buttonsSupplier !== undefined) {            
             innerRows.push("<div class=\"utilitiesColumn\">" + buttonsSupplier(album).map(button => "<a onclick=\"" + button.action + "\"><img style=\"width: 24px;\" src=\"" + button.image + "\"></a>").join("") + "</div>");

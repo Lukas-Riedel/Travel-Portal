@@ -7,7 +7,7 @@
 
             $detectedLandmark = "UNKNOWN";
 
-            $image = file_get_contents($input["baseUrl"] . "=w" . $configuration["mainAlbumImageSize"]["width"] . "-h" . $configuration["mainAlbumImageSize"]["height"]);
+            $image = file_get_contents($input["baseUrl"] . "=w" . $configuration["albumThumbnailImageSize"]["width"] . "-h" . $configuration["albumThumbnailImageSize"]["height"]);
             $apiResponse = $this->getGoogleVisionResponse(base64_encode($image));
 
             if (array_key_exists("error", $apiResponse)) {

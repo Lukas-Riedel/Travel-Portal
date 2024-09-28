@@ -1,5 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/GetHighlightIdentifierProcessor.php");
+    require_once(dirname(__FILE__) . "/UpdateHighlightProcessor.php");
 
     class AddHighlightProcessor extends Processor {        
         public function process($input) {
@@ -20,6 +21,10 @@
                     ->statementBuilder("INSERT INTO " . $table . " (id, highlight_id) VALUES (?, ?)")
                     ->withParameters($input["id"], $highlightId->getId())
                     ->execute();
+
+                (new UpdateHighlightProcessor())
+                    ->process(array(
+                        "highlightId" => $highlightId->getId()));
             }
             
             return $highlightId;

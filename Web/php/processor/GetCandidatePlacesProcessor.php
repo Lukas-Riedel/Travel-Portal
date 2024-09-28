@@ -38,7 +38,7 @@
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             $placeRows = $databaseProvider
-                ->statementBuilder("SELECT pcan.*, cs.category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL OR (MAX(ps.is_low_quality_album) = 1 AND MIN(ps.is_low_quality_album) = 1) OR (MAX(ps.is_bad_weather_album) = 1 AND MIN(ps.is_bad_weather_album) = 1)) pcan INNER JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
+                ->statementBuilder("SELECT pcan.*, cs.category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL OR (MAX(ps.is_low_quality_album) = 1 AND MIN(ps.is_low_quality_album) = 1) OR (MAX(ps.is_bad_weather_album) = 1 AND MIN(ps.is_bad_weather_album) = 1)) pcan INNER JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
                 ->getResultSet();
 
             $result = array();
@@ -112,7 +112,7 @@
                     ->withParameters($input["tripId"])
                     ->getSingleRow();
 
-                $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"]), $this->getHighlight($tripRow["main_highlight_id"]);
+                $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]));
                 
                 $tempPlaces[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], NULL, NULL, $trip));
             }

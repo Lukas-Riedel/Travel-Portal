@@ -171,12 +171,12 @@ async function getLoggedAirports(loggedFlights = undefined) {
 function loadPage(initFunction) {
     $(document).ready(async () => { 
         configuration = await getResponse("GetConfiguration", { levels: "public" });
-        const albumsPerRow = $(window).width() / configuration.mainAlbumImageSize.width;
-        const newImageWidth = albumsPerRow - Math.floor(albumsPerRow) > 0.9 ? ($(window).width() / Math.ceil(albumsPerRow)) * 0.95 : configuration.mainAlbumImageSize.width;
-        const newImageHeight = newImageWidth / configuration.mainAlbumImageSize.width * configuration.mainAlbumImageSize.height;
-        configuration.mainAlbumImageSize.width = newImageWidth;
-        configuration.mainAlbumImageSize.height = newImageHeight;
-        configuration.albumsPerRow = Math.floor($(window).width() / configuration.mainAlbumImageSize.width);
+        const albumsPerRow = $(window).width() / configuration.albumThumbnailImageSize.width;
+        const newImageWidth = albumsPerRow - Math.floor(albumsPerRow) > 0.9 ? ($(window).width() / Math.ceil(albumsPerRow)) * 0.95 : configuration.albumThumbnailImageSize.width;
+        const newImageHeight = newImageWidth / configuration.albumThumbnailImageSize.width * configuration.albumThumbnailImageSize.height;
+        configuration.albumThumbnailImageSize.width = newImageWidth;
+        configuration.albumThumbnailImageSize.height = newImageHeight;
+        configuration.albumsPerRow = Math.floor($(window).width() / configuration.albumThumbnailImageSize.width);
         configuration.maximumCalendarEntriesPerRow = Math.floor($(window).width() / configuration.calendarEntryMinimumWidth);
         Object.keys(configuration.countries).forEach(country => configuration.countries[country].emoji = configuration.countries[country].unicode.split("-").map(c => "0x" + c).map(c => Number(c)).map(c => String.fromCodePoint(c)).join(""));
         const afterInitFunctionEvent = new Event("afterInitFunction");

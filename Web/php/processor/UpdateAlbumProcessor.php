@@ -12,7 +12,7 @@
             $getPhotoIdentifierProcessor = new GetPhotoIdentifierProcessor();
             $addHighlightProcessor = new AddHighlightProcessor();
 
-            $albumCachePath = dirname(__FILE__) . "/../../cache/album";
+            $albumCachePath = dirname(__FILE__) . "/../../" . $configuration["cachePath"]["albumThumbnail"];
 
             $albumId = isset($input["albumId"]) ? $input["albumId"] : NULL;
         
@@ -31,16 +31,12 @@
                 ->getResultSetForColumn("album_id");
 
             foreach ($pendingAlbumIds as &$pendingAlbumId) {
-                while(true) {
-                    $pendingPhotos = $databaseProvider
-                        ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? ORDER BY position LIMIT 50")
-                        ->withParameters($pendingAlbumId)
-                        ->getResultSet();
-
-                    if (count($pendingPhotos) == 0) {
-                        break;
-                    }
-
+                $pendingPhotos = $databaseProvider
+                    ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? ORDER BY position LIMIT 50")
+                    ->withParameters($pendingAlbumId)
+                    ->getResultSet();
+                
+                while (count($pendingPhotos) == 0) {
                     $newMediaItems = array();
                     foreach ($pendingPhotos as &$pendingPhoto) {
                         $newMediaItems[] = array(
@@ -56,6 +52,11 @@
                     }
 
                     $this->createGooglePhotos($pendingAlbumId, $newMediaItems);
+                    
+                    $pendingPhotos = $databaseProvider
+                        ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? ORDER BY position LIMIT 50")
+                        ->withParameters($pendingAlbumId)
+                        ->getResultSet();
                 }
             }
         
@@ -69,11 +70,11 @@
                         $filePath = $albumCachePath . "/" . $fileName;
             
                         if ((isset($input["forceOverwrite"]) && $input["forceOverwrite"] == "true") || !file_exists($filePath)) {
-                            file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] . "=w" . $configuration["mainAlbumImageSize"]["width"] . "-h" . $configuration["mainAlbumImageSize"]["height"]));
+                            file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] . "=w" . $configuration["albumThumbnailImageSize"]["width"] . "-h" . $configuration["albumThumbnailImageSize"]["height"]));
                         }
             
                         $actuallyUsedImages[] = $filePath;
-                        $mainImageUrl = "https://" . $configuration["hostName"] . "/cache/album/" . $fileName;
+                        $mainImageUrl = "https://" . $configuration["hostName"] . "/" . $configuration["cachePath"]["albumThumbnail"] . "/" . $fileName;
                     }
         
                     $imagesCount = 0;
