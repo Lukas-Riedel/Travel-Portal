@@ -40,7 +40,7 @@
                     ->withParameters($resolvedAlbumId)
                     ->getSingleRow();
 
-                return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_image_url"], $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"], $albumRow["images_count"] == 0, 
+                return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["main_image_url"], $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"], $albumRow["images_count"] == 0, 
                     $albumRow["is_main_for_place"] == 1, $albumRow["is_main_for_country"] == 1, $albumRow["is_main_for_trip"] == 1, $albumRow["is_low_quality"] == 1, $albumRow["is_bad_weather"] == 1);
             }
 

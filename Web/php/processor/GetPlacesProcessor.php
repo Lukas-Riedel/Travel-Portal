@@ -75,7 +75,7 @@
 
                 $album = NULL;
                 if ($placeRow["album_id"] != NULL) {                    
-                    $album = new Album($placeRow["album_id"], $placeRow["name"] . " " . date("j.n.Y", $placeRow["start"]), $placeRow["album_main_image_url"], $placeRow["album_permalink"], $placeRow["album_images_count"], $placeRow["album_indoor_images_count"], $placeRow["album_images_count"] == 0, 
+                    $album = new Album($placeRow["album_id"], $placeRow["name"] . " " . date("j.n.Y", $placeRow["start"]), $placeRow["album_main_photo_id"], $placeRow["album_main_image_url"], $placeRow["album_permalink"], $placeRow["album_images_count"], $placeRow["album_indoor_images_count"], $placeRow["album_images_count"] == 0, 
                         $placeRow["is_main_album_for_place"] == 1, $placeRow["is_main_album_for_country"] == 1, $placeRow["is_main_album_for_trip"] == 1, $placeRow["is_low_quality_album"] == 1, $placeRow["is_bad_weather_album"] == 1);
                 }
 

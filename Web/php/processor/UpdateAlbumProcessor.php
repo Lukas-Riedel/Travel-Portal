@@ -64,6 +64,7 @@
             $response = $this->getGooglePhotosAlbumResponse($albumId);
             while (isset($response["albums"])) {
                 foreach ($response["albums"] as &$album) {
+                    $mainPhotoId = NULL;
                     $mainImageUrl = "";
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $fileName = $album["coverPhotoMediaItemId"] . ".jpg";
@@ -75,6 +76,10 @@
             
                         $actuallyUsedImages[] = $filePath;
                         $mainImageUrl = "https://" . $configuration["hostName"] . "/" . $configuration["cachePath"]["albumThumbnail"] . "/" . $fileName;
+                        
+                        $mainPhotoId = $getPhotoIdentifierProcessor
+                            ->process(array(
+                                "externalId" => $album["coverPhotoMediaItemId"]));
                     }
         
                     $imagesCount = 0;
@@ -89,16 +94,13 @@
                     $albums[] = array(
                         "id" => $resolvedAlbumId,
                         "name" => $album["title"],
+                        "mainPhotoId" => $mainPhotoId,
                         "mainImageUrl" => $mainImageUrl,
                         "imagesCount" => $imagesCount,
                         "permalink" => $album["productUrl"]);
 
                     // This is temporary until there's a proper support for highlights.
                     if (isset($album["coverPhotoMediaItemId"])) {
-                        $resolvedMainPhotoIdentifier = $getPhotoIdentifierProcessor
-                            ->process(array(
-                                "externalId" => $album["coverPhotoMediaItemId"]));
-    
                         $placeRow = $databaseProvider
                             ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year_id FROM place_summary WHERE album_id = ?")
                             ->withParameters($resolvedAlbumId)
@@ -108,7 +110,7 @@
                             ->process(array(
                                 "type" => "place",
                                 "id" => $placeRow["place_id"], 
-                                "photoId" => $resolvedMainPhotoIdentifier));
+                                "photoId" => $mainPhotoId));
 
                         if ($placeRow["is_main_album_for_place"]) {
                             $databaseProvider
@@ -122,7 +124,7 @@
                                 ->process(array(
                                     "type" => "trip",
                                     "id" => $placeRow["trip_id"], 
-                                    "photoId" => $resolvedMainPhotoIdentifier));
+                                    "photoId" => $mainPhotoId));
 
                             if ($placeRow["is_main_album_for_trip"]) {
                                 $databaseProvider
@@ -136,7 +138,7 @@
                             ->process(array(
                                 "type" => "year",
                                 "id" => $placeRow["year_id"], 
-                                "photoId" => $resolvedMainPhotoIdentifier));
+                                "photoId" => $mainPhotoId));
 
                         $countryCategoryId = $databaseProvider
                             ->statementBuilder("SELECT id FROM category_identifier WHERE name = ?")
@@ -148,7 +150,7 @@
                                 ->process(array(
                                     "type" => "category",
                                     "id" => $categoryId, 
-                                    "photoId" => $resolvedMainPhotoIdentifier));
+                                    "photoId" => $mainPhotoId));
 
                             if ($categoryId == $countryCategoryId) {
                                 if ($placeRow["is_main_album_for_country"]) {
@@ -191,8 +193,8 @@
         
             foreach ($albums as &$album) {
                 $databaseProvider
-                    ->statementBuilder("INSERT INTO album (name, id, main_image_url, images_count, indoor_images_count, permalink) VALUES (?, ?, ?, ?, GET_INDOOR_IMAGES_COUNT(?), ?)")
-                    ->withParameters($album["name"], $album["id"], $album["mainImageUrl"], $album["imagesCount"], $album["id"], $album["permalink"])
+                    ->statementBuilder("INSERT INTO album (name, id, main_photo_id, main_image_url, images_count, indoor_images_count, permalink) VALUES (?, ?, ?, ?, ?, GET_INDOOR_IMAGES_COUNT(?), ?)")
+                    ->withParameters($album["name"], $album["id"], $album["mainPhotoId"], $album["mainImageUrl"], $album["imagesCount"], $album["id"], $album["permalink"])
                     ->execute();
             }
 

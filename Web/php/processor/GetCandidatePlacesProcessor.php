@@ -54,7 +54,7 @@
                 foreach ($dateRows as &$dateRow) {    
                     $album = NULL;
                     if ($dateRow["album_id"] != NULL) {                    
-                        $album = new Album($dateRow["album_id"], $dateRow["name"], $dateRow["album_main_image_url"], $dateRow["album_permalink"], $dateRow["album_images_count"], $dateRow["album_indoor_images_count"], $dateRow["album_images_count"] == 0, 
+                        $album = new Album($dateRow["album_id"], $dateRow["name"], $dateRow["album_main_photo_id"], $dateRow["album_main_image_url"], $dateRow["album_permalink"], $dateRow["album_images_count"], $dateRow["album_indoor_images_count"], $dateRow["album_images_count"] == 0, 
                             $dateRow["is_main_album_for_place"] == 1, $dateRow["is_main_album_for_country"] == 1, $dateRow["is_main_album_for_trip"] == 1, $dateRow["is_low_quality_album"] == 1, $dateRow["is_bad_weather_album"] == 1);
                     }
     
