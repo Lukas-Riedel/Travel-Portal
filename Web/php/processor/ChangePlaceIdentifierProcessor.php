@@ -8,6 +8,13 @@
     class ChangePlaceIdentifierProcessor extends Processor {    
         public function process($input) {
             global $databaseProvider, $schedulingProvider;
+            
+            if (isset($input["mainHighlightId"])) {
+                $databaseProvider
+                    ->statementBuilder("UPDATE place_identifier SET main_highlight_id = ? WHERE id = ? AND EXISTS(SELECT * FROM highlight_place WHERE highlight_id = ? AND id = ?)")
+                    ->withParameters($input["mainHighlightId"], $input["placeId"], $input["mainHighlightId"], $input["placeId"])
+                    ->execute();
+            }
 
             if (isset($input["latitude"])) {
                 $databaseProvider

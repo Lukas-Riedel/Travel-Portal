@@ -10,16 +10,22 @@
                 ->process(array(
                     "photoId" => $input["photoId"]));
 
-            $table = $this->resolveTable($input["type"]);
+            $highlightTable = $this->resolveHighlightTable($input["type"]);
             $highlightRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM " . $table . " WHERE id = ? AND highlight_id = ?")
+                ->statementBuilder("SELECT * FROM " . $highlightTable . " WHERE id = ? AND highlight_id = ?")
                 ->withParameters($input["id"], $highlightId->getId())
                 ->getSingleRow();
 
             if ($highlightRow == NULL) {
                 $databaseProvider
-                    ->statementBuilder("INSERT INTO " . $table . " (id, highlight_id) VALUES (?, ?)")
+                    ->statementBuilder("INSERT INTO " . $highlightTable . " (id, highlight_id) VALUES (?, ?)")
                     ->withParameters($input["id"], $highlightId->getId())
+                    ->execute();
+
+                $identifierTable = $this->resolveIdentifierTable($input["type"]);
+                $databaseProvider
+                    ->statementBuilder("UPDATE " . $identifierTable . " SET main_highlight_id = ? WHERE id = ? AND main_highlight_id IS NULL")
+                    ->withParameters($highlightId->getId(), $input["id"])
                     ->execute();
 
                 (new UpdateHighlightProcessor())
@@ -38,7 +44,7 @@
             return TRUE;
         }
 
-        private function resolveTable($type) {
+        private function resolveHighlightTable($type) {
             if ($type == "place") {
                 return "highlight_place";
             }
@@ -50,6 +56,22 @@
             }
             if ($type == "year") {
                 return "highlight_year";
+            }
+            throw new InvalidArgumentException("Unknown highlight type " . $type . ". Permitted values: place, trip, category, year");
+        }
+
+        private function resolveIdentifierTable($type) {
+            if ($type == "place") {
+                return "place_identifier";
+            }
+            if ($type == "trip") {
+                return "trip_identifier";
+            }
+            if ($type == "category") {
+                return "category_identifier";
+            }
+            if ($type == "year") {
+                return "year_identifier";
             }
             throw new InvalidArgumentException("Unknown highlight type " . $type . ". Permitted values: place, trip, category, year");
         }

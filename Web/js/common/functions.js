@@ -29,6 +29,10 @@ function executeAndReload(action, args = {}, targetLocation = undefined) {
 }
 
 // High-level backend communication.
+async function addHighlight(type, id, photoId) {
+    return await getResponse("AddHighlight", { id: id, type: type, photoId: photoId });
+}
+
 async function getGeographicalRegions() {
     return await getResponse("GetGeographicalRegions");
 }

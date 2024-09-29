@@ -1,11 +1,19 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
 
     class ChangeTripIdentifierProcessor extends Processor {
         public function process($input) {
             global $databaseProvider, $schedulingProvider;
+
+            if (isset($input["mainHighlightId"])) {
+                $databaseProvider
+                    ->statementBuilder("UPDATE trip_identifier SET main_highlight_id = ? WHERE id = ? AND EXISTS(SELECT * FROM highlight_trip WHERE highlight_id = ? AND id = ?)")
+                    ->withParameters($input["mainHighlightId"], $input["tripId"], $input["mainHighlightId"], $input["tripId"])
+                    ->execute();
+            }
 
             if (isset($input["name"])) {
                 $databaseProvider

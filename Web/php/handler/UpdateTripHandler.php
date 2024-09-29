@@ -60,7 +60,8 @@
         public function getRequestExamples() {
             return array(
                 $this->createRequestExample("Update trip name", '{"name":"Východní Itálie"}'),
-                $this->createRequestExample("Update trip start", '{"start":1724666400}'));
+                $this->createRequestExample("Update trip start", '{"start":1724666400}'),
+                $this->createRequestExample("Update trip main highlight", '{"mainHighlightId":1}'));
         }
 
         public function getResponseExamples() {

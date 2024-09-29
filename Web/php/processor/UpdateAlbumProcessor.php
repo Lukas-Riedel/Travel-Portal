@@ -112,26 +112,12 @@
                                 "id" => $placeRow["place_id"], 
                                 "photoId" => $mainPhotoId));
 
-                        if ($placeRow["is_main_album_for_place"]) {
-                            $databaseProvider
-                                ->statementBuilder("UPDATE place_identifier SET main_highlight_id = ? WHERE id = ?")
-                                ->withParameters($highlight->getId(), $placeRow["place_id"])
-                                ->execute();
-                        }
-
                         if ($placeRow["trip_id"] != NULL) {
                             $highlight = $addHighlightProcessor
                                 ->process(array(
                                     "type" => "trip",
                                     "id" => $placeRow["trip_id"], 
                                     "photoId" => $mainPhotoId));
-
-                            if ($placeRow["is_main_album_for_trip"]) {
-                                $databaseProvider
-                                    ->statementBuilder("UPDATE trip_identifier SET main_highlight_id = ? WHERE id = ?")
-                                    ->withParameters($highlight->getId(), $placeRow["trip_id"])
-                                    ->execute();
-                            }
                         }
 
                         $highlight = $addHighlightProcessor
@@ -151,15 +137,6 @@
                                     "type" => "category",
                                     "id" => $categoryId, 
                                     "photoId" => $mainPhotoId));
-
-                            if ($categoryId == $countryCategoryId) {
-                                if ($placeRow["is_main_album_for_country"]) {
-                                    $databaseProvider
-                                        ->statementBuilder("UPDATE category_identifier SET main_highlight_id = ? WHERE id = ?")
-                                        ->withParameters($highlight->getId(), $categoryId)
-                                        ->execute();
-                                }
-                            }
                         }
                     }  
                     // End of temporary code.                          

@@ -7,14 +7,16 @@ function getAlbumsComponentForTrip(trip, places, showButtons) {
                 name: place.name,
                 country: place.country,
                 start: date.start,
+                tripId: date.trip.id,
                 album: date.album
             }
         })), (a, b) => b.start - a.start);
     return getAlbumsComponent(places.map(place => {
         return {
             id: place.album.id,
+            mainPhotoId: place.album.mainPhotoId,
             permalink: place.album.permalink,
-            place: { id: place.id, name: place.name, country: place.country },
+            place: { id: place.id, name: place.name, country: place.country, tripId: place.tripId },
             tripName: getFullyQualifiedTripName(trip),
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), getDateString(place.start, true) ],
             action: "onclick=\"openGalleryForAlbum('" + place.album.id + "', " + place.id + ")\"",
@@ -34,14 +36,16 @@ function getAlbumsComponentForYear(places, showButtons) {
                 name: place.name,
                 country: place.country,
                 start: date.start,
+                tripId: date.trip.id,
                 album: date.album
             }
         })), (a, b) => b.start - a.start);
     return getAlbumsComponent(places.map(place => {
         return {
             id: place.album.id,
+            mainPhotoId: place.album.mainPhotoId,
             permalink: place.album.permalink,
-            place: { id: place.id, name: place.name, country: place.country },
+            place: { id: place.id, name: place.name, country: place.country, tripId: place.tripId },
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), getDateString(place.start, true) ],
             action: "onclick=\"openGalleryForAlbum('" + place.album.id + "', " + place.id + ")\"",
             imageUrl: place.album.mainImageUrl,
@@ -58,14 +62,16 @@ function getAlbumsComponentForPlace(place, showButtons) {
             name: place.name,
             country: place.country,
             start: date.start,
+            tripId: date.trip.id,
             album: date.album
         }
     }), (a, b) => b.start - a.start);
     return getAlbumsComponent(places.map(place => {
         return {
             id: place.album.id,
+            mainPhotoId: place.album.mainPhotoId,
             permalink: place.album.permalink,
-            place: { id: place.id, name: place.name, country: place.country },
+            place: { id: place.id, name: place.name, country: place.country, tripId: place.tripId },
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), getDateString(place.start, true) ],
             action: "onclick=\"openGalleryForAlbum('" + place.album.id + "', " + place.id + ")\"",
             imageUrl: place.album.mainImageUrl,
@@ -77,7 +83,7 @@ function getAlbumsComponentForPlace(place, showButtons) {
 
 function getAlbumsComponentForCategory(places) {
     places = sorted(places
-        .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
+        .filter(place => place.mainHighlight != null)
         .map(place => {     
             return {
                 name: place.name,
@@ -99,7 +105,7 @@ function getAlbumsComponentForCategory(places) {
 
 function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
     places = sorted(places
-        .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
+        .filter(place => place.mainHighlight != null)
         .map(place => {     
             return {
                 name: place.name,
@@ -216,7 +222,7 @@ function getButtonsForStandardAlbum(album) {
             image: "img/photo.png"
         },
         { 
-            action: "refreshAlbum('" + album.id + "')",
+            action: "refreshAlbum(" + album.id + ")",
             image: "img/refresh.png"
         },
         { 
@@ -228,11 +234,11 @@ function getButtonsForStandardAlbum(album) {
             image: !album.isLowQuality ? "img/good_quality.png" : "img/low_quality.png"
         },
         { 
-            action: "changeAlbumStatus('MAIN_FOR_PLACE', '" + album.id + "', " + album.place.id + ")",
+            action: "changePlaceMainHighlight(" + album.place.id + ", " + album.mainPhotoId + ")",
             image: "img/heart.png"
         },
         { 
-            action: "changeAlbumStatus('MAIN_FOR_COUNTRY', '" + album.id + "', " + album.place.id + ")",
+            action: "changeCountryMainHighlight('" + album.place.country + "', " + album.mainPhotoId + ")",
             image: getFlagImageUrl(album.place.country)
         }
     ];
@@ -242,7 +248,7 @@ function getButtonsForStandardAlbumInTrip(album) {
     const result = getButtonsForStandardAlbum(album);
     result.push(        
         { 
-            action: "changeAlbumStatus('MAIN_FOR_TRIP', '" + album.id + "', " + album.place.id + ")",
+            action: "changeTripMainHighlight(" + album.place.tripId + ", " + album.mainPhotoId + ")",
             image: "img/organized_tour.png"
     });
     return result;
@@ -274,6 +280,22 @@ async function refreshAlbum(albumId) {
 
 async function changeAlbumStatus(type, albumId, placeId) {
     executeAndAlertConfirmation("ChangeAlbumStatus", { type: type, albumId: albumId, placeId: placeId});
+}
+
+async function changePlaceMainHighlight(placeId, photoId) {
+    const highlight = await addHighlight("place", placeId, photoId);
+    executeAndReload("ChangePlaceIdentifier", { placeId: placeId, mainHighlightId: highlight.id });
+}
+
+async function changeCountryMainHighlight(country, photoId) {
+    const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: country });
+    const highlight = await addHighlight("category", categoryIdentifier.id, photoId);
+    executeAndReload("ChangeCategoryIdentifier", { categoryId: categoryIdentifier.id, mainHighlightId: highlight.id });
+}
+
+async function changeTripMainHighlight(tripId, photoId) {
+    const highlight = await addHighlight("trip", tripId, photoId);
+    executeAndReload("ChangeTripIdentifier", { tripId: tripId, mainHighlightId: highlight.id });
 }
 
 function getTripFlagImages(trip) {

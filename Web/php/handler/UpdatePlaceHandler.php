@@ -54,7 +54,8 @@
         public function getRequestExamples() {
             return array(
                 $this->createRequestExample("Update place name", '{"name":"Praha"}'),
-                $this->createRequestExample("Update place location", '{"latitude":50.0755381,"longitude":14.4378005}'));
+                $this->createRequestExample("Update place location", '{"latitude":50.0755381,"longitude":14.4378005}'),
+                $this->createRequestExample("Update place main highlight", '{"mainHighlightId":1}'));
         }
 
         public function getResponseExamples() {
