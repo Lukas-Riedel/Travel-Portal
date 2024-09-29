@@ -20,9 +20,7 @@ function getAlbumsComponentForTrip(trip, places, showButtons) {
             tripName: getFullyQualifiedTripName(trip),
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), getDateString(place.start, true) ],
             action: "onclick=\"openGalleryForAlbum('" + place.album.id + "', " + place.id + ")\"",
-            imageUrl: place.album.mainImageUrl,
-            isLowQuality: place.album.isLowQuality,
-            isBadWeather: place.album.isBadWeather
+            imageUrl: place.album.mainImageUrl
         };
      }), showButtons ? getButtonsForStandardAlbumInTrip : undefined);
 }
@@ -36,7 +34,7 @@ function getAlbumsComponentForYear(places, showButtons) {
                 name: place.name,
                 country: place.country,
                 start: date.start,
-                tripId: date.trip.id,
+                tripId: date.trip == null ? null : date.trip.id,
                 album: date.album
             }
         })), (a, b) => b.start - a.start);
@@ -48,9 +46,7 @@ function getAlbumsComponentForYear(places, showButtons) {
             place: { id: place.id, name: place.name, country: place.country, tripId: place.tripId },
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), getDateString(place.start, true) ],
             action: "onclick=\"openGalleryForAlbum('" + place.album.id + "', " + place.id + ")\"",
-            imageUrl: place.album.mainImageUrl,
-            isLowQuality: place.album.isLowQuality,
-            isBadWeather: place.album.isBadWeather
+            imageUrl: place.album.mainImageUrl
         };
      }), showButtons ? getButtonsForStandardAlbum : undefined);
 }
@@ -74,9 +70,7 @@ function getAlbumsComponentForPlace(place, showButtons) {
             place: { id: place.id, name: place.name, country: place.country, tripId: place.tripId },
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), getDateString(place.start, true) ],
             action: "onclick=\"openGalleryForAlbum('" + place.album.id + "', " + place.id + ")\"",
-            imageUrl: place.album.mainImageUrl,
-            isLowQuality: place.album.isLowQuality,
-            isBadWeather: place.album.isBadWeather
+            imageUrl: place.album.mainImageUrl
         };
      }), showButtons ? getButtonsForStandardAlbum : undefined);
 }
@@ -224,14 +218,6 @@ function getButtonsForStandardAlbum(album) {
         { 
             action: "refreshAlbum(" + album.id + ")",
             image: "img/refresh.png"
-        },
-        { 
-            action: "changeAlbumStatus('BAD_WEATHER', '" + album.id + "', " + album.place.id + ")",
-            image: !album.isBadWeather ? "img/good_weather.png" : "img/bad_weather.png"
-        },
-        { 
-            action: "changeAlbumStatus('LOW_QUALITY', '" + album.id + "', " + album.place.id + ")",
-            image: !album.isLowQuality ? "img/good_quality.png" : "img/low_quality.png"
         },
         { 
             action: "changePlaceMainHighlight(" + album.place.id + ", " + album.mainPhotoId + ")",

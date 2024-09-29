@@ -36,12 +36,11 @@
                         "albumId" => $resolvedAlbumId));
 
                 $albumRow = $databaseProvider
-                    ->statementBuilder("SELECT a.*, am.is_main_for_place, am.is_main_for_country, am.is_main_for_trip, am.is_low_quality, am.is_bad_weather FROM album a INNER JOIN album_metadata am ON a.id = am.id WHERE a.id = ?")
+                    ->statementBuilder("SELECT * FROM album WHERE id = ?")
                     ->withParameters($resolvedAlbumId)
                     ->getSingleRow();
 
-                return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["main_image_url"], $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"], 
-                    $albumRow["is_main_for_place"] == 1, $albumRow["is_main_for_country"] == 1, $albumRow["is_main_for_trip"] == 1, $albumRow["is_low_quality"] == 1, $albumRow["is_bad_weather"] == 1);
+                return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["main_image_url"], $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"]);
             }
 
             throw new RuntimeException("The album " . $albumName . " could not be added.");

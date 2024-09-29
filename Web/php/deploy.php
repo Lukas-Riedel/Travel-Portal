@@ -38,9 +38,13 @@
             try {
                 set_error_handler($onError);
 
-                $databaseProvider
-                    ->statementBuilder($migrationScript)
-                    ->execute();
+                foreach (explode(";", $migrationScript) as &$migrationSubScript) {
+                    if (trim($migrationSubScript) !== '') {                        
+                        $databaseProvider
+                            ->statementBuilder($migrationSubScript)
+                            ->execute();
+                    }
+                }
 
                 $databaseProvider
                     ->statementBuilder("INSERT INTO migration_script (name, hash, timestamp) VALUES (?, ?, UNIX_TIMESTAMP())")
@@ -52,7 +56,7 @@
             catch (Throwable $e) {
                 $databaseProvider->rollback();
                 http_response_code(500);
-                throw $e;
+                die($e->getMessage());
             }
             finally {            
                 restore_error_handler();

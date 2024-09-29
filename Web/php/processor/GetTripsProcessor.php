@@ -35,10 +35,6 @@
                     ->statementBuilder("SELECT DISTINCT country FROM place_summary WHERE trip_id = ? AND layover = 0 GROUP BY country ORDER BY MIN(start)")
                     ->withParameters($tripRow["trip_id"])
                     ->getResultSetForColumn("country");
-                $imageUrl = $databaseProvider
-                    ->statementBuilder("SELECT DISTINCT album_main_image_url FROM place_summary WHERE trip_id = ? AND is_main_album_for_trip")
-                    ->withParameters($tripRow["trip_id"])
-                    ->getSingleColumn("album_main_image_url");
 
                 $expenses = array();
                 $stays = array();
@@ -102,7 +98,7 @@
                     $publicHolidays = $this->getPublicHolidays($tripRow);                               
                 }
 
-                $result[] = new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"], $tripRow["end"], $countries, $imageUrl,
+                $result[] = new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"], $tripRow["end"], $countries,
                     $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL,
                     isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays);
             }

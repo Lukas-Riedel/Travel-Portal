@@ -7,7 +7,6 @@
         private $start;
         private $end;
         private $countries;
-        private $imageUrl;
         private $cost;
         private $days;
         private $vacation;
@@ -22,7 +21,7 @@
         private $stats;
         private $publicHolidays;
 
-        public function __construct($id, $name, $year, $mainHighlight, $start, $end, $countries, $imageUrl, $cost, $totalDays, $workingDays,
+        public function __construct($id, $name, $year, $mainHighlight, $start, $end, $countries, $cost, $totalDays, $workingDays,
             $expectedVacation, $maximumVacation, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays) {
             $this->id = $id;
             $this->name = $name;
@@ -31,7 +30,6 @@
             $this->start = $start;
             $this->end = $end;
             $this->countries = $countries;
-            $this->imageUrl = $imageUrl;
             $this->cost = $cost;
             $this->days = array("total" => $totalDays, "working" => $workingDays);
             $this->vacation = ($expectedVacation === NULL && $maximumVacation === NULL) ? NULL : array("expected" => $expectedVacation, "maximum" => $maximumVacation);
@@ -73,10 +71,6 @@
 
         public function getCountries() {
             return $this->countries;
-        }
-
-        public function getImageUrl() {
-            return $this->imageUrl;
         }
 
         public function getCost() {

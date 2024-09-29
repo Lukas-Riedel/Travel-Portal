@@ -28,7 +28,7 @@
                     $publicHolidays = $this->getPublicHolidays($tripRow["id"], explode(",", $tripRow["countries"]));
                 }
 
-                $result[] = new Trip($tripRow["id"], $tripRow["name"], NULL, NULL, NULL, NULL, explode(",", $tripRow["countries"]), NULL, NULL, 
+                $result[] = new Trip($tripRow["id"], $tripRow["name"], NULL, NULL, NULL, NULL, explode(",", $tripRow["countries"]), NULL, 
                     $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), array(), $notes, array(), $publicHolidays);
             }
 

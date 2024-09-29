@@ -38,7 +38,7 @@
                 ->execute();
             
             // Some fields are omitted, supply values if needed.
-            return new Trip($targetTripRow["trip_id"], $targetTripRow["name"], $targetTripRow["year"], $this->getHighlight($targetTripRow["main_highlight_id"], $targetTripRow["start"], $targetTripRow["end"], NULL, NULL,
+            return new Trip($targetTripRow["trip_id"], $targetTripRow["name"], $targetTripRow["year"], $this->getHighlight($targetTripRow["main_highlight_id"], $targetTripRow["start"], $targetTripRow["end"], array(),
                 $targetTripRow["cost"], $targetTripRow["days"], isset($targetTripRow["working_days"]) ? $targetTripRow["working_days"] : NULL, 
                 isset($targetTripRow["expected_vacation"]) ? $targetTripRow["expected_vacation"] : NULL, isset($targetTripRow["max_vacation"]) ? $targetTripRow["max_vacation"] : NULL,
                 array(), array(), array(), array(), array(), array(), array(), array(), array(), array());

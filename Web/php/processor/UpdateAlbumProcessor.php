@@ -215,11 +215,6 @@
                 array_map("unlink", $unusedImages);
             }
 
-            // Synchronize the table with metadata.
-            $databaseProvider
-                ->statementBuilder("INSERT INTO album_metadata (id, is_main_for_place, is_main_for_country, is_main_for_trip, is_low_quality, is_bad_weather) SELECT album_id, NOT EXISTS(SELECT * FROM place_summary WHERE name = ps.name AND country = ps.country AND is_main_album_for_place), NOT EXISTS(SELECT * FROM place_summary WHERE country = ps.country AND is_main_album_for_country), NOT EXISTS(SELECT * FROM place_summary WHERE trip_id = ps.trip_id AND is_main_album_for_trip) AND trip_id IS NOT NULL, 0, 0 FROM _place_summary ps WHERE album_id IS NOT NULL AND is_main_album_for_place IS NULL")
-                ->execute();
-
             // Schedule album photo updates.
             if ($albumId == NULL) {
                 $albumRowsToUpdate = $databaseProvider

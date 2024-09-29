@@ -31,7 +31,7 @@
 
             // Some fields are omitted, supply values if needed.
             // Vacation data may be inaccurate until the next calendar update.
-            return new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"] + $offset, $tripRow["end"] + $offset, NULL, NULL,
+            return new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"] + $offset, $tripRow["end"] + $offset, array(),
                 $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, 
                 isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL, isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL,
                 array(), array(), array(), array(), array(), array(), array(), array(), array());

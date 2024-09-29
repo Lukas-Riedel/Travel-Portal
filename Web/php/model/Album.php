@@ -7,13 +7,8 @@
         private $permalink;
         private $imagesCount;
         private $indoorImagesCount;
-        private $isMainForPlace;
-        private $isMainForCountry;
-        private $isMainForTrip;
-        private $isLowQuality;
-        private $isBadWeather;
 
-        public function __construct($id, $name, $mainPhotoId, $mainImageUrl, $permalink, $imagesCount, $indoorImagesCount, $isMainForPlace, $isMainForCountry, $isMainForTrip, $isLowQuality, $isBadWeather) {
+        public function __construct($id, $name, $mainPhotoId, $mainImageUrl, $permalink, $imagesCount, $indoorImagesCount) {
             $this->id = $id;
             $this->name = $name;
             $this->mainPhotoId = $mainPhotoId;
@@ -21,11 +16,6 @@
             $this->permalink = $permalink;
             $this->imagesCount = $imagesCount;
             $this->indoorImagesCount = $indoorImagesCount;
-            $this->isMainForPlace = $isMainForPlace;
-            $this->isMainForCountry = $isMainForCountry;
-            $this->isMainForTrip = $isMainForTrip;
-            $this->isLowQuality = $isLowQuality;
-            $this->isBadWeather = $isBadWeather;
         }
 
         public function getId() {
@@ -54,26 +44,6 @@
 
         public function getIndoorImagesCount() {
             return $this->indoorImagesCount;
-        }
-
-        public function isMainForPlace() {
-            return $this->isMainForPlace;
-        }
-
-        public function isMainForCountry() {
-            return $this->isMainForCountry;
-        }
-
-        public function isMainForTrip() {
-            return $this->isMainForTrip;
-        }
-
-        public function isLowQuality() {
-            return $this->isLowQuality;
-        }
-
-        public function isBadWeather() {
-            return $this->isBadWeather;
         }
 
         #[\ReturnTypeWillChange]
