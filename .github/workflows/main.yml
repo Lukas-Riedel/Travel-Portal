@@ -1,5 +1,5 @@
 on: push
-name: Deploy web
+name: Main Pipeline
 jobs:
   web-deploy:
     name: Deploy Web
@@ -15,6 +15,11 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./Web/
         server-dir: www/domains/lriedel.cz/
+    - name: Migrate Database
+      uses: muhfaris/request-action@v0.1.2
+      with:
+        url: https://lriedel.cz/php/deploy.php
+        method: GET
   maven-verify:
     name: Build Photo Uploader
     runs-on: ubuntu-latest
