@@ -16,7 +16,7 @@
 
     foreach ($schedulers as &$scheduler) {
         $interval = doubleval(array_values($databaseProvider
-            ->statementBuilder(str_replace("{{id}}", $scheduler["id"], $scheduler["interval_query"]))
+            ->statementBuilder(str_replace("{{name}}", $scheduler["name"], $scheduler["interval_query"]))
             ->getSingleRow())[0]);
 
         if ($scheduler["last_execution"] + $interval > time()) {
@@ -39,8 +39,8 @@
         }
 
         $databaseProvider
-            ->statementBuilder("UPDATE scheduler SET last_execution = UNIX_TIMESTAMP() WHERE id = ?")
-            ->withParameters($scheduler["id"])
+            ->statementBuilder("UPDATE scheduler SET last_execution = UNIX_TIMESTAMP() WHERE name = ?")
+            ->withParameters($scheduler["name"])
             ->execute();
     }
 
