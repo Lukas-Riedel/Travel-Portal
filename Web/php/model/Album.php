@@ -7,14 +7,13 @@
         private $permalink;
         private $imagesCount;
         private $indoorImagesCount;
-        private $isEmpty;
         private $isMainForPlace;
         private $isMainForCountry;
         private $isMainForTrip;
         private $isLowQuality;
         private $isBadWeather;
 
-        public function __construct($id, $name, $mainPhotoId, $mainImageUrl, $permalink, $imagesCount, $indoorImagesCount, $isEmpty, $isMainForPlace, $isMainForCountry, $isMainForTrip, $isLowQuality, $isBadWeather) {
+        public function __construct($id, $name, $mainPhotoId, $mainImageUrl, $permalink, $imagesCount, $indoorImagesCount, $isMainForPlace, $isMainForCountry, $isMainForTrip, $isLowQuality, $isBadWeather) {
             $this->id = $id;
             $this->name = $name;
             $this->mainPhotoId = $mainPhotoId;
@@ -22,7 +21,6 @@
             $this->permalink = $permalink;
             $this->imagesCount = $imagesCount;
             $this->indoorImagesCount = $indoorImagesCount;
-            $this->isEmpty = $isEmpty;
             $this->isMainForPlace = $isMainForPlace;
             $this->isMainForCountry = $isMainForCountry;
             $this->isMainForTrip = $isMainForTrip;
@@ -56,10 +54,6 @@
 
         public function getIndoorImagesCount() {
             return $this->indoorImagesCount;
-        }
-
-        public function isEmpty() {
-            return $this->isEmpty;
         }
 
         public function isMainForPlace() {

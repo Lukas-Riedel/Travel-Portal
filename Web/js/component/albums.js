@@ -1,7 +1,7 @@
 function getAlbumsComponentForTrip(trip, places, showButtons) {
     places = sorted(places
         .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
-        .flatMap(place => place.dates.filter(date => date.album != null && !date.album.isEmpty).map(date => {
+        .flatMap(place => place.dates.filter(date => date.album != null && date.album.imagesCount > 0).map(date => {
             return {
                 id: place.id,
                 name: place.name,
@@ -28,7 +28,7 @@ function getAlbumsComponentForTrip(trip, places, showButtons) {
 function getAlbumsComponentForYear(places, showButtons) {
     places = sorted(places
         .filter(place => place.dates.map(date => date.album).filter(album => album != null).length > 0)
-        .flatMap(place => place.dates.filter(date => date.album != null && !date.album.isEmpty).map(date => {
+        .flatMap(place => place.dates.filter(date => date.album != null && date.album.imagesCount > 0).map(date => {
             return {
                 id: place.id,
                 name: place.name,
@@ -52,7 +52,7 @@ function getAlbumsComponentForYear(places, showButtons) {
 }
 
 function getAlbumsComponentForPlace(place, showButtons) {
-    const places = sorted(place.dates.filter(date => date.album != null && !date.album.isEmpty).map(date => {
+    const places = sorted(place.dates.filter(date => date.album != null && date.album.imagesCount > 0).map(date => {
         return {
             id: place.id,
             name: place.name,
