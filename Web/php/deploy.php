@@ -35,14 +35,14 @@
             fclose($handle);
 
             $databaseProvider->beginTransaction();
+            $lastMigrationSubscript = "";
             try {
                 set_error_handler($onError);
 
                 foreach (explode(";", $migrationScript) as &$migrationSubScript) {
                     if (trim($migrationSubScript) !== '') {                        
-                        $databaseProvider
-                            ->statementBuilder($migrationSubScript)
-                            ->execute();
+                        $lastMigrationSubscript = $migrationSubScript;
+                        $databaseProvider->query($migrationSubScript);
                     }
                 }
 
@@ -56,7 +56,7 @@
             catch (Throwable $e) {
                 $databaseProvider->rollback();
                 http_response_code(500);
-                die($e->getMessage());
+                die($lastMigrationSubscript . " - " . $e->getMessage());
             }
             finally {            
                 restore_error_handler();

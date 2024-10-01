@@ -29,7 +29,7 @@
                 }
 
                 $result[] = new Trip($tripRow["id"], $tripRow["name"], NULL, NULL, NULL, NULL, explode(",", $tripRow["countries"]), NULL, 
-                    $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), array(), $notes, array(), $publicHolidays);
+                    $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
             }
 
             return $result;

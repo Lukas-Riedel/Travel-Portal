@@ -26,6 +26,10 @@
             $this->viewsToMaterialize = array();
         }
 
+        public function query($sql) {
+            $this->connection->query($sql);
+        }
+
         public function statementBuilder($sql, $whereClause = NULL) {
             if ($whereClause != NULL) {
                 $sql = str_replace("{{WHERE CLAUSE}}", $whereClause["clause"], $sql);
