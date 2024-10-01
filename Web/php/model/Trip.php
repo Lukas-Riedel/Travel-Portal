@@ -32,7 +32,7 @@
             $this->countries = $countries;
             $this->cost = $cost;
             $this->days = array("total" => $totalDays, "working" => $workingDays);
-            $this->vacation = ($expectedVacation === NULL && $maximumVacation === NULL) ? NULL : array("expected" => $expectedVacation, "maximum" => $maximumVacation);
+            $this->vacation = ($expectedVacation === NULL && $maximumVacation === NULL) ? NULL : array("expected" => max(0, $expectedVacation), "maximum" => $maximumVacation);
             $this->expenses = $expenses;
             $this->stays = $stays;
             $this->flights = $flights;
