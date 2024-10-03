@@ -26,7 +26,7 @@
 
             $categoryRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
-                ->withParameters($categoryId)
+                ->withParameters($input["categoryId"])
                 ->getSingleRow();
 
             return new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));

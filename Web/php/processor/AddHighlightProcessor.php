@@ -22,11 +22,13 @@
                     ->withParameters($input["id"], $highlightId->getId())
                     ->execute();
 
-                $identifierTable = $this->resolveIdentifierTable($input["type"]);
-                $databaseProvider
-                    ->statementBuilder("UPDATE " . $identifierTable . " SET main_highlight_id = ? WHERE id = ? AND main_highlight_id IS NULL")
-                    ->withParameters($highlightId->getId(), $input["id"])
-                    ->execute();
+                if ($input["type"] != "year") {
+                    $identifierTable = $this->resolveIdentifierTable($input["type"]);
+                    $databaseProvider
+                        ->statementBuilder("UPDATE " . $identifierTable . " SET main_highlight_id = ? WHERE id = ? AND main_highlight_id IS NULL")
+                        ->withParameters($highlightId->getId(), $input["id"])
+                        ->execute();
+                }
 
                 (new UpdateHighlightProcessor())
                     ->process(array(
