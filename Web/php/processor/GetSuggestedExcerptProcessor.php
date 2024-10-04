@@ -10,9 +10,9 @@
                 ->withParameters($input["placeId"])
                 ->getSingleRow();
 
-            return (new GetChatResponseProcessor())
+            return trim((new GetChatResponseProcessor())
                 ->process(array(
-                    "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $placeIdentifierRow["name"], $placeIdentifierRow["country"])));
+                    "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $placeIdentifierRow["name"], $placeIdentifierRow["country"]))));
         }
 
         public function getRequiredArguments() {
