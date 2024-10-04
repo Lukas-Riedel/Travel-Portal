@@ -39,6 +39,69 @@ CREATE TABLE album_metadata (
   CONSTRAINT album_metadata_ibfk_1 FOREIGN KEY (id) REFERENCES album_identifier (id) ON DELETE CASCADE
 );
 
+CREATE TABLE cache_exchange_rate (
+  currency text NOT NULL,
+  exchange_rate double NOT NULL,
+  last_update bigint(20) NOT NULL
+);
+
+CREATE TABLE cache_location (
+  address text NOT NULL,
+  country text NOT NULL,
+  timezone text NOT NULL,
+  latitude double NOT NULL,
+  longitude double NOT NULL,
+  last_access bigint(20) NOT NULL
+);
+
+CREATE TABLE cache_log (
+  timestamp mediumtext DEFAULT NULL,
+  message text DEFAULT NULL
+);
+
+CREATE TABLE cache_point (
+  place_id bigint(20) unsigned NOT NULL,
+  json text DEFAULT NULL,
+  timestamp bigint(20) DEFAULT NULL,
+  KEY place_id (place_id),
+  CONSTRAINT cache_point_ibfk_1 FOREIGN KEY (place_id) REFERENCES place_identifier (id) ON DELETE CASCADE
+);
+
+CREATE TABLE cache_statistics_all (
+  last_update bigint(20) NOT NULL,
+  name text NOT NULL,
+  value text NOT NULL,
+  unit text NOT NULL
+);
+
+CREATE TABLE cache_statistics_category (
+  id bigint(20) unsigned NOT NULL,
+  last_update bigint(20) NOT NULL,
+  name text NOT NULL,
+  value text NOT NULL,
+  unit text NOT NULL,
+  KEY id (id),
+  CONSTRAINT cache_statistics_category_ibfk_1 FOREIGN KEY (id) REFERENCES category_identifier (id) ON DELETE CASCADE
+);
+
+CREATE TABLE cache_statistics_trip (
+  id bigint(20) unsigned NOT NULL,
+  last_update bigint(20) NOT NULL,
+  name text NOT NULL,
+  value text NOT NULL,
+  unit text NOT NULL,
+  KEY id (id),
+  CONSTRAINT cache_statistics_trip_ibfk_1 FOREIGN KEY (id) REFERENCES trip_identifier (id) ON DELETE CASCADE
+);
+
+CREATE TABLE cache_statistics_year (
+  id bigint(20) unsigned NOT NULL,
+  last_update bigint(20) NOT NULL,
+  name text NOT NULL,
+  value text NOT NULL,
+  unit text NOT NULL
+);
+
 CREATE TABLE category (
   category_id bigint(20) unsigned NOT NULL,
   place_id bigint(20) unsigned NOT NULL,

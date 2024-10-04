@@ -1,6 +1,7 @@
 <?php 
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/GetYearIdentifierProcessor.php");
 
     class GetTripIdentifierProcessor extends Processor {        
         public function process($input) {
@@ -15,6 +16,12 @@
 
             if ($tripIdentifierRow != NULL) {
                 return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"], $this->getHighlight($tripIdentifierRow["main_highlight_id"]));
+            }
+            
+            if ($year != NULL) {
+                (new GetYearIdentifierProcessor())
+                    ->process(array(
+                        "year" => $year));
             }
 
             $databaseProvider

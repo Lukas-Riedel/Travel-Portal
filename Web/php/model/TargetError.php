@@ -35,7 +35,7 @@
         }
 
         #[\ReturnTypeWillChange]
-        public function jsonSerialize() {
+        public function jsonSerialize() : mixed {
             $arr = array(
                 "code" => $this->code,
                 "error" => $this->error,
