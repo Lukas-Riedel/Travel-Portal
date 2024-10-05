@@ -5,7 +5,7 @@
     require_once(dirname(__FILE__) . "/provider/SchedulingProvider.php");
     require_once(dirname(__FILE__) . "/processor/Processor.php");
 
-    $databaseProvider = new DatabaseProvider();
+    $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);

@@ -5,29 +5,46 @@
 
         private $connection;
         private $viewsToMaterialize;
+        private $delayMaterializationIfNeeded;
 
-        public function __construct() {
+        public function __construct($delayMaterializationIfNeeded) {
             $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
             $this->connection->set_charset("utf8mb4");
             $this->viewsToMaterialize = array();
+            $this->delayMaterializationIfNeeded = $delayMaterializationIfNeeded;
         }
 
         public function __destruct() {
             $this->materializeViews();
         }
 
+        public function materializeView($viewToMaterialize) {
+            $this->connection->begin_transaction();
+            $this->connection->query("DELETE FROM view_materialization WHERE view_name = '" . $viewToMaterialize . "'");
+            $this->connection->query("DELETE FROM " . substr($viewToMaterialize, 1));
+            $start = microtime(TRUE);
+            $this->connection->query("INSERT INTO " . substr($viewToMaterialize, 1) . " SELECT * FROM " . $viewToMaterialize);
+            $_SESSION["materializationDuration"][$viewToMaterialize] = ceil(1000 * (microtime(TRUE) - $start));
+            $this->connection->query("INSERT INTO view_materialization (view_name, last_materialization_duration, is_materialization_delayed) VALUES ('" 
+                . $viewToMaterialize . "', " . $_SESSION["materializationDuration"][$viewToMaterialize] . ", 0)");
+            $this->connection->commit();
+        }
+
         public function materializeViews() {            
-            foreach ($this->viewsToMaterialize as &$viewToMaterialize) {                
-                $this->connection->begin_transaction();
-                $this->connection->query("DELETE FROM " . substr($viewToMaterialize, 1));
-                $this->connection->query("INSERT INTO " . substr($viewToMaterialize, 1) . " SELECT * FROM " . $viewToMaterialize);
-                $this->connection->commit();
+            foreach ($this->viewsToMaterialize as &$viewToMaterialize) {
+                if ($this->delayMaterializationIfNeeded && isset($_SESSION["materializationDuration"][$viewToMaterialize])
+                    && $_SESSION["materializationDuration"][$viewToMaterialize] > 3000) {
+                    $this->connection->query("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '" . $viewToMaterialize . "'");
+                }
+                else {                    
+                    $this->materializeView($viewToMaterialize);
+                }
             }
             $this->viewsToMaterialize = array();
         }
 
         public function query($sql) {
-            $this->connection->query($sql);
+            return $this->connection->query($sql);
         }
 
         public function statementBuilder($sql, $whereClause = NULL) {
@@ -66,7 +83,14 @@
             return $var == NULL ? "IS NULL" : ("= '" . $this->escape($var) . "'");
         }
 
-        private function updateViewsToMaterialize($sql) {
+        private function updateViewsToMaterialize($sql) {            
+            if (!isset($_SESSION["materializationDuration"])) {
+                $views = $this->connection->query("SELECT * FROM view_materialization");
+                while ($view = $views->fetch_assoc()) {
+                    $_SESSION["materializationDuration"][$view["view_name"]] = intval($view["last_materialization_duration"]);
+                }
+            }
+
             if (!isset($_SESSION["viewDependencies"])) {  
                 $_SESSION["viewDependencies"] = array();
 
@@ -118,6 +142,13 @@
                             $this->viewsToMaterialize[] = $dependentView;
                         }
                     }
+                }
+            }
+
+            $delayedViews = $this->connection->query("SELECT view_name FROM view_materialization WHERE is_materialization_delayed = 1");
+            while ($delayedView = $delayedViews->fetch_assoc()) {
+                if (!in_array($delayedView["view_name"], $this->viewsToMaterialize)) {
+                    $this->viewsToMaterialize[] = $delayedView["view_name"];
                 }
             }
         }

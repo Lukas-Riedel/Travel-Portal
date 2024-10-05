@@ -1,17 +1,17 @@
 <?php
     class RemoveTimeTrackingEventProcessor extends Processor {        
         public function process($input) {
-            global $configuration, $databaseProvider, $schedulingProvider;
+            global $databaseProvider;
 
             $deletedRowsCount = $databaseProvider
                 ->statementBuilder("DELETE FROM tracking WHERE id = ?")
                 ->withParameters($input["eventId"])
                 ->execute();
 
-            // Schedule calendar to materialize the trip summary view and recompute vacation numbers.
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateCalendar", array(
-                    "uuid" => $configuration["googleCalendarApiWatchUuid"]), NULL);
+            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
+            $databaseProvider
+                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
+                ->execute();
 
             return $deletedRowsCount == 1;
         }

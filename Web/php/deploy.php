@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
 
-    $databaseProvider = new DatabaseProvider();
+    $databaseProvider = new DatabaseProvider(FALSE);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
@@ -15,11 +15,10 @@
     asort($migrationScriptFileNames);
 
     $alreadyAppliedScriptsRows = $databaseProvider
-        ->statementBuilder("SELECT * FROM migration_script")
-        ->getResultSet();
+        ->query("SELECT * FROM migration_script");
 
     $alreadyAppliedScripts = array();
-    foreach ($alreadyAppliedScriptsRows as &$alreadyAppliedScriptsRow) {
+    while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
         $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
             "hash" => $alreadyAppliedScriptsRow["hash"],
             "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);

@@ -4,7 +4,7 @@
     require_once(dirname(__FILE__) . "/php/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/php/provider/ConfigurationProvider.php");
 
-    $databaseProvider = new DatabaseProvider();
+    $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $passwords = $configuration["passwords"];

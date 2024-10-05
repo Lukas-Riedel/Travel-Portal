@@ -13,7 +13,7 @@
     require_once(dirname(__FILE__) . "/handler/Handler.php");
     require_once(dirname(__FILE__) . "/model/TargetError.php");
 
-    $databaseProvider = new DatabaseProvider();
+    $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
 

@@ -3,7 +3,7 @@
 
     class AddTimeTrackingEventProcessor extends Processor {     
         public function process($input) {
-            global $configuration, $databaseProvider, $schedulingProvider;
+            global $databaseProvider;
         
             $databaseProvider
                 ->statementBuilder("INSERT INTO tracking (type, hours, description, timestamp) VALUES (?, ?, ?, ?)")
@@ -19,10 +19,10 @@
                 ->withParameters($trackingEventRow["timestamp"], $trackingEventRow["type"])
                 ->getSingleColumn("balance");
 
-            // Schedule calendar to materialize the trip summary view and recompute vacation numbers.
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateCalendar", array(
-                    "uuid" => $configuration["googleCalendarApiWatchUuid"]), NULL);
+            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
+            $databaseProvider
+                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
+                ->execute();
 
             return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], $trackingEventRow["hours"],
                 $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
