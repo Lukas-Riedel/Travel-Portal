@@ -265,21 +265,6 @@
                 // If there was an error, e.g., when moving a trip and two trips overlap now, don't update the calendar tables so that the action can be reverted.
                 throw new RuntimeException("The trip " . $overlappingTripName . " overlaps with the previous one.");
             }
-
-            // Recompute expected time off to use until a fixed point is reached.
-            $cachedTotalTimeOffToUse = $databaseProvider
-                ->statementBuilder("SELECT SUM(expected_vacation) AS sum FROM trip_summary")
-                ->getSingleColumn("sum");
-            
-            $actualTotalTimeOffToUse = $databaseProvider
-                ->statementBuilder("SELECT SUM(expected_vacation) AS sum FROM _trip_summary")
-                ->getSingleColumn("sum");
-
-            if ($cachedTotalTimeOffToUse != $actualTotalTimeOffToUse) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateCalendar", array(
-                        "uuid" => $configuration["googleCalendarApiWatchUuid"]), NULL);
-            }
         }
 
         private function postProcessPlaces() {

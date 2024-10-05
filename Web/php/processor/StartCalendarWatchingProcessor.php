@@ -34,7 +34,6 @@
                     "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/watch", 
                     "payload" => json_encode($payload)));
 
-
             $schedulingProvider
                 ->scheduleJobExecution("UpdateCalendar", array(
                     "uuid" => $configuration["googleCalendarApiWatchUuid"]), NULL);
