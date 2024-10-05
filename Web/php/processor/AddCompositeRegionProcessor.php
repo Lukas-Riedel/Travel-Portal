@@ -3,7 +3,7 @@
 
     class AddCompositeRegionProcessor extends Processor {    
         public function process($input) {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $schedulingProvider, $configuration;
 
             $referencableRegionNames = $databaseProvider
                 ->statementBuilder("SELECT name FROM category_identifier")

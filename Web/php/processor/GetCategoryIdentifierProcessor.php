@@ -4,7 +4,7 @@
 
     class GetCategoryIdentifierProcessor extends Processor {  
         public function process($input) {
-            global $configuration, $databaseProvider;
+            global $databaseProvider;
             
             $categoryIdentifierRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM category_identifier WHERE name = ?")

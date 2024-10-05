@@ -4,7 +4,7 @@
 
     class GetPublicHolidaysProcessor extends Processor {
         public function process($input) {
-            global $configuration, $databaseProvider;
+            global $configuration;
 
             if ($configuration["countries"][$input["country"]]["publicHolidaysCalendar"] == NULL) {
                 return array();
