@@ -6,15 +6,10 @@
         public function process($input) {
             global $databaseProvider;
 
-            $backupFolder = $this->createBackupFolder();
+            $dump = array();
 
-            $ddls = array();
-            $dmls = array();
-
-            // Tables.
             foreach (explode(",", $input["tables"]) as &$table) {
-                $dmls[] = "-- " . $table;
-                $ddls[] = "-- " . $table;
+                $dump[] = "-- " . $table;
         
                 $rows = $databaseProvider
                     ->statementBuilder("SELECT * FROM " . $table)
@@ -29,79 +24,27 @@
                         $values[] = $value === NULL ? "NULL" : ("'" . str_replace("'", "''", $value) . "'");
                     }
 
-                    $dmls[] = "INSERT INTO " . $table . " (" . implode(", ", $keys) . ") VALUES (" . implode(", ", $values) . ");";
+                    $dump[] = "INSERT INTO " . $table . " (" . implode(", ", $keys) . ") VALUES (" . implode(", ", $values) . ");";
                 }
 
-                $definitionRow = $databaseProvider
-                    ->statementBuilder("SHOW CREATE TABLE " . $table)
-                    ->getSingleRow();
-                $ddls[] = $definitionRow["Create Table"] . ";";
-
-                $dmls[] = "";
-                $ddls[] = "";
+                $dump[] = "";
             }
             
-            // Views.
-            foreach (explode(",", $input["views"]) as &$view) {
-                $ddls[] = "-- " . $view;
-                
-                $definitionRow = $databaseProvider
-                    ->statementBuilder("SHOW CREATE VIEW " . $view)
-                    ->getSingleRow();
-                $ddls[] = $definitionRow["Create View"] . ";";
-
-                $ddls[] = "";
-            }
-            
-            // Functions.
-            foreach (explode(",", $input["functions"]) as &$function) {
-                $ddls[] = "-- " . $function;
-                
-                $definitionRow = $databaseProvider
-                    ->statementBuilder("SHOW CREATE FUNCTION " . $function)
-                    ->getSingleRow();
-                $ddls[] = $definitionRow["Create Function"] . ";";
-
-                $ddls[] = "";
-            }
-
-            $createFileProcessor = new CreateFileProcessor();
-            
-            $createFileProcessor
+            (new CreateFileProcessor())
                 ->process(array(
-                    "folderId" => $backupFolder, 
-                    "name" => "Database Dump.sql",
-                    "content" => implode("\n", $dmls), 
-                    "contentType" => "application/sql"));
-
-            $createFileProcessor
-                ->process(array(
-                    "folderId" => $backupFolder, 
-                    "name" => "Database Objects.sql", 
-                    "content" => implode("\n", $ddls), 
+                    "name" => "Backup " . date("d.m.Y H:i:s") . ".sql",
+                    "content" => implode("\n", $dump), 
                     "contentType" => "application/sql"));
 
             return TRUE;
         }
 
         public function getRequiredArguments() {
-            return array("tables", "views", "functions");
+            return array("tables");
         }
         
         public function requiresAuthentication() {
             return TRUE;
-        }
-
-        private function createBackupFolder() {
-            $payload = array(
-                "name" => "Backup " . date("d.m.Y H:i:s"), 
-                "mimeType" => "application/vnd.google-apps.folder");
-            
-            return (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://www.googleapis.com/drive/v3/files", 
-                    "payload" => json_encode($payload)))["id"];
         }
     }
 ?>

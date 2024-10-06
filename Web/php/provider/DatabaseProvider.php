@@ -18,7 +18,7 @@
             $this->materializeViews();
         }
 
-        public function materializeView($viewToMaterialize) {
+        private function materializeView($viewToMaterialize) {
             $this->connection->begin_transaction();
             $this->connection->query("DELETE FROM view_materialization WHERE view_name = '" . $viewToMaterialize . "'");
             $this->connection->query("DELETE FROM " . substr($viewToMaterialize, 1));

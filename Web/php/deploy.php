@@ -14,8 +14,7 @@
      }, array_filter((array) glob($migrationScriptsBasePath . "*")));
     asort($migrationScriptFileNames);
 
-    $alreadyAppliedScriptsRows = $databaseProvider
-        ->query("SELECT * FROM migration_script");
+    $alreadyAppliedScriptsRows = $databaseProvider->query("SELECT * FROM migration_script");
 
     $alreadyAppliedScripts = array();
     while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
