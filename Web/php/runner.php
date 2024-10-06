@@ -14,25 +14,32 @@
     $loggingProvider = new LoggingProvider($databaseProvider);
     $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
     $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE, FALSE, TRUE);
+    
+    $supportedActions = array_filter(array_map(function ($file) {
+        $tokens = explode("/", $file);
+        return str_replace("Processor.php", "", $tokens[count($tokens) - 1]);
+    }, glob(dirname(__FILE__) . "/processor/*")), function ($action) {
+        return $action !== "";
+    });
 
     $key = ftok(__FILE__, 1);
     $semaphore = sem_get($key);
 
-    if (sem_acquire($semaphore, true)) {
+    if (sem_acquire($semaphore, TRUE)) {
         while (($jobExecution = getNextScheduledJobExecution()) != NULL) {
-            $result = $processorProvider->run($jobExecution["processor"], $jobExecution["args"]);
+            $processorProvider->run($jobExecution["processor"], $jobExecution["args"]);
             terminateJobExecution($jobExecution["id"]);
-            echo json_encode($result, JSON_HEX_QUOT | JSON_HEX_TAG);
         }
 
         sem_release($semaphore);
     }
 
     function getNextScheduledJobExecution() {
-        global $databaseProvider;
+        global $databaseProvider, $supportedActions;
 
         $nextJob = $databaseProvider
-            ->statementBuilder("SELECT * FROM queue_job ORDER BY priority ASC LIMIT 1")
+            ->statementBuilder("SELECT * FROM queue_job WHERE FIND_IN_SET(processor, ?) ORDER BY priority ASC LIMIT 1")
+            ->withParameters(implode(",", $supportedActions))
             ->getSingleRow();
 
         if ($nextJob != NULL) {    

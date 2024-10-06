@@ -1,11 +1,17 @@
 <?php
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/processor/Processor.php");
+    require_once(dirname(__FILE__) . "/processor/GetHttpResponseProcessor.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
+    $hostName = $_SERVER["HTTP_HOST"];
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
     };
+
+    $databaseProvider
+        ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
 
     $migrationScriptsBasePath = dirname(__FILE__) . "/../sql/";
     $migrationScriptFileNames = array_map(function ($path) { 
@@ -14,7 +20,8 @@
      }, array_filter((array) glob($migrationScriptsBasePath . "*")));
     asort($migrationScriptFileNames);
 
-    $alreadyAppliedScriptsRows = $databaseProvider->query("SELECT * FROM migration_script");
+    $alreadyAppliedScriptsRows = $databaseProvider
+        ->query("SELECT * FROM migration_script");
 
     $alreadyAppliedScripts = array();
     while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
@@ -31,6 +38,20 @@
             $handle = fopen($path, "r");
             $migrationScript = fread($handle, filesize($path));
             fclose($handle);
+
+            $tablesToBackupRow = $databaseProvider
+                ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_NAME NOT LIKE 'cache_%' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
+            $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
+        
+            (new GetHttpResponseProcessor())
+                ->process(array(
+                    "method" => "POST", 
+                    "url" => "https://" . $hostName . "/api/jobs/run",
+                    "headers" => "Cookie: authToken=RkbsDLLhQ582KiBZa4UfSabTEZB6VKHpDFixlILvBwmFiytLvzlfJcq0xjMd77yp",
+                    "payload" => json_encode(array(
+                        "action" => "BackupDatabase", 
+                        "args" => array(
+                            "tables" => $tablesToBackup)))));
 
             $databaseProvider->beginTransaction();
             $lastMigrationSubscript = "";
