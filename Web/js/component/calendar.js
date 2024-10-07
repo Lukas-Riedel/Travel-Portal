@@ -350,12 +350,11 @@ async function createAlbumAndUploadPhotos(placeId, timestamp) {
 }
 
 async function processPhotosUploadRequest(args) {
-    $.post("http://localhost:8083/photos/upload", args)
-    .done(album => {        
-        if ("permalink" in album) {
-            window.open(album.permalink, '_blank').focus();
-        }
-        location.reload();
-    })
-    .fail(data => console.log(data));
+    $.ajax({
+        type: "POST",
+        url: "/api/jobs/schedule",
+        data: JSON.stringify({ action: "UploadPhotos", args: args }),
+        success: alertConfirmation,
+        dataType: "application/json"
+      });
 }

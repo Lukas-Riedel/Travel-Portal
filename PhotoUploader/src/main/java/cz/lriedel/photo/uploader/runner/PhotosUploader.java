@@ -1,4 +1,4 @@
-package cz.lriedel.photo.uploader.rest;
+package cz.lriedel.photo.uploader.runner;
 
 import static java.util.Comparator.comparing;
 
@@ -17,11 +17,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import com.drew.imaging.ImageMetadataReader;
@@ -33,17 +30,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.lriedel.photo.uploader.fetcher.PhotoFetcher;
 import cz.lriedel.photo.uploader.model.Album;
+import cz.lriedel.photo.uploader.model.UploadPhotosJob;
 import cz.lriedel.photo.uploader.model.request.AlbumPrototype;
 import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
-import cz.lriedel.photo.uploader.model.request.UploadPrototype;
+import cz.lriedel.photo.uploader.model.UploadPhotosJobArgs;
 
 @Controller
-@RequestMapping("photos")
-public class PhotosController {
+public class PhotosUploader implements CommandLineRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PhotosController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhotosUploader.class);
 
+    private static final int RETRY_REQUEST_TIME = 10000;
     private static final int AVAILABLE_WORKERS = 16;
+
+    private static final String GET_JOBS_ENDPOINT = "/api/jobs/UploadPhotos";
+    private static final String DELETE_JOB_ENDPOINT = "/api/jobs/%s";
 
     private static final String CREATE_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums";
     private static final String REFRESH_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/refresh";
@@ -53,41 +54,70 @@ public class PhotosController {
     private final ObjectMapper objectMapper;
     private final PhotoFetcher photoFetcher;
 
-    public PhotosController(RestTemplate restTemplate, ObjectMapper objectMapper, PhotoFetcher photoFetcher) {
+    public PhotosUploader(RestTemplate restTemplate, ObjectMapper objectMapper, PhotoFetcher photoFetcher) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.photoFetcher = photoFetcher;
     }
 
-    @PostMapping("/upload")
-    @CrossOrigin(origins = "${service.url}")
-    @ResponseBody
-    public Album uploadPhotos(UploadPrototype uploadPrototype) throws IOException, InterruptedException {
-        LOGGER.info("Received request to upload photos: {}", uploadPrototype);
+    @Override
+    public void run(String... args) throws Exception {
+        while (true) {
+            UploadPhotosJob[] uploadPhotosJobs = restTemplate.getForObject(GET_JOBS_ENDPOINT, UploadPhotosJob[].class);
 
-        long albumId = tryCreateAlbum(uploadPrototype);
-        uploadPhotos(uploadPrototype, albumId);
-        return refreshAlbum(uploadPrototype, albumId);
+            if (uploadPhotosJobs != null) {
+                for (UploadPhotosJob uploadPhotosJob : uploadPhotosJobs) {
+                    try {
+                        uploadPhotos(uploadPhotosJob.args());
+                    }
+                    catch (Throwable e) {
+                        LOGGER.error("Unknown error occurred when processing '{}'.", uploadPhotosJob, e);
+                    }
+                    restTemplate.delete(String.format(DELETE_JOB_ENDPOINT, uploadPhotosJob.id()));
+                }
+            }
+
+            Thread.sleep(RETRY_REQUEST_TIME);
+        }
     }
 
-    private long tryCreateAlbum(UploadPrototype uploadPrototype) throws JsonProcessingException {
-        Long albumId = uploadPrototype.albumId();
+    private void uploadPhotos(UploadPhotosJobArgs uploadPhotosJobArgs) throws IOException, InterruptedException {
+        LOGGER.info("Received request to upload photos: {}", uploadPhotosJobArgs);
+
+        Validate.isTrue(uploadPhotosJobArgs.placeId() > 0, "Invalid place identifier.");
+        Validate.isTrue(uploadPhotosJobArgs.timestamp() != null || uploadPhotosJobArgs.albumId() != null,
+            "Either timestamp or album identifier must be set.");
+        Validate.isTrue(uploadPhotosJobArgs.timestamp() == null || uploadPhotosJobArgs.albumId() == null,
+            "Either timestamp or album identifier must be set, but not both.");
+        Objects.requireNonNull(uploadPhotosJobArgs.path(), "The path must be set.");
+
+        long albumId = tryCreateAlbum(uploadPhotosJobArgs);
+        uploadPhotos(uploadPhotosJobArgs, albumId);
+        Album album = refreshAlbum(uploadPhotosJobArgs, albumId);
+
+        if (album != null) {
+            new ProcessBuilder("start", "\"\"", album.permalink()).start();
+        }
+    }
+
+    private long tryCreateAlbum(UploadPhotosJobArgs uploadPhotosJobArgs) throws JsonProcessingException {
+        Long albumId = uploadPhotosJobArgs.albumId();
         if (albumId != null) {
             return albumId;
         }
 
-        LOGGER.info("Album for the place '{}' does not exist. Creating a new album...", uploadPrototype.placeId());
-        AlbumPrototype albumPrototype = new AlbumPrototype(Objects.requireNonNull(uploadPrototype.timestamp(), "Timestamp is not set."));
-        Album createdAlbum = restTemplate.postForObject(String.format(CREATE_ALBUM_ENDPOINT_PATTERN, uploadPrototype.placeId()),
+        LOGGER.info("Album for the place '{}' does not exist. Creating a new album...", uploadPhotosJobArgs.placeId());
+        AlbumPrototype albumPrototype = new AlbumPrototype(Objects.requireNonNull(uploadPhotosJobArgs.timestamp(), "Timestamp is not set."));
+        Album createdAlbum = restTemplate.postForObject(String.format(CREATE_ALBUM_ENDPOINT_PATTERN, uploadPhotosJobArgs.placeId()),
             objectMapper.writeValueAsString(albumPrototype), Album.class);
         return Objects.requireNonNull(createdAlbum, "Album was not created.").id();
     }
 
-    private void uploadPhotos(UploadPrototype uploadPrototype, long albumId) throws IOException, InterruptedException {
-        String createPhotoUri = String.format(CREATE_PHOTO_ENDPOINT_PATTERN, uploadPrototype.placeId(), albumId);
+    private void uploadPhotos(UploadPhotosJobArgs uploadPhotosJobArgs, long albumId) throws IOException, InterruptedException {
+        String createPhotoUri = String.format(CREATE_PHOTO_ENDPOINT_PATTERN, uploadPhotosJobArgs.placeId(), albumId);
 
-        try (Stream<Path> paths = Files.list(uploadPrototype.path())) {
-            List<Path> sortedPaths = paths.sorted(comparing(PhotosController::getPhotoCreationTime)).toList();
+        try (Stream<Path> paths = Files.list(uploadPhotosJobArgs.path())) {
+            List<Path> sortedPaths = paths.sorted(comparing(PhotosUploader::getPhotoCreationTime)).toList();
 
             try (ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS)) {
                 for (int i = 1; i <= sortedPaths.size(); ++i) {
@@ -101,9 +131,9 @@ public class PhotosController {
         }
     }
 
-    private Album refreshAlbum(UploadPrototype uploadPrototype, long albumId) {
+    private Album refreshAlbum(UploadPhotosJobArgs uploadPhotosJobArgs, long albumId) {
         LOGGER.info("Uploading has finished. Refreshing the album...");
-        return restTemplate.postForObject(String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, uploadPrototype.placeId(), albumId),
+        return restTemplate.postForObject(String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, uploadPhotosJobArgs.placeId(), albumId),
             null, Album.class);
     }
 

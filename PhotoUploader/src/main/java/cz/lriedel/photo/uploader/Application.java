@@ -29,7 +29,7 @@ public class Application {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader("Cookie", "authToken=RkbsDLLhQ582KiBZa4UfSabTEZB6VKHpDFixlILvBwmFiytLvzlfJcq0xjMd77yp")
+            .defaultHeader(HttpHeaders.COOKIE, "authToken=RkbsDLLhQ582KiBZa4UfSabTEZB6VKHpDFixlILvBwmFiytLvzlfJcq0xjMd77yp")
             .build();
     }
 }
