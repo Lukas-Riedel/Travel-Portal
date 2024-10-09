@@ -50,7 +50,7 @@
             return array("placeId", "timestamp");
         }
 
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

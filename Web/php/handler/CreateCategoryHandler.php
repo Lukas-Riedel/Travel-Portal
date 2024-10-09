@@ -61,7 +61,7 @@
             return array(
                 $this->createResponseExample("Created category", 201, '{"id":151,"name":"Ústecký kraj","category":"ADMINISTRATIVE"}'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample());
+                $this->create403ResponseExample());
         }
     }
 ?>

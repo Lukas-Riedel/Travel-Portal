@@ -30,8 +30,8 @@
                 $className = $processorName . "Processor";
                 require_once(dirname(__FILE__) . "/../processor/" . $className . ".php");
                 $processor = new $className;
-                if ($processor->requiresAuthentication() && !$this->isLoggedIn) {
-                    throw new ErrorException("The action can only be executed by authenticated users.");
+                if ($processor->requiresAdminRole() && !$this->isLoggedIn) {
+                    throw new ErrorException("The action can only be executed by users with admin role.");
                 }
                 foreach ($processor->getRequiredArguments() as $requiredArgument) {
                     if ($args == NULL || !array_key_exists($requiredArgument, $args)) {

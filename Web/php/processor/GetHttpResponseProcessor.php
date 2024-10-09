@@ -42,7 +42,7 @@
             return array("method", "url");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
 

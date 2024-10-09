@@ -27,7 +27,7 @@
             return array("externalId");
         }
 
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
     }

@@ -45,7 +45,7 @@
             return array(
                 $this->createResponseExample("Created place", 201, '{"id":2572,"name":"Los Angeles","country":"Spojené státy americké","latitude":34.0549076,"longitude":-118.242643,"timezone":"America/Los_Angeles","categories":[],"dates":[],"imagesCount":0,"imagesScore":0}'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample());
+                $this->create403ResponseExample());
         }
     }
 ?>

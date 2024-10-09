@@ -42,7 +42,7 @@
             return array("name", "category", "latitude", "longitude");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

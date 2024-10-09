@@ -27,7 +27,7 @@
             return array("baseUrl");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
         

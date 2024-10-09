@@ -50,7 +50,7 @@
 
         private static function resolveErrorCode($e) {
             if ($e instanceof ErrorException) {
-                return 401;
+                return 403;
             }
             // Return 400 for everything else for now.
             return 400;

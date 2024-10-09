@@ -36,7 +36,7 @@
             return array();
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
     }

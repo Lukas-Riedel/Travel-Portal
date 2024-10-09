@@ -33,7 +33,7 @@
             return array("albumId", "name", "data", "position");
         }
 
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

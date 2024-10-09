@@ -40,7 +40,7 @@
             return array("id", "type", "photoId");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
 

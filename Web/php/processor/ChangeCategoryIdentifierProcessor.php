@@ -36,7 +36,7 @@
             return array("categoryId");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
 

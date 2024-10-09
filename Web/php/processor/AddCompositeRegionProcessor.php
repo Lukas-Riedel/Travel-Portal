@@ -77,7 +77,7 @@
             return array("name", "category", "includedRegions", "excludedRegions");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

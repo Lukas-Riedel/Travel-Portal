@@ -65,7 +65,7 @@
             return array("albumId");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
             

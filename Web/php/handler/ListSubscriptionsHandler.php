@@ -43,7 +43,7 @@
             return array(
                 $this->createResponseExample("Non-expired subscriptions", 200, '[{"id":2,"description":"ESTA","value":21,"currency":"USD","mainCurrencyValue":489.72,"expiration":"1731369600"},{"id":8,"description":"WizzAir Club","value":39.99,"currency":"EUR","mainCurrencyValue":1014.45966514461,"expiration":"1752271200"}]'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample());
+                $this->create403ResponseExample());
         }
     }
 ?>

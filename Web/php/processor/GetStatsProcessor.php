@@ -19,7 +19,7 @@
             return array("type");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
 

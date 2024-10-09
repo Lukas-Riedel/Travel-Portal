@@ -49,7 +49,7 @@
             return array(
                 $this->createResponseExample("Created time tracking event", 201, '{"id":233,"description":"Implementing DSD resolver for OpenLineage events","hours":6.5,"timestamp":1725692400,"type":"OVERTIME","balance":17.3}'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample());
+                $this->create403ResponseExample());
         }
     }
 ?>

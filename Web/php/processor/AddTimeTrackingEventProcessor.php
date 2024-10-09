@@ -32,7 +32,7 @@
             return array("type", "hours", "description", "date");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

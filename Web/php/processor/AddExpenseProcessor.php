@@ -38,7 +38,7 @@
             return array("tripId", "type", "description", "cost", "currency");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

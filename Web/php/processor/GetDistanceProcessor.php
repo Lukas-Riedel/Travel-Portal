@@ -17,7 +17,7 @@
             return array("aLatitude", "aLongitude", "bLatitude", "bLongitude");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
     }

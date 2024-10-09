@@ -21,7 +21,7 @@
             return array("tripId", "content");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

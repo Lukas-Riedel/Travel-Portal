@@ -56,7 +56,7 @@
             return array(
                 $this->createResponseExample("Updated expense", 200, '{"id":5215,"description":"Archeologická naleziště v Římě (WizzAir Club do 12.7.2025)","value":18,"currency":"EUR","mainCurrencyValue":577.9352776919483,"type":"ATTRACTION"}'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample(),
+                $this->create403ResponseExample(),
                 $this->create404ResponseExample());
         }
     }

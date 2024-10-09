@@ -80,7 +80,7 @@
             return array("uuid");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
 

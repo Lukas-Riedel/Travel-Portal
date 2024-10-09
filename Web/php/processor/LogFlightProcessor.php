@@ -98,7 +98,7 @@
             return array("flight", "from", "to", "scheduledDeparture");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

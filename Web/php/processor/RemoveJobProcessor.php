@@ -15,7 +15,7 @@
             return array("jobId");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

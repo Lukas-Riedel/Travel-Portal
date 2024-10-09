@@ -29,7 +29,7 @@
             return array("country");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
 

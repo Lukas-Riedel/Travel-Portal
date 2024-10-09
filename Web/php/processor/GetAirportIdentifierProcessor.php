@@ -38,7 +38,7 @@
             return array("code");
         }
 
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
     }

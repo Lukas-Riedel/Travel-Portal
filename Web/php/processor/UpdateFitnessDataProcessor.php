@@ -69,7 +69,7 @@
             return array("start");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return FALSE;
         }
         

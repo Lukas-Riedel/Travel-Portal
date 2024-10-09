@@ -15,7 +15,7 @@
             return array("noteId", "tripId");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

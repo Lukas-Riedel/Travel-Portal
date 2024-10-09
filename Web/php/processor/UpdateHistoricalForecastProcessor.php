@@ -48,7 +48,7 @@
             return array("placeId", "start");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     

@@ -27,7 +27,7 @@
             return array("description", "value", "currency", "expiration");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

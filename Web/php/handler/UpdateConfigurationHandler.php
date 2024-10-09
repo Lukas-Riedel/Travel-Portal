@@ -48,7 +48,7 @@
             return array(
                 $this->createResponseExample("Updated configuration item", 200, '{"airlines":{"FR":"Ryanair"}}'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample());
+                $this->create403ResponseExample());
         }
     }
 ?>

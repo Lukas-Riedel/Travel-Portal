@@ -52,7 +52,7 @@
             return array("tripId", "expenseId");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

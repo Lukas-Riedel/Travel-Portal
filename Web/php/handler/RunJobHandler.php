@@ -44,7 +44,7 @@
             return array(
                 $this->createResponseExample("Job results", 200, 'true'),
                 $this->create400ResponseExample(),
-                $this->create401ResponseExample());
+                $this->create403ResponseExample());
         }
     }
 ?>

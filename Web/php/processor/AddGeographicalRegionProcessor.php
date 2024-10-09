@@ -45,7 +45,7 @@
             return array("name", "category", "radius", "geoJson");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }

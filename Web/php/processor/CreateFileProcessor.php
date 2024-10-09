@@ -30,7 +30,7 @@
             return array("name", "content", "contentType");
         }
         
-        public function requiresAuthentication() {
+        public function requiresAdminRole() {
             return TRUE;
         }
     }
