@@ -2,6 +2,7 @@
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
+    require_once(dirname(__FILE__) . "/GetChatResponseProcessor.php");
 
     class GetPlaceIdentifierProcessor extends Processor {   
         public function process($input) {
@@ -13,6 +14,18 @@
                 ->getFirstRow();
 
             if ($placeIdentifierRow != NULL) {
+                if ($placeIdentifierRow["excerpt"] == NULL) {
+                    $databaseProvider
+                        ->statementBuilder("UPDATE place_identifier SET excerpt = ? WHERE id = ?")
+                        ->withParameters($this->getSuggestedExcerpt($input), $placeIdentifierRow["id"])
+                        ->execute();
+
+                    $placeIdentifierRow = $databaseProvider
+                        ->statementBuilder("SELECT * FROM place_identifier WHERE name = ? AND country = ?")
+                        ->withParameters($input["name"], $input["country"])
+                        ->getFirstRow();
+                }
+
                 return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"], $this->getHighlight($placeIdentifierRow["main_highlight_id"]));
             }
 
@@ -30,8 +43,8 @@
                     "address" => $address));
 
             $databaseProvider
-                ->statementBuilder("INSERT INTO place_identifier (name, country, timezone, latitude, longitude) VALUES (?, ?, ?, ?, ?)")
-                ->withParameters($input["name"], $input["country"], $location->getTimezone(), $location->getLatitude(), $location->getLongitude())
+                ->statementBuilder("INSERT INTO place_identifier (name, country, timezone, latitude, longitude, excerpt) VALUES (?, ?, ?, ?, ?, ?)")
+                ->withParameters($input["name"], $input["country"], $location->getTimezone(), $location->getLatitude(), $location->getLongitude(), $this->getSuggestedExcerpt($input))
                 ->execute();
 
             $placeIdentifierRow = $databaseProvider
@@ -64,6 +77,14 @@
             
            return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
                 $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
+        }
+
+        private function getSuggestedExcerpt($input) {
+            global $configuration;
+
+            return trim((new GetChatResponseProcessor())
+                ->process(array(
+                    "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $input["name"], $input["country"]))));
         }
     }
 ?>
