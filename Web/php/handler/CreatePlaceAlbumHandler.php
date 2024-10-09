@@ -52,7 +52,7 @@
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Created album", 201, '{"id":8,"name":"Praha 17.8.2024","mainImageUrl":"","permalink":"https://photos.google.com/lr/album/AGhjs2nt055b_D4gNjHmLuQffWUk9Q-0PPAGV9it1I_lr_vqtcTw9Fy9kjwHBCxcB-QaemmkVhDQ","imagesCount":0,"indoorImagesCount":0,"isEmpty":true,"isMainForPlace":false,"isMainForCountry":false,"isMainForTrip":false,"isLowQuality":false,"isBadWeather":false}'),
+                $this->createResponseExample("Created album", 201, '{"id":1120,"name":"Praha 17.8.2024","mainPhotoId":null,"mainImageUrl":"","permalink":"https://photos.google.com/lr/album/AGhjs2neOWtKlvmE7Reqmc6uHBU785HHFNOPGdKK2mMOtJ3mBYjr1TpHgdnpyviI8iAAzl_N0w1-","imagesCount":0,"indoorImagesCount":0}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create404ResponseExample());
