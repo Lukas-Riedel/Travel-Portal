@@ -104,7 +104,7 @@ function changeScale(markers, currentZoom) {
 }
 
 function getFlightRoute(flight) {
-    const airports = sorted([ flight.from.name, flight.to.name ]);
+    const airports = sorted([ flight.from.code, flight.to.code ]);
     return airports[0] + " - " + airports[1];
 }
 
