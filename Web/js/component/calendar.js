@@ -346,7 +346,14 @@ async function createAlbumAndUploadPhotos(placeId, timestamp) {
         return;
     }
 
-    return processPhotosUploadRequest({ placeId: placeId, timestamp: timestamp, path: path });
+    const args = { placeId: placeId, timestamp: timestamp, path: path };
+    
+    const mainPhotoPosition = prompt("Zadej pozici hlavní fotky alba (nebo ponech prázdné):");
+    if (path != null && path != "") {
+        args["mainPhotoPosition"] = mainPhotoPosition;
+    }
+
+    return processPhotosUploadRequest(args);
 }
 
 async function processPhotosUploadRequest(args) {

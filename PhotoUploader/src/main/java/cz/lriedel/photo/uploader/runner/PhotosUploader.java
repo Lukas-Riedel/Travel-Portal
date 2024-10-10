@@ -89,7 +89,10 @@ public class PhotosUploader implements CommandLineRunner {
             "Either timestamp or album identifier must be set.");
         Validate.isTrue(uploadPhotosJobArgs.timestamp() == null || uploadPhotosJobArgs.albumId() == null,
             "Either timestamp or album identifier must be set, but not both.");
+        Validate.isTrue(uploadPhotosJobArgs.mainPhotoPosition() == null || uploadPhotosJobArgs.mainPhotoPosition() > 0,
+            "The main photo position must be either a positive number, or not set.");
         Objects.requireNonNull(uploadPhotosJobArgs.path(), "The path must be set.");
+        Validate.isTrue(uploadPhotosJobArgs.path().toFile().exists(), "The directory does not exist.");
 
         long albumId = tryCreateAlbum(uploadPhotosJobArgs);
         uploadPhotos(uploadPhotosJobArgs, albumId);
@@ -119,22 +122,24 @@ public class PhotosUploader implements CommandLineRunner {
         try (Stream<Path> paths = Files.list(uploadPhotosJobArgs.path())) {
             List<Path> sortedPaths = paths.sorted(comparing(PhotosUploader::getPhotoCreationTime)).toList();
 
-            try (ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS)) {
-                for (int i = 1; i <= sortedPaths.size(); ++i) {
-                    final int position = i;
-                    executorService.submit(() -> uploadPhoto(sortedPaths.get(position), position, createPhotoUri));
-                }
-
-                executorService.shutdown();
-                Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
+            ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
+            for (int i = 1; i <= sortedPaths.size(); ++i) {
+                final int position = i;
+                executorService.submit(() -> uploadPhoto(sortedPaths.get(position), position, createPhotoUri));
             }
+
+            executorService.shutdown();
+            Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
         }
     }
 
     private Album refreshAlbum(UploadPhotosJobArgs uploadPhotosJobArgs, long albumId) {
         LOGGER.info("Uploading has finished. Refreshing the album...");
-        return restTemplate.postForObject(String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, uploadPhotosJobArgs.placeId(), albumId),
-            null, Album.class);
+        String url = String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, uploadPhotosJobArgs.placeId(), albumId);
+        if (uploadPhotosJobArgs.mainPhotoPosition() != null) {
+            url += "?mainPhotoPosition=" + uploadPhotosJobArgs.mainPhotoPosition();
+        }
+        return restTemplate.postForObject(url, null, Album.class);
     }
 
     private void uploadPhoto(Path path, int position, String uri) {
