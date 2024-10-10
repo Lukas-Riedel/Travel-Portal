@@ -2,6 +2,7 @@
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetAlbumIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPhotoIdentifierProcessor.php");
+    require_once(dirname(__FILE__) . "/GetMediaItemsProcessor.php");
     require_once(dirname(__FILE__) . "/AddHighlightProcessor.php");
 
     class UpdateAlbumProcessor extends Processor {        
@@ -58,6 +59,26 @@
                         ->withParameters($pendingAlbumId)
                         ->getResultSet();
                 }
+            }
+
+            // Update album main photo.
+            if (isset($input["mainPhotoPosition"])) {
+                if ($albumId == NULL) {
+                    throw new InvalidArgumentException("Cannot update main photo because the album identifier was not specified.");
+                }
+
+                $photos = (new GetMediaItemsProcessor())
+                    ->process(array(
+                        "albumId" => $albumId));
+
+                $mainPhotoPosition = $input["mainPhotoPosition"] - 1;
+                if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
+                    throw new RuntimeException("Cannot set main photo because there are only " . count($photos) . " photos in the album.");
+                }
+
+                $mainPhoto = $photos[$mainPhotoPosition];
+
+                $this->setAlbumMainPhoto($albumId, $mainPhoto->getId());
             }
         
             // Fetch albums.
@@ -308,6 +329,27 @@
             if (isset($apiResponse["newMediaItemResults"][0]["status"]["message"]) && $apiResponse["newMediaItemResults"][0]["status"]["message"] != "Success") {
                 throw new RuntimeException($apiResponse["newMediaItemResults"][0]["status"]["message"]);
             }   
+        }
+
+        private function setAlbumMainPhoto($albumId, $photoId) {
+            global $databaseProvider;
+            
+            $externalAlbumId = $databaseProvider
+                ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
+                ->withParameters($albumId)
+                ->getFirstColumn("external_id");
+            
+            $externalPhotoId = $databaseProvider
+                ->statementBuilder("SELECT external_id FROM photo_identifier WHERE id = ?")
+                ->withParameters($photoId)
+                ->getFirstColumn("external_id");
+                          
+            (new GetGoogleResponseProcessor())
+                ->process(array(
+                    "method" => "PATCH", 
+                    "url" => "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", 
+                    "payload" => json_encode(array(
+                        "coverPhotoMediaItemId" => $externalPhotoId))));
         }
     }
 ?>

@@ -48,7 +48,8 @@
         public function getParameters() {
             return array(
                 $this->createPathParameter("placeId", "integer", 5295),
-                $this->createPathParameter("albumId", "integer", 227));
+                $this->createPathParameter("albumId", "integer", 227),
+                $this->createQueryParameter("mainPhotoPosition", "integer", 1));
         }
 
         public function getMethod() {
