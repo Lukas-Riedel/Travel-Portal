@@ -82,9 +82,9 @@
         private function getSuggestedExcerpt($input) {
             global $configuration;
 
-            return trim((new GetChatResponseProcessor())
+            return (new GetChatResponseProcessor())
                 ->process(array(
-                    "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $input["name"], $input["country"]))));
+                    "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $input["name"], $input["country"])));
         }
     }
 ?>
