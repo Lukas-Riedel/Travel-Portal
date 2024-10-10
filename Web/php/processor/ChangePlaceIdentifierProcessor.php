@@ -30,6 +30,13 @@
                     ->execute();
             }
 
+            if (isset($input["excerpt"])) {
+                $databaseProvider
+                    ->statementBuilder("UPDATE place_identifier SET excerpt = ? WHERE id = ?")
+                    ->withParameters($input["excerpt"], $input["placeId"])
+                    ->execute();
+            }
+
             if (isset($input["name"])) {
                 $databaseProvider
                     ->statementBuilder("UPDATE place_identifier SET name = ? WHERE id = ?")
