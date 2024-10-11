@@ -37,7 +37,7 @@
                     ->withParameters($pendingAlbumId)
                     ->getResultSet();
                 
-                while (count($pendingPhotos) == 0) {
+                while (count($pendingPhotos) > 0) {
                     $newMediaItems = array();
                     foreach ($pendingPhotos as &$pendingPhoto) {
                         $newMediaItems[] = array(

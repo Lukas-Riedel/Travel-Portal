@@ -58,11 +58,7 @@ public class PhotosUploader extends AbstractJobRunner<UploadPhotosArgs> {
 
         long albumId = tryCreateAlbum(uploadPhotosArgs);
         uploadPhotos(uploadPhotosArgs, albumId);
-        Album album = refreshAlbum(uploadPhotosArgs, albumId);
-
-        if (album != null) {
-            new ProcessBuilder("start", "\"\"", album.permalink()).start();
-        }
+        refreshAlbum(uploadPhotosArgs, albumId);
     }
 
     private long tryCreateAlbum(UploadPhotosArgs uploadPhotosArgs) throws JsonProcessingException {
@@ -85,9 +81,9 @@ public class PhotosUploader extends AbstractJobRunner<UploadPhotosArgs> {
             List<Path> sortedPaths = paths.sorted(comparing(PhotosUploader::getPhotoCreationTime)).toList();
 
             ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
-            for (int i = 1; i <= sortedPaths.size(); ++i) {
-                final int position = i;
-                executorService.submit(() -> uploadPhoto(sortedPaths.get(position), position, createPhotoUri));
+            for (int i = 0; i < sortedPaths.size(); ++i) {
+                final int position = i + 1;
+                executorService.submit(() -> uploadPhoto(sortedPaths.get(position - 1), position, createPhotoUri));
             }
 
             executorService.shutdown();
