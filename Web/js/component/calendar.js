@@ -332,12 +332,14 @@ async function uploadPhotos(placeId, albumId) {
         return;
     }
 
-    const photosCount = prompt("Zadej očekávaný počet fotek k nahrání. Nahrávání se spustí až ve chvíli, kdy bude ve složce požadovaný počet souborů:", 0);
-    if (photosCount == null || photosCount == "") {
-        return;
+    const args = { placeId: placeId, albumId: albumId, path: path };
+    
+    const mainPhotoPosition = prompt("Zadej pozici hlavní fotky alba (nebo ponech prázdné):");
+    if (path != null && path != "") {
+        args["mainPhotoPosition"] = mainPhotoPosition;
     }
 
-    return processPhotosUploadRequest({ placeId: placeId, albumId: albumId, path: path, photosCount: photosCount });
+    return processPhotosUploadRequest(args);
 }
 
 async function createAlbumAndUploadPhotos(placeId, timestamp) {
