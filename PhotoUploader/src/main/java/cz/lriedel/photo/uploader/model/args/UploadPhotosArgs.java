@@ -1,4 +1,4 @@
-package cz.lriedel.photo.uploader.model;
+package cz.lriedel.photo.uploader.model.args;
 
 import java.nio.file.Path;
 import java.util.Objects;
