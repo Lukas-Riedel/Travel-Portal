@@ -40,10 +40,6 @@
                 }
                 $result = $processor->process($args);
                 $this->databaseProvider->commit();
-                if ($processorName != "PruneDatabase") {
-                    $this->schedulingProvider
-                        ->scheduleJobExecution("PruneDatabase", NULL, NULL);
-                }
             }
             catch (Throwable $e) {
                 $this->databaseProvider->rollback();

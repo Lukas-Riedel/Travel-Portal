@@ -123,37 +123,32 @@
                     // This is temporary until there's a proper support for highlights.
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $placeRow = $databaseProvider
-                            ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year_id FROM place_summary WHERE album_id = ?")
+                            ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE album_id = ?")
                             ->withParameters($resolvedAlbumId)
                             ->getFirstRow();
     
-                        $highlight = $addHighlightProcessor
+                        $addHighlightProcessor
                             ->process(array(
                                 "type" => "place",
                                 "id" => $placeRow["place_id"], 
                                 "photoId" => $mainPhotoId));
 
                         if ($placeRow["trip_id"] != NULL) {
-                            $highlight = $addHighlightProcessor
+                            $addHighlightProcessor
                                 ->process(array(
                                     "type" => "trip",
                                     "id" => $placeRow["trip_id"], 
                                     "photoId" => $mainPhotoId));
                         }
 
-                        $highlight = $addHighlightProcessor
+                        $addHighlightProcessor
                             ->process(array(
                                 "type" => "year",
-                                "id" => $placeRow["year_id"], 
+                                "id" => $placeRow["year"], 
                                 "photoId" => $mainPhotoId));
 
-                        $countryCategoryId = $databaseProvider
-                            ->statementBuilder("SELECT id FROM category_identifier WHERE name = ?")
-                            ->withParameters($placeRow["country"])
-                            ->getSingleColumn("id");
-
                         foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
-                            $highlight = $addHighlightProcessor
+                            $addHighlightProcessor
                                 ->process(array(
                                     "type" => "category",
                                     "id" => $categoryId, 

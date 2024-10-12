@@ -1,0 +1,1 @@
+INSERT INTO scheduler (`name`, `processor`, `args_query`, `interval_query`, `last_execution`) VALUES ('PRUNE_DATABASE', 'PruneDatabase', NULL, 'SELECT 7200', '1727611826');
