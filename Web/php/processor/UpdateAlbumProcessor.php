@@ -127,32 +127,34 @@
                             ->withParameters($resolvedAlbumId)
                             ->getFirstRow();
     
-                        $addHighlightProcessor
-                            ->process(array(
-                                "type" => "place",
-                                "id" => $placeRow["place_id"], 
-                                "photoId" => $mainPhotoId));
-
-                        if ($placeRow["trip_id"] != NULL) {
+                        if ($placeRow != NULL) {
                             $addHighlightProcessor
                                 ->process(array(
-                                    "type" => "trip",
-                                    "id" => $placeRow["trip_id"], 
+                                    "type" => "place",
+                                    "id" => $placeRow["place_id"], 
                                     "photoId" => $mainPhotoId));
-                        }
-
-                        $addHighlightProcessor
-                            ->process(array(
-                                "type" => "year",
-                                "id" => $placeRow["year"], 
-                                "photoId" => $mainPhotoId));
-
-                        foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
+    
+                            if ($placeRow["trip_id"] != NULL) {
+                                $addHighlightProcessor
+                                    ->process(array(
+                                        "type" => "trip",
+                                        "id" => $placeRow["trip_id"], 
+                                        "photoId" => $mainPhotoId));
+                            }
+    
                             $addHighlightProcessor
                                 ->process(array(
-                                    "type" => "category",
-                                    "id" => $categoryId, 
+                                    "type" => "year",
+                                    "id" => $placeRow["year"], 
                                     "photoId" => $mainPhotoId));
+    
+                            foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
+                                $addHighlightProcessor
+                                    ->process(array(
+                                        "type" => "category",
+                                        "id" => $categoryId, 
+                                        "photoId" => $mainPhotoId));
+                            }
                         }
                     }  
                     // End of temporary code.                          

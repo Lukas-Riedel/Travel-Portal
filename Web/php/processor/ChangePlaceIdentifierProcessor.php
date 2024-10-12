@@ -61,11 +61,16 @@
                             ->statementBuilder("SELECT name FROM album WHERE id = ?")
                             ->withParameters($placeRow["album_id"])
                             ->getSingleColumn("name");
+                            
+                        $externalAlbumId = $databaseProvider
+                            ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
+                            ->withParameters($placeRow["album_id"])
+                            ->getFirstColumn("external_id");
 
                         $getGoogleResponseProcessor
                             ->process(array(
                                 "method" => "PATCH", 
-                                "url" => "https://photoslibrary.googleapis.com/v1/albums/" . $placeRow["album_id"] . "?updateMask=title", 
+                                "url" => "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=title", 
                                 "payload" => json_encode(array(
                                     "title" => str_replace($placeRow["name"], $input["name"], $albumName)))));
                         
