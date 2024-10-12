@@ -1,6 +1,5 @@
 package cz.lriedel.photo.uploader;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,10 +10,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.lriedel.photo.uploader.model.Job;
-import cz.lriedel.photo.uploader.runner.Processor;
+import cz.lriedel.photo.uploader.processor.AbstractProcessor;
+import cz.lriedel.photo.uploader.processor.Processor;
 
 @Component
 public final class JobRunner {
@@ -25,16 +23,16 @@ public final class JobRunner {
     private static final String DELETE_JOB_ENDPOINT = "/api/jobs/%s";
 
     private final RestTemplate restTemplate;
-    private final Set<Processor> processors;
+    private final Set<? extends AbstractProcessor<?>> processors;
 
-    JobRunner(RestTemplate restTemplate, Set<Processor> processors) {
+    JobRunner(RestTemplate restTemplate, Set<? extends AbstractProcessor<?>> processors) {
         this.restTemplate = Objects.requireNonNull(restTemplate);
         this.processors = Set.copyOf(processors);
     }
 
     @Scheduled(fixedDelayString = "${request.interval.retry}")
     public void run() {
-        for (Processor processor : processors) {
+        for (AbstractProcessor<?> processor : processors) {
             Job[] jobs = fetchJobs(processor);
 
             if (jobs != null) {

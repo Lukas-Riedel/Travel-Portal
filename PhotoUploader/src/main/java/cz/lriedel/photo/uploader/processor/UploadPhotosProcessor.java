@@ -1,4 +1,4 @@
-package cz.lriedel.photo.uploader.runner;
+package cz.lriedel.photo.uploader.processor;
 
 import static java.util.Comparator.comparing;
 
@@ -48,7 +48,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     }
 
     @Override
-    protected void process(UploadPhotosArgs args) throws IOException, InterruptedException {
+    public void process(UploadPhotosArgs args) throws IOException, InterruptedException {
         long albumId = tryCreateAlbum(args);
         uploadPhotos(args, albumId);
         refreshAlbum(args, albumId);
@@ -60,7 +60,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
             return albumId;
         }
 
-        logger.info("Album for the place {} does not exist. Creating a new album...", args.placeId());
+        logger.info("Album for place {} does not exist. Creating a new album...", args.placeId());
         AlbumPrototype albumPrototype = new AlbumPrototype(Objects.requireNonNull(args.timestamp(), "Timestamp is not set."));
         Album createdAlbum = restTemplate.postForObject(String.format(CREATE_ALBUM_ENDPOINT_PATTERN, args.placeId()),
             objectMapper.writeValueAsString(albumPrototype), Album.class);
