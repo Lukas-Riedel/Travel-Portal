@@ -29,7 +29,10 @@ async function init(placeName, countryName, isLoggedIn) {
 
     // Footer.
     const placeId = await getResponse("GetPlaceIdentifier", { name: placeName, country: country });
-    $('#footer').html(getFooter(isLoggedIn, [ "<a onclick=\"changeLocation(" + placeId.id + ")\">Upravit polohu</a>", "<a onclick=\"changeName(" + placeId.id + ")\">Přejmenovat</a>" ]));
+    $('#footer').html(getFooter(isLoggedIn, [ 
+        "<a onclick=\"changeLocation(" + placeId.id + ")\">Upravit polohu</a>", 
+        "<a onclick=\"changeName(" + placeId.id + ")\">Přejmenovat</a>", 
+        "<a onclick=\"changeExcerpt(" + placeId.id + ", '" + place.excerpt + "')\">Změnit excerpt</a>" ]));
 }
 
 function getDocumentTitle(place) {
@@ -84,4 +87,13 @@ async function changeName(placeId) {
     }
 
     executeAndAlertConfirmation("ChangePlaceIdentifier", { placeId: placeId, name: name });
+}
+
+async function changeExcerpt(placeId, originalExcerpt) {
+    const excerpt = prompt("Zadej nový excerpt místa:", originalExcerpt);
+    if (excerpt == null || excerpt == "") {
+        return;
+    }
+
+    executeAndAlertConfirmation("ChangePlaceIdentifier", { placeId: placeId, excerpt: excerpt });
 }

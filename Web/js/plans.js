@@ -37,6 +37,10 @@ function getMain(places, showButtons) {
         if (place.dates.length === 0) {
             buttons.push(
             { 
+                action: "changeName(" + place.id + ")",
+                image: "img/edit.png"
+            },
+            {
                 action: "removeCandidatePlace('" + escapeStringForHtml(place.name) + "', '" + place.country + "')",
                 image: "img/x.png"
             });
@@ -56,4 +60,13 @@ function getMain(places, showButtons) {
     }
 
     return getGeneralTable(headerRowColumns, contentRowColumnsSelector, places);
+}
+
+async function changeName(placeId) {
+    const name = prompt("Zadej nové jméno místa:");
+    if (name == null || name == "") {
+        return;
+    }
+
+    executeAndAlertConfirmation("ChangePlaceIdentifier", { placeId: placeId, name: name });
 }
