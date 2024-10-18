@@ -33,6 +33,8 @@
                 $this->createQueryParameter("minStart", "integer", 1716154060),
                 $this->createQueryParameter("maxEnd", "integer", 1716154060),
                 $this->createQueryParameter("type", "string", array("regular", "candidate")),
+                $this->createQueryParameter("includeExcerpt", "boolean", "true"),
+                $this->createQueryParameter("includeCategories", "boolean", "true"),
                 $this->createQueryParameter("includeHighlights", "boolean", "false"));
         }
 

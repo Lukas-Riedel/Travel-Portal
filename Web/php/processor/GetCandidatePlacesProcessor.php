@@ -77,8 +77,9 @@
                     $highlights = $this->getHighlights($placeRow);                      
                 }
                 
-                $result[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), $placeRow["excerpt"],
-                    $this->getCategories(explode(",", $placeRow["category_ids"])), $highlights, $dates);                
+                $includeExcerpt = isset($input["includeExcerpt"]) && $input["includeExcerpt"] == "true";
+                $result[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), ($includeExcerpt || isset($input["placeId"])) ? $placeRow["excerpt"] : NULL,
+                    $this->getCategories($input, explode(",", $placeRow["category_ids"])), $highlights, $dates);                
             }
             
             return $result;
@@ -95,6 +96,7 @@
 
             $tempPlaces = array();
 
+            
             foreach ($placeRows as &$placeRow) {
                 if (!isset($tempPlaces[$placeRow["place_id"]])) {
                     $highlights = array();
@@ -103,9 +105,10 @@
                     if ($includeHighlights || isset($input["placeId"])) {
                         $highlights = $this->getHighlights($placeRow);                      
                     }
-
+                    
+                    $includeExcerpt = isset($input["includeExcerpt"]) && $input["includeExcerpt"] == "true";
                     $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $this->getHighlight($placeRow["main_highlight_id"]), $placeRow["excerpt"], $this->getCategories(explode(",", $placeRow["category_ids"])), $highlights, array()); 
+                        $this->getHighlight($placeRow["main_highlight_id"]), ($includeExcerpt || isset($input["placeId"])) ? $placeRow["excerpt"] : NULL, $this->getCategories($input, explode(",", $placeRow["category_ids"])), $highlights, array()); 
                 }
                 
                 $tripRow = $databaseProvider
@@ -121,18 +124,21 @@
             return array_values($tempPlaces);
         }
 
-        private function getCategories($categoryIds) {
+        private function getCategories($input, $categoryIds) {
             global $databaseProvider;
-
+        
             $categories = array();     
 
-            foreach ($categoryIds as &$categoryId) {
-                $categoryRow = $databaseProvider
-                    ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
-                    ->withParameters($categoryId)
-                    ->getSingleRow();
+            $includeCategories = isset($input["includeCategories"]) && $input["includeCategories"] == "true";            
+            if ($includeCategories || isset($input["placeId"])) {
+                foreach ($categoryIds as &$categoryId) {
+                    $categoryRow = $databaseProvider
+                        ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
+                        ->withParameters($categoryId)
+                        ->getSingleRow();
 
-                $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));
+                    $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));
+                }
             }
 
             return $categories;

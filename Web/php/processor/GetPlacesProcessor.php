@@ -45,26 +45,30 @@
             foreach ($placeRows as &$placeRow) {
                 if (!isset($tempPlaces[$placeRow["place_id"]])) {    
                     $categories = array();  
-                    $highlights = array();      
+                    $highlights = array();                          
                     
-                    foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
-                        $categoryRow = $databaseProvider
-                            ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
-                            ->withParameters($categoryId)
-                            ->getSingleRow();
-
-                        if ($categoryRow != NULL) {
-                            $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));
+                    $includeCategories = isset($input["includeCategories"]) && $input["includeCategories"] == "true";
+                    if ($includeCategories || isset($input["placeId"])) {
+                        foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
+                            $categoryRow = $databaseProvider
+                                ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
+                                ->withParameters($categoryId)
+                                ->getSingleRow();
+    
+                            if ($categoryRow != NULL) {
+                                $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));
+                            }
                         }
-                    }                    
+                    }                   
 
                     $includeHighlights = isset($input["includeHighlights"]) && $input["includeHighlights"] == "true";
                     if ($includeHighlights || isset($input["placeId"])) {
                         $highlights = $this->getHighlights($placeRow);                      
                     }
-
+                    
+                    $includeExcerpt = isset($input["includeExcerpt"]) && $input["includeExcerpt"] == "true";
                     $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $this->getHighlight($placeRow["main_highlight_id"]), $placeRow["excerpt"], $categories, $highlights, array());
+                        $this->getHighlight($placeRow["main_highlight_id"]), ($includeExcerpt || isset($input["placeId"])) ? $placeRow["excerpt"] : NULL, $categories, $highlights, array());
                 }
                 
                 $weather = NULL;
