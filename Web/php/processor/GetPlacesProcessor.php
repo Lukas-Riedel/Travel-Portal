@@ -63,7 +63,8 @@
                         $highlights = $this->getHighlights($placeRow);                      
                     }
 
-                    $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), $categories, $highlights, array());
+                    $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                        $this->getHighlight($placeRow["main_highlight_id"]), $placeRow["excerpt"], $categories, $highlights, array());
                 }
                 
                 $weather = NULL;

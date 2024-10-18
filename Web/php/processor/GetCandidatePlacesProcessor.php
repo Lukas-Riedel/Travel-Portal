@@ -38,7 +38,7 @@
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             $placeRows = $databaseProvider
-                ->statementBuilder("SELECT pcan.*, cs.category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan INNER JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
+                ->statementBuilder("SELECT pcan.*, cs.category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id, ps.excerpt FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan INNER JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
                 ->getResultSet();
 
             $result = array();
@@ -77,7 +77,8 @@
                     $highlights = $this->getHighlights($placeRow);                      
                 }
                 
-                $result[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), $this->getCategories(explode(",", $placeRow["category_ids"])), $highlights, $dates);                
+                $result[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), $placeRow["excerpt"],
+                    $this->getCategories(explode(",", $placeRow["category_ids"])), $highlights, $dates);                
             }
             
             return $result;
@@ -89,7 +90,7 @@
             $whereClause = $whereClauseBuilder->withClause("trip_id = ?", $input["tripId"])->buildForAnd();
 
             $placeRows = $databaseProvider
-                ->statementBuilder("SELECT pce.place_id, pi.name, pi.country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pce.start, pce.end, cs.category_ids FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
+                ->statementBuilder("SELECT pce.place_id, pi.name, pi.country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pi.excerpt, pce.start, pce.end, cs.category_ids FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
                 ->getResultSet();
 
             $tempPlaces = array();
@@ -103,7 +104,8 @@
                         $highlights = $this->getHighlights($placeRow);                      
                     }
 
-                    $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"], $this->getHighlight($placeRow["main_highlight_id"]), $this->getCategories(explode(",", $placeRow["category_ids"])), $highlights, array()); 
+                    $tempPlaces[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                        $this->getHighlight($placeRow["main_highlight_id"]), $placeRow["excerpt"], $this->getCategories(explode(",", $placeRow["category_ids"])), $highlights, array()); 
                 }
                 
                 $tripRow = $databaseProvider

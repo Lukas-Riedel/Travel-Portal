@@ -108,7 +108,7 @@
                 ->getSingleRow();
             
             return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], 
-                $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"], $this->getHighlight($placeIdentifierRow["main_highlight_id"]));
+                $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["timezone"], $this->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
         }
 
         public function getRequiredArguments() {

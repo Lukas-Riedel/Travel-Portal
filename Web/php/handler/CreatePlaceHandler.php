@@ -43,7 +43,7 @@
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Created place", 201, '{"id":2572,"name":"Los Angeles","country":"Spojené státy americké","latitude":34.0549076,"longitude":-118.242643,"timezone":"America/Los_Angeles","categories":[],"dates":[],"imagesCount":0,"imagesScore":0}'),
+                $this->createResponseExample("Created place", 201, '{"id":2572,"name":"Los Angeles","country":"Spojené státy americké","latitude":34.0549076,"longitude":-118.242643,"timezone":"America/Los_Angeles","mainHighlight":null,"excerpt":"Los Angeles, Město andělů, je dynamické a rozmanité město, které láká snem o slunci, pláži a hollywoodském glamour. Procházka po Sunset Boulevardu, kde se mísí historii s moderními architektonickými klenoty, vás zavede do světa filmů a hudebního průmyslu. Právě v Los Angeles se nachází slavný Hollywoodský chodník slávy a legendární Universal Studios, kde se můžete ponořit do světa filmu a zažít neuvěřitelné atrakce. Samozřejmě nesmíme zapomenout na pláže, jako je Venice Beach, s typickým surfováním a barevnými postranními uličkami plnými pouličních umělců a obchodů s suvenýry. Los Angeles je také domovem světoznámých muzeí, například Getty Center s úchvatnou sbírkou umění a krásných zahrad. Pokud hledáte adrenalinové zážitky, Disneyland Park a Six Flags Magic Mountain vám splní sny. Ať už se zajímáte o film, hudbu, historii, kulturu nebo jednoduše o slunce a pláž, Los Angeles vám zaručeně nabídne neuvěřitelné zážitky.","categories":[],"highlights":[],"dates":[],"imagesCount":0,"imagesScore":0}'),
                 $this->create400ResponseExample(),
                 $this->create403ResponseExample());
         }

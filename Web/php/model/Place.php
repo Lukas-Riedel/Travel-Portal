@@ -7,11 +7,12 @@
         private $longitude;
         private $timezone;
         private $mainHighlight;
+        private $excerpt;
         private $categories;
         private $highlights;
         private $dates;
 
-        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight, $categories, $highlights, $dates) {
+        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight, $excerpt, $categories, $highlights, $dates) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
@@ -19,6 +20,7 @@
             $this->longitude = $longitude;
             $this->timezone = $timezone;
             $this->mainHighlight = $mainHighlight;
+            $this->excerpt = $excerpt;
             $this->categories = $categories;
             $this->highlights = $highlights;
             $this->dates = $dates;
@@ -50,6 +52,10 @@
 
         public function getMainHighlight() {
             return $this->mainHighlight;
+        }
+
+        public function getExcerpt() {
+            return $this->excerpt;
         }
 
         public function getCategories() {

@@ -7,8 +7,9 @@
         private $longitude;
         private $timezone;
         private $mainHighlight;
+        private $excerpt;
 
-        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight) {
+        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight, $excerpt) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
@@ -16,6 +17,7 @@
             $this->longitude = $longitude;
             $this->timezone = $timezone;
             $this->mainHighlight = $mainHighlight;
+            $this->excerpt = $excerpt;
         }
 
         public function getId() {
@@ -44,6 +46,10 @@
 
         public function getMainHighlight() {
             return $this->mainHighlight;
+        }
+
+        public function getExcerpt() {
+            return $this->excerpt;
         }
 
         #[\ReturnTypeWillChange]
