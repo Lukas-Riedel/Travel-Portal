@@ -118,6 +118,9 @@ function getProblemResolver(problemName, context) {
         const idSuffix = ("AIRLINES" + context.code).replace(/\s/g, "");
         return "changeConfigurationValue(\"" + idSuffix + "\", \"AIRLINES\", \"" + context.code + "\")";
     }
+    if (problemName == "DUPLICATED_PLACE_IDENTIFIERS") {
+        return "resolveDuplicatedPlaceIdentifiers(" + JSON.stringify(context.places) + ")";
+    }
     return undefined;
 }
 
@@ -435,4 +438,13 @@ async function getGeoJson() {
     await navigator.clipboard.writeText(JSON.stringify(await getGeographicalRegions()));
     
     alertConfirmation();
+}
+
+function resolveDuplicatedPlaceIdentifiers(places) {
+    const id = Number.parseInt(prompt("Zadej identifikátor místa k odstranění (pouze jedno):\n\n" + places.map(place => place.id + " - " + place.name).join("\n")));
+    if (id == null || id == "" || Number.isNaN(id) || !places.some(place => place.id == id)) {
+        return;
+    }
+    
+    executeAndReload("RemoveSpecialPlace", { type: "candidate", placeId: id });
 }
