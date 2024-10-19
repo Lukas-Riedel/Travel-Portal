@@ -3,6 +3,8 @@
 
     abstract class Handler {
         abstract public function handle($input);
+        abstract public function getRequiredRole();
+        abstract public function isProtected();
         abstract public function getTag();
         abstract public function getPath();
         abstract public function getParameters();

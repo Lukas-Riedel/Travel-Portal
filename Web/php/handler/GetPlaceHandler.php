@@ -23,6 +23,14 @@
             return $this->create404Response("places", $input["placeId"]);
         }
 
+        public function getRequiredRole() {
+            return "USER";
+        }
+        
+        public function isProtected() {
+            return TRUE;
+        }
+
         public function getTag() {
             return "Places";
         }

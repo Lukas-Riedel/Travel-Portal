@@ -351,11 +351,5 @@ async function createAlbumAndUploadPhotos(placeId, timestamp) {
 }
 
 async function processPhotosUploadRequest(args) {
-    $.ajax({
-        type: "POST",
-        url: "/api/jobs/schedule",
-        data: JSON.stringify({ action: "UploadPhotos", args: args }),
-        success: alertConfirmation,
-        dataType: "application/json"
-      });
+    executeAndAlertConfirmation("UploadPhotos&async=true", args);
 }

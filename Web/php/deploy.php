@@ -42,12 +42,23 @@
             $tablesToBackupRow = $databaseProvider
                 ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_NAME NOT LIKE 'cache_%' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
             $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
+
+            $apiKeyRow = $databaseProvider
+                ->query("SELECT api_key FROM users WHERE FIND_IN_SET('ADMIN', roles)");
+            $apiKey = $apiKeyRow->fetch_assoc()["api_key"];
+
+            $accessTokenResponse = (new GetHttpResponseProcessor())
+                ->process(array(
+                    "method" => "POST", 
+                    "url" => "https://" . $hostName . "/iam",
+                    "payload" => json_encode(array(
+                        "apiKey" => $apiKey))));
         
             (new GetHttpResponseProcessor())
                 ->process(array(
                     "method" => "POST", 
                     "url" => "https://" . $hostName . "/api/jobs/run",
-                    "headers" => "Cookie: authToken=RkbsDLLhQ582KiBZa4UfSabTEZB6VKHpDFixlILvBwmFiytLvzlfJcq0xjMd77yp",
+                    "headers" => "Authorization: Bearer " . $accessTokenResponse["accessToken"],
                     "payload" => json_encode(array(
                         "action" => "BackupDatabase", 
                         "args" => array(

@@ -16,6 +16,14 @@
             return $this->createResponse(201, $response);
         }
 
+        public function getRequiredRole() {
+            return "ADMIN";
+        }
+        
+        public function isProtected() {
+            return TRUE;
+        }
+
         public function getTag() {
             return "Place Albums";
         }

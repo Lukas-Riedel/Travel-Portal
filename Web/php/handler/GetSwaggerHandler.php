@@ -35,7 +35,24 @@
                 "info" => array("title" => "Travel Portal API", "version" => "1.0.0"),
                 "tags" => array_map(function ($tag) { return array("name" => $tag); }, $tags),
                 "servers" => array(array("url" => "https://" . $configuration["hostName"] . "/api")),
-                "paths" => $paths));
+                "paths" => $paths,
+                "security" => array(
+                    array(
+                        "bearerAuth" => array())),
+                "components" => array(
+                    "securitySchemes" => array(
+                        "bearerAuth" => array(
+                            "type" => "http", 
+                            "scheme" => "bearer", 
+                            "bearerFormat" => "JWT")))));
+        }
+
+        public function getRequiredRole() {
+            return NULL;
+        }
+        
+        public function isProtected() {
+            return FALSE;
         }
 
         public function getTag() {

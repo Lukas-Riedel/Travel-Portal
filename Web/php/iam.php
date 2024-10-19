@@ -20,10 +20,10 @@
 
         $roles = array();
         if (isset($requestBody["apiKey"])) {
-            $roles = $databaseProvider
+            $roles = explode(",", $databaseProvider
                 ->statementBuilder("SELECT roles FROM users WHERE api_key = ?")
                 ->withParameters($requestBody["apiKey"])
-                ->getSingleColumn("roles");
+                ->getSingleColumn("roles"));
 
             if ($roles == NULL) {
                 throw new AuthenticationException("No user for the provided API key was found.");
@@ -43,7 +43,7 @@
                 throw new AuthenticationException("Passowrd for the user '" . $requestBody["username"] . "' is invalid.");
             }
 
-            $roles = $userRow["roles"];
+            $roles = explode(",", $userRow["roles"]);
         }
         else {
             throw new InvalidArgumentException("Some of the required arguments are missing.");

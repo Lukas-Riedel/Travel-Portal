@@ -14,6 +14,14 @@
             return $this->create404Response("years", $input["year"]);
         }
 
+        public function getRequiredRole() {
+            return "USER";
+        }
+        
+        public function isProtected() {
+            return TRUE;
+        }
+
         public function getTag() {
             return "Years";
         }

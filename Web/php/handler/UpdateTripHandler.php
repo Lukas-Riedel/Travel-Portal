@@ -28,6 +28,14 @@
                     "tripId" => $input["tripId"]));
         }
 
+        public function getRequiredRole() {
+            return "ADMIN";
+        }
+        
+        public function isProtected() {
+            return TRUE;
+        }
+
         public function getTag() {
             return "Trips";
         }

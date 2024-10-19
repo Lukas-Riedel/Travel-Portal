@@ -17,6 +17,14 @@
             return $this->createResponse(200, $response);
         }
 
+        public function getRequiredRole() {
+            return "USER";
+        }
+        
+        public function isProtected() {
+            return TRUE;
+        }
+
         public function getTag() {
             return "Places";
         }
