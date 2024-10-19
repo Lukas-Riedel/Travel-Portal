@@ -40,8 +40,12 @@
             return $this->createResponseExample("Invalid album", 400, '{"code":400,"error":"Invalid album ID.","details":{"action":"UpdateAlbum","arguments":{"placeId":"2507","albumId":"AGhjs2lxV1nXaHgWw_G6CAL9Sm-jnZX7wU5qM_ai2Ro6OzEv2olcSAwgaB_gmXUrep2CPl2ygyjxq"}}}');
         }
 
+        protected function create401ResponseExample() {
+            return $this->createResponseExample("Missing authentication", 401, '{"code":401,"error":"The access token was not provided.","details":{"action":"API","arguments":[]}}');
+        }
+
         protected function create403ResponseExample() {
-            return $this->createResponseExample("Insufficient permissions", 403, '{"code":403,"error":"The action can only be executed by users with admin role.","details":{"action":"AddAlbum","arguments":{"placeId":2507,"date":1589580000}}}');
+            return $this->createResponseExample("Insufficient permissions", 403, '{"code":403,"error":"The action can only be executed by users with admin role.","details":{"action":"API","arguments":[]}}');
         }
 
         protected function create404ResponseExample() {

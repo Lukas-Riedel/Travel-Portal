@@ -52,6 +52,7 @@
             return array(
                 $this->createResponseExample("Resolved location", 200, '{"country":"Česko","latitude":50.0755381,"longitude":14.4378005,"timezone":"Europe/Prague"}'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample());
         }
     }

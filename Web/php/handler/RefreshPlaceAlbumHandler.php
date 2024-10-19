@@ -84,6 +84,7 @@
             return array(
                 $this->createResponseExample("Refreshed album", 200, '{"id":227,"name":"Serra de Santa Bárbara 21.2.2024","mainPhotoId":59603,"mainImageUrl":"https://lriedel.cz/cache/album/AGhjs2mIL9vYy2Utq5LmdaMJjVZwscDHJsfXN9WWZjfGxsOwg7sWY576kcsRr5-hbhjS4osVWn64qHg88yOnmfoE9GjMAFko6Q.jpg","permalink":"https://photos.google.com/lr/album/AGhjs2nXeoDvNyM1x-8Iy3YJD_mws3VXP9-h5a3CQH0_1jW_A5F_j8HYkNAqCUmfgLpPu802ob8U","imagesCount":8,"indoorImagesCount":0}'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample(),
                 $this->create404ResponseExample());
         }

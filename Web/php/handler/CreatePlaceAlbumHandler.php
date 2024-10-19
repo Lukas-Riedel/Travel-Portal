@@ -62,6 +62,7 @@
             return array(
                 $this->createResponseExample("Created album", 201, '{"id":1120,"name":"Praha 17.8.2024","mainPhotoId":null,"mainImageUrl":"","permalink":"https://photos.google.com/lr/album/AGhjs2neOWtKlvmE7Reqmc6uHBU785HHFNOPGdKK2mMOtJ3mBYjr1TpHgdnpyviI8iAAzl_N0w1-","imagesCount":0,"indoorImagesCount":0}'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample(),
                 $this->create404ResponseExample());
         }

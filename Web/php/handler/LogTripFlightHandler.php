@@ -54,6 +54,7 @@
             return array(
                 $this->createResponseExample("Logged flight", 201, '{"flight":"FR1531","registration":"SP-RKB","aircraft":"B738","distance":519.0304981094692,"from":{"id":62,"name":"Benátky","code":"TSF","country":"Itálie","latitude":45.6498881,"longitude":12.1944795,"timezone":"Europe/Rome"},"to":{"id":2,"name":"Praha","code":"PRG","country":"Česko","latitude":50.101791,"longitude":14.2631811,"timezone":"Europe/Prague"},"start":1725476732,"end":1725480116}'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample());
         }
     }

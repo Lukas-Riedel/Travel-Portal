@@ -59,6 +59,7 @@
 
         echo json_encode(array(
             "accessToken" => $accessToken,
+            "roles" => $roles,
             "validity" => $configuration["bearerToken"]["validity"]), JSON_HEX_QUOT | JSON_HEX_TAG);
     }
     catch (Throwable $e) {

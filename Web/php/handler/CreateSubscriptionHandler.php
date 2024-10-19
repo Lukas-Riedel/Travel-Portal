@@ -52,6 +52,7 @@
             return array(
                 $this->createResponseExample("Created subscription", 201, '{"id":9,"description":"Deutschland Ticket","value":49,"currency":"EUR","mainCurrencyValue":1227.1475081392311,"expiration":"1725098400"}'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample());
         }
     }

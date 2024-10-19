@@ -52,6 +52,7 @@
             return array(
                 $this->create204ResponseExample(),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample());
         }
     }

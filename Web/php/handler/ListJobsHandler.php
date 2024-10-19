@@ -52,6 +52,7 @@
             return array(
                 $this->createResponseExample("Scheduled jobs", 200, '[{"id":352299,"args":{"type":"YEAR","id":2024}},{"id":352300,"args":{"type":"VARIABLE_TIME_CATEGORY","id":2}},{"id":352301,"args":{"type":"VARIABLE_TIME_CATEGORY","id":3}},{"id":352302,"args":{"type":"ALL"}}]'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample());
         }
     }

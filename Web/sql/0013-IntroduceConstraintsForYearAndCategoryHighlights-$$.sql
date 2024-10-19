@@ -24,17 +24,14 @@ BEGIN
   WHERE highlight_id = OLD.highlight_id;
 END$$
 
-CREATE TRIGGER highlight_category_insert_trigger_1
-BEFORE INSERT ON highlight_category
-FOR EACH ROW
 BEGIN
   IF NOT EXISTS (
     SELECT *
     FROM highlight_place hp
-    INNER JOIN category c
-      ON hp.id = c.place_id
+    INNER JOIN category_summary cs
+      ON hp.id = cs.place_id
     WHERE hp.highlight_id = NEW.highlight_id
-      AND c.category_id = NEW.id)
+      AND FIND_IN_SET(NEW.id, cs.category_ids))
   THEN
     SIGNAL SQLSTATE '45000'
     SET MESSAGE_TEXT = 'Cannot insert into highlight_category. No appropriate entry in highlight_place for the category was found.';

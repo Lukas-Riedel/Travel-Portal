@@ -1,0 +1,471 @@
+class Api {
+
+    #hostName;
+
+    constructor(hostName) {
+        this.#hostName = hostName;
+    }
+
+    async createGeographicalCategory(name, country, category, radius, geoJson) {
+        return this.#sendRequest("POST", "categories",
+            {
+                name: name,
+                country: country,
+                category: category,
+                radius: radius,
+                geoJson: geoJson
+            });
+    }
+
+    async createGeographicalExtensionCategory(name, country, category, latitude, longitude) {
+        return this.#sendRequest("POST", "categories",
+            {
+                name: name,
+                country: country,
+                category: category,
+                latitude: latitude,
+                longitude: longitude
+            });
+    }
+
+    async createCompositeCategory(name, category, includedRegions, execludedRegions) {
+        return this.#sendRequest("POST", "categories",
+            {
+                name: name,
+                category: category,
+                includedRegions: includedRegions,
+                execludedRegions: execludedRegions
+            });
+    }
+
+    async listCategories(categories = undefined, includeHighlights = undefined, includeStats = undefined) {
+        return this.#sendRequest("GET", "categories", {},
+            {
+                categories: categories,
+                includeHighlights: includeHighlights,
+                includeStats: includeStats
+            });
+    }
+
+    async getCategory(categoryId) {
+        return this.#sendRequest("GET", "categories/" + categoryId);
+    }
+
+    async updateCategoryName(categoryId, name) {
+        return this.#sendRequest("PATCH", "categories/" + categoryId, 
+            {
+                name: name
+            });
+    }
+
+    async updateCategoryMainHighlight(categoryId, mainHighlightId) {
+        return this.#sendRequest("PATCH", "categories/" + categoryId, 
+            {
+                mainHighlightId: mainHighlightId
+            });
+    }
+
+    async listCategories(levels) {
+        return this.#sendRequest("GET", "configuration", {},
+            {
+                levels: levels
+            });
+    }
+
+    async updateConfigurationEntry(type, key, value) {
+        return this.#sendRequest("PATCH", "configuration/" + type, 
+            {
+                key: key,
+                value: value
+            });
+    }
+
+    async getCoordinates(address) {
+        return this.#sendRequest("GET", "coordinates/" + address);
+    }
+
+    async runJob(action, args) {
+        return this.#sendRequest("POST", "jobs/run", 
+            {
+                action: action,
+                args: args
+            });
+    }
+
+    async scheduleJob(action, args) {
+        return this.#sendRequest("POST", "jobs/schedule", 
+            {
+                action: action,
+                args: args
+            });
+    }
+
+    async listJobs(action) {
+        return this.#sendRequest("GET", "jobs/" + action);
+    }
+
+    async removeJob(jobId) {
+        return this.#sendRequest("DELETE", "jobs/" + jobId);
+    }
+
+    async createCandidatePlace(name, address) {
+        return this.#sendRequest("POST", "places", 
+            {
+                type: "candidate",
+                name: name,
+                address: address
+            });
+    }
+
+    async createPermanentPlace(name, address) {
+        return this.#sendRequest("POST", "places", 
+            {
+                type: "permanent",
+                name: name,
+                address: address
+            });
+    }
+
+    async listPlaces(tripId = undefined, categoryId = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
+        includeExcerpt = undefined, includeCategories = undefined, includeHighlights = undefined) {
+        return this.#sendRequest("GET", "places", {}, 
+            {
+                type: "regular",
+                tripId: tripId,
+                categoryId: categoryId,
+                year: year,
+                minStart: minStart,
+                maxEnd: maxEnd,
+                includeExcerpt: includeExcerpt,
+                includeCategories: includeCategories,
+                includeHighlights: includeHighlights
+            });
+    }
+
+    async listPlaces(tripId = undefined, categoryId = undefined,
+        includeExcerpt = undefined, includeCategories = undefined, includeHighlights = undefined) {
+        return this.#sendRequest("GET", "places", {}, 
+            {
+                type: "candidate",
+                tripId: tripId,
+                categoryId: categoryId,
+                includeExcerpt: includeExcerpt,
+                includeCategories: includeCategories,
+                includeHighlights: includeHighlights
+            });
+    }
+
+    async getPlace(placeId) {
+        return this.#sendRequest("GET", "places/" + placeId);
+    }
+
+    async updatePlaceName(placeId, name) {
+        return this.#sendRequest("PATCH", "places/" + placeId, 
+            {
+                name: name
+            });
+    }
+
+    async updatePlaceLocation(placeId, latitude, longitude) {
+        return this.#sendRequest("PATCH", "places/" + placeId, 
+            {
+                latitude: latitude,
+                longitude: longitude
+            });
+    }
+
+    async updatePlaceMainHighlight(placeId, mainHighlightId) {
+        return this.#sendRequest("PATCH", "places/" + placeId, 
+            {
+                mainHighlightId: mainHighlightId
+            });
+    }
+
+    async updatePlaceExcerpt(placeId, excerpt) {
+        return this.#sendRequest("PATCH", "places/" + placeId, 
+            {
+                excerpt: excerpt
+            });
+    }
+
+    async removeCandidatePlace(placeId) {
+        return this.#sendRequest("DELETE", "places/" + placeId, {}, 
+            {
+                type: "candidate"
+            });
+    }
+
+    async removePermanentPlace(placeId) {
+        return this.#sendRequest("DELETE", "places/" + placeId, {}, 
+            {
+                type: "permanent"
+            });
+    }
+
+    async createPlaceAlbum(placeId, timestamp) {
+        return this.#sendRequest("POST", "places/" + placeId + "/albums", 
+            {
+                timestamp: timestamp
+            });
+    }
+
+    async refreshPlaceAlbum(placeId, albumId, mainPhotoPosition = undefined) {
+        return this.#sendRequest("POST", "places/" + placeId + "/albums/" + albumId, {}, 
+            {
+                mainPhotoPosition: mainPhotoPosition
+            });
+    }
+
+    async createPlaceAlbumPhoto(placeId, albumId, name, position, data) {
+        return this.#sendRequest("POST", "places/" + placeId + "/albums/" + albumId + "/photos", 
+            {
+                name: name,
+                position: position,
+                data: data
+            });
+    }
+
+    async listPlaceAlbumPhotos(placeId, albumId) {
+        return this.#sendRequest("GET", "places/" + placeId + "/albums/" + albumId + "/photos");
+    }
+
+    async listProblems() {
+        return this.#sendRequest("GET", "problems");
+    }
+
+    async listStatistics() {
+        return this.#sendRequest("GET", "statistics");
+    }
+
+    async createSubscription(description, value, currency, expiration) {
+        return this.#sendRequest("POST", "subscriptions", 
+            {
+                description: description,
+                value: value,
+                currency: currency,
+                expiration: expiration
+            });
+    }
+
+    async listSubscriptions() {
+        return this.#sendRequest("GET", "subscriptions");
+    }
+
+    async createTimeTrackingEvent(type, hours, description, date) {
+        return this.#sendRequest("POST", "tracker", 
+            {
+                type: type,
+                hours: hours,
+                description: description,
+                date: date
+            });
+    }
+
+    async listTimeTrackingEvents(type = undefined) {
+        return this.#sendRequest("GET", "tracker", {}, 
+            {
+                type: type
+            });
+    }
+
+    async removeTimeTrackingEvent(eventId) {
+        return this.#sendRequest("DELETE", "tracker/" + eventId);
+    }
+
+    async listTrips(year = undefined, includeExpenses = undefined, includeStays = undefined, includeFlights = undefined, includeWatchedFlights = undefined,
+        includeLayovers = undefined, includeFitness = undefined, includeNotes = undefined, includeHighlights = undefined, includeStats = undefined, includePublicHolidays = undefined) {
+        return this.#sendRequest("GET", "trips", {}, 
+            {
+                type: "regular",
+                year: year,
+                includeExpenses: includeExpenses,
+                includeStays: includeStays,
+                includeFlights: includeFlights,
+                includeWatchedFlights: includeWatchedFlights,
+                includeLayovers: includeLayovers,
+                includeFitness: includeFitness,
+                includeNotes: includeNotes,
+                includeHighlights: includeHighlights,
+                includeStats: includeStats,
+                includePublicHolidays: includePublicHolidays
+            });
+    }
+
+    async listCandidateTrips(includeNotes = undefined, includePublicHolidays = undefined) {
+        return this.#sendRequest("GET", "trips", {}, 
+            {
+                type: "candidate",
+                includeNotes: includeNotes,
+                includePublicHolidays: includePublicHolidays
+            });
+    }
+
+    async getTrip(tripId) {
+        return this.#sendRequest("GET", "trips/" + tripId);
+    }
+
+    async updateTripName(tripId, name) {
+        return this.#sendRequest("PATCH", "trips/" + tripId, 
+            {
+                name: name
+            });
+    }
+
+    async updateTripStart(tripId, start) {
+        return this.#sendRequest("PATCH", "trips/" + tripId, 
+            {
+                start: start
+            });
+    }
+
+    async updateTripMainHighlight(tripId, mainHighlightId) {
+        return this.#sendRequest("PATCH", "trips/" + tripId, 
+            {
+                mainHighlightId: mainHighlightId
+            });
+    }
+
+    async replaceTrip(tripId, candidateTripId) {
+        return this.#sendRequest("PUT", "trips/" + tripId, 
+            {
+                candidateTripId: candidateTripId
+            });
+    }
+
+    async removeTrip(tripId) {
+        return this.#sendRequest("DELETE", "trips/" + tripId);
+    }
+
+    async createTripExpense(tripId, type, description, cost, currency) {
+        return this.#sendRequest("POST", "trips/" + tripId + "/expenses", 
+            {
+                type: type,
+                description: description,
+                cost: cost,
+                currency: currency
+            });
+    }
+
+    async createTripExpenseWithSubscription(tripId, type, description, cost, currency, subscriptionId) {
+        return this.#sendRequest("POST", "trips/" + tripId + "/expenses", 
+            {
+                type: type,
+                description: description,
+                cost: cost,
+                currency: currency,
+                subscriptionId: subscriptionId
+            });
+    }
+
+    async updateTripExpenseDescription(tripId, expenseId, description) {
+        return this.#sendRequest("PATCH", "trips/" + tripId + "/expenses/" + expenseId, 
+            {
+                description: description
+            });
+    }
+
+    async updateTripExpenseValue(tripId, expenseId, cost, currency) {
+        return this.#sendRequest("PATCH", "trips/" + tripId + "/expenses/" + expenseId, 
+            {
+                cost: cost,
+                currency: currency
+            });
+    }
+
+    async removeTripExpense(tripId, expenseId) {
+        return this.#sendRequest("DELETE", "trips/" + tripId + "/expenses/" + expenseId);
+    }
+
+    async logTripFlight(tripId, flight, from, to, scheduledDeparture) {
+        return this.#sendRequest("POST", "trips/" + tripId + "/flights/log", 
+            {
+                flight: flight,
+                from: from,
+                to: to,
+                scheduledDeparture: scheduledDeparture
+            });
+    }
+
+    async logTripFlightManually(tripId, flight, aircraft, registration, from, fromCode, to, toCode,
+        scheduledDeparture, actualDeparture, scheduledArrival, actualArrival) {
+        return this.#sendRequest("POST", "trips/" + tripId + "/flights/log", 
+            {
+                flight: flight,
+                aircraft: aircraft,
+                registration: registration,
+                from: from,
+                fromCode: fromCode,
+                to: to,
+                toCode: toCode,
+                scheduledDeparture: scheduledDeparture,
+                actualDeparture: actualDeparture,
+                scheduledArrival: scheduledArrival,
+                actualArrival: actualArrival
+            });
+    }
+
+    async createTripNote(tripId, content) {
+        return this.#sendRequest("POST", "trips/" + tripId + "/notes", 
+            {
+                content: content
+            });
+    }
+
+    async removeTripNote(tripId, noteId) {
+        return this.#sendRequest("DELETE", "trips/" + tripId + "/notes/" + noteId);
+    }
+
+    async listYears(includeHighlights = undefined, includeStats = undefined) {
+        return this.#sendRequest("GET", "years", {}, 
+            {
+                includeHighlights: includeHighlights,
+                includeStats: includeStats
+            });
+    }
+
+    async getYear(year) {
+        return this.#sendRequest("GET", "years/" + year);
+    }
+
+    async updateYearMainHighlight(year, mainHighlightId) {
+        return this.#sendRequest("PATCH", "year/" + year, 
+            {
+                mainHighlightId: mainHighlightId
+            });
+    }
+
+    async #sendRequest(method, url, data = {}, args = {}) {
+        const argKeys = Object.keys(args).filter(arg => args[arg] !== undefined);
+        const queryString = argKeys.length === 0 ? "" : ("?" + argKeys.map(key => key + "=" + args[key]).join("&"));
+
+        return new Promise(async (resolve, reject) => {
+            $.ajax({
+                method: method,
+                url: "https://" + this.#hostName + "/api/" + url + queryString,
+                data: JSON.stringify(data),
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + (await this.#getBearerToken())
+                },
+                success: resolve,
+                error: reject
+            });
+        });
+    }
+
+    async #getBearerToken() {
+        // TODO: Caching and obtaining credentials from cookies.
+        const response = await new Promise((resolve, reject) => {
+            $.ajax({
+                method: "POST",
+                url: "https://" + this.#hostName + "/iam",
+                data: JSON.stringify({ username: "guest", password: "guest" }),
+                dataType: "json",
+                success: resolve,
+                error: reject
+            });
+        });
+
+        return response.accessToken;
+    }
+}

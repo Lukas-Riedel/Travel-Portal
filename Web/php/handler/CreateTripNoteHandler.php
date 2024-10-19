@@ -62,6 +62,7 @@
             return array(
                 $this->createResponseExample("Created note", 201, '{"id":83,"content":"Obsah poznámky"}'),
                 $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
                 $this->create403ResponseExample(),
                 $this->create404ResponseExample());
         }
