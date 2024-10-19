@@ -50,6 +50,9 @@ RewriteRule ^flight/(.+)$ $1 [L,QSA]
 RewriteRule ^acp/?$ acp.php [L,QSA]
 RewriteRule ^acp/(.+)$ $1 [L,QSA]
 
+RewriteRule ^iam/?$ php/iam.php [L,QSA]
+RewriteRule ^iam/(.+)$ $1 [L,QSA]
+
 RewriteRule ^tracking/?$ time_tracking.php [L,QSA]
 RewriteRule ^tracking/(.+)$ $1 [L,QSA]
 

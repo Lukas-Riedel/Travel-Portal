@@ -1,4 +1,7 @@
 <?php
+    require_once(dirname(__FILE__) . "/../exception/AuthorizationException.php");
+    require_once(dirname(__FILE__) . "/../exception/AuthenticationException.php");
+
     class TargetError implements JsonSerializable {        
         private $code;
         private $error;
@@ -49,10 +52,12 @@
         }
 
         private static function resolveErrorCode($e) {
-            if ($e instanceof ErrorException) {
+            if ($e instanceof AuthorizationException) {
                 return 403;
             }
-            // Return 400 for everything else for now.
+            if ($e instanceof AuthenticationException) {
+                return 401;
+            }
             return 400;
         }
     }

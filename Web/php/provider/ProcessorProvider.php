@@ -1,5 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/TargetError.php");
+    require_once(dirname(__FILE__) . "/../exception/AuthorizationException.php");
 
     class ProcessorProvider {
 
@@ -31,7 +32,7 @@
                 require_once(dirname(__FILE__) . "/../processor/" . $className . ".php");
                 $processor = new $className;
                 if ($processor->requiresAdminRole() && !$this->isLoggedIn) {
-                    throw new ErrorException("The action can only be executed by users with admin role.");
+                    throw new AuthorizationException("The action can only be executed by users with admin role.");
                 }
                 foreach ($processor->getRequiredArguments() as $requiredArgument) {
                     if ($args == NULL || !array_key_exists($requiredArgument, $args)) {
