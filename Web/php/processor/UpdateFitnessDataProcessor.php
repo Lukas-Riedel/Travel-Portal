@@ -24,20 +24,20 @@
                 ->withParameters($input["start"])
                 ->getSingleRow();
 
-            if ($existingFitnessRow != NULL && $steps < $existingFitnessRow["steps"] * 0.9) {
-                throw new RuntimeException("Totally " . $steps . " steps were reported for the interval but there are " . $existingFitnessRow["steps"] . " steps already stored in the database.");
+            if ($existingFitnessRow == NULL && $steps < $existingFitnessRow["steps"] * 0.9) {
+                return FALSE;
             }
 
             if ($existingFitnessRow != NULL && $minutes < $existingFitnessRow["minutes"] * 0.9) {
-                throw new RuntimeException("Totally " . $minutes . " activity minutes were reported for the interval but there are " . $existingFitnessRow["minutes"] . " activity minutes already stored in the database.");
+                return FALSE;
             }
 
             if ($existingFitnessRow != NULL && $calories < $existingFitnessRow["calories"] * 0.9) {
-                throw new RuntimeException("Totally " . $calories . " burnt calories were reported for the interval but there are " . $existingFitnessRow["calories"] . " burnt calories already stored in the database.");
+                return FALSE;
             }
 
             if ($existingFitnessRow != NULL && $distance < $existingFitnessRow["distance"] * 0.9) {
-                throw new RuntimeException("Totally " . $distance . " kilometers were reported for the interval but there are " . $existingFitnessRow["distance"] . " kilometers already stored in the database.");
+                return FALSE;
             }
 
             $databaseProvider
