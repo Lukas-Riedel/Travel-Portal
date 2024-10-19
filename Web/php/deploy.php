@@ -53,12 +53,15 @@
                         "args" => array(
                             "tables" => $tablesToBackup)))));
 
+            $migrationScriptFileNameTokens = explode("-", $migrationScriptFileName);
+            $delimiter = count($migrationScriptFileNameTokens) == 3 ? str_replace(".sql", "", $migrationScriptFileNameTokens[2]) : ";";
+
             $databaseProvider->beginTransaction();
             $lastMigrationSubscript = "";
             try {
                 set_error_handler($onError);
 
-                foreach (explode(";", $migrationScript) as &$migrationSubScript) {
+                foreach (explode($delimiter, $migrationScript) as &$migrationSubScript) {
                     if (trim($migrationSubScript) !== '') {                        
                         $lastMigrationSubscript = $migrationSubScript;
                         $databaseProvider->query($migrationSubScript);
