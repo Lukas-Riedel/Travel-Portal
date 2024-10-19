@@ -201,10 +201,6 @@ function getPlaceButtonsForTripEntry(place) {
             { 
                 action: "createAlbumAndUploadPhotos(" + place.id + ", " + place.start + ')"',
                 image: "img/upload.png"
-            },
-            { 
-                action: "window.open('../point/" + place.name + "," + place.country + "', '_blank')",
-                image: "img/map.png"
             }
         );
     }
@@ -225,10 +221,6 @@ function getPlaceButtonsForTripEntry(place) {
             { 
                 action: "uploadPhotos(" + place.id + ", " + place.album.id + ')"',
                 image: "img/upload.png"
-            },
-            { 
-                action: "window.open('../point/" + place.name + "," + place.country + "', '_blank')",
-                image: "img/map.png"
             }
         );
     }

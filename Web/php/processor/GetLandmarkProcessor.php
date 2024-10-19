@@ -3,11 +3,9 @@
 
     class GetLandmarkProcessor extends Processor {        
         public function process($input) {
-            global $configuration;
-
             $detectedLandmark = "UNKNOWN";
 
-            $image = file_get_contents($input["baseUrl"] . "=w" . $configuration["albumThumbnailImageSize"]["width"] . "-h" . $configuration["albumThumbnailImageSize"]["height"]);
+            $image = file_get_contents($input["baseUrl"] . "=d");
             $apiResponse = $this->getGoogleVisionResponse(base64_encode($image));
 
             if (array_key_exists("error", $apiResponse)) {

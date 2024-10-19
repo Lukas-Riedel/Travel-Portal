@@ -28,9 +28,6 @@ RewriteRule ^plan/(.+)$ $1 [L,QSA]
 RewriteRule ^place/([^/]+),([^/]+)/?$ place.php?name=$1&country=$2 [L,QSA]
 RewriteRule ^place/(.+)$ $1 [L,QSA]
 
-RewriteRule ^point/([^/]+),([^/]+)/?$ points.php?name=$1&country=$2 [L,QSA]
-RewriteRule ^point/(.+)$ $1 [L,QSA]
-
 RewriteRule ^acp/([^/]+)/?$ acp.php?authToken=$1 [L,QSA]
 RewriteRule ^acp/(.+)$ $1 [L,QSA]
 
