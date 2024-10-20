@@ -13,7 +13,7 @@
             require_once(dirname(__FILE__) . "/php/header.php");
         ?> 
         <script>    
-            loadPage(async () => await init("<?php echo $_GET['name']; ?>", "<?php echo $_GET['country']; ?>", <?php echo json_encode(isset($_SESSION["authToken"])); ?>));            
+            loadPage(async () => await init("<?php echo $_GET['name']; ?>", "<?php echo $_GET['country']; ?>", <?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", explode(",", $_COOKIE["roles"])) && in_array("ADMIN", explode(",", $_COOKIE["roles"]))); ?>));            
         </script>
     </head>
     <body>

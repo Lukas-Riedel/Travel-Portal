@@ -41,7 +41,7 @@
         }
 
         protected function create401ResponseExample() {
-            return $this->createResponseExample("Missing authentication", 401, '{"code":401,"error":"The access token was not provided.","details":{"action":"API","arguments":[]}}');
+            return $this->createResponseExample("Missing access token", 401, '{"code":401,"error":"The access token was not provided.","details":{"action":"API","arguments":[]}}');
         }
 
         protected function create403ResponseExample() {

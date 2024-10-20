@@ -15,7 +15,7 @@
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $loggingProvider = new LoggingProvider($databaseProvider);
     $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
-    $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, isset($_SESSION["authToken"]), TRUE, TRUE);
+    $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, isset($_COOKIE["accessToken"]) && in_array("ADMIN", explode(",", $_COOKIE["roles"])), TRUE, TRUE);
 
     $args = getProcessorArguments();
 

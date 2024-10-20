@@ -9,6 +9,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex">
         <link rel="icon" href="img/icon.jpg"/>
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('json/service-worker.js');
+            }
+        </script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
         <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $configuration["googleMapsApiKeys"]["website"] ?>&v=weekly&callback=Function.prototype" defer></script>
@@ -19,7 +24,9 @@
     $rootPath = dirname(__FILE__) . "/../js";
     $commonFilesPath = $rootPath . "/common";
     $commonFiles = array_diff(scandir($commonFilesPath), array('.', '..'));
-    $version = filemtime(dirname(__FILE__) . "/../css/main.css");
+    $version = filemtime(dirname(__FILE__) . "/../css/main.css")
+        + filemtime(dirname(__FILE__) . "/../json/manifest.json") 
+        + filemtime(dirname(__FILE__) . "/../json/service-worker.json");
     foreach ($commonFiles as &$file) {
         $version += filemtime($commonFilesPath . "/" . $file);
     }
@@ -37,3 +44,4 @@
     }
 ?>
 <link rel="stylesheet" href="https://<?php echo $configuration["hostName"]; ?>/css/main.css<?php echo $version; ?>">
+<link rel="manifest" href="json/manifest.json<?php echo $version; ?>">

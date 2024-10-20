@@ -3,28 +3,34 @@
     
     require_once(dirname(__FILE__) . "/php/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/php/provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/php/processor/Processor.php");
+    require_once(dirname(__FILE__) . "/php/processor/GetHttpResponseProcessor.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $passwords = $configuration["passwords"];
 
-    if (isset($_GET["authToken"]) && in_array($_GET["authToken"], $passwords)) {
-        $_SESSION['authToken'] = $_GET["authToken"];
-    }
+    if (isset($_POST["username"]) && isset($_POST["password"])) {
+        $accessTokenResponse = (new GetHttpResponseProcessor())
+            ->process(array(
+                "method" => "POST", 
+                "url" => "https://" . $configuration["hostName"] . "/iam",
+                "payload" => json_encode(array(
+                    "username" => $_POST["username"],
+                    "password" => $_POST["password"]))));
 
-    if (isset($_POST["password"]) && array_key_exists($_POST["password"], $passwords)) {
-        $_SESSION['authToken'] = $passwords[$_POST["password"]];
-    }
+        if (isset($accessTokenResponse["accessToken"])) {
+            setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"]);
+            setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"]);
+
+            if (isset($_GET["origin"])) {
+                header("Location: " . $_GET["origin"]);
+                exit;
+            }
     
-    if (isset($_SESSION['authToken'])) {
-        if (isset($_GET["origin"])) {
-            header("Location: " . $_GET["origin"]);
+            header("Location: index.php");
             exit;
         }
-
-        header("Location: index.php");
-        exit;
     }
 
     if (isset($_GET["cookies"])) {
@@ -51,7 +57,10 @@
     <body style="text-align: center">
         <h1>Login Required</h1>
         <form method="post" action="<?php echo $action; ?>">
-            <input type="password" name="password"><br><br>
+            <input type="text" name="username">
+            <br><br>
+            <input type="password" name="password">
+            <br><br>
             <input type="submit" value="Login">
         </form>  
     </body>
