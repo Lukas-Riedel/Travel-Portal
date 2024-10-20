@@ -1,7 +1,7 @@
 
 async function init(isLoggedIn) {
     const places = await getPlaces(!isLoggedIn);
-    const trips = await getTrips();
+    const trips = await api.listTrips();
 
     // Title.
     $('#title').html(getTitle(places));
@@ -39,7 +39,7 @@ async function getFeaturedTrip(trip, displayFutureTrips) {
         return "";
     }
 
-    return await doGetFeaturedTrip(await getTrip(getFullyQualifiedTripName(trip)));
+    return await doGetFeaturedTrip(await api.getTrip(trip.id));
 }
 
 function getFutureTrips(trips, displayFutureTrips) {
@@ -58,7 +58,7 @@ function getFutureTrips(trips, displayFutureTrips) {
     ];
 
     const contentRowColumnsSelector = trip => [
-        { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/trip/" + getFullyQualifiedTripName(trip) + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
+        { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
         { hideifSimplified: false, content: getFromDateToDateString(trip.start, trip.end, true, false) },
         { hideifSimplified: false, content: "<a style=\"color: black\" href=\"https://" + configuration.hostName + "/year/" + trip.year + "\">" + trip.year + "</a>" },
         { hideifSimplified: true,  content: Math.ceil(trip.days.total) },

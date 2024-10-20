@@ -1,7 +1,5 @@
-async function init(country, isLoggedIn) {
-    const candidatePlaces = country === undefined 
-        ? (await getCandidatePlaces()) 
-        : (await getCandidatePlacesForCountry(country));
+async function init(categoryId, isLoggedIn) {
+    const candidatePlaces = await api.listCandidatePlaces(undefined, categoryId, undefined, true);
 
     // Title.
     $('#title').html(getTitle(isLoggedIn, candidatePlaces));
@@ -41,14 +39,14 @@ function getMain(places, showButtons) {
                 image: "img/edit.png"
             },
             {
-                action: "removeCandidatePlace('" + escapeStringForHtml(place.name) + "', '" + place.country + "')",
+                action: "removeCandidatePlace(" + place.id + ", '" + escapeStringForHtml(place.name) + "', '" + place.country + "')",
                 image: "img/x.png"
             });
         }
 
         const columns = [
-            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/place/" + place.name + "," + place.country + "\"><strong style=\"color: black\">" + getPlacePrettyName(place.name) + "</strong></a>" },
-            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/plan/" + place.country + "\">" + place.country + "</a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/place/" + place.id + "\"><strong style=\"color: black\">" + getPlacePrettyName(place.name) + "</strong></a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/plan/" + getOnlyElementOrDefault(place.categories.filter(category => category.category === "COUNTRY"), "").id + "\">" + place.country + "</a>" },
             { hideifSimplified: true, content: place.dates.length === 0 ? "Nikdy" : formatBeforeDaysTimestamp(place.dates[place.dates.length - 1].start) }
         ];
 
@@ -68,5 +66,5 @@ async function changeName(placeId) {
         return;
     }
 
-    executeAndAlertConfirmation("ChangePlaceIdentifier", { placeId: placeId, name: name });
+    api.updatePlaceName(placeId, name).done(alertConfirmation);
 }

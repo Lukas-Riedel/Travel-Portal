@@ -1,10 +1,10 @@
-async function init(category, isLoggedIn) {
-    const places = await getPlacesForCategory(category, !isLoggedIn);
-    const stats = (await getCategory(category)).stats;
+async function init(categoryId, isLoggedIn) {
+    const places = await api.listRegularPlaces(undefined, categoryId, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now));
+    const category = await api.getCategory(categoryId);
 
     // Title.
-    document.title = getDocumentTitle(getCategoryPrettyName(category), places);
-    $('#title').html(getTitle(getCategoryPrettyName(category), places));
+    document.title = getDocumentTitle(getCategoryPrettyName(category.name), places);
+    $('#title').html(getTitle(getCategoryPrettyName(category.name), places));
     
     // Map.
     initializeMap("map", places);
@@ -13,7 +13,7 @@ async function init(category, isLoggedIn) {
     $('#albums').html(getAlbumsComponentForCategory(places));
 
     // Stats.
-    $('#stats').html(getStatsComponent(stats));
+    $('#stats').html(getStatsComponent(category.stats));
 
     // Footer.
     $('#footer').html(getLoginLink(isLoggedIn));

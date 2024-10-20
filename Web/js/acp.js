@@ -3,8 +3,8 @@ const problemNames = {"FUTURE_COUNTRIES_WITHOUT_PUBLIC_HOLIDAYS_CALENDAR":"Stát
 async function init() {
     const isNextTrip = trip => trip.end > now && !isDayTrips(trip);
 
-    const tripName = getFullyQualifiedTripName(getFirstElement((await getTrips()).filter(isNextTrip)));
-    const trip = await getTrip(tripName);
+    const tripId = getFirstElement((await api.listTrips()).filter(isNextTrip)).id;
+    const trip = await api.getTrip(tripId);
 
     if (trip !== undefined) {
         // Navigation.
@@ -78,7 +78,7 @@ function getNavigationComponent(trip) {
 }
 
 async function getProblemsComponent() {    
-    const problems = await getProblemsReport();
+    const problems = await api.listProblems();
 
     const headerRowColumns = [
         { hideifSimplified: false, content: "Typ problému" },
@@ -171,8 +171,8 @@ function getUtilitiesComponent(trip) {
 
     // Tools.
     const tools = [
-        { name: "Aktualizovat alba", action: "executeAndAlertConfirmation('UpdateAlbum')" },
-        { name: "Aktualizovat kalendář", action: "executeAndAlertConfirmation('UpdateCalendar', { uuid: configuration.googleCalendarApiWatchUuid })" },
+        { name: "Aktualizovat alba", action: "runJob('UpdateAlbum', {})" },
+        { name: "Aktualizovat kalendář", action: "runJob('UpdateCalendar', { uuid: configuration.googleCalendarApiWatchUuid })" },
         { name: "Získat GeoJSON s geografickými regiony", action: "getGeoJson()" },
         { name: "Přidat předplatné", action: "addSubscription()" },
         { name: "Přidat geografický region", action: "addGeoRegion()" },
@@ -213,7 +213,7 @@ function getUtilitiesComponent(trip) {
 async function logFlight(start, flight, from, to, tripId) {
     // Switch to manual logging in new UI.
     if (confirm("Přeješ si zalogovat let " + flight + "?")) {
-        const loggedFlight = await execute("LogFlight", { flight: flight, from: from, to: to, scheduledDeparture: start, tripId: tripId });
+        const loggedFlight = await api.logTripFlight(tripId, flight, from, to, start);
         alert("Let: " + loggedFlight.flight + " (" + loggedFlight.from.name + " - " + loggedFlight.to.name + ")"
             + "\nLetadlo: " + loggedFlight.aircraft + " (" + loggedFlight.registration + ")"
             + "\nOdlet: " + getDateString(loggedFlight.start) + " " + getTimeString(new Date(new Date(loggedFlight.start * 1000).toLocaleString('en-US', { timeZone: loggedFlight.from.timezone })))
@@ -247,7 +247,7 @@ async function getConfigurationComponent() {
         ];
     };
 
-    const modifiableConfiguration = await getModifiableConfiguration();
+    const modifiableConfiguration = await api.listConfigurationEntries("modifiable");
     return getGeneralTable(headerRowColumns, contentRowColumnsSelector, Object.keys(modifiableConfiguration).flatMap(type => createConfigurationEntries(mapConfigurationEntryType(type), modifiableConfiguration[type])));
 }
 
@@ -269,8 +269,8 @@ function changeConfigurationValue(idSuffix, type, key) {
     if (newValue == null || newValue == "") {
         return;
     }
-    
-    executeAndReload("ChangeConfiguration", { "type": type, "key": key, "value": newValue });
+
+    api.updateConfigurationEntry(type, key, newValue).done(reload);
 }
 
 function addSubscription() {
@@ -301,7 +301,7 @@ function addSubscription() {
 
     const expirationTimestamp = new Date(expirationTokens[2], expirationTokens[1] - 1, expirationTokens[0]).getTime() / 1000;
 
-    executeAndAlertConfirmation("AddSubscription", { "value": cost, "currency" : currency, "description": description, "expiration": expirationTimestamp });
+    api.createSubscription(description, cost, currency, expirationTimestamp).done(reload);
 }
 
 function addGeoRegion(country = undefined) {
@@ -349,20 +349,18 @@ function addGeoRegion(country = undefined) {
             geometry: feature.geometry
         });
 
-        const postArgs = { "name": name, "geoJson": regionGeoJson, "radius": radius };
+        let category = undefined;
         if (country !== undefined) {
-            postArgs["country"] = resolveCountry(country);
-            postArgs["category"] = "ADMINISTRATIVE";
+            category = "ADMINISTRATIVE";
         }
         else {
-            const category = prompt("Zadej kategorii kategorie:\n\nMožné hodnoty:\n" + [ 'CONTINENT','COUNTRY','ADMINISTRATIVE','OCEAN','SEA','BAY','VARIABLE','ISLAND','REGION' ].join("\n"));
+            category = prompt("Zadej kategorii kategorie:\n\nMožné hodnoty:\n" + [ 'CONTINENT','COUNTRY','ADMINISTRATIVE','OCEAN','SEA','BAY','VARIABLE','ISLAND','REGION' ].join("\n"));
             if (category == null || category == "") {
                 return;
             }
-            postArgs["category"] = category;
         }
 
-        executeAndAlertConfirmation("AddGeographicalRegion", postArgs);
+        api.createGeographicalCategory(name, country, category, radius, regionGeoJson).done(alertConfirmation);
     });
 }
 
@@ -372,7 +370,7 @@ async function addGeoRegionExtensionForPlace(placeId) {
         return;
     }
 
-    const place = await getPlaceById(placeId);
+    const place = await api.getPlace(placeId);
 
     let category = undefined;
     let regionCountry = prompt("Je region " + regionName + " specifický pro stát? Pokud ano, zadej jméno státu. Jinak ponech prázdné:", place.country);
@@ -387,8 +385,8 @@ async function addGeoRegionExtensionForPlace(placeId) {
         regionCountry = resolveCountry(regionCountry);
         category = "ADMINISTRATIVE"
     }
-    
-    executeAndAlertConfirmation("AddGeographicalRegionExtension", { "name": regionName, "country": regionCountry, "latitude": place.latitude, "longitude": place.longitude, "category": category });
+
+    api.createGeographicalExtensionCategory(regionName, regionCountry, category, place.latitude, place.longitude).done(alertConfirmation);
 }
 
 function addCompositeRegion() {
@@ -414,7 +412,7 @@ function addCompositeRegion() {
         return;
     }
 
-    executeAndAlertConfirmation("AddCompositeRegion", { "name": name, "includedRegions": included.split(","), "excludedRegions": excluded.split(","), "category": category });
+    api.createCompositeCategory(name, category, included.split(","), excluded.split(",")).done(alertConfirmation);
 }
 
 async function addPermanentPlace() {
@@ -428,14 +426,14 @@ async function addPermanentPlace() {
         return;
     }
 
-    const resolvedAddress = await getCoords(address);
+    const resolvedAddress = await api.getCoordinates(address);
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
-        executeAndAlertConfirmation("AddSpecialPlace", { name: name, type: "permanent", address: address });
+        api.createPermanentPlace(name, address).done(alertConfirmation);
     }
 }
 
 async function getGeoJson() {
-    await navigator.clipboard.writeText(JSON.stringify(await getGeographicalRegions()));
+    await navigator.clipboard.writeText(JSON.stringify(await api.runJob("GetGeographicalRegions", {})));
     
     alertConfirmation();
 }
@@ -445,6 +443,6 @@ function resolveDuplicatedPlaceIdentifiers(places) {
     if (id == null || id == "" || Number.isNaN(id) || !places.some(place => place.id == id)) {
         return;
     }
-    
-    executeAndReload("RemoveSpecialPlace", { type: "candidate", placeId: id });
+
+    api.removeCandidatePlace(id).done(alertConfirmation);
 }

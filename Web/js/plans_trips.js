@@ -1,5 +1,5 @@
 async function init(isLoggedIn) {
-    const candidatePlaces = await getCandidatePlaces();
+    const candidatePlaces = await api.listCandidatePlaces();
 
     // Title.
     $('#title').html(getTitle(isLoggedIn, candidatePlaces));
@@ -14,7 +14,7 @@ async function init(isLoggedIn) {
     $('#utilities').html(getFooter(isLoggedIn));
 
     // Main.
-    $('#main').html(getContentComponent(await getCandidateTrips(), isLoggedIn));
+    $('#main').html(getContentComponent(await api.listCandidateTrips(), isLoggedIn));
 }
 
 function getContentComponent(trips, showButtons) {
@@ -30,13 +30,13 @@ function getContentComponent(trips, showButtons) {
     const contentRowColumnsSelector = trip => {
         const buttons = [
             { 
-                action: "removeTripCandidate('" + trip.name + "')",
+                action: "removeTripCandidate('" + trip.name + "', " + trip.id + ")",
                 image: "img/x.png"
             }
         ];
 
         const columns = [
-            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/plan/trip/" + trip.name + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/plan/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
             { hideifSimplified: false, content: trip.days.total }
         ]; 
 
@@ -54,9 +54,8 @@ function getTitle(isLoggedIn, places) {
     return "<img src=\"img/icon.jpg\"><br>" + (isLoggedIn ? "<a onclick=\"addPlaceCandidate()\">Plán</a>" : "Plán") + "<br>" + getCountries(places).map(getFlagImage).join(" ");
 }
 
-async function removeTripCandidate(trip) {
-    if (confirm("Skutečně chceš odstranit výlet " + trip + "?")) {
-        const tripIdentifier = await getResponse("GetTripIdentifier", { name: trip });
-        executeAndAlertConfirmation("RemoveCandidateTrip", { tripId: tripIdentifier.id });
+async function removeTripCandidate(tripName, tripId) {
+    if (confirm("Skutečně chceš odstranit výlet " + tripName + "?")) {
+        api.removeTrip(tripId).done(alertConfirmation);
     }
 }

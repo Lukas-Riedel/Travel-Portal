@@ -213,7 +213,7 @@ function getPlaceButtonsForTripEntry(place) {
         );
         buttons.push(
             {
-                action: "refreshAlbum('" + place.album.id + "')",
+                action: "refreshAlbum(" + place.id + ", " + place.album.id + ")",
                 image: "img/refresh.png"
             }
         );
@@ -296,7 +296,7 @@ function updateForecastLastUpdateTime(forecasts) {
 }
 
 function getPlaceLink(place) {
-    return "<a href=\"https://" + configuration.hostName + "/place/" + place.name + "," + place.country + "\">" + getPlacePrettyName(place.name) + "</a>";
+    return "<a href=\"https://" + configuration.hostName + "/place/" + place.id + "\">" + getPlacePrettyName(place.name) + "</a>";
 }
 
 function findMinAndMax(values) {
@@ -351,5 +351,5 @@ async function createAlbumAndUploadPhotos(placeId, timestamp) {
 }
 
 async function processPhotosUploadRequest(args) {
-    executeAndAlertConfirmation("UploadPhotos&async=true", args);
+    api.scheduleJob("UploadPhotos", args).done(alertConfirmation);
 }

@@ -1,6 +1,6 @@
 async function init(isLoggedIn) {
     const places = await getPlaces(!isLoggedIn);
-    const stats = await getStats();
+    const stats = await api.listStatistics();
 
     // Title.
     $('#title').html(getTitle(places));

@@ -14,7 +14,7 @@
         ?> 
         <title>Cestovní portál</title>
         <script>
-            loadPage(async () => await init("<?php echo $_GET['name']; ?>", <?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", explode(",", $_COOKIE["roles"]))); ?>));
+            loadPage(async () => await init("<?php echo $_GET['tripId']; ?>", <?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", explode(",", $_COOKIE["roles"]))); ?>));
         </script>
     </head>
     <body>

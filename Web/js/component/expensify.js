@@ -65,7 +65,7 @@ async function getExpensifyComponent(trips, viableExpenseTypes, detailed, showBu
         });
         
         if (includeAdderRows) { 
-            const subscriptions = await getActiveSubscriptions();
+            const subscriptions = await api.listSubscriptions();
 
             const getAdderRow = (trip, allowedTypes, defaultValue = "") => {
                 if (defaultValue !== "" && expenses.map(expense => expense.description).some(expenseDescription => expenseDescription.startsWith(defaultValue))) {
@@ -116,7 +116,7 @@ async function getExpensifyComponent(trips, viableExpenseTypes, detailed, showBu
                         }
                         else if (newType === 'PUBLIC_TRANSPORT' || newType === 'CITY_TAX' || newType === 'PARKING') {
                             navigator.geolocation.getCurrentPosition(async position => {
-                                const places = await getPlacesForTrip(getFullyQualifiedTripName(trip));
+                                const places = await api.listRegularPlaces(trip.id);
                                 if (places.length === 0) {
                                     return;
                                 }
@@ -135,7 +135,7 @@ async function getExpensifyComponent(trips, viableExpenseTypes, detailed, showBu
                         }        
                         else if (newType === 'VISA') {
                             navigator.geolocation.getCurrentPosition(async position => {
-                                const places = await getPlacesForTrip(getFullyQualifiedTripName(trip));
+                                const places = await api.listRegularPlaces(trip.id);
                                 if (places.length === 0) {
                                     return;
                                 }
@@ -245,16 +245,17 @@ function addExpense(tripId, inputSuffix) {
         return;
     }
 
-    const args = { "tripId": tripId, "cost": cost, "currency" : currency, "description": description, "type": type };
     if (subscriptionId !== undefined) {
-        args["subscriptionId"] = subscriptionId;
+        api.createTripExpenseWithSubscription(tripId, type, description, cost, currency, subscriptionId).done(reload);
     }
-    executeAndReload("AddExpense", args);
+    else {
+        api.createTripExpense(tripId, type, description, cost, currency).done(reload);
+    }
 }
 
 function removeExpense(id, description, tripId) {
     if (confirm("Jsi si jist, že chceš odstranit " + description + "?")) {
-        executeAndReload("RemoveExpense", { "expenseId": id, tripId: tripId });
+        api.removeTripExpense(tripId, id).done(reload);
     }
 }
 
@@ -275,5 +276,8 @@ async function changeExpense(id, oldName, oldCurrency, oldCost, tripId) {
         return;
     }
 
-    executeAndReload("ChangeExpense", { "expenseId": id, tripId: tripId, "description": newName, "currency": newCurrency, "cost": newCost });
+    await api.updateTripExpenseDescription(tripId, id, newName);
+    await api.updateTripExpenseValue(tripId, id, newCost, newCurrency);
+
+    reload();
 }

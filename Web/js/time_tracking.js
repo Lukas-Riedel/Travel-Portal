@@ -1,12 +1,12 @@
 async function init(isLoggedIn) {
-    const events = await getTimeTrackingEvents();
+    const events = await api.listTimeTrackingEvents();
     
     // Content.
     $('#tracking').html([
-        getContentComponent((await getTimeTrackingEvents("OVERTIME")), isLoggedIn, true),
-        getContentComponent((await getTimeTrackingEvents("VACATION")), isLoggedIn),
-        getContentComponent((await getTimeTrackingEvents("SELFCARE")), isLoggedIn),
-        getContentComponent((await getTimeTrackingEvents("TENURE")), isLoggedIn)
+        getContentComponent((await api.listTimeTrackingEvents("OVERTIME")), isLoggedIn, true),
+        getContentComponent((await api.listTimeTrackingEvents("VACATION")), isLoggedIn),
+        getContentComponent((await api.listTimeTrackingEvents("SELFCARE")), isLoggedIn),
+        getContentComponent((await api.listTimeTrackingEvents("TENURE")), isLoggedIn)
     ].join("<br>"));
 
     // Footer.
@@ -88,13 +88,13 @@ function addTimeTrackingEvent(type, factor) {
         return;
     }
 
-    executeAndReload("AddTimeTrackingEvent", { type: type, hours: factor * hours, description: description, date: date });
+    api.createTimeTrackingEvent(type, factor * hours, description, date).done(reload);
 }
 
 async function createOvertimeStatement() {
-    const trip = getFirstElement((await getTrips()).filter(trip => trip.end > now && !isDayTrips(trip)));
+    const trip = getFirstElement((await api.listTrips()).filter(trip => trip.end > now && !isDayTrips(trip)));
 
-    const events = await getTimeTrackingEvents();
+    const events = await api.listTimeTrackingEvents();
     const overtimeEvents = reversed(events.filter(event => event.type === 'OVERTIME'));
     const stillAvailableVacationHours = events.filter(event => event.type === 'VACATION')[0].balance
         + events.filter(event => event.type === 'SELFCARE')[0].balance
@@ -156,7 +156,7 @@ function getDayOfWeek(date) {
 
 function removeTimeTrackingEvent(id) {
     if (confirm("Skutečně chceš odstranit vybranou událost?")) {
-        executeAndReload("RemoveTimeTrackingEvent", { eventId: id });
+        api.removeTimeTrackingEvent(id).done(reload);
     }
 }
 

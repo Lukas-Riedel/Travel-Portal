@@ -1,9 +1,8 @@
-async function init(placeName, countryName, isLoggedIn) {
-    const country = resolveCountry(countryName);
-    const place = await getPlace(placeName, country);
+async function init(placeId, isLoggedIn) {
+    const place = await api.getPlace(placeId);
 
     if (place === undefined) {
-        location.replace("https://www.google.com/maps/search/" + placeName + ", " + country);
+        location.replace("https://www.google.com/maps/search/" + place.name + ", " + place.country);
     }
 
     const places = await getPlaces(!isLoggedIn);
@@ -28,11 +27,10 @@ async function init(placeName, countryName, isLoggedIn) {
     $('#nearbyPlaces').html(getAlbumsComponentWithTitle("Místa v okolí", getAlbumsComponentForNearbyPlaces(place, places)));
 
     // Footer.
-    const placeId = await getResponse("GetPlaceIdentifier", { name: placeName, country: country });
     $('#footer').html(getFooter(isLoggedIn, [ 
-        "<a onclick=\"changeLocation(" + placeId.id + ")\">Upravit polohu</a>", 
-        "<a onclick=\"changeName(" + placeId.id + ")\">Přejmenovat</a>", 
-        "<a onclick=\"changeExcerpt(" + placeId.id + ", '" + place.excerpt + "')\">Změnit excerpt</a>" ]));
+        "<a onclick=\"changeLocation(" + place.id + ")\">Upravit polohu</a>", 
+        "<a onclick=\"changeName(" + place.id + ")\">Přejmenovat</a>", 
+        "<a onclick=\"changeExcerpt(" + place.id + ", '" + place.excerpt + "')\">Změnit excerpt</a>" ]));
 }
 
 function getDocumentTitle(place) {
@@ -45,7 +43,7 @@ function getTitle(place) {
 
 function getCategoriesComponent(place) {
     return getListComponent("Kategorie", place.categories.map(category => 
-        "<a href=\"https://" + configuration.hostName + "/category/" + category.name + "\">" + getCategoryPrettyName(category.name) + "</a>"
+        "<a href=\"https://" + configuration.hostName + "/category/" + category.id + "\">" + getCategoryPrettyName(category.name) + "</a>"
     ));
 }
 
@@ -56,7 +54,7 @@ function getDatesComponent(place) {
 }
 
 function getDateEntry(date) {
-    return getDateString(date.start, true) + " (<a href=\"https://" + configuration.hostName + "/trip/" + getFullyQualifiedTripName(date.trip) + "\">" + getFullyQualifiedTripName(date.trip) + "</a>)";
+    return getDateString(date.start, true) + " (<a href=\"https://" + configuration.hostName + "/trip/" + date.trip.id + "\">" + getFullyQualifiedTripName(date.trip) + "</a>)";
 }
 
 function getLoginComponent(isLoggedIn) {
@@ -74,9 +72,9 @@ async function changeLocation(placeId) {
         return;
     }
 
-    const resolvedAddress = await getCoords(address);
+    const resolvedAddress = await api.getCoordinates(address);
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
-        executeAndReload("ChangePlaceIdentifier", { placeId: placeId, latitude: resolvedAddress.latitude, longitude: resolvedAddress.longitude });
+        api.updatePlaceLocation(placeId, resolvedAddress.latitude, resolvedAddress.longitude).done(reload);
     }
 }
 
@@ -86,7 +84,7 @@ async function changeName(placeId) {
         return;
     }
 
-    executeAndAlertConfirmation("ChangePlaceIdentifier", { placeId: placeId, name: name });
+    api.updatePlaceName(placeId, name).done(alertConfirmation);
 }
 
 async function changeExcerpt(placeId, originalExcerpt) {
@@ -94,6 +92,7 @@ async function changeExcerpt(placeId, originalExcerpt) {
     if (excerpt == null || excerpt == "") {
         return;
     }
+    
+    api.updatePlaceExcerpt(placeId, excerpt).done(alertConfirmation);
 
-    executeAndAlertConfirmation("ChangePlaceIdentifier", { placeId: placeId, excerpt: excerpt });
 }

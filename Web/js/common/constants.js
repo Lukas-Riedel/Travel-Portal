@@ -1,4 +1,5 @@
 let configuration = undefined;
+let api = undefined;
 
 const now = new Date(Date.now()).getTime() / 1000;
 

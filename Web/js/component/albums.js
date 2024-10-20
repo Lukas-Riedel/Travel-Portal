@@ -58,7 +58,7 @@ function getAlbumsComponentForPlace(place, showButtons) {
             name: place.name,
             country: place.country,
             start: date.start,
-            tripId: date.trip.id,
+            tripId: date.trip === null ? undefined : date.trip.id,
             album: date.album
         }
     }), (a, b) => b.start - a.start);
@@ -80,6 +80,7 @@ function getAlbumsComponentForCategory(places) {
         .filter(place => place.mainHighlight != null)
         .map(place => {     
             return {
+                id: place.id,
                 name: place.name,
                 country: place.country,
                 imagesCount: place.imagesCount,
@@ -91,7 +92,7 @@ function getAlbumsComponentForCategory(places) {
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name) ],
-            action: "href=\"https://" + configuration.hostName + "/place/" + place.name + "," + place.country,            
+            action: "href=\"https://" + configuration.hostName + "/place/" + place.id,            
             imageUrl: place.imageUrl
         };
      }), undefined);
@@ -102,6 +103,7 @@ function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
         .filter(place => place.mainHighlight != null)
         .map(place => {     
             return {
+                id: place.id,
                 name: place.name,
                 country: place.country,
                 distance: Math.round(getDistance(referencePlace, place)),
@@ -113,7 +115,7 @@ function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), formatKilometersCount(place.distance) ],
-            action: "href=\"https://" + configuration.hostName + "/place/" + place.name + "," + place.country + "\"",         
+            action: "href=\"https://" + configuration.hostName + "/place/" + place.id + "\"",         
             imageUrl: place.imageUrl
         };
      }), undefined);
@@ -123,7 +125,7 @@ function getAlbumsComponentForTrips(trips) {
     return getAlbumsComponent(trips.map(trip => {
         return {
             nameTokens: isDayTrips(trip) ? [ getTripFlagImages(trip), getFullyQualifiedTripName(trip) ] : [ getTripFlagImages(trip), trip.name, getFromDateToDateString(trip.start, trip.end, true, true) ],
-            action: "href=\"https://" + configuration.hostName + "/trip/" + getFullyQualifiedTripName(trip) + "\"",
+            action: "href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\"",
             imageUrl: trip.mainHighlight.url.thumbnail
         }
     }), undefined);
@@ -132,6 +134,10 @@ function getAlbumsComponentForTrips(trips) {
 function getAlbumsComponentForCountries(countryCategories, places) {
     const countryImages = countryCategories.filter(c => c.mainHighlight != null).reduce(function(map, obj) {
         map[obj.name] = obj.mainHighlight.url.thumbnail;
+        return map;
+    }, {});
+    const countryIds = countryCategories.reduce(function(map, obj) {
+        map[obj.name] = obj.id;
         return map;
     }, {});
     places = sorted(places
@@ -166,7 +172,7 @@ function getAlbumsComponentForCountries(countryCategories, places) {
             permalink: undefined,
             place: undefined,
             nameTokens: [ getFlagImage(country.name), country.name ],
-            action: "href=\"https://" + configuration.hostName + "/category/" + country.name + "\"",            
+            action: "href=\"https://" + configuration.hostName + "/category/" + countryIds[country.name] + "\"",            
             imageUrl: countryImages[country.name]
         };
      }), undefined);
@@ -216,7 +222,7 @@ function getButtonsForStandardAlbum(album) {
             image: "img/photo.png"
         },
         { 
-            action: "refreshAlbum(" + album.id + ")",
+            action: "refreshAlbum(" + album.place.id + ", " + album.id + ")",
             image: "img/refresh.png"
         },
         { 
@@ -224,7 +230,7 @@ function getButtonsForStandardAlbum(album) {
             image: "img/heart.png"
         },
         { 
-            action: "changeCountryMainHighlight('" + album.place.country + "', " + album.mainPhotoId + ")",
+            action: "changeCountryMainHighlight('" + album.place.id + "', " + album.mainPhotoId + ")",
             image: getFlagImageUrl(album.place.country)
         }
     ];
@@ -241,7 +247,7 @@ function getButtonsForStandardAlbumInTrip(album) {
 }
 
 async function openGalleryForAlbum(albumId, placeId) {
-    openGallery((await getAlbumContents(albumId, placeId)).map(image => image.url).map(url => url + "=w" + $(window).width() + "-h" + $(window).height()));
+    openGallery((await api.listPlaceAlbumPhotos(placeId, albumId)).map(image => image.url).map(url => url + "=w" + $(window).width() + "-h" + $(window).height()));
 }
 
 function openGallery(images) {
@@ -252,36 +258,32 @@ function openGallery(images) {
 }
 
 async function createAlbum(id, start) {
-    execute("AddAlbum", { placeId: id, timestamp: start }, album => {
-        if ("permalink" in album) {
-            window.open(album.permalink, '_blank').focus();
-        }
-        location.reload();
-    });
+    const album = await api.createPlaceAlbum(id, start);
+    if ("permalink" in album) {
+        window.open(album.permalink, '_blank').focus();
+    }
+    reload();
 }
 
-async function refreshAlbum(albumId) {
-    executeAndReload("UpdateAlbum", { forceOverwrite: true, albumId : albumId });
-}
-
-async function changeAlbumStatus(type, albumId, placeId) {
-    executeAndAlertConfirmation("ChangeAlbumStatus", { type: type, albumId: albumId, placeId: placeId});
+async function refreshAlbum(placeId, albumId) {
+    api.refreshPlaceAlbum(placeId, albumId).done(reload);
 }
 
 async function changePlaceMainHighlight(placeId, photoId) {
-    const highlight = await addHighlight("place", placeId, photoId);
-    executeAndReload("ChangePlaceIdentifier", { placeId: placeId, mainHighlightId: highlight.id });
+    const highlight = await api.createPlaceHighlight(placeId, photoId);
+    api.updatePlaceMainHighlight(placeId, highlight.id).done(reload);
 }
 
-async function changeCountryMainHighlight(country, photoId) {
-    const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: country });
-    const highlight = await addHighlight("category", categoryIdentifier.id, photoId);
-    executeAndReload("ChangeCategoryIdentifier", { categoryId: categoryIdentifier.id, mainHighlightId: highlight.id });
+async function changeCountryMainHighlight(countryPlaceId, photoId) {
+    const place = await api.getPlace(countryPlaceId);
+    const categoryId = getOnlyElement(place.categories.filter(category => category.category === "COUNTRY")).id;
+    const highlight = await api.createCategoryHighlight(categoryId, photoId);
+    api.updateCategoryMainHighlight(categoryId, highlight.id).done(reload);
 }
 
 async function changeTripMainHighlight(tripId, photoId) {
-    const highlight = await addHighlight("trip", tripId, photoId);
-    executeAndReload("ChangeTripIdentifier", { tripId: tripId, mainHighlightId: highlight.id });
+    const highlight = await api.createTripHighlight(tripId, photoId);
+    api.updateTripMainHighlight(tripId, highlight.id).done(reload);
 }
 
 function getTripFlagImages(trip) {

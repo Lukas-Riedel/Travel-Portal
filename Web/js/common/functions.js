@@ -1,157 +1,18 @@
-// Low-level backend communication.
-async function getResponse(action, args = undefined) {
-    const argsString = (args == undefined) ? "" : ("&" + Object.keys(args).map(arg => arg + "=" + args[arg]).join("&"));
-    return await $.getJSON("/php/controller.php?action=" + action + argsString + "&forceReload=" + new Date().getTime())
-        .fail(data => console.log(data));
-}
-
-function executeAndAlertConfirmation(action, args = {}) {  
-    execute(action, args, alertConfirmation);
-}
-
-async function execute(action, args, callback) {    
-    return $.post("/php/controller.php?action=" + action, args)
-        .done(callback)
-        .fail(data => console.log(data));
-}
-
-function executeAndReload(action, args = {}, targetLocation = undefined) {    
-    $.post("/php/controller.php?action=" + action, args)
-        .done(async () => {
-            if (targetLocation === undefined) {
-                location.reload();
-            }
-            else {
-                location.replace(targetLocation);
-            }
-        })
-        .fail(data => console.log(data));
-}
-
 // High-level backend communication.
-async function addHighlight(type, id, photoId) {
-    return await getResponse("AddHighlight", { id: id, type: type, photoId: photoId });
-}
-
-async function getGeographicalRegions() {
-    return await getResponse("GetGeographicalRegions");
-}
-
-async function getActiveSubscriptions() {
-    return await getResponse("GetActiveSubscriptions");
-}
-
-async function getCoords(address) {
-    return await getResponse("GetCoords", { address: address });
-}
-
-async function getSuggestedMapPoints(placeId) {
-    return await getResponse("GetSuggestedMapPoints", { placeId: placeId });
-}
-
-async function getModifiableConfiguration() {
-    return await getResponse("GetConfiguration", { levels: "modifiable" });
-}
-
-async function getCandidateTrip(tripName) {
-    const tripIdentifier = await getResponse("GetTripIdentifier", { name: tripName });
-    return getOnlyElement(await getResponse("GetCandidateTrips", { tripId: tripIdentifier.id }));
-}
-
-async function getCandidateTrips() {
-    return await getResponse("GetCandidateTrips");
-}
-
-async function getCandidatePlacesForTrip(tripId) {
-    return await getResponse("GetCandidatePlaces", { tripId: tripId });
-}
-
-async function getProblemsReport() {
-    return await getResponse("GetProblemsReport");
-}
-
-async function getTimeTrackingEvents(type) {
-    return await getResponse("GetTimeTrackingEvents", { type: type });
+async function runJob(action, args) {
+    return api.runJob(action, args).done(alertConfirmation);
 }
 
 async function getFutureFlights() {
-    return (await getResponse("GetTrips", { includeWatchedFlights: true })).flatMap(t => t.watchedFlights);
-    // return getResponse("GetWatchedFlights");
-}
-
-async function getStats() {
-    return await getResponse("GetStats", { type: "all" });
-}
-
-async function getCategory(category) {
-    const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: category });
-    return getOnlyElement(await getResponse("GetCategories", { categoryId: categoryIdentifier.id }));
-}
-
-async function getCountryCategories() {
-    return await getResponse("GetCategories", { categories: "COUNTRY" });
-}
-
-async function getYear(year) {
-    return getOnlyElement(await getResponse("GetYears", { year: year }));
-}
-
-async function getTrips() {
-    return await getResponse("GetTrips", { });
-}
-
-async function getTripsForYear(year) {
-    return await getResponse("GetTrips", { year: year, includeExpenses: true });
-}
-
-async function getTrip(tripName) {
-    const tripIdentifier = await getResponse("GetTripIdentifier", decomposeFullyQualifiedTripName(tripName));
-    return getOnlyElement(await getResponse("GetTrips", { tripId: tripIdentifier.id }));
-}
-
-async function getCandidatePlaces() {
-    return await getResponse("GetCandidatePlaces");
-}
-
-async function getCandidatePlacesForCountry(country) {
-    const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: country });
-    return await getResponse("GetCandidatePlaces", { categoryId: categoryIdentifier.id });
+    return (await api.listTrips(undefined, undefined, undefined, undefined, true)).flatMap(t => t.watchedFlights);
 }
 
 async function getPlaces(onlyPast) {
-    return await getResponse("GetPlaces", { maxEnd: onlyPast ? now : Number.MAX_SAFE_INTEGER });
-}
-
-async function getPlace(name, country) {
-    const placeIdentifier = await getResponse("GetPlaceIdentifier", { name: name, country: country });
-    return getOnlyElement(await getResponse("GetPlaces", { placeId: placeIdentifier.id, maxEnd: now }));
-}
-
-async function getPlaceById(placeId) {
-    return getOnlyElement(await getResponse("GetPlaces", { placeId: placeId, maxEnd: now }));
-}
-
-async function getPlacesForTrip(tripName) {
-    const tripIdentifier = await getResponse("GetTripIdentifier", decomposeFullyQualifiedTripName(tripName));
-    return await getResponse("GetPlaces", { tripId: tripIdentifier.id });
-}
-
-async function getPlacesForCategory(category, onlyPast) {
-    const categoryIdentifier = await getResponse("GetCategoryIdentifier", { name: category });
-    return await getResponse("GetPlaces", { categoryId: categoryIdentifier.id, maxEnd: onlyPast ? now : Number.MAX_SAFE_INTEGER });
-}
-
-async function getPlacesForYear(year, onlyPast) {
-    return await getResponse("GetPlaces", { year: year, maxEnd: onlyPast ? now : Number.MAX_SAFE_INTEGER });
+    return api.listRegularPlaces(undefined, undefined, undefined, undefined, onlyPast ? Math.round(now) : Number.MAX_SAFE_INTEGER);
 }
 
 async function getLoggedFlights() {
-    return sorted((await getResponse("GetTrips", { includeFlights: true })).flatMap(t => t.flights).filter(f => f.aircraft != null), (a, b) => b.start - a.start);
-    // return await getResponse("GetLoggedFlights");
-}
-
-async function getAlbumContents(albumId, placeId) {
-    return await getResponse("GetMediaItems", { albumId: albumId, placeId: placeId });
+    return sorted((await api.listTrips(undefined, undefined, undefined, true)).flatMap(t => t.flights).filter(f => f.aircraft != null), (a, b) => b.start - a.start);
 }
 
 async function getLoggedAirports(loggedFlights = undefined) {
@@ -177,8 +38,9 @@ async function getLoggedAirports(loggedFlights = undefined) {
 
 // Common frontend.
 function loadPage(initFunction) {
-    $(document).ready(async () => { 
-        configuration = await getResponse("GetConfiguration", { levels: "public" });
+    $(document).ready(async () => {
+        api = new Api("lriedel.cz"); // TODO
+        configuration = await api.listConfigurationEntries("public");
         const albumsPerRow = $(window).width() / configuration.albumThumbnailImageSize.width;
         const newImageWidth = albumsPerRow - Math.floor(albumsPerRow) > 0.9 ? ($(window).width() / Math.ceil(albumsPerRow)) * 0.95 : configuration.albumThumbnailImageSize.width;
         const newImageHeight = newImageWidth / configuration.albumThumbnailImageSize.width * configuration.albumThumbnailImageSize.height;
@@ -207,6 +69,10 @@ function alertConfirmation() {
     alert("OK");
 }
 
+function reload() {
+    location.reload();
+}
+
 function getTimezoneComponent() {
     const lines = [ "Všechny časy jsou uvedeny pro časovou zónu " + Intl.DateTimeFormat().resolvedOptions().timeZone + "." ];
     if (forecastLastUpdateTime !== 0) {
@@ -226,7 +92,7 @@ async function addUsefulLink(tripId) {
         return;
     }
 
-    executeAndReload("AddNote", { tripId: tripId, content: "<a href=\"" + link + "\">" + name + "</a>" });
+    api.createTripNote(tripId, "<a href=\"" + link + "\">" + name + "</a>").done(reload);
 }
 
 function getPublicHolidaysComponent(trip, isLoggedIn) {
@@ -244,8 +110,6 @@ function getNotesComponent(trip, isLoggedIn) {
     }
 
     const notes = trip.notes.map(note => formatNote(note, trip.id, isLoggedIn));
-    trip.countries.map(country => "<a href=\"https://" + configuration.hostName + "/plan/" + country + "\">Plán (" + country + ")</a>").forEach(link => notes.push(link));
-    
     if (notes.length === 0) {
         return "";
     }
@@ -259,7 +123,7 @@ async function addNote(tripId) {
         return;
     }
 
-    executeAndReload("AddNote", { tripId: tripId, content: note });
+    api.createTripNote(tripId, note).done(reload);
 }
 
 function promptDate(name) {    
@@ -316,10 +180,9 @@ function promptTime(name, allowEmpty) {
     return Number(hours) * 3600 + Number(minutes) * 60;
 }
 
-async function removeCandidatePlace(name, country) {
+async function removeCandidatePlace(placeId, name, country) {
     if (confirm("Jsi si jist, že chceš odstranit " + name + ", " + country + "?")) {
-        const placeIdentifier = await getResponse("GetPlaceIdentifier", { name: name, country: country });
-        executeAndReload("RemoveSpecialPlace", { type: "candidate", placeId: placeIdentifier.id });
+        api.removeCandidatePlace(placeId).done(reload);
     }
 }
 
@@ -348,14 +211,14 @@ async function addPlaceCandidate() {
         return;
     }
 
-    const resolvedAddress = await getCoords(address);
+    const resolvedAddress = await api.getCoordinates(address);
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
-        executeAndAlertConfirmation("AddSpecialPlace", { name: name, type: "candidate", address: address });
+        api.createCandidatePlace(name, address).done(alertConfirmation);
     }
 }
 
 async function doGetFeaturedTrip(trip) {
-    const places = await getPlacesForTrip(getFullyQualifiedTripName(trip));
+    const places = await api.listRegularPlaces(trip.id);
     const calendar = getCalendarDatesForTrip(trip, places, false).filter(date => date.date > now - 86400).slice(0, configuration.maximumNextTripCalendarEntries);
 
     const headerRowColumns = [
@@ -368,7 +231,7 @@ async function doGetFeaturedTrip(trip) {
     }
 
     const calendarRowColumns = [
-        { hideifSimplified: false, rowspan: 2, content: "<h2 style=\"color: black\">" + getCountriesWithoutLayovers(trip, places).map(getFlagImage).join(" ") + " <a href=\"https://" + configuration.hostName + "/trip/" + getFullyQualifiedTripName(trip) + "\">" + trip.name + "</a></h2>" },
+        { hideifSimplified: false, rowspan: 2, content: "<h2 style=\"color: black\">" + getCountriesWithoutLayovers(trip, places).map(getFlagImage).join(" ") + " <a href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\">" + trip.name + "</a></h2>" },
         { hideifSimplified: false, rowspan: 2, content: "<h2>" + getFromDateToDateString(trip.start, trip.end, true, false) + "</h2>" }
     ];
 
@@ -391,7 +254,7 @@ async function doGetFeaturedTrip(trip) {
 
 function removeNote(id, tripId) {
     if (confirm("Opravdu chceš odstranit vybranou poznámku?")) {
-        executeAndReload("RemoveNote", { noteId: id, tripId: tripId });
+        api.removeTripNote(tripId, id).done(reload);
     }
 }
 
@@ -700,8 +563,12 @@ function findMin(array, fn) {
     return result;
 }
 
+function getOnlyElementOrDefault(array, val) {
+    return array.length == 1 ? array[0] : val;
+}
+
 function getOnlyElement(array) {
-    return array.length == 1 ? array[0] : undefined;
+    return getOnlyElementOrDefault(array, undefined);
 }
 
 function getFirstElement(array) {

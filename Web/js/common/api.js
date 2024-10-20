@@ -65,7 +65,14 @@ class Api {
             });
     }
 
-    async listCategories(levels) {
+    async createCategoryHighlight(categoryId, photoId) {
+        return this.#sendRequest("POST", "categories/" + categoryId + "/highlights", 
+            {
+                photoId: photoId
+            });
+    }
+
+    async listConfigurationEntries(levels) {
         return this.#sendRequest("GET", "configuration", {},
             {
                 levels: levels
@@ -126,7 +133,7 @@ class Api {
             });
     }
 
-    async listPlaces(tripId = undefined, categoryId = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
+    async listRegularPlaces(tripId = undefined, categoryId = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
         includeExcerpt = undefined, includeCategories = undefined, includeHighlights = undefined) {
         return this.#sendRequest("GET", "places", {}, 
             {
@@ -142,7 +149,7 @@ class Api {
             });
     }
 
-    async listPlaces(tripId = undefined, categoryId = undefined,
+    async listCandidatePlaces(tripId = undefined, categoryId = undefined,
         includeExcerpt = undefined, includeCategories = undefined, includeHighlights = undefined) {
         return this.#sendRequest("GET", "places", {}, 
             {
@@ -227,6 +234,13 @@ class Api {
 
     async listPlaceAlbumPhotos(placeId, albumId) {
         return this.#sendRequest("GET", "places/" + placeId + "/albums/" + albumId + "/photos");
+    }
+
+    async createPlaceHighlight(placeId, photoId) {
+        return this.#sendRequest("POST", "places/" + placeId + "/highlights", 
+            {
+                photoId: photoId
+            });
     }
 
     async listProblems() {
@@ -404,6 +418,13 @@ class Api {
             });
     }
 
+    async createTripHighlight(tripId, photoId) {
+        return this.#sendRequest("POST", "trips/" + tripId + "/highlights", 
+            {
+                photoId: photoId
+            });
+    }
+
     async createTripNote(tripId, content) {
         return this.#sendRequest("POST", "trips/" + tripId + "/notes", 
             {
@@ -431,6 +452,13 @@ class Api {
         return this.#sendRequest("PATCH", "year/" + year, 
             {
                 mainHighlightId: mainHighlightId
+            });
+    }
+
+    async createYearHighlight(year, photoId) {
+        return this.#sendRequest("POST", "years/" + year + "/highlights", 
+            {
+                photoId: photoId
             });
     }
 

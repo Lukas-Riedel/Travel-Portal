@@ -1,6 +1,6 @@
-async function init(tripName, isLoggedIn) {
-    const trip = await getTrip(tripName);
-    const places = await getPlacesForTrip(tripName);
+async function init(tripId, isLoggedIn) {
+    const trip = await api.getTrip(tripId);
+    const places = await api.listRegularPlaces(tripId);
     
     // Title.
     document.title = getDocumentTitle(trip);
@@ -70,14 +70,8 @@ function getAdditionalFooterLinks(trip, places) {
     }
     
     links.push("<a onclick=\"moveTrip(" + trip.id + ", " + trip.start + ")\">Přesunout</a>");
-
     links.push("<a onclick=\"archiveTrip(" + trip.id + ")\">Archivovat</a>");
-
     links.push("<a onclick=\"loadTrip('" + trip.id + "')\">Načíst</a>");
-
-    const aiMapPointsArg = serializeForHtmlAttribute(places.map(place => { return { id: place.id, name: escapeStringForHtml(place.name), country: escapeStringForHtml(place.country) }; }));
-    links.push("<a onclick=\"getAiMapPoints(" + aiMapPointsArg + ")\">Vygenerovat mapu</a>");
-
     links.push("<a onclick=\"addUsefulLink('" + trip.id + "')\">Přidat odkaz</a>");
     links.push("<a onclick=\"addNote('" + trip.id + "')\">Přidat poznámku</a>");
 
@@ -109,41 +103,12 @@ function getFlightsComponent(trip) {
     }));
 }
 
-async function getAiMapPoints(places) {
-    const placesWithPointsCount = places.map(place => {
-        const pointsCount = prompt("Zadej počet bodů pro " + place.name + ", " + place.country + ":");
-    
-        if (pointsCount == null || isNaN(pointsCount) || Number(pointsCount) <= 0) {
-            return undefined;
-        }
-
-        
-        return { id: place.id, pointsCount: pointsCount };
-    }).filter(place => place !== undefined);
-    
-    const points = [];
-
-    initProgressBar(placesWithPointsCount.length);
-    for (let i = 0; i < placesWithPointsCount.length; ++i) {        
-        (await getSuggestedMapPoints(placesWithPointsCount[i].id, placesWithPointsCount[i].pointsCount)).forEach(point => points.push(point));
-        updateProgressBar(i + 1, placesWithPointsCount.length);
-    }
-
-    const result = "Name,Latitude,Longitude\n" 
-        + points.filter(point => point.latitude != "UNKNOWN" && point.longitude != "UNKNOWN").map(point => point.name + "," + point.latitude + "," + point.longitude).join("\n");
-
-    console.log(result);
-    await navigator.clipboard.writeText(result);
-
-    alertConfirmation();
-}
-
 async function archiveTrip(tripId) {
     if (!confirm("Jsi si jist, že chceš archivovat tento výlet?")) {
         return;
     }
 
-    executeAndAlertConfirmation("ArchiveTrip", { tripId: tripId });
+    api.removeTrip(tripId).done(alertConfirmation);
 }
 
 async function moveTrip(tripId, oldStart) {
@@ -152,17 +117,16 @@ async function moveTrip(tripId, oldStart) {
         return;
     }
 
-    executeAndAlertConfirmation("MoveTrip", { tripId: tripId, start: oldStart + days * 86400 });
+    api.updateTripStart(tripId, oldStart + days * 86400).done(alertConfirmation);
 }
 
-async function loadTrip(id) {
-    const trip = prompt("Zadej název výletu k nahrání:");
-    if (trip == null || trip == "") {
+async function loadTrip(oldId) {
+    const newId = prompt("Zadej identifikátor výletu k nahrání:");
+    if (newId == null || newId == "") {
         return;
     }
 
-    const candidateTripIdentifier = await getResponse("GetTripIdentifier", { name: trip });
-    executeAndAlertConfirmation("LoadTrip", { tripId: id, candidateTripId: candidateTripIdentifier.id });
+    api.replaceTrip(oldId, newId).done(alertConfirmation);
 }
 
 async function changeName(tripId) {
@@ -171,5 +135,5 @@ async function changeName(tripId) {
         return;
     }
 
-    executeAndAlertConfirmation("ChangeTripIdentifier", { tripId: tripId, name: name });
+    api.updateTripName(tripId, name).done(alertConfirmation);
 }
