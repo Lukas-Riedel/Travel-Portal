@@ -270,7 +270,7 @@ function changeConfigurationValue(idSuffix, type, key) {
         return;
     }
 
-    api.updateConfigurationEntry(type, key, newValue).done(reload);
+    api.updateConfigurationEntry(type, key, newValue).then(reload);
 }
 
 function addSubscription() {
@@ -301,7 +301,7 @@ function addSubscription() {
 
     const expirationTimestamp = new Date(expirationTokens[2], expirationTokens[1] - 1, expirationTokens[0]).getTime() / 1000;
 
-    api.createSubscription(description, cost, currency, expirationTimestamp).done(reload);
+    api.createSubscription(description, cost, currency, expirationTimestamp).then(reload);
 }
 
 function addGeoRegion(country = undefined) {
@@ -360,7 +360,7 @@ function addGeoRegion(country = undefined) {
             }
         }
 
-        api.createGeographicalCategory(name, country, category, radius, regionGeoJson).done(alertConfirmation);
+        api.createGeographicalCategory(name, country, category, radius, regionGeoJson).then(alertConfirmation);
     });
 }
 
@@ -386,7 +386,7 @@ async function addGeoRegionExtensionForPlace(placeId) {
         category = "ADMINISTRATIVE"
     }
 
-    api.createGeographicalExtensionCategory(regionName, regionCountry, category, place.latitude, place.longitude).done(alertConfirmation);
+    api.createGeographicalExtensionCategory(regionName, regionCountry, category, place.latitude, place.longitude).then(alertConfirmation);
 }
 
 function addCompositeRegion() {
@@ -412,7 +412,7 @@ function addCompositeRegion() {
         return;
     }
 
-    api.createCompositeCategory(name, category, included.split(","), excluded.split(",")).done(alertConfirmation);
+    api.createCompositeCategory(name, category, included.split(","), excluded.split(",")).then(alertConfirmation);
 }
 
 async function addPermanentPlace() {
@@ -428,7 +428,7 @@ async function addPermanentPlace() {
 
     const resolvedAddress = await api.getCoordinates(address);
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
-        api.createPermanentPlace(name, address).done(alertConfirmation);
+        api.createPermanentPlace(name, address).then(alertConfirmation);
     }
 }
 
@@ -444,5 +444,5 @@ function resolveDuplicatedPlaceIdentifiers(places) {
         return;
     }
 
-    api.removeCandidatePlace(id).done(alertConfirmation);
+    api.removeCandidatePlace(id).then(alertConfirmation);
 }

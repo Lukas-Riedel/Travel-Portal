@@ -88,7 +88,7 @@ function addTimeTrackingEvent(type, factor) {
         return;
     }
 
-    api.createTimeTrackingEvent(type, factor * hours, description, date).done(reload);
+    api.createTimeTrackingEvent(type, factor * hours, description, date).then(reload);
 }
 
 async function createOvertimeStatement() {
@@ -156,7 +156,7 @@ function getDayOfWeek(date) {
 
 function removeTimeTrackingEvent(id) {
     if (confirm("Skutečně chceš odstranit vybranou událost?")) {
-        api.removeTimeTrackingEvent(id).done(reload);
+        api.removeTimeTrackingEvent(id).then(reload);
     }
 }
 

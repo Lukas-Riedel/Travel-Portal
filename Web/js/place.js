@@ -74,7 +74,7 @@ async function changeLocation(placeId) {
 
     const resolvedAddress = await api.getCoordinates(address);
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
-        api.updatePlaceLocation(placeId, resolvedAddress.latitude, resolvedAddress.longitude).done(reload);
+        api.updatePlaceLocation(placeId, resolvedAddress.latitude, resolvedAddress.longitude).then(reload);
     }
 }
 
@@ -84,7 +84,7 @@ async function changeName(placeId) {
         return;
     }
 
-    api.updatePlaceName(placeId, name).done(alertConfirmation);
+    api.updatePlaceName(placeId, name).then(alertConfirmation);
 }
 
 async function changeExcerpt(placeId, originalExcerpt) {
@@ -93,6 +93,6 @@ async function changeExcerpt(placeId, originalExcerpt) {
         return;
     }
     
-    api.updatePlaceExcerpt(placeId, excerpt).done(alertConfirmation);
+    api.updatePlaceExcerpt(placeId, excerpt).then(alertConfirmation);
 
 }

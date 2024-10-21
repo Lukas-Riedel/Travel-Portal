@@ -6,34 +6,39 @@
         public function process($input) {
             global $databaseProvider;
 
-            $highlightId = (new GetHighlightIdentifierProcessor())
+            $highlightIdentifier = (new GetHighlightIdentifierProcessor())
                 ->process(array(
                     "photoId" => $input["photoId"]));
 
             $highlightTable = $this->resolveHighlightTable($input["type"]);
             $highlightRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM " . $highlightTable . " WHERE id = ? AND highlight_id = ?")
-                ->withParameters($input["id"], $highlightId->getId())
+                ->withParameters($input["id"], $highlightIdentifier->getId())
                 ->getSingleRow();
 
             if ($highlightRow == NULL) {
                 $databaseProvider
                     ->statementBuilder("INSERT INTO " . $highlightTable . " (id, highlight_id) VALUES (?, ?)")
-                    ->withParameters($input["id"], $highlightId->getId())
+                    ->withParameters($input["id"], $highlightIdentifier->getId())
                     ->execute();
 
                 $identifierTable = $this->resolveIdentifierTable($input["type"]);
                 $databaseProvider
                     ->statementBuilder("UPDATE " . $identifierTable . " SET main_highlight_id = ? WHERE id = ? AND main_highlight_id IS NULL")
-                    ->withParameters($highlightId->getId(), $input["id"])
+                    ->withParameters($highlightIdentifier->getId(), $input["id"])
                     ->execute();
 
                 (new UpdateHighlightProcessor())
                     ->process(array(
-                        "highlightId" => $highlightId->getId()));
+                        "highlightId" => $highlightIdentifier->getId()));
             }
+
+            $highlightRow = $databaseProvider
+                ->statementBuilder("SELECT * FROM " . $highlightTable . " WHERE id = ? AND highlight_id = ?")
+                ->withParameters($input["id"], $highlightIdentifier->getId())
+                ->getSingleRow();
             
-            return $highlightId;
+           return $highlightIdentifier;
         }
 
         public function getRequiredArguments() {

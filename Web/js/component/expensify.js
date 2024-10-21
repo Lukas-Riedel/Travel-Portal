@@ -246,16 +246,16 @@ function addExpense(tripId, inputSuffix) {
     }
 
     if (subscriptionId !== undefined) {
-        api.createTripExpenseWithSubscription(tripId, type, description, cost, currency, subscriptionId).done(reload);
+        api.createTripExpenseWithSubscription(tripId, type, description, cost, currency, subscriptionId).then(reload);
     }
     else {
-        api.createTripExpense(tripId, type, description, cost, currency).done(reload);
+        api.createTripExpense(tripId, type, description, cost, currency).then(reload);
     }
 }
 
 function removeExpense(id, description, tripId) {
     if (confirm("Jsi si jist, že chceš odstranit " + description + "?")) {
-        api.removeTripExpense(tripId, id).done(reload);
+        api.removeTripExpense(tripId, id).then(reload);
     }
 }
 

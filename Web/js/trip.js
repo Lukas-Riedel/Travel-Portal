@@ -108,7 +108,7 @@ async function archiveTrip(tripId) {
         return;
     }
 
-    api.removeTrip(tripId).done(alertConfirmation);
+    api.removeTrip(tripId).then(alertConfirmation);
 }
 
 async function moveTrip(tripId, oldStart) {
@@ -117,7 +117,7 @@ async function moveTrip(tripId, oldStart) {
         return;
     }
 
-    api.updateTripStart(tripId, oldStart + days * 86400).done(alertConfirmation);
+    api.updateTripStart(tripId, oldStart + days * 86400).then(alertConfirmation);
 }
 
 async function loadTrip(oldId) {
@@ -126,7 +126,7 @@ async function loadTrip(oldId) {
         return;
     }
 
-    api.replaceTrip(oldId, newId).done(alertConfirmation);
+    api.replaceTrip(oldId, newId).then(alertConfirmation);
 }
 
 async function changeName(tripId) {
@@ -135,5 +135,5 @@ async function changeName(tripId) {
         return;
     }
 
-    api.updateTripName(tripId, name).done(alertConfirmation);
+    api.updateTripName(tripId, name).then(alertConfirmation);
 }

@@ -66,5 +66,5 @@ async function changeName(placeId) {
         return;
     }
 
-    api.updatePlaceName(placeId, name).done(alertConfirmation);
+    api.updatePlaceName(placeId, name).then(alertConfirmation);
 }

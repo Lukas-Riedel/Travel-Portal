@@ -266,24 +266,24 @@ async function createAlbum(id, start) {
 }
 
 async function refreshAlbum(placeId, albumId) {
-    api.refreshPlaceAlbum(placeId, albumId).done(reload);
+    api.refreshPlaceAlbum(placeId, albumId).then(reload);
 }
 
 async function changePlaceMainHighlight(placeId, photoId) {
     const highlight = await api.createPlaceHighlight(placeId, photoId);
-    api.updatePlaceMainHighlight(placeId, highlight.id).done(reload);
+    api.updatePlaceMainHighlight(placeId, highlight.id).then(reload);
 }
 
 async function changeCountryMainHighlight(countryPlaceId, photoId) {
     const place = await api.getPlace(countryPlaceId);
     const categoryId = getOnlyElement(place.categories.filter(category => category.category === "COUNTRY")).id;
     const highlight = await api.createCategoryHighlight(categoryId, photoId);
-    api.updateCategoryMainHighlight(categoryId, highlight.id).done(reload);
+    api.updateCategoryMainHighlight(categoryId, highlight.id).then(reload);
 }
 
 async function changeTripMainHighlight(tripId, photoId) {
     const highlight = await api.createTripHighlight(tripId, photoId);
-    api.updateTripMainHighlight(tripId, highlight.id).done(reload);
+    api.updateTripMainHighlight(tripId, highlight.id).then(reload);
 }
 
 function getTripFlagImages(trip) {

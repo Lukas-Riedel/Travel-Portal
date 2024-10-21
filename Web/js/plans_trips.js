@@ -56,6 +56,6 @@ function getTitle(isLoggedIn, places) {
 
 async function removeTripCandidate(tripName, tripId) {
     if (confirm("Skutečně chceš odstranit výlet " + tripName + "?")) {
-        api.removeTrip(tripId).done(alertConfirmation);
+        api.removeTrip(tripId).then(alertConfirmation);
     }
 }

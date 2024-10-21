@@ -351,5 +351,5 @@ async function createAlbumAndUploadPhotos(placeId, timestamp) {
 }
 
 async function processPhotosUploadRequest(args) {
-    api.scheduleJob("UploadPhotos", args).done(alertConfirmation);
+    api.scheduleJob("UploadPhotos", args).then(alertConfirmation);
 }

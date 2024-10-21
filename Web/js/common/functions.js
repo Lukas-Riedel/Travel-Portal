@@ -1,6 +1,6 @@
 // High-level backend communication.
 async function runJob(action, args) {
-    return api.runJob(action, args).done(alertConfirmation);
+    return api.runJob(action, args).then(alertConfirmation);
 }
 
 async function getFutureFlights() {
@@ -92,7 +92,7 @@ async function addUsefulLink(tripId) {
         return;
     }
 
-    api.createTripNote(tripId, "<a href=\"" + link + "\">" + name + "</a>").done(reload);
+    api.createTripNote(tripId, "<a href=\"" + link + "\">" + name + "</a>").then(reload);
 }
 
 function getPublicHolidaysComponent(trip, isLoggedIn) {
@@ -123,7 +123,7 @@ async function addNote(tripId) {
         return;
     }
 
-    api.createTripNote(tripId, note).done(reload);
+    api.createTripNote(tripId, note).then(reload);
 }
 
 function promptDate(name) {    
@@ -182,7 +182,7 @@ function promptTime(name, allowEmpty) {
 
 async function removeCandidatePlace(placeId, name, country) {
     if (confirm("Jsi si jist, že chceš odstranit " + name + ", " + country + "?")) {
-        api.removeCandidatePlace(placeId).done(reload);
+        api.removeCandidatePlace(placeId).then(reload);
     }
 }
 
@@ -213,7 +213,7 @@ async function addPlaceCandidate() {
 
     const resolvedAddress = await api.getCoordinates(address);
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
-        api.createCandidatePlace(name, address).done(alertConfirmation);
+        api.createCandidatePlace(name, address).then(alertConfirmation);
     }
 }
 
@@ -254,7 +254,7 @@ async function doGetFeaturedTrip(trip) {
 
 function removeNote(id, tripId) {
     if (confirm("Opravdu chceš odstranit vybranou poznámku?")) {
-        api.removeTripNote(tripId, id).done(reload);
+        api.removeTripNote(tripId, id).then(reload);
     }
 }
 
