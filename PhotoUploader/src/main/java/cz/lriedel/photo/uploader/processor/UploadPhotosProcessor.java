@@ -5,12 +5,15 @@ import static java.util.Comparator.comparing;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -35,7 +38,8 @@ import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
 @Component
 public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
-    private static final int AVAILABLE_WORKERS = 16;
+    private static final int AVAILABLE_WORKERS = 8;
+    private static final int MAX_ATTEMPTS = 10;
 
     private static final String CREATE_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums";
     private static final String REFRESH_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/refresh";
@@ -50,7 +54,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     }
 
     @Override
-    public void process(UploadPhotosArgs args) throws IOException, InterruptedException {
+    public void process(UploadPhotosArgs args) throws IOException, InterruptedException, ExecutionException {
         long albumId = tryCreateAlbum(args);
         uploadPhotos(args, albumId);
         refreshAlbum(args, albumId);
@@ -69,16 +73,21 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
         return Objects.requireNonNull(createdAlbum, "Album was not created.").id();
     }
 
-    private void uploadPhotos(UploadPhotosArgs args, long albumId) throws IOException, InterruptedException {
+    private void uploadPhotos(UploadPhotosArgs args, long albumId) throws IOException, InterruptedException, ExecutionException {
         String createPhotoUri = String.format(CREATE_PHOTO_ENDPOINT_PATTERN, args.placeId(), albumId);
 
         try (Stream<Path> paths = Files.list(args.path())) {
             List<Path> sortedPaths = paths.sorted(comparing(UploadPhotosProcessor::getPhotoCreationTime)).toList();
+            List<Future<?>> futures = new ArrayList<>();
 
             ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
             for (int i = 0; i < sortedPaths.size(); ++i) {
                 final int position = i + 1;
-                executorService.submit(() -> uploadPhoto(sortedPaths.get(position - 1), position, createPhotoUri));
+                futures.add(executorService.submit(() -> uploadPhoto(sortedPaths.get(position - 1), position, createPhotoUri, 0)));
+            }
+
+            for (Future<?> future : futures) {
+                future.get();
             }
 
             executorService.shutdown();
@@ -95,15 +104,19 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
         return restTemplate.postForObject(url, httpEntityProvider.getEmptyHttpEntity(), Album.class);
     }
 
-    private void uploadPhoto(Path path, int position, String uri) {
+    private void uploadPhoto(Path path, int position, String uri, int attempt) {
         logger.info("Uploading '{}'...", path);
 
         try {
+            Thread.sleep(5000L * attempt);
             PhotoPrototype photoPrototype = new PhotoPrototype(path.getFileName().toString(), position,
                 Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
             restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), Void.class);
         } catch (Exception e) {
-            logger.error("Error occurred when uploading a photo.", e);
+            logger.error("Error occurred when uploading a photo (attempt {}).", attempt, e);
+            if (attempt == MAX_ATTEMPTS) {
+                throw new RuntimeException("Unable to upload photo after " + attempt + " attempts.", e);
+            }
         }
     }
 
