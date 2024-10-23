@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.lriedel.photo.uploader.HttpEntityProvider;
+
 public abstract class AbstractProcessor<JOB_ARGS> implements Processor<JOB_ARGS> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -16,11 +18,14 @@ public abstract class AbstractProcessor<JOB_ARGS> implements Processor<JOB_ARGS>
     protected final RestTemplate restTemplate;
     protected final ObjectMapper objectMapper;
 
+    protected final HttpEntityProvider httpEntityProvider;
     private final Class<JOB_ARGS> jobArgsClass;
 
-    protected AbstractProcessor(RestTemplate restTemplate, ObjectMapper objectMapper, Class<JOB_ARGS> jobArgsClass) {
+    protected AbstractProcessor(RestTemplate restTemplate, ObjectMapper objectMapper, HttpEntityProvider httpEntityProvider,
+        Class<JOB_ARGS> jobArgsClass) {
         this.restTemplate = Objects.requireNonNull(restTemplate);
         this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.httpEntityProvider = Objects.requireNonNull(httpEntityProvider);
         this.jobArgsClass = Objects.requireNonNull(jobArgsClass);
     }
 

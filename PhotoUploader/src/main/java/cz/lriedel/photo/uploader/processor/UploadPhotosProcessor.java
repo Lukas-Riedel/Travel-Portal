@@ -25,6 +25,7 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.lriedel.photo.uploader.HttpEntityProvider;
 import cz.lriedel.photo.uploader.fetcher.PhotoFetcher;
 import cz.lriedel.photo.uploader.model.Album;
 import cz.lriedel.photo.uploader.model.args.UploadPhotosArgs;
@@ -42,8 +43,9 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
     private final PhotoFetcher photoFetcher;
 
-    public UploadPhotosProcessor(RestTemplate restTemplate, ObjectMapper objectMapper, PhotoFetcher photoFetcher) {
-        super(restTemplate, objectMapper, UploadPhotosArgs.class);
+    public UploadPhotosProcessor(RestTemplate restTemplate, ObjectMapper objectMapper, HttpEntityProvider httpEntityProvider,
+        PhotoFetcher photoFetcher) {
+        super(restTemplate, objectMapper, httpEntityProvider, UploadPhotosArgs.class);
         this.photoFetcher = Objects.requireNonNull(photoFetcher);
     }
 
@@ -63,7 +65,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
         logger.info("Album for place {} does not exist. Creating a new album...", args.placeId());
         AlbumPrototype albumPrototype = new AlbumPrototype(Objects.requireNonNull(args.timestamp(), "Timestamp is not set."));
         Album createdAlbum = restTemplate.postForObject(String.format(CREATE_ALBUM_ENDPOINT_PATTERN, args.placeId()),
-            objectMapper.writeValueAsString(albumPrototype), Album.class);
+            httpEntityProvider.getHttpEntity(albumPrototype), Album.class);
         return Objects.requireNonNull(createdAlbum, "Album was not created.").id();
     }
 
@@ -84,13 +86,13 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
         }
     }
 
-    private Album refreshAlbum(UploadPhotosArgs args, long albumId) {
+    private Album refreshAlbum(UploadPhotosArgs args, long albumId) throws JsonProcessingException {
         logger.info("Uploading has finished. Refreshing the album...");
         String url = String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, args.placeId(), albumId);
         if (args.mainPhotoPosition() != null) {
             url += "?mainPhotoPosition=" + args.mainPhotoPosition();
         }
-        return restTemplate.postForObject(url, null, Album.class);
+        return restTemplate.postForObject(url, httpEntityProvider.getEmptyHttpEntity(), Album.class);
     }
 
     private void uploadPhoto(Path path, int position, String uri) {
@@ -99,7 +101,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
         try {
             PhotoPrototype photoPrototype = new PhotoPrototype(path.getFileName().toString(), position,
                 Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
-            restTemplate.postForObject(uri, objectMapper.writeValueAsString(photoPrototype), Void.class);
+            restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), Void.class);
         } catch (Exception e) {
             logger.error("Error occurred when uploading a photo.", e);
         }

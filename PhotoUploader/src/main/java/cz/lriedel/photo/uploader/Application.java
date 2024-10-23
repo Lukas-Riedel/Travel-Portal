@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @EnableScheduling
@@ -27,11 +26,10 @@ public class Application {
     }
 
     @Bean
-    public RestTemplate restTemplate(@Value("${service.url}") String serviceUrl, AccessTokenProvider accessTokenProvider) throws JsonProcessingException {
+    public RestTemplate restTemplate(@Value("${service.url}") String serviceUrl) {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessTokenProvider.getAccessToken())
             .build();
     }
 }
