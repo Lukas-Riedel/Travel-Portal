@@ -24,7 +24,7 @@
                 ->withParameters($input["start"])
                 ->getSingleRow();
 
-            if ($existingFitnessRow == NULL && $steps < $existingFitnessRow["steps"] * 0.9) {
+            if ($existingFitnessRow != NULL && $steps < $existingFitnessRow["steps"] * 0.9) {
                 return FALSE;
             }
 
