@@ -217,7 +217,7 @@ class Api {
     }
 
     async refreshPlaceAlbum(placeId, albumId, mainPhotoPosition = undefined) {
-        return this.#sendRequest("POST", "places/" + placeId + "/albums/" + albumId, {}, 
+        return this.#sendRequest("POST", "places/" + placeId + "/albums/" + albumId + "/refresh", {}, 
             {
                 mainPhotoPosition: mainPhotoPosition
             });
