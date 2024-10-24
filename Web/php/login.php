@@ -10,7 +10,7 @@
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
 
-    if (isset($_GET["apiKey"])) {
+    if (isset($_GET["apiKey"]) && !isset($_COOKIE["accessToken"])) {
         $accessTokenResponse = (new GetHttpResponseProcessor())
             ->process(array(
                 "method" => "POST", 
@@ -19,11 +19,11 @@
                     "apiKey" => $_GET["apiKey"]))));
 
         if (isset($accessTokenResponse["accessToken"])) {
-            setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"]);
-            setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"]);
+            setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"], "/");
+            setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"], "/");
 
-            $_COOKIE["accessToken"] = $accessTokenResponse["accessToken"];
-            $_COOKIE["roles"] = implode(",", $accessTokenResponse["roles"]);
+            header("Location: " . $_SERVER["REQUEST_URI"]);
+            exit();
         }
     }
 
@@ -35,8 +35,8 @@
         }
 
         $authTokenParameter = "";
-        if (isset($_GET["authToken"])) {
-            $authTokenParameter = "&authToken=" . $_GET["authToken"];
+        if (isset($_GET["apiKey"])) {
+            $authTokenParameter = "&apiKey=" . $_GET["apiKey"];
         }
 
         header("Location: https://" . $configuration["hostName"] . "/login.php?origin=" . rawurlencode($originUrl) . $authTokenParameter); 

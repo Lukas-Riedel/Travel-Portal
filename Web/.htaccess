@@ -29,7 +29,7 @@ RewriteRule ^plan/(.+)$ $1 [L,QSA]
 RewriteRule ^place/([^/]+)/?$ place.php?placeId=$1 [L,QSA]
 RewriteRule ^place/(.+)$ $1 [L,QSA]
 
-RewriteRule ^acp/([^/]+)/?$ acp.php?authToken=$1 [L,QSA]
+RewriteRule ^acp/([^/]+)/?$ acp.php?apiKey=$1 [L,QSA]
 RewriteRule ^acp/(.+)$ $1 [L,QSA]
 
 # Pages without arguments

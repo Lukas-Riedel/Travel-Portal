@@ -20,8 +20,8 @@
                     "password" => $_POST["password"]))));
 
         if (isset($accessTokenResponse["accessToken"])) {
-            setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"]);
-            setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"]);
+            setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"], "/");
+            setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"], "/");
 
             if (isset($_GET["origin"])) {
                 header("Location: " . $_GET["origin"]);
