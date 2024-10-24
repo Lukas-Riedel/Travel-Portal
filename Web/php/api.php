@@ -93,6 +93,12 @@
                     if ($decodedAccessToken["expiration"] < time()) {
                         throw new AuthenticationException("The access token expired at " . $decodedAccessToken["expiration"] . ".");
                     }
+
+                    if ($decodedAccessToken["version"] !== $configuration["bearerToken"]["version"]) {
+                        setcookie("accessToken", "", time() - 3600, "/");
+                        setcookie("roles", "", time() - 3600, "/");
+                        throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
+                    }
     
                     if (!in_array($handler->getRequiredRole(), $decodedAccessToken["roles"])) {
                         throw new AuthorizationException("The user is not authorized to perform this action.");

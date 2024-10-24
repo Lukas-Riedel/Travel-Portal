@@ -51,6 +51,7 @@
 
         $result = array(
             "roles" => $roles,
+            "version" => $configuration["bearerToken"]["version"],
             "expiration" => time() + $configuration["bearerToken"]["validity"]);
 
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($configuration["bearerToken"]["cipher"]));
