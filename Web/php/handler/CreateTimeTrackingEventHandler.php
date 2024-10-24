@@ -30,10 +30,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_time_tracking_event";
-        }
         
         public function getShortDescription() {
             return "Create a time tracking event";

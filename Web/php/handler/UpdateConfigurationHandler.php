@@ -33,10 +33,6 @@
         public function getMethod() {
             return "PATCH";
         }
-
-        public function getOperationId() {
-            return "update_configuration";
-        }
         
         public function getShortDescription() {
             return "Update a configuration item with the specified type";

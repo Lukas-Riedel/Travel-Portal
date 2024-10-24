@@ -47,10 +47,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "get_place";
-        }
         
         public function getShortDescription() {
             return "Retrieve a place with the specified identifier";

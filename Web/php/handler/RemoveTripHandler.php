@@ -50,10 +50,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_trip";
-        }
         
         public function getShortDescription() {
             return "Remove a trip with the specified identifier";

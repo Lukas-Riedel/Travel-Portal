@@ -44,10 +44,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_trip_highlight";
-        }
         
         public function getShortDescription() {
             return "Remove a highlight with the specified identifier for the specified trip";

@@ -46,10 +46,6 @@
         public function getMethod() {
             return "PATCH";
         }
-
-        public function getOperationId() {
-            return "update_category";
-        }
         
         public function getShortDescription() {
             return "Update a category with the specified identifier";

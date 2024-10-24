@@ -63,10 +63,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "refresh_place_album";
-        }
         
         public function getShortDescription() {
             return "Refresh an album with the specified identifier for the specified place";

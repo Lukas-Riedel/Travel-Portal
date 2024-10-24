@@ -38,10 +38,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "get_category";
-        }
         
         public function getShortDescription() {
             return "Retrieve a category with the specified identifier";

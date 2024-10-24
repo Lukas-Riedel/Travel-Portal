@@ -46,10 +46,6 @@
         public function getMethod() {
             return "PATCH";
         }
-
-        public function getOperationId() {
-            return "update_place";
-        }
         
         public function getShortDescription() {
             return "Update a place with the specified identifier";

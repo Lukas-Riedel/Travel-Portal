@@ -40,10 +40,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_place_album";
-        }
         
         public function getShortDescription() {
             return "Create an album for the specified place";

@@ -31,10 +31,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "list_jobs";
-        }
         
         public function getShortDescription() {
             return "Retrieve a collection of scheduled jobs with the specified action";

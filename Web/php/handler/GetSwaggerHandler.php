@@ -70,10 +70,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "get_swagger";
-        }
         
         public function getShortDescription() {
             return "Retrieve a Swagger definition of the API";
@@ -95,7 +91,7 @@
             $endpoint = array(
                 "summary" => $handler->getShortDescription(),
                 "description" => $handler->getLongDescription(),
-                "operationId" => $handler->getOperationId(),
+                "operationId" => str_replace("Handler", "", get_class($handler)),
                 "tags" => array($handler->getTag()));
     
             $parameters = $handler->getParameters();

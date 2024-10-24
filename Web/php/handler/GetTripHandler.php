@@ -47,10 +47,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "get_trip";
-        }
         
         public function getShortDescription() {
             return "Retrieve a trip with the specified identifier";

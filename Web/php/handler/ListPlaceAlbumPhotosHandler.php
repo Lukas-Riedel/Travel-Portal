@@ -46,10 +46,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "list_place_album_photos";
-        }
         
         public function getShortDescription() {
             return "Retrieve a collection of photos for an album with the specified identifier for the specified place";

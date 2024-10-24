@@ -31,10 +31,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_job";
-        }
         
         public function getShortDescription() {
             return "Remove a job with the specified identifier";

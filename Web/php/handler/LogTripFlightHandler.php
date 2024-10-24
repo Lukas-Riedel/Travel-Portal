@@ -31,10 +31,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "log_trip_flight";
-        }
         
         public function getShortDescription() {
             return "Log a flight for the specified trip";

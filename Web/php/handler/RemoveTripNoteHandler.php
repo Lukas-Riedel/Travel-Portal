@@ -45,10 +45,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_trip_note";
-        }
         
         public function getShortDescription() {
             return "Remove a note with the specified identifier for the specified trip";

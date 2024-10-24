@@ -45,10 +45,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_trip_expense";
-        }
         
         public function getShortDescription() {
             return "Remove an expense with the specified identifier for the specified trip";

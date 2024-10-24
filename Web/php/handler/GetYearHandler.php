@@ -38,10 +38,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "get_year";
-        }
         
         public function getShortDescription() {
             return "Retrieve a year with the specified identifier";

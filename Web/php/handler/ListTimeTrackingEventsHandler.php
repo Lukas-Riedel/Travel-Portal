@@ -32,10 +32,6 @@
             return "GET";
         }
 
-        public function getOperationId() {
-            return "list_time_tracking_events";
-        }
-        
         public function getShortDescription() {
             return "Retrieve a collection of time tracking events";
         }

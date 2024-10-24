@@ -9,7 +9,6 @@
         abstract public function getPath();
         abstract public function getParameters();
         abstract public function getMethod();
-        abstract public function getOperationId();
         abstract public function getShortDescription();
         abstract public function getLongDescription();
         abstract public function getRequestExamples();

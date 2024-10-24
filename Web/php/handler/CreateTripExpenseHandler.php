@@ -40,10 +40,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_trip_expense";
-        }
         
         public function getShortDescription() {
             return "Create an expense for the specified trip";

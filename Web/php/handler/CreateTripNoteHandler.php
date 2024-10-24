@@ -40,10 +40,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_trip_note";
-        }
         
         public function getShortDescription() {
             return "Create a note for the specified trip";

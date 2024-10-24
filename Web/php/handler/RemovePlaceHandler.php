@@ -36,10 +36,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_place";
-        }
         
         public function getShortDescription() {
             return "Remove a place with the specified identifier";

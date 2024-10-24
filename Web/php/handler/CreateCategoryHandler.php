@@ -40,10 +40,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_category";
-        }
         
         public function getShortDescription() {
             return "Create a category";

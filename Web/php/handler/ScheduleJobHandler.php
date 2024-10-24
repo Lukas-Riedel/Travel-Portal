@@ -30,10 +30,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "schedule_job";
-        }
         
         public function getShortDescription() {
             return "Schedule a job";

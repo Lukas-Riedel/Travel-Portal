@@ -30,10 +30,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_subsciption";
-        }
         
         public function getShortDescription() {
             return "Create a subscription";

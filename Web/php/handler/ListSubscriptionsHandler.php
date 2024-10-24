@@ -30,10 +30,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "list_places";
-        }
         
         public function getShortDescription() {
             return "Retrieve a collection of subscriptions";

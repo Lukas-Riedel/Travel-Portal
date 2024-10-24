@@ -52,10 +52,6 @@
         public function getMethod() {
             return "PATCH";
         }
-
-        public function getOperationId() {
-            return "update_trip";
-        }
         
         public function getShortDescription() {
             return "Update a trip with the specified identifier";

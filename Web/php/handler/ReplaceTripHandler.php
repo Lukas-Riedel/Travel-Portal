@@ -40,10 +40,6 @@
         public function getMethod() {
             return "PUT";
         }
-
-        public function getOperationId() {
-            return "replace_trip";
-        }
         
         public function getShortDescription() {
             return "Replace a trip with the specified identifier with a candidate trip";

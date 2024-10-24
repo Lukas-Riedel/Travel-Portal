@@ -43,10 +43,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_trip_highlight";
-        }
         
         public function getShortDescription() {
             return "Create a highlight for the specified trip";

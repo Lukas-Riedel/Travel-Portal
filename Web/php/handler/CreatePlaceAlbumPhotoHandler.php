@@ -46,10 +46,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_place_album_photos";
-        }
         
         public function getShortDescription() {
             return "Create a photo for an album with the specified identifier for the specified place";

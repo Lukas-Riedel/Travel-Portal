@@ -30,10 +30,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "list_statistics";
-        }
         
         public function getShortDescription() {
             return "Retrieve a collection of statistics";

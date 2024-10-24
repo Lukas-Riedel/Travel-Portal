@@ -41,10 +41,6 @@
         public function getMethod() {
             return "PATCH";
         }
-
-        public function getOperationId() {
-            return "update_trip_expense";
-        }
         
         public function getShortDescription() {
             return "Update an expense with the specified identifier for the specified trip";

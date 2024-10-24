@@ -30,10 +30,6 @@
         public function getMethod() {
             return "POST";
         }
-
-        public function getOperationId() {
-            return "create_place";
-        }
         
         public function getShortDescription() {
             return "Create a place";

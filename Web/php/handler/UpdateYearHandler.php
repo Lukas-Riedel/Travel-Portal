@@ -46,10 +46,6 @@
         public function getMethod() {
             return "PATCH";
         }
-
-        public function getOperationId() {
-            return "update_year";
-        }
         
         public function getShortDescription() {
             return "Update a year with the specified identifier";

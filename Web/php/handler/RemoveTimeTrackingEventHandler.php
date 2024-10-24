@@ -35,10 +35,6 @@
         public function getMethod() {
             return "DELETE";
         }
-
-        public function getOperationId() {
-            return "remove_time_tracking_event";
-        }
         
         public function getShortDescription() {
             return "Remove a time tracking event with the specified identifier";

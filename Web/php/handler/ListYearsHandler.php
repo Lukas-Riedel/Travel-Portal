@@ -32,10 +32,6 @@
         public function getMethod() {
             return "GET";
         }
-
-        public function getOperationId() {
-            return "list_years";
-        }
         
         public function getShortDescription() {
             return "Retrieve a collection of years";
