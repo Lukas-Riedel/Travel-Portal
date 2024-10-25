@@ -29,8 +29,8 @@
             $payload = array(
                 "id" => $input["watchId"],
                 "type" => "web_hook",
-                "token" => $authenticationResult["accessToken"],
-                "address" => "https://" . $configuration["hostName"] . "/api/jobs/schedule/?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
+                "token" => "Bearer " . $authenticationResult["accessToken"],
+                "address" => "https://" . $configuration["hostName"] . "/api/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
                 "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
 
             $getGoogleResponseProcessor
@@ -41,7 +41,7 @@
 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateCalendar", array(
-                    "watchId" => $configuration["googleCalendarApi"]["watchId"]), NULL);
+                    "watchId" => $input["watchId"]), NULL);
                 
             return TRUE;
         }
