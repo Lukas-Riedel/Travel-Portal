@@ -1,14 +1,15 @@
 <?php
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
+    require_once(dirname(__FILE__) . "/../service/AuthenticationService.php");
 
     class StartCalendarWatchingProcessor extends Processor {        
         public function process($input) {
             global $configuration, $databaseProvider, $schedulingProvider;
 
             $databaseProvider
-                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_CALENDAR_API_WATCH_UUID'")
-                ->withParameters($input["uuid"])
+                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_CALENDAR_API' AND `key` = 'watchId'")
+                ->withParameters($input["watchId"])
                 ->execute();
 
             $getGoogleResponseProcessor = new GetGoogleResponseProcessor();
@@ -22,11 +23,15 @@
                 throw new InvalidArgumentException("Unable to start watching calendar  " . $input["calendar"] . ".");
             }
 
+            $authenticationService = new AuthenticationService($databaseProvider);
+            $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
+
             $payload = array(
-                "id" => $input["uuid"],
+                "id" => $input["watchId"],
                 "type" => "web_hook",
-                "address" => "https://" . $configuration["hostName"] . "/php/controller.php?action=UpdateCalendar&uuid=" . $input["uuid"] . "&async=true",
-                "params" => array("ttl" => 86400));
+                "token" => $authenticationResult["accessToken"],
+                "address" => "https://" . $configuration["hostName"] . "/api/jobs/schedule/?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
+                "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
 
             $getGoogleResponseProcessor
                 ->process(array(
@@ -36,13 +41,13 @@
 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateCalendar", array(
-                    "uuid" => $configuration["googleCalendarApiWatchUuid"]), NULL);
+                    "watchId" => $configuration["googleCalendarApi"]["watchId"]), NULL);
                 
             return TRUE;
         }
 
         public function getRequiredArguments() {
-            return array("uuid", "calendar");
+            return array("watchId", "calendar");
         }
         
         public function requiresAdminRole() {

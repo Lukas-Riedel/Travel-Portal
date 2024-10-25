@@ -172,7 +172,7 @@ function getUtilitiesComponent(trip) {
     // Tools.
     const tools = [
         { name: "Aktualizovat alba", action: "runJob('UpdateAlbum', {})" },
-        { name: "Aktualizovat kalendář", action: "runJob('UpdateCalendar', { uuid: configuration.googleCalendarApiWatchUuid })" },
+        { name: "Aktualizovat kalendář", action: "runJob('UpdateCalendar', { watchId: configuration.googleCalendarApi.watchId })" },
         { name: "Získat GeoJSON s geografickými regiony", action: "getGeoJson()" },
         { name: "Přidat předplatné", action: "addSubscription()" },
         { name: "Přidat geografický region", action: "addGeoRegion()" },

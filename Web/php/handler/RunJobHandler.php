@@ -41,7 +41,7 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Submitted job", '{"action":"UpdateCalendar","args":{"uuid":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
+                $this->createRequestExample("Submitted job", '{"action":"UpdateCalendar","args":{"watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
         }
 
         public function getResponseExamples() {

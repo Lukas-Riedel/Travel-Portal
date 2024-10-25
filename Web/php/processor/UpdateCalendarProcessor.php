@@ -11,7 +11,7 @@
         public function process($input) {
             global $configuration, $databaseProvider;
 
-            if ($input["uuid"] != $configuration["googleCalendarApiWatchUuid"]) {
+            if ($input["watchId"] != $configuration["googleCalendarApi"]["watchId"]) {
                 return FALSE;
             }
 
@@ -77,7 +77,7 @@
         }
 
         public function getRequiredArguments() {
-            return array("uuid");
+            return array("watchId");
         }
         
         public function requiresAdminRole() {

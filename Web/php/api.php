@@ -128,6 +128,9 @@
 
     function getAuthorizationHeader() {
         $headers = NULL;
+        if (isset($_SERVER['REDIRECT_GOOG_CHANNEL_TOKEN'])) {
+            $headers = trim($_SERVER["REDIRECT_GOOG_CHANNEL_TOKEN"]);
+        }
         if (isset($_SERVER['Authorization'])) {
             $headers = trim($_SERVER["Authorization"]);
         }

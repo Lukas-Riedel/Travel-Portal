@@ -3,23 +3,19 @@
     
     require_once(dirname(__FILE__) . "/php/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/php/provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/php/service/AuthenticationService.php");
     require_once(dirname(__FILE__) . "/php/processor/Processor.php");
     require_once(dirname(__FILE__) . "/php/processor/GetHttpResponseProcessor.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+    $authenticationService = new AuthenticationService($databaseProvider);
 
     if (isset($_POST["username"]) && isset($_POST["password"])) {
-        $accessTokenResponse = (new GetHttpResponseProcessor())
-            ->process(array(
-                "method" => "POST", 
-                "url" => "https://" . $configuration["hostName"] . "/iam",
-                "payload" => json_encode(array(
-                    "username" => $_POST["username"],
-                    "password" => $_POST["password"]))));
+        try {
+            $accessTokenResponse = $authenticationService->authenticateWithCredentials($_POST["username"], $_POST["password"]);
 
-        if (isset($accessTokenResponse["accessToken"])) {
             setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"], "/");
             setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"], "/");
 
@@ -30,6 +26,9 @@
     
             header("Location: index.php");
             exit;
+        }
+        catch (Exception $e) {
+            // Do nothing.
         }
     }
 

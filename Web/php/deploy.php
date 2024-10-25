@@ -1,9 +1,14 @@
 <?php
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
     require_once(dirname(__FILE__) . "/processor/Processor.php");
     require_once(dirname(__FILE__) . "/processor/GetHttpResponseProcessor.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
+    $configurationProvider = new ConfigurationProvider($databaseProvider);
+    $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+    $authenticationService = new AuthenticationService($databaseProvider);
     $hostName = $_SERVER["HTTP_HOST"];
     
     $onError = function($level, $message, $file, $line) {
@@ -47,12 +52,7 @@
                 ->query("SELECT api_key FROM users WHERE FIND_IN_SET('ADMIN', roles)");
             $apiKey = $apiKeyRow->fetch_assoc()["api_key"];
 
-            $accessTokenResponse = (new GetHttpResponseProcessor())
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://" . $hostName . "/iam",
-                    "payload" => json_encode(array(
-                        "apiKey" => $apiKey))));
+            $accessTokenResponse = $authenticationService->authenticateWithApiKey($apiKey);
         
             (new GetHttpResponseProcessor())
                 ->process(array(
