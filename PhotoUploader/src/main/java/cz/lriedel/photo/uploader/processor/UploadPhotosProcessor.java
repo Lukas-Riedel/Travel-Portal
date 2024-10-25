@@ -42,7 +42,7 @@ import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
 @Component
 public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
-    private static final int AVAILABLE_WORKERS = 8;
+    private static final int AVAILABLE_WORKERS = 16;
     private static final int MAX_ATTEMPTS = 10;
 
     private static final String CREATE_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums";
@@ -103,10 +103,9 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
                 }
                 double averageUploadSpeed = sum / futures.size();
                 currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageUploadSpeed));
-                logger.info("The average upload speed is {} Mbps.", averageUploadSpeed);
-                logger.info("Already {} photos were uploaded.", position - 1);
-                logger.info("There are still {} photos to upload.", queue.size());
-                logger.info("Next batch will consist of {} photos.", currentParallelRequestsCount);
+
+                logger.info("Totally {}/{} photos were uploaded at the average upload speed of {} Mbps.",
+                    position - 1, position - 1 + queue.size(), averageUploadSpeed);
             }
 
             executorService.shutdown();
@@ -128,7 +127,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
             new PhotoPrototype(path.getFileName().toString(), position, Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
         long start = System.currentTimeMillis();
         doUploadPhoto(photoPrototype, uri, 0);
-        long uploadDuration = System.currentTimeMillis() - start;
+        long uploadDuration = (System.currentTimeMillis() - start) / 1000;
         double fileSize = FileChannel.open(path).size() / (1024.0 * 1024.0);
         return 8 * fileSize / uploadDuration;
     }

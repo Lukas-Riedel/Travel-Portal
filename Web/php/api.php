@@ -14,10 +14,12 @@
     require_once(dirname(__FILE__) . "/model/TargetError.php");
     require_once(dirname(__FILE__) . "/exception/AuthenticationException.php");
     require_once(dirname(__FILE__) . "/exception/AuthorizationException.php");
+    require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+    $authenticationService = new AuthenticationService($databaseProvider);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
@@ -64,43 +66,9 @@
                 }
 
                 if ($handler->isProtected()) {
-                    $bearer = getBearerToken();
-                    if ($bearer === NULL) {
-                        throw new AuthenticationException("The access token was not provided.");
-                    }
+                    $accessToken = $authenticationService->getAccessToken(getBearerToken());
 
-                    $decoded = base64_decode($bearer);
-                    if ($decoded === FALSE) {
-                        throw new AuthenticationException("The access token could not be read.");
-                    }
-            
-                    $parts = explode('::', $decoded, 2);
-                    if (count($parts) !== 2) {
-                        throw new AuthenticationException("The access token could not be read.");
-                    }
-                    
-                    list($encryptedData, $iv) = $parts;
-                    $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], $configuration["bearerToken"]["privateKey"], 0, $iv);
-                    if ($decrypted === FALSE) {
-                        throw new AuthenticationException("The access token could not be read.");
-                    }
-                    
-                    $decodedAccessToken = json_decode($decrypted, TRUE);
-                    if ($decodedAccessToken === NULL) {
-                        throw new AuthenticationException("The access token could not be read.");
-                    }
-            
-                    if ($decodedAccessToken["expiration"] < time()) {
-                        throw new AuthenticationException("The access token expired at " . $decodedAccessToken["expiration"] . ".");
-                    }
-
-                    if ($decodedAccessToken["version"] !== $configuration["bearerToken"]["version"]) {
-                        setcookie("accessToken", "", time() - 3600, "/");
-                        setcookie("roles", "", time() - 3600, "/");
-                        throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
-                    }
-    
-                    if (!in_array($handler->getRequiredRole(), $decodedAccessToken["roles"])) {
+                    if (!in_array($handler->getRequiredRole(), $accessToken["roles"])) {
                         throw new AuthorizationException("The user is not authorized to perform this action.");
                     }
                 }

@@ -9,6 +9,47 @@
             $this->databaseProvider = $databaseProvider;
         }
 
+        public function getAccessToken($accessToken) {
+            global $configuration;
+
+            if ($accessToken === NULL) {
+                throw new AuthenticationException("The access token was not provided.");
+            }
+
+            $decoded = base64_decode($accessToken);
+            if ($decoded === FALSE) {
+                throw new AuthenticationException("The access token could not be read.");
+            }
+    
+            $parts = explode('::', $decoded, 2);
+            if (count($parts) !== 2) {
+                throw new AuthenticationException("The access token could not be read.");
+            }
+            
+            list($encryptedData, $iv) = $parts;
+            $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], $configuration["bearerToken"]["privateKey"], 0, $iv);
+            if ($decrypted === FALSE) {
+                throw new AuthenticationException("The access token could not be read.");
+            }
+            
+            $decodedAccessToken = json_decode($decrypted, TRUE);
+            if ($decodedAccessToken === NULL) {
+                throw new AuthenticationException("The access token could not be read.");
+            }
+    
+            if ($decodedAccessToken["expiration"] < time()) {
+                throw new AuthenticationException("The access token expired at " . $decodedAccessToken["expiration"] . ".");
+            }
+
+            if ($decodedAccessToken["version"] !== $configuration["bearerToken"]["version"]) {
+                setcookie("accessToken", "", time() - 3600, "/");
+                setcookie("roles", "", time() - 3600, "/");
+                throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
+            }
+
+            return $decodedAccessToken;
+        }
+
         public function authenticateWithCredentials($username, $password) {
             global $configuration;
 
