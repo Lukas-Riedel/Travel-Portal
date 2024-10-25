@@ -1,11 +1,10 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Place.php");
-    require_once(dirname(__FILE__) . "/GetPlaceIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
 
     class AddSpecialPlaceProcessor extends Processor {  
         public function process($input) {
-            global $databaseProvider;
+            global $databaseProvider, $placeService;
 
             $table = $this->resolveTable($input["type"]);
 
@@ -13,11 +12,7 @@
                 ->process(array(
                     "address" => $input["address"]))->getCountry();
 
-            $placeIdentifier = (new GetPlaceIdentifierProcessor())
-                ->process(array(
-                    "name" => $input["name"],
-                    "country" => $country,
-                    "address" => $input["address"]));
+            $placeIdentifier = $placeService->getOrCreatePlaceIdentifier($input["name"], $country, $input["address"]);
 
             $databaseProvider
                 ->statementBuilder("DELETE FROM " . $table . " WHERE place_id = ?")

@@ -8,7 +8,7 @@
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService($databaseProvider);
+    $authenticationService = new AuthenticationService();
     $hostName = $_SERVER["HTTP_HOST"];
     
     $onError = function($level, $message, $file, $line) {

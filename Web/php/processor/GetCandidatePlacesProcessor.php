@@ -3,7 +3,7 @@
     require_once(dirname(__FILE__) . "/../model/Date.php");
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
     require_once(dirname(__FILE__) . "/GetTripIdentifierProcessor.php");
 
@@ -151,7 +151,7 @@
                 ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_place hp INNER JOIN highlight_identifier hi ON hp.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE hp.id = ?")
                 ->withParameters($placeRow["place_id"])
                 ->getMappedResultSet(function ($highlightRow) { 
-                    return new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
+                    return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
                         $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
                 });
         }
@@ -164,7 +164,7 @@
             ->withParameters($highlightId)
             ->getSingleRow();
             
-           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+           return $mainHighlightIdentifierRow == NULL ? NULL : new Highlight($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
                 $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }

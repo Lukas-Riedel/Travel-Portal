@@ -10,7 +10,7 @@
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService($databaseProvider);
+    $authenticationService = new AuthenticationService();
 
     if (isset($_POST["username"]) && isset($_POST["password"])) {
         try {

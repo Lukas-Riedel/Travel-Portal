@@ -3,7 +3,6 @@
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
-    require_once(dirname(__FILE__) . "/GetPlaceIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetTripIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
@@ -112,10 +111,9 @@
         }
 
         private function processPlaces() {
-            global $databaseProvider, $configuration;
+            global $databaseProvider, $configuration, $placeService;
 
             $getCoordsProcessor = new GetCoordsProcessor();
-            $getPlaceIdentifierProcessor = new GetPlaceIdentifierProcessor();
 
             // Add places to the database.
             foreach ($this->downloadEvents($configuration["calendars"]["places"]) as &$placeEvent) {
@@ -124,11 +122,7 @@
                 $resolvedLocation = $getCoordsProcessor
                     ->process(array(
                         "address" => $address));
-                $placeIdentifier = $getPlaceIdentifierProcessor
-                    ->process(array(
-                        "name" => $name,
-                        "country" => $resolvedLocation->getCountry(),
-                        "address" => $address));
+                $placeIdentifier = $placeService->getOrCreatePlaceIdentifier($name, $resolvedLocation->getCountry(), $address);
                         
                 $timeOffset = $this->getTimezoneOffset($placeEvent["DTSTART"], $placeIdentifier->getTimezone());
                 $start = $this->getTimestamp($placeEvent["DTSTART"]) - $timeOffset;

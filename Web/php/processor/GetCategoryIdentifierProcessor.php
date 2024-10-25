@@ -1,6 +1,6 @@
 <?php 
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
 
     class GetCategoryIdentifierProcessor extends Processor {  
         public function process($input) {
@@ -48,7 +48,7 @@
                 ->withParameters($highlightId)
                 ->getSingleRow();
             
-           return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
+           return $highlightRow == NULL ? NULL : new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
                 $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
         }
     }

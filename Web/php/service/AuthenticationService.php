@@ -2,13 +2,6 @@
     require_once(dirname(__FILE__) . "/../exception/AuthenticationException.php");
 
     class AuthenticationService {
-
-        private $databaseProvider;
-
-        public function __construct($databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
-        }
-
         public function getAccessToken($accessToken) {
             global $configuration;
 
@@ -51,9 +44,9 @@
         }
 
         public function authenticateWithCredentials($username, $password) {
-            global $configuration;
+            global $configuration, $databaseProvider;
 
-            $userRow = $this->databaseProvider
+            $userRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM users WHERE username = ?")
                 ->withParameters($username)
                 ->getSingleRow();
@@ -71,9 +64,9 @@
         }
 
         public function authenticateWithApiKey($apiKey) {
-            global $configuration;
+            global $configuration, $databaseProvider;
             
-            $roles = explode(",", $this->databaseProvider
+            $roles = explode(",", $databaseProvider
                 ->statementBuilder("SELECT roles FROM users WHERE api_key = ?")
                 ->withParameters($apiKey)
                 ->getSingleColumn("roles"));

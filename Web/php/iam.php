@@ -10,7 +10,7 @@
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService($databaseProvider);
+    $authenticationService = new AuthenticationService();
 
     $requestBody = json_decode(file_get_contents('php://input'), TRUE);
 

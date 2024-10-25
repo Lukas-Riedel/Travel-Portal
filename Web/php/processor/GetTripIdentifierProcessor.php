@@ -1,6 +1,6 @@
 <?php 
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/GetYearIdentifierProcessor.php");
 
     class GetTripIdentifierProcessor extends Processor {        
@@ -53,7 +53,7 @@
             ->withParameters($highlightId)
             ->getSingleRow();
             
-           return $mainHighlightIdentifierRow == NULL ? NULL : new HighlightIdentifier($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
+           return $mainHighlightIdentifierRow == NULL ? NULL : new Highlight($mainHighlightIdentifierRow["id"], $mainHighlightIdentifierRow["thumbnail_url"], $mainHighlightIdentifierRow["full_url"], 
                 $mainHighlightIdentifierRow["focal_length"], $mainHighlightIdentifierRow["aperture"], $mainHighlightIdentifierRow["shutter_speed"], $mainHighlightIdentifierRow["iso"], $mainHighlightIdentifierRow["timestamp"]);
         }
     }

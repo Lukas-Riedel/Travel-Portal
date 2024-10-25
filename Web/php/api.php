@@ -15,11 +15,17 @@
     require_once(dirname(__FILE__) . "/exception/AuthenticationException.php");
     require_once(dirname(__FILE__) . "/exception/AuthorizationException.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/service/PlaceService.php");
+    require_once(dirname(__FILE__) . "/service/HighlightService.php");
+    require_once(dirname(__FILE__) . "/service/PhotoService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService($databaseProvider);
+    $authenticationService = new AuthenticationService();
+    $placeService = new PlaceService();
+    $highlightService = new HighlightService();
+    $photoService = new PhotoService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

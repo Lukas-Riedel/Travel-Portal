@@ -23,7 +23,7 @@
                 throw new InvalidArgumentException("Unable to start watching calendar  " . $input["calendar"] . ".");
             }
 
-            $authenticationService = new AuthenticationService($databaseProvider);
+            $authenticationService = new AuthenticationService();
             $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
 
             $payload = array(

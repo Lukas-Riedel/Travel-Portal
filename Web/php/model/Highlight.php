@@ -1,5 +1,5 @@
 <?php
-    class HighlightIdentifier implements JsonSerializable {        
+    class Highlight implements JsonSerializable {        
         private $id;
         private $url;
         private $focalLength;

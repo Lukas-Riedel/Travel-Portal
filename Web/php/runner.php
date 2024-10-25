@@ -7,6 +7,9 @@
     require_once(dirname(__FILE__) . "/provider/SchedulingProvider.php");
     require_once(dirname(__FILE__) . "/provider/ProcessorProvider.php");
     require_once(dirname(__FILE__) . "/processor/Processor.php");
+    require_once(dirname(__FILE__) . "/service/PlaceService.php");
+    require_once(dirname(__FILE__) . "/service/HighlightService.php");
+    require_once(dirname(__FILE__) . "/service/PhotoService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -14,6 +17,9 @@
     $loggingProvider = new LoggingProvider($databaseProvider);
     $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
     $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE, FALSE, TRUE);
+    $placeService = new PlaceService();
+    $highlightService = new HighlightService();
+    $photoService = new PhotoService();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);

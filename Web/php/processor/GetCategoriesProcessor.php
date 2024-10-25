@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Category.php");
-    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/GetStatsProcessor.php");
 
     class GetCategoriesProcessor extends Processor {        
@@ -57,7 +57,7 @@
                 ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_category hc INNER JOIN highlight_identifier hi ON hc.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE hc.id = ?")
                 ->withParameters($categoryRow["id"])
                 ->getMappedResultSet(function ($highlightRow) { 
-                    return new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
+                    return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
                         $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
                 });
         }
@@ -70,7 +70,7 @@
                 ->withParameters($highlightId)
                 ->getSingleRow();
             
-           return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
+           return $highlightRow == NULL ? NULL : new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
                 $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
         }
         

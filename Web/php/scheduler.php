@@ -4,11 +4,17 @@
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/provider/SchedulingProvider.php");
     require_once(dirname(__FILE__) . "/processor/Processor.php");
+    require_once(dirname(__FILE__) . "/service/PlaceService.php");
+    require_once(dirname(__FILE__) . "/service/HighlightService.php");
+    require_once(dirname(__FILE__) . "/service/PhotoService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
+    $placeService = new PlaceService();
+    $highlightService = new HighlightService();
+    $photoService = new PhotoService();
 
     $schedulers = $databaseProvider
         ->statementBuilder("SELECT * FROM scheduler")

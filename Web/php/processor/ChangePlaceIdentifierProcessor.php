@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/UpdateAlbumProcessor.php");
@@ -132,7 +132,7 @@
                 ->withParameters($highlightId)
                 ->getSingleRow();
             
-           return $highlightRow == NULL ? NULL : new HighlightIdentifier($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
+           return $highlightRow == NULL ? NULL : new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
                 $highlightRow["focal_length"], $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
         }
     }

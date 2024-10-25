@@ -1,5 +1,5 @@
 <?php 
-    require_once(dirname(__FILE__) . "/../model/HighlightIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
 
     class GetHighlightIdentifierProcessor extends Processor {   
         public function process($input) {
@@ -11,7 +11,7 @@
                 ->getFirstRow();
 
             if ($highlightIdentifierRow != NULL) {
-                return new HighlightIdentifier($highlightIdentifierRow["id"], $highlightIdentifierRow["thumbnail_url"], $highlightIdentifierRow["full_url"], $highlightIdentifierRow["focal_length"], 
+                return new Highlight($highlightIdentifierRow["id"], $highlightIdentifierRow["thumbnail_url"], $highlightIdentifierRow["full_url"], $highlightIdentifierRow["focal_length"], 
                     $highlightIdentifierRow["aperture"], $highlightIdentifierRow["shutter_speed"], $highlightIdentifierRow["iso"], $highlightIdentifierRow["timestamp"]);
             }
 
@@ -25,7 +25,7 @@
                 ->withParameters($input["photoId"])
                 ->getFirstRow();
 
-            return new HighlightIdentifier($highlightIdentifierRow["id"], $highlightIdentifierRow["thumbnail_url"], $highlightIdentifierRow["full_url"], $highlightIdentifierRow["focal_length"], 
+            return new Highlight($highlightIdentifierRow["id"], $highlightIdentifierRow["thumbnail_url"], $highlightIdentifierRow["full_url"], $highlightIdentifierRow["focal_length"], 
                 $highlightIdentifierRow["aperture"], $highlightIdentifierRow["shutter_speed"], $highlightIdentifierRow["iso"], $highlightIdentifierRow["timestamp"]);
         }
 
