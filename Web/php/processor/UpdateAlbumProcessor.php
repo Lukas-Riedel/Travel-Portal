@@ -1,15 +1,13 @@
 <?php
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/GetAlbumIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPhotoIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetMediaItemsProcessor.php");
     require_once(dirname(__FILE__) . "/AddHighlightProcessor.php");
 
     class UpdateAlbumProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration, $schedulingProvider;
+            global $databaseProvider, $configuration, $schedulingProvider, $albumService;
 
-            $getAlbumIdentifierProcessor = new GetAlbumIdentifierProcessor();
             $getPhotoIdentifierProcessor = new GetPhotoIdentifierProcessor();
             $addHighlightProcessor = new AddHighlightProcessor();
 
@@ -108,9 +106,7 @@
                         $imagesCount = intval($album["mediaItemsCount"]);
                     }
 
-                    $resolvedAlbumId = $getAlbumIdentifierProcessor
-                        ->process(array(
-                            "externalId" => $album["id"]));
+                    $resolvedAlbumId = $albumService->getOrCreateAlbumIdentifier($album["id"]);
         
                     $albums[] = array(
                         "id" => $resolvedAlbumId,

@@ -2,11 +2,10 @@
     require_once(dirname(__FILE__) . "/../model/Album.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/UpdateAlbumProcessor.php");
-    require_once(dirname(__FILE__) . "/GetAlbumIdentifierProcessor.php");
 
     class AddAlbumProcessor extends Processor {   
         public function process($input) {
-            global $databaseProvider;
+            global $databaseProvider, $albumService;
 
             $placeName = $databaseProvider
                 ->statementBuilder("SELECT * FROM place_identifier WHERE id = ?")
@@ -27,9 +26,7 @@
                             "title" => $albumName)))));
     
             if (isset($apiResponse["id"])) {
-                $resolvedAlbumId = (new GetAlbumIdentifierProcessor())
-                    ->process(array(
-                        "externalId" => $apiResponse["id"]));
+                $resolvedAlbumId = $albumService->getOrCreateAlbumIdentifier($apiResponse["id"]);
 
                 (new UpdateAlbumProcessor())
                     ->process(array(

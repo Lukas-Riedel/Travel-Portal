@@ -8,6 +8,7 @@
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
     require_once(dirname(__FILE__) . "/service/PhotoService.php");
     require_once(dirname(__FILE__) . "/service/TripService.php");
+    require_once(dirname(__FILE__) . "/service/AlbumService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -17,6 +18,7 @@
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
     $tripService = new TripService();
+    $albumService = new AlbumService();
 
     $schedulers = $databaseProvider
         ->statementBuilder("SELECT * FROM scheduler")
