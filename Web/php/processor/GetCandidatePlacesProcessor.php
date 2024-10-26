@@ -5,7 +5,6 @@
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
-    require_once(dirname(__FILE__) . "/GetTripIdentifierProcessor.php");
 
     class GetCandidatePlacesProcessor extends Processor {        
         public function process($input) {

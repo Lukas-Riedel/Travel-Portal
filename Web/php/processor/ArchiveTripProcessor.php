@@ -1,12 +1,11 @@
 <?php
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
-    require_once(dirname(__FILE__) . "/GetTripIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/AddNoteProcessor.php");
 
     class ArchiveTripProcessor extends Processor {    
         public function process($input) {
-            global $configuration, $databaseProvider;
+            global $configuration, $databaseProvider, $tripService;
 
             $tripRow = $databaseProvider
                 ->statementBuilder("SELECT te.id, te.trip_id, te.start, te.end, ti.name FROM trip_event te INNER JOIN trip_identifier ti ON te.trip_id = ti.id WHERE ti.id = ?")
@@ -17,9 +16,7 @@
                 throw new InvalidArgumentException("The trip " . $input["tripId"] . " could not be archived because it does not exist.");
             }
             
-            $archivedTripIdentifier = (new GetTripIdentifierProcessor())
-                ->process(array(
-                    "name" => $tripRow["name"]));
+            $archivedTripIdentifier = $tripService->getOrCreateTripIdentifier($tripRow["name"], NULL);
 
             (new AddNoteProcessor())
                 ->process(array(

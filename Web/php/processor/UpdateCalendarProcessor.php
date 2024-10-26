@@ -3,7 +3,6 @@
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
-    require_once(dirname(__FILE__) . "/GetTripIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
     class UpdateCalendarProcessor extends Processor {
@@ -85,9 +84,7 @@
 
         // Processors.
         private function processTrips() {  
-            global $databaseProvider, $configuration;
-
-            $getTripIdentifierProcessor = new GetTripIdentifierProcessor();
+            global $databaseProvider, $configuration, $tripService;
 
             $holidays = $this->getHolidays();       
                      
@@ -95,10 +92,7 @@
             foreach ($this->downloadEvents($configuration["calendars"]["trips"]) as &$tripEvent) {
                 $name = $tripEvent["SUMMARY"];
                 $year = intval(substr($tripEvent["DTSTART"], 0, 4));
-                $tripIdentifier = $getTripIdentifierProcessor
-                    ->process(array(
-                        "name" => $name,
-                        "year" => $year));
+                $tripIdentifier = $tripService->getOrCreateTripIdentifier($name, $year);
 
                 $start = $this->getTimestamp($tripEvent["DTSTART"]);
                 $end = $this->getTimestamp($tripEvent["DTEND"]);
@@ -193,9 +187,7 @@
         }
 
         private function processDayTrips() {
-            global $configuration, $databaseProvider;
-
-            $getTripIdentifierProcessor = new GetTripIdentifierProcessor();
+            global $configuration, $databaseProvider, $tripService;
 
             // Add day trips to the database.
             $years = $databaseProvider
@@ -204,10 +196,7 @@
                 ->getResultSetForColumn("year");
 
             foreach ($years as &$year) {
-                $tripIdentifier = $getTripIdentifierProcessor
-                    ->process(array(
-                        "name" => $configuration["specialTripNames"]["dayTrips"],
-                        "year" => $year));
+                $tripIdentifier = $tripService->getOrCreateTripIdentifier($configuration["specialTripNames"]["dayTrips"], $year);
 
                 $databaseProvider
                     ->statementBuilder("INSERT INTO trip_event (trip_id, start, end) VALUES (?, 0, 2147483647)")

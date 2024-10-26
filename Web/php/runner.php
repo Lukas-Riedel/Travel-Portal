@@ -10,6 +10,7 @@
     require_once(dirname(__FILE__) . "/service/PlaceService.php");
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
     require_once(dirname(__FILE__) . "/service/PhotoService.php");
+    require_once(dirname(__FILE__) . "/service/TripService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -20,6 +21,7 @@
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
+    $tripService = new TripService();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);

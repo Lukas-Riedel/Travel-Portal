@@ -15,7 +15,6 @@
             }
 
             $photo = $photoService->getPhoto($highlightRow["photo_id"]);
-
             if ($photo === NULL) {
                 return NULL;
             }

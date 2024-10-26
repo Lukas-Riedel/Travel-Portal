@@ -18,6 +18,7 @@
     require_once(dirname(__FILE__) . "/service/PlaceService.php");
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
     require_once(dirname(__FILE__) . "/service/PhotoService.php");
+    require_once(dirname(__FILE__) . "/service/TripService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -26,6 +27,7 @@
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
+    $tripService = new TripService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

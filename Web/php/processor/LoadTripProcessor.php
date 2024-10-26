@@ -1,6 +1,5 @@
 <?php
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
-    require_once(dirname(__FILE__) . "/GetTripIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../model/Trip.php");
 
