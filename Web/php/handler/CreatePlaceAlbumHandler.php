@@ -3,7 +3,7 @@
 
     class CreatePlaceAlbumHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $processorProvider, $albumService;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddAlbum", $input);
+            $response = $albumService->createAlbum($input["placeId"], $input["timestamp"]);
             return $this->createResponse(201, $response);
         }
 

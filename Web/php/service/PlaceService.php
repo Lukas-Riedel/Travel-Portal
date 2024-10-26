@@ -2,8 +2,16 @@
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetChatResponseProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
 
     class PlaceService {
+        public function getRegularPlace($placeId) {
+            $places = (new GetPlacesProcessor())
+                ->process(array(
+                    "placeId" => $placeId));
+            return count($places) === 1 ? $places[0] : NULL;
+        }
+
         public function getPlaceIdentifier($name, $country) {
             global $databaseProvider, $highlightService;
 
