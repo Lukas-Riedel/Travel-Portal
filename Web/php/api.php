@@ -14,6 +14,7 @@
     require_once(dirname(__FILE__) . "/model/TargetError.php");
     require_once(dirname(__FILE__) . "/exception/AuthenticationException.php");
     require_once(dirname(__FILE__) . "/exception/AuthorizationException.php");
+    require_once(dirname(__FILE__) . "/exception/EntityNotFoundException.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
     require_once(dirname(__FILE__) . "/service/PlaceService.php");
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
@@ -33,17 +34,23 @@
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
-    };
+    };    
+    
+    if (!isset($_GET["path"])) {
+        header("Location: https://" . $configuration["hostName"] . "/swagger"); 
+    }
+
+    $path = $_GET["path"];
+    unset($_GET["path"]);
+    
+    $requestBody = json_decode(file_get_contents('php://input'), TRUE);
+    $input = array_merge($_GET, $requestBody == NULL ? array() : $requestBody);
     
     try {            
         set_error_handler($onError);
         $loggingProvider = new LoggingProvider($databaseProvider);
         $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
         $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE, TRUE, FALSE);
-    
-        if (!isset($_GET["path"])) {
-            header("Location: https://" . $configuration["hostName"] . "/swagger"); 
-        }
     
         $handlers = array();
         foreach (array_diff(scandir(dirname(__FILE__) . "/handler"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
@@ -61,15 +68,11 @@
             $argValuesRegex = "^" . preg_replace("#\{[^{}]+\}#", "([^\/]+)", str_replace("/", "\/", $handler->getPath())) . "(\?.+)?$";
     
             $argValues = array();
-            if (preg_match("#" . $argValuesRegex . "#", $_GET["path"], $argValues)) {
+            if (preg_match("#" . $argValuesRegex . "#", $path, $argValues)) {
                 $argNamesRegex = "^" . preg_replace("#\{[^{}]+\}#", "{([^{}]+)}", str_replace("/", "\/", $handler->getPath())) . "(\?.+)?$";
     
                 $argNames = array();
                 preg_match("#" . $argNamesRegex . "#", $handler->getPath(), $argNames);
-    
-                $requestBody = json_decode(file_get_contents('php://input'), TRUE);
-                $input = array_merge($_GET, $requestBody == NULL ? array() : $requestBody);
-                unset($input["path"]);
     
                 for ($i = 1; $i < count($argValues); ++$i) {
                     $input[$argNames[$i]] = $argValues[$i];
@@ -91,9 +94,27 @@
                 exit();
             }
         }
-    }    
+    }   
+    catch (EntityNotFoundException $e) {
+        $error = new TargetError(404, $e, $input);
+        http_response_code($error->getCode());
+        echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
+        exit();
+    } 
+    catch (AuthenticationException $e) {
+        $error = new TargetError(401, $e, $input);
+        http_response_code($error->getCode());
+        echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
+        exit();
+    }
+    catch (AuthorizationException $e) {
+        $error = new TargetError(403, $e, $input);
+        http_response_code($error->getCode());
+        echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
+        exit();
+    }
     catch (Throwable $e) {
-        $error = new TargetError($e, "API", array(), FALSE);
+        $error = new TargetError(400, $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
         exit();

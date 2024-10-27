@@ -44,7 +44,7 @@
             }
             catch (Throwable $e) {
                 $this->databaseProvider->rollback();
-                $error = new TargetError($e, $processorName, $args, $this->shouldIncludeTrace);
+                $error = new TargetError(400, $e, $args);
                 $this->loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
                 return $error;
             }

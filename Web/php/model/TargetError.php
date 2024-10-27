@@ -1,20 +1,17 @@
 <?php
-    require_once(dirname(__FILE__) . "/../exception/AuthorizationException.php");
-    require_once(dirname(__FILE__) . "/../exception/AuthenticationException.php");
-
     class TargetError implements JsonSerializable {        
         private $code;
         private $error;
-        private $action;
-        private $arguments;
+        private $message;
         private $trace;
+        private $arguments;
 
-        public function __construct($error, $action, $arguments, $includeTrace) {
-            $this->code = TargetError::resolveErrorCode($error);
-            $this->error = $error->getMessage();
-            $this->action = $action;
+        public function __construct($code, $exception, $arguments) {
+            $this->code = $code;
+            $this->error = get_class($exception);
+            $this->message = $exception->getMessage();
+            $this->trace = explode("\n", $exception->getTraceAsString());
             $this->arguments = $arguments;
-            $this->trace = $includeTrace ? $error->getTraceAsString() : NULL;
         }
 
         public function getCode() {
@@ -25,40 +22,27 @@
             return $this->error;
         }
 
-        public function getAction() {
-            return $this->action;
-        }
-
-        public function getArguments() {
-            return $this->arguments;
+        public function getMessage() {
+            return $this->message;
         }
 
         public function getTrace() {
             return $this->trace;
         }
 
-        #[\ReturnTypeWillChange]
-        public function jsonSerialize() : mixed {
-            $arr = array(
-                "code" => $this->code,
-                "error" => $this->error,
-                "details" => array(
-                    "action" => $this->action,
-                    "arguments" => $this->arguments));
-            if ($this->trace !== NULL) {
-                $arr["details"]["trace"] = $this->trace;
-            }
-            return $arr;
+        public function getArguments() {
+            return $this->arguments;
         }
 
-        private static function resolveErrorCode($e) {
-            if ($e instanceof AuthorizationException) {
-                return 403;
-            }
-            if ($e instanceof AuthenticationException) {
-                return 401;
-            }
-            return 400;
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize() : mixed {
+            return array(
+                "code" => $this->code,
+                "error" => $this->error,
+                "message" => $this->message,
+                "details" => array(
+                    "arguments" => $this->arguments,
+                    "trace" => $this->trace));
         }
     }
 ?>

@@ -1,5 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Album.php");
+    require_once(dirname(__FILE__) . "/../exception/EntityNotFoundException.php");
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
@@ -51,8 +52,8 @@
             global $databaseProvider, $placeService;
 
             $place = $placeService->getRegularPlace($placeId);
-            if ($place === NULL) {                
-                throw new InvalidArgumentException("A regular place with the identifier " . $placeId . " does not exist.");
+            if ($place === NULL) {            
+                throw new EntityNotFoundException("place", $placeId);
             }
 
             $albumName = $place->getName() . " " . date("j.n.Y", $timestamp);

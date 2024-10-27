@@ -1,19 +1,9 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
-
     class CreatePlaceAlbumHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $albumService;
-
-            $response = (new GetPlaceHandler())
-                ->handle(array(
-                    "placeId" => $input["placeId"]));
-            if ($response["code"] != 200) {
-                return $response;
-            }
-
-            $response = $albumService->createAlbum($input["placeId"], $input["timestamp"]);
-            return $this->createResponse(201, $response);
+            global $albumService;
+            
+            return $this->createResponse(201, $albumService->createAlbum($input["placeId"], $input["timestamp"]));
         }
 
         public function getRequiredRole() {

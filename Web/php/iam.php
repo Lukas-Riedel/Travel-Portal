@@ -33,7 +33,7 @@
         echo json_encode($authenticationResult, JSON_HEX_QUOT | JSON_HEX_TAG);
     }
     catch (Throwable $e) {
-        $error = new TargetError($e, "IAM", $requestBody, FALSE);
+        $error = new TargetError(401, $e, $requestBody);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
     }
