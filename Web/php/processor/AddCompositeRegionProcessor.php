@@ -1,9 +1,7 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetCategoryIdentifierProcessor.php");
-
     class AddCompositeRegionProcessor extends Processor {    
         public function process($input) {
-            global $databaseProvider, $schedulingProvider, $configuration;
+            global $databaseProvider, $schedulingProvider, $configuration, $categoryService;
 
             $referencableRegionNames = $databaseProvider
                 ->statementBuilder("SELECT name FROM category_identifier")
@@ -27,21 +25,17 @@
                 }
             }
 
-            $getCategoryIdentifierProcessor = new GetCategoryIdentifierProcessor();
-            $categoryIdentifier = $getCategoryIdentifierProcessor
-                ->process(array(
-                    "name" => $input["name"],
-                    "category" => $input["category"]));
-            
+            $categoryIdentifier = $categoryService->getOrCreateCategoryIdentifier($input["name"], $input["category"]);            
             $databaseProvider
                 ->statementBuilder("DELETE FROM region_composite WHERE category_id = ?")
                 ->withParameters($categoryIdentifier->getId())
                 ->execute();
 
             foreach ($input["includedRegions"] as &$includedRegion) {
-                $subjectCategoryIdentifier = $getCategoryIdentifierProcessor
-                    ->process(array(
-                        "name" => $includedRegion));
+                $subjectCategoryIdentifier = $categoryService->getCategoryIdentifier($includedRegion);
+                if ($subjectCategoryIdentifier === NULL) {
+                    throw new InvalidArgumentException("The included category " . $includedRegion . " could not be found.");
+                }
 
                 $databaseProvider
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'INCLUDE')")
@@ -50,9 +44,10 @@
             }
 
             foreach ($input["excludedRegions"] as &$excludedRegion) {
-                $subjectCategoryIdentifier = $getCategoryIdentifierProcessor
-                    ->process(array(
-                        "name" => $excludedRegion));
+                $subjectCategoryIdentifier = $categoryService->getCategoryIdentifier($excludedRegion);
+                if ($subjectCategoryIdentifier === NULL) {
+                    throw new InvalidArgumentException("The included category " . $excludedRegion . " could not be found.");
+                }
 
                 $databaseProvider
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'EXCLUDE')")

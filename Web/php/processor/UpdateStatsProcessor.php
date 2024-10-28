@@ -1,11 +1,7 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetCategoryIdentifierProcessor.php");
-
     class UpdateStatsProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration, $schedulingProvider;
-            
-            $getCategoryIdentifierProcessor = new GetCategoryIdentifierProcessor();
+            global $databaseProvider, $configuration, $schedulingProvider, $categoryService;
             
             // Use default values if not specified otherwise.
             $start = 0;
@@ -41,11 +37,7 @@
                     // Update variable categories if the trip end falls into the category timespan.
                     foreach ($configuration["variableTimeCategories"] as $categoryName => $categoryTimespan) {
                         if (time() - $end < $categoryTimespan) {
-                            $categoryIdentifier = $getCategoryIdentifierProcessor
-                                ->process(array(
-                                    "name" => $categoryName,
-                                    "category" => "VARIABLE"));
-                            
+                            $categoryIdentifier = $categoryService->getOrCreateCategoryIdentifier($categoryName, "VARIABLE");                            
                             $schedulingProvider
                                 ->scheduleJobExecution("UpdateStats", array(
                                     "type" => "VARIABLE_TIME_CATEGORY", 

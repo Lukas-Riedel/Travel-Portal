@@ -11,7 +11,7 @@
         <link rel="icon" href="img/icon.jpg"/>
         <script>
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('json/service-worker.js');
+                navigator.serviceWorker.register('/js/service-worker.js');
             }
         </script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
@@ -26,7 +26,7 @@
     $commonFiles = array_diff(scandir($commonFilesPath), array('.', '..'));
     $version = filemtime(dirname(__FILE__) . "/../css/main.css")
         + filemtime(dirname(__FILE__) . "/../json/manifest.json") 
-        + filemtime(dirname(__FILE__) . "/../json/service-worker.json");
+        + filemtime(dirname(__FILE__) . "/../js/service-worker.js");
     foreach ($commonFiles as &$file) {
         $version += filemtime($commonFilesPath . "/" . $file);
     }

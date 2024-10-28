@@ -1,12 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/../GeoPHP/geoPHP.inc");
-    require_once(dirname(__FILE__) . "/GetCategoryIdentifierProcessor.php");
 
     class UpdateCategoriesProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $schedulingProvider, $configuration;
-
-            $getCategoryIdentifierProcessor = new GetCategoryIdentifierProcessor();
+            global $databaseProvider, $schedulingProvider, $configuration, $categoryService;
 
             $placeIdentifierRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM place_identifier WHERE id = ?")
@@ -54,10 +51,7 @@
             $placeCategoryIds = array();
             
             // Country category.
-            $placeCategoryIds[] = $getCategoryIdentifierProcessor
-                ->process(array(
-                    "name" => $placeIdentifierRow["country"],
-                    "category" => "COUNTRY"))->getId();
+            $placeCategoryIds[] = $categoryService->getOrCreateCategoryIdentifier($placeIdentifierRow["country"], "COUNTRY")->getId(); 
         
             // Geographical region categories.
             $point = geoPHP::load("POINT (" . $placeIdentifierRow["longitude"] . " " . $placeIdentifierRow["latitude"] . ")", "wkt");

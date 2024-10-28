@@ -1,9 +1,7 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetCategoryIdentifierProcessor.php");
-
     class AddGeographicalRegionExtensionProcessor extends Processor {    
         public function process($input) {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $schedulingProvider, $categoryService;
             
             $country = isset($input["country"]) ? $input["country"] : NULL;
             $geoJson = json_encode(array(
@@ -14,10 +12,7 @@
                         floatval($input["longitude"]), 
                         floatval($input["latitude"])))), true);
             
-            $categoryIdentifier = (new GetCategoryIdentifierProcessor())
-                ->process(array(
-                    "name" => $input["name"],
-                    "category" => $input["category"]));
+            $categoryIdentifier = $categoryService->getOrCreateCategoryIdentifier($input["name"], $input["category"]);
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO region_geographical (category_id, country, json, radius) VALUES (?, ?, ?, 0)")

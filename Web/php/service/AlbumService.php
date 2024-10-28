@@ -56,26 +56,29 @@
                 throw new EntityNotFoundException("place", $placeId);
             }
 
-            $albumName = $place->getName() . " " . date("j.n.Y", $timestamp);
-
             $apiResponse = (new GetGoogleResponseProcessor())
                 ->process(array(
                     "method" => "POST", 
                     "url" => "https://photoslibrary.googleapis.com/v1/albums", 
                     "payload" => json_encode(array(
                         "album" => array(
-                            "title" => $albumName)))));
+                            "title" => $this->getAlbumName($place->getName(), $timestamp))))));
     
             if (!isset($apiResponse["id"])) {
-                throw new RuntimeException("The album " . $albumName . " could not be created.");
+                throw new RuntimeException("The album could not be created.");
             }
 
-            $resolvedAlbumId = $this->getOrCreateAlbumIdentifier($apiResponse["id"]);        
+            $resolvedAlbumId = $this->getOrCreateAlbumIdentifier($apiResponse["id"]);
+
             (new UpdateAlbumProcessor())
                 ->process(array(
                     "albumId" => $resolvedAlbumId));
 
             return $this->getAlbum($resolvedAlbumId);
+        }
+
+        private function getAlbumName($placeName, $timestamp) {
+            return $placeName . " " . date("j.n.Y", $timestamp);
         }
     }
 ?>

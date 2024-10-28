@@ -1,16 +1,11 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetCategoryIdentifierProcessor.php");
-
     class AddGeographicalRegionProcessor extends Processor {    
         public function process($input) {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $schedulingProvider, $categoryService;
             
             $country = isset($input["country"]) ? $input["country"] : NULL;
                         
-            $categoryIdentifier = (new GetCategoryIdentifierProcessor())
-                ->process(array(
-                    "name" => $input["name"],
-                    "category" => $input["category"]));
+            $categoryIdentifier = $categoryService->getOrCreateCategoryIdentifier($input["name"], $input["category"]); 
 
             $databaseProvider
                 ->statementBuilder("DELETE FROM region_geographical WHERE category_id = ? AND country " . $databaseProvider->getIsNullOrEqualTo($country))
