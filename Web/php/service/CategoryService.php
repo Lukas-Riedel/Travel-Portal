@@ -33,5 +33,66 @@
                 
             return $this->getCategoryIdentifier($name);
         }
+
+        public function createCompositeRegion($name, $category, $includedRegions, $excludedRegions) {
+            global $databaseProvider, $schedulingProvider, $configuration, $placeService;
+
+            // Find out what can the composite regions consist of.
+            $referencableRegionNames = $databaseProvider
+                ->statementBuilder("SELECT name FROM category_identifier")
+                ->getResultSetForColumn("name");
+            
+            foreach ($configuration["countries"] as $countryName => $countryConfigurationValue) {
+                if (!in_array($countryName, $referencableRegionNames)) {
+                    $referencableRegionNames[] = $countryName;
+                }
+            }
+
+            // Verify that all referenced regions exist.
+            foreach ($includedRegions as &$includedRegion) {
+                if (!in_array($includedRegion, $referencableRegionNames)) {
+                    throw new InvalidArgumentException("The included region " . $includedRegion . " does not exist.");
+                }
+            }
+
+            foreach ($excludedRegions as &$excludedRegion) {
+                if (!in_array($excludedRegion, $referencableRegionNames)) {
+                    throw new InvalidArgumentException("The excluded region " . $excludedRegion . " does not exist.");
+                }
+            }
+
+            // Create the region.
+            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);        
+            $databaseProvider
+                ->statementBuilder("DELETE FROM region_composite WHERE category_id = ?")
+                ->withParameters($categoryIdentifier->getId())
+                ->execute();
+
+            foreach ($includedRegions as &$includedRegion) {
+                $subjectCategoryIdentifier = $categoryService->getCategoryIdentifier($includedRegion);
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'INCLUDE')")
+                    ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
+                    ->execute();
+            }
+
+            foreach ($excludedRegions as &$excludedRegion) {
+                $subjectCategoryIdentifier = $categoryService->getCategoryIdentifier($excludedRegion);
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'EXCLUDE')")
+                    ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
+                    ->execute();
+            }
+
+            $placeIdentifiers = $placeService->getAllPlaceIdentifiers();
+
+            foreach ($placeIdentifier as &$placeIdentifiers) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateCategories", array(
+                        "placeId" => $placeIdToUpdate->getId()), NULL);
+            }
+            
+            return $categoryIdentifier;
+        }
     }
 ?>

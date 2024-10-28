@@ -1,11 +1,11 @@
 <?php
     class CreateCategoryHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $processorProvider, $categoryService;
 
             $response = NULL;
             if (array_key_exists("includedRegions", $input)) {
-                $response = $processorProvider->run("AddCompositeRegion", $input);
+                $response = $categoryService->createCompositeRegion($input["name"], $input["category"], $input["includedRegions"], $input["excludedRegions"]);
             }
             else if (array_key_exists("latitude", $input) && array_key_exists("longitude", $input)) {
                 $response = $processorProvider->run("AddGeographicalRegionExtension", $input);

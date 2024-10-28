@@ -40,6 +40,17 @@
                 $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
         }
 
+        public function getAllPlaceIdentifiers() {
+            global $databaseProvider, $highlightService;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT * FROM place_identifier")
+                ->getMappedResultSet(function ($placeIdentifierRow) use (&$highlightService) { 
+                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+                        $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
+                });
+        }
+
         public function getOrCreatePlaceIdentifier($name, $country, $address) {            
             global $databaseProvider, $configuration, $schedulingProvider;
 
