@@ -35,8 +35,6 @@
             }
 
             if ($decodedAccessToken["version"] !== $configuration["bearerToken"]["version"]) {
-                setcookie("accessToken", "", time() - 3600, "/");
-                setcookie("roles", "", time() - 3600, "/");
                 throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
             }
 

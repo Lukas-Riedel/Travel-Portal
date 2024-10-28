@@ -11,12 +11,10 @@
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $authenticationService = new AuthenticationService();
 
-    if (isset($_GET["apiKey"]) && !isset($_COOKIE["accessToken"])) {
+    if (isset($_GET["apiKey"]) && (!isset($_COOKIE["accessToken"]) || $_COOKIE["accessToken"] === NULL)) {
         try {
             $accessTokenResponse = $authenticationService->authenticateWithApiKey($_GET["apiKey"]);
-
-            setcookie("accessToken", $accessTokenResponse["accessToken"], time() + $accessTokenResponse["validity"], "/");
-            setcookie("roles", implode(",", $accessTokenResponse["roles"]), time() + $accessTokenResponse["validity"], "/");
+            setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse["validity"], "/");
 
             header("Location: " . $_SERVER["REQUEST_URI"]);
             exit();
@@ -26,7 +24,7 @@
         }
     }
 
-    if (!isset($_COOKIE["accessToken"]) || !isset($_COOKIE["roles"]) || !in_array("ADMIN", explode(",", $_COOKIE["roles"]))) {
+    if (!isset($_COOKIE["accessToken"]) || $_COOKIE["accessToken"] === NULL || !in_array("ADMIN", json_decode($_COOKIE["accessToken"], TRUE)["roles"])) {
         $originUrl = substr($_SERVER['PHP_SELF'], strlen($configuration["fileSystemDir"] . "/"));
 
         if (!empty($_SERVER['QUERY_STRING'])) {

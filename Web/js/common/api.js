@@ -484,7 +484,7 @@ class Api {
     async #getBearerToken() {
         const cachedBearerToken = document.cookie.match("(^|;)\\s*accessToken\\s*=\\s*([^;]+)")?.pop();
         if (cachedBearerToken !== undefined) {
-            return decodeURIComponent(cachedBearerToken);
+            return JSON.parse(decodeURIComponent(cachedBearerToken)).accessToken;
         }
         
         const response = await new Promise((resolve, reject) => {
@@ -500,8 +500,7 @@ class Api {
 
         const expiration = new Date();
         expiration.setTime(expiration.getTime() + (response.validity * 1000));
-        document.cookie = "accessToken=" + response.accessToken + "; expires=" + expiration.toUTCString() + "; path=/";
-        document.cookie = "roles=" + response.roles.join(",") + "; expires=" + expiration.toUTCString() + "; path=/";
+        document.cookie = "accessToken=" + JSON.stringify(response) + "; expires=" + expiration.toUTCString() + "; path=/";
 
         return response.accessToken;
     }

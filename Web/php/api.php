@@ -105,6 +105,7 @@
         $error = new TargetError(401, $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
+        setcookie("accessToken", "", time() - 3600, "/");
         exit();
     }
     catch (AuthorizationException $e) {

@@ -15,7 +15,7 @@
             require_once(dirname(__FILE__) . "/php/header.php");
         ?> 
         <script>
-            loadPage(async () => await init(<?php echo $_GET['year']; ?>, <?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", explode(",", $_COOKIE["roles"]))); ?>));
+            loadPage(async () => await init(<?php echo $_GET['year']; ?>, <?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", json_decode($_COOKIE["accessToken"], TRUE)["roles"])); ?>));
         </script>
     </head>
     <body>

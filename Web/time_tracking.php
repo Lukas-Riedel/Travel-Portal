@@ -12,7 +12,7 @@
         ?> 
         <title>Sledování času</title>
         <script>
-            loadPage(async () => await init(<?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", explode(",", $_COOKIE["roles"]))); ?>));
+            loadPage(async () => await init(<?php echo json_encode(isset($_COOKIE["accessToken"]) && in_array("ADMIN", json_decode($_COOKIE["accessToken"], TRUE)["roles"])); ?>));
         </script>
     </head>
     <body>
