@@ -48,7 +48,7 @@ function addMarker(place, map, bounds) {
         title: getPlacePrettyName(place.name),
         icon: getFlagMarker(color, map.getZoom()) 
     });
-    marker.addListener("click", _ => window.location = "place/" + place.name + "," + place.country);
+    marker.addListener("click", _ => window.location = "place/" + place.id);
     if (typeof(handleMarkerRightClick) === typeof(Function)) {
         marker.addListener("rightclick", _ => handleMarkerRightClick(place));
     }
