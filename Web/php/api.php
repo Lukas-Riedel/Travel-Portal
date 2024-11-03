@@ -46,7 +46,7 @@
     unset($_GET["path"]);
     
     $requestBody = json_decode(file_get_contents('php://input'), TRUE);
-    $input = array_merge($_GET, $requestBody == NULL ? array() : $requestBody);
+    $input = array_merge(filterArrayKeys($_GET), filterArrayKeys($requestBody ?? []));
     
     try {            
         set_error_handler($onError);
@@ -96,31 +96,9 @@
                 exit();
             }
         }
-    }   
-    catch (EntityNotFoundException $e) {
-        $error = new TargetError(404, $e, $input);
-        http_response_code($error->getCode());
-        echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
-        $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
-        exit();
     } 
-    catch (AuthenticationException $e) {
-        $error = new TargetError(401, $e, $input);
-        http_response_code($error->getCode());
-        echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
-        $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
-        setcookie("accessToken", "", time() - 3600, "/");
-        exit();
-    }
-    catch (AuthorizationException $e) {
-        $error = new TargetError(403, $e, $input);
-        http_response_code($error->getCode());
-        echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
-        $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
-        exit();
-    }
     catch (Throwable $e) {
-        $error = new TargetError(400, $e, $input);
+        $error = new TargetError(getErrorCode($e), $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
         $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
@@ -131,6 +109,19 @@
     }
 
     header("Location: https://" . $configuration["hostName"] . "/swagger");
+
+    function getErrorCode($e) {
+        if ($e instanceof EntryNotFoundException) {
+            return 404;
+        }
+        if ($e instanceof AuthenticationException) {
+            return 401;
+        }
+        if ($e instanceof AuthorizationException) {
+            return 403;
+        }
+        return 404;
+    }
 
     function getAuthorizationHeader() {
         $headers = NULL;
@@ -161,5 +152,11 @@
             }
         }
         return NULL;
+    }
+
+    function filterArrayKeys($array) {
+        return array_filter($array, function($key) {
+            return is_string($key);
+        }, ARRAY_FILTER_USE_KEY);
     }
 ?>

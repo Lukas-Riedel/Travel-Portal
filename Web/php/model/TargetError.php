@@ -41,8 +41,10 @@
                 "error" => $this->error,
                 "message" => $this->message,
                 "details" => array(
+                    "endpoint" => parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH),
                     "arguments" => $this->arguments,
-                    "trace" => $this->trace));
+                    "trace" => $this->trace,
+                    "ip" => $_SERVER["REMOTE_ADDR"]));
         }
     }
 ?>
