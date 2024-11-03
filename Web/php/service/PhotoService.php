@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../model/Photo.php");
 
     class PhotoService {
-        public function getPhoto($photoId) {
+        public function getPhoto($photoId) : ?Photo {
             global $databaseProvider;            
                 
             $photoRow = $databaseProvider

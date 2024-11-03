@@ -5,14 +5,14 @@
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
 
     class PlaceService {
-        public function getRegularPlace($placeId) {
+        public function getRegularPlace($placeId) : ?Place {
             $places = (new GetPlacesProcessor())
                 ->process(array(
                     "placeId" => $placeId));
             return count($places) === 1 ? $places[0] : NULL;
         }
 
-        public function getPlaceIdentifier($name, $country) {
+        public function getPlaceIdentifier($name, $country) : ?PlaceIdentifier {
             global $databaseProvider, $highlightService;
 
             $placeIdentifierRow = $databaseProvider
@@ -40,7 +40,7 @@
                 $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
         }
 
-        public function getAllPlaceIdentifiers() {
+        public function getAllPlaceIdentifiers() : array {
             global $databaseProvider, $highlightService;
             
             return $databaseProvider
@@ -51,7 +51,7 @@
                 });
         }
 
-        public function getPlaceIdentifiersByCoordinates($latitude, $longitude) {
+        public function getPlaceIdentifiersByCoordinates($latitude, $longitude) : array {
             global $databaseProvider, $highlightService;
             
             return $databaseProvider
@@ -63,7 +63,7 @@
                 });
         }
 
-        public function getOrCreatePlaceIdentifier($name, $country, $address) {            
+        public function getOrCreatePlaceIdentifier($name, $country, $address) : PlaceIdentifier {            
             global $databaseProvider, $configuration, $schedulingProvider;
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
@@ -93,7 +93,7 @@
             return $placeIdentifier;
         }
 
-        private function getSuggestedExcerpt($name, $country) {
+        private function getSuggestedExcerpt($name, $country) : ?string {
             global $configuration;
 
             return (new GetChatResponseProcessor())

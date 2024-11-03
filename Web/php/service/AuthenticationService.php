@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../exception/AuthenticationException.php");
 
     class AuthenticationService {
-        public function getAccessToken($accessToken) {
+        public function getAccessToken($accessToken) : mixed {
             global $configuration;
 
             if ($accessToken === NULL) {
@@ -41,7 +41,7 @@
             return $decodedAccessToken;
         }
 
-        public function authenticateWithCredentials($username, $password) {
+        public function authenticateWithCredentials($username, $password) : mixed {
             global $configuration, $databaseProvider;
 
             $userRow = $databaseProvider
@@ -61,7 +61,7 @@
             return $this->generateAuthenticationResult($roles, $configuration["bearerToken"]["validity"]);
         }
 
-        public function authenticateWithApiKey($apiKey) {
+        public function authenticateWithApiKey($apiKey) : mixed {
             global $configuration, $databaseProvider;
             
             $roles = explode(",", $databaseProvider
@@ -76,11 +76,11 @@
             return $this->generateAuthenticationResult($roles, $configuration["bearerToken"]["validity"]);
         }
 
-        public function authenticateAsAdmin($validity) {
+        public function authenticateAsAdmin($validity) : mixed {
             return $this->generateAuthenticationResult(array("ADMIN", "USER"), $validity);
         }
 
-        private function generateAuthenticationResult($roles, $validity) {
+        private function generateAuthenticationResult($roles, $validity) : mixed {
             global $configuration;
 
             $result = array(

@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
 
     class HighlightService {
-        public function getHighlight($highlightId) {
+        public function getHighlight($highlightId) : ?Highlight {
             global $databaseProvider, $photoService;            
                 
             $highlightRow = $databaseProvider

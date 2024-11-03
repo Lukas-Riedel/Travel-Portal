@@ -5,7 +5,7 @@
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class AlbumService {
-        public function getAlbum($albumId) {
+        public function getAlbum($albumId) : ?Album {
             global $databaseProvider;
 
             $albumRow = $databaseProvider
@@ -21,18 +21,16 @@
                 $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"]);
         }
 
-        public function getAlbumIdentifier($externalId) {
+        public function getAlbumIdentifier($externalId) : ?string {
             global $databaseProvider;
             
-            $albumIdentifier = $databaseProvider
+            return $databaseProvider
                 ->statementBuilder("SELECT id FROM album_identifier WHERE external_id = ?")
                 ->withParameters($externalId)
                 ->getFirstColumn("id");
-
-            return $albumIdentifier;
         }
         
-        public function getOrCreateAlbumIdentifier($externalId) {
+        public function getOrCreateAlbumIdentifier($externalId) : string {
             global $databaseProvider;
 
             $albumIdentifier = $this->getAlbumIdentifier($externalId);
@@ -48,8 +46,8 @@
             return $this->getAlbumIdentifier($externalId);
         }
 
-        public function createAlbum($placeId, $timestamp) {
-            global $databaseProvider, $placeService;
+        public function createAlbum($placeId, $timestamp) : Album {
+            global $placeService;
 
             $place = $placeService->getRegularPlace($placeId);
             if ($place === NULL) {            
@@ -77,7 +75,7 @@
             return $this->getAlbum($resolvedAlbumId);
         }
 
-        private function getAlbumName($placeName, $timestamp) {
+        private function getAlbumName($placeName, $timestamp) : string {
             return $placeName . " " . date("j.n.Y", $timestamp);
         }
     }

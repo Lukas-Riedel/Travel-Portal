@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
 
     class CategoryService {
-        public function getCategoryIdentifier($name) {
+        public function getCategoryIdentifier($name) : ?CategoryIdentifier {
             global $databaseProvider, $highlightService;
             
             $categoryIdentifierRow = $databaseProvider
@@ -18,7 +18,7 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
         
-        public function getOrCreateCategoryIdentifier($name, $category) { 
+        public function getOrCreateCategoryIdentifier($name, $category) : CategoryIdentifier { 
             global $databaseProvider;
 
             $categoryIdentifier = $this->getCategoryIdentifier($name);
@@ -34,7 +34,7 @@
             return $this->getCategoryIdentifier($name);
         }
 
-        public function createCompositeRegion($name, $category, $includedRegions, $excludedRegions) {
+        public function createCompositeRegion($name, $category, $includedRegions, $excludedRegions) : CategoryIdentifier {
             global $databaseProvider, $schedulingProvider, $configuration, $placeService;
 
             // Find out what can the composite regions consist of.
@@ -69,7 +69,7 @@
                 ->execute();
 
             foreach ($includedRegions as &$includedRegion) {
-                $subjectCategoryIdentifier = $categoryService->getCategoryIdentifier($includedRegion);
+                $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
                 $databaseProvider
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'INCLUDE')")
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
@@ -77,7 +77,7 @@
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
-                $subjectCategoryIdentifier = $categoryService->getCategoryIdentifier($excludedRegion);
+                $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedRegion);
                 $databaseProvider
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'EXCLUDE')")
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
@@ -86,7 +86,7 @@
 
             $placeIdentifiers = $placeService->getAllPlaceIdentifiers();
 
-            foreach ($placeIdentifier as &$placeIdentifiers) {
+            foreach ($placeIdentifiers as &$placeIdentifier) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateCategories", array(
                         "placeId" => $placeIdentifier->getId()), NULL);
@@ -95,7 +95,7 @@
             return $categoryIdentifier;
         }
 
-        public createGeographicalRegionExtensionRegion($name, $country, $category, $latitude, $longitude) {
+        public function createGeographicalRegionExtensionRegion($name, $country, $category, $latitude, $longitude) : CategoryIdentifier {
             global $databaseProvider, $schedulingProvider, $placeService;
             
             $geoJson = json_encode(array(
@@ -115,7 +115,7 @@
 
             $placeIdentifiers = $placeService->getPlaceIdentifiersByCoordinates($latitude, $longitude);
 
-            foreach ($placeIdentifier as &$placeIdentifiers) {
+            foreach ($placeIdentifiers as &$placeIdentifier) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateCategories", array(
                         "placeId" => $placeIdentifier->getId()), NULL);
