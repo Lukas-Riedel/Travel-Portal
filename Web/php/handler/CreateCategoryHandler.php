@@ -8,7 +8,7 @@
                 $response = $categoryService->createCompositeRegion($input["name"], $input["category"], $input["includedRegions"], $input["excludedRegions"]);
             }
             else if (array_key_exists("latitude", $input) && array_key_exists("longitude", $input)) {
-                $response = $processorProvider->run("AddGeographicalRegionExtension", $input);
+                $response = $categoryService->createGeographicalRegionExtensionRegion($input["name"], isset($input["country"]) ? $input["country"] : NULL, $input["category"], $input["latitude"], $input["longitude"]);
             }
             else {
                 $response = $processorProvider->run("AddGeographicalRegion", $input);

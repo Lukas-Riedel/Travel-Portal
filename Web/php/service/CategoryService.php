@@ -89,7 +89,36 @@
             foreach ($placeIdentifier as &$placeIdentifiers) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateCategories", array(
-                        "placeId" => $placeIdToUpdate->getId()), NULL);
+                        "placeId" => $placeIdentifier->getId()), NULL);
+            }
+            
+            return $categoryIdentifier;
+        }
+
+        public createGeographicalRegionExtensionRegion($name, $country, $category, $latitude, $longitude) {
+            global $databaseProvider, $schedulingProvider, $placeService;
+            
+            $geoJson = json_encode(array(
+                "type" => "Feature", 
+                "geometry" => array(
+                    "type" => "Point", 
+                    "coordinates" => array(
+                        floatval($longitude), 
+                        floatval($latitude)))), TRUE);
+            
+            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
+            $databaseProvider
+                ->statementBuilder("INSERT INTO region_geographical (category_id, country, json, radius) VALUES (?, ?, ?, 0)")
+                ->withParameters($categoryIdentifier->getId(), $country, $geoJson)
+                ->execute();
+                
+
+            $placeIdentifiers = $placeService->getPlaceIdentifiersByCoordinates($latitude, $longitude);
+
+            foreach ($placeIdentifier as &$placeIdentifiers) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateCategories", array(
+                        "placeId" => $placeIdentifier->getId()), NULL);
             }
             
             return $categoryIdentifier;
