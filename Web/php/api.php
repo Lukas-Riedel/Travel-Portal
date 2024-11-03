@@ -22,6 +22,7 @@
     require_once(dirname(__FILE__) . "/service/TripService.php");
     require_once(dirname(__FILE__) . "/service/AlbumService.php");
     require_once(dirname(__FILE__) . "/service/CategoryService.php");
+    require_once(dirname(__FILE__) . "/service/ExpenseService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -33,6 +34,7 @@
     $tripService = new TripService();
     $albumService = new AlbumService();
     $categoryService = new CategoryService();
+    $expenseService = new ExpenseService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
@@ -120,7 +122,7 @@
         if ($e instanceof AuthorizationException) {
             return 403;
         }
-        return 404;
+        return 400;
     }
 
     function getAuthorizationHeader() {

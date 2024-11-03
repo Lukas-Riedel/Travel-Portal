@@ -3,7 +3,7 @@
     
     class CreateTripExpenseHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $processorProvider, $expenseService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddExpense", $input);
+            $response = $expenseService->createTripExpense($input["tripId"], $input["cost"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : NULL);
             return $this->createResponse(201, $response);
         }
 

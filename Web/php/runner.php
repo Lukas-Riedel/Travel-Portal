@@ -13,6 +13,7 @@
     require_once(dirname(__FILE__) . "/service/TripService.php");
     require_once(dirname(__FILE__) . "/service/AlbumService.php");
     require_once(dirname(__FILE__) . "/service/CategoryService.php");
+    require_once(dirname(__FILE__) . "/service/ExpenseService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -26,6 +27,7 @@
     $tripService = new TripService();
     $albumService = new AlbumService();
     $categoryService = new CategoryService();
+    $expenseService = new ExpenseService();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);
