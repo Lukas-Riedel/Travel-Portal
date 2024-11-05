@@ -62,7 +62,8 @@
             }
 
             // Create the region.
-            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);        
+            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);    
+
             $databaseProvider
                 ->statementBuilder("DELETE FROM region_composite WHERE category_id = ?")
                 ->withParameters($categoryIdentifier->getId())
@@ -95,6 +96,34 @@
             return $categoryIdentifier;
         }
 
+        public function createGeographicalRegion($name, $country, $category, $radius, $geoJson) : CategoryIdentifier {
+            global $databaseProvider, $schedulingProvider, $placeService;
+                                    
+            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
+
+            $databaseProvider
+                ->statementBuilder("DELETE FROM region_geographical WHERE category_id = ? AND country " . $databaseProvider->getIsNullOrEqualTo($country))
+                ->withParameters($categoryIdentifier->getId())
+                ->execute();
+                
+            $databaseProvider
+                ->statementBuilder("INSERT INTO region_geographical (category_id, country, json, radius) VALUES (?, ?, ?, ?)")
+                ->withParameters($categoryIdentifier->getId(), $country, $geoJson, $radius)
+                ->execute();
+
+            $placeIdentifiers = $country === NULL
+                ? $placeService->getAllPlaceIdentifiers()
+                : $placeService->getPlaceIdentifiersByCountry($country);
+
+            foreach ($placeIdentifiers as &$placeIdentifier) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateCategories", array(
+                        "placeId" => $placeIdentifier->getId()), NULL);
+            }
+            
+            return $categoryIdentifier;
+        }
+
         public function createGeographicalRegionExtensionRegion($name, $country, $category, $latitude, $longitude) : CategoryIdentifier {
             global $databaseProvider, $schedulingProvider, $placeService;
             
@@ -107,11 +136,11 @@
                         floatval($latitude)))), TRUE);
             
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
+
             $databaseProvider
                 ->statementBuilder("INSERT INTO region_geographical (category_id, country, json, radius) VALUES (?, ?, ?, 0)")
                 ->withParameters($categoryIdentifier->getId(), $country, $geoJson)
-                ->execute();
-                
+                ->execute();                
 
             $placeIdentifiers = $placeService->getPlaceIdentifiersByCoordinates($latitude, $longitude);
 

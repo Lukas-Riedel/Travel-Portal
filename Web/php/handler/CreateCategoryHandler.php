@@ -1,7 +1,7 @@
 <?php
     class CreateCategoryHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $categoryService;
+            global $categoryService;
 
             $response = NULL;
             if (array_key_exists("includedRegions", $input)) {
@@ -11,7 +11,7 @@
                 $response = $categoryService->createGeographicalRegionExtensionRegion($input["name"], isset($input["country"]) ? $input["country"] : NULL, $input["category"], $input["latitude"], $input["longitude"]);
             }
             else {
-                $response = $processorProvider->run("AddGeographicalRegion", $input);
+                $response = $categoryService->createGeographicalRegionExtensionRegion($input["name"], isset($input["country"]) ? $input["country"] : NULL, $input["category"], $input["radius"], $input["geoJson"]);
             }
     
             return $this->createResponse(201, $response);

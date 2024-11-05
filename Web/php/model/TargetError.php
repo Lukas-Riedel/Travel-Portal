@@ -44,7 +44,7 @@
                     "endpoint" => parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH),
                     "arguments" => $this->arguments,
                     "trace" => $this->trace,
-                    "ip" => $_SERVER["REMOTE_ADDR"]));
+                    "ipAddress" => $_SERVER["REMOTE_ADDR"]));
         }
     }
 ?>
