@@ -3,7 +3,7 @@
 
     class CreateYearHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetYearHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddHighlight", array(
-                "id" => $input["year"],
-                "type" => "year",
-                "photoId" => $input["photoId"]));
+            $response = $highlightService->createHighlight($input["year"], "year", $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 

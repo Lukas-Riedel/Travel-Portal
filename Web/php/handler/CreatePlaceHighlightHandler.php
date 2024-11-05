@@ -3,7 +3,7 @@
 
     class CreatePlaceHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddHighlight", array(
-                "id" => $input["placeId"],
-                "type" => "place",
-                "photoId" => $input["photoId"]));
+            $response = $highlightService->createHighlight($input["placeId"], "place", $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 

@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/UpdateHighlightProcessor.php");
 
-    class AddHighlightProcessor extends Processor {        
+    class RemoveHighlightProcessor extends Processor {        
         public function process($input) {
             global $databaseProvider;
 

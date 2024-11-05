@@ -3,7 +3,7 @@
 
     class CreateCategoryHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetCategoryHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddHighlight", array(
-                "id" => $input["categoryId"],
-                "type" => "category",
-                "photoId" => $input["photoId"]));
+            $response = $highlightService->createHighlight($input["categoryId"], "category", $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 

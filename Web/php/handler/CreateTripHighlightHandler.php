@@ -3,7 +3,7 @@
 
     class CreateTripHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddHighlight", array(
-                "id" => $input["tripId"],
-                "type" => "trip",
-                "photoId" => $input["photoId"]));
+            $response = $highlightService->createHighlight($input["tripId"], "trip", $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 

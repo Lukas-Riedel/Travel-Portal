@@ -18,6 +18,31 @@
             return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
                 $highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
         }
+
+        public function getTripIdentifierById($tripId) : ?TripIdentifier {
+            global $databaseProvider, $highlightService;
+            
+            $tripIdentifierRow = $databaseProvider
+                ->statementBuilder("SELECT * FROM trip_identifier WHERE id = ?")
+                ->withParameters($tripId)
+                ->getSingleRow();
+
+            if ($tripIdentifierRow === NULL) {
+                return NULL;
+            }
+
+            return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
+                $highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
+        }
+
+        public function updateMainHighlight($tripId, $highlightIdentifier) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("UPDATE trip_identifier SET main_highlight_id = ? WHERE id = ?")
+                ->withParameters($highlightIdentifier, $tripId)
+                ->execute() === 1;
+        }
         
         public function getOrCreateTripIdentifier($name, $year) { 
             global $databaseProvider;

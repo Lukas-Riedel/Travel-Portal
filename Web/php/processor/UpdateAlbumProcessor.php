@@ -2,14 +2,12 @@
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetPhotoIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetMediaItemsProcessor.php");
-    require_once(dirname(__FILE__) . "/AddHighlightProcessor.php");
 
     class UpdateAlbumProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration, $schedulingProvider, $albumService;
+            global $databaseProvider, $configuration, $schedulingProvider, $albumService, $highlightService;
 
             $getPhotoIdentifierProcessor = new GetPhotoIdentifierProcessor();
-            $addHighlightProcessor = new AddHighlightProcessor();
 
             $albumCachePath = dirname(__FILE__) . "/../../" . $configuration["cachePath"]["albumThumbnail"];
 
@@ -124,32 +122,16 @@
                             ->getFirstRow();
     
                         if ($placeRow != NULL) {
-                            $addHighlightProcessor
-                                ->process(array(
-                                    "type" => "place",
-                                    "id" => $placeRow["place_id"], 
-                                    "photoId" => $mainPhotoId));
+                            $highlightService->createHighlight($placeRow["place_id"], "place", $mainPhotoId);
     
                             if ($placeRow["trip_id"] != NULL) {
-                                $addHighlightProcessor
-                                    ->process(array(
-                                        "type" => "trip",
-                                        "id" => $placeRow["trip_id"], 
-                                        "photoId" => $mainPhotoId));
+                                $highlightService->createHighlight($placeRow["trip_id"], "trip", $mainPhotoId);
                             }
     
-                            $addHighlightProcessor
-                                ->process(array(
-                                    "type" => "year",
-                                    "id" => $placeRow["year"], 
-                                    "photoId" => $mainPhotoId));
+                            $highlightService->createHighlight($placeRow["year"], "year", $mainPhotoId);
     
                             foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
-                                $addHighlightProcessor
-                                    ->process(array(
-                                        "type" => "category",
-                                        "id" => $categoryId, 
-                                        "photoId" => $mainPhotoId));
+                                $highlightService->createHighlight($categoryId, "category", $mainPhotoId);
                             }
                         }
                     }  

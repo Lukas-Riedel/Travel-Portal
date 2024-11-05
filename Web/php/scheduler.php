@@ -11,6 +11,7 @@
     require_once(dirname(__FILE__) . "/service/AlbumService.php");
     require_once(dirname(__FILE__) . "/service/CategoryService.php");
     require_once(dirname(__FILE__) . "/service/ExpenseService.php");
+    require_once(dirname(__FILE__) . "/service/YearService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -23,6 +24,7 @@
     $albumService = new AlbumService();
     $categoryService = new CategoryService();
     $expenseService = new ExpenseService();
+    $yearService = new YearService();
 
     $schedulers = $databaseProvider
         ->statementBuilder("SELECT * FROM scheduler")

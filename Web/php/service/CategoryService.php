@@ -17,6 +17,31 @@
             return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], 
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
+
+        public function getCategoryIdentifierById($categoryId) : ?CategoryIdentifier {
+            global $databaseProvider, $highlightService;
+            
+            $categoryIdentifierRow = $databaseProvider
+                ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
+                ->withParameters($categoryId)
+                ->getSingleRow();
+
+            if ($categoryIdentifierRow === NULL) {
+                return NULL;
+            }
+            
+            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], 
+                $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+        }
+
+        public function updateMainHighlight($categoryId, $highlightIdentifier) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("UPDATE category_identifier SET main_highlight_id = ? WHERE id = ?")
+                ->withParameters($highlightIdentifier, $categoryId)
+                ->execute() === 1;
+        }
         
         public function getOrCreateCategoryIdentifier($name, $category) : CategoryIdentifier { 
             global $databaseProvider;

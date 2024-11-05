@@ -40,6 +40,31 @@
                 $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
         }
 
+        public function getPlaceIdentifierById($placeId) : ?PlaceIdentifier {
+            global $databaseProvider, $highlightService;
+            
+            $placeIdentifierRow = $databaseProvider
+                ->statementBuilder("SELECT * FROM place_identifier WHERE id = ?")
+                ->withParameters($placeId)
+                ->getSingleRow();
+
+            if ($placeIdentifierRow === NULL) {
+                return NULL;
+            }
+            
+            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+                $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
+        }
+
+        public function updateMainHighlight($placeId, $highlightIdentifier) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("UPDATE place_identifier SET main_highlight_id = ? WHERE id = ?")
+                ->withParameters($highlightIdentifier, $placeId)
+                ->execute() === 1;
+        }
+
         public function getAllPlaceIdentifiers() : array {
             global $databaseProvider, $highlightService;
             

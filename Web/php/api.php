@@ -23,6 +23,7 @@
     require_once(dirname(__FILE__) . "/service/AlbumService.php");
     require_once(dirname(__FILE__) . "/service/CategoryService.php");
     require_once(dirname(__FILE__) . "/service/ExpenseService.php");
+    require_once(dirname(__FILE__) . "/service/YearService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -35,6 +36,7 @@
     $albumService = new AlbumService();
     $categoryService = new CategoryService();
     $expenseService = new ExpenseService();
+    $yearService = new YearService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
@@ -113,7 +115,7 @@
     header("Location: https://" . $configuration["hostName"] . "/swagger");
 
     function getErrorCode($e) {
-        if ($e instanceof EntryNotFoundException) {
+        if ($e instanceof EntityNotFoundException) {
             return 404;
         }
         if ($e instanceof AuthenticationException) {
