@@ -1,41 +1,38 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHighlightIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/UpdateHighlightProcessor.php");
 
     class AddHighlightProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider;
+            global $databaseProvider, $highlightService;
 
-            $highlightIdentifier = (new GetHighlightIdentifierProcessor())
-                ->process(array(
-                    "photoId" => $input["photoId"]));
+            $highlightIdentifier = $highlightService->getOrCreateHighlightIdentifier($input["photoId"]);
 
             $highlightTable = $this->resolveHighlightTable($input["type"]);
             $highlightRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM " . $highlightTable . " WHERE id = ? AND highlight_id = ?")
-                ->withParameters($input["id"], $highlightIdentifier->getId())
+                ->withParameters($input["id"], $highlightIdentifier)
                 ->getSingleRow();
 
             if ($highlightRow == NULL) {
                 $databaseProvider
                     ->statementBuilder("INSERT INTO " . $highlightTable . " (id, highlight_id) VALUES (?, ?)")
-                    ->withParameters($input["id"], $highlightIdentifier->getId())
+                    ->withParameters($input["id"], $highlightIdentifier)
                     ->execute();
 
                 $identifierTable = $this->resolveIdentifierTable($input["type"]);
                 $databaseProvider
                     ->statementBuilder("UPDATE " . $identifierTable . " SET main_highlight_id = ? WHERE id = ? AND main_highlight_id IS NULL")
-                    ->withParameters($highlightIdentifier->getId(), $input["id"])
+                    ->withParameters($highlightIdentifier, $input["id"])
                     ->execute();
 
                 (new UpdateHighlightProcessor())
                     ->process(array(
-                        "highlightId" => $highlightIdentifier->getId()));
+                        "highlightId" => $highlightIdentifier));
             }
 
             $highlightRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM " . $highlightTable . " WHERE id = ? AND highlight_id = ?")
-                ->withParameters($input["id"], $highlightIdentifier->getId())
+                ->withParameters($input["id"], $highlightIdentifier)
                 ->getSingleRow();
             
            return $highlightIdentifier;

@@ -1,5 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHighlightIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/UpdateHighlightProcessor.php");
 
     class AddHighlightProcessor extends Processor {        
