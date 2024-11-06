@@ -1,5 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Place.php");
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetChatResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
@@ -130,6 +131,41 @@
             return $placeIdentifier;
         }
 
+        public function createPermanentPlace($name, $address) : Place {
+            return $this->createSpecialPlace(SpecialPlaceType::Permanent, $name, $address);
+        }
+
+        public function createCandidatePlace($name, $address) : Place {
+            return $this->createSpecialPlace(SpecialPlaceType::Candidate, $name, $address);
+        }
+
+        private function createSpecialPlace($specialPlaceType, $name, $address) : Place {            
+            global $databaseProvider, $configurationService;
+
+            $placeTable = $this->resolveSpecialPlaceTable($specialPlaceType);
+            $country = (new GetCoordsProcessor())
+                ->process(array(
+                    "address" => $address))->getCountry();
+
+            $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
+
+            // TODO: Remove the create-if-not-exists semantics.
+            $databaseProvider
+                ->statementBuilder("DELETE FROM " . $placeTable . " WHERE place_id = ?")
+                ->withParameters($placeIdentifier->getId())
+                ->execute();
+
+            $databaseProvider
+                ->statementBuilder("INSERT INTO " . $placeTable . " (place_id) VALUES (?)")
+                ->withParameters($placeIdentifier->getId())
+                ->execute();
+
+            $configurationService->updateConfigurationVisibility(array("public", "modifiable"), "COUNTRIES", $placeIdentifier->getCountry());
+    
+            return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
+                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(), array(), array(), array());
+        }
+
         private function getSuggestedExcerpt($name, $country) : ?string {
             global $configuration;
 
@@ -137,5 +173,20 @@
                 ->process(array(
                     "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $name, $country)));
         }
+
+        private function resolveSpecialPlaceTable($specialPlaceType) {
+            if ($specialPlaceType === SpecialPlaceType::Candidate) {
+                return "place_candidate";
+            }
+            if ($specialPlaceType === SpecialPlaceType::Permanent) {
+                return "place_permanent";
+            }
+            throw new InvalidArgumentException("Unknown special place type " . $specialPlaceType . ".");
+        }
+    }
+
+    enum SpecialPlaceType {
+        case Candidate;
+        case Permanent;
     }
 ?>

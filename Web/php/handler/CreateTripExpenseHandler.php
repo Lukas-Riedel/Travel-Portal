@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $expenseService->createTripExpense($input["tripId"], $input["cost"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : NULL);
+            $response = $expenseService->createExpense($input["tripId"], $input["cost"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : NULL);
             return $this->createResponse(201, $response);
         }
 

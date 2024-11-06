@@ -4,7 +4,7 @@
     require_once(dirname(__FILE__) . "/../processor/UpdateCurrenciesProcessor.php");
 
     class ExpenseService {
-        public function createTripExpense($tripId, $cost, $currency, $type, $description, $subscriptionId) : Expense {            
+        public function createExpense($tripId, $cost, $currency, $type, $description, $subscriptionId) : Expense {            
             global $databaseProvider, $schedulingProvider;
                       
             $exchangeRate = (new GetExchangeRateProcessor())

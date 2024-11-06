@@ -1,9 +1,19 @@
 <?php
     class CreatePlaceHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $placeService;
     
-            $response = $processorProvider->run("AddSpecialPlace", $input);
+            $response = NULL;
+            if ($input["type"] === "candidate") {
+                $response = $placeService->createCandidatePlace($input["name"], $input["address"]);
+            }
+            else if ($input["type"] === "permanent") {
+                $response = $placeService->createPermanentPlace($input["name"], $input["address"]);
+            }
+            else {
+                throw new InvalidArgumentException("Unknown special place type " . $input["type"] . ".");
+            }
+
             return $this->createResponse(201, $response);
         }
 
