@@ -1,9 +1,9 @@
 <?php
     class CreateSubscriptionHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $expenseService;
     
-            $response = $processorProvider->run("AddSubscription", $input);
+            $response = $expenseService->createSubscription($input["value"], $input["currency"], $input["description"], $input["expiration"]);
             return $this->createResponse(201, $response);
         }
 
