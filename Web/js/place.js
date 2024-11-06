@@ -1,7 +1,7 @@
 async function init(placeId, isLoggedIn) {
     const place = await api.getPlace(placeId);
 
-    if (place === undefined) {
+    if (place === undefined || place.dates.every(date => date.start > now)) {
         location.replace("https://www.google.com/maps/search/" + place.name + ", " + place.country);
     }
 
