@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $highlightService->createHighlight($input["placeId"], "place", $input["photoId"]);
+            $response = $highlightService->createPlaceHighlight($input["placeId"], $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 

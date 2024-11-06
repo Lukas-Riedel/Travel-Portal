@@ -49,11 +49,27 @@
             return $this->getHighlightIdentifier($photoId);
         }
 
-        public function createHighlight($entityId, $entityType, $photoId) : Highlight {
+        public function createPlaceHighlight($placeId, $photoId) : Highlight {
+            return $this->createHighlight(HighlightType::Place, $placeId, $photoId);
+        }
+
+        public function createTripHighlight($tripId, $photoId) : Highlight {
+            return $this->createHighlight(HighlightType::Trip, $tripId, $photoId);
+        }
+
+        public function createCategoryHighlight($categoryId, $photoId) : Highlight {
+            return $this->createHighlight(HighlightType::Category, $categoryId, $photoId);
+        }
+
+        public function createYearHighlight($year, $photoId) : Highlight {
+            return $this->createHighlight(HighlightType::Year, $year, $photoId);
+        }
+
+        private function createHighlight($highlightType, $entityId, $photoId) : Highlight {
             global $databaseProvider;
 
             $highlightIdentifier = $this->getOrCreateHighlightIdentifier($photoId);
-            $highlightTable = $this->resolveHighlightTable($entityType);
+            $highlightTable = $this->resolveHighlightTable($highlightType);
 
             // TODO: Remove the create-if-not-exists semantics.
             $highlightNotExists = $databaseProvider
@@ -67,7 +83,7 @@
                     ->withParameters($entityId, $highlightIdentifier)
                     ->execute();
 
-                $this->updateEntityMainHighlightIfNull($entityId, $entityType, $highlightIdentifier);
+                $this->updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier);
 
                 (new UpdateHighlightProcessor())
                     ->process(array(
@@ -77,52 +93,59 @@
            return $this->getHighlight($highlightIdentifier);
         }
 
-        private function resolveHighlightTable($entityType) : string {
-            if ($entityType === "place") {
+        private function resolveHighlightTable($highlightType) : string {
+            if ($highlightType === HighlightType::Place) {
                 return "highlight_place";
             }
-            if ($entityType === "trip") {
+            if ($highlightType === HighlightType::Trip) {
                 return "highlight_trip";
             }
-            if ($entityType === "category") {
+            if ($highlightType === HighlightType::Category) {
                 return "highlight_category";
             }
-            if ($entityType === "year") {
+            if ($highlightType === HighlightType::Year) {
                 return "highlight_year";
             }
-            throw new InvalidArgumentException("Unknown highlight type " . $entityType . ". Permitted values: place, trip, category, year");
+            throw new InvalidArgumentException("Unknown highlight type " . $highlightType . ".");
         }
 
-        private function updateEntityMainHighlightIfNull($entityId, $entityType, $highlightIdentifier) : void {
+        private function updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier) : void {
             global $placeService, $tripService, $categoryService, $yearService;
 
-            if ($entityType === "place") {
+            if ($highlightType === HighlightType::Place) {
                 $placeIdentifier = $placeService->getPlaceIdentifierById($entityId);
                 if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
                     $placeService->updateMainHighlight($entityId, $highlightIdentifier);
                 }
             }
-            else if ($entityType === "trip") {
+            else if ($highlightType === HighlightType::Trip) {
                 $tripIdentifier = $tripService->getTripIdentifierById($entityId);
                 if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
                     $tripService->updateMainHighlight($entityId, $highlightIdentifier);
                 }
             }
-            else if ($entityType === "category") {
+            else if ($highlightType === HighlightType::Category) {
                 $categoryIdentifier = $categoryService->getCategoryIdentifierById($entityId);
                 if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
                     $categoryService->updateMainHighlight($entityId, $highlightIdentifier);
                 }
             }
-            else if ($entityType === "year") {
+            else if ($highlightType === HighlightType::Year) {
                 $yearIdentifier = $yearService->getYearIdentifier($entityId);
                 if ($yearIdentifier !== NULL && $yearIdentifier->getMainHighlight() === NULL) {
                     $yearService->updateMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else {
-                throw new InvalidArgumentException("Unknown highlight type " . $entityType . ". Permitted values: place, trip, category, year");
+                throw new InvalidArgumentException("Unknown highlight type " . $highlightType . ".");
             }
         }
+    }
+
+    enum HighlightType {
+        case Place;
+        case Trip;
+        case Category;
+        case Year;
     }
 ?>

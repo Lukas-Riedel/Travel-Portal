@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $highlightService->createHighlight($input["year"], "year", $input["photoId"]);
+            $response = $highlightService->createYearHighlight($input["year"], $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 

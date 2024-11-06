@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $highlightService->createHighlight($input["categoryId"], "category", $input["photoId"]);
+            $response = $highlightService->createCategoryHighlight($input["categoryId"], $input["photoId"]);
             return $this->createResponse(201, $response);
         }
 
