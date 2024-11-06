@@ -3,7 +3,7 @@
     
     class CreateTripNoteHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $noteService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("AddNote", $input);
+            $response = $noteService->createNote($input["tripId"], $input["content"]);
             return $this->createResponse(201, $response);
         }
 

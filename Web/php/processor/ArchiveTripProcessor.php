@@ -1,11 +1,10 @@
 <?php
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/AddNoteProcessor.php");
 
     class ArchiveTripProcessor extends Processor {    
         public function process($input) {
-            global $configuration, $databaseProvider, $tripService;
+            global $configuration, $databaseProvider, $tripService, $noteService;
 
             $tripRow = $databaseProvider
                 ->statementBuilder("SELECT te.id, te.trip_id, te.start, te.end, ti.name FROM trip_event te INNER JOIN trip_identifier ti ON te.trip_id = ti.id WHERE ti.id = ?")
@@ -17,11 +16,7 @@
             }
             
             $archivedTripIdentifier = $tripService->getOrCreateTripIdentifier($tripRow["name"], NULL);
-
-            (new AddNoteProcessor())
-                ->process(array(
-                    "tripId" => $archivedTripIdentifier->getId(), 
-                    "content" => date("j.n.Y", $tripRow["start"]) . " - " . date("j.n.Y", $tripRow["end"])));
+            $noteService->createNote($archivedTripIdentifier->getId(), date("j.n.Y", $tripRow["start"]) . " - " . date("j.n.Y", $tripRow["end"]));
 
             $placeRows = $databaseProvider
                 ->statementBuilder("SELECT pe.id, pe.place_id, pe.start, pe.end, pi.timezone FROM place_event pe INNER JOIN place_identifier pi ON pe.place_id = pi.id WHERE pe.trip_id = ?")

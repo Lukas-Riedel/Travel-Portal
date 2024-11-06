@@ -1,13 +1,13 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Note.php");
 
-    class AddNoteProcessor extends Processor {        
-        public function process($input) {
+    class NoteService {
+        public function createNote($tripId, $content) : Note {
             global $databaseProvider;
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO note (trip_id, content) VALUES (?, ?)")
-                ->withParameters($input["tripId"], $input["content"])
+                ->withParameters($tripId, $content)
                 ->execute();
             
             $noteRow = $databaseProvider
@@ -15,14 +15,6 @@
                 ->getSingleRow();
                 
             return new Note($noteRow["id"], $noteRow["content"]);
-        }
-
-        public function getRequiredArguments() {
-            return array("tripId", "content");
-        }
-        
-        public function requiresAdminRole() {
-            return TRUE;
         }
     }
 ?>
