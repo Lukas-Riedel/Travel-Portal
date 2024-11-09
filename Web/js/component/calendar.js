@@ -234,6 +234,7 @@ function getForecastEntry(forecasts) {
     }
     
     const sun = toRangeString({ min: getTimeString(forecasts[0].sunrise), max: getTimeString(forecasts[forecasts.length - 1].sunset) });
+    const sunAltitude = toRangeString({ min: forecasts[0].sunAltitude.start.toFixed(1), max: forecasts[forecasts.length - 1].sunAltitude.end.toFixed(1) + "°" });
     
     forecasts.sort((a, b) => (b.precipitation - a.precipitation) || (b.clouds - a.clouds) || (a.temperature - b.temperature));
     
@@ -250,7 +251,7 @@ function getForecastEntry(forecasts) {
     return "<div class=\"forecast\">"
         + "<img src=\"" + imageUrl + "\"><br>"
         + "<span class=\"temperature\">" + temperature + "</span><br>"
-        + "<div class=\"details\">" + (isHistoricalForecast ? "??? %" : clouds) + "<br>" + precipitation + "<br>" + wind + "<br>" + sun + "</div>"
+        + "<div class=\"details\">" + (isHistoricalForecast ? "??? %" : clouds) + "<br>" + precipitation + "<br>" + wind + "<br>" + sun + "<br>" + sunAltitude + "</div>"
         + "</div>";
 }
 

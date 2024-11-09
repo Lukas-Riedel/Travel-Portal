@@ -1,5 +1,5 @@
 <?php
-    require_once(dirname(__FILE__) . "/../GeoPHP/geoPHP.inc");
+    require_once(dirname(__FILE__) . "/../lib/GeoPHP/geoPHP.inc");
 
     class UpdateCategoriesProcessor extends Processor {        
         public function process($input) {
