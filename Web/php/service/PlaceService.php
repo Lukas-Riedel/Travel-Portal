@@ -4,8 +4,21 @@
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetChatResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetCandidatePlacesProcessor.php");
 
     class PlaceService {
+        public function getRegularPlaces($tripId) : array {
+            return (new GetPlacesProcessor())
+                ->process(array(
+                    "tripId" => $tripId));
+        }
+
+        public function getCandidatePlaces($tripId) : array {
+            return (new GetCandidatePlacesProcessor())
+                ->process(array(
+                    "tripId" => $tripId));
+        }
+
         public function getRegularPlace($placeId) : ?Place {
             $places = (new GetPlacesProcessor())
                 ->process(array(
@@ -139,6 +152,25 @@
             return $this->createSpecialPlace(SpecialPlaceType::Candidate, $name, $address);
         }
 
+        public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
+            global $configuration, $databaseProvider;
+
+            $places = $this->getRegularPlaces($tripId);
+            
+            foreach ($places as &$place) {
+                foreach ($place->getDates() as &$date) {
+                    $timeOffset = $this->getTimezoneOffset($date->getStart(), $configuration["homeLocation"]["timezone"], $place->getTimezone());
+                    $databaseProvider
+                        ->statementBuilder("INSERT INTO place_candidate_event (place_id, trip_id, start, end) VALUES (?, ?, ?, ?)")
+                        ->withParameters($place->getId(), $archivedTripId, $date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart)
+                        ->execute();
+                    $this->deletePlaceEvent($place->getId(), $date->getStart());
+                }
+            }
+            
+            return $this->getCandidatePlaces($archivedTripId);
+        }
+
         private function createSpecialPlace($specialPlaceType, $name, $address) : Place {            
             global $databaseProvider, $configurationService;
 
@@ -182,6 +214,27 @@
                 return "place_permanent";
             }
             throw new InvalidArgumentException("Unknown special place type " . $specialPlaceType . ".");
+        }
+
+        private function getPlaceEventId($placeId, $start) : ?string {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT id FROM place_event WHERE place_id = ? AND start = ?")
+                ->withParameters($placeId, $start)
+                ->getSingleColumn("id");
+        }
+        
+        private function deletePlaceEvent($placeId, $start) : void {
+            global $googleApiClient;
+                
+            $googleApiClient->deleteCalendarEvent("places", $this->getPlaceEventId($placeId, $start));
+        }
+
+        private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) {
+            $timezone = new DateTimeZone($fromTimezone);
+            $dateTimeHome = new DateTime(date('m/d/Y H:i:s', $timestamp), new DateTimeZone($toTimezone));
+            return $timezone->getOffset($dateTimeHome) - (new DateTimeZone($toTimezone))->getOffset($dateTimeHome);
         }
     }
 

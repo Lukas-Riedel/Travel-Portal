@@ -1,8 +1,25 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Trip.php");
     require_once(dirname(__FILE__) . "/../processor/GetYearIdentifierProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetCandidateTripsProcessor.php");
 
     class TripService {
+        public function getRegularTrip($tripId) : ?Trip {
+            $trips = (new GetTripsProcessor())
+                ->process(array(
+                    "tripId" => $tripId));
+            return count($trips) === 1 ? $trips[0] : NULL;
+        }
+
+        public function getCandidateTrip($tripId) : ?Trip {
+            $trips = (new GetCandidateTripsProcessor())
+                ->process(array(
+                    "tripId" => $tripId));
+            return count($trips) === 1 ? $trips[0] : NULL;
+        }
+
         public function getTripIdentifier($name, $year) {
             global $databaseProvider, $highlightService;
             
@@ -65,6 +82,40 @@
                 ->execute();
                 
             return $this->getTripIdentifier($name, $year);
+        }
+
+        public function archiveTrip($tripId) : Trip {            
+            global $noteService, $placeService;
+
+            $trip = $this->getRegularTrip($tripId);
+            if ($trip === NULL) {
+                throw new InvalidArgumentException("The trip " . $tripId . " could not be archived because it does not exist.");
+            }
+            
+            $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), NULL);
+            $noteService->createNote($archivedTripIdentifier->getId(), date("j.n.Y", $trip->getStart()) . " - " . date("j.n.Y", $trip->getEnd()));
+
+            $placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier->getId());
+            $this->deleteTripEvent($tripId);
+
+            $noteService->updateNotesOwner($tripId, $archivedTripIdentifier->getId());
+            
+            return $this->getCandidateTrip($archivedTripIdentifier->getId());
+        }
+
+        private function getTripEventId($tripId) : ?string {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT id FROM trip_event WHERE trip_id = ?")
+                ->withParameters($tripId)
+                ->getSingleColumn("id");
+        }
+        
+        private function deleteTripEvent($tripId) : void {
+            global $googleApiClient;
+                
+            $googleApiClient->deleteCalendarEvent("trips", $this->getTripEventId($tripId));
         }
     }
 ?>
