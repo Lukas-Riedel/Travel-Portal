@@ -3,7 +3,7 @@
 
     class UpdateCategoryHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $categoryService;
 
             $response = (new GetCategoryHandler())
                 ->handle(array(
@@ -12,14 +12,15 @@
                 return $response;
             }     
 
-            $response = $processorProvider->run("ChangeCategoryIdentifier", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
+            if (isset($input["mainHighlightId"])) {
+                $categoryService->updateMainHighlight($input["categoryId"], $input["mainHighlightId"]);
             }
-    
-            return (new GetCategoryHandler())
-                ->handle(array(
-                    "categoryId" => $input["categoryId"]));
+
+            if (isset($input["name"])) {
+                $categoryService->updateName($input["categoryId"], $input["name"]);
+            }
+
+            return $categoryService->getCategoryIdentifierById($input["categoryId"]);
         }
 
         public function getRequiredRole() {

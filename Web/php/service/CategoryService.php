@@ -34,13 +34,27 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function updateMainHighlight($categoryId, $highlightIdentifier) : bool {
+        public function updateMainHighlight($categoryId, $highlightIdentifier) : void {
             global $databaseProvider;
 
-            return $databaseProvider
+            $databaseProvider
                 ->statementBuilder("UPDATE category_identifier SET main_highlight_id = ? WHERE id = ?")
                 ->withParameters($highlightIdentifier, $categoryId)
-                ->execute() === 1;
+                ->execute();
+        }
+
+        public function updateName($categoryId, $name) : void {
+            global $databaseProvider, $schedulingProvider;
+            
+            $databaseProvider
+                ->statementBuilder("UPDATE category_identifier SET name = ? WHERE id = ?")
+                ->withParameters($name, $categoryId)
+                ->execute();
+                
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateStats", array(
+                    "type" => "CATEGORY", 
+                    "id" => $categoryId), NULL);
         }
         
         public function getOrCreateCategoryIdentifier($name, $category) : CategoryIdentifier { 
