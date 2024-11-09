@@ -1,13 +1,13 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/TimeTrackingEvent.php");
 
-    class AddTimeTrackingEventProcessor extends Processor {     
-        public function process($input) {
+    class TimeTrackingService {
+        public function createTimeTrackingEvent($type, $hours, $description, $date) : TimeTrackingEvent {
             global $databaseProvider;
         
             $databaseProvider
                 ->statementBuilder("INSERT INTO tracking (type, hours, description, timestamp) VALUES (?, ?, ?, ?)")
-                ->withParameters($input["type"], doubleval($input["hours"]), $input["description"], strtotime($input["date"]) + 9 * 3600)
+                ->withParameters($type, doubleval($hours), $description, strtotime($date) + 9 * 3600)
                 ->execute();
                 
             $trackingEventRow = $databaseProvider
@@ -26,14 +26,6 @@
 
             return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], $trackingEventRow["hours"],
                 $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
-        }
-
-        public function getRequiredArguments() {
-            return array("type", "hours", "description", "date");
-        }
-        
-        public function requiresAdminRole() {
-            return TRUE;
         }
     }
 ?>

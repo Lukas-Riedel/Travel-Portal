@@ -17,6 +17,7 @@
     require_once(dirname(__FILE__) . "/service/YearService.php");
     require_once(dirname(__FILE__) . "/service/NoteService.php");
     require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
+    require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -34,6 +35,7 @@
     $yearService = new YearService();
     $noteService = new NoteService();
     $configurationService = new ConfigurationService();
+    $timeTrackingService = new TimeTrackingService();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);

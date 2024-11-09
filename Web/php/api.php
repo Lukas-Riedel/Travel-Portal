@@ -26,6 +26,7 @@
     require_once(dirname(__FILE__) . "/service/YearService.php");
     require_once(dirname(__FILE__) . "/service/NoteService.php");
     require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
+    require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -41,6 +42,7 @@
     $yearService = new YearService();
     $noteService = new NoteService();
     $configurationService = new ConfigurationService();
+    $timeTrackingService = new TimeTrackingService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
