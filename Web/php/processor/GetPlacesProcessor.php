@@ -36,6 +36,7 @@
             if (isset($input["maxEnd"])) {
                 $whereClauseBuilder->withClause("end <= ?", $input["maxEnd"]);
             }
+            $whereClauseBuilder->withClause("(album_id IS NULL OR album_id IN (SELECT id FROM album_identifier WHERE replacement_album_id IS NULL OR replacement_album_id = id))");
             $whereClause = $whereClauseBuilder->buildForAnd();
             
             $placeRows = $databaseProvider

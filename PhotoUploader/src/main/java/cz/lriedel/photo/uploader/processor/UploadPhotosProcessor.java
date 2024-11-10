@@ -6,13 +6,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +34,7 @@ import cz.lriedel.photo.uploader.model.request.AlbumPrototype;
 import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
 
 @Component
-public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
+public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs, Album> {
 
     private static final int AVAILABLE_WORKERS = 16;
     private static final int MAX_ATTEMPTS = 10;
@@ -48,6 +42,8 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     private static final String CREATE_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums";
     private static final String REFRESH_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/refresh";
     private static final String CREATE_PHOTO_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/photos";
+
+    private static final String JPG_SUFFIX = ".jpg";
 
     private final PhotoFetcher photoFetcher;
 
@@ -58,10 +54,10 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     }
 
     @Override
-    public void process(UploadPhotosArgs args) throws IOException, InterruptedException, ExecutionException {
+    public Album process(UploadPhotosArgs args) throws IOException, InterruptedException, ExecutionException {
         long albumId = tryCreateAlbum(args);
         uploadPhotos(args, albumId);
-        refreshAlbum(args, albumId);
+        return refreshAlbum(args, albumId);
     }
 
     private long tryCreateAlbum(UploadPhotosArgs args) throws JsonProcessingException {
@@ -82,8 +78,7 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
         try (Stream<Path> paths = Files.list(args.path())) {
             ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
-            Queue<Path> queue =
-                paths.sorted(comparing(UploadPhotosProcessor::getPhotoCreationTime)).collect(Collectors.toCollection(LinkedList::new));
+            Queue<Path> queue = paths.sorted(comparing(UploadPhotosProcessor::getPhotoCreationTime)).collect(Collectors.toCollection(LinkedList::new));
 
             int currentParallelRequestsCount = 1;
             int position = 1;
@@ -123,8 +118,8 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     }
 
     private double uploadPhoto(Path path, int position, String uri) throws IOException {
-        PhotoPrototype photoPrototype =
-            new PhotoPrototype(path.getFileName().toString(), position, Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
+        PhotoPrototype photoPrototype = new PhotoPrototype(UUID.randomUUID() + JPG_SUFFIX, position,
+                Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
         long start = System.currentTimeMillis();
         doUploadPhoto(photoPrototype, uri, 0);
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;

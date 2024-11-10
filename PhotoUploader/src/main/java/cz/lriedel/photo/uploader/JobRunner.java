@@ -27,9 +27,9 @@ public final class JobRunner {
 
     private final RestTemplate restTemplate;
     private final HttpEntityProvider httpEntityProvider;
-    private final Set<? extends AbstractProcessor<?>> processors;
+    private final Set<? extends AbstractProcessor<?, ?>> processors;
 
-    JobRunner(RestTemplate restTemplate, HttpEntityProvider httpEntityProvider, Set<? extends AbstractProcessor<?>> processors) {
+    JobRunner(RestTemplate restTemplate, HttpEntityProvider httpEntityProvider, Set<? extends AbstractProcessor<?, ?>> processors) {
         this.restTemplate = Objects.requireNonNull(restTemplate);
         this.httpEntityProvider = Objects.requireNonNull(httpEntityProvider);
         this.processors = Set.copyOf(processors);
@@ -37,7 +37,7 @@ public final class JobRunner {
 
     @Scheduled(fixedDelayString = "${request.interval.retry}")
     public void run() throws JsonProcessingException {
-        for (AbstractProcessor<?> processor : processors) {
+        for (AbstractProcessor<?, ?> processor : processors) {
             Job[] jobs = fetchJobs(processor);
 
             if (jobs != null) {
@@ -55,7 +55,7 @@ public final class JobRunner {
         }
     }
 
-    private Job[] fetchJobs(Processor<?> processor) throws JsonProcessingException {
+    private Job[] fetchJobs(Processor<?, ?> processor) throws JsonProcessingException {
         String jobName = processor.getClass().getSimpleName().replace(Processor.class.getSimpleName(), StringUtils.EMPTY);
         return restTemplate.exchange(String.format(GET_JOBS_ENDPOINT, jobName), HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Job[].class)
             .getBody();
