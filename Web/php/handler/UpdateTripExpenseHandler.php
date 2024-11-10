@@ -3,7 +3,7 @@
 
     class UpdateTripExpenseHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $expenseService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,7 +12,19 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("ChangeExpense", $input);
+            if (isset($input["description"])) {
+                $expenseService->updateExpenseDescription($input["expenseId"], $input["description"]);
+            }
+
+            if (isset($input["value"])) {
+                $expenseService->updateExpenseValue($input["expenseId"], $input["value"], $input["tripId"]);
+            }
+
+            if (isset($input["currency"])) {
+                $expenseService->updateExpenseCurrency($input["expenseId"], $input["currency"], $input["tripId"]);
+            }
+
+            $response = $expenseService->getExpense($input["expenseId"]);
             return $this->createResponse(200, $response);
         }
 
@@ -53,7 +65,7 @@
         public function getRequestExamples() {
             return array(
                 $this->createRequestExample("Update expense description", '{"description":"Archeologická naleziště v Římě"}'),
-                $this->createRequestExample("Update expense value", '{"cost":18,"currency":"EUR"}'));
+                $this->createRequestExample("Update expense value", '{"value":18,"currency":"EUR"}'));
         }
 
         public function getResponseExamples() {

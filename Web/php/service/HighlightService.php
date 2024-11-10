@@ -115,25 +115,25 @@
             if ($highlightType === HighlightType::Place) {
                 $placeIdentifier = $placeService->getPlaceIdentifierById($entityId);
                 if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
-                    $placeService->updateMainHighlight($entityId, $highlightIdentifier);
+                    $placeService->updatePlaceMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else if ($highlightType === HighlightType::Trip) {
                 $tripIdentifier = $tripService->getTripIdentifierById($entityId);
                 if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
-                    $tripService->updateMainHighlight($entityId, $highlightIdentifier);
+                    $tripService->updateTripMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else if ($highlightType === HighlightType::Category) {
-                $categoryIdentifier = $categoryService->getCategoryIdentifierById($entityId);
+                $categoryIdentifier = $categoryService->getCategory($entityId);
                 if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
-                    $categoryService->updateMainHighlight($entityId, $highlightIdentifier);
+                    $categoryService->updateCategoryMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else if ($highlightType === HighlightType::Year) {
                 $yearIdentifier = $yearService->getYearIdentifier($entityId);
                 if ($yearIdentifier !== NULL && $yearIdentifier->getMainHighlight() === NULL) {
-                    $yearService->updateMainHighlight($entityId, $highlightIdentifier);
+                    $yearService->updateYearMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else {

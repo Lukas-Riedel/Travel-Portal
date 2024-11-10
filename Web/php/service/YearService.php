@@ -17,7 +17,7 @@
             return new YearIdentifier($yearIdentifierRow["id"], $highlightService->getHighlight($yearIdentifierRow["main_highlight_id"]));
         }
 
-        public function updateMainHighlight($year, $highlightIdentifier) : bool {
+        public function updateYearMainHighlight($year, $highlightIdentifier) : bool {
             global $databaseProvider;
 
             return $databaseProvider

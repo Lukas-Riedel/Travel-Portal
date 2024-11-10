@@ -70,7 +70,7 @@
                 $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
         }
 
-        public function updateMainHighlight($placeId, $highlightIdentifier) : bool {
+        public function updatePlaceMainHighlight($placeId, $highlightIdentifier) : bool {
             global $databaseProvider;
 
             return $databaseProvider

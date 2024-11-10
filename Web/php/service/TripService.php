@@ -52,7 +52,7 @@
                 $highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
         }
 
-        public function updateMainHighlight($tripId, $highlightIdentifier) : bool {
+        public function updateTripMainHighlight($tripId, $highlightIdentifier) : bool {
             global $databaseProvider;
 
             return $databaseProvider

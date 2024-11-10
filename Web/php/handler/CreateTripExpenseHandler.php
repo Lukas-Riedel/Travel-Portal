@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $expenseService->createExpense($input["tripId"], $input["cost"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : NULL);
+            $response = $expenseService->createExpense($input["tripId"], $input["value"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : NULL);
             return $this->createResponse(201, $response);
         }
 
@@ -56,7 +56,7 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Create expense", '{"type":"ATTRACTION","description":"Archeologická naleziště v Římě","cost":18,"currency":"EUR","subscriptionId":8}'));
+                $this->createRequestExample("Create expense", '{"type":"ATTRACTION","description":"Archeologická naleziště v Římě","value":18,"currency":"EUR","subscriptionId":8}'));
         }
 
         public function getResponseExamples() {

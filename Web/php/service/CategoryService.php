@@ -18,7 +18,7 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function getCategoryIdentifierById($categoryId) : ?CategoryIdentifier {
+        public function getCategory($categoryId) : ?CategoryIdentifier {
             global $databaseProvider, $highlightService;
             
             $categoryIdentifierRow = $databaseProvider
@@ -34,7 +34,7 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function updateMainHighlight($categoryId, $highlightIdentifier) : void {
+        public function updateCategoryMainHighlight($categoryId, $highlightIdentifier) : void {
             global $databaseProvider;
 
             $databaseProvider
@@ -43,7 +43,7 @@
                 ->execute();
         }
 
-        public function updateName($categoryId, $name) : void {
+        public function updateCategoryName($categoryId, $name) : void {
             global $databaseProvider, $schedulingProvider;
             
             $databaseProvider

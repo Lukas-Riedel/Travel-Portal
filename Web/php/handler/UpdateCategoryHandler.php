@@ -13,14 +13,15 @@
             }     
 
             if (isset($input["mainHighlightId"])) {
-                $categoryService->updateMainHighlight($input["categoryId"], $input["mainHighlightId"]);
+                $categoryService->updateCategoryMainHighlight($input["categoryId"], $input["mainHighlightId"]);
             }
 
             if (isset($input["name"])) {
-                $categoryService->updateName($input["categoryId"], $input["name"]);
+                $categoryService->updateCategoryName($input["categoryId"], $input["name"]);
             }
 
-            return $categoryService->getCategoryIdentifierById($input["categoryId"]);
+            $response = $categoryService->getCategory($input["categoryId"]);
+            return $this->createResponse(200, $response);
         }
 
         public function getRequiredRole() {

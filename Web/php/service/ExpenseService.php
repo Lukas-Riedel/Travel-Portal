@@ -5,7 +5,18 @@
     require_once(dirname(__FILE__) . "/../processor/UpdateCurrenciesProcessor.php");
 
     class ExpenseService {
-        public function createExpense($tripId, $cost, $currency, $type, $description, $subscriptionId) : Expense {            
+        public function getExpense($expenseId) : ?Expense {
+            global $databaseProvider;
+
+            $expenseRow = $databaseProvider
+                ->statementBuilder("SELECT * FROM _expense_summary WHERE id = ?")
+                ->withParameters($expenseId)
+                ->getSingleRow();
+            
+            return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"], $expenseRow["main_currency_value"], $expenseRow["type"]);
+        }
+
+        public function createExpense($tripId, $value, $currency, $type, $description, $subscriptionId) : Expense {            
             global $databaseProvider, $schedulingProvider;
                       
             $exchangeRate = (new GetExchangeRateProcessor())
@@ -14,7 +25,7 @@
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO expense (trip_id, value, currency, exchange_rate, type, description, timestamp, subscription_id) VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), ?)")
-                ->withParameters($tripId, $cost, $currency, $exchangeRate, $type, $description, $subscriptionId)
+                ->withParameters($tripId, $value, $currency, $exchangeRate, $type, $description, $subscriptionId)
                 ->execute();   
 
             $schedulingProvider
@@ -50,6 +61,47 @@
                 
             return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
                 $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]);
+        }
+
+        public function updateExpenseDescription($expenseId, $description) : void {
+            global $databaseProvider;
+            
+            $databaseProvider
+                ->statementBuilder("UPDATE expense SET description = ? WHERE id = ?")
+                ->withParameters($description, $expenseId)
+                ->execute();
+        }
+
+        public function updateExpenseValue($expenseId, $value, $tripId) : void {
+            global $databaseProvider, $schedulingProvider;
+            
+            $databaseProvider
+                ->statementBuilder("UPDATE expense SET value = ? WHERE id = ?")
+                ->withParameters($value, $expenseId)
+                ->execute();
+                
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateStats", array(
+                    "type" => "TRIP", 
+                    "id" => $tripId), NULL);
+        }
+
+        public function updateExpenseCurrency($expenseId, $currency, $tripId) : void {
+            global $databaseProvider, $schedulingProvider;
+
+            $exchangeRate = (new GetExchangeRateProcessor())
+                ->process(array(
+                    "currency" => $currency));
+
+            $databaseProvider
+                ->statementBuilder("UPDATE expense SET currency = ?, exchange_rate = ? WHERE id = ?")
+                ->withParameters($currency, $exchangeRate, $expenseId)
+                ->execute();
+                
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateStats", array(
+                    "type" => "TRIP", 
+                    "id" => $tripId), NULL);
         }
     }
 ?>

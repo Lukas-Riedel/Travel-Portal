@@ -350,22 +350,22 @@ class Api {
         return this.#sendRequest("DELETE", "trips/" + tripId);
     }
 
-    async createTripExpense(tripId, type, description, cost, currency) {
+    async createTripExpense(tripId, type, description, value, currency) {
         return this.#sendRequest("POST", "trips/" + tripId + "/expenses", 
             {
                 type: type,
                 description: description,
-                cost: cost,
+                value: value,
                 currency: currency
             });
     }
 
-    async createTripExpenseWithSubscription(tripId, type, description, cost, currency, subscriptionId) {
+    async createTripExpenseWithSubscription(tripId, type, description, value, currency, subscriptionId) {
         return this.#sendRequest("POST", "trips/" + tripId + "/expenses", 
             {
                 type: type,
                 description: description,
-                cost: cost,
+                value: value,
                 currency: currency,
                 subscriptionId: subscriptionId
             });
@@ -378,10 +378,10 @@ class Api {
             });
     }
 
-    async updateTripExpenseValue(tripId, expenseId, cost, currency) {
+    async updateTripExpenseValue(tripId, expenseId, value, currency) {
         return this.#sendRequest("PATCH", "trips/" + tripId + "/expenses/" + expenseId, 
             {
-                cost: cost,
+                value: value,
                 currency: currency
             });
     }
