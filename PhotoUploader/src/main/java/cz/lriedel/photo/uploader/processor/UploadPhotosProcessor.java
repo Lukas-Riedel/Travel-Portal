@@ -6,13 +6,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,6 +42,8 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     private static final String CREATE_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums";
     private static final String REFRESH_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/refresh";
     private static final String CREATE_PHOTO_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/photos";
+
+    private static final String JPG_SUFFIX = ".jpg";
 
     private final PhotoFetcher photoFetcher;
 
@@ -123,8 +119,8 @@ public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
     }
 
     private double uploadPhoto(Path path, int position, String uri) throws IOException {
-        PhotoPrototype photoPrototype =
-            new PhotoPrototype(path.getFileName().toString(), position, Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
+        PhotoPrototype photoPrototype = new PhotoPrototype(UUID.randomUUID() + JPG_SUFFIX, position,
+                Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
         long start = System.currentTimeMillis();
         doUploadPhoto(photoPrototype, uri, 0);
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;

@@ -126,9 +126,8 @@
     
                             if ($placeRow["trip_id"] != NULL) {
                                 $highlightService->createTripHighlight($placeRow["trip_id"], $mainPhotoId);
-                            }
-    
-                            $highlightService->createYearHighlight($placeRow["year"], $mainPhotoId);
+                                $highlightService->createYearHighlight($placeRow["year"], $mainPhotoId);
+                            }    
     
                             foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
                                 $highlightService->createCategoryHighlight($categoryId, $mainPhotoId);
