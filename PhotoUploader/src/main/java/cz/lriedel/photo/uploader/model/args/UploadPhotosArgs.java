@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.apache.commons.lang.Validate;
 import org.springframework.lang.Nullable;
 
-public record UploadPhotosArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId, @Nullable Integer mainPhotoPosition, Path path) {
+public record UploadPhotosArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId, @Nullable Long mainPhotoPosition, Path path) {
     
     public UploadPhotosArgs {
         Validate.isTrue(placeId > 0, "Invalid place identifier.");

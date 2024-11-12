@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.lriedel.photo.uploader.HttpEntityProvider;
 
-public abstract class AbstractProcessor<JOB_ARGS, RETURN_VALUE> implements Processor<JOB_ARGS, RETURN_VALUE> {
+public abstract class AbstractProcessor<JOB_ARGS> implements Processor<JOB_ARGS> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -29,12 +29,11 @@ public abstract class AbstractProcessor<JOB_ARGS, RETURN_VALUE> implements Proce
         this.jobArgsClass = Objects.requireNonNull(jobArgsClass);
     }
 
-    public final RETURN_VALUE process(Map<String, Object> args) throws Exception {
+    public final void process(Map<String, Object> args) throws Exception {
         JOB_ARGS convertedArgs = objectMapper.convertValue(args, jobArgsClass);
         logger.info("Starting processing of '{}'...", convertedArgs);
         long start = System.currentTimeMillis();
-        RETURN_VALUE result = process(convertedArgs);
+        process(convertedArgs);
         logger.info("Processing of '{}' ended in {} seconds.", convertedArgs, (System.currentTimeMillis() - start) / 1000);
-        return result;
     }
 }

@@ -1,6 +1,6 @@
 package cz.lriedel.photo.uploader.processor;
 
-public interface Processor<JOB_ARGS, RETURN_VALUE> {
+public interface Processor<JOB_ARGS> {
 
-    RETURN_VALUE process(JOB_ARGS args) throws Exception;
+    void process(JOB_ARGS args) throws Exception;
 }

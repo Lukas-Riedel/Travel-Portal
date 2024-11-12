@@ -1,9 +1,0 @@
-ALTER TABLE photo
-DROP FOREIGN KEY photo_ibfk_2;
-
-ALTER TABLE photo
-DROP PRIMARY KEY;
-
-ALTER TABLE photo
-ADD CONSTRAINT photo_ibfk_2
-FOREIGN KEY (id) REFERENCES photo_identifier (id);

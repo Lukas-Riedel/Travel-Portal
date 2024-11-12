@@ -17,7 +17,7 @@
 
             $photo = $photoService->getPhoto($highlightRow["photo_id"]);
             if ($photo === NULL) {
-                return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], NULL, NULL, NULL, NULL, NULL);
+                return NULL;
             }
             
             return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 

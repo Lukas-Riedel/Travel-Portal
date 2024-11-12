@@ -70,7 +70,7 @@
         }
             
         private function getGooglePhotosAlbumContentsResponse($id, $pageToken = NULL) {
-            $payload = array("albumId" => $id, "pageSize" => 100);
+            $payload = array("albumId" => $id);
             if ($pageToken != NULL) {
                 $payload["pageToken"] = $pageToken;
             }

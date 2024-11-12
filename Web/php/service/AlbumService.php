@@ -43,14 +43,7 @@
                 ->withParameters($externalId)
                 ->execute();
 
-            $internalId = $this->getAlbumIdentifier($externalId);
-
-            $databaseProvider
-                ->statementBuilder("UPDATE album_identifier SET replacement_album_id = ? WHERE id = ?")
-                ->withParameters($internalId, $internalId)
-                ->execute();
-
-            return $internalId;
+            return $this->getAlbumIdentifier($externalId);
         }
 
         public function createAlbum($placeId, $timestamp) : Album {

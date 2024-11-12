@@ -39,7 +39,7 @@ public class AccessTokenProvider {
             AccessTokenPrototype request = new AccessTokenPrototype(apiKey);
             AccessToken response = restTemplate.postForObject(IAM_ENDPOINT, objectMapper.writeValueAsString(request), AccessToken.class);
             this.accessToken = response.accessToken();
-            this.expiration = System.currentTimeMillis() / 1000 + response.validity() / 2;
+            this.expiration = System.currentTimeMillis() / 1000 + response.validity();
         }
 
         return accessToken;

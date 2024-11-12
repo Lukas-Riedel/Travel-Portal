@@ -7,6 +7,7 @@
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex">
         <link rel="icon" href="img/icon.jpg"/>
         <script>
             if ('serviceWorker' in navigator) {
