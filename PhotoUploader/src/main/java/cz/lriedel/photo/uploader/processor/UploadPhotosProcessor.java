@@ -34,7 +34,7 @@ import cz.lriedel.photo.uploader.model.request.AlbumPrototype;
 import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
 
 @Component
-public class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
+class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
     private static final int AVAILABLE_WORKERS = 16;
     private static final int MAX_ATTEMPTS = 10;
