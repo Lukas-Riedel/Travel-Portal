@@ -255,7 +255,7 @@
             
             // Process new places, renamed places and places for which the start time has changed.
             $newPlaceRows = $databaseProvider
-                ->statementBuilder("SELECT np.start, np.place_id, np.trip_id FROM place_event np LEFT JOIN old_place_event op ON op.id = np.id WHERE op.place_id <> np.place_id OR op.start <> np.start")
+                ->statementBuilder("SELECT np.start, np.end, np.place_id, np.trip_id FROM place_event np LEFT JOIN old_place_event op ON op.id = np.id WHERE op.place_id <> np.place_id OR op.start <> np.start")
                 ->getResultSet();
 
             foreach ($newPlaceRows as &$newPlaceRow) {
@@ -275,7 +275,8 @@
                     $schedulingProvider
                         ->scheduleJobExecution("UpdateDaylightForecast", array(
                             "placeId" => $newPlaceRow["place_id"],
-                            "start" => $newPlaceRow["start"]), NULL);
+                            "start" => $newPlaceRow["start"],
+                            "end" => $newPlaceRow["end"]), NULL);
                 }
 
                 $schedulingProvider
