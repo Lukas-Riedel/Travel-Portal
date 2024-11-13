@@ -73,8 +73,8 @@
                 
                 $weather = NULL;
                 if ($placeRow["end"] > time()) {
-                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL && $placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL && $placeRow["start_sun_altitude"] !== NULL && $placeRow["end_sun_altitude"] !== NULL) {
-                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["sunrise"], $placeRow["sunset"], $placeRow["start_sun_altitude"], $placeRow["end_sun_altitude"], $placeRow["last_update"]);
+                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL && $placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL && $placeRow["start_sun_altitude"] !== NULL && $placeRow["end_sun_altitude"] !== NULL && $placeRow["start_sun_azimuth"] !== NULL && $placeRow["end_sun_azimuth"] !== NULL) {
+                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["sunrise"], $placeRow["sunset"], $placeRow["start_sun_altitude"], $placeRow["end_sun_altitude"], $placeRow["start_sun_azimuth"], $placeRow["end_sun_azimuth"], $placeRow["last_update"]);
                     }
                 }
 

@@ -8,9 +8,10 @@
         private $sunrise;
         private $sunset;
         private $sunAltitude;
+        private $sunAzimuth;
         private $lastUpdate;
 
-        public function __construct($temperature, $clouds, $wind, $precipitation, $symbol, $sunrise, $sunset, $startSunAltitude, $endSunAltitude, $lastUpdate) {
+        public function __construct($temperature, $clouds, $wind, $precipitation, $symbol, $sunrise, $sunset, $startSunAltitude, $endSunAltitude, $startSunAzimuth, $endSunAzimuth, $lastUpdate) {
             $this->temperature = $temperature;
             $this->clouds = $clouds;
             $this->wind = $wind;
@@ -19,6 +20,7 @@
             $this->sunrise = $sunrise;
             $this->sunset = $sunset;
             $this->sunAltitude = array("start" => $startSunAltitude, "end" => $endSunAltitude);
+            $this->sunAzimuth = array("start" => $startSunAzimuth, "end" => $endSunAzimuth);
             $this->lastUpdate = $lastUpdate;
         }
 
@@ -50,8 +52,12 @@
             return $this->sunset;
         }
 
-        public function sunAltitude() {
+        public function getSunAltitude() {
             return $this->sunAltitude;
+        }
+
+        public function getSunAzimuth() {
+            return $this->sunAzimuth;
         }
 
         public function getLastUpdate() {

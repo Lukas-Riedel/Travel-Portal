@@ -25,8 +25,8 @@
                 ->execute();
 
             $databaseProvider
-                ->statementBuilder("INSERT INTO forecast_daylight (place_id, timestamp, sunrise, sunset, start_sun_altitude, end_sun_altitude) VALUES (?, ?, ?, ?, ?, ?)")
-                ->withParameters($placeIdentifierRow["id"], $input["start"], $sunTimes["sunrise"]->getTimestamp(), $sunTimes["sunset"]->getTimestamp(), $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI)
+                ->statementBuilder("INSERT INTO forecast_daylight (place_id, timestamp, sunrise, sunset, start_sun_altitude, end_sun_altitude, start_sun_azimuth, end_sun_azimuth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                ->withParameters($placeIdentifierRow["id"], $input["start"], $sunTimes["sunrise"]->getTimestamp(), $sunTimes["sunset"]->getTimestamp(), $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI, $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI)
                 ->execute();
 
             return TRUE;
