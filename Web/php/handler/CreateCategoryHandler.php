@@ -11,7 +11,7 @@
                 $response = $categoryService->createGeographicalRegionExtensionRegion($input["name"], isset($input["country"]) ? $input["country"] : NULL, $input["category"], $input["latitude"], $input["longitude"]);
             }
             else {
-                $response = $categoryService->createGeographicalRegionExtensionRegion($input["name"], isset($input["country"]) ? $input["country"] : NULL, $input["category"], $input["radius"], $input["geoJson"]);
+                $response = $categoryService->createGeographicalRegion($input["name"], isset($input["country"]) ? $input["country"] : NULL, $input["category"], $input["radius"], $input["geoJson"]);
             }
     
             return $this->createResponse(201, $response);
