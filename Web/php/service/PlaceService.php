@@ -114,6 +114,18 @@
                 });
         }
 
+        public function getPlaceIdentifiersByCategoryId($categoryId) : array {
+            global $databaseProvider, $highlightService;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT * FROM place_identifier WHERE id IN (SELECT place_id FROM category WHERE category_id = ?)")
+                ->withParameters($categoryId)
+                ->getMappedResultSet(function ($placeIdentifierRow) use (&$highlightService) { 
+                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+                        $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
+                });
+        }
+
         public function getOrCreatePlaceIdentifier($name, $country, $address) : PlaceIdentifier {            
             global $databaseProvider, $configuration, $schedulingProvider;
 

@@ -114,6 +114,13 @@
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'INCLUDE')")
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
                     ->execute();
+
+                $placeIdentifiers = $placeService->getPlaceIdentifiersByCategoryId($categoryIdentifier->getId());    
+                foreach ($placeIdentifiers as &$placeIdentifier) {
+                    $schedulingProvider
+                        ->scheduleJobExecution("UpdateCategories", array(
+                            "placeId" => $placeIdentifier->getId()), NULL);
+                }
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
@@ -122,14 +129,6 @@
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'EXCLUDE')")
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
                     ->execute();
-            }
-
-            $placeIdentifiers = $placeService->getAllPlaceIdentifiers();
-
-            foreach ($placeIdentifiers as &$placeIdentifier) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateCategories", array(
-                        "placeId" => $placeIdentifier->getId()), NULL);
             }
             
             return $categoryIdentifier;
