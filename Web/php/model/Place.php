@@ -132,7 +132,7 @@
         }
 
         private function getRelevantImagesCountForScore($album) {
-            return $album->getImagesCount() == 0 || $album->getIndoorImagesCount() / $album->getImagesCount() > 0.7
+            return $album->getImagesCount() == 0 || $album->getIndoorImagesCount() / $album->getImagesCount() > 0.6
                 ? $album->getImagesCount() // This is an indoor-only location.
                 : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
         }
