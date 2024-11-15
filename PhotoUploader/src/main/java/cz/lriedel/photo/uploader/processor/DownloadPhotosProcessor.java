@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -35,12 +34,8 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
     private static final String BASE_URL_DOWNLOAD_SUFFIX = "=d";
     private static final String JPG_SUFFIX = ".jpg";
 
-    private final Path photosRootDirectory;
-
-    public DownloadPhotosProcessor(RestTemplate restTemplate, ObjectMapper objectMapper,
-        HttpEntityProvider httpEntityProvider, @Value("${temp.dir.photos}") Path photosRootDirectory) {
+    public DownloadPhotosProcessor(RestTemplate restTemplate, ObjectMapper objectMapper, HttpEntityProvider httpEntityProvider) {
         super(restTemplate, objectMapper, httpEntityProvider, DownloadPhotosArgs.class);
-        this.photosRootDirectory = Objects.requireNonNull(photosRootDirectory);
     }
 
     @Override
@@ -63,7 +58,8 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
                 Photo[] photos = fetchPhotos(place.id(), date.album().id());
                 int mainPhotoPosition = getMainPhotoPosition(date.album(), photos);
 
-                Path albumPhotosDirectory = photosRootDirectory.resolve(Long.toString(place.id())).resolve(Long.toString(date.start())).resolve(Integer.toString(mainPhotoPosition));
+                Path albumPhotosDirectory =
+                    args.path().resolve(Long.toString(place.id())).resolve(Long.toString(date.start())).resolve(Integer.toString(mainPhotoPosition));
                 FileUtils.deleteDirectory(albumPhotosDirectory.toFile());
                 Files.createDirectories(albumPhotosDirectory);
 
