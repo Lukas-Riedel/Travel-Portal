@@ -28,13 +28,13 @@ class Api {
             });
     }
 
-    async createCompositeCategory(name, category, includedRegions, execludedRegions) {
+    async createCompositeCategory(name, category, includedRegions, excludedRegions) {
         return this.#sendRequest("POST", "categories",
             {
                 name: name,
                 category: category,
                 includedRegions: includedRegions,
-                execludedRegions: execludedRegions
+                excludedRegions: excludedRegions
             });
     }
 

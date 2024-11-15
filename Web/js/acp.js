@@ -390,8 +390,6 @@ async function addGeoRegionExtensionForPlace(placeId) {
 }
 
 function addCompositeRegion() {
-    alert("Tato metoda pravděpodobně nebude fungovat, protože se pole nedokáže zakódovat do URL string. Použij raději API.");
-
     const name = prompt("Zadej název regionu:");
     if (name == null || name == "") {
         return;
@@ -403,8 +401,8 @@ function addCompositeRegion() {
     }
 
     let excluded = prompt("Zadej názvy vyloučených regionů (oddělených čárkou):");
-    if (excluded == null) {
-        excluded = "";
+    if (excluded == "") {
+        excluded = null;
     }
 
     const category = prompt("Zadej kategorii kategorie:\n\nMožné hodnoty:\n" + [ 'CONTINENT','COUNTRY','ADMINISTRATIVE','OCEAN','SEA','BAY','VARIABLE','ISLAND','REGION' ].join("\n"));
@@ -412,7 +410,7 @@ function addCompositeRegion() {
         return;
     }
 
-    api.createCompositeCategory(name, category, included.split(","), excluded.split(",")).then(alertConfirmation);
+    api.createCompositeCategory(name, category, included.split(","), excluded == null ? [] : excluded.split(",")).then(alertConfirmation);
 }
 
 async function addPermanentPlace() {
