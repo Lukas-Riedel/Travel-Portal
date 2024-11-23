@@ -1,5 +1,22 @@
 package cz.lriedel.photo.uploader.processor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.lriedel.photo.uploader.HttpEntityProvider;
+import cz.lriedel.photo.uploader.model.Album;
+import cz.lriedel.photo.uploader.model.Date;
+import cz.lriedel.photo.uploader.model.Photo;
+import cz.lriedel.photo.uploader.model.Place;
+import cz.lriedel.photo.uploader.model.args.DownloadPhotosArgs;
+import cz.lriedel.photo.uploader.model.args.UploadPhotosArgs;
+import cz.lriedel.photo.uploader.model.request.JobPrototype;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -8,21 +25,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
-
-import org.apache.commons.io.FileUtils;
-import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cz.lriedel.photo.uploader.HttpEntityProvider;
-import cz.lriedel.photo.uploader.model.Album;
-import cz.lriedel.photo.uploader.model.Date;
-import cz.lriedel.photo.uploader.model.Photo;
-import cz.lriedel.photo.uploader.model.Place;
-import cz.lriedel.photo.uploader.model.args.DownloadPhotosArgs;
 
 @Component
 public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArgs> {
@@ -34,8 +36,9 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
     private static final String BASE_URL_DOWNLOAD_SUFFIX = "=d";
     private static final String JPG_SUFFIX = ".jpg";
 
-    public DownloadPhotosProcessor(RestTemplate restTemplate, ObjectMapper objectMapper, HttpEntityProvider httpEntityProvider) {
-        super(restTemplate, objectMapper, httpEntityProvider, DownloadPhotosArgs.class);
+    public DownloadPhotosProcessor(RestTemplate restTemplate, RetryTemplate retryTemplate,
+                                   ObjectMapper objectMapper, HttpEntityProvider httpEntityProvider) {
+        super(restTemplate, retryTemplate, objectMapper, httpEntityProvider, DownloadPhotosArgs.class);
     }
 
     @Override
@@ -58,24 +61,25 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
                 Photo[] photos = fetchPhotos(place.id(), date.album().id());
                 int mainPhotoPosition = getMainPhotoPosition(date.album(), photos);
 
-                Path albumPhotosDirectory =
-                    args.path().resolve(Long.toString(place.id())).resolve(Long.toString(date.start())).resolve(Integer.toString(mainPhotoPosition));
+                Path albumPhotosDirectory = args.path().resolve(Long.toString(place.id()))
+                        .resolve(Long.toString(date.start())).resolve(Integer.toString(mainPhotoPosition));
                 FileUtils.deleteDirectory(albumPhotosDirectory.toFile());
                 Files.createDirectories(albumPhotosDirectory);
 
                 logger.info("Downloading album {}/{}...", ++i, albumsCount);
                 downloadPhotos(albumPhotosDirectory, photos);
+                schedulePhotosUploading(new UploadPhotosArgs(place.id(), date.start(), null, mainPhotoPosition, albumPhotosDirectory));
             }
         }
     }
 
-    private Place[] getPlaces() throws JsonProcessingException {
+    private Place[] getPlaces() {
         return restTemplate.exchange(LIST_PLACES_ENDPOINT, HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Place[].class).getBody();
     }
     
     private Photo[] fetchPhotos(long placeId, long albumId) throws JsonProcessingException {
-        return restTemplate.exchange(String.format(LIST_PHOTOS_ENDPOINT_PATTERN, placeId, albumId),
-                HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Photo[].class).getBody();
+        return retryTemplate.execute(context -> restTemplate.exchange(String.format(LIST_PHOTOS_ENDPOINT_PATTERN, placeId, albumId),
+                HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Photo[].class).getBody());
     }
 
     private void downloadPhotos(Path photosDirectory, Photo[] photos) throws IOException {
@@ -87,7 +91,14 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
         }
     }
 
-    private int getMainPhotoPosition(Album album, Photo[] photos) throws JsonProcessingException {
+    private void schedulePhotosUploading(UploadPhotosArgs uploadPhotosArgs) throws JsonProcessingException {
+        JobPrototype jobPrototype = new JobPrototype(StrictUploadPhotosProcessor.class.getSimpleName()
+                .replace(Processor.class.getSimpleName(), StringUtils.EMPTY), uploadPhotosArgs);
+        retryTemplate.execute(context -> restTemplate.postForObject(SCHEDULE_JOB_ENDPOINT,
+                httpEntityProvider.getHttpEntity(jobPrototype), Void.class));
+    }
+
+    private int getMainPhotoPosition(Album album, Photo[] photos) {
         int i = 1;
         for (Photo photo : photos) {
             if (photo.id() == album.mainPhotoId()) {
@@ -96,7 +107,7 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
             ++i;
         }
         
-        logger.warn("The main photo position could not be ontained.");
+        logger.warn("The main photo position could not be obtained.");
         return 1;
     }
 }

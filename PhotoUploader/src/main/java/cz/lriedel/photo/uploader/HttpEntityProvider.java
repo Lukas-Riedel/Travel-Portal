@@ -1,13 +1,11 @@
 package cz.lriedel.photo.uploader;
 
-import java.util.Objects;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
 
 @Component
 public class HttpEntityProvider {
@@ -20,15 +18,20 @@ public class HttpEntityProvider {
         this.accessTokenProvider = Objects.requireNonNull(accessTokenProvider);
     }
 
-    public HttpEntity<Void> getEmptyHttpEntity() throws JsonProcessingException {
+    public HttpEntity<Void> getEmptyHttpEntity() {
         return new HttpEntity<>(getHttpHeaders());
     }
 
-    public <T> HttpEntity<String> getHttpEntity(T requestBody) throws JsonProcessingException {
-        return new HttpEntity<>(objectMapper.writeValueAsString(requestBody), getHttpHeaders());
+    public <T> HttpEntity<String> getHttpEntity(T requestBody) {
+        try {
+            return new HttpEntity<>(objectMapper.writeValueAsString(requestBody), getHttpHeaders());
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private HttpHeaders getHttpHeaders() throws JsonProcessingException {
+    private HttpHeaders getHttpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(accessTokenProvider.getAccessToken());
         return httpHeaders;

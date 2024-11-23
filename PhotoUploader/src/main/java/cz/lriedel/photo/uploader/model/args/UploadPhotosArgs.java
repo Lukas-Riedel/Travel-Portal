@@ -1,10 +1,10 @@
 package cz.lriedel.photo.uploader.model.args;
 
-import java.nio.file.Path;
-import java.util.Objects;
-
 import org.apache.commons.lang.Validate;
 import org.springframework.lang.Nullable;
+
+import java.nio.file.Path;
+import java.util.Objects;
 
 public record UploadPhotosArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId, @Nullable Integer mainPhotoPosition, Path path) {
     

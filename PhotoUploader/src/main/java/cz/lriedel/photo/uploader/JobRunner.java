@@ -1,21 +1,20 @@
 package cz.lriedel.photo.uploader;
 
-import java.util.Objects;
-import java.util.Set;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import cz.lriedel.photo.uploader.model.Job;
+import cz.lriedel.photo.uploader.processor.AbstractProcessor;
+import cz.lriedel.photo.uploader.processor.Processor;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import cz.lriedel.photo.uploader.model.Job;
-import cz.lriedel.photo.uploader.processor.AbstractProcessor;
-import cz.lriedel.photo.uploader.processor.Processor;
+import java.util.Objects;
+import java.util.Set;
 
 @Component
 public final class JobRunner {
@@ -26,11 +25,14 @@ public final class JobRunner {
     private static final String DELETE_JOB_ENDPOINT = "/api/jobs/%s";
 
     private final RestTemplate restTemplate;
+    private final RetryTemplate retryTemplate;
     private final HttpEntityProvider httpEntityProvider;
     private final Set<? extends AbstractProcessor<?>> processors;
 
-    JobRunner(RestTemplate restTemplate, HttpEntityProvider httpEntityProvider, Set<? extends AbstractProcessor<?>> processors) {
+    JobRunner(RestTemplate restTemplate, RetryTemplate retryTemplate, HttpEntityProvider httpEntityProvider,
+              Set<? extends AbstractProcessor<?>> processors) {
         this.restTemplate = Objects.requireNonNull(restTemplate);
+        this.retryTemplate = Objects.requireNonNull(retryTemplate);
         this.httpEntityProvider = Objects.requireNonNull(httpEntityProvider);
         this.processors = Set.copyOf(processors);
     }
@@ -55,13 +57,14 @@ public final class JobRunner {
         }
     }
 
-    private Job[] fetchJobs(Processor<?> processor) throws JsonProcessingException {
+    private Job[] fetchJobs(Processor<?> processor) {
         String jobName = processor.getClass().getSimpleName().replace(Processor.class.getSimpleName(), StringUtils.EMPTY);
-        return restTemplate.exchange(String.format(GET_JOBS_ENDPOINT, jobName), HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Job[].class)
-            .getBody();
+        return retryTemplate.execute(context -> restTemplate.exchange(String.format(GET_JOBS_ENDPOINT, jobName),
+                        HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Job[].class).getBody());
     }
 
-    private void terminateJob(Job job) throws JsonProcessingException {
-        restTemplate.exchange(String.format(DELETE_JOB_ENDPOINT, job.id()), HttpMethod.DELETE, httpEntityProvider.getEmptyHttpEntity(), Void.class);
+    private void terminateJob(Job job) {
+        retryTemplate.execute(context -> restTemplate.exchange(String.format(DELETE_JOB_ENDPOINT, job.id()),
+                HttpMethod.DELETE, httpEntityProvider.getEmptyHttpEntity(), Void.class));
     }
 }

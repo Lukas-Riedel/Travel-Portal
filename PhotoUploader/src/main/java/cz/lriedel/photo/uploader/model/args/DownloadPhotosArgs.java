@@ -1,8 +1,8 @@
 package cz.lriedel.photo.uploader.model.args;
 
-import java.nio.file.Path;
-
 import org.apache.commons.lang.Validate;
+
+import java.nio.file.Path;
 
 public record DownloadPhotosArgs(Path path) {
 

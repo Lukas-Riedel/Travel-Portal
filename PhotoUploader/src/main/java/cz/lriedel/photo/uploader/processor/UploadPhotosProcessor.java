@@ -1,37 +1,32 @@
 package cz.lriedel.photo.uploader.processor;
 
-import static java.util.Comparator.comparing;
-
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang.Validate;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.lriedel.photo.uploader.HttpEntityProvider;
 import cz.lriedel.photo.uploader.fetcher.PhotoFetcher;
 import cz.lriedel.photo.uploader.model.Album;
 import cz.lriedel.photo.uploader.model.args.UploadPhotosArgs;
 import cz.lriedel.photo.uploader.model.request.AlbumPrototype;
 import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
+import org.apache.commons.lang.Validate;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Comparator.comparing;
 
 @Component
 class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
@@ -47,9 +42,9 @@ class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
     private final PhotoFetcher photoFetcher;
 
-    public UploadPhotosProcessor(RestTemplate restTemplate, ObjectMapper objectMapper,
-        HttpEntityProvider httpEntityProvider, PhotoFetcher photoFetcher) {
-        super(restTemplate, objectMapper, httpEntityProvider, UploadPhotosArgs.class);
+    public UploadPhotosProcessor(RestTemplate restTemplate, RetryTemplate retryTemplate, ObjectMapper objectMapper,
+                                 HttpEntityProvider httpEntityProvider, PhotoFetcher photoFetcher) {
+        super(restTemplate, retryTemplate, objectMapper, httpEntityProvider, UploadPhotosArgs.class);
         this.photoFetcher = Objects.requireNonNull(photoFetcher);
     }
 
@@ -69,7 +64,7 @@ class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
         logger.info("Album for place {} does not exist. Creating a new album...", args.placeId());
         AlbumPrototype albumPrototype = new AlbumPrototype(Objects.requireNonNull(args.timestamp(), "Timestamp is not set."));
         Album createdAlbum = restTemplate.postForObject(String.format(CREATE_ALBUM_ENDPOINT_PATTERN, args.placeId()),
-            httpEntityProvider.getHttpEntity(albumPrototype), Album.class);
+                httpEntityProvider.getHttpEntity(albumPrototype), Album.class);
         return Objects.requireNonNull(createdAlbum, "Album was not created.").id();
     }
 
@@ -97,11 +92,10 @@ class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
                 for (Future<Double> future : futures) {
                     sum += future.get();
                 }
-                double averageUploadSpeed = sum / futures.size();
-                currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageUploadSpeed));
+                double averageProcessingSpeed = sum / futures.size();
+                currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
 
-                logger.info("Totally {}/{} photos were uploaded at the average upload speed of {} Mbps.",
-                    position - 1, position - 1 + queue.size(), averageUploadSpeed);
+                logger.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
             }
 
             executorService.shutdown();
@@ -111,35 +105,19 @@ class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
     private Album refreshAlbum(UploadPhotosArgs args, long albumId) throws JsonProcessingException {
         logger.info("Uploading has finished. Refreshing the album...");
-        String url = String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, args.placeId(), albumId);
-        if (args.mainPhotoPosition() != null) {
-            url += "?mainPhotoPosition=" + args.mainPhotoPosition();
-        }
-        return restTemplate.postForObject(url, httpEntityProvider.getEmptyHttpEntity(), Album.class);
+        String url = String.format(REFRESH_ALBUM_ENDPOINT_PATTERN, args.placeId(), albumId)
+                + (args.mainPhotoPosition() == null ? "" : "?mainPhotoPosition=" + args.mainPhotoPosition());
+        return retryTemplate.execute(context -> restTemplate.postForObject(url, httpEntityProvider.getEmptyHttpEntity(), Album.class));
     }
 
     private double uploadPhoto(Path path, int position, String uri) throws IOException {
         PhotoPrototype photoPrototype = new PhotoPrototype(UUID.randomUUID() + JPG_SUFFIX, position,
                 Base64.getEncoder().encodeToString(photoFetcher.fetch(path)));
         long start = System.currentTimeMillis();
-        doUploadPhoto(photoPrototype, uri, 0);
+        retryTemplate.execute(context -> restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), Void.class));
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;
         double fileSize = FileChannel.open(path).size() / (1024.0 * 1024.0);
         return 8 * fileSize / uploadDuration;
-    }
-
-    private void doUploadPhoto(PhotoPrototype photoPrototype, String uri, int attempt) {
-        logger.info("Uploading {}...", photoPrototype.name());
-
-        try {
-            restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), Void.class);
-        } catch (Exception e) {
-            logger.error("Error occurred when uploading {} (attempt {}).", photoPrototype.name(), attempt, e);
-            if (attempt == MAX_ATTEMPTS) {
-                throw new RuntimeException("Unable to upload photo after " + attempt + " attempts.", e);
-            }
-            doUploadPhoto(photoPrototype, uri, attempt + 1);
-        }
     }
 
     private static Date getPhotoCreationTime(Path path) {
