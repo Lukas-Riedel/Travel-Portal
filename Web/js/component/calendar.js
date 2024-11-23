@@ -26,6 +26,7 @@ function getCalendarDatesForTrip(trip, places, isLoggedIn) {
                 longitude: place.longitude,
                 country: place.country,
                 weather: placeDate.weather,
+                sun: placeDate.sun,
                 album: placeDate.album
             });
         });
@@ -47,7 +48,7 @@ function getCalendarDatesForTrip(trip, places, isLoggedIn) {
             date: convertedDate.getTime() / 1000, // Apparently important for featured trips only.
             title: getDayOfWeek(convertedDate) + " " + getDateString(convertedDate),
             calendar: getCalendarEntry(calendar[date], isLoggedIn ? getPlaceButtonsForTripEntry : undefined, undefined),
-            weather: getForecastEntry(calendar[date].map(place => place.weather).filter(weather => weather != null)),
+            weather: getForecastEntry(calendar[date].map(place => place.weather).filter(weather => weather != null), calendar[date].map(place => place.sun).filter(sun => sun != null)),
             fitness: getFitnessEntry(trip.fitness[dates.indexOf(date)], trip.fitness)
         };
     });    
@@ -228,13 +229,13 @@ function getPlaceButtonsForTripEntry(place) {
     return buttons;
 }
 
-function getForecastEntry(forecasts) {
+function getForecastEntry(forecasts, suns) {
     if (forecasts.length == 0) {
         return "";
     }
     
-    const sun = toRangeString({ min: getTimeString(forecasts[0].sunrise), max: getTimeString(forecasts[forecasts.length - 1].sunset) });
-    const sunAltitude = toRangeString({ min: forecasts[0].sunAltitude.start.toFixed(1), max: forecasts[forecasts.length - 1].sunAltitude.end.toFixed(1) + "°" });
+    const sun = toRangeString({ min: getTimeString(suns[0].sunrise), max: getTimeString(suns[suns.length - 1].sunset) });
+    const altitude = toRangeString({ min: suns[0].altitude.start.toFixed(1), max: suns[suns.length - 1].altitude.end.toFixed(1) + "°" });
     
     forecasts.sort((a, b) => (b.precipitation - a.precipitation) || (b.clouds - a.clouds) || (a.temperature - b.temperature));
     
@@ -251,7 +252,7 @@ function getForecastEntry(forecasts) {
     return "<div class=\"forecast\">"
         + "<img src=\"" + imageUrl + "\"><br>"
         + "<span class=\"temperature\">" + temperature + "</span><br>"
-        + "<div class=\"details\">" + (isHistoricalForecast ? "??? %" : clouds) + "<br>" + precipitation + "<br>" + wind + "<br>" + sun + "<br>" + sunAltitude + "</div>"
+        + "<div class=\"details\">" + (isHistoricalForecast ? "??? %" : clouds) + "<br>" + precipitation + "<br>" + wind + "<br>" + sun + "<br>" + altitude + "</div>"
         + "</div>";
 }
 

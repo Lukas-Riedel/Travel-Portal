@@ -5,6 +5,7 @@
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../model/Weather.php");
+    require_once(dirname(__FILE__) . "/../model/Sun.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
 
     class GetPlacesProcessor extends Processor {        
@@ -72,9 +73,14 @@
                 }
                 
                 $weather = NULL;
+                $sun = NULL;
                 if ($placeRow["end"] > time()) {
-                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL && $placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL && $placeRow["start_sun_altitude"] !== NULL && $placeRow["end_sun_altitude"] !== NULL && $placeRow["start_sun_azimuth"] !== NULL && $placeRow["end_sun_azimuth"] !== NULL) {
-                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["sunrise"], $placeRow["sunset"], $placeRow["start_sun_altitude"], $placeRow["end_sun_altitude"], $placeRow["start_sun_azimuth"], $placeRow["end_sun_azimuth"], $placeRow["last_update"]);
+                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL) {
+                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["last_update"]);
+                    }
+
+                    if ($placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL && $placeRow["start_sun_altitude"] !== NULL && $placeRow["end_sun_altitude"] !== NULL && $placeRow["start_sun_azimuth"] !== NULL && $placeRow["end_sun_azimuth"] !== NULL) {
+                        $sun = new Sun($placeRow["sunrise"], $placeRow["sunset"], $placeRow["start_sun_altitude"], $placeRow["end_sun_altitude"], $placeRow["start_sun_azimuth"], $placeRow["end_sun_azimuth"]);
                     }
                 }
 
@@ -93,7 +99,7 @@
                     $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]));
                 }
                 
-                $tempPlaces[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $weather, $album, $trip));  
+                $tempPlaces[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $weather, $sun, $album, $trip));  
             }
 
             return array_values($tempPlaces);
@@ -105,12 +111,6 @@
         
         public function requiresAdminRole() {
             return FALSE;
-        }
-
-        private function getRelevantImagesCountForScore($album) {
-            return $album->getImagesCount() == 0 || $album->getIndoorImagesCount() / $album->getImagesCount() > 0.7
-                ? $album->getImagesCount() // This is an indoor-only location.
-                : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
         }
 
         private function getHighlights($placeRow) {

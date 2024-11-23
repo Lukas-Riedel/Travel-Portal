@@ -3,13 +3,15 @@
         private $start;
         private $end;
         private $weather;
+        private $sun;
         private $album;
         private $trip;
 
-        public function __construct($start, $end, $weather, $album, $trip) {
+        public function __construct($start, $end, $weather, $sun, $album, $trip) {
             $this->start = $start;
             $this->end = $end;
             $this->weather = $weather;
+            $this->sun = $sun;
             $this->album = $album;
             $this->trip = $trip;
         }
@@ -24,6 +26,10 @@
 
         public function getWeather() {
             return $this->weather;
+        }
+
+        public function getSun() {
+            return $this->sun;
         }
 
         public function getAlbum() {
