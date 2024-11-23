@@ -86,7 +86,7 @@
 
                 $album = NULL;
                 if ($placeRow["album_id"] != NULL) {                    
-                    $album = new Album($placeRow["album_id"], $placeRow["name"] . " " . date("j.n.Y", $placeRow["start"]), $placeRow["album_main_photo_id"], $placeRow["album_main_image_url"], $placeRow["album_permalink"], $placeRow["album_images_count"], $placeRow["album_indoor_images_count"]);
+                    $album = new Album($placeRow["album_id"], $placeRow["name"] . " " . date("j.n.Y", $placeRow["start"]), $placeRow["album_main_photo_id"], $placeRow["album_thumbnail_url"], $placeRow["album_permalink"], $placeRow["album_images_count"], $placeRow["album_indoor_images_count"]);
                 }
 
                 $trip = NULL;

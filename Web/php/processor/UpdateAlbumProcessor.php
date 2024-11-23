@@ -165,7 +165,7 @@
         
             foreach ($albums as &$album) {
                 $databaseProvider
-                    ->statementBuilder("INSERT INTO album (name, id, main_photo_id, main_image_url, images_count, indoor_images_count, permalink) VALUES (?, ?, ?, ?, ?, GET_INDOOR_IMAGES_COUNT(?), ?)")
+                    ->statementBuilder("INSERT INTO album (name, id, main_photo_id, thumbnail_url, images_count, indoor_images_count, permalink) VALUES (?, ?, ?, ?, ?, GET_INDOOR_IMAGES_COUNT(?), ?)")
                     ->withParameters($album["name"], $album["id"], $album["mainPhotoId"], $album["mainImageUrl"], $album["imagesCount"], $album["id"], $album["permalink"])
                     ->execute();
             }

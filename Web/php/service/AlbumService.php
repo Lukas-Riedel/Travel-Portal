@@ -17,7 +17,7 @@
                 return NULL;
             }
 
-            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["main_image_url"],
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["thumbnail_url"],
                 $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"]);
         }
 
