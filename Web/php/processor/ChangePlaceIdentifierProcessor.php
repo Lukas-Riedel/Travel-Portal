@@ -44,8 +44,8 @@
                     ->getSingleRow();
 
                 $databaseProvider
-                    ->statementBuilder("UPDATE place_identifier SET name = ?, excerpt = ? WHERE id = ?")
-                    ->withParameters($input["name"], str_replace($placeIdentifierRow["name"], $input["name"], $placeIdentifierRow["excerpt"]), $input["placeId"])
+                    ->statementBuilder("UPDATE place_identifier SET name = ?, excerpt = NULL WHERE id = ?")
+                    ->withParameters($input["name"], $input["placeId"])
                     ->execute();
                 
                 $getGoogleResponseProcessor = new GetGoogleResponseProcessor();
