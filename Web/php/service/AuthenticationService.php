@@ -20,7 +20,7 @@
             }
             
             list($encryptedData, $iv) = $parts;
-            $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], $configuration["bearerToken"]["privateKey"], 0, $iv);
+            $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], PRIVATE_KEY, 0, $iv);
             if ($decrypted === FALSE) {
                 throw new AuthenticationException("The access token could not be read.");
             }
@@ -89,7 +89,7 @@
                 "expiration" => time() + $validity);
 
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($configuration["bearerToken"]["cipher"]));
-            $encrypted = openssl_encrypt(json_encode($result), $configuration["bearerToken"]["cipher"], $configuration["bearerToken"]["privateKey"], 0, $iv);
+            $encrypted = openssl_encrypt(json_encode($result), $configuration["bearerToken"]["cipher"], PRIVATE_KEY, 0, $iv);
             $accessToken = base64_encode($encrypted . '::' . $iv);
 
             return array(
