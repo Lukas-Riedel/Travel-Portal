@@ -14,23 +14,23 @@
             $this->arguments = $arguments;
         }
 
-        public function getCode() {
+        public function getCode() : int {
             return $this->code;
         }
 
-        public function getError() {
+        public function getError() : string {
             return $this->error;
         }
 
-        public function getMessage() {
+        public function getMessage() : string {
             return $this->message;
         }
 
-        public function getTrace() {
+        public function getTrace() : array {
             return $this->trace;
         }
 
-        public function getArguments() {
+        public function getArguments() : array {
             return $this->arguments;
         }
 

@@ -1,4 +1,6 @@
 <?php
+    require_once(dirname(__FILE__) . "/Highlight.php");
+
     class TripIdentifier implements JsonSerializable {        
         private $id;
         private $name;
@@ -12,19 +14,19 @@
             $this->mainHighlight = $mainHighlight;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getYear() {
+        public function getYear() : int {
             return $this->year;
         }
 
-        public function getMainHighlight() {
+        public function getMainHighlight() : ?Highlight {
             return $this->mainHighlight;
         }
 

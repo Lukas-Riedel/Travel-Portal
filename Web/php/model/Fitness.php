@@ -12,19 +12,19 @@
             $this->distance = $distance;
         }
 
-        public function getSteps() {
+        public function getSteps() : int {
             return $this->steps;
         }
 
-        public function getMinutes() {
+        public function getMinutes() : int {
             return $this->minutes;
         }
 
-        public function getCalories() {
+        public function getCalories() : float {
             return $this->calories;
         }
 
-        public function getDistance() {
+        public function getDistance() : float {
             return $this->distance;
         }
 

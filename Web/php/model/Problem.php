@@ -8,11 +8,11 @@
             $this->values = $values;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getValues() {
+        public function getValues() : array {
             return $this->values;
         }
 

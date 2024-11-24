@@ -1,4 +1,6 @@
 <?php
+    require_once(dirname(__FILE__) . "/Airport.php");
+
     class Flight implements JsonSerializable {        
         private $flight;
         private $registration;
@@ -20,35 +22,35 @@
             $this->end = $end;
         }
 
-        public function getFlight() {
+        public function getFlight() : string {
             return $this->flight;
         }
 
-        public function getRegistration() {
+        public function getRegistration() : string {
             return $this->registration;
         }
 
-        public function getAircraft() {
+        public function getAircraft() : string {
             return $this->aircraft;
         }
 
-        public function getDistance() {
+        public function getDistance() : float {
             return $this->distance;
         }
 
-        public function getFrom() {
+        public function getFrom() : Airport {
             return $this->from;
         }
 
-        public function getTo() {
+        public function getTo() : Airport {
             return $this->to;
         }
 
-        public function getStart() {
+        public function getStart() : int {
             return $this->start;
         }
 
-        public function getEnd() {
+        public function getEnd() : int {
             return $this->end;
         }
 

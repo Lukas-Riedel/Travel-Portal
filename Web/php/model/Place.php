@@ -1,4 +1,6 @@
 <?php
+    require_once(dirname(__FILE__) . "/Highlight.php");
+
     class Place implements JsonSerializable {        
         private $id;
         private $name;
@@ -26,55 +28,55 @@
             $this->dates = $dates;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getCountry() {
+        public function getCountry() : string {
             return $this->country;
         }
 
-        public function getLatitude() {
+        public function getLatitude() : float {
             return $this->latitude;
         }
 
-        public function getLongitude() {
+        public function getLongitude() : float {
             return $this->longitude;
         }
 
-        public function getTimezone() {
+        public function getTimezone() : string {
             return $this->timezone;
         }
 
-        public function getMainHighlight() {
+        public function getMainHighlight() : ?Highlight {
             return $this->mainHighlight;
         }
 
-        public function getExcerpt() {
+        public function getExcerpt() : ?string {
             return $this->excerpt;
         }
 
-        public function getCategories() {
+        public function getCategories() : array {
             return $this->categories;
         }
 
-        public function getHighlights() {
+        public function getHighlights() : array {
             return $this->highlights;
         }
 
-        public function getDates() {
+        public function getDates() : array {
             return $this->dates;
         }
 
-        public function addDate($date) {
+        public function addDate($date) : void {
             $this->dates[] = $date;
         }
 
-        public function findAlbum($albumId) {
+        public function findAlbum($albumId) : ?Album {
             foreach ($this->getDates() as &$date) {
                 $album = $date->getAlbum();
                 if ($album != NULL && $album->getId() == $albumId) {
@@ -85,7 +87,7 @@
             return NULL;
         }
 
-        public function getImagesCount() {
+        public function getImagesCount() : int {
             $count = 0;
             $encounteredAlbums = array();
     
@@ -103,9 +105,7 @@
             return $count;
         }
     
-        public function getImagesScore() {
-            global $configuration;
-            
+        public function getImagesScore() : float {            
             $buckets = array();
             $encounteredAlbums = array();
     
@@ -131,7 +131,7 @@
             return empty($buckets) ? 0 : max(array_values($buckets));
         }
 
-        private function getRelevantImagesCountForScore($album) {
+        private function getRelevantImagesCountForScore($album) : int {
             return $album->getImagesCount() == 0 || $album->getIndoorImagesCount() / $album->getImagesCount() > 0.6
                 ? $album->getImagesCount() // This is an indoor-only location.
                 : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.

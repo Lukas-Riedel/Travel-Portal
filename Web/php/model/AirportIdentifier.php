@@ -16,27 +16,27 @@
             $this->timezone = $timezone;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getCode() {
+        public function getCode() : string {
             return $this->code;
         }
 
-        public function getCountry() {
+        public function getCountry() : string {
             return $this->country;
         }
 
-        public function getLatitude() {
+        public function getLatitude() : float {
             return $this->latitude;
         }
 
-        public function getLongitude() {
+        public function getLongitude() : float {
             return $this->longitude;
         }
 
-        public function getTimezone() {
+        public function getTimezone() : string {
             return $this->timezone;
         }
 

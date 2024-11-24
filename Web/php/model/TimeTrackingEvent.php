@@ -16,27 +16,27 @@
             $this->balance = $balance;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getDescription() {
+        public function getDescription() : string {
             return $this->description;
         }
 
-        public function getHours() {
+        public function getHours() : float {
             return $this->hours;
         }
 
-        public function getTimestamp() {
+        public function getTimestamp() : int {
             return $this->timestamp;
         }
         
-        public function getType() {
+        public function getType() : string {
             return $this->type;
         }
 
-        public function getBalance() {
+        public function getBalance() : float {
             return $this->balance;
         }
 

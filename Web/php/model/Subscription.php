@@ -16,27 +16,27 @@
             $this->expiration = $expiration;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getDescription() {
+        public function getDescription() : string {
             return $this->description;
         }
 
-        public function getValue() {
+        public function getValue() : float {
             return $this->value;
         }
 
-        public function getCurrency() {
+        public function getCurrency() : string {
             return $this->currency;
         }
 
-        public function getMainCurrencyValue() {
+        public function getMainCurrencyValue() : float {
             return $this->mainCurrencyValue;
         }
 
-        public function getExpiration() {
+        public function getExpiration() : int {
             return $this->expiration;
         }
 

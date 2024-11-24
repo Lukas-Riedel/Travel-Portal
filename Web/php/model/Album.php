@@ -18,31 +18,31 @@
             $this->indoorImagesCount = $indoorImagesCount;
         }
 
-        public function getId() {
+        public function getId() : string {
             return $this->id;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getMainPhotoId() {
+        public function getMainPhotoId() : int {
             return $this->mainPhotoId;
         }
 
-        public function getMainImageUrl() {
+        public function getMainImageUrl() : string {
             return $this->mainImageUrl;
         }
 
-        public function getPermalink() {
+        public function getPermalink() : string {
             return $this->permalink;
         }
 
-        public function getImagesCount() {
+        public function getImagesCount() : int {
             return $this->imagesCount;
         }
 
-        public function getIndoorImagesCount() {
+        public function getIndoorImagesCount() : int {
             return $this->indoorImagesCount;
         }
 

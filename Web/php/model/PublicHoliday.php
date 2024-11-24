@@ -10,15 +10,15 @@
             $this->date = $date;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getCountry() {
+        public function getCountry() : string {
             return $this->country;
         }
 
-        public function getDate() {
+        public function getDate() : string {
             return $this->date;
         }
 

@@ -8,11 +8,11 @@
             $this->context = $context;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getContext() {
+        public function getContext() : mixed {
             return $this->context;
         }
 

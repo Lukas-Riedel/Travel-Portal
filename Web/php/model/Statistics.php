@@ -10,15 +10,15 @@
             $this->unit = $unit;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getValue() {
+        public function getValue() : mixed {
             return $this->value;
         }
 
-        public function getUnit() {
+        public function getUnit() : string {
             return $this->unit;
         }
 

@@ -18,31 +18,31 @@
             $this->timestamp = $timestamp;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getUrl() {
+        public function getUrl() : string {
             return $this->url;
         }
 
-        public function getFocalLength() {
+        public function getFocalLength() : float {
             return $this->focalLength;
         }
 
-        public function getAperture() {
+        public function getAperture() : float {
             return $this->aperture;
         }
 
-        public function getShutterSpeed() {
+        public function getShutterSpeed() : float {
             return $this->shutterSpeed;
         }
 
-        public function getIso() {
+        public function getIso() : int {
             return $this->iso;
         }
 
-        public function getTimestamp() {
+        public function getTimestamp() : int {
             return $this->timestamp;
         }
 

@@ -1,4 +1,8 @@
 <?php
+    require_once(dirname(__FILE__) . "/Highlight.php");
+    require_once(dirname(__FILE__) . "/TripDays.php");
+    require_once(dirname(__FILE__) . "/TripVacation.php");
+
     class Trip implements JsonSerializable {        
         private $id;
         private $name;
@@ -31,8 +35,8 @@
             $this->end = $end;
             $this->countries = $countries;
             $this->cost = $cost;
-            $this->days = array("total" => $totalDays, "working" => $workingDays);
-            $this->vacation = ($expectedVacation === NULL && $maximumVacation === NULL) ? NULL : array("expected" => max(0, $expectedVacation), "maximum" => max(0, $maximumVacation)); 
+            $this->days = new TripDays($totalDays, $workingDays);
+            $this->vacation = ($expectedVacation === NULL && $maximumVacation === NULL) ? NULL : new TripVacation($expectedVacation, $maximumVacation); 
             $this->expenses = $expenses;
             $this->stays = $stays;
             $this->flights = $flights;
@@ -45,83 +49,83 @@
             $this->publicHolidays = $publicHolidays;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getName() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getYear() {
+        public function getYear() : int {
             return $this->year;
         }
 
-        public function getMainHighlight() {
+        public function getMainHighlight() : ?Highlight {
             return $this->mainHighlight;
         }
 
-        public function getStart() {
+        public function getStart() : int {
             return $this->start;
         }
 
-        public function getEnd() {
+        public function getEnd() : int {
             return $this->end;
         }
 
-        public function getCountries() {
+        public function getCountries() : array {
             return $this->countries;
         }
 
-        public function getCost() {
+        public function getCost() : float {
             return $this->cost;
         }
 
-        public function getDays() {
+        public function getDays() : TripDays {
             return $this->days;
         }
 
-        public function getVacation() {
+        public function getVacation() : ?TripVacation {
             return $this->vacation;
         }
 
-        public function getExpenses() {
+        public function getExpenses() : array {
             return $this->expenses;
         }
 
-        public function getStays() {
+        public function getStays() : array {
             return $this->stays;
         }
 
-        public function getFlights() {
+        public function getFlights() : array {
             return $this->flights;
         }
 
-        public function getWatchedFlights() {
+        public function getWatchedFlights() : array {
             return $this->watchedFlights;
         }
 
-        public function getLayovers() {
+        public function getLayovers() : array {
             return $this->layovers;
         }
 
-        public function getFitness() {
+        public function getFitness() : array {
             return $this->fitness;
         }
 
-        public function getNotes() {
+        public function getNotes() : array {
             return $this->notes;
         }
 
-        public function getHighlights() {
+        public function getHighlights() : array {
             return $this->highlights;
         }
 
-        public function getStats() {
+        public function getStats() : array {
             return $this->stats;
         }
 
-        public function getPublicHolidays() {
+        public function getPublicHolidays() : array {
             return $this->publicHolidays;
         }
 

@@ -1,4 +1,9 @@
 <?php
+    require_once(dirname(__FILE__) . "/Weather.php");
+    require_once(dirname(__FILE__) . "/Sun.php");
+    require_once(dirname(__FILE__) . "/Album.php");
+    require_once(dirname(__FILE__) . "/TripIdentifier.php");
+
     class Date implements JsonSerializable {        
         private $start;
         private $end;
@@ -16,27 +21,27 @@
             $this->trip = $trip;
         }
 
-        public function getStart() {
+        public function getStart() : int {
             return $this->start;
         }
 
-        public function getEnd() {
+        public function getEnd() : int {
             return $this->end;
         }
 
-        public function getWeather() {
+        public function getWeather() : ?Weather {
             return $this->weather;
         }
 
-        public function getSun() {
+        public function getSun() : ?Sun {
             return $this->sun;
         }
 
-        public function getAlbum() {
+        public function getAlbum() : ?Album {
             return $this->album;
         }
 
-        public function getTrip() {
+        public function getTrip() : ?TripIdentifier {
             return $this->trip;
         }
 

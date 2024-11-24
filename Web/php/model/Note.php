@@ -8,11 +8,11 @@
             $this->content = $content;
         }
 
-        public function getId() {
+        public function getId() : int {
             return $this->id;
         }
 
-        public function getContent() {
+        public function getContent() : string {
             return $this->content;
         }
 

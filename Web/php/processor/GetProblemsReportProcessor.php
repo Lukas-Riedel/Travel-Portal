@@ -26,12 +26,8 @@
                     ->getResultSet();
                 
                 if (count($problemRows) > 0) {
-                    $result[] = new Problem($problemDefinitionRow["name"], array_map(function($problemRow) { 
-                        $context = $problemRow[array_key_last($problemRow)];
-                        if ($context != NULL) {
-                            $context = json_decode($context, TRUE);
-                        }
-                        return new Problemvalue($problemRow[array_key_first($problemRow)], $context); 
+                    $result[] = new Problem($problemDefinitionRow["name"], array_map(function($problemRow) {
+                        return new Problemvalue($problemRow[array_key_first($problemRow)], $problemRow[array_key_last($problemRow)]); 
                     }, $problemRows));
                 }
             }

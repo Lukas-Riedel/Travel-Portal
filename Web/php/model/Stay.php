@@ -12,19 +12,19 @@
             $this->end = $end;
         }
 
-        public function getname() {
+        public function getName() : string {
             return $this->name;
         }
 
-        public function getaddress() {
+        public function getAddress() : string {
             return $this->address;
         }
 
-        public function getstart() {
+        public function getStart() : int {
             return $this->start;
         }
 
-        public function getend() {
+        public function getEnd() : int {
             return $this->end;
         }
 

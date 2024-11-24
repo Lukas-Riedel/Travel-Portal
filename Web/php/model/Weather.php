@@ -16,27 +16,27 @@
             $this->lastUpdate = $lastUpdate;
         }
 
-        public function getTemperature() {
+        public function getTemperature() : float {
             return $this->temperature;
         }
 
-        public function getClouds() {
+        public function getClouds() : float {
             return $this->clouds;
         }
 
-        public function getWind() {
+        public function getWind() : float {
             return $this->wind;
         }
 
-        public function getPrecipitation() {
+        public function getPrecipitation() : float {
             return $this->precipitation;
         }
 
-        public function getSymbol() {
+        public function getSymbol() : string {
             return $this->symbol;
         }
 
-        public function getLastUpdate() {
+        public function getLastUpdate() : int {
             return $this->lastUpdate;
         }
 
