@@ -3,18 +3,29 @@
 
     class UpdatePlaceHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $placeService;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
                     "placeId" => $input["placeId"]));                    
             if ($response["code"] != 200) {
                 return $response;
-            }     
+            }
 
-            $response = $processorProvider->run("ChangePlaceIdentifier", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
+            if (isset($input["mainHighlightId"])) {
+                $placeService->updatePlaceMainHighlight($input["placeId"], $input["mainHighlightId"]);
+            }
+
+            if (isset($input["latitude"]) && isset($input["longitude"])) {
+                $placeService->updatePlaceLocation($input["placeId"], $input["latitude"], $input["longitude"]);
+            }
+
+            if (isset($input["excerpt"])) {
+                $placeService->updatePlaceExcerpt($input["placeId"], $input["excerpt"]);
+            }
+
+            if (isset($input["name"])) {
+                $placeService->updatePlaceName($input["placeId"], $input["name"]);
             }
     
             return (new GetPlaceHandler())

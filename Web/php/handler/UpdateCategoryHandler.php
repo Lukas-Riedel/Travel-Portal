@@ -20,8 +20,9 @@
                 $categoryService->updateCategoryName($input["categoryId"], $input["name"]);
             }
 
-            $response = $categoryService->getCategory($input["categoryId"]);
-            return $this->createResponse(200, $response);
+            return (new GetCategoryHandler())
+                ->handle(array(
+                    "categoryId" => $input["categoryId"]));
         }
 
         public function getRequiredRole() {

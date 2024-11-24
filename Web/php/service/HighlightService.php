@@ -109,31 +109,31 @@
             throw new InvalidArgumentException("Unknown highlight type " . $highlightType . ".");
         }
 
-        private function updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier) : void {
+        private function updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier) : bool {
             global $placeService, $tripService, $categoryService, $yearService;
 
             if ($highlightType === HighlightType::Place) {
                 $placeIdentifier = $placeService->getPlaceIdentifierById($entityId);
                 if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
-                    $placeService->updatePlaceMainHighlight($entityId, $highlightIdentifier);
+                    return $placeService->updatePlaceMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else if ($highlightType === HighlightType::Trip) {
                 $tripIdentifier = $tripService->getTripIdentifierById($entityId);
                 if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
-                    $tripService->updateTripMainHighlight($entityId, $highlightIdentifier);
+                    return $tripService->updateTripMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else if ($highlightType === HighlightType::Category) {
                 $categoryIdentifier = $categoryService->getCategory($entityId);
                 if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
-                    $categoryService->updateCategoryMainHighlight($entityId, $highlightIdentifier);
+                    return $categoryService->updateCategoryMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else if ($highlightType === HighlightType::Year) {
                 $yearIdentifier = $yearService->getYearIdentifier($entityId);
                 if ($yearIdentifier !== NULL && $yearIdentifier->getMainHighlight() === NULL) {
-                    $yearService->updateYearMainHighlight($entityId, $highlightIdentifier);
+                    return $yearService->updateYearMainHighlight($entityId, $highlightIdentifier);
                 }
             }
             else {

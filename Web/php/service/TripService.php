@@ -112,10 +112,10 @@
                 ->getSingleColumn("id");
         }
         
-        private function deleteTripEvent($tripId) : void {
+        private function deleteTripEvent($tripId) : bool {
             global $googleApiClient;
                 
-            $googleApiClient->deleteCalendarEvent("trips", $this->getTripEventId($tripId));
+            return $googleApiClient->deleteCalendarEvent("trips", $this->getTripEventId($tripId));
         }
     }
 ?>

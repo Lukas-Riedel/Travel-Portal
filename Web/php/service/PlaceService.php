@@ -5,6 +5,9 @@
     require_once(dirname(__FILE__) . "/../processor/GetChatResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidatePlacesProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetCalendarIdentifierProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class PlaceService {
         public function getRegularPlaces($tripId) : array {
@@ -77,6 +80,68 @@
                 ->statementBuilder("UPDATE place_identifier SET main_highlight_id = ? WHERE id = ?")
                 ->withParameters($highlightIdentifier, $placeId)
                 ->execute() === 1;
+        }
+
+        public function updatePlaceExcerpt($placeId, $excerpt) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("UPDATE place_identifier SET excerpt = ? WHERE id = ?")
+                ->withParameters($excerpt, $placeId)
+                ->execute() === 1;
+        }
+
+        public function updatePlaceName($placeId, $name) : bool {
+            global $databaseProvider, $googleApiClient, $albumService, $schedulingProvider;
+
+            $wasUpdated = $databaseProvider
+                ->statementBuilder("UPDATE place_identifier SET name = ?, excerpt = NULL WHERE id = ?")
+                ->withParameters($name, $placeId)
+                ->execute() === 1;
+
+            $place = $this->getRegularPlace($placeId);
+            if ($place !== NULL) {
+                foreach ($place->getDates() as &$date) {                       
+                    $album = $date->getAlbum();
+                    if ($album !== NULL) {     
+                        $externalAlbumId = $albumService->getExternalIdentifier($album->getId());
+                        $wasUpdated &= $googleApiClient->updateAlbumName($externalAlbumId, str_replace($place->getName(), $name, $album->getName()));
+                        $albumService->updateAlbum($album->getId());
+                    }
+
+                    $eventId = $this->getPlaceEventId($placeId, $date->getStart());
+                    if ($eventId !== NULL) {  
+                        $wasUpdated &= $googleApiClient->updateCalendarEventSummary("places", $eventId, $name);
+                    }
+                }
+            }
+            
+            foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => "TRIP", 
+                        "id" => $tripId), NULL); 
+            }   
+
+            return $wasUpdated;
+        }
+
+        public function updatePlaceLocation($placeId, $latitude, $longitude) : bool {
+            global $databaseProvider, $schedulingProvider;
+
+            $wasUpdated = $databaseProvider
+                ->statementBuilder("UPDATE place_identifier SET latitude = ?, longitude = ? WHERE id = ?")
+                ->withParameters($latitude, $longitude, $placeId)
+                ->execute() === 1;
+            
+            foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => "TRIP", 
+                        "id" => $tripId), NULL); 
+            }   
+
+            return $wasUpdated;
         }
 
         public function getAllPlaceIdentifiers() : array {
@@ -236,11 +301,20 @@
                 ->withParameters($placeId, $start)
                 ->getSingleColumn("id");
         }
+
+        private function getContainedTripIdentifiers($placeId) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT DISTINCT trip_id FROM place_summary WHERE place_id = ? AND trip_id IS NOT NULL")
+                ->withParameters($placeId)
+                ->getResultSetForColumn("trip_id");
+        }
         
-        private function deletePlaceEvent($placeId, $start) : void {
+        private function deletePlaceEvent($placeId, $start) : bool {
             global $googleApiClient;
                 
-            $googleApiClient->deleteCalendarEvent("places", $this->getPlaceEventId($placeId, $start));
+            return $googleApiClient->deleteCalendarEvent("places", $this->getPlaceEventId($placeId, $start));
         }
 
         private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) {

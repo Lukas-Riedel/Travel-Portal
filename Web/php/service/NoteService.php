@@ -17,13 +17,13 @@
             return new Note($noteRow["id"], $noteRow["content"]);
         }
 
-        public function updateNotesOwner($oldTripId, $newTripId) : void {       
+        public function updateNotesOwner($oldTripId, $newTripId) : bool {       
             global $databaseProvider;
 
-            $databaseProvider
+            return $databaseProvider
                 ->statementBuilder("UPDATE note SET trip_id = ? WHERE trip_id = ?")
                 ->withParameters($newTripId, $oldTripId)
-                ->execute();
+                ->execute() > 0;
         }
     }
 ?>

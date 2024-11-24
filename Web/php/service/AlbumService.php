@@ -29,6 +29,15 @@
                 ->withParameters($externalId)
                 ->getFirstColumn("id");
         }
+
+        public function getExternalIdentifier($albumId) : ?string {
+            global $databaseProvider;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT id FROM album_identifier WHERE id = ?")
+                ->withParameters($albumId)
+                ->getFirstColumn("external_id");
+        }
         
         public function getOrCreateAlbumIdentifier($externalId) : string {
             global $databaseProvider;
@@ -67,12 +76,15 @@
             }
 
             $resolvedAlbumId = $this->getOrCreateAlbumIdentifier($apiResponse["id"]);
-
-            (new UpdateAlbumProcessor())
-                ->process(array(
-                    "albumId" => $resolvedAlbumId));
+            $this->updateAlbum($resolvedAlbumId);
 
             return $this->getAlbum($resolvedAlbumId);
+        }
+
+        public function updateAlbum($albumId) : bool {
+            return (new UpdateAlbumProcessor())
+                ->process(array(
+                    "albumId" => $albumId));
         }
 
         private function getAlbumName($placeName, $timestamp) : string {

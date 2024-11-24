@@ -63,45 +63,49 @@
                 $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]);
         }
 
-        public function updateExpenseDescription($expenseId, $description) : void {
+        public function updateExpenseDescription($expenseId, $description) : bool {
             global $databaseProvider;
             
-            $databaseProvider
+            return $databaseProvider
                 ->statementBuilder("UPDATE expense SET description = ? WHERE id = ?")
                 ->withParameters($description, $expenseId)
-                ->execute();
+                ->execute() === 1;
         }
 
-        public function updateExpenseValue($expenseId, $value, $tripId) : void {
+        public function updateExpenseValue($expenseId, $value, $tripId) : bool {
             global $databaseProvider, $schedulingProvider;
             
-            $databaseProvider
+            $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE expense SET value = ? WHERE id = ?")
                 ->withParameters($value, $expenseId)
-                ->execute();
+                ->execute() === 1;
                 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
                     "type" => "TRIP", 
                     "id" => $tripId), NULL);
+
+            return $wasUpdated;
         }
 
-        public function updateExpenseCurrency($expenseId, $currency, $tripId) : void {
+        public function updateExpenseCurrency($expenseId, $currency, $tripId) : bool {
             global $databaseProvider, $schedulingProvider;
 
             $exchangeRate = (new GetExchangeRateProcessor())
                 ->process(array(
                     "currency" => $currency));
 
-            $databaseProvider
+            $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE expense SET currency = ?, exchange_rate = ? WHERE id = ?")
                 ->withParameters($currency, $exchangeRate, $expenseId)
-                ->execute();
+                ->execute() === 1;
                 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
                     "type" => "TRIP", 
                     "id" => $tripId), NULL);
+
+            return $wasUpdated;
         }
     }
 ?>
