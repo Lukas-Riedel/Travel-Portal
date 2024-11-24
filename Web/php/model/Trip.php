@@ -57,7 +57,7 @@
             return $this->name;
         }
 
-        public function getYear() : int {
+        public function getYear() : ?int {
             return $this->year;
         }
 

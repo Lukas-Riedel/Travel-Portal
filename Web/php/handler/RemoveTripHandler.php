@@ -3,7 +3,7 @@
 
     class RemoveTripHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $tripService;
+            global  $tripService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,14 +12,11 @@
                 return $response;
             }
 
-            if ($response["body"]->getYear() !== NULL) {
-                $response = $tripService->archiveTrip($input["tripId"]);
-            }
-            else {
-                $response = $processorProvider->run("RemoveCandidateTrip", $input);
-            }
+            $wasDeleted = ($response["body"]->getYear() !== NULL)
+                ? $tripService->archiveTrip($input["tripId"])
+                : $tripService->removeCandidateTrip($input["tripId"]);
             
-            if ($response === FALSE) {                
+            if ($wasDeleted === FALSE) {                
                 return $this->create404Response("trips", $input["tripId"]);
             }
 

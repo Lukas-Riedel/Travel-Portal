@@ -84,6 +84,15 @@
             return $this->getTripIdentifier($name, $year);
         }
 
+        public function removeCandidateTrip($tripId) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("DELETE FROM place_candidate_event WHERE trip_id = ?")
+                ->withParameters($tripId)
+                ->execute();
+        }
+
         public function archiveTrip($tripId) : Trip {            
             global $noteService, $placeService;
 
