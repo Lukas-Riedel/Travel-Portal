@@ -15,7 +15,7 @@
     if (isset($_POST["username"]) && isset($_POST["password"])) {
         try {
             $accessTokenResponse = $authenticationService->authenticateWithCredentials($_POST["username"], $_POST["password"]);
-            setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse["validity"], "/");
+            setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse->getValidity(), "/");
 
             if (isset($_GET["origin"])) {
                 header("Location: " . $_GET["origin"]);

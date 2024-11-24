@@ -53,7 +53,7 @@
                 ->process(array(
                     "method" => "POST", 
                     "url" => "https://" . $hostName . "/api/jobs/run",
-                    "headers" => "Authorization: Bearer " . $accessTokenResponse["accessToken"],
+                    "headers" => "Authorization: Bearer " . $accessTokenResponse->getAccessToken(),
                     "payload" => json_encode(array(
                         "action" => "BackupDatabase", 
                         "args" => array(

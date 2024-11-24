@@ -1,8 +1,11 @@
 <?php
+    require_once(dirname(__FILE__) . "/../model/AccessToken.php");
+    require_once(dirname(__FILE__) . "/../model/AuthenticationResult.php");
     require_once(dirname(__FILE__) . "/../exception/AuthenticationException.php");
+    require_once(dirname(__FILE__) . "/../config/secrets.php");
 
     class AuthenticationService {
-        public function getAccessToken($accessToken) : mixed {
+        public function getAccessToken($accessToken) : AccessToken {
             global $configuration;
 
             if ($accessToken === NULL) {
@@ -38,10 +41,10 @@
                 throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
             }
 
-            return $decodedAccessToken;
+            return new AccessToken($decodedAccessToken["roles"], $decodedAccessToken["version"], $decodedAccessToken["expiration"]);
         }
 
-        public function authenticateWithCredentials($username, $password) : mixed {
+        public function authenticateWithCredentials($username, $password) : AuthenticationResult {
             global $configuration, $databaseProvider;
 
             $userRow = $databaseProvider
@@ -61,7 +64,7 @@
             return $this->generateAuthenticationResult($roles, $configuration["bearerToken"]["validity"]);
         }
 
-        public function authenticateWithApiKey($apiKey) : mixed {
+        public function authenticateWithApiKey($apiKey) : AuthenticationResult {
             global $configuration, $databaseProvider;
             
             $roles = explode(",", $databaseProvider
@@ -76,26 +79,19 @@
             return $this->generateAuthenticationResult($roles, $configuration["bearerToken"]["validity"]);
         }
 
-        public function authenticateAsAdmin($validity) : mixed {
+        public function authenticateAsAdmin($validity) : AuthenticationResult {
             return $this->generateAuthenticationResult(array("ADMIN", "USER"), $validity);
         }
 
-        private function generateAuthenticationResult($roles, $validity) : mixed {
+        private function generateAuthenticationResult($roles, $validity) : AuthenticationResult {
             global $configuration;
 
-            $result = array(
-                "roles" => $roles,
-                "version" => $configuration["bearerToken"]["version"],
-                "expiration" => time() + $validity);
-
+            $rawAccessToken = new AccessToken($roles, $configuration["bearerToken"]["version"], time() + $validity);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($configuration["bearerToken"]["cipher"]));
-            $encrypted = openssl_encrypt(json_encode($result), $configuration["bearerToken"]["cipher"], PRIVATE_KEY, 0, $iv);
+            $encrypted = openssl_encrypt(json_encode($rawAccessToken), $configuration["bearerToken"]["cipher"], PRIVATE_KEY, 0, $iv);
             $accessToken = base64_encode($encrypted . '::' . $iv);
 
-            return array(
-                "accessToken" => $accessToken,
-                "roles" => $roles,
-                "validity" => $validity);
+            return new AuthenticationResult($accessToken, $roles, $validity);
         }
     }
 ?>

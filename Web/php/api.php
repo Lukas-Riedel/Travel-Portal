@@ -95,7 +95,7 @@
                 if ($handler->isProtected()) {
                     $accessToken = $authenticationService->getAccessToken(getBearerToken());
 
-                    if (!in_array($handler->getRequiredRole(), $accessToken["roles"])) {
+                    if (!in_array($handler->getRequiredRole(), $accessToken->getRoles())) {
                         throw new AuthorizationException("The user is not authorized to perform this action.");
                     }
                 }

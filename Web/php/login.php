@@ -14,7 +14,7 @@
     if (isset($_GET["apiKey"]) && (!isset($_COOKIE["accessToken"]) || $_COOKIE["accessToken"] === NULL)) {
         try {
             $accessTokenResponse = $authenticationService->authenticateWithApiKey($_GET["apiKey"]);
-            setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse["validity"], "/");
+            setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse->getValidity(), "/");
 
             header("Location: " . $_SERVER["REQUEST_URI"]);
             exit();
