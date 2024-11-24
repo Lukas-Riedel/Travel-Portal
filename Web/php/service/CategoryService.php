@@ -90,13 +90,13 @@
             // Verify that all referenced regions exist.
             foreach ($includedRegions as &$includedRegion) {
                 if (!in_array($includedRegion, $referencableRegionNames)) {
-                    throw new InvalidArgumentException("The included region " . $includedRegion . " does not exist.");
+                    throw new InvalidArgumentException("The included region '" . $includedRegion . "' does not exist.");
                 }
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
                 if (!in_array($excludedRegion, $referencableRegionNames)) {
-                    throw new InvalidArgumentException("The excluded region " . $excludedRegion . " does not exist.");
+                    throw new InvalidArgumentException("The excluded region '" . $excludedRegion . "' does not exist.");
                 }
             }
 
