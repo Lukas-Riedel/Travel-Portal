@@ -17,6 +17,15 @@
             return new Note($noteRow["id"], $noteRow["content"]);
         }
 
+        public function removeNote($noteId) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("DELETE FROM note WHERE id = ?")
+                ->withParameters($noteId)
+                ->execute() === 1;
+        }
+
         public function updateNotesOwner($oldTripId, $newTripId) : bool {       
             global $databaseProvider;
 

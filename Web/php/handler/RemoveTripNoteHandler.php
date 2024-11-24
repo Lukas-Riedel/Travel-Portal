@@ -3,7 +3,7 @@
 
     class RemoveTripNoteHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $noteService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,8 +12,8 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("RemoveNote", $input);
-            if ($response === FALSE) {                
+            $wasRemoved = $noteService->removeNote($input["noteId"]);
+            if ($wasRemoved === FALSE) {                
                 return $this->create404Response("trip_notes", $input["noteId"]);
             }
 
