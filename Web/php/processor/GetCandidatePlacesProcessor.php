@@ -66,7 +66,7 @@
                         $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]));
                     }
 
-                    $dates[] = new Date($dateRow["start"], $dateRow["end"], NULL, $album, $trip);
+                    $dates[] = new Date($dateRow["start"], $dateRow["end"], NULL, NULL, $album, $trip);
                 }
                 
                 $highlights = array();
@@ -117,7 +117,7 @@
 
                 $trip = new TripIdentifier($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->getHighlight($tripRow["main_highlight_id"]));
                 
-                $tempPlaces[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], NULL, NULL, $trip));
+                $tempPlaces[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], NULL, NULL, NULL, $trip));
             }
 
             return array_values($tempPlaces);
