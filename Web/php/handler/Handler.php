@@ -36,7 +36,7 @@
         }
 
         protected function create400ResponseExample() {
-            return $this->createResponseExample("Invalid category reference", 400, '{"code":400,"error":"InvalidArgumentException","message":"The included region \'Kontinent\' does not exist.","details":{"endpoint":"/api/categories","arguments":{"name":"Svět","category":"CONTINENT","includedRegions":["Kontinent"],"excludedRegions":[]},"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/handler/CreateCategoryHandler.php(8): CategoryService->createCompositeRegion(\'Sv\\xC4\\x9Bt\', \'CONTINENT\', Array, Array)","#1 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(103): CreateCategoryHandler->handle(Array)","#2 {main}"],"ipAddress":"89.103.191.6"}}');
+            return $this->createResponseExample("Invalid category reference", 400, '{"code":400,"error":"InvalidArgumentException","message":"The included region \'Paradise\' does not exist.","details":{"endpoint":"/api/categories","arguments":{"name":"Svět","category":"CONTINENT","includedRegions":["Paradise"],"excludedRegions":[]},"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/handler/CreateCategoryHandler.php(8): CategoryService->createCompositeRegion(\'World\', \'CONTINENT\', Array, Array)","#1 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(103): CreateCategoryHandler->handle(Array)","#2 {main}"],"ipAddress":"89.103.191.6"}}');
         }
 
         protected function create401ResponseExample() {

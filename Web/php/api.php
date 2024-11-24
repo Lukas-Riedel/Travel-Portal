@@ -60,11 +60,12 @@
     $requestBody = json_decode(file_get_contents('php://input'), TRUE);
     $input = array_merge(filterArrayKeys($_GET), filterArrayKeys($requestBody ?? []));
     
+    $databaseProvider->beginTransaction();        
     try {            
         set_error_handler($onError);
         $loggingProvider = new LoggingProvider($databaseProvider);
         $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
-        $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE, TRUE, FALSE);
+        $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE);
     
         $handlers = array();
         foreach (array_diff(scandir(dirname(__FILE__) . "/handler"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
@@ -101,6 +102,7 @@
                 }
     
                 $response = $handler->handle($input);
+                $databaseProvider->commit();
     
                 http_response_code($response["code"]);
                 echo json_encode($response["body"], JSON_HEX_QUOT | JSON_HEX_TAG);
@@ -110,6 +112,7 @@
         }
     } 
     catch (Throwable $e) {
+        $databaseProvider->rollback();
         $error = new TargetError(getErrorCode($e), $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
@@ -119,6 +122,7 @@
     finally {        
         restore_error_handler();
     }
+    $databaseProvider->materializeViews();  
 
     header("Location: https://" . $configuration["hostName"] . "/swagger");
 

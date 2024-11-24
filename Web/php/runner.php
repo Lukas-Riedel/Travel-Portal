@@ -25,7 +25,7 @@
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $loggingProvider = new LoggingProvider($databaseProvider);
     $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
-    $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE, FALSE, TRUE);
+    $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, FALSE);
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
