@@ -257,7 +257,7 @@
                     ->getFirstColumn("external_id");
 
                 if ($externalAlbumId == NULL) {
-                    throw new InvalidArgumentException("The album " + $albumId + " was not found.");
+                    throw new InvalidArgumentException("The album " . $albumId . " was not found.");
                 }
 
                 $queryParameters .= "/" . $externalAlbumId;
