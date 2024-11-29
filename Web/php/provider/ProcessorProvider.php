@@ -46,7 +46,7 @@
                 $error = new TargetError(400, $e, $args);
                 $this->loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
                 if ($this->isExecutedFromApi) {
-                    throw e;
+                    throw $e;
                 }
                 return $error;
             }
