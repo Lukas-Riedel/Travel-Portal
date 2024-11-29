@@ -140,7 +140,7 @@
                 throw new InvalidArgumentException("Unknown highlight type " . $highlightType . ".");
             }
 
-            return NULL;
+            return FALSE;
         }
     }
 
