@@ -29,10 +29,13 @@
         ->query("SELECT * FROM migration_script");
 
     $alreadyAppliedScripts = array();
-    while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
-        $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
-            "hash" => $alreadyAppliedScriptsRow["hash"],
-            "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
+
+    if ($alreadyAppliedScriptsRows) {
+        while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
+            $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
+                "hash" => $alreadyAppliedScriptsRow["hash"],
+                "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
+        }
     }
 
     foreach ($migrationScriptFileNames as &$migrationScriptFileName) {
