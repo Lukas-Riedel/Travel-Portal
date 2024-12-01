@@ -15,6 +15,8 @@
         throw new RuntimeException($message);
     };
 
+    $backupDatabase = isset($_GET["backupDatabase"]) && $_GET["backupDatabase"] == "true";
+
     $databaseProvider
         ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
 
@@ -29,10 +31,13 @@
         ->query("SELECT * FROM migration_script");
 
     $alreadyAppliedScripts = array();
-    while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
-        $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
-            "hash" => $alreadyAppliedScriptsRow["hash"],
-            "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
+
+    if ($alreadyAppliedScriptsRows) {
+        while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
+            $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
+                "hash" => $alreadyAppliedScriptsRow["hash"],
+                "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
+        }
     }
 
     foreach ($migrationScriptFileNames as &$migrationScriptFileName) {
@@ -48,16 +53,18 @@
                 ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_NAME NOT LIKE 'cache_%' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
             $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
 
-            $accessTokenResponse = $authenticationService->authenticateAsAdmin(300);        
-            (new GetHttpResponseProcessor())
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://" . $hostName . "/api/jobs/run",
-                    "headers" => "Authorization: Bearer " . $accessTokenResponse->getAccessToken(),
-                    "payload" => json_encode(array(
-                        "action" => "BackupDatabase", 
-                        "args" => array(
-                            "tables" => $tablesToBackup)))));
+            if ($backupDatabase) {
+                $accessTokenResponse = $authenticationService->authenticateAsAdmin(300);        
+                (new GetHttpResponseProcessor())
+                    ->process(array(
+                        "method" => "POST", 
+                        "url" => "https://" . $hostName . "/api/jobs/run",
+                        "headers" => "Authorization: Bearer " . $accessTokenResponse->getAccessToken(),
+                        "payload" => json_encode(array(
+                            "action" => "BackupDatabase", 
+                            "args" => array(
+                                "tables" => $tablesToBackup)))));
+            }
 
             $migrationScriptFileNameTokens = explode("-", $migrationScriptFileName);
             $delimiter = count($migrationScriptFileNameTokens) == 3 ? str_replace(".sql", "", $migrationScriptFileNameTokens[2]) : ";";

@@ -86,8 +86,10 @@
         private function updateViewsToMaterialize($sql) {            
             if (!isset($_SESSION["materializationDuration"])) {
                 $views = $this->connection->query("SELECT * FROM view_materialization");
-                while ($view = $views->fetch_assoc()) {
-                    $_SESSION["materializationDuration"][$view["view_name"]] = intval($view["last_materialization_duration"]);
+                if ($views) {
+                    while ($view = $views->fetch_assoc()) {
+                        $_SESSION["materializationDuration"][$view["view_name"]] = intval($view["last_materialization_duration"]);
+                    }
                 }
             }
 
@@ -146,9 +148,11 @@
             }
 
             $delayedViews = $this->connection->query("SELECT view_name FROM view_materialization WHERE is_materialization_delayed = 1");
-            while ($delayedView = $delayedViews->fetch_assoc()) {
-                if (!in_array($delayedView["view_name"], $this->viewsToMaterialize)) {
-                    $this->viewsToMaterialize[] = $delayedView["view_name"];
+            if ($delayedViews) {
+                while ($delayedView = $delayedViews->fetch_assoc()) {
+                    if (!in_array($delayedView["view_name"], $this->viewsToMaterialize)) {
+                        $this->viewsToMaterialize[] = $delayedView["view_name"];
+                    }
                 }
             }
         }
@@ -192,6 +196,10 @@
         }
 
         public function execute() {
+            if (!$this->statement) {
+                return 0;
+            }
+
             $params = array_merge($this->params, $this->deferredParams);
             if (empty($params)) {
                 $this->statement->execute();
@@ -203,6 +211,10 @@
         }
 
         public function getResultSet() {
+            if (!$this->statement) {
+                return array();
+            }
+
             $this->execute();
             $result = $this->statement->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
