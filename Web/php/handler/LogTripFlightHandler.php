@@ -1,9 +1,20 @@
 <?php
     class LogTripFlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
-    
-            $response = $processorProvider->run("LogFlight", $input);
+            global $flightService;
+
+            $response = NULL;
+            if (isset($input["fromCode"]) && isset($input["toCode"]) && isset($input["actualDeparture"]) && isset($input["scheduledArrival"])
+                && isset($input["actualArrival"]) && isset($input["registration"]) && isset($input["aircraft"])) {
+                $response = $flightService->logFlight($input["flight"], isset($input["tripId"]) ? $input["tripId"] : NULL, $input["from"], $input["fromCode"],
+                    $input["to"], $input["toCode"], $input["scheduledDeparture"], $input["actualDeparture"], $input["scheduledArrival"], $input["actualArrival"],
+                    $input["registration"], $input["aircraft"]);
+            }
+            else {
+                $response = $flightService->fetchAndLogFlight($input["flight"], isset($input["tripId"]) ? $input["tripId"] : NULL, $input["from"],
+                    $input["to"], $input["scheduledDeparture"]);
+            }
+            
             return $this->createResponse(201, $response);
         }
 
