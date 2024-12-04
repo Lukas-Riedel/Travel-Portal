@@ -1,5 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetAirportIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetDistanceProcessor.php");
     require_once(dirname(__FILE__) . "/../model/Flight.php");
@@ -7,7 +6,7 @@
 
     class LogFlightProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $schedulingProvider, $flightService;
 
             $fromCode = $toCode = $scheduledDeparture = $actualDeparture = $scheduledArrival = $actualArrival = $registration = $aircraft = NULL;
             if (isset($input["fromCode"]) && isset($input["toCode"]) && isset($input["actualDeparture"]) && isset($input["scheduledArrival"])
@@ -54,13 +53,8 @@
                 $aircraft = $selectedFlight["aircraft"]["model"]["code"];
             }
 
-            $getAirportIdentifierProcessor = new GetAirportIdentifierProcessor();
-            $originAirportIdentifier = $getAirportIdentifierProcessor
-                ->process(array(
-                    "code" => $fromCode));
-            $destinationAirportIdentifier = $getAirportIdentifierProcessor
-                ->process(array(
-                    "code" => $toCode));
+            $originAirportIdentifier = $flightService->getOrCreateAirportIdentifier($fromCode);
+            $destinationAirportIdentifier = $flightService->getOrCreateAirportIdentifier($toCode);
 
             $databaseProvider
                 ->statementBuilder("DELETE FROM flight_log WHERE flight = ? AND actual_departure = ? AND actual_arrival = ?")
