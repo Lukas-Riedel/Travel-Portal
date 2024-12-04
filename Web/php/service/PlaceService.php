@@ -220,14 +220,6 @@
             return $placeIdentifier;
         }
 
-        public function createPermanentPlace($name, $address) : Place {
-            return $this->createSpecialPlace(SpecialPlaceType::Permanent, $name, $address);
-        }
-
-        public function createCandidatePlace($name, $address) : Place {
-            return $this->createSpecialPlace(SpecialPlaceType::Candidate, $name, $address);
-        }
-
         public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
             global $configuration, $databaseProvider;
 
@@ -245,6 +237,14 @@
             }
             
             return $this->getCandidatePlaces($archivedTripId);
+        }
+
+        public function createPermanentPlace($name, $address) : Place {
+            return $this->createSpecialPlace(SpecialPlaceType::Permanent, $name, $address);
+        }
+
+        public function createCandidatePlace($name, $address) : Place {
+            return $this->createSpecialPlace(SpecialPlaceType::Candidate, $name, $address);
         }
 
         private function createSpecialPlace($specialPlaceType, $name, $address) : Place {            
@@ -272,6 +272,51 @@
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(), array(), array(), array());
+        }
+
+        public function removePermanentPlace($placeId) : bool {
+            global $databaseProvider, $schedulingProvider;
+
+            $wasRemoved = $this->removeSpecialPlace(SpecialPlaceType::Permanent, $placeId);
+
+            $categoryIdsToUpdate = $databaseProvider
+                ->statementBuilder("SELECT category_id FROM category WHERE place_id = ?")
+                ->withParameters($placeId)
+                ->getResultSetForColumn("category_id");
+
+            foreach ($categoryIdsToUpdate as &$categoryIdToUpdate) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => "CATEGORY", 
+                        "id" => $categoryIdToUpdate), NULL);
+            }
+
+            $yearsToUpdate = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE place_id = ?")
+                ->withParameters($placeId)
+                ->getResultSetForColumn("year");
+
+            foreach ($yearsToUpdate as &$yearToUpdate) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => "YEAR", 
+                        "id" => $yearToUpdate), NULL);
+            }
+
+            return $wasRemoved;
+        }
+
+        public function removeCandidatePlace($placeId) : bool {
+            return $this->removeSpecialPlace(SpecialPlaceType::Candidate, $placeId);
+        }
+
+        private function removeSpecialPlace($specialPlaceType, $placeId) : bool {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("DELETE FROM " . $this->resolveSpecialPlaceTable($specialPlaceType) . " WHERE place_id = ?")
+                ->withParameters($placeId)
+                ->execute() === 1;
         }
 
         private function getSuggestedExcerpt($name, $country) : ?string {

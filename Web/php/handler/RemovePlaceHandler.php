@@ -1,9 +1,16 @@
 <?php
     class RemovePlaceHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $placeService;
 
-            $response = $processorProvider->run("RemoveSpecialPlace", $input);
+            $response = FALSE;
+            if ($input["type"] == "permanent") {
+                $placeService->removePermanentPlace($input["placeId"]);
+            }
+            if ($input["type"] == "candidate") {
+                $placeService->removeCandidatePlace($input["placeId"]);
+            }
+            
             if ($response === FALSE) {                
                 return $this->create404Response("places", $input["placeId"]);
             }
