@@ -5,7 +5,6 @@
     require_once(dirname(__FILE__) . "/../processor/GetChatResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidatePlacesProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
