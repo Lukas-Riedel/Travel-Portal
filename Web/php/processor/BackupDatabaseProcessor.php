@@ -1,10 +1,9 @@
 <?php
-    require_once(dirname(__FILE__) . "/CreateFileProcessor.php");
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
 
     class BackupDatabaseProcessor extends Processor {  
         public function process($input) {
-            global $databaseProvider;
+            global $databaseProvider, $googleApiClient;
 
             $dump = array();
 
@@ -29,14 +28,8 @@
 
                 $dump[] = "";
             }
-            
-            (new CreateFileProcessor())
-                ->process(array(
-                    "name" => "Backup " . date("d.m.Y H:i:s") . ".sql",
-                    "content" => implode("\n", $dump), 
-                    "contentType" => "application/sql"));
 
-            return TRUE;
+            return $googleApiClient->createFile("Backup " . date("d.m.Y H:i:s") . ".sql", NULL, "application/sql", implode("\n", $dump));
         }
 
         public function getRequiredArguments() {

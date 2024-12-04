@@ -3,6 +3,33 @@
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
 
     class GoogleApiClient {
+        public function createFile($name, $folderId, $contentType, $content) : bool {
+            $separator = "mpr_separator";
+
+            $metadata = array("name" => $name);
+            if ($folderId !== NULL) {
+                $metadata["parents"] = array($folderId);
+            }
+
+            $payload = "--" . $separator . "\n"
+                 . "Content-Type: application/json\n\n"
+                 . json_encode($metadata) . "\n\n"
+                 . "--" . $separator . "\n"
+                 . "Content-Type: " . $contentType . "\n\n" 
+                 . $content . "\n"
+                 . "--" . $separator . "--";
+    
+            (new GetGoogleResponseProcessor())
+                ->process(array(
+                    "method" => "POST", 
+                    "url" => "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", 
+                    "payload" => $payload, 
+                    "contentType" => "multipart/related;boundary=" . $separator));
+
+            // TODO: Return whether the file was created.
+            return TRUE;
+        }
+
         public function deleteCalendarEvent($calendar, $eventId) : bool {
             $calendarId = (new GetCalendarIdentifierProcessor())
                 ->process(array(
