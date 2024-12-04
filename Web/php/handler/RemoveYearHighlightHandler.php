@@ -3,7 +3,7 @@
 
     class RemoveYearHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetYearHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("RemoveHighlight", array(
-                "id" => $input["year"],
-                "type" => "year",
-                "highlightId" => $input["highlightId"]));
+            $response = $highlightService->removeYearHighlight($input["year"], $input["highlightId"]);
             return $this->createResponse(201, $response);
         }
 

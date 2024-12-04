@@ -3,7 +3,7 @@
 
     class RemovePlaceHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("RemoveHighlight", array(
-                "id" => $input["placeId"],
-                "type" => "place",
-                "highlightId" => $input["highlightId"]));
+            $response = $highlightService->removePlaceHighlight($input["placeId"], $input["highlightId"]);
             return $this->createResponse(201, $response);
         }
 
