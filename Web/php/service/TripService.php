@@ -1,9 +1,12 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Trip.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../processor/GetYearIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidateTripsProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetCalendarIdentifierProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {
@@ -60,8 +63,29 @@
                 ->withParameters($highlightIdentifier, $tripId)
                 ->execute() === 1;
         }
+
+        public function updateTripName($tripId, $name) : bool {
+            global $databaseProvider, $googleApiClient, $schedulingProvider;
+
+            $wasUpdated = $databaseProvider
+                ->statementBuilder("UPDATE trip_identifier SET name = ? WHERE id = ?")
+                ->withParameters($name, $tripId)
+                ->execute() === 1;
+
+            $eventId = $this->getTripEventId($tripId);
+            if ($eventId != NULL) {
+                $wasUpdated &= $googleApiClient->updateCalendarEventSummary("trips", $eventId, $name);
+            }
+
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateStats", array(
+                    "type" => "TRIP", 
+                    "id" => $tripId), NULL);   
+
+            return $wasUpdated;
+        }
         
-        public function getOrCreateTripIdentifier($name, $year) { 
+        public function getOrCreateTripIdentifier($name, $year) : TripIdentifier { 
             global $databaseProvider;
 
             $tripIdentifier = $this->getTripIdentifier($name, $year);
