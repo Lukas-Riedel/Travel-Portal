@@ -269,7 +269,7 @@
                 ->withParameters($placeIdentifier->getId())
                 ->execute();
 
-            $configurationService->updateConfigurationVisibility(array("public", "modifiable"), "COUNTRIES", $placeIdentifier->getCountry());
+            $configurationService->updateConfigurationEntryVisibility(array("public", "modifiable"), "COUNTRIES", $placeIdentifier->getCountry());
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(), array(), array(), array());
