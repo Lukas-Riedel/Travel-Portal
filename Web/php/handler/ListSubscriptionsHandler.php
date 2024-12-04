@@ -1,9 +1,9 @@
 <?php
     class ListSubscriptionsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $expenseService;
 
-            $response = $processorProvider->run("GetActiveSubscriptions", $input);
+            $response = $expenseService->getActiveSubscriptions();
             return $this->createResponse(200, $response);
         }
 

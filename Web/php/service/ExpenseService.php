@@ -63,6 +63,17 @@
                 $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]);
         }
 
+        public function getActiveSubscriptions() : array {
+            global $databaseProvider;            
+
+            return $databaseProvider
+                ->statementBuilder("SELECT *, value * exchange_rate AS main_currency_value FROM expense_subscription WHERE expiration > UNIX_TIMESTAMP()")
+                ->getMappedResultSet(function ($subscriptionRow) { 
+                    return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
+                        $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]); 
+                });
+        }
+ 
         public function updateExpenseDescription($expenseId, $description) : bool {
             global $databaseProvider;
             
