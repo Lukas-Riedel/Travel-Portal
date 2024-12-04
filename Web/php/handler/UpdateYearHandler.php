@@ -3,7 +3,7 @@
 
     class UpdateYearHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $yearService;
 
             $response = (new GetYearHandler())
                 ->handle(array(
@@ -12,14 +12,11 @@
                 return $response;
             }     
 
-            $response = $processorProvider->run("ChangeYearIdentifier", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
-            }
+            $yearService->updateYearMainHighlight($input["year"], $input["mainHighlightId"]);
     
             return (new GetYearHandler())
                 ->handle(array(
-                    "yearId" => $input["yearId"]));
+                    "year" => $input["year"]));
         }
 
         public function getRequiredRole() {
