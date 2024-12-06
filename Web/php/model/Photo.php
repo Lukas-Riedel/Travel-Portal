@@ -26,19 +26,19 @@
             return $this->url;
         }
 
-        public function getFocalLength() : float {
+        public function getFocalLength() : ?float {
             return $this->focalLength;
         }
 
-        public function getAperture() : float {
+        public function getAperture() : ?float {
             return $this->aperture;
         }
 
-        public function getShutterSpeed() : float {
+        public function getShutterSpeed() : ?float {
             return $this->shutterSpeed;
         }
 
-        public function getIso() : int {
+        public function getIso() : ?int {
             return $this->iso;
         }
 
