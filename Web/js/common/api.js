@@ -391,7 +391,7 @@ class Api {
     }
 
     async logTripFlight(tripId, flight, from, to, scheduledDeparture) {
-        return this.#sendRequest("POST", "trips/" + tripId + "/flights/log", 
+        return this.#sendRequest("POST", "flights/log?tripId=" + tripId, 
             {
                 flight: flight,
                 from: from,
@@ -402,7 +402,7 @@ class Api {
 
     async logTripFlightManually(tripId, flight, aircraft, registration, from, fromCode, to, toCode,
         scheduledDeparture, actualDeparture, scheduledArrival, actualArrival) {
-        return this.#sendRequest("POST", "trips/" + tripId + "/flights/log", 
+        return this.#sendRequest("POST", "flights/log?tripId=" + tripId, 
             {
                 flight: flight,
                 aircraft: aircraft,

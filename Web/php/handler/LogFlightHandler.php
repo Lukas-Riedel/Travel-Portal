@@ -1,5 +1,5 @@
 <?php
-    class LogTripFlightHandler extends Handler {
+    class LogFlightHandler extends Handler {
         public function handle($input) {
             global $flightService;
 
@@ -27,16 +27,16 @@
         }
 
         public function getTag() {
-            return "Trip Flights";
+            return "Flights";
         }
 
         public function getPath() {
-            return "/trips/{tripId}/flights/log";
+            return "/flights/log";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("tripId", "integer", 125));
+                $this->createQueryParameter("tripId", "integer", 125));
         }
 
         public function getMethod() {
@@ -44,11 +44,11 @@
         }
         
         public function getShortDescription() {
-            return "Log a flight for the specified trip";
+            return "Log a flight";
         }
         
         public function getLongDescription() {
-            return "Logs a flight for the specified trip. If only general information about the flight are provided, then the rest is obtained via Flightradar24 APIs.";
+            return "Logs a flight. If only general information about the flight are provided, then the rest is obtained via Flightradar24 APIs.";
         }
         
         public function getRequestExamples() {
