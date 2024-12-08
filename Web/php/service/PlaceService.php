@@ -220,6 +220,22 @@
             return $placeIdentifier;
         }
 
+        public function loadPlaces($candidateTripId, $startOffset) : array {
+            global $googleApiClient;
+
+            $places = $this->getCandidatePlaces($candidateTripId);
+
+            foreach ($places as &$place) {
+                $address = $place->getName() . ", " . $place->getCountry() . " (" . $place->getLatitude() . ", " . $place->getLongitude() . ")";
+
+                foreach ($place->getDates() as &$date) {
+                    $googleApiClient->createCalendarEvent("places", $place->getName(), $address, $startOffset + $date->getStart(), $startOffset + $date->getEnd());
+                }
+            }
+
+            return $places;
+        }
+
         public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
             global $configuration, $databaseProvider;
 

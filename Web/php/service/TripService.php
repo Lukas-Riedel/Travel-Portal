@@ -116,6 +116,22 @@
                 ->execute();
         }
 
+        public function loadTrip($candidateTripId, $targetTripId) : Trip {
+            global $placeService, $noteService;
+
+            $targetTrip = $this->getRegularTrip($targetTripId);
+            if ($targetTrip === NULL) {
+                throw new InvalidArgumentException("No places could not be loaded to the trip " . $targetTripId . " because it does not exist.");
+            }
+
+            $placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
+            $this->removeCandidateTrip($candidateTripId);
+
+            $noteService->updateNotesOwner($candidateTripId, $targetTripId);
+            
+            return $targetTrip;
+        }
+
         public function archiveTrip($tripId) : Trip {            
             global $noteService, $placeService;
 
