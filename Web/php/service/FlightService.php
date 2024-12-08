@@ -109,5 +109,16 @@
                 
             return new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival);
         }
+
+        public function createFlight($flight, $originAirportName, $destinationAirportName, $scheduledDeparture, $scheduledArrival) : Flight {
+            global $googleApiClient;
+
+            $eventName = $originAirportName . " - " . $destinationAirportName . " (" . substr($flight, 0, 2) . " " . substr($flight, 2) . ")";
+            $googleApiClient->createCalendarEvent("flights", $eventName, NULL, $scheduledDeparture, $scheduledArrival);
+            
+            $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
+            $to = new Airport(NULL, $destinationAirportName, NULL, NULL, NULL, NULL, NULL);
+            return new Flight($flight, NULL, NULL, NULL, $from, $to, $scheduledDeparture, $scheduledArrival);
+        }
     }
 ?>

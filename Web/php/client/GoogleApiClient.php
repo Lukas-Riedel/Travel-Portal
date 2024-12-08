@@ -30,6 +30,36 @@
             return TRUE;
         }
 
+        public function createCalendarEvent($calendar, $name, $address, $start, $end) : bool {    
+            global $configuration;        
+            
+            $payload = array(
+                "summary" => $name, 
+                "start" => array(
+                    "dateTime" => date(DATE_RFC3339, $start),
+                    "timeZone" => $configuration["homeLocation"]["timezone"]), 
+                "end" => array(
+                    "dateTime" => date(DATE_RFC3339, $end),
+                    "timeZone" => $configuration["homeLocation"]["timezone"]));
+
+            if ($address !== NULL) {
+                $payload["location"] = $address;
+            }
+
+            $calendarId = (new GetCalendarIdentifierProcessor())
+                ->process(array(
+                    "name" => $calendar));
+                    
+            (new GetGoogleResponseProcessor())
+                ->process(array(
+                    "method" => "POST",
+                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events", 
+                    "payload" => json_encode($payload)));
+                    
+            // TODO: Return whether the event was created.
+            return TRUE;
+        }
+
         public function deleteCalendarEvent($calendar, $eventId) : bool {
             $calendarId = (new GetCalendarIdentifierProcessor())
                 ->process(array(
