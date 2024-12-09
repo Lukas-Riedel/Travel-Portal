@@ -3,7 +3,7 @@
 
     class RemoveCategoryHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetCategoryHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("RemoveHighlight", array(
-                "id" => $input["categoryId"],
-                "type" => "category",
-                "highlightId" => $input["highlightId"]));
+            $response = $highlightService->removeCategoryHighlight($input["categoryId"], $input["highlightId"]);
             return $this->createResponse(201, $response);
         }
 

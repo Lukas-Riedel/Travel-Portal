@@ -3,7 +3,7 @@
 
     class RemoveTripExpenseHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $expenseService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("RemoveExpense", $input);
+            $response = $expenseService->removeExpense($input["expenseId"]);
             if ($response === FALSE) {                
                 return $this->create404Response("trip_expenses", $input["expenseId"]);
             }

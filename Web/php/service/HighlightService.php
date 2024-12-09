@@ -93,6 +93,36 @@
            return $this->getHighlight($highlightIdentifier);
         }
 
+        public function removePlaceHighlight($placeId, $highlightId) : bool {
+            return $this->removeHighlight(HighlightType::Place, $placeId, $highlightId);
+        }
+
+        public function removeTripHighlight($tripId, $highlightId) : bool {
+            return $this->removeHighlight(HighlightType::Trip, $tripId, $highlightId);
+        }
+
+        public function removeCategoryHighlight($categoryId, $highlightId) : bool {
+            return $this->removeHighlight(HighlightType::Category, $categoryId, $highlightId);
+        }
+
+        public function removeYearHighlight($year, $highlightId) : bool {
+            return $this->removeHighlight(HighlightType::Year, $year, $highlightId);
+        }
+
+        private function removeHighlight($highlightType, $entityId, $highlightId) : bool {
+            global $databaseProvider, $schedulingProvider;
+
+            $wasDeleted = $databaseProvider
+                ->statementBuilder("DELETE FROM " . $this->resolveHighlightTable($highlightType) . " WHERE id = ? AND highlight_id = ?")
+                ->withParameters($entityId, $highlightId)
+                ->execute();
+
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateHighlight", NULL, NULL);
+                
+            return $wasDeleted;
+        }
+
         private function resolveHighlightTable($highlightType) : string {
             if ($highlightType === HighlightType::Place) {
                 return "highlight_place";

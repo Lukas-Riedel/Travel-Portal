@@ -14,6 +14,7 @@
     require_once(dirname(__FILE__) . "/service/YearService.php");
     require_once(dirname(__FILE__) . "/service/NoteService.php");
     require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
+    require_once(dirname(__FILE__) . "/service/FlightService.php");
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
 
@@ -31,6 +32,7 @@
     $yearService = new YearService();
     $noteService = new NoteService();
     $configurationService = new ConfigurationService();
+    $flightService = new FlightService();
     $timeTrackingService = new TimeTrackingService();
     $googleApiClient = new GoogleApiClient();
 

@@ -20,6 +20,7 @@
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
     require_once(dirname(__FILE__) . "/service/PhotoService.php");
     require_once(dirname(__FILE__) . "/service/TripService.php");
+    require_once(dirname(__FILE__) . "/service/FlightService.php");
     require_once(dirname(__FILE__) . "/service/AlbumService.php");
     require_once(dirname(__FILE__) . "/service/CategoryService.php");
     require_once(dirname(__FILE__) . "/service/ExpenseService.php");
@@ -42,6 +43,7 @@
     $expenseService = new ExpenseService();
     $yearService = new YearService();
     $noteService = new NoteService();
+    $flightService = new FlightService();
     $configurationService = new ConfigurationService();
     $timeTrackingService = new TimeTrackingService();
     $googleApiClient = new GoogleApiClient();

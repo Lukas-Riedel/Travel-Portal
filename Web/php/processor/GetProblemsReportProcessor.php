@@ -27,7 +27,8 @@
                 
                 if (count($problemRows) > 0) {
                     $result[] = new Problem($problemDefinitionRow["name"], array_map(function($problemRow) {
-                        return new Problemvalue($problemRow[array_key_first($problemRow)], $problemRow[array_key_last($problemRow)]); 
+                        $context = $problemRow[array_key_last($problemRow)];
+                        return new Problemvalue($problemRow[array_key_first($problemRow)], $context === NULL ? NULL : json_decode($context, TRUE));
                     }, $problemRows));
                 }
             }

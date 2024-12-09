@@ -390,8 +390,8 @@ class Api {
         return this.#sendRequest("DELETE", "trips/" + tripId + "/expenses/" + expenseId);
     }
 
-    async logTripFlight(tripId, flight, from, to, scheduledDeparture) {
-        return this.#sendRequest("POST", "trips/" + tripId + "/flights/log", 
+    async logFlight(tripId, flight, from, to, scheduledDeparture) {
+        return this.#sendRequest("POST", "flights/log?tripId=" + tripId, 
             {
                 flight: flight,
                 from: from,
@@ -400,9 +400,9 @@ class Api {
             });
     }
 
-    async logTripFlightManually(tripId, flight, aircraft, registration, from, fromCode, to, toCode,
+    async logFlightManually(tripId, flight, aircraft, registration, from, fromCode, to, toCode,
         scheduledDeparture, actualDeparture, scheduledArrival, actualArrival) {
-        return this.#sendRequest("POST", "trips/" + tripId + "/flights/log", 
+        return this.#sendRequest("POST", "flights/log?tripId=" + tripId, 
             {
                 flight: flight,
                 aircraft: aircraft,
@@ -415,6 +415,17 @@ class Api {
                 actualDeparture: actualDeparture,
                 scheduledArrival: scheduledArrival,
                 actualArrival: actualArrival
+            });
+    }
+
+    async createFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
+        return this.#sendRequest("POST", "flights", 
+            {
+                flight: flight,
+                from: from,
+                to: to,
+                scheduledDeparture: scheduledDeparture,
+                scheduledArrival: scheduledArrival
             });
     }
 

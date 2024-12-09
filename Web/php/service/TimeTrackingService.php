@@ -27,5 +27,21 @@
             return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], $trackingEventRow["hours"],
                 $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
         }
+
+        public function removeTimeTrackingEvent($eventId) : bool {            
+            global $databaseProvider;
+
+            $wasDeleted = $databaseProvider
+                ->statementBuilder("DELETE FROM tracking WHERE id = ?")
+                ->withParameters($eventId)
+                ->execute() === 1;
+
+            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
+            $databaseProvider
+                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
+                ->execute();
+
+            return $wasDeleted;
+        }
     }
 ?>

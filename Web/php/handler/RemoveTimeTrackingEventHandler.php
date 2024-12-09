@@ -1,9 +1,9 @@
 <?php
     class RemoveTimeTrackingEventHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $timeTrackingService;
 
-            $response = $processorProvider->run("RemoveTimeTrackingEvent", $input);
+            $response = $timeTrackingService->removeTimeTrackingEvent($input["eventId"]);
             if ($response === FALSE) {                
                 return $this->create404Response("tracker", $input["eventId"]);
             }

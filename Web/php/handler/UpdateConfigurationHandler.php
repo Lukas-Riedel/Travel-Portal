@@ -3,9 +3,9 @@
 
     class UpdateConfigurationHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $configurationService;
 
-            $response = $processorProvider->run("ChangeConfiguration", $input);
+            $response = $configurationService->updateConfigurationEntryValue($input["type"], isset($input["key"]) ? $input["key"] : NULL, $input["value"]);
             return $this->createResponse(200, $response);
         }
 

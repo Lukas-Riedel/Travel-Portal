@@ -175,6 +175,7 @@ function getUtilitiesComponent(trip) {
         { name: "Aktualizovat kalendář", action: "runJob('UpdateCalendar', { watchId: configuration.googleCalendarApi.watchId })" },
         { name: "Získat GeoJSON s geografickými regiony", action: "getGeoJson()" },
         { name: "Přidat předplatné", action: "addSubscription()" },
+        { name: "Přidat let", action: "addFlight()" },
         { name: "Přidat geografický region", action: "addGeoRegion()" },
         { name: "Přidat složený region", action: "addCompositeRegion()" },
         { name: "Přidat trvalé místo", action: "addPermanentPlace()" },
@@ -210,10 +211,60 @@ function getUtilitiesComponent(trip) {
     return getGeneralTable(headerRowColumns, contentRowColumnsSelector, utils);
 }
 
+async function addFlight() {
+    const flight = prompt("Zadej číslo letu (např. EK139):");
+    if (flight == null || flight == "") {
+        return;
+    }
+
+    const from = prompt("Zadej místo odletu:");
+    if (from == null || from == "") {
+        return;
+    }
+
+    const to = prompt("Zadej místo příletu:");
+    if (to == null || to == "") {
+        return;
+    }
+
+    const startString = prompt("Zadej čas odletu (např. 1.1.2024 12:00):");
+    if (startString == null || startString == "") {
+        return;
+    }
+
+    const endString = prompt("Zadej čas příletu (např. 1.1.2024 14:00):");
+    if (endString == null || endString == "") {
+        return;
+    }
+
+    const fromLocation = await api.getCoordinates("Letiště " + from);
+    const toLocation = await api.getCoordinates("Letiště " + to);
+
+    const scheduledDeparture = getUnixTimestamp(startString, fromLocation.timezone);
+    const scheduledArrival = getUnixTimestamp(endString, toLocation.timezone);
+
+    if (confirm("Je očekávaná délka letu " + Math.floor((scheduledArrival - scheduledDeparture) / 3600) + " hodin " + (((scheduledArrival - scheduledDeparture) % 3600) / 60) + " minut?")) {
+        api.createFlight(flight, from, to, scheduledDeparture, scheduledArrival).then(alertConfirmation);
+    }
+}
+
+function getUnixTimestamp(dateString, originalTimezone) {
+    const [day, month, year, hours, minutes] = dateString.match(/\d+/g).map(Number);
+    const date = new Date(year, month - 1, day, hours, minutes);
+    const diff = changeTimezone(date, configuration.homeLocation.timezone).getTime() - changeTimezone(date, originalTimezone).getTime();
+    return Math.floor((date.getTime() + diff) / 1000);
+}
+
+function changeTimezone(date, ianatz) {
+    const invdate = new Date(date.toLocaleString('en-US', { timeZone: ianatz }));
+    const diff = date.getTime() - invdate.getTime();
+    return new Date(date.getTime() - diff);  
+}
+
 async function logFlight(start, flight, from, to, tripId) {
     // Switch to manual logging in new UI.
     if (confirm("Přeješ si zalogovat let " + flight + "?")) {
-        const loggedFlight = await api.logTripFlight(tripId, flight, from, to, start);
+        const loggedFlight = await api.logFlight(tripId, flight, from, to, start);
         alert("Let: " + loggedFlight.flight + " (" + loggedFlight.from.name + " - " + loggedFlight.to.name + ")"
             + "\nLetadlo: " + loggedFlight.aircraft + " (" + loggedFlight.registration + ")"
             + "\nOdlet: " + getDateString(loggedFlight.start) + " " + getTimeString(new Date(new Date(loggedFlight.start * 1000).toLocaleString('en-US', { timeZone: loggedFlight.from.timezone })))

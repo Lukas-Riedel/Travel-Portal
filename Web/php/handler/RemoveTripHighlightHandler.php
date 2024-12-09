@@ -3,7 +3,7 @@
 
     class RemoveTripHighlightHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $highlightService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,10 +12,7 @@
                 return $response;
             }
 
-            $response = $processorProvider->run("RemoveHighlight", array(
-                "id" => $input["tripId"],
-                "type" => "trip",
-                "highlightId" => $input["highlightId"]));
+            $response = $highlightService->removeTripHighlight($input["tripId"], $input["highlightId"]);
             return $this->createResponse(201, $response);
         }
 

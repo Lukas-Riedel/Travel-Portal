@@ -63,6 +63,17 @@
                 $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]);
         }
 
+        public function getActiveSubscriptions() : array {
+            global $databaseProvider;            
+
+            return $databaseProvider
+                ->statementBuilder("SELECT *, value * exchange_rate AS main_currency_value FROM expense_subscription WHERE expiration > UNIX_TIMESTAMP()")
+                ->getMappedResultSet(function ($subscriptionRow) { 
+                    return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
+                        $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]); 
+                });
+        }
+ 
         public function updateExpenseDescription($expenseId, $description) : bool {
             global $databaseProvider;
             
@@ -106,6 +117,30 @@
                     "id" => $tripId), NULL);
 
             return $wasUpdated;
+        }
+
+        public function removeExpense($expenseId) : bool {
+            global $databaseProvider, $schedulingProvider;
+
+            $tripId = $databaseProvider
+                ->statementBuilder("SELECT trip_id FROM expense WHERE id = ?")
+                ->withParameters($expenseId)
+                ->getSingleColumn("trip_id");
+
+            $wasDeleted = $databaseProvider
+                ->statementBuilder("DELETE FROM expense WHERE id = ?")
+                ->withParameters($expenseId)
+                ->execute() === 1;
+                
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateStats", array(
+                    "type" => "TRIP", 
+                    "id" => $tripId), NULL);
+                    
+            (new UpdateCurrenciesProcessor())
+                ->process(NULL);  
+
+            return $wasDeleted;
         }
     }
 ?>

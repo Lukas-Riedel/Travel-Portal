@@ -3,7 +3,7 @@
 
     class ReplaceTripHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $tripService;
             
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -12,7 +12,7 @@
                 return $response;
             }
     
-            $response = $processorProvider->run("LoadTrip", $input);
+            $response = $tripService->loadTrip($input["candidateTripId"], $input["tripId"]);
             return $this->createResponse(200, $response);
         }
 
