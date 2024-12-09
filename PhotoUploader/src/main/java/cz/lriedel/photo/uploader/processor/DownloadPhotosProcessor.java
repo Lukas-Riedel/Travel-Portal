@@ -1,7 +1,35 @@
 package cz.lriedel.photo.uploader.processor;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.springframework.http.HttpMethod;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cz.lriedel.photo.uploader.HttpEntityProvider;
 import cz.lriedel.photo.uploader.model.Album;
 import cz.lriedel.photo.uploader.model.Date;
@@ -10,25 +38,12 @@ import cz.lriedel.photo.uploader.model.Place;
 import cz.lriedel.photo.uploader.model.args.DownloadPhotosArgs;
 import cz.lriedel.photo.uploader.model.args.UploadPhotosArgs;
 import cz.lriedel.photo.uploader.model.request.JobPrototype;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.http.HttpMethod;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.UUID;
 
 @Component
 public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArgs> {
-    
+
+    private static final int AVAILABLE_WORKERS = 16;
+
     private static final String LIST_PLACES_ENDPOINT = "/api/places?maxEnd=" + System.currentTimeMillis() / 1000;
     private static final String LIST_PHOTOS_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/photos";
     private static final String SCHEDULE_JOB_ENDPOINT = "/api/jobs/schedule";
@@ -82,13 +97,47 @@ public class DownloadPhotosProcessor extends AbstractProcessor<DownloadPhotosArg
                 HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Photo[].class).getBody());
     }
 
-    private void downloadPhotos(Path photosDirectory, Photo[] photos) throws IOException {
+    private void downloadPhotos(Path photosDirectory, Photo[] photos) throws IOException, InterruptedException, ExecutionException {
+        ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
+        Queue<Photo> queue = new LinkedList<>(Arrays.asList(photos));
+
+        int currentParallelRequestsCount = 1;
+        int position = 1;
+
+        while (!queue.isEmpty()) {
+            List<Future<Double>> futures = new ArrayList<>();
+            for (int i = 0; i < currentParallelRequestsCount && !queue.isEmpty(); ++i) {
+                final Photo submittedPhoto = queue.remove();
+                futures.add(executorService.submit(() -> downloadPhoto(photosDirectory, submittedPhoto)));
+                ++position;
+            }
+
+            double sum = 0;
+            for (Future<Double> future : futures) {
+                sum += future.get();
+            }
+            double averageProcessingSpeed = sum / futures.size();
+            currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
+
+            logger.info("Totally {}/{} photos were downloaded.", position - 1, position - 1 + queue.size());
+        }
+
+        executorService.shutdown();
+        Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
+
         int i = 0;
         for (Photo photo : photos) {
             logger.info("Downloading photo {}/{}...", ++i, photos.length);
-            Files.copy(new URL(photo.url() + BASE_URL_DOWNLOAD_SUFFIX).openStream(),
-                photosDirectory.resolve(UUID.randomUUID() + JPG_SUFFIX), StandardCopyOption.REPLACE_EXISTING);
         }
+    }
+
+    private double downloadPhoto(Path photosDirectory, Photo photo) throws IOException {
+        Path path = photosDirectory.resolve(UUID.randomUUID() + JPG_SUFFIX);
+        long start = System.currentTimeMillis();
+        Files.copy(new URL(photo.url() + BASE_URL_DOWNLOAD_SUFFIX).openStream(), path, StandardCopyOption.REPLACE_EXISTING);
+        long uploadDuration = (System.currentTimeMillis() - start) / 1000;
+        double fileSize = FileChannel.open(path).size() / (1024.0 * 1024.0);
+        return 8 * fileSize / uploadDuration;
     }
 
     private void schedulePhotosUploading(UploadPhotosArgs uploadPhotosArgs) throws JsonProcessingException {

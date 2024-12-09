@@ -1,38 +1,50 @@
 package cz.lriedel.photo.uploader.processor;
 
+import static java.util.Comparator.comparing;
+
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang.Validate;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cz.lriedel.photo.uploader.HttpEntityProvider;
 import cz.lriedel.photo.uploader.fetcher.PhotoFetcher;
 import cz.lriedel.photo.uploader.model.Album;
 import cz.lriedel.photo.uploader.model.args.UploadPhotosArgs;
 import cz.lriedel.photo.uploader.model.request.AlbumPrototype;
 import cz.lriedel.photo.uploader.model.request.PhotoPrototype;
-import org.apache.commons.lang.Validate;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.Comparator.comparing;
 
 @Component
 class UploadPhotosProcessor extends AbstractProcessor<UploadPhotosArgs> {
 
     private static final int AVAILABLE_WORKERS = 16;
-    private static final int MAX_ATTEMPTS = 10;
 
     private static final String CREATE_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums";
     private static final String REFRESH_ALBUM_ENDPOINT_PATTERN = "/api/places/%s/albums/%s/refresh";
