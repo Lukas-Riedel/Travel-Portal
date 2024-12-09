@@ -68,7 +68,7 @@
             (new GetGoogleResponseProcessor())
                 ->process(array(
                     "method" => "DELETE", 
-                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . explode("@", $eventId)[0]));
+                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId)));
 
             // TODO: Return whether the event was deleted.
             return TRUE;
@@ -85,6 +85,29 @@
                     "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId),
                     "payload" => json_encode(array(
                         "summary" => $name))));
+
+            // TODO: Return whether the event was updated.
+            return TRUE;
+        }
+
+        public function updateCalendarEventDates($calendar, $eventId, $start, $end) : bool {
+            global $configuration;
+
+            $calendarId = (new GetCalendarIdentifierProcessor())
+                ->process(array(
+                    "name" => $calendar));
+
+            (new GetGoogleResponseProcessor())
+                ->process(array(
+                    "method" => "PATCH",
+                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId),
+                    "payload" => json_encode(array(
+                        "start" => array(
+                            "dateTime" => date(DATE_RFC3339, $start),
+                            "timeZone" => $configuration["homeLocation"]["timezone"]),
+                        "end" => array(
+                            "dateTime" => date(DATE_RFC3339, $end),
+                            "timeZone" => $configuration["homeLocation"]["timezone"])))));
 
             // TODO: Return whether the event was updated.
             return TRUE;

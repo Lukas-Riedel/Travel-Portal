@@ -71,10 +71,7 @@
                 ->withParameters($name, $tripId)
                 ->execute() === 1;
 
-            $eventId = $this->getTripEventId($tripId);
-            if ($eventId != NULL) {
-                $wasUpdated &= $googleApiClient->updateCalendarEventSummary("trips", $eventId, $name);
-            }
+            $wasUpdated &= $googleApiClient->updateCalendarEventSummary("trips", $this->getTripEventId($tripId), $name);
 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
@@ -114,6 +111,21 @@
                 ->statementBuilder("DELETE FROM place_candidate_event WHERE trip_id = ?")
                 ->withParameters($tripId)
                 ->execute();
+        }
+
+        public function moveTrip($tripId, $start) : Trip {
+            global $googleApiClient, $placeService;
+            
+            $trip = $this->getRegularTrip($tripId);
+            if ($trip === NULL) {
+                throw new InvalidArgumentException("The trip " . $tripId . " could not be moved because it does not exist.");
+            }
+
+            $offset = $start - $trip->getStart();
+            $placeService->movePlaces($tripId, $offset);
+            $googleApiClient->updateCalendarEventDates("trips", $this->getTripEventId($tripId), $start, $offset + $trip->getEnd());
+
+            return $trip;
         }
 
         public function loadTrip($candidateTripId, $targetTripId) : Trip {

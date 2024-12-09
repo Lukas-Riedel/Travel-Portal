@@ -3,7 +3,7 @@
 
     class UpdateTripHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $tripService;
+            global $tripService;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -13,7 +13,7 @@
             }
     
             if (isset($input["start"])) {
-                $processorProvider->run("MoveTrip", $input);
+                $tripService->moveTrip($input["tripId"], $input["start"]);
             }
             if (isset($input["mainHighlightId"])) {
                 $tripService->updateTripMainHighlight($input["tripId"], $input["mainHighlightId"]);

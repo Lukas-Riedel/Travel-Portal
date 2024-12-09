@@ -220,6 +220,21 @@
             return $placeIdentifier;
         }
 
+        public function movePlaces($tripId, $offset) : array {
+            global $configuration, $googleApiClient;
+
+            $places = $this->getRegularPlaces($tripId);
+
+            foreach ($places as &$place) {
+                foreach ($place->getDates() as &$date) {
+                    $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $configuration["homeLocation"]["timezone"], $place->getTimezone());
+                    $googleApiClient->updateCalendarEventDates("places", $this->getPlaceEventId($place->getId(), $date->getStart()), $place->getStart() + $timezoneOffset + $offset, $place->getEnd() + $timezoneOffset + $offset);
+                }
+            }
+
+            return $places;
+        }
+
         public function loadPlaces($candidateTripId, $startOffset) : array {
             global $googleApiClient;
 
@@ -237,7 +252,7 @@
         }
 
         public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
-            global $configuration, $databaseProvider;
+            global $configuration, $databaseProvider, $googleApiClient;
 
             $places = $this->getRegularPlaces($tripId);
             
@@ -248,7 +263,7 @@
                         ->statementBuilder("INSERT INTO place_candidate_event (place_id, trip_id, start, end) VALUES (?, ?, ?, ?)")
                         ->withParameters($place->getId(), $archivedTripId, $date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart)
                         ->execute();
-                    $this->deletePlaceEvent($place->getId(), $date->getStart());
+                    $googleApiClient->deleteCalendarEvent("places", $this->getPlaceEventId($place->getId(), $date->getStart()));
                 }
             }
             
@@ -369,12 +384,6 @@
                 ->statementBuilder("SELECT DISTINCT trip_id FROM place_summary WHERE place_id = ? AND trip_id IS NOT NULL")
                 ->withParameters($placeId)
                 ->getResultSetForColumn("trip_id");
-        }
-        
-        private function deletePlaceEvent($placeId, $start) : bool {
-            global $googleApiClient;
-                
-            return $googleApiClient->deleteCalendarEvent("places", $this->getPlaceEventId($placeId, $start));
         }
 
         private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) {
