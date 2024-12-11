@@ -72,7 +72,7 @@
                             "title" => $this->getAlbumName($place->getName(), $timestamp))))));
     
             if (!isset($apiResponse["id"])) {
-                throw new RuntimeException("The album could not be created.");
+                throw new RuntimeException("The album could not be created. " . $apiResponse["message"]);
             }
 
             $resolvedAlbumId = $this->getOrCreateAlbumIdentifier($apiResponse["id"]);
