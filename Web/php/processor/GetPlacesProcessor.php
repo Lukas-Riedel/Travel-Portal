@@ -43,6 +43,30 @@
                 ->statementBuilder("SELECT * FROM place_summary {{WHERE CLAUSE}} ORDER BY start", $whereClause)
                 ->getResultSet();
 
+            // Handle permanent places with no dates.
+            if (count($placeRows) == 0 && isset($input["placeId"]) && in_array($input["placeId"], $permanentPlaceIdentifiers)) {
+                $placeRow = $databaseProvider
+                    ->statementBuilder("SELECT pi.*, COALESCE(cs.category_ids, '') AS category_ids FROM place_identifier pi LEFT JOIN category_summary cs ON pi.id = cs.place_id WHERE pi.id = ?")
+                    ->withParameters($input["placeId"])
+                    ->getSingleRow();
+
+                $categories = array();                     
+                
+                foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
+                    $categoryRow = $databaseProvider
+                        ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
+                        ->withParameters($categoryId)
+                        ->getSingleRow();
+
+                    if ($categoryRow != NULL) {
+                        $categories[] = new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $this->getHighlight($categoryRow["main_highlight_id"]));
+                    }
+                }
+                
+                $tempPlaces[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                    NULL, $placeRow["excerpt"], $categories, array(), array());                
+            }
+
             foreach ($placeRows as &$placeRow) {
                 if (!isset($tempPlaces[$placeRow["place_id"]])) {    
                     $categories = array();  
