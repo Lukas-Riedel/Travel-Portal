@@ -6,10 +6,11 @@ import cz.lriedel.photo.uploader.fetcher.PhotoFetcher;
 import cz.lriedel.photo.uploader.model.args.UploadPhotosArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.RestTemplate;
 
-//@Component
+@Component
 class StrictUploadPhotosProcessor extends UploadPhotosProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StrictUploadPhotosProcessor.class);

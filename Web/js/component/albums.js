@@ -126,7 +126,7 @@ function getAlbumsComponentForTrips(trips) {
         return {
             nameTokens: isDayTrips(trip) ? [ getTripFlagImages(trip), getFullyQualifiedTripName(trip) ] : [ getTripFlagImages(trip), trip.name, getFromDateToDateString(trip.start, trip.end, true, true) ],
             action: "href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\"",
-            imageUrl: trip.mainHighlight.url.thumbnail
+            imageUrl: trip.mainHighlight == null ? trip.id : trip.mainHighlight.url.thumbnail
         }
     }), undefined);
 }
