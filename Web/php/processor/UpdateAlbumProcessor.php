@@ -114,7 +114,7 @@
                         "imagesCount" => $imagesCount,
                         "permalink" => $album["productUrl"]);
 
-                    // This is temporary until there's a proper support for highlights.
+                    // TODO: This is temporary until there's a proper support for highlights.
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $placeRow = $databaseProvider
                             ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE album_id = ?")

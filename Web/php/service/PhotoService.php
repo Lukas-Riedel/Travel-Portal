@@ -17,7 +17,8 @@
             }
 
             // TODO: URL
-            return new Photo($photoId, NULL, $photoRow["focal_length"], $photoRow["aperture"], $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
+            return new Photo($photoId, NULL, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+                $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
         }
 
         public function uploadPhoto($fileName, $albumId, $position, $data) : bool {

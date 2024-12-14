@@ -2,15 +2,17 @@
     class Photo implements JsonSerializable {        
         private $id;
         private $url;
+        private $permalink;
         private $focalLength;
         private $aperture;
         private $shutterSpeed;
         private $iso;
         private $timestamp;
 
-        public function __construct($id, $url, $focalLength, $aperture, $shutterSpeed, $iso, $timestamp) {
+        public function __construct($id, $url, $permalink, $focalLength, $aperture, $shutterSpeed, $iso, $timestamp) {
             $this->id = $id;
             $this->url = $url;
+            $this->permalink = $permalink;
             $this->focalLength = $focalLength;
             $this->aperture = $aperture;
             $this->shutterSpeed = $shutterSpeed;
@@ -24,6 +26,10 @@
 
         public function getUrl() : string {
             return $this->url;
+        }
+
+        public function getPermalink() : string {
+            return $this->permalink;
         }
 
         public function getFocalLength() : ?float {

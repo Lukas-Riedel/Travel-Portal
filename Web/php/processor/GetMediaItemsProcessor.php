@@ -22,7 +22,7 @@
                     $photoId = $getPhotoIdentifierProcessor
                         ->process(array(
                             "externalId" => $mediaItem["id"]));                            
-                    $result[] = new Photo($photoId, $mediaItem["baseUrl"], isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
+                    $result[] = new Photo($photoId, $mediaItem["baseUrl"], $mediaItem["productUrl"], isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
                         isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : NULL, isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : NULL,
                         isset($mediaItem["mediaMetadata"]["photo"]["isoEquivalent"]) ? $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] : NULL, strtotime($mediaItem["mediaMetadata"]["creationTime"]));
                 }
@@ -47,8 +47,8 @@
 
             foreach ($result as &$photo) {
                 $databaseProvider
-                    ->statementBuilder("INSERT INTO photo (id, album_id, focal_length, aperture, shutter_speed, iso, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)")
-                    ->withParameters($photo->getId(), $input["albumId"], $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp())
+                    ->statementBuilder("INSERT INTO photo (id, album_id, focal_length, aperture, shutter_speed, iso, timestamp, permalink) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                    ->withParameters($photo->getId(), $input["albumId"], $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink())
                     ->execute();
             }
 

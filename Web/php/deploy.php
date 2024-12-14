@@ -8,6 +8,12 @@
     $databaseProvider = new DatabaseProvider(FALSE);
     $authenticationService = new AuthenticationService();
     $hostName = $_SERVER["HTTP_HOST"];
+
+    $configuration = array();
+    if ($databaseProvider->isDatabaseInitialized()) {        
+        $configurationProvider = new ConfigurationProvider($databaseProvider);
+        $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+    }
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
