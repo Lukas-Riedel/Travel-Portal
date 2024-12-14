@@ -51,6 +51,22 @@ function getAlbumsComponentForYear(places, showButtons) {
      }), showButtons ? getButtonsForStandardAlbum : undefined);
 }
 
+function getAlbumsComponentForPhotos(placeId, albumId, photos, showButtons) {
+    return getAlbumsComponent(photos.map(photo => {
+        return {
+            id: photo.id,
+            mainPhotoId: photo.id,
+            permalink: photo.permalink,
+            place: { id: placeId },
+            album: { id: albumId },
+            index: photos.indexOf(photo) + 1,
+            nameTokens: [],
+            action: "",
+            imageUrl: photo.url + "?w=" + configuration.highlightThumbnailImageSize.width + "&h=" + configuration.highlightThumbnailImageSize.height
+        };
+     }), showButtons ? getButtonsForPhotos : undefined);
+}
+
 function getAlbumsComponentForPlace(place, showButtons) {
     const places = sorted(place.dates.filter(date => date.album != null && date.album.imagesCount > 0).map(date => {
         return {
@@ -222,6 +238,10 @@ function getButtonsForStandardAlbum(album) {
             image: "img/photo.png"
         },
         { 
+            action: "window.open('../place/" + album.place.id + "/album/" + album.id + "', '_blank')",
+            image: "img/edit.png"
+        },
+        { 
             action: "refreshAlbum(" + album.place.id + ", " + album.id + ")",
             image: "img/refresh.png"
         },
@@ -233,6 +253,23 @@ function getButtonsForStandardAlbum(album) {
             action: "changeCountryMainHighlight('" + album.place.id + "', " + album.mainPhotoId + ")",
             image: getFlagImageUrl(album.place.country)
         }
+    ];
+}
+
+function getButtonsForPhotos(photo) {
+    return [
+        { 
+            action: "window.open('" + photo.permalink + "', '_blank')",
+            image: "../../../img/photo.png"
+        },
+        { 
+            action: "refreshAlbum(" + photo.place.id + ", " + photo.album.id + ", " + photo.index + ")",
+            image: "../../../img/heart.png"
+        },
+        { 
+            action: "replacePhoto(" + photo.place.id + ", " + photo.album.id + ", " + photo.id + ", '" + photo.permalink + "')",
+            image: "../../../img/edit.png"
+        },
     ];
 }
 
@@ -265,8 +302,8 @@ async function createAlbum(id, start) {
     reload();
 }
 
-async function refreshAlbum(placeId, albumId) {
-    api.refreshPlaceAlbum(placeId, albumId).then(reload);
+async function refreshAlbum(placeId, albumId, mainPhotoPosition = undefined) {
+    api.refreshPlaceAlbum(placeId, albumId, mainPhotoPosition).then(reload);
 }
 
 async function changePlaceMainHighlight(placeId, photoId) {
@@ -288,4 +325,15 @@ async function changeTripMainHighlight(tripId, photoId) {
 
 function getTripFlagImages(trip) {
     return "<ul class=\"tripFlags\">" + getListItems(trip.countries.map(getFlagImage)) + "</ul>";
+}
+
+async function replacePhoto(placeId, albumId, replacedPhotoId, replacedPhotoPermalink) {
+    const path = prompt("Zadej cestu ke složce s fotkou k nahrání:");
+    if (path == null || path == "") {
+        return;
+    }
+
+    await api.scheduleJob("ReplacePhoto", { placeId: placeId, albumId: albumId, replacedPhotoId: replacedPhotoId, path: path });
+
+    window.open(replacedPhotoPermalink, '_blank').focus();
 }

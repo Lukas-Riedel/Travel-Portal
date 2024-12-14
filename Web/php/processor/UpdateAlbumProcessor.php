@@ -24,12 +24,12 @@
             $whereClause = $whereClauseBuilder->buildForAnd();
             
             $pendingAlbumIds = $databaseProvider
-                ->statementBuilder("SELECT album_id FROM photo_pending {{WHERE CLAUSE}} GROUP BY album_id", $whereClause)
+                ->statementBuilder("SELECT DISTINCT album_id FROM photo_pending {{WHERE CLAUSE}}", $whereClause)
                 ->getResultSetForColumn("album_id");
 
             foreach ($pendingAlbumIds as &$pendingAlbumId) {
                 $pendingPhotos = $databaseProvider
-                    ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? ORDER BY position LIMIT 50")
+                    ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND position IS NOT NULL ORDER BY position LIMIT 50")
                     ->withParameters($pendingAlbumId)
                     ->getResultSet();
                 
@@ -48,12 +48,46 @@
                             ->execute();
                     }
 
-                    $this->createGooglePhotos($pendingAlbumId, $newMediaItems);
+                    $this->createGooglePhotos($pendingAlbumId, $newMediaItems, NULL);
                     
                     $pendingPhotos = $databaseProvider
-                        ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? ORDER BY position LIMIT 50")
+                        ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND position IS NOT NULL ORDER BY position LIMIT 50")
                         ->withParameters($pendingAlbumId)
                         ->getResultSet();
+                }
+                
+                $pendingPhotos = $databaseProvider
+                    ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND replaced_photo_id IS NOT NULL")
+                    ->withParameters($pendingAlbumId)
+                    ->getResultSet();
+                
+                foreach ($pendingPhotos as &$pendingPhoto) {
+                    $newMediaItem = array(
+                        "description" => "",
+                        "simpleMediaItem" => array(
+                            "uploadToken" => $pendingPhoto["upload_token"],
+                            "fileName" => $pendingPhoto["file_name"]));
+
+                    $databaseProvider
+                        ->statementBuilder("DELETE FROM photo_pending WHERE id = ?")
+                        ->withParameters($pendingPhoto["id"])
+                        ->execute();
+                        
+                    $createdMediaItemId = $this->createGooglePhotos($pendingAlbumId, array($newMediaItem), $pendingPhoto["replaced_photo_id"])[0]["mediaItem"]["id"];
+
+                    $databaseProvider
+                        ->statementBuilder("DELETE FROM photo WHERE id = ?")
+                        ->withParameters($pendingPhoto["replaced_photo_id"])
+                        ->execute();
+
+                    $databaseProvider
+                        ->statementBuilder("UPDATE photo_identifier SET external_id = ? WHERE id = ?")
+                        ->withParameters($createdMediaItemId, $pendingPhoto["replaced_photo_id"])
+                        ->execute();
+
+                    $schedulingProvider
+                        ->scheduleJobExecution("UpdateHighlight", array(
+                            "photoId" => $pendingPhoto["replaced_photo_id"]), NULL);
                 }
             }
 
@@ -280,7 +314,7 @@
             }
         }
 
-        private function createGooglePhotos($albumId, $newMediaItems) {  
+        private function createGooglePhotos($albumId, $newMediaItems, $replacedPhotoId) {  
             global $databaseProvider;
 
             $externalAlbumId = $databaseProvider
@@ -292,17 +326,36 @@
                 throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
 
+            $payload = array(
+                "albumId" => $externalAlbumId,
+                "newMediaItems" => $newMediaItems);
+
+            if ($replacedPhotoId != NULL) {
+                $externalReplacedPhotoId = $databaseProvider
+                    ->statementBuilder("SELECT external_id FROM photo_identifier WHERE id = ?")
+                    ->withParameters($replacedPhotoId)
+                    ->getFirstColumn("external_id");
+    
+                if ($externalReplacedPhotoId == NULL) {
+                    throw new InvalidArgumentException("A photo with the identifier " . $externalReplacedPhotoId . " does not exist.");
+                }
+
+                $payload["albumPosition"] = array(
+                    "position" => "AFTER_MEDIA_ITEM",
+                    "relativeMediaItemId" => $externalReplacedPhotoId);
+            }
+
             $apiResponse = (new GetGoogleResponseProcessor())
                 ->process(array(
                     "method" => "POST", 
                     "url" => "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate",
-                    "payload" => json_encode(array(
-                        "albumId" => $externalAlbumId,
-                        "newMediaItems" => $newMediaItems))));
+                    "payload" => json_encode($payload)));
 
             if (isset($apiResponse["newMediaItemResults"][0]["status"]["message"]) && $apiResponse["newMediaItemResults"][0]["status"]["message"] != "Success") {
                 throw new RuntimeException($apiResponse["newMediaItemResults"][0]["status"]["message"]);
             }   
+
+            return $apiResponse["newMediaItemResults"];
         }
 
         private function setAlbumMainPhoto($albumId, $photoId) {

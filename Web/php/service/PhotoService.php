@@ -21,13 +21,17 @@
                 $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
         }
 
-        public function uploadPhoto($fileName, $albumId, $position, $data) : bool {
+        public function uploadPhoto($fileName, $albumId, $position, $replacedPhotoId, $data) : bool {
             global $databaseProvider;
+
+            if ($position === NULL && $replacedPhotoId === NULL) {
+                throw new InvalidArgumentException("Either the photo position or the identifier of the photo being replaced must be specified.");
+            }
         
             $uploadToken = (new GetGoogleResponseProcessor())
                 ->process(array(
                     "method" => "POST", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/uploads", 
+                    "url" => "https://photoslibrary.googleapis.com/v1/uploads",
                     "contentType" => "application/octet-stream",
                     "headers" => array(
                         "X-Goog-Upload-Content-Type" => "image/jpeg",
@@ -39,8 +43,8 @@
             }
 
             return $databaseProvider
-                ->statementBuilder("INSERT INTO photo_pending (album_id, file_name, position, upload_token) VALUES (?, ?, ?, ?)")
-                ->withParameters($albumId, $fileName, $position, $uploadToken)
+                ->statementBuilder("INSERT INTO photo_pending (album_id, file_name, position, replaced_photo_id, upload_token) VALUES (?, ?, ?, ?, ?)")
+                ->withParameters($albumId, $fileName, $position, $replacedPhotoId, $uploadToken)
                 ->execute() === 1;
         }
     }

@@ -26,6 +26,9 @@
             if (isset($input["highlightId"])) {
                 $whereClauseBuilder->withClause("hi.id = ?", $input["highlightId"]);
             }
+            if (isset($input["photoId"])) {
+                $whereClauseBuilder->withClause("pi.id = ?", $input["photoId"]);
+            }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
             $highlightRows = $databaseProvider

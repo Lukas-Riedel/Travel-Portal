@@ -17,7 +17,8 @@
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
-            $response = $photoService->uploadPhoto($input["name"], $input["albumId"], $input["position"], $input["data"]);
+            $response = $photoService->uploadPhoto($input["name"], $input["albumId"], isset($input["position"]) ? $input["position"] : NULL, 
+                isset($input["replacePhotoId"]) ? $input["replacePhotoId"] : NULL, $input["data"]);
             return $this->createResponse(204, $response);
         }
 
@@ -56,7 +57,9 @@
         }
         
         public function getRequestExamples() {
-            return array($this->createRequestExample("Create photo", '{"name":"DSC01163.jpg", "position": 1, "data":"base64"}'));
+            return array(
+                $this->createRequestExample("Create photo", '{"name":"77589a7e-a4d6-4931-9f42-ac809bdd27a7.jpg", "position": 1, "data":"base64"}'),
+                $this->createRequestExample("Replace photo", '{"name":"77589a7e-a4d6-4931-9f42-ac809bdd27a7.jpg", "replacedPhotoId": 56743, "data":"base64"}'));
         }
 
         public function getResponseExamples() {

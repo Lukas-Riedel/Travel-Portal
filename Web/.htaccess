@@ -29,6 +29,9 @@ RewriteRule ^plan/trip/(.+)$ $1 [L,QSA]
 RewriteRule ^plan/([^/]+)/?$ plans.php?categoryId=$1 [L,QSA]
 RewriteRule ^plan/(.+)$ $1 [L,QSA]
 
+RewriteRule ^place/([^/]+)/album/([^/]+)/?$ album.php?placeId=$1&albumId=$2 [L,QSA]
+RewriteRule ^place/([^/]+)/album/(.+)$ $1 [L,QSA]
+
 RewriteRule ^place/([^/]+)/?$ place.php?placeId=$1 [L,QSA]
 RewriteRule ^place/(.+)$ $1 [L,QSA]
 
