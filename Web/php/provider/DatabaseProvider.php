@@ -6,16 +6,25 @@
         private $connection;
         private $viewsToMaterialize;
         private $delayMaterializationIfNeeded;
+        private $isDatabaseInitialized;
 
         public function __construct($delayMaterializationIfNeeded) {
             $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
             $this->connection->set_charset("utf8mb4");
             $this->viewsToMaterialize = array();
             $this->delayMaterializationIfNeeded = $delayMaterializationIfNeeded;
+            $this->isDatabaseInitialized = $this
+                ->query("SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'configuration'")->fetch_assoc()["count"] > 0;
         }
 
         public function __destruct() {
-            $this->materializeViews();
+            if ($this->isDatabaseInitialized) {
+                $this->materializeViews();
+            }
+        }
+
+        public function isDatabaseInitialized() {
+            return $this->isDatabaseInitialized;
         }
 
         private function materializeView($viewToMaterialize) {

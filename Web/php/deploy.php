@@ -6,19 +6,12 @@
     require_once(dirname(__FILE__) . "/processor/GetHttpResponseProcessor.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
-    $configurationProvider = new ConfigurationProvider($databaseProvider);
-    $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $authenticationService = new AuthenticationService();
     $hostName = $_SERVER["HTTP_HOST"];
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
     };
-
-    $backupDatabase = isset($_GET["backupDatabase"]) && $_GET["backupDatabase"] == "true";
-
-    $databaseProvider
-        ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
 
     $migrationScriptsBasePath = dirname(__FILE__) . "/../sql/";
     $migrationScriptFileNames = array_map(function ($path) { 
@@ -27,16 +20,17 @@
      }, array_filter((array) glob($migrationScriptsBasePath . "*")));
     asort($migrationScriptFileNames);
 
-    $alreadyAppliedScriptsRows = $databaseProvider
-        ->query("SELECT * FROM migration_script");
-
     $alreadyAppliedScripts = array();
+    if ($databaseProvider->isDatabaseInitialized()) {
+        $alreadyAppliedScriptsRows = $databaseProvider
+            ->query("SELECT * FROM migration_script");
 
-    if ($alreadyAppliedScriptsRows) {
-        while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
-            $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
-                "hash" => $alreadyAppliedScriptsRow["hash"],
-                "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
+        if ($alreadyAppliedScriptsRows) {
+            while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
+                $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
+                    "hash" => $alreadyAppliedScriptsRow["hash"],
+                    "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
+            }
         }
     }
 
@@ -53,7 +47,7 @@
                 ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_NAME NOT LIKE 'cache_%' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
             $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
 
-            if ($backupDatabase) {
+            if ($databaseProvider->isDatabaseInitialized()) {
                 $accessTokenResponse = $authenticationService->authenticateAsAdmin(300);        
                 (new GetHttpResponseProcessor())
                     ->process(array(
@@ -70,28 +64,24 @@
             $delimiter = count($migrationScriptFileNameTokens) == 3 ? str_replace(".sql", "", $migrationScriptFileNameTokens[2]) : ";";
 
             $databaseProvider->beginTransaction();
-            $lastMigrationSubscript = "";
             try {
                 set_error_handler($onError);
 
                 foreach (explode($delimiter, $migrationScript) as &$migrationSubScript) {
-                    if (trim($migrationSubScript) !== '') {                        
-                        $lastMigrationSubscript = $migrationSubScript;
+                    if (trim($migrationSubScript) !== "") {             
                         $databaseProvider->query($migrationSubScript);
                     }
                 }
 
                 $databaseProvider
-                    ->statementBuilder("INSERT INTO migration_script (name, hash, timestamp) VALUES (?, ?, UNIX_TIMESTAMP())")
-                    ->withParameters($migrationScriptFileName, $hash)
-                    ->execute();
+                    ->query("INSERT INTO migration_script (name, hash, timestamp) VALUES ('" . $migrationScriptFileName . "', '" . $hash . "', UNIX_TIMESTAMP())");
                 
                 $databaseProvider->commit();
             }
             catch (Throwable $e) {
                 $databaseProvider->rollback();
                 http_response_code(500);
-                die($lastMigrationSubscript . " - " . $e->getMessage());
+                die($e->getMessage());
             }
             finally {            
                 restore_error_handler();
@@ -102,7 +92,9 @@
             die("Could not apply " . $migrationScriptFileName . " migration script. It was already applied at " . date('d.m.Y H:i:s', $alreadyAppliedScripts[$migrationScriptFileName]["timestamp"]) . ". Expected: " . $alreadyAppliedScripts[$migrationScriptFileName]["hash"] . " Actual: " . $hash);
         }
     }
+
+    $databaseProvider
+        ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
     
     http_response_code(200);
-    echo "The database was successfully migrated.";
 ?>

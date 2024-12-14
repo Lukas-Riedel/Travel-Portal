@@ -24,6 +24,9 @@ BEGIN
   WHERE highlight_id = OLD.highlight_id;
 END$$
 
+CREATE TRIGGER highlight_category_insert_trigger_1
+BEFORE INSERT ON highlight_category
+FOR EACH ROW
 BEGIN
   IF NOT EXISTS (
     SELECT *
