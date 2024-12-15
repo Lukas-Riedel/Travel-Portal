@@ -26,7 +26,7 @@ jobs:
         method: GET
         url: https://lriedel.cz/php/deploy.php
   maven-verify:
-    name: Build Photo Uploader
+    name: Build Agent
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,4 +37,4 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Verify
-        run: mvn verify -f PhotoUploader/pom.xml
+        run: mvn verify -f Agent/pom.xml
