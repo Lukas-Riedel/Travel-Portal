@@ -99,8 +99,14 @@
         }
     }
 
-    $databaseProvider
-        ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
+    if (!$databaseProvider->isDatabaseInitialized()) {       
+        $databaseProvider
+            ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
+        $databaseProvider
+            ->query("INSERT INTO users (username, password, api_key, roles) VALUES ('guest', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER')");
+        $databaseProvider
+            ->query("INSERT INTO users (username, password, api_key, roles) VALUES ('admin', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER,ADMIN')");
+    }
     
     http_response_code(200);
 ?>

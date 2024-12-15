@@ -56,8 +56,16 @@
                 throw new AuthenticationException("The user '" . $username . "' was not found.");
             }
 
-            if (!password_verify($password, $userRow["password"])) {
-                throw new AuthenticationException("Passowrd for the user '" . $username . "' is invalid.");
+            if ($userRow["password"] == NULL) {
+                // Set the password on the first call of the IAM endpoint for the specified user.
+                // Sufficient for now, create a separate service for users if needed.
+                $databaseProvider
+                    ->statementBuilder("UPDATE users SET password = ? WHERE username = ?")
+                    ->withParameters(password_hash($password, PASSWORD_DEFAULT), $username)
+                    ->execute();
+            }
+            else if (!password_verify($password, $userRow["password"])) {
+                throw new AuthenticationException("Password for the user '" . $username . "' is invalid.");
             }
 
             $roles = explode(",", $userRow["roles"]);
