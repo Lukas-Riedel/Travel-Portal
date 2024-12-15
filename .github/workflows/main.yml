@@ -7,19 +7,24 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4    
+    - name: Prepare Files
+      run: |
+        mkdir target
+        cp -r ./Portal/* target/
+        cp -r ./Service/* target/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: 254146.w46.wedos.net
         username: w254146
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./Web/
+        local-dir: target/
         server-dir: www/domains/lriedel.cz/
-    - name: Migrate Database
+    - name: Deploy
       uses: muhfaris/request-action@v0.1.2
       with:
-        url: https://lriedel.cz/php/deploy.php
         method: GET
+        url: https://lriedel.cz/php/deploy.php
   maven-verify:
     name: Build Photo Uploader
     runs-on: ubuntu-latest
@@ -31,5 +36,5 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Run Verification
+      - name: Verify
         run: mvn verify -f PhotoUploader/pom.xml
