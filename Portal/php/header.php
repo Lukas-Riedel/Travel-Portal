@@ -1,6 +1,6 @@
 <?php
-    require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/../api/php/provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/../api/php/provider/ConfigurationProvider.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);

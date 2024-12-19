@@ -1,7 +1,7 @@
 <?php
     class GetSwaggerHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $configuration;
+            global $configuration;
             
             $methodsOrder = array(
                 "post" => 0,
@@ -34,7 +34,7 @@
                 "openapi" => "3.0.1",
                 "info" => array("title" => "Travel Portal API", "version" => "1.0.0"),
                 "tags" => array_map(function ($tag) { return array("name" => $tag); }, $tags),
-                "servers" => array(array("url" => "https://" . $configuration["hostName"] . "/api")),
+                "servers" => array(array("url" => (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on" ? "https://" : "http://") . $configuration["hostName"] . str_replace($this->getPath(), "", $_SERVER["REQUEST_URI"]))),
                 "paths" => $paths,
                 "security" => array(
                     array(

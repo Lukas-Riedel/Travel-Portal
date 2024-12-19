@@ -53,7 +53,7 @@
     };    
     
     if (!isset($_GET["path"])) {
-        header("Location: https://" . $configuration["hostName"] . "/swagger"); 
+        header("Location: https://" . $configuration["hostName"] . "/api"); 
     }
 
     $path = $_GET["path"];
@@ -126,7 +126,7 @@
     }
     $databaseProvider->materializeViews();  
 
-    header("Location: https://" . $configuration["hostName"] . "/swagger");
+    header("Location: https://" . $configuration["hostName"] . "/api");
 
     function getErrorCode($e) {
         if ($e instanceof EntityNotFoundException) {

@@ -8,6 +8,11 @@
     $databaseProvider = new DatabaseProvider(FALSE);
     $authenticationService = new AuthenticationService();
     $hostName = $_SERVER["HTTP_HOST"];
+    
+    $overriddenHostName = getenv("HTTP_HOST");
+    if ($overriddenHostName !== FALSE) {
+        $hostName = $overriddenHostName;
+    }
 
     $configuration = array();
     if ($databaseProvider->isDatabaseInitialized()) {        

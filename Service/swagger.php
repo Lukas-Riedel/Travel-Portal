@@ -13,7 +13,7 @@
     <script>
       window.onload = () => {
         window.ui = SwaggerUIBundle({
-          url: 'api/swagger',
+          url: './swagger',
           dom_id: '#swagger-ui'
           });
         };

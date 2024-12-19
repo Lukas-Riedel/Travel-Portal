@@ -10,8 +10,10 @@ jobs:
     - name: Prepare Files
       run: |
         mkdir target
+        mkdir target/api
+        shopt -s dotglob
         cp -r ./Portal/* target/
-        cp -r ./Service/* target/
+        cp -r ./Service/* target/api/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -24,7 +26,7 @@ jobs:
       uses: muhfaris/request-action@v0.1.2
       with:
         method: GET
-        url: https://lriedel.cz/php/deploy.php
+        url: https://lriedel.cz/api/php/deploy.php
   maven-verify:
     name: Build Agent
     runs-on: ubuntu-latest

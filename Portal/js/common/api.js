@@ -480,7 +480,7 @@ class Api {
         return new Promise(async (resolve, reject) => {
             $.ajax({
                 method: method,
-                url: "https://" + this.#hostName + "/api/" + url + queryString,
+                url: "https://" + this.#hostName + "/" + url + queryString,
                 data: JSON.stringify(data),
                 dataType: "json",
                 headers: {

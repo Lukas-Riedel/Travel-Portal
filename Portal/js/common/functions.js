@@ -39,7 +39,7 @@ async function getLoggedAirports(loggedFlights = undefined) {
 // Common frontend.
 function loadPage(initFunction) {
     $(document).ready(async () => {
-        api = new Api("lriedel.cz"); // TODO
+        api = new Api("lriedel.cz/api"); // TODO
         configuration = await api.listConfigurationEntries("public");
         const albumsPerRow = $(window).width() / configuration.albumThumbnailImageSize.width;
         const newImageWidth = albumsPerRow - Math.floor(albumsPerRow) > 0.9 ? ($(window).width() / Math.ceil(albumsPerRow)) * 0.95 : configuration.albumThumbnailImageSize.width;

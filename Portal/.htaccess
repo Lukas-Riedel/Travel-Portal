@@ -5,13 +5,6 @@ RewriteRule ^ - [L]
 
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-RewriteCond %{HTTP:X-Goog-Channel-Token} ^(.+)$
-RewriteRule .* - [E=GOOG_CHANNEL_TOKEN:%1]
-
-# API
-RewriteRule ^api/(.+)/?$ php/api.php?path=/$1 [L,QSA]
-RewriteCond %{QUERY_STRING} ^(.*)$
-
 # Pages with arguments
 RewriteRule ^year/([^/]+)/?$ year.php?year=$1 [L,QSA]
 RewriteRule ^year/(.+)$ $1 [L,QSA]
@@ -57,14 +50,8 @@ RewriteRule ^flight/(.+)$ $1 [L,QSA]
 RewriteRule ^acp/?$ acp.php [L,QSA]
 RewriteRule ^acp/(.+)$ $1 [L,QSA]
 
-RewriteRule ^iam/?$ php/iam.php [L,QSA]
-RewriteRule ^iam/(.+)$ $1 [L,QSA]
-
 RewriteRule ^tracking/?$ time_tracking.php [L,QSA]
 RewriteRule ^tracking/(.+)$ $1 [L,QSA]
 
 RewriteRule ^login/?$ login.php [L,QSA]
 RewriteRule ^login/(.+)$ $1 [L,QSA]
-
-RewriteRule ^swagger/?$ swagger.php [L,QSA]
-RewriteRule ^swagger/(.+)$ $1 [L,QSA]
