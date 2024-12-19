@@ -228,7 +228,7 @@
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $configuration["homeLocation"]["timezone"], $place->getTimezone());
-                    $googleApiClient->updateCalendarEventDates("places", $this->getPlaceEventId($place->getId(), $date->getStart()), $place->getStart() + $timezoneOffset + $offset, $place->getEnd() + $timezoneOffset + $offset);
+                    $googleApiClient->updateCalendarEventDates("places", $this->getPlaceEventId($place->getId(), $date->getStart()), $date->getStart() + $timezoneOffset + $offset, $date->getEnd() + $timezoneOffset + $offset);
                 }
             }
 
