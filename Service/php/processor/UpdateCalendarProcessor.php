@@ -4,6 +4,7 @@
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
+    require_once(dirname(__FILE__) . "/GetChatResponseProcessor.php");
 
     class UpdateCalendarProcessor extends Processor {
         public function process($input) {
@@ -251,7 +252,7 @@
         }
 
         private function postProcessPlaces() {
-            global $databaseProvider, $configuration, $schedulingProvider;
+            global $databaseProvider, $configuration, $schedulingProvider, $noteService;
             
             // Process new places, renamed places and places for which the start time has changed.
             $newPlaceRows = $databaseProvider
@@ -283,6 +284,18 @@
                     ->scheduleJobExecution("UpdateStats", array(
                         "type" => "TRIP", 
                         "id" => $newPlaceRow["trip_id"]), NULL);
+            }
+
+            // Process new countries in trips.
+            $newCountryInTripRows = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT npi.country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country NOT IN (SELECT opi.country FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id)")
+                ->getResultSet();
+
+            foreach ($newCountryInTripRows as &$newCountryInTripRow) {
+                $entryRequirements = $this->getEntryRequirements($newCountryInTripRow["country"]);
+                if ($entryRequirements != NULL) {                    
+                    $noteService->createNote($newCountryInTripRow["trip_id"], $entryRequirements);
+                }
             }
 
             // Process yet non-visited places.
@@ -400,6 +413,14 @@
         }
 
         // Helper functions.
+        private function getEntryRequirements($country) : ?string {
+            global $configuration;
+
+            return (new GetChatResponseProcessor())
+                ->process(array(
+                    "query" => sprintf($configuration["chatRequests"]["entryRequirements"], $country)));
+        }
+
         private function updatePlaceEventLocation($event, $newAddress) {
             $eventId = explode("@", $event)[0];
             $calendarId = (new GetCalendarIdentifierProcessor())
