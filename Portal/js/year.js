@@ -61,7 +61,7 @@ function getContentComponent(trips, displayFutureTrips) {
 
     const contentRowColumnsSelector = trip => {
         const result = [
-            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
             { hideifSimplified: false, content: getFromDateToDateString(trip.start, trip.end, true, false) },
             { hideifSimplified: true,  content: Math.ceil(trip.days.total) }
         ];

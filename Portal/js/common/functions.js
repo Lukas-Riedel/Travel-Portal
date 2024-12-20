@@ -188,15 +188,15 @@ async function removeCandidatePlace(placeId, name, country) {
 
 function getMainMenu() {
     const items = [
-        "<a href=\"https://" + configuration.hostName + "/trip/\">Výlety</a>",
-        "<a href=\"https://" + configuration.hostName + "/place/\">Místa</a>",
-        "<a href=\"https://" + configuration.hostName + "/flight/\">Lety</a>"
+        "<a href=\"https://" + location.hostname + "/trip/\">Výlety</a>",
+        "<a href=\"https://" + location.hostname + "/place/\">Místa</a>",
+        "<a href=\"https://" + location.hostname + "/flight/\">Lety</a>"
     ];
     return "<table><tr>" + items.map(item => "<th>" + item + "</th>").join("") + "</tr></table>";   
 }
 
 function getFooter(isLoggedIn, additionalItems = []) {
-    const utils = isLoggedIn ? [ "<a href=\"https://" + configuration.hostName + "/acp\">Admin Control Panel</a>" ].concat(additionalItems) : [ getLoginLink(isLoggedIn) ];
+    const utils = isLoggedIn ? [ "<a href=\"https://" + location.hostname + "/acp\">Admin Control Panel</a>" ].concat(additionalItems) : [ getLoginLink(isLoggedIn) ];
     return "<ul>" + getListItems(utils) + "</ul>";
 }
 
@@ -231,7 +231,7 @@ async function doGetFeaturedTrip(trip) {
     }
 
     const calendarRowColumns = [
-        { hideifSimplified: false, rowspan: 2, content: "<h2 style=\"color: black\">" + getCountriesWithoutLayovers(trip, places).map(getFlagImage).join(" ") + " <a href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\">" + trip.name + "</a></h2>" },
+        { hideifSimplified: false, rowspan: 2, content: "<h2 style=\"color: black\">" + getCountriesWithoutLayovers(trip, places).map(getFlagImage).join(" ") + " <a href=\"https://" + location.hostname + "/trip/" + trip.id + "\">" + trip.name + "</a></h2>" },
         { hideifSimplified: false, rowspan: 2, content: "<h2>" + getFromDateToDateString(trip.start, trip.end, true, false) + "</h2>" }
     ];
 
@@ -436,7 +436,7 @@ function decomposeFullyQualifiedTripName(tripName) {
 }
 
 function getLoginLink(isLoggedIn) {
-    return isLoggedIn ? "" : "<a href=\"https://" + configuration.hostName + "/login.php?origin=" + encodeURIComponent(window.location.href) + "\">Přihlášení</a>";
+    return isLoggedIn ? "" : "<a href=\"https://" + location.hostname + "/login.php?origin=" + encodeURIComponent(window.location.href) + "\">Přihlášení</a>";
 }
 
 function toRangeString(obj) {
@@ -489,7 +489,7 @@ function getFlagImage(country) {
 }
 
 function getFlagImageUrl(country) {
-    return "https://" + configuration.hostName + "/img/flags/" + configuration.countries[country].unicode + ".svg";
+    return "https://" + location.hostname + "/img/flags/" + configuration.countries[country].unicode + ".svg";
 }
 
 function createDate(timestamp, keepHomeTimeZone) {

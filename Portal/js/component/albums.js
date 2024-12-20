@@ -108,7 +108,7 @@ function getAlbumsComponentForCategory(places) {
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name) ],
-            action: "href=\"https://" + configuration.hostName + "/place/" + place.id,            
+            action: "href=\"https://" + location.hostname + "/place/" + place.id,            
             imageUrl: place.imageUrl
         };
      }), undefined);
@@ -131,7 +131,7 @@ function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), formatKilometersCount(place.distance) ],
-            action: "href=\"https://" + configuration.hostName + "/place/" + place.id + "\"",         
+            action: "href=\"https://" + location.hostname + "/place/" + place.id + "\"",         
             imageUrl: place.imageUrl
         };
      }), undefined);
@@ -141,7 +141,7 @@ function getAlbumsComponentForTrips(trips) {
     return getAlbumsComponent(trips.map(trip => {
         return {
             nameTokens: isDayTrips(trip) ? [ getTripFlagImages(trip), getFullyQualifiedTripName(trip) ] : [ getTripFlagImages(trip), trip.name, getFromDateToDateString(trip.start, trip.end, true, true) ],
-            action: "href=\"https://" + configuration.hostName + "/trip/" + trip.id + "\"",
+            action: "href=\"https://" + location.hostname + "/trip/" + trip.id + "\"",
             imageUrl: trip.mainHighlight == null ? trip.id : trip.mainHighlight.url.thumbnail
         }
     }), undefined);
@@ -188,7 +188,7 @@ function getAlbumsComponentForCountries(countryCategories, places) {
             permalink: undefined,
             place: undefined,
             nameTokens: [ getFlagImage(country.name), country.name ],
-            action: "href=\"https://" + configuration.hostName + "/category/" + countryIds[country.name] + "\"",            
+            action: "href=\"https://" + location.hostname + "/category/" + countryIds[country.name] + "\"",            
             imageUrl: countryImages[country.name]
         };
      }), undefined);

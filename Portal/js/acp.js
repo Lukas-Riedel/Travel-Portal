@@ -165,9 +165,9 @@ function getUtilitiesComponent(trip) {
         { name: "Zobrazit plán výletů", link: "/plan/trip" },
         { name: "Zobrazit sledování času", link: "/tracking" },
         { name: "Zobrazit statistiky", link: "/stats" },
-        { name: "Autorizovat vůči Google", link: "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + configuration.googleApiCredentials.clientId + "&prompt=consent&redirect_uri=https://" + configuration.hostName + "&response_type=code&access_type=offline&scope=" + googleApiAuthorizationScopes.join(" ") }
+        { name: "Autorizovat vůči Google", link: "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + configuration.googleApiCredentials.clientId + "&prompt=consent&redirect_uri=https://" + location.hostname + "&response_type=code&access_type=offline&scope=" + googleApiAuthorizationScopes.join(" ") }
     ];
-    Object.keys(configuration.cookies).forEach(cookieName => links.push({ name: "Nastavit " + cookieName + " cookie", link: "https://" + configuration.hostName + "/login.php?cookies=" + configuration.cookies[cookieName] }));
+    Object.keys(configuration.cookies).forEach(cookieName => links.push({ name: "Nastavit " + cookieName + " cookie", link: "https://" + location.hostname + "/login.php?cookies=" + configuration.cookies[cookieName] }));
 
     // Tools.
     const tools = [

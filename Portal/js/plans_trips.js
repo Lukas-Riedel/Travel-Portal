@@ -36,7 +36,7 @@ function getContentComponent(trips, showButtons) {
         ];
 
         const columns = [
-            { hideifSimplified: false, content: "<a href=\"https://" + configuration.hostName + "/plan/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/plan/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
             { hideifSimplified: false, content: trip.days.total }
         ]; 
 

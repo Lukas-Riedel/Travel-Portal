@@ -43,7 +43,7 @@ function getTitle(place) {
 
 function getCategoriesComponent(place) {
     return getListComponent("Kategorie", place.categories.map(category => 
-        "<a href=\"https://" + configuration.hostName + "/category/" + category.id + "\">" + getCategoryPrettyName(category.name) + "</a>"
+        "<a href=\"https://" + location.hostname + "/category/" + category.id + "\">" + getCategoryPrettyName(category.name) + "</a>"
     ));
 }
 
@@ -54,7 +54,7 @@ function getDatesComponent(place) {
 }
 
 function getDateEntry(date) {
-    return getDateString(date.start, true) + " (<a href=\"https://" + configuration.hostName + "/trip/" + date.trip.id + "\">" + getFullyQualifiedTripName(date.trip) + "</a>)";
+    return getDateString(date.start, true) + " (<a href=\"https://" + location.hostname + "/trip/" + date.trip.id + "\">" + getFullyQualifiedTripName(date.trip) + "</a>)";
 }
 
 function getLoginComponent(isLoggedIn) {
