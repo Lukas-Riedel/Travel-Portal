@@ -55,8 +55,8 @@
             return $this->createParameter("path", TRUE, $name, $type, $examples);
         }
 
-        protected function createQueryParameter($name, $type, $examples) {
-            return $this->createParameter("query", FALSE, $name, $type, $examples);
+        protected function createQueryParameter($name, $type, $examples, $required = FALSE) {
+            return $this->createParameter("query", $required, $name, $type, $examples);
         }
 
         private function createParameter($category, $required, $name, $type, $examples) {

@@ -37,7 +37,7 @@
         public function getParameters() {
             return array(
                 $this->createPathParameter("placeId", "integer", 2507),
-                $this->createQueryParameter("type", "string", array("permanent", "candidate")));
+                $this->createQueryParameter("type", "string", array("permanent", "candidate"), TRUE));
         }
 
         public function getMethod() {

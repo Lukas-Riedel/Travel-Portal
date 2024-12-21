@@ -25,7 +25,7 @@
 
         public function getParameters() {
             return array(
-                $this->createQueryParameter("levels", "string", "public,modifiable"));
+                $this->createQueryParameter("levels", "string", "public,modifiable", TRUE));
         }
 
         public function getMethod() {

@@ -20,12 +20,12 @@
         }
 
         public function getPath() {
-            return "/jobs/{action}";
+            return "/jobs";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("action", "string", "UpdateStats"));
+                $this->createQueryParameter("action", "string", "UpdateStats", TRUE));
         }
 
         public function getMethod() {

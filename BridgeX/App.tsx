@@ -34,7 +34,7 @@ async function synchronize() {
       "apiKey": apiKey
     })).data.accessToken;
 
-    const jobs = (await axios.get(`${baseUrl}/jobs/UpdateFitnessData`, {
+    const jobs = (await axios.get(`${baseUrl}/jobs?action=UpdateFitnessData`, {
       headers: {
         "Authorization": `Bearer ${accessToken}`
       }

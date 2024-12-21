@@ -61,7 +61,7 @@ public final class ServiceClient {
 
     public Job[] listJobs(String jobName) {
         return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.exchange(
-                "/jobs/" + jobName,
+                "/jobs?action=" + jobName,
                 HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Job[].class).getBody()));
     }
 
