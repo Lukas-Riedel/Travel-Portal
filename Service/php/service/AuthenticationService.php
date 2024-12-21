@@ -75,16 +75,16 @@
         public function authenticateWithApiKey($apiKey) : AuthenticationResult {
             global $configuration, $databaseProvider;
             
-            $roles = explode(",", $databaseProvider
+            $roles = $databaseProvider
                 ->statementBuilder("SELECT roles FROM users WHERE api_key = ?")
                 ->withParameters($apiKey)
-                ->getSingleColumn("roles"));
+                ->getSingleColumn("roles");
 
             if ($roles == NULL) {
                 throw new AuthenticationException("No user for the provided API key was found.");
             }
 
-            return $this->generateAuthenticationResult($roles, $configuration["bearerToken"]["validity"]);
+            return $this->generateAuthenticationResult(explode(",", $roles), $configuration["bearerToken"]["validity"]);
         }
 
         public function authenticateAsAdmin($validity) : AuthenticationResult {
