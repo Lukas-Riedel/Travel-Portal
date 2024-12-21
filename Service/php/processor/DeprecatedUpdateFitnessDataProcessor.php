@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
 
-    class UpdateFitnessDataProcessor extends Processor {        
+    class DeprecatedUpdateFitnessDataProcessor extends Processor {        
         public function process($input) {
             global $databaseProvider, $schedulingProvider;
             

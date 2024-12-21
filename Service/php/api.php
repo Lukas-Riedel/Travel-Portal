@@ -28,6 +28,7 @@
     require_once(dirname(__FILE__) . "/service/NoteService.php");
     require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
+    require_once(dirname(__FILE__) . "/service/FitnessService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
@@ -40,6 +41,7 @@
     $tripService = new TripService();
     $albumService = new AlbumService();
     $categoryService = new CategoryService();
+    $fitnessService = new FitnessService();
     $expenseService = new ExpenseService();
     $yearService = new YearService();
     $noteService = new NoteService();

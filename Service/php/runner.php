@@ -19,6 +19,7 @@
     require_once(dirname(__FILE__) . "/service/FlightService.php");
     require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
+    require_once(dirname(__FILE__) . "/service/FitnessService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
@@ -39,6 +40,7 @@
     $configurationService = new ConfigurationService();
     $flightService = new FlightService();
     $timeTrackingService = new TimeTrackingService();
+    $fitnessService = new FitnessService();
     $googleApiClient = new GoogleApiClient();
     
     $supportedActions = array_filter(array_map(function ($file) {
