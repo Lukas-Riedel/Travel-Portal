@@ -2,14 +2,14 @@
     class FitnessService {
 
         public function updateFitnessRecord($timestamp, $steps, $minutes, $calories, $distance) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $schedulingProvider, $configuration;
             
             $stepLengthRow = $databaseProvider
                 ->statementBuilder("SELECT AVG(distance / steps) AS average_distance_per_step, MIN(distance / steps) AS minimum_distance_per_step, MAX(distance / steps) AS maximum_distance_per_step FROM fitness")
                 ->getSingleRow();
 
             // Distance is recorded incorrectly, scale steps by average step length.
-            if ($steps != 0 && (($distance / $steps < $stepLengthRow["minimum_distance_per_step"]) || ($distance / $steps > $stepLengthRow["maximum_distance_per_step"]))) {
+            if ($steps != 0 && (($distance / $steps < max(0.5, $stepLengthRow["minimum_distance_per_step"] * 0.85)) || ($distance / $steps > min($stepLengthRow["maximum_distance_per_step"] > 1.15, 1.5)))) {
                 $distance = $steps * $stepLengthRow["average_distance_per_step"];
             }
             
@@ -18,8 +18,7 @@
                 ->withParameters($timestamp)
                 ->getSingleRow();
 
-            if ($existingFitnessRow != NULL && ($steps < $existingFitnessRow["steps"] || $minutes < $existingFitnessRow["minutes"]
-                || $calories < $existingFitnessRow["calories"] || $distance < $existingFitnessRow["distance"])) {
+            if ($existingFitnessRow != NULL && ($steps < $existingFitnessRow["steps"] || $minutes < $existingFitnessRow["minutes"] || $distance < $existingFitnessRow["distance"])) {
                 return FALSE;
             }
 
@@ -30,7 +29,7 @@
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO fitness (timestamp, last_update, steps, minutes, calories, distance) VALUES (?, UNIX_TIMESTAMP(), ?, ?, ?, ?)")
-                ->withParameters($timestamp, $steps, $minutes, $calories, $distance)
+                ->withParameters($timestamp, $steps, min($minutes, $configuration["fitnessRecordDuration"] / 60), $calories, $distance)
                 ->execute();
 
             $parentTripIds = $databaseProvider

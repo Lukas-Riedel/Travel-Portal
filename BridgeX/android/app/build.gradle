@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.bridgex"
+    namespace "cz.lriedel.bridgex"
     defaultConfig {
-        applicationId "com.bridgex"
+        applicationId "cz.lriedel.bridgex"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

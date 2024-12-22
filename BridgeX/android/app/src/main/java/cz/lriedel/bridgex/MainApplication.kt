@@ -1,4 +1,4 @@
-package com.bridgex
+package cz.lriedel.bridgex
 
 import android.app.Application
 import com.facebook.react.PackageList
