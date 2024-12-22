@@ -36,7 +36,7 @@
             $authTokenParameter = "&apiKey=" . $_GET["apiKey"];
         }
 
-        header("Location: https://" . $configuration["hostName"] . "/login.php?origin=" . rawurlencode($originUrl) . $authTokenParameter); 
+        header("Location: https://" . $_SERVER["HTTP_HOST"] . "/login.php?origin=" . rawurlencode($originUrl) . $authTokenParameter); 
         exit;
     }
 ?>

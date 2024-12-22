@@ -13,7 +13,7 @@
             "code" => $_GET["code"],
             "client_id" => $configuration["googleApiCredentials"]["clientId"],
             "client_secret" => $configuration["googleApiCredentials"]["clientSecret"],
-            "redirect_uri" => "https://" . $configuration["hostName"],
+            "redirect_uri" => "https://" . $_SERVER["HTTP_HOST"],
             "grant_type" => "authorization_code",
             "access_type" => "offline"
         );

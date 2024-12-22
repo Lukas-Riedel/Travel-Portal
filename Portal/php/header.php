@@ -35,13 +35,13 @@
     }
     $version = "?v=" . $version;
     foreach ($commonFiles as &$file) {
-        ?><script src="https://<?php echo $configuration["hostName"]; ?>/js/common/<?php echo $file . $version; ?>"></script>
+        ?><script src="https://<?php echo $_SERVER["HTTP_HOST"]; ?>/js/common/<?php echo $file . $version; ?>"></script>
         <?php
     }
     foreach ($requiredFiles as &$file) {
-        ?><script src="https://<?php echo $configuration["hostName"]; ?>/js/<?php echo $file . $version; ?>"></script>
+        ?><script src="https://<?php echo $_SERVER["HTTP_HOST"]; ?>/js/<?php echo $file . $version; ?>"></script>
         <?php
     }
 ?>
-<link rel="stylesheet" href="https://<?php echo $configuration["hostName"]; ?>/css/main.css<?php echo $version; ?>">
+<link rel="stylesheet" href="https://<?php echo $_SERVER["HTTP_HOST"]; ?>/css/main.css<?php echo $version; ?>">
 <link rel="manifest" href="json/manifest.json<?php echo $version; ?>">

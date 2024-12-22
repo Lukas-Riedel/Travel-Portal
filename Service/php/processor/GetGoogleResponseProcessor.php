@@ -46,10 +46,11 @@
                 return $_SESSION["googleApiAccessToken"];
             }
             
+            $httpsEnabled = isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on";
             $payload = array(
                 "client_id" => $configuration["googleApiCredentials"]["clientId"],
                 "client_secret" => $configuration["googleApiCredentials"]["clientSecret"],
-                "redirect_uri" => "https://" . $configuration["hostName"],
+                "redirect_uri" => ($httpsEnabled ? "https://" : "http://") . $configuration["hostName"],
                 "refresh_token" => $configuration["googleApiCredentials"]["accessKey"],
                 "grant_type" => "refresh_token",
                 "access_type" => "offline");     

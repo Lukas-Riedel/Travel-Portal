@@ -52,10 +52,11 @@
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
-    };    
-    
+    };
+
+    $httpsEnabled = isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on";    
     if (!isset($_GET["path"])) {
-        header("Location: https://" . $configuration["hostName"] . "/api"); 
+        header("Location: " . ($httpsEnabled ? "https://" : "http://") . $configuration["hostName"]); 
     }
 
     $path = $_GET["path"];
@@ -128,7 +129,7 @@
     }
     $databaseProvider->materializeViews();  
 
-    header("Location: https://" . $configuration["hostName"] . "/api");
+    header("Location: " . ($httpsEnabled ? "https://" : "http://") . $configuration["hostName"]); 
 
     function getErrorCode($e) {
         if ($e instanceof EntityNotFoundException) {

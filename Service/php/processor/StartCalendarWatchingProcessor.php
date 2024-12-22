@@ -30,7 +30,7 @@
                 "id" => $input["watchId"],
                 "type" => "web_hook",
                 "token" => "Bearer " . $authenticationResult->getAccessToken(),
-                "address" => "https://" . $configuration["hostName"] . "/api/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
+                "address" => "https://" . $configuration["hostName"] . "/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
                 "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
 
             $getGoogleResponseProcessor

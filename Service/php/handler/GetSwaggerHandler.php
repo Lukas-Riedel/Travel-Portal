@@ -30,11 +30,12 @@
             }
             ksort($paths);
 
+            $httpsEnabled = isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on";
             return $this->createResponse(200, array(
                 "openapi" => "3.0.1",
                 "info" => array("title" => "Travel Portal API", "version" => "1.0.0"),
                 "tags" => array_map(function ($tag) { return array("name" => $tag); }, $tags),
-                "servers" => array(array("url" => (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on" ? "https://" : "http://") . $configuration["hostName"] . str_replace($this->getPath(), "", $_SERVER["REQUEST_URI"]))),
+                "servers" => array(array("url" => ($httpsEnabled ? "https://" : "http://") . $configuration["hostName"])),
                 "paths" => $paths,
                 "security" => array(
                     array(
