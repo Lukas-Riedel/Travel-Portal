@@ -36,15 +36,15 @@
         }
 
         protected function create400ResponseExample() {
-            return $this->createResponseExample("Invalid category reference", 400, '{"code":400,"error":"InvalidArgumentException","message":"The included region \'Paradise\' does not exist.","details":{"endpoint":"/api/categories","arguments":{"name":"World","category":"CONTINENT","includedRegions":["Paradise"],"excludedRegions":[]},"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/handler/CreateCategoryHandler.php(8): CategoryService->createCompositeRegion(\'World\', \'CONTINENT\', Array, Array)","#1 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(103): CreateCategoryHandler->handle(Array)","#2 {main}"],"ipAddress":"89.103.191.6"}}');
+            return $this->createResponseExample("Invalid category reference", 400, '{"code":400,"error":"InvalidArgumentException","message":"The included region \'Paradise\' does not exist.","details":{"endpoint":"/categories","arguments":{"name":"World","category":"CONTINENT","includedRegions":["Paradise"],"excludedRegions":[]},"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/handler/CreateCategoryHandler.php(8): CategoryService->createCompositeRegion(\'World\', \'CONTINENT\', Array, Array)","#1 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(103): CreateCategoryHandler->handle(Array)","#2 {main}"],"ipAddress":"89.103.191.6"}}');
         }
 
         protected function create401ResponseExample() {
-            return $this->createResponseExample("Missing access token", 401, '{"code":401,"error":"AuthenticationException","message":"The access token was not provided.","details":{"endpoint":"/api/categories","arguments":[],"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(96): AuthenticationService->getAccessToken(NULL)","#1 {main}"],"ipAddress":"89.103.191.6"}}');
+            return $this->createResponseExample("Missing access token", 401, '{"code":401,"error":"AuthenticationException","message":"The access token was not provided.","details":{"endpoint":"/categories","arguments":[],"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(96): AuthenticationService->getAccessToken(NULL)","#1 {main}"],"ipAddress":"89.103.191.6"}}');
         }
 
         protected function create403ResponseExample() {
-            return $this->createResponseExample("Insufficient permissions", 403, '{"code":403,"error":"AuthorizationException","message":"The user is not authorized to perform this action.","details":{"endpoint":"/api/jobs/run","arguments":{"action":"UpdateCalendar","args":{"watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}},"trace":["#0 {main}"],"ipAddress":"89.103.191.6"}}');
+            return $this->createResponseExample("Insufficient permissions", 403, '{"code":403,"error":"AuthorizationException","message":"The user is not authorized to perform this action.","details":{"endpoint":"/jobs/run","arguments":{"action":"UpdateCalendar","args":{"watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}},"trace":["#0 {main}"],"ipAddress":"89.103.191.6"}}');
         }
 
         protected function create404ResponseExample() {

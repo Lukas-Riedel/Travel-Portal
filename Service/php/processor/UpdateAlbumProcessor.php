@@ -126,7 +126,7 @@
                         }
             
                         $actuallyUsedImages[] = $filePath;
-                        $mainImageUrl = "https://" . $configuration["hostName"] . "/" . $configuration["cachePath"]["albumThumbnail"] . "/" . $fileName;
+                        $mainImageUrl = BASE_URL . "/" . $configuration["cachePath"]["albumThumbnail"] . "/" . $fileName;
                         
                         $mainPhotoId = $getPhotoIdentifierProcessor
                             ->process(array(

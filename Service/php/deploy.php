@@ -7,13 +7,7 @@
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $authenticationService = new AuthenticationService();
-    $hostName = $_SERVER["HTTP_HOST"];
     
-    $overriddenHostName = getenv("HTTP_HOST");
-    if ($overriddenHostName !== FALSE) {
-        $hostName = $overriddenHostName;
-    }
-
     $configuration = array();
     if ($databaseProvider->isDatabaseInitialized()) {        
         $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -63,7 +57,7 @@
                 (new GetHttpResponseProcessor())
                     ->process(array(
                         "method" => "POST", 
-                        "url" => "https://" . $hostName . "/api/jobs/run",
+                        "url" => BASE_URL . "/jobs/run",
                         "headers" => "Authorization: Bearer " . $accessTokenResponse->getAccessToken(),
                         "payload" => json_encode(array(
                             "action" => "BackupDatabase", 
@@ -104,9 +98,7 @@
         }
     }
 
-    if (!$databaseProvider->isDatabaseInitialized()) {       
-        $databaseProvider
-            ->query("UPDATE configuration SET value = '" . $hostName . "' WHERE type = 'HOST_NAME'");
+    if (!$databaseProvider->isDatabaseInitialized()) {
         $databaseProvider
             ->query("INSERT INTO users (username, password, api_key, roles) VALUES ('guest', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER')");
         $databaseProvider

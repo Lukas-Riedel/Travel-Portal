@@ -45,7 +45,7 @@
                 }
     
                 $actuallyUsedImages[] = $filePath;
-                $imageUrl = "https://" . $configuration["hostName"] . "/" . $cachePath . "/" . $fileName;
+                $imageUrl = BASE_URL . "/" . $cachePath . "/" . $fileName;
 
                 $databaseProvider
                     ->statementBuilder("UPDATE highlight_identifier SET " . $urlColumnName . " = ? WHERE id = ?")

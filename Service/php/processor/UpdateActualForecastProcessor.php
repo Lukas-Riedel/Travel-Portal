@@ -15,7 +15,7 @@
                     "method" => "GET", 
                     "url" => "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($placeIdentifier["latitude"], 4) . "&lon=" . round($placeIdentifier["longitude"], 4), 
                     "includeHeaders" => TRUE,
-                    "headers" => "User-Agent: " . $configuration["hostName"] . " " . $configuration["contactEmail"]));
+                    "headers" => "User-Agent: " . BASE_URL . " " . $configuration["contactEmail"]));
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {
                 throw new RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));

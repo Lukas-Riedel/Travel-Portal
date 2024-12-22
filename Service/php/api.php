@@ -54,9 +54,8 @@
         throw new RuntimeException($message);
     };
 
-    $httpsEnabled = isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on";    
     if (!isset($_GET["path"])) {
-        header("Location: " . ($httpsEnabled ? "https://" : "http://") . $configuration["hostName"]); 
+        header("Location: " . BASE_URL); 
     }
 
     $path = $_GET["path"];
@@ -129,7 +128,7 @@
     }
     $databaseProvider->materializeViews();  
 
-    header("Location: " . ($httpsEnabled ? "https://" : "http://") . $configuration["hostName"]); 
+    header("Location: " . BASE_URL); 
 
     function getErrorCode($e) {
         if ($e instanceof EntityNotFoundException) {
