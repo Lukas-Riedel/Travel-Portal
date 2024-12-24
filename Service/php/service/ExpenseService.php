@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Expense.php");
     require_once(dirname(__FILE__) . "/../model/Subscription.php");
-    require_once(dirname(__FILE__) . "/../processor/GetExchangeRateProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetHttpResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateCurrenciesProcessor.php");
 
     class ExpenseService {
@@ -19,9 +19,7 @@
         public function createExpense($tripId, $value, $currency, $type, $description, $subscriptionId) : Expense {            
             global $databaseProvider, $schedulingProvider;
                       
-            $exchangeRate = (new GetExchangeRateProcessor())
-                ->process(array(
-                    "currency" => $currency));
+            $exchangeRate = $this->getExchangeRate($currency);
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO expense (trip_id, value, currency, exchange_rate, type, description, timestamp, subscription_id) VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), ?)")
@@ -46,9 +44,7 @@
         public function createSubscription($value, $currency, $description, $expiration) : Subscription {
             global $databaseProvider;
                         
-            $exchangeRate = (new GetExchangeRateProcessor())
-                ->process(array(
-                    "currency" => $currency));
+            $exchangeRate = $this->getExchangeRate($currency);
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO expense_subscription (value, currency, exchange_rate, description, expiration) VALUES (?, ?, ?, ?, ?)")
@@ -102,9 +98,7 @@
         public function updateExpenseCurrency($expenseId, $currency, $tripId) : bool {
             global $databaseProvider, $schedulingProvider;
 
-            $exchangeRate = (new GetExchangeRateProcessor())
-                ->process(array(
-                    "currency" => $currency));
+            $exchangeRate = $this->getExchangeRate($currency);
 
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE expense SET currency = ?, exchange_rate = ? WHERE id = ?")
@@ -141,6 +135,41 @@
                 ->process(NULL);  
 
             return $wasDeleted;
+        }
+
+        public function getExchangeRate($currency) : float {      
+                global $databaseProvider, $configuration;
+                
+                if ($currency === $configuration["mainCurrency"]) {
+                    return 1;
+                }
+    
+                $cachedRate = $databaseProvider
+                    ->statementBuilder("SELECT exchange_rate FROM cache_exchange_rate WHERE currency = ?")
+                    ->withParameters($currency)
+                    ->getSingleColumn("exchange_rate");
+    
+                if ($cachedRate != NULL) {
+                    return $cachedRate;
+                }    
+        
+                $apiResponse = (new GetHttpResponseProcessor())
+                    ->process(array(
+                        "method" => "GET", 
+                        "url" => "https://v6.exchangerate-api.com/v6/88f93f800acc098fbf682685/latest/" . $configuration["mainCurrency"]));
+                
+                if ($apiResponse === NULL || !array_key_exists($currency, $apiResponse["conversion_rates"])) {
+                    return 0;
+                }
+        
+                $rate = (1 / doubleval($apiResponse["conversion_rates"][$currency]));
+
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO cache_exchange_rate (currency, exchange_rate, last_update) VALUES (?, ?, UNIX_TIMESTAMP())")
+                    ->withParameters($currency, $rate)
+                    ->execute();
+
+                return $rate;
         }
     }
 ?>
