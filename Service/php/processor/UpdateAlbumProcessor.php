@@ -1,6 +1,5 @@
 <?php
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/GetMediaItemsProcessor.php");
 
     class UpdateAlbumProcessor extends Processor {        
         public function process($input) {
@@ -94,9 +93,7 @@
                     throw new InvalidArgumentException("Cannot update main photo because the album identifier was not specified.");
                 }
 
-                $photos = (new GetMediaItemsProcessor())
-                    ->process(array(
-                        "albumId" => $albumId));
+                $photos = $photoService->getPhotos($albumId);
 
                 $mainPhotoPosition = $input["mainPhotoPosition"] - 1;
                 if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {

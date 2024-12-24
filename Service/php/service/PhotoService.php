@@ -28,6 +28,53 @@
             return $this->getPhotoIdentifier($externalId);
         }
 
+        public function getPhotos($albumId) : array {
+            global $databaseProvider, $schedulingProvider, $albumService, $googleApiClient;
+
+            $photos = array();
+
+            $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+            $apiResponse = $googleApiClient->getMediaItemsResponse($externalAlbumId);
+
+            while (isset($apiResponse["mediaItems"] )) {
+                foreach ($apiResponse["mediaItems"] as &$mediaItem) {
+                    $photos[] = new Photo(
+                        $this->getOrCreatePhotoIdentifier($mediaItem["id"]), 
+                        $mediaItem["baseUrl"],
+                        $mediaItem["productUrl"],
+                        isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
+                        isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : NULL,
+                        isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : NULL,
+                        isset($mediaItem["mediaMetadata"]["photo"]["isoEquivalent"]) ? $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] : NULL,
+                        strtotime($mediaItem["mediaMetadata"]["creationTime"]));
+                }
+        
+                $apiResponse = isset($apiResponse["nextPageToken"]) 
+                    ? $googleApiClient->getMediaItemsResponse($externalAlbumId, $apiResponse["nextPageToken"])
+                    : array();
+            }
+
+            $previousCount = $databaseProvider
+                ->statementBuilder("DELETE FROM photo WHERE album_id = ?")
+                ->withParameters($albumId)
+                ->execute();
+
+            foreach ($photos as &$photo) {
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO photo (id, album_id, focal_length, aperture, shutter_speed, iso, timestamp, permalink) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                    ->withParameters($photo->getId(), $albumId, $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink())
+                    ->execute();
+            }
+
+            if (count($photos) != $previousCount) {
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateAlbum", array(
+                        "albumId" => $albumId), NULL);
+            }
+
+            return $photos;
+        }
+
         public function getPhoto($photoId) : ?Photo {
             global $databaseProvider;            
                 

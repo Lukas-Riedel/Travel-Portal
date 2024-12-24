@@ -34,7 +34,7 @@
             global $databaseProvider;
             
             return $databaseProvider
-                ->statementBuilder("SELECT id FROM album_identifier WHERE id = ?")
+                ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
                 ->withParameters($albumId)
                 ->getFirstColumn("external_id");
         }

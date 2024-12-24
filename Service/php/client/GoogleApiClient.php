@@ -124,5 +124,27 @@
             // TODO: Return whether the album was updated.
             return TRUE;
         }
+
+        public function getMediaItemsResponse($externalId, $pageToken = NULL) : mixed {
+            $payload = array(
+                "albumId" => $externalId, 
+                "pageSize" => 100);
+
+            if ($pageToken != NULL) {
+                $payload["pageToken"] = $pageToken;
+            }
+
+            $apiResponse = (new GetGoogleResponseProcessor())
+                ->process(array(
+                    "method" => "POST", 
+                    "url" => "https://photoslibrary.googleapis.com/v1/mediaItems:search", 
+                    "payload" => json_encode($payload)));
+                    
+            if (isset($apiResponse["error"])) {
+                throw new RuntimeException($apiResponse["error"]["message"]);
+            }
+
+            return $apiResponse;
+        }
     }
 ?>
