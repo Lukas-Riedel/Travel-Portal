@@ -85,9 +85,7 @@
 
         // Processors.
         private function processTrips() {  
-            global $databaseProvider, $configuration, $tripService;
-
-            $holidays = $this->getHolidays();       
+            global $databaseProvider, $configuration, $tripService;    
                      
             // Add trips to the database.
             foreach ($this->downloadEvents($configuration["calendars"]["trips"]) as &$tripEvent) {
@@ -192,7 +190,7 @@
 
             // Add day trips to the database.
             $years = $databaseProvider
-                // This does not pick up years for which there is, e.g., a flight, but no place. But it doesn't really make much sense, flying somewhere not to visit anything, so we can live with it.
+                // This does not pick up years for which there is, e.g., a flight, but no place.
                 ->statementBuilder("SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(start), '%Y') AS year FROM place_event WHERE trip_id IS NULL ORDER BY year")
                 ->getResultSetForColumn("year");
 
@@ -286,15 +284,16 @@
                         "id" => $newPlaceRow["trip_id"]), NULL);
             }
 
-            // Process new countries in trips.
+            // Process new countries in trips (only those visited more than one year ago prior to visiting it).
             $newCountryInTripRows = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT npi.country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country NOT IN (SELECT opi.country FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id)")
+                ->statementBuilder("SELECT DISTINCT npi.country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country NOT IN (SELECT opi.country FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id) AND npi.country NOT IN (SELECT country FROM place_summary WHERE start < UNIX_TIMESTAMP() AND start > np.start - (365 * 86400))")
                 ->getResultSet();
 
             foreach ($newCountryInTripRows as &$newCountryInTripRow) {
                 $entryRequirements = $this->getEntryRequirements($newCountryInTripRow["country"]);
-                if ($entryRequirements != NULL) {                    
-                    $noteService->createNote($newCountryInTripRow["trip_id"], $entryRequirements);
+                $plugTypes = $this->getPlugTypes($newCountryInTripRow["country"]);
+                if ($entryRequirements != NULL && $plugTypes != NULL) {                    
+                    $noteService->createNote($newCountryInTripRow["trip_id"], $newCountryInTripRow["country"] . "<ul><li>" . $entryRequirements . "</li><li>" . $plugTypes . "</li></ul>");
                 }
             }
 
@@ -419,6 +418,14 @@
             return (new GetChatResponseProcessor())
                 ->process(array(
                     "query" => sprintf($configuration["chatRequests"]["entryRequirements"], $country)));
+        }
+
+        private function getPlugTypes($country) : ?string {
+            global $configuration;
+
+            return (new GetChatResponseProcessor())
+                ->process(array(
+                    "query" => sprintf($configuration["chatRequests"]["plugTypes"], $country)));
         }
 
         private function updatePlaceEventLocation($event, $newAddress) {
