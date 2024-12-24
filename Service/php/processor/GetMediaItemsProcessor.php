@@ -1,13 +1,10 @@
 <?php
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/GetPhotoIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/../model/Photo.php");
 
     class GetMediaItemsProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $schedulingProvider;
-
-            $getPhotoIdentifierProcessor = new GetPhotoIdentifierProcessor();
+            global $databaseProvider, $schedulingProvider, $photoService;
 
             $externalAlbumId = $databaseProvider
                 ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
@@ -19,9 +16,7 @@
             $apiResponse = $this->getGooglePhotosAlbumContentsResponse($externalAlbumId);
             while (isset($apiResponse["mediaItems"] )) {
                 foreach ($apiResponse["mediaItems"] as &$mediaItem) {
-                    $photoId = $getPhotoIdentifierProcessor
-                        ->process(array(
-                            "externalId" => $mediaItem["id"]));                            
+                    $photoId = $photoService->getOrCreatePhotoIdentifier($mediaItem["id"]);
                     $result[] = new Photo($photoId, $mediaItem["baseUrl"], $mediaItem["productUrl"], isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
                         isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : NULL, isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : NULL,
                         isset($mediaItem["mediaMetadata"]["photo"]["isoEquivalent"]) ? $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] : NULL, strtotime($mediaItem["mediaMetadata"]["creationTime"]));

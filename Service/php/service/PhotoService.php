@@ -1,9 +1,33 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Photo.php");
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetPhotoIdentifierProcessor.php");
 
     class PhotoService {
+        public function getPhotoIdentifier($externalId) : ?string {
+            global $databaseProvider;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT id FROM photo_identifier WHERE external_id = ?")
+                ->withParameters($externalId)
+                ->getFirstColumn("id");
+        }
+        
+        public function getOrCreatePhotoIdentifier($externalId) : string {
+            global $databaseProvider;
+
+            $albumIdentifier = $this->getPhotoIdentifier($externalId);
+            if ($albumIdentifier !== NULL) {
+                return $albumIdentifier;
+            }
+
+            $databaseProvider
+                ->statementBuilder("INSERT INTO photo_identifier (external_id) VALUES (?)")
+                ->withParameters($externalId)
+                ->execute();
+
+            return $this->getPhotoIdentifier($externalId);
+        }
+
         public function getPhoto($photoId) : ?Photo {
             global $databaseProvider;            
                 

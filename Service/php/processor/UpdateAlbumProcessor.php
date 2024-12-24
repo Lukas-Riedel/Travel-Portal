@@ -1,13 +1,10 @@
 <?php
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/GetPhotoIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetMediaItemsProcessor.php");
 
     class UpdateAlbumProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration, $schedulingProvider, $albumService, $highlightService;
-
-            $getPhotoIdentifierProcessor = new GetPhotoIdentifierProcessor();
+            global $databaseProvider, $configuration, $schedulingProvider, $albumService, $highlightService, $photoService;
 
             $albumCachePath = dirname(__FILE__) . "/../../" . $configuration["cachePath"]["albumThumbnail"];
 
@@ -128,9 +125,7 @@
                         $actuallyUsedImages[] = $filePath;
                         $mainImageUrl = BASE_URL . "/" . $configuration["cachePath"]["albumThumbnail"] . "/" . $fileName;
                         
-                        $mainPhotoId = $getPhotoIdentifierProcessor
-                            ->process(array(
-                                "externalId" => $album["coverPhotoMediaItemId"]));
+                        $mainPhotoId = $photoService->getOrCreatePhotoIdentifier($album["coverPhotoMediaItemId"]);
                     }
         
                     $imagesCount = 0;
