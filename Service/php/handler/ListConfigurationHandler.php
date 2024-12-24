@@ -1,9 +1,9 @@
 <?php
     class ListConfigurationHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $configurationService;
 
-            $response = $processorProvider->run("GetConfiguration", $input);
+            $response = $configurationService->getConfigurationEntries(explode(",", $input["levels"]));
             return $this->createResponse(200, $response);
         }
 

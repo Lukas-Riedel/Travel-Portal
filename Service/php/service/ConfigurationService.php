@@ -1,6 +1,15 @@
 <?php
     class ConfigurationService {
-        // TODO: Strong-typed return value.
+        public function getConfigurationEntries($levels) : array {
+            global $configurationProvider;
+
+            if (in_array(PRIVATE_CONFIGURATION, $levels)) {
+                throw new AuthorizationException("The user is not authorized to view private configuration.");
+            }
+            
+            return $configurationProvider->get(...$levels);
+        }
+
         public function getConfigurationEntry($type, $key) : ?array {
             global $databaseProvider;
 
