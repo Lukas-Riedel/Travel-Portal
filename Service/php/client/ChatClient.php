@@ -1,14 +1,14 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetHttpResponseProcessor.php");
 
-    class GetChatResponseProcessor extends Processor {        
-        public function process($input) {
+    class ChatClient {        
+        public function getResponse($query) : ?string {
             global $configuration;
 
             $payload = array(
                 "contents" => array(array(
                     "parts" => array(array(
-                        "text" => $input["query"])))));
+                        "text" => $query)))));
 
             try {                
                 $response = (new GetHttpResponseProcessor())
@@ -27,14 +27,6 @@
             catch (Throwable $e) {
                 return NULL;
             }
-        }
-
-        public function getRequiredArguments() {
-            return array("query");
-        }
-        
-        public function requiresAdminRole() {
-            return TRUE;
         }
     }
 ?>

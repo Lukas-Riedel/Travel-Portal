@@ -2,7 +2,6 @@
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetChatResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidatePlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
@@ -351,11 +350,9 @@
         }
 
         private function getSuggestedExcerpt($name, $country) : ?string {
-            global $configuration;
+            global $configuration, $chatClient;
 
-            return (new GetChatResponseProcessor())
-                ->process(array(
-                    "query" => sprintf($configuration["chatRequests"]["suggestedExcerpt"], $name, $country)));
+            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["suggestedExcerpt"], $name, $country));
         }
 
         private function resolveSpecialPlaceTable($specialPlaceType) {

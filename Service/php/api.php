@@ -30,6 +30,7 @@
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
     require_once(dirname(__FILE__) . "/service/FitnessService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
+    require_once(dirname(__FILE__) . "/client/ChatClient.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -49,6 +50,7 @@
     $configurationService = new ConfigurationService();
     $timeTrackingService = new TimeTrackingService();
     $googleApiClient = new GoogleApiClient();
+    $chatClient = new ChatClient();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

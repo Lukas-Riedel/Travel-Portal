@@ -4,7 +4,6 @@
     require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
-    require_once(dirname(__FILE__) . "/GetChatResponseProcessor.php");
 
     class UpdateCalendarProcessor extends Processor {
         public function process($input) {
@@ -413,20 +412,15 @@
 
         // Helper functions.
         private function getEntryRequirements($country) : ?string {
-            global $configuration;
+            global $configuration, $chatClient;
 
-            return (new GetChatResponseProcessor())
-                ->process(array(
-                    "query" => sprintf($configuration["chatRequests"]["entryRequirements"], $country)));
+            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["entryRequirements"], $country));
         }
 
         private function getPlugTypes($country) : ?string {
-            global $configuration;
+            global $configuration, $chatClient;
 
-            return (new GetChatResponseProcessor())
-                ->process(array(
-                    "query" => sprintf($configuration["chatRequests"]["plugTypes"], $country)));
-        }
+            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $country));        }
 
         private function updatePlaceEventLocation($event, $newAddress) {
             $eventId = explode("@", $event)[0];

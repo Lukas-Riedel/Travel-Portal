@@ -18,6 +18,7 @@
     require_once(dirname(__FILE__) . "/service/FitnessService.php");
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
+    require_once(dirname(__FILE__) . "/client/ChatClient.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -37,6 +38,7 @@
     $fitnessService = new FitnessService();
     $timeTrackingService = new TimeTrackingService();
     $googleApiClient = new GoogleApiClient();
+    $chatClient = new ChatClient();
 
     $schedulers = $databaseProvider
         ->statementBuilder("SELECT * FROM scheduler")
