@@ -17,6 +17,22 @@
             return new YearIdentifier($yearIdentifierRow["id"], $highlightService->getHighlight($yearIdentifierRow["main_highlight_id"]));
         }
 
+        public function getOrCreateYearIdentifier($year) : YearIdentifier {            
+            global $databaseProvider;
+
+            $yearIdentifier = $this->getYearIdentifier($year);
+            if ($yearIdentifier !== NULL) {
+                return $yearIdentifier;
+            }
+
+            $databaseProvider
+                ->statementBuilder("INSERT INTO year_identifier (id) VALUES (?)")
+                ->withParameters($year)
+                ->execute();
+                
+            return $this->getYearIdentifier($year);
+        }
+
         public function updateYearMainHighlight($year, $highlightIdentifier) : bool {
             global $databaseProvider;
 

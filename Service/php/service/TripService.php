@@ -2,7 +2,6 @@
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Trip.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
-    require_once(dirname(__FILE__) . "/../processor/GetYearIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidateTripsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
@@ -82,7 +81,7 @@
         }
         
         public function getOrCreateTripIdentifier($name, $year) : TripIdentifier { 
-            global $databaseProvider;
+            global $databaseProvider, $yearService;
 
             $tripIdentifier = $this->getTripIdentifier($name, $year);
             if ($tripIdentifier !== NULL) {
@@ -91,9 +90,7 @@
             
             // Make sure the year is registered so it can be used as a foreign key.
             if ($year !== NULL) {
-                (new GetYearIdentifierProcessor())
-                    ->process(array(
-                        "year" => $year));
+                $yearService->getOrCreateYearIdentifier($year);
             }
 
             $databaseProvider
