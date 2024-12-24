@@ -3,6 +3,22 @@
     require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
 
     class GoogleApiClient {
+        public function createAlbum($albumName) : string {
+            $apiResponse = (new GetGoogleResponseProcessor())
+            ->process(array(
+                "method" => "POST", 
+                "url" => "https://photoslibrary.googleapis.com/v1/albums", 
+                "payload" => json_encode(array(
+                    "album" => array(
+                        "title" => $albumName)))));
+
+            if (!isset($apiResponse["id"])) {
+                throw new RuntimeException("The album could not be created. " . $apiResponse["message"]);
+            }
+
+            return $apiResponse["id"];
+        }
+
         public function createFile($name, $folderId, $contentType, $content) : bool {
             $separator = "mpr_separator";
 

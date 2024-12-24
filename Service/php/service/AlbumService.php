@@ -56,26 +56,16 @@
         }
 
         public function createAlbum($placeId, $timestamp) : Album {
-            global $placeService;
+            global $placeService, $googleApiClient;
 
             $place = $placeService->getRegularPlace($placeId);
             if ($place === NULL) {            
                 throw new EntityNotFoundException("place", $placeId);
             }
 
-            $apiResponse = (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/albums", 
-                    "payload" => json_encode(array(
-                        "album" => array(
-                            "title" => $this->getAlbumName($place->getName(), $timestamp))))));
-    
-            if (!isset($apiResponse["id"])) {
-                throw new RuntimeException("The album could not be created. " . $apiResponse["message"]);
-            }
-
-            $resolvedAlbumId = $this->getOrCreateAlbumIdentifier($apiResponse["id"]);
+            $albumName = $this->getAlbumName($place->getName(), $timestamp);
+            $createdAlbumExternalId = $googleApiClient->createAlbum($albumName);
+            $resolvedAlbumId = $this->getOrCreateAlbumIdentifier($createdAlbumExternalId);
             $this->updateAlbum($resolvedAlbumId);
 
             return $this->getAlbum($resolvedAlbumId);
