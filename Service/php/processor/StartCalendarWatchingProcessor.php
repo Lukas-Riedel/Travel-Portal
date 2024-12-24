@@ -39,6 +39,18 @@
                     "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/watch", 
                     "payload" => json_encode($payload)));
 
+            $payload = array(
+                "id" => $input["watchId"],
+                "type" => "web_hook",
+                "address" => BASE_URL . "/php/runner.php",
+                "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
+
+            $getGoogleResponseProcessor
+                ->process(array(
+                    "method" => "POST", 
+                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/watch", 
+                    "payload" => json_encode($payload)));
+
             $schedulingProvider
                 ->scheduleJobExecution("UpdateCalendar", array(
                     "watchId" => $input["watchId"]), NULL);
