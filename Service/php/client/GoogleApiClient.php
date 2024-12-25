@@ -1,6 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/../processor/GetCalendarIdentifierProcessor.php");
-
     class GoogleApiClient {
         public function createAlbum($albumName) : string {
             $payload = array(
@@ -53,65 +51,33 @@
             if ($address !== NULL) {
                 $payload["location"] = $address;
             }
-
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => $calendar));
-
-            if ($calendarId === NULL) {
-                throw new InvalidArgumentException("The calendar " . $calendar . " does not exist.");
-            }
              
-            $this->executeRequest("POST", "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events", array(), $payload);
+            $this->executeRequest("POST", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events", array(), $payload);
                     
             // TODO: Return whether the event was created.
             return TRUE;
         }
 
         public function deleteCalendarEvent($calendar, $eventId) : bool {
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => $calendar));
-
-            if ($calendarId === NULL) {
-                throw new InvalidArgumentException("The calendar " . $calendar . " does not exist.");
-            }
-
-            $this->executeRequest("DELETE", "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId));
+            $this->executeRequest("DELETE", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId));
 
             // TODO: Return whether the event was deleted.
             return TRUE;
         }
 
         public function updateCalendarEventSummary($calendar, $eventId, $name) : bool {
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => $calendar));
-
-            if ($calendarId === NULL) {
-                throw new InvalidArgumentException("The calendar " . $calendar . " does not exist.");
-            }
-
             $payload = array(
                 "summary" => $name);
-            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
         }
 
         public function updateCalendarEventLocation($calendar, $eventId, $location) : bool {
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => $calendar));
-
-            if ($calendarId === NULL) {
-                throw new InvalidArgumentException("The calendar " . $calendar . " does not exist.");
-            }
-
             $payload = array(
                 "location" => $location);
-            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -120,14 +86,6 @@
         public function updateCalendarEventDates($calendar, $eventId, $start, $end) : bool {
             global $configuration;
 
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => $calendar));
-
-            if ($calendarId === NULL) {
-                throw new InvalidArgumentException("The calendar " . $calendar . " does not exist.");
-            }
-
             $payload = array(
                 "start" => array(
                     "dateTime" => date(DATE_RFC3339, $start),
@@ -135,7 +93,7 @@
                 "end" => array(
                     "dateTime" => date(DATE_RFC3339, $end),
                     "timeZone" => $configuration["homeLocation"]["timezone"]));
-            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -143,14 +101,6 @@
 
         public function watchCalendar($calendar, $channelId, $url, $token = NULL) : bool {
             global $configuration;
-
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => $calendar));
-
-            if ($calendarId === NULL) {
-                throw new InvalidArgumentException("The calendar " . $calendar . " does not exist.");
-            }
                     
             $payload = array(
                 "id" => $channelId,
@@ -162,7 +112,7 @@
                 $payload["token"] = $token;
             }
 
-            $this->executeRequest("POST", "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/watch", array(), $payload);
+            $this->executeRequest("POST", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/watch", array(), $payload);
             
             // TODO: Return whether the calendar is watched now.
             return TRUE;
@@ -319,6 +269,21 @@
             $_SESSION["googleApiAccessTokenExpiration"] = time() + $response["expires_in"];
 
             return $_SESSION["googleApiAccessToken"];
+        }
+
+        private function getCalendarIdentifier($name) : string {            
+            global $configuration;
+    
+            preg_match('/https:\/\/calendar\.google\.com\/calendar\/ical\/(.+@group\.calendar\.google\.com)\/.*/', rawurldecode($configuration["calendars"][$name]), $tokens);
+            if (count($tokens) !== 2) {
+                throw new InvalidArgumentException("The calendar " . $name . " does not exist.");
+            }
+            
+            if ($tokens[1] === NULL) {
+                throw new InvalidArgumentException("The calendar " . $name . " does not exist.");
+            }
+
+            return $tokens[1];
         }
     }
 ?>

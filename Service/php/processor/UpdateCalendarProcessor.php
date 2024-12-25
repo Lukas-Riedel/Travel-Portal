@@ -1,7 +1,6 @@
 <?php    
     require_once(dirname(__FILE__) . "/../ical.php");
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
-    require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
     class UpdateCalendarProcessor extends Processor {
