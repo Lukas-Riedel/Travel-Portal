@@ -28,6 +28,39 @@
                 $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
         }
 
+        public function getTimeTrackingEvents($type = NULL) : array {
+            global $databaseProvider;
+            
+            $timeTrackingEvents = array();
+
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
+            if ($type !== NULL) {
+                $whereClauseBuilder->withClause("type = ?", $type);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            $trackingEventRows = $databaseProvider
+                ->statementBuilder("SELECT * FROM tracking {{WHERE CLAUSE}} ORDER BY timestamp DESC, id DESC", $whereClause)
+                ->getResultSet();
+
+            foreach ($trackingEventRows as &$trackingEventRow) {
+                $whereClauseBuilder = $databaseProvider->whereClauseBuilder()->withClause("timestamp <= ?", $trackingEventRow["timestamp"]);
+                if ($type !== NULL) {
+                    $whereClauseBuilder->withClause("type = ?", $type);
+                }
+                $whereClause = $whereClauseBuilder->buildForAnd();
+
+                $balance = $databaseProvider
+                    ->statementBuilder("SELECT ROUND(SUM(hours), 2) AS balance FROM tracking {{WHERE CLAUSE}}", $whereClause)
+                    ->getSingleColumn("balance");
+
+                $timeTrackingEvents[] = new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], $trackingEventRow["hours"],
+                    $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
+            }
+
+            return $timeTrackingEvents;
+        }
+
         public function removeTimeTrackingEvent($eventId) : bool {            
             global $databaseProvider;
 

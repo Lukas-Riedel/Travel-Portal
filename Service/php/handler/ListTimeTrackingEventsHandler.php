@@ -1,9 +1,9 @@
 <?php
     class ListTimeTrackingEventsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $timeTrackingService;
 
-            $response = $processorProvider->run("GetTimeTrackingEvents", $input);
+            $response = $timeTrackingService->getTimeTrackingEvents(isset($input["type"]) ? $input["type"] : NULL);
             return $this->createResponse(200, $response);
         }
 
