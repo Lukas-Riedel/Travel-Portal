@@ -1,10 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Location.php");
-    require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
 
     class GetCoordsProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration;
+            global $databaseProvider, $configuration, $httpClient;
 
             $locationRow = $databaseProvider
                 ->statementBuilder("SELECT address, country, timezone, latitude, longitude FROM cache_location WHERE address = ?")
@@ -47,10 +46,7 @@
 
             // Geocoding request.
             if ($country == "UNKNOWN" || $latitude == "UNKNOWN" || $longitude == "UNKNOWN") {
-                $apiResponse = (new GetHttpResponseProcessor())
-                    ->process(array(
-                        "method" => "GET", 
-                        "url" => "https://maps.googleapis.com/maps/api/geocode/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&language=en&address=" . rawurlencode($input["address"])));
+                $apiResponse = $httpClient->executeRequest("GET", "https://maps.googleapis.com/maps/api/geocode/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&language=en&address=" . rawurlencode($input["address"]));
     
                 if ($apiResponse["status"] == "OK") {
                     if (count($apiResponse["results"]) > 0) {
@@ -71,11 +67,8 @@
 
             // Timezone request.
             if ($latitude != "UNKNOWN" && $longitude != "UNKNOWN" && $timezone == "UNKNOWN") {    
-                $apiResponse = (new GetHttpResponseProcessor())
-                    ->process(array(
-                        "method" => "GET", 
-                        "url" => "https://maps.googleapis.com/maps/api/timezone/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&location=" . $latitude . "," . $longitude . "&timestamp=0"));
-
+                $apiResponse = $httpClient->executeRequest("GET", "https://maps.googleapis.com/maps/api/timezone/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&location=" . $latitude . "," . $longitude . "&timestamp=0");
+                
                 if (array_key_exists("timeZoneId", $apiResponse)) {
                     $timezone = $apiResponse["timeZoneId"];
                 }

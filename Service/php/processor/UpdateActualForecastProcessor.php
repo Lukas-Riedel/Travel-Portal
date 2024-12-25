@@ -1,21 +1,15 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
-
     class UpdateActualForecastProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration;
+            global $databaseProvider, $configuration, $httpClient;
 
             $placeIdentifier = $databaseProvider
                 ->statementBuilder("SELECT * FROM place_identifier WHERE id = ?")
                 ->withParameters($input["placeId"])
                 ->getSingleRow();
         
-            $apiResponse = (new GetHttpResponseProcessor())
-                ->process(array(
-                    "method" => "GET", 
-                    "url" => "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($placeIdentifier["latitude"], 4) . "&lon=" . round($placeIdentifier["longitude"], 4), 
-                    "includeHeaders" => TRUE,
-                    "headers" => "User-Agent: " . BASE_URL . " " . $configuration["contactEmail"]));
+            $apiResponse = $httpClient->executeRequest("GET", "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($placeIdentifier["latitude"], 4) . "&lon=" . round($placeIdentifier["longitude"], 4),
+                array("User-Agent: " . BASE_URL . " " . $configuration["contactEmail"]), NULL, TRUE);
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {
                 throw new RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));

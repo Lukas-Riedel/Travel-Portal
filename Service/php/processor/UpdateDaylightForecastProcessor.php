@@ -1,5 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../lib/suncalc.php");
 
     class UpdateDaylightForecastProcessor extends Processor {        

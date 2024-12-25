@@ -3,7 +3,6 @@
     require_once(dirname(__FILE__) . "/../model/Airport.php");
     require_once(dirname(__FILE__) . "/../model/AirportIdentifier.php");
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetHttpResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetDistanceProcessor.php");
 
     class FlightService {
@@ -44,11 +43,10 @@
         }
 
         public function fetchAndLogFlight($flight, $tripId, $originAirportName, $destinationAirportName, $scheduledDeparture) : Flight {
+            global $httpClient;
+
             date_default_timezone_set("UTC");
-            $apiResponse = (new GetHttpResponseProcessor())
-                ->process(array(
-                    "method" => "GET", 
-                    "url" => "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=" . $flight));
+            $apiResponse = $httpClient->executeRequest("GET", "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=" . $flight);
 
             $selectedFlight = NULL;
             foreach ($apiResponse["result"]["response"]["data"] as &$flight) {

@@ -3,10 +3,11 @@
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
     require_once(dirname(__FILE__) . "/processor/Processor.php");
-    require_once(dirname(__FILE__) . "/processor/GetHttpResponseProcessor.php");
+    require_once(dirname(__FILE__) . "/servíce/HttpClient.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $authenticationService = new AuthenticationService();
+    $httpClient = new HttpClient();
     
     $configuration = array();
     if ($databaseProvider->isDatabaseInitialized()) {        
@@ -53,16 +54,11 @@
             $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
 
             if ($databaseProvider->isDatabaseInitialized()) {
-                $accessTokenResponse = $authenticationService->authenticateAsAdmin(300);        
-                (new GetHttpResponseProcessor())
-                    ->process(array(
-                        "method" => "POST", 
-                        "url" => BASE_URL . "/jobs/run",
-                        "headers" => "Authorization: Bearer " . $accessTokenResponse->getAccessToken(),
-                        "payload" => json_encode(array(
-                            "action" => "BackupDatabase", 
-                            "args" => array(
-                                "tables" => $tablesToBackup)))));
+                $payload = array(
+                    "action" => "BackupDatabase", 
+                    "args" => array(
+                        "tables" => $tablesToBackup));
+                $httpClient->executeRequest("POST", BASE_URL . "/jobs/run", array("Authorization: Bearer " . $authenticationService->authenticateAsAdmin(300)->getAccessToken()), json_encode($payload));
             }
 
             $migrationScriptFileNameTokens = explode("-", $migrationScriptFileName);

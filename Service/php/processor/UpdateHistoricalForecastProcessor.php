@@ -1,9 +1,7 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
-
     class UpdateHistoricalForecastProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider, $configuration;
+            global $databaseProvider, $configuration, $httpClient;
             
             $placeIdentifierRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM place_identifier WHERE id = ?")
@@ -19,11 +17,8 @@
             $startDate = date("Y-m-d", $oneYearAgoTimestamp - 3 * 86400);
             $endDate = date("Y-m-d", $oneYearAgoTimestamp + 3 * 86400);
         
-            $apiResponse = (new GetHttpResponseProcessor())
-                ->process(array(
-                    "method" => "GET", 
-                    "url" => "https://archive-api.open-meteo.com/v1/archive?latitude=" . $placeIdentifierRow["latitude"] . "&longitude=" . $placeIdentifierRow["longitude"] . "&start_date=" . $startDate . "&end_date=" . $endDate . "&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=" . $configuration["homeLocation"]["timezone"] . "&windspeed_unit=ms&timeformat=unixtime"));
-
+            $apiResponse = $httpClient->executeRequest("GET", "https://archive-api.open-meteo.com/v1/archive?latitude=" . $placeIdentifierRow["latitude"] . "&longitude=" . $placeIdentifierRow["longitude"] . "&start_date=" . $startDate . "&end_date=" . $endDate . "&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=" . $configuration["homeLocation"]["timezone"] . "&windspeed_unit=ms&timeformat=unixtime");
+            
             $result = array(
                 "temperature" => $this->getAverage($apiResponse["daily"]["temperature_2m_max"]),
                 "wind" => $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]),

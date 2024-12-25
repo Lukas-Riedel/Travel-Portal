@@ -1,6 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetHttpResponseProcessor.php");
-    require_once(dirname(__FILE__) . "/GetDistanceProcessor.php");
     require_once(dirname(__FILE__) . "/../model/Flight.php");
     require_once(dirname(__FILE__) . "/../model/Airport.php");
 

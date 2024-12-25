@@ -1,7 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Expense.php");
     require_once(dirname(__FILE__) . "/../model/Subscription.php");
-    require_once(dirname(__FILE__) . "/../processor/GetHttpResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateCurrenciesProcessor.php");
 
     class ExpenseService {
@@ -138,7 +137,7 @@
         }
 
         public function getExchangeRate($currency) : float {      
-                global $databaseProvider, $configuration;
+                global $databaseProvider, $configuration, $httpClient;
                 
                 if ($currency === $configuration["mainCurrency"]) {
                     return 1;
@@ -153,10 +152,7 @@
                     return $cachedRate;
                 }    
         
-                $apiResponse = (new GetHttpResponseProcessor())
-                    ->process(array(
-                        "method" => "GET", 
-                        "url" => "https://v6.exchangerate-api.com/v6/88f93f800acc098fbf682685/latest/" . $configuration["mainCurrency"]));
+                $apiResponse = $httpClient->executeRequest("GET", "https://v6.exchangerate-api.com/v6/88f93f800acc098fbf682685/latest/" . $configuration["mainCurrency"]);
                 
                 if ($apiResponse === NULL || !array_key_exists($currency, $apiResponse["conversion_rates"])) {
                     return 0;

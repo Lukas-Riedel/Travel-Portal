@@ -1,9 +1,7 @@
 <?php
-    require_once(dirname(__FILE__) . "/../processor/GetHttpResponseProcessor.php");
-
     class ChatClient {        
         public function getResponse($query) : ?string {
-            global $configuration;
+            global $configuration, $httpClient;
 
             $payload = array(
                 "contents" => array(array(
@@ -11,12 +9,8 @@
                         "text" => $query)))));
 
             try {                
-                $response = (new GetHttpResponseProcessor())
-                    ->process(array(
-                        "method" => "POST", 
-                        "payload" => json_encode($payload), 
-                        "url" => "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $configuration["googleGeminiApiKey"],
-                        "headers" => "Content-Type: application/json" ))["candidates"][0]["content"]["parts"][0]["text"];
+                $response = $httpClient->executeRequest("POST", "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $configuration["googleGeminiApiKey"],
+                    array("Content-Type: application/json"), json_encode($payload))["candidates"][0]["content"]["parts"][0]["text"];
 
                 if ($response != NULL) {
                     $response = trim($response);

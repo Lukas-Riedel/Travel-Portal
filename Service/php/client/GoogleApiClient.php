@@ -271,10 +271,10 @@
             return $data;
         }
 
-        private function executeRequest($method, $url, $headers = array(), $payload = NULL, $contentType = NULL) : mixed {            
-            $getHttpResponseProcessor = new GetHttpResponseProcessor();
+        private function executeRequest($method, $url, $headers = array(), $payload = NULL, $contentType = NULL) : mixed {
+            global $httpClient;
 
-            $convertedHeaders = array('Authorization: Bearer ' . $this->getGoogleApiAccessToken($getHttpResponseProcessor));
+            $convertedHeaders = array('Authorization: Bearer ' . $this->getGoogleApiAccessToken());
             if ($payload !== NULL) {
                 if ($contentType !== NULL) {
                     $convertedHeaders[] = "Content-Type: " . $contentType;
@@ -289,16 +289,11 @@
                 $convertedHeaders[] = $key . ": " . $value;
             }
 
-            return $getHttpResponseProcessor
-                ->process(array(
-                    "method" => $method, 
-                    "url" => $url, 
-                    "payload" => $payload, 
-                    "headers" => implode(",", $convertedHeaders)));
+            return $httpClient->executeRequest($method, $url, $convertedHeaders, $payload);
         }
 
-        private function getGoogleApiAccessToken($getHttpResponseProcessor) : string {
-            global $configuration;
+        private function getGoogleApiAccessToken() : string {
+            global $configuration, $httpClient;
 
             if (isset($_SESSION["googleApiAccessToken"]) 
                 && isset($_SESSION["googleApiAccessTokenExpiration"]) 
@@ -314,11 +309,7 @@
                 "grant_type" => "refresh_token",
                 "access_type" => "offline");     
 
-            $response = $getHttpResponseProcessor->process(array(
-                "method" => "POST", 
-                "url" => "https://oauth2.googleapis.com/token", 
-                "payload" => http_build_query($payload), 
-                "headers" => "Content-Type: application/x-www-form-urlencoded"));
+            $response = $httpClient->executeRequest("POST", "https://oauth2.googleapis.com/token", array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["access_token"])) {
                 throw new RuntimeException("The access token could not be obtained. Response: " . json_encode($response));

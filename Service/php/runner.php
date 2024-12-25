@@ -22,6 +22,7 @@
     require_once(dirname(__FILE__) . "/service/FitnessService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
     require_once(dirname(__FILE__) . "/client/ChatClient.php");
+    require_once(dirname(__FILE__) . "/client/HttpClient.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -44,6 +45,7 @@
     $fitnessService = new FitnessService();
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
+    $httpClient = new HttpClient();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);
