@@ -4,7 +4,6 @@
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidatePlacesProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class PlaceService {
@@ -103,6 +102,9 @@
                     $album = $date->getAlbum();
                     if ($album !== NULL) {     
                         $externalAlbumId = $albumService->getExternalIdentifier($album->getId());
+                        if ($externalAlbumId === NULL) {
+                            throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
+                        }
                         $wasUpdated &= $googleApiClient->updateAlbumName($externalAlbumId, str_replace($place->getName(), $name, $album->getName()));
                         $albumService->updateAlbum($album->getId());
                     }

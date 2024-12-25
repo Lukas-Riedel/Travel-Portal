@@ -4,7 +4,6 @@
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetCandidateTripsProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {

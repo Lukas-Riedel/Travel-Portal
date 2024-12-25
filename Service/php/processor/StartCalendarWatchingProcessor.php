@@ -1,55 +1,23 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
-    require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../service/AuthenticationService.php");
 
     class StartCalendarWatchingProcessor extends Processor {        
         public function process($input) {
-            global $configuration, $databaseProvider, $schedulingProvider;
+            global $configuration, $databaseProvider, $schedulingProvider, $googleApiClient;
 
             $databaseProvider
                 ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_CALENDAR_API' AND `key` = 'watchId'")
                 ->withParameters($input["watchId"])
                 ->execute();
 
-            $getGoogleResponseProcessor = new GetGoogleResponseProcessor();
-            $getCalendarIdentifierProcessor = new GetCalendarIdentifierProcessor();
-        
-            $calendarId = $getCalendarIdentifierProcessor
-                ->process(array(
-                    "name" => $input["calendar"]));
-
-            if ($calendarId == NULL) {
-                throw new InvalidArgumentException("Unable to start watching calendar  " . $input["calendar"] . ".");
-            }
-
             $authenticationService = new AuthenticationService();
             $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
 
-            $payload = array(
-                "id" => $input["watchId"],
-                "type" => "web_hook",
-                "token" => "Bearer " . $authenticationResult->getAccessToken(),
-                "address" => BASE_URL . "/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
-                "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
-
-            $getGoogleResponseProcessor
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/watch", 
-                    "payload" => json_encode($payload)));
-
-            $payload = array(
-                "id" => $input["watchId"],
-                "type" => "web_hook",
-                "address" => BASE_URL . "/php/runner.php",
-                "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
-
-            $getGoogleResponseProcessor
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/watch", 
-                    "payload" => json_encode($payload)));
+            $googleApiClient->watchCalendar($input["calendar"], $input["watchId"], 
+                BASE_URL . "/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $input["watchId"],
+                "Bearer " . $authenticationResult->getAccessToken());
+                
+            $googleApiClient->watchCalendar($input["calendar"], $input["watchId"], BASE_URL . "/php/runner.php");
 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateCalendar", array(

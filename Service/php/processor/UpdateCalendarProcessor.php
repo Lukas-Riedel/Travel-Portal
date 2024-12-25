@@ -1,7 +1,6 @@
 <?php    
     require_once(dirname(__FILE__) . "/../ical.php");
     require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
-    require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/GetCalendarIdentifierProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
@@ -103,7 +102,7 @@
         }
 
         private function processPlaces() {
-            global $databaseProvider, $configuration, $placeService;
+            global $databaseProvider, $configuration, $placeService, $googleApiClient;
 
             $getCoordsProcessor = new GetCoordsProcessor();
 
@@ -132,7 +131,7 @@
                 // When changing the format, do not forget to update it in GetCoordsProcessor/LoadTripProcessor as well.
                 $newAddress = $name . ", " . $resolvedLocation->getCountry() . " (" . $resolvedLocation->getLatitude() . ", " . $resolvedLocation->getLongitude() . ")";
                 if (str_replace(' ', '', $address) != str_replace(' ', '', $newAddress)) {
-                    $this->updatePlaceEventLocation($placeEvent["UID"], $newAddress);
+                    $googleApiClient->updateCalendarEventLocation("places", $placeEvent["UID"], $newAddress);
                 }
             }
         }
@@ -420,20 +419,7 @@
         private function getPlugTypes($country) : ?string {
             global $configuration, $chatClient;
 
-            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $country));        }
-
-        private function updatePlaceEventLocation($event, $newAddress) {
-            $eventId = explode("@", $event)[0];
-            $calendarId = (new GetCalendarIdentifierProcessor())
-                ->process(array(
-                    "name" => "places"));
-                    
-            return (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "PATCH",
-                    "url" => "https://www.googleapis.com/calendar/v3/calendars/" . $calendarId . "/events/" . $eventId, 
-                    "payload" => json_encode(array(
-                        "location" => $newAddress))));
+            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $country));
         }
 
         private function getHolidays() {

@@ -1,6 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-
     class UpdateHighlightProcessor extends Processor {        
         public function process($input) {
             global $configuration;
@@ -17,7 +15,7 @@
         }
 
         private function updateHighlights($input, $cachePath, $imageSize, $urlColumnName) {
-            global $databaseProvider, $configuration;
+            global $databaseProvider, $googleApiClient;
 
             $highlightCachePath = dirname(__FILE__) . "/../../" . $cachePath;        
             $actuallyUsedImages = array();
@@ -40,7 +38,7 @@
                 $filePath = $highlightCachePath . "/" . $fileName;
     
                 if ((isset($input["forceOverwrite"]) && $input["forceOverwrite"] == "true") || !file_exists($filePath)) {
-                    $baseUrl = $this->getGooglePhotosMediaItemBaseUrl($highlightRow["external_id"]);
+                    $baseUrl = $googleApiClient->getMediaItem($highlightRow["external_id"])["baseUrl"];
                     file_put_contents($filePath, file_get_contents($baseUrl . "=w" . $imageSize["width"] . "-h" . $imageSize["height"]));
                 }
     
@@ -60,19 +58,6 @@
             }
 
             return TRUE;
-        }
-            
-        private function getGooglePhotosMediaItemBaseUrl($id) {
-            $apiResponse = (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "GET", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/mediaItems/" . $id));
-                    
-            if (isset($apiResponse["error"])) {
-                throw new RuntimeException($apiResponse["error"]["message"]);
-            }
-
-            return $apiResponse["baseUrl"];
         }
     }
 ?>

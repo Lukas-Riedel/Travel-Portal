@@ -1,6 +1,5 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Photo.php");
-    require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
 
     class PhotoService {
         public function getPhotoIdentifier($externalId) : ?string {
@@ -10,6 +9,15 @@
                 ->statementBuilder("SELECT id FROM photo_identifier WHERE external_id = ?")
                 ->withParameters($externalId)
                 ->getFirstColumn("id");
+        }
+
+        public function getExternalIdentifier($photoId) : ?string {
+            global $databaseProvider;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT external_id FROM photo_identifier WHERE id = ?")
+                ->withParameters($photoId)
+                ->getFirstColumn("external_id");
         }
         
         public function getOrCreatePhotoIdentifier($externalId) : string {
@@ -34,7 +42,11 @@
             $photos = array();
 
             $externalAlbumId = $albumService->getExternalIdentifier($albumId);
-            $apiResponse = $googleApiClient->getMediaItemsResponse($externalAlbumId);
+            if ($externalAlbumId === NULL) {
+                throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
+            }
+
+            $apiResponse = $googleApiClient->getMediaItems($externalAlbumId);
 
             while (isset($apiResponse["mediaItems"] )) {
                 foreach ($apiResponse["mediaItems"] as &$mediaItem) {
@@ -50,7 +62,7 @@
                 }
         
                 $apiResponse = isset($apiResponse["nextPageToken"]) 
-                    ? $googleApiClient->getMediaItemsResponse($externalAlbumId, $apiResponse["nextPageToken"])
+                    ? $googleApiClient->getMediaItems($externalAlbumId, $apiResponse["nextPageToken"])
                     : array();
             }
 
@@ -93,25 +105,13 @@
         }
 
         public function uploadPhoto($fileName, $albumId, $position, $replacedPhotoId, $data) : bool {
-            global $databaseProvider;
+            global $databaseProvider, $googleApiClient;
 
             if ($position === NULL && $replacedPhotoId === NULL) {
                 throw new InvalidArgumentException("Either the photo position or the identifier of the photo being replaced must be specified.");
             }
         
-            $uploadToken = (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/uploads",
-                    "contentType" => "application/octet-stream",
-                    "headers" => array(
-                        "X-Goog-Upload-Content-Type" => "image/jpeg",
-                        "X-Goog-Upload-Protocol" => "raw"),
-                    "payload" => base64_decode($data)));    
-        
-            if ($uploadToken === NULL) {
-                throw new RuntimeException("The photo " . $fileName . " was not uploaded.");
-            }
+            $uploadToken = $googleApiClient->uploadPhoto($data);
 
             return $databaseProvider
                 ->statementBuilder("INSERT INTO photo_pending (album_id, file_name, position, replaced_photo_id, upload_token) VALUES (?, ?, ?, ?, ?)")

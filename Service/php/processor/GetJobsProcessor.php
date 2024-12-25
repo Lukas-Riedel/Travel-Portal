@@ -1,6 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-
     class GetJobsProcessor extends Processor {        
         public function process($input) {
             global $databaseProvider;

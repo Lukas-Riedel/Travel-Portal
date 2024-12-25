@@ -1,7 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Album.php");
     require_once(dirname(__FILE__) . "/../exception/EntityNotFoundException.php");
-    require_once(dirname(__FILE__) . "/../processor/GetGoogleResponseProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class AlbumService {

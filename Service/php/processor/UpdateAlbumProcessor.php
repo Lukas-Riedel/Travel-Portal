@@ -1,6 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetGoogleResponseProcessor.php");
-
     class UpdateAlbumProcessor extends Processor {        
         public function process($input) {
             global $databaseProvider, $configuration, $schedulingProvider, $albumService, $highlightService, $photoService;
@@ -30,13 +28,11 @@
                     ->getResultSet();
                 
                 while (count($pendingPhotos) > 0) {
-                    $newMediaItems = array();
+                    $newPhotos = array();
                     foreach ($pendingPhotos as &$pendingPhoto) {
-                        $newMediaItems[] = array(
-                            "description" => "",
-                            "simpleMediaItem" => array(
-                                "uploadToken" => $pendingPhoto["upload_token"],
-                                "fileName" => $pendingPhoto["file_name"]));
+                        $newPhotos[] = array(
+                            "uploadToken" => $pendingPhoto["upload_token"],
+                            "fileName" => $pendingPhoto["file_name"]);
 
                         $databaseProvider
                             ->statementBuilder("DELETE FROM photo_pending WHERE id = ?")
@@ -44,7 +40,7 @@
                             ->execute();
                     }
 
-                    $this->createGooglePhotos($pendingAlbumId, $newMediaItems, NULL);
+                    $this->createGooglePhotos($pendingAlbumId, $newPhotos, NULL);
                     
                     $pendingPhotos = $databaseProvider
                         ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND position IS NOT NULL ORDER BY position LIMIT 50")
@@ -58,18 +54,16 @@
                     ->getResultSet();
                 
                 foreach ($pendingPhotos as &$pendingPhoto) {
-                    $newMediaItem = array(
-                        "description" => "",
-                        "simpleMediaItem" => array(
-                            "uploadToken" => $pendingPhoto["upload_token"],
-                            "fileName" => $pendingPhoto["file_name"]));
+                    $newPhoto = array(
+                        "uploadToken" => $pendingPhoto["upload_token"],
+                        "fileName" => $pendingPhoto["file_name"]);
 
                     $databaseProvider
                         ->statementBuilder("DELETE FROM photo_pending WHERE id = ?")
                         ->withParameters($pendingPhoto["id"])
                         ->execute();
                         
-                    $createdMediaItemId = $this->createGooglePhotos($pendingAlbumId, array($newMediaItem), $pendingPhoto["replaced_photo_id"])[0]["mediaItem"]["id"];
+                    $createdMediaItemId = $this->createGooglePhotos($pendingAlbumId, array($newPhoto), $pendingPhoto["replaced_photo_id"])[0]["mediaItem"]["id"];
 
                     $databaseProvider
                         ->statementBuilder("DELETE FROM photo WHERE id = ?")
@@ -265,110 +259,61 @@
         }
     
         private function getGooglePhotosAlbumResponse($albumId, $pageToken = NULL) {
-            global $databaseProvider;
+            global $albumService, $googleApiClient;
 
-            $queryParameters = "";
-    
             if ($albumId == NULL) {
-                $queryParameters .= "?pageSize=50";
-        
-                if ($pageToken != NULL) {
-                    $queryParameters .= "&pageToken=" . $pageToken;
-                }
+                return $googleApiClient->getAlbums($pageToken);
             }
             else {
-                $externalAlbumId = $databaseProvider
-                    ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
-                    ->withParameters($albumId)
-                    ->getFirstColumn("external_id");
-
-                if ($externalAlbumId == NULL) {
-                    throw new InvalidArgumentException("The album " . $albumId . " was not found.");
+                $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+                if ($externalAlbumId === NULL) {
+                    throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
                 }
 
-                $queryParameters .= "/" . $externalAlbumId;
-            }
-
-            $apiResponse = (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "GET", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/albums" . $queryParameters));
-
-            if (isset($apiResponse["error"])) {
-                throw new RuntimeException($apiResponse["error"]["message"]);
-            }
-    
-            if ($albumId == NULL) {
-                return $apiResponse;
-            }
-            else {    
-                return array("albums" => array($apiResponse));
+                $album = $googleApiClient->getAlbum($externalAlbumId);
+                return array("albums" => array($album));
             }
         }
 
-        private function createGooglePhotos($albumId, $newMediaItems, $replacedPhotoId) {  
-            global $databaseProvider;
+        private function createGooglePhotos($albumId, $newPhotos, $replacedPhotoId) {  
+            global $googleApiClient, $albumService, $photoService;
 
-            $externalAlbumId = $databaseProvider
-                ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
-                ->withParameters($albumId)
-                ->getFirstColumn("external_id");
-
-            if ($externalAlbumId == NULL) {
+            $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+            if ($externalAlbumId === NULL) {
                 throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
 
-            $payload = array(
-                "albumId" => $externalAlbumId,
-                "newMediaItems" => $newMediaItems);
-
+            $externalReplacedPhotoId = NULL;
             if ($replacedPhotoId != NULL) {
-                $externalReplacedPhotoId = $databaseProvider
-                    ->statementBuilder("SELECT external_id FROM photo_identifier WHERE id = ?")
-                    ->withParameters($replacedPhotoId)
-                    ->getFirstColumn("external_id");
-    
+                $externalReplacedPhotoId = $photoService->getExternalIdentifier($replacedPhotoId);    
                 if ($externalReplacedPhotoId == NULL) {
                     throw new InvalidArgumentException("A photo with the identifier " . $externalReplacedPhotoId . " does not exist.");
                 }
+            }  
+            
+            $createdPhotos = $googleApiClient->createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId);
 
-                $payload["albumPosition"] = array(
-                    "position" => "AFTER_MEDIA_ITEM",
-                    "relativeMediaItemId" => $externalReplacedPhotoId);
-            }
-
-            $apiResponse = (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "POST", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate",
-                    "payload" => json_encode($payload)));
-
-            if (isset($apiResponse["newMediaItemResults"][0]["status"]["message"]) && $apiResponse["newMediaItemResults"][0]["status"]["message"] != "Success") {
-                throw new RuntimeException($apiResponse["newMediaItemResults"][0]["status"]["message"]);
+            if (isset($createdPhotos[0]["status"]["message"]) && $createdPhotos[0]["status"]["message"] != "Success") {
+                throw new RuntimeException($createdPhotos[0]["status"]["message"]);
             }   
 
-            return $apiResponse["newMediaItemResults"];
+            return $createdPhotos;
         }
 
         private function setAlbumMainPhoto($albumId, $photoId) {
-            global $databaseProvider;
+            global $photoService, $albumService, $googleApiClient;
             
-            $externalAlbumId = $databaseProvider
-                ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
-                ->withParameters($albumId)
-                ->getFirstColumn("external_id");
-            
-            $externalPhotoId = $databaseProvider
-                ->statementBuilder("SELECT external_id FROM photo_identifier WHERE id = ?")
-                ->withParameters($photoId)
-                ->getFirstColumn("external_id");
-                          
-            (new GetGoogleResponseProcessor())
-                ->process(array(
-                    "method" => "PATCH", 
-                    "url" => "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", 
-                    "payload" => json_encode(array(
-                        "coverPhotoMediaItemId" => $externalPhotoId))));
+            $externalAlbumId = $albumService->getExternalIdentifier($albumId);       
+            if ($externalAlbumId === NULL) {
+                throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
+            }
+
+            $externalPhotoId = $photoService->getExternalIdentifier($photoId);
+            if ($externalPhotoId === NULL) {
+                throw new InvalidArgumentException("A photo with the identifier " . $photoId . " does not exist.");
+            }
+
+            $googleApiClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
         }
     }
 ?>
