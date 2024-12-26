@@ -205,9 +205,6 @@
                     $album = $date->getAlbum();
                     if ($album !== NULL) {     
                         $externalAlbumId = $albumService->getExternalIdentifier($album->getId());
-                        if ($externalAlbumId === NULL) {
-                            throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
-                        }
                         $wasUpdated &= $googleApiClient->updateAlbumName($externalAlbumId, str_replace($place->getName(), $name, $album->getName()));
                         $albumService->updateAlbum($album->getId());
                     }
@@ -342,7 +339,7 @@
         public function loadPlaces($candidateTripId, $startOffset) : array {
             global $googleApiClient;
 
-            $places = $this->getCandidatePlaces($candidateTripId);
+            $places = $this->doGetCandidatePlacesForTrip(NULL, $candidateTripId, TRUE, TRUE, TRUE);
 
             foreach ($places as &$place) {
                 $address = $place->getName() . ", " . $place->getCountry() . " (" . $place->getLatitude() . ", " . $place->getLongitude() . ")";
@@ -371,7 +368,7 @@
                 }
             }
             
-            return $this->getCandidatePlaces($archivedTripId);
+            return $this->doGetCandidatePlacesForTrip(NULL, $archivedTripId, TRUE, TRUE, TRUE);
         }
 
         public function createPermanentPlace($name, $address) : Place {

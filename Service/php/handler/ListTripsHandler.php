@@ -1,7 +1,7 @@
 <?php
     class ListTripsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $processorProvider, $tripService;
 
             $type = isset($input["type"]) ? $input["type"] : "regular";
             unset($input["type"]);
@@ -11,7 +11,8 @@
                 $response = $processorProvider->run("GetTrips", $input);
             }
             else if ($type == "candidate") { 
-                $response = $processorProvider->run("GetCandidateTrips", $input);
+                $response = $tripService->getCandidateTrips(isset($input["includeNotes"]) && $input["includeNotes"] === "true",
+                    isset($input["includePublicHolidays"]) && $input["includePublicHolidays"] === "true");
             }
 
             return $this->createResponse(200, $response);

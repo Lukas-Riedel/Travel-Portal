@@ -3,7 +3,7 @@
     require_once(dirname(__FILE__) . "/../model/Trip.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetCandidateTripsProcessor.php");
+    require_once(dirname(__FILE__) . "/../processor/GetPublicHolidaysProcessor.php");
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {
@@ -14,10 +14,43 @@
         }
 
         public function getCandidateTrip($tripId) : ?Trip {
-            $trips = (new GetCandidateTripsProcessor())
-                ->process(array(
-                    "tripId" => $tripId));
-            return count($trips) === 1 ? $trips[0] : NULL;
+            return $this->doGetCandidateTrip($tripId, TRUE, TRUE);
+        }
+
+        public function getCandidateTrips($includeNotes, $includePublicHolidays) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT DISTINCT trip_id FROM place_candidate_event")
+                ->getMappedResultSet(function ($tripRow) use (&$includeNotes, &$includePublicHolidays) {
+                    return $this->doGetCandidateTrip($tripRow["trip_id"], $includeNotes, $includePublicHolidays);
+                });            
+        }
+
+        private function doGetCandidateTrip($tripId, $includeNotes, $includePublicHolidays) : ?Trip {
+            global $databaseProvider, $noteService;
+
+            $tripRow = $databaseProvider
+                ->statementBuilder("SELECT ti.id, ti.name, tc.days, tc.countries FROM (SELECT trip_id, CEIL(MAX(end) / 86400) AS days, GROUP_CONCAT(DISTINCT pi.country SEPARATOR ',') AS countries FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id GROUP BY pce.trip_id) tc INNER JOIN trip_identifier ti ON tc.trip_id = ti.id WHERE ti.id = ? ORDER BY ti.name")
+                ->withParameters($tripId)
+                ->getSingleRow();
+
+            if ($tripRow === NULL) {
+                return NULL;
+            }
+
+            $notes = array();
+            if ($includeNotes) {
+                $notes = $noteService->getNotes($tripId);;
+            }
+
+            $publicHolidays = array();
+            if ($includePublicHolidays) {
+                $publicHolidays = $this->getPublicHolidays(explode(",", $tripRow["countries"]));
+            }
+
+            return new Trip($tripRow["id"], $tripRow["name"], NULL, NULL, NULL, NULL, explode(",", $tripRow["countries"]), NULL, 
+                $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
         }
 
         public function getTripIdentifier($name, $year) : ?Trip {
@@ -172,6 +205,24 @@
             global $googleApiClient;
                 
             return $googleApiClient->deleteCalendarEvent("trips", $this->getTripEventId($tripId));
+        }
+    
+        private function getPublicHolidays($countries) {
+            $holidays = array();
+
+            foreach ($countries as &$country) {
+                $holidays = (new GetPublicHolidaysProcessor())
+                    ->process(array(
+                        "country" => $country));
+
+                foreach ($holidays as &$holiday) {
+                    $holidays[strtotime($holiday->getDate())] = $holiday;
+                }
+            }
+
+            ksort($holidays);
+
+            return array_values($holidays);
         }
     }
 ?>
