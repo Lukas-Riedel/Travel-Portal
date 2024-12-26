@@ -2,7 +2,6 @@
     require_once(dirname(__FILE__) . "/../model/Flight.php");
     require_once(dirname(__FILE__) . "/../model/Airport.php");
     require_once(dirname(__FILE__) . "/../model/AirportIdentifier.php");
-    require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetDistanceProcessor.php");
 
     class FlightService {
@@ -23,17 +22,15 @@
         }
         
         public function getOrCreateAirportIdentifier($code) : AirportIdentifier {
-            global $databaseProvider;
+            global $databaseProvider, $geocodingClient;
 
             $airportIdentifier = $this->getAirportIdentifier($code);
             if ($airportIdentifier !== NULL) {
                 return $airportIdentifier;
             }
             
-            $location = (new GetCoordsProcessor())
-                ->process(array(
-                    "address" => $code . " Airport"));
-
+            $location = $geocodingClient->getLocation($code . " Airport");
+            
             $databaseProvider
                 ->statementBuilder("INSERT INTO airport_identifier (code, latitude, longitude, country, timezone) VALUES (?, ?, ?, ?, ?)")
                 ->withParameters($code, $location->getLatitude(), $location->getLongitude(), $location->getCountry(), $location->getTimezone())

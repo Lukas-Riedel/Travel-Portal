@@ -33,6 +33,7 @@
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
     require_once(dirname(__FILE__) . "/client/ChatClient.php");
     require_once(dirname(__FILE__) . "/client/HttpClient.php");
+    require_once(dirname(__FILE__) . "/client/GeocodingClient.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -55,6 +56,7 @@
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
     $statisticsService = new StatisticsService();
+    $geocodingClient = new GeocodingClient();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

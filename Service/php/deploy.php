@@ -3,7 +3,7 @@
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
     require_once(dirname(__FILE__) . "/processor/Processor.php");
-    require_once(dirname(__FILE__) . "/servíce/HttpClient.php");
+    require_once(dirname(__FILE__) . "/client/HttpClient.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $authenticationService = new AuthenticationService();

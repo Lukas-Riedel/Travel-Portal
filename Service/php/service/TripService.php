@@ -53,7 +53,7 @@
                 $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
         }
 
-        public function getTripIdentifier($name, $year) : ?Trip {
+        public function getTripIdentifier($name, $year) : ?TripIdentifier {
             global $databaseProvider, $highlightService;
             
             $tripIdentifierRow = $databaseProvider

@@ -6,7 +6,6 @@
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
-    require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
@@ -292,7 +291,7 @@
         }
 
         public function getOrCreatePlaceIdentifier($name, $country, $address) : PlaceIdentifier {            
-            global $databaseProvider, $configuration, $schedulingProvider;
+            global $databaseProvider, $configuration, $schedulingProvider, $geocodingClient;
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
             if ($placeIdentifier !== NULL) {
@@ -303,9 +302,7 @@
                 throw new InvalidArgumentException("Cannot create an identifier for an unknown country.");
             }
             
-            $location = (new GetCoordsProcessor())
-                ->process(array(
-                    "address" => $address));
+            $location = $geocodingClient->getLocation($address);
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO place_identifier (name, country, timezone, latitude, longitude, excerpt) VALUES (?, ?, ?, ?, ?, ?)")
@@ -380,12 +377,10 @@
         }
 
         private function createSpecialPlace($specialPlaceType, $name, $address) : Place {            
-            global $databaseProvider, $configurationService;
+            global $databaseProvider, $configurationService, $geocodingClient;
 
             $placeTable = $this->resolveSpecialPlaceTable($specialPlaceType);
-            $country = (new GetCoordsProcessor())
-                ->process(array(
-                    "address" => $address))->getCountry();
+            $country = $geocodingClient->getLocation($address)->getCountry();
 
             $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
 

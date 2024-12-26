@@ -21,6 +21,7 @@
     require_once(dirname(__FILE__) . "/client/ChatClient.php");
     require_once(dirname(__FILE__) . "/client/HttpClient.php");
     require_once(dirname(__FILE__) . "/service/StatisticsService.php");
+    require_once(dirname(__FILE__) . "/client/GeocodingClient.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -43,6 +44,7 @@
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
     $statisticsService = new StatisticsService();
+    $geocodingClient = new GeocodingClient();
 
     $schedulers = $databaseProvider
         ->statementBuilder("SELECT * FROM scheduler")

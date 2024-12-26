@@ -1,6 +1,5 @@
 <?php    
     require_once(dirname(__FILE__) . "/../ical.php");
-    require_once(dirname(__FILE__) . "/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
     class UpdateCalendarProcessor extends Processor {
@@ -101,17 +100,13 @@
         }
 
         private function processPlaces() {
-            global $databaseProvider, $configuration, $placeService, $googleApiClient;
-
-            $getCoordsProcessor = new GetCoordsProcessor();
+            global $databaseProvider, $configuration, $placeService, $googleApiClient, $geocodingClient;
 
             // Add places to the database.
             foreach ($this->downloadEvents($configuration["calendars"]["places"]) as &$placeEvent) {
                 $name = html_entity_decode($placeEvent["SUMMARY"], ENT_QUOTES | ENT_HTML5);
                 $address = html_entity_decode(str_replace('\\', '', $placeEvent["LOCATION"]), ENT_QUOTES | ENT_HTML5);
-                $resolvedLocation = $getCoordsProcessor
-                    ->process(array(
-                        "address" => $address));
+                $resolvedLocation = $geocodingClient->getLocation($address);
                 $placeIdentifier = $placeService->getOrCreatePlaceIdentifier($name, $resolvedLocation->getCountry(), $address);
                         
                 $timeOffset = $this->getTimezoneOffset($placeEvent["DTSTART"], $placeIdentifier->getTimezone());
@@ -127,7 +122,7 @@
                     ->execute();
 
                 // Update address to match a common format.
-                // When changing the format, do not forget to update it in GetCoordsProcessor/LoadTripProcessor as well.
+                // When changing the format, do not forget to update it in GeocodingClient as well.
                 $newAddress = $name . ", " . $resolvedLocation->getCountry() . " (" . $resolvedLocation->getLatitude() . ", " . $resolvedLocation->getLongitude() . ")";
                 if (str_replace(' ', '', $address) != str_replace(' ', '', $newAddress)) {
                     $googleApiClient->updateCalendarEventLocation("places", $placeEvent["UID"], $newAddress);

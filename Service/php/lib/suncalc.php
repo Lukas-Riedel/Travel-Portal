@@ -329,12 +329,3 @@ class SunCalc {
         return $result;
     }
 }
-
-// tests
-/*
-$test = new SunCalc(new \DateTime(), 48.85, 2.35);
-print_r($test->getSunTimes());
-print_r($test->getMoonIllumination());
-print_r($test->getMoonTimes());
-print_r(getMoonPosition(new \DateTime(), 48.85, 2.35));
-*/
