@@ -23,6 +23,7 @@
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
     require_once(dirname(__FILE__) . "/client/ChatClient.php");
     require_once(dirname(__FILE__) . "/client/HttpClient.php");
+    require_once(dirname(__FILE__) . "/service/StatisticsService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -46,6 +47,7 @@
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
+    $statisticsService = new StatisticsService();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);

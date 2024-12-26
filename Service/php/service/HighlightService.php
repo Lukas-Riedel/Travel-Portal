@@ -24,16 +24,35 @@
                 $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp());
         }
 
-        public function getHighlights($placeId) : array {
+        public function getPlaceHighlights($placeId) : array {
+            return $this->getHighlights(HighlightType::Place, $placeId);
+        }
+
+        public function getCategoryHighlights($categoryId) : array {
+            return $this->getHighlights(HighlightType::Category, $categoryId);
+        }
+
+        public function getYearHighlights($year) : array {
+            return $this->getHighlights(HighlightType::Year, $year);
+        }
+
+        public function getTripHighlights($tripId) : array {
+            return $this->getHighlights(HighlightType::Trip, $tripId);
+        }
+        
+        private function getHighlights($highlightType, $entityId) : array {
             global $databaseProvider;
+            
+            $highlightTable = $this->resolveHighlightTable($highlightType);
 
             return $databaseProvider
-                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_place hp INNER JOIN highlight_identifier hi ON hp.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE hp.id = ?")
-                ->withParameters($placeId)
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM " . $highlightTable . " ht INNER JOIN highlight_identifier hi ON ht.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE ht.id = ?")
+                ->withParameters($entityId)
                 ->getMappedResultSet(function ($highlightRow) { 
                     return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
                         $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
                 });
+
         }
 
         public function getHighlightIdentifier($photoId) : ?string {
@@ -167,7 +186,7 @@
                 }
             }
             else if ($highlightType === HighlightType::Category) {
-                $categoryIdentifier = $categoryService->getCategory($entityId);
+                $categoryIdentifier = $categoryService->getCategoryIdentifier($entityId);
                 if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
                     return $categoryService->updateCategoryMainHighlight($entityId, $highlightIdentifier);
                 }

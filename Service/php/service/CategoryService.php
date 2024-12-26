@@ -1,8 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Category.php");
 
     class CategoryService {
-        public function getCategoryIdentifier($name) : ?CategoryIdentifier {
+        public function getCategoryIdentifierByName($name) : ?CategoryIdentifier {
             global $databaseProvider, $highlightService;
             
             $categoryIdentifierRow = $databaseProvider
@@ -18,7 +19,7 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function getCategory($categoryId) : ?CategoryIdentifier {
+        public function getCategoryIdentifier($categoryId) : ?CategoryIdentifier {
             global $databaseProvider, $highlightService;
             
             $categoryIdentifierRow = $databaseProvider
@@ -34,16 +35,61 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function getCategories($categoryIds) : array {
+        public function getCategoryIdentifiers($categoryIds) : array {
             $categories = array();
 
             foreach ($categoryIds as &$categoryId) {
-                $category = $this->getCategory($categoryId);
+                $category = $this->getCategoryIdentifier($categoryId);
                 if ($category !== NULL) {
                     $categories[] = $category;
                 }
             }
             
+            return $categories;
+        }
+
+        public function getCategory($categoryId) : ?Category {
+            $categories = $this->doGetCategories($categoryId, NULL, TRUE, TRUE);
+            return count($categories) === 1 ? $categories[0] : NULL;
+        }
+
+        public function getCategories($categoryCategories, $includeHighlights, $includeStats) : array {
+            return $this->doGetCategories(NULL, $categoryCategories, $includeHighlights, $includeStats);
+        }
+
+        private function doGetCategories($categoryId, $categoryCategories, $includeHighlights, $includeStats) : array {            
+            global $databaseProvider, $highlightService, $statisticsService;
+            
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
+            if ($categoryId !== NULL) {
+                $whereClauseBuilder->withClause("id = ?", $categoryId);
+            }
+            if ($categoryCategories !== NULL) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(category, ?)", $categoryCategories);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            $categories = array();
+
+            $categoryRows = $databaseProvider
+                ->statementBuilder("SELECT * FROM category_identifier {{WHERE CLAUSE}}", $whereClause)
+                ->getResultSet();
+
+            foreach ($categoryRows as &$categoryRow) {                
+                $highlights = array();
+                if ($includeHighlights) {
+                    $highlights = $highlightService->getCategoryHighlights($categoryRow["id"]);                      
+                }
+
+                $stats = array();
+                if ($includeStats) {
+                    $stats = $statisticsService->getCategoryStatistics($categoryRow["id"]);              
+                }
+                
+                $categories[] = new Category($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], 
+                    $highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $stats);
+            }
+
             return $categories;
         }
 
@@ -75,7 +121,7 @@
         public function getOrCreateCategoryIdentifier($name, $category) : CategoryIdentifier { 
             global $databaseProvider;
 
-            $categoryIdentifier = $this->getCategoryIdentifier($name);
+            $categoryIdentifier = $this->getCategoryIdentifierByName($name);
             if ($categoryIdentifier !== NULL) {
                 return $categoryIdentifier;
             }
@@ -85,7 +131,7 @@
                 ->withParameters($name, $category)
                 ->execute();
                 
-            return $this->getCategoryIdentifier($name);
+            return $this->getCategoryIdentifierByName($name);
         }
 
         public function createCompositeRegion($name, $category, $includedRegions, $excludedRegions) : CategoryIdentifier {
@@ -124,7 +170,7 @@
                 ->execute();
 
             foreach ($includedRegions as &$includedRegion) {
-                $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
+                $subjectCategoryIdentifier = $this->getCategoryIdentifierByName($includedRegion);
                 $databaseProvider
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'INCLUDE')")
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
@@ -139,7 +185,7 @@
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
-                $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedRegion);
+                $subjectCategoryIdentifier = $this->getCategoryIdentifierByName($excludedRegion);
                 $databaseProvider
                     ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'EXCLUDE')")
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())

@@ -1,9 +1,11 @@
 <?php
     class ListCategoriesHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $categoryService;
 
-            $response = $processorProvider->run("GetCategories", $input);
+            $response = $categoryService->getCategories(isset($input["categories"]) ? $input["categories"] : NULL,
+                isset($input["includeHighlights"]) && $input["includeHighlights"] == "true",
+                isset($input["includeStats"]) && $input["includeStats"] == "true");
             return $this->createResponse(200, $response);
         }
 

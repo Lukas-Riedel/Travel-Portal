@@ -60,7 +60,7 @@
                 
                 $highlights = array();
                 if ($includeHighlights) {
-                    $highlights = $highlightService->getHighlights($placeRow["place_id"]);                      
+                    $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                 }
                 
                 $excerpt = NULL;
@@ -70,7 +70,7 @@
 
                 $categories = array();
                 if ($includeCategories) {
-                    $categories = $categoryService->getCategories(explode(",", $placeRow["category_ids"]));
+                    $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                 }
 
                 $places[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
@@ -98,7 +98,7 @@
                 if (!isset($places[$placeRow["place_id"]])) {
                     $highlights = array();
                     if ($includeHighlights) {
-                        $highlights = $highlightService->getHighlights($placeRow["place_id"]);                      
+                        $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                     }
                     
                     $excerpt = NULL;
@@ -108,7 +108,7 @@
 
                     $categories = array();
                     if ($includeCategories) {
-                        $categories = $categoryService->getCategories(explode(",", $placeRow["category_ids"]));
+                        $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                     }
 
                     $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],

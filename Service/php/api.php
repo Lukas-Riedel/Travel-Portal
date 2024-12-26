@@ -29,6 +29,7 @@
     require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
     require_once(dirname(__FILE__) . "/service/FitnessService.php");
+    require_once(dirname(__FILE__) . "/service/StatisticsService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
     require_once(dirname(__FILE__) . "/client/ChatClient.php");
     require_once(dirname(__FILE__) . "/client/HttpClient.php");
@@ -53,6 +54,7 @@
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
+    $statisticsService = new StatisticsService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

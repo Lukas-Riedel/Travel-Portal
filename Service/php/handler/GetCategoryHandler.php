@@ -1,14 +1,11 @@
 <?php
     class GetCategoryHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $categoryService;
 
-            $response = $processorProvider->run("GetCategories", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
-            }
-            if (count($response) == 1) {
-                return $this->createResponse(200, $response[0]);
+            $response = $categoryService->getCategory($input["categoryId"]);
+            if ($response !== NULL) {
+                return $this->createResponse(200, $response);
             }
 
             return $this->create404Response("categories", $input["categoryId"]);
