@@ -20,7 +20,7 @@
             return count($trips) === 1 ? $trips[0] : NULL;
         }
 
-        public function getTripIdentifier($name, $year) {
+        public function getTripIdentifier($name, $year) : ?Trip {
             global $databaseProvider, $highlightService;
             
             $tripIdentifierRow = $databaseProvider

@@ -24,6 +24,18 @@
                 $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp());
         }
 
+        public function getHighlights($placeId) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM highlight_place hp INNER JOIN highlight_identifier hi ON hp.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE hp.id = ?")
+                ->withParameters($placeId)
+                ->getMappedResultSet(function ($highlightRow) { 
+                    return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
+                        $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
+                });
+        }
+
         public function getHighlightIdentifier($photoId) : ?string {
             global $databaseProvider;
             

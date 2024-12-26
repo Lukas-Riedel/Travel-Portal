@@ -1,7 +1,7 @@
 <?php
     class ListPlacesHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $processorProvider, $placeService;
 
             $type = isset($input["type"]) ? $input["type"] : "regular";
             unset($input["type"]);
@@ -11,7 +11,11 @@
                 $response = $processorProvider->run("GetPlaces", $input);
             }
             else if ($type == "candidate") { 
-                $response = $processorProvider->run("GetCandidatePlaces", $input);
+                $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
+                    isset($input["tripId"]) ? $input["tripId"] : NULL,
+                    isset($input["includeHighlights"]) && $input["includeHighlights"] === "true",
+                    isset($input["includeCategories"]) && $input["includeCategories"] === "true",
+                    isset($input["includeExcerpt"]) && $input["includeExcerpt"] === "true");
             }
 
             return $this->createResponse(200, $response);

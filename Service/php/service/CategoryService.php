@@ -34,6 +34,19 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
+        public function getCategories($categoryIds) : array {
+            $categories = array();
+
+            foreach ($categoryIds as &$categoryId) {
+                $category = $this->getCategory($categoryId);
+                if ($category !== NULL) {
+                    $categories[] = $category;
+                }
+            }
+            
+            return $categories;
+        }
+
         public function updateCategoryMainHighlight($categoryId, $highlightIdentifier) : bool {
             global $databaseProvider;
 

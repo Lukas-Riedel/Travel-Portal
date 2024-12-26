@@ -1,9 +1,13 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
+    require_once(dirname(__FILE__) . "/../model/Album.php");
+    require_once(dirname(__FILE__) . "/../model/Date.php");
+    require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../processor/GetCoordsProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetCandidatePlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class PlaceService {
@@ -13,10 +17,109 @@
                     "tripId" => $tripId));
         }
 
-        public function getCandidatePlaces($tripId) : array {
-            return (new GetCandidatePlacesProcessor())
-                ->process(array(
-                    "tripId" => $tripId));
+        public function getCandidatePlace($placeId) : ?Place {
+            $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, TRUE, TRUE, TRUE);
+            return count($candidatePlaces) === 1 ? $candidatePlaces[0] : NULL;
+        }
+
+        public function getCandidatePlaces($categoryId, $tripId, $includeHighlights, $includeCategories, $includeExcerpt) : array {
+            return $tripId !== NULL
+                ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includeHighlights, $includeCategories, $includeExcerpt)
+                : $this->doGetCandidatePlaces(NULL, $categoryId, $includeHighlights, $includeCategories, $includeExcerpt);
+        }
+        
+        private function doGetCandidatePlaces($placeId, $categoryId, $includeHighlights, $includeCategories, $includeExcerpt) : array {
+            global $databaseProvider, $tripService, $albumService, $highlightService, $categoryService;
+
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder(); 
+            if ($placeId !== NULL) {
+                $whereClauseBuilder->withClause("cs.place_id = ?", $placeId);
+            }
+            if ($categoryId !== NULL) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(?, category_ids)", $categoryId);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            $placeRows = $databaseProvider
+                ->statementBuilder("SELECT pcan.*, cs.category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id, ps.excerpt FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan INNER JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
+                ->getResultSet();
+
+            $places = array();
+            foreach ($placeRows as &$placeRow) {
+                $dateRows = $databaseProvider
+                    ->statementBuilder("SELECT * FROM place_summary WHERE place_id = ? AND start < UNIX_TIMESTAMP()")
+                    ->withParameters($placeRow["place_id"])
+                    ->getResultSet();
+                    
+                $dates = array();
+                foreach ($dateRows as &$dateRow) {    
+                    $album = $albumService->getAlbum($dateRow["album_id"]);    
+                    $trip = $tripService->getTripIdentifierById($dateRow["trip_id"]);
+                    $dates[] = new Date($dateRow["start"], $dateRow["end"], NULL, NULL, $album, $trip);
+                }
+                
+                $highlights = array();
+                if ($includeHighlights) {
+                    $highlights = $highlightService->getHighlights($placeRow["place_id"]);                      
+                }
+                
+                $excerpt = NULL;
+                if ($includeExcerpt) {
+                    $excerpt = $placeRow["excerpt"];
+                }
+
+                $categories = array();
+                if ($includeCategories) {
+                    $categories = $categoryService->getCategories(explode(",", $placeRow["category_ids"]));
+                }
+
+                $places[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                    $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, $dates);                
+            }
+            
+            return $places;
+        }
+
+        private function doGetCandidatePlacesForTrip($categoryId, $tripId, $includeHighlights, $includeCategories, $includeExcerpt) {
+            global $databaseProvider, $tripService, $highlightService, $categoryService;
+            
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder(); 
+            if ($categoryId !== NULL) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(?, category_ids)", $categoryId);
+            }
+            $whereClause = $whereClauseBuilder->withClause("trip_id = ?", $tripId)->buildForAnd();
+
+            $placeRows = $databaseProvider
+                ->statementBuilder("SELECT pce.place_id, pi.name, pi.country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pi.excerpt, pce.start, pce.end, cs.category_ids FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
+                ->getResultSet();
+
+            $places = array();            
+            foreach ($placeRows as &$placeRow) {
+                if (!isset($places[$placeRow["place_id"]])) {
+                    $highlights = array();
+                    if ($includeHighlights) {
+                        $highlights = $highlightService->getHighlights($placeRow["place_id"]);                      
+                    }
+                    
+                    $excerpt = NULL;
+                    if ($includeExcerpt) {
+                        $excerpt = $placeRow["excerpt"];
+                    }
+
+                    $categories = array();
+                    if ($includeCategories) {
+                        $categories = $categoryService->getCategories(explode(",", $placeRow["category_ids"]));
+                    }
+
+                    $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                        $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, array()); 
+                }
+
+                $trip = $tripService->getTripIdentifierById($tripId);                
+                $places[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], NULL, NULL, NULL, $trip));
+            }
+
+            return array_values($places);
         }
 
         public function getRegularPlace($placeId) : ?Place {
