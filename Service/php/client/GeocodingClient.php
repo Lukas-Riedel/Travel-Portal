@@ -88,5 +88,18 @@
 
             return $this->getLocation($address);
         }
+
+        public function getDistance($lat1, $lon1, $lat2, $lon2) : float {            
+            $deltaLatitude = $lat2 - $lat1;
+            $deltaLongitude = $lon2 - $lon1;
+
+            $alpha = $deltaLatitude / 2;
+            $beta = $deltaLongitude / 2;
+
+            $a = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin(deg2rad($beta)) * sin(deg2rad($beta));
+            $c = asin(min(1, sqrt($a)));
+
+            return 2 * 6378 * $c;
+        }
     }
 ?>

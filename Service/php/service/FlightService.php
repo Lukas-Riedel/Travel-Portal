@@ -2,7 +2,6 @@
     require_once(dirname(__FILE__) . "/../model/Flight.php");
     require_once(dirname(__FILE__) . "/../model/Airport.php");
     require_once(dirname(__FILE__) . "/../model/AirportIdentifier.php");
-    require_once(dirname(__FILE__) . "/../processor/GetDistanceProcessor.php");
 
     class FlightService {
         public function getAirportIdentifier($code) : ?AirportIdentifier {
@@ -68,7 +67,7 @@
 
         public function logFlight($flight, $tripId, $originAirportName, $originAirportCode, $destinationAirportName, $destinationAirportCode,
             $scheduledDeparture, $actualDeparture, $scheduledArrival, $actualArrival, $registration, $aircraft) : Flight {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $schedulingProvider, $geocodingClient;
             
             $originAirportIdentifier = $this->getOrCreateAirportIdentifier($originAirportCode);
             $destinationAirportIdentifier = $this->getOrCreateAirportIdentifier($destinationAirportCode);
@@ -95,12 +94,7 @@
             $to = new Airport($destinationAirportIdentifier->getId(), $destinationAirportName, $destinationAirportIdentifier->getCode(), $destinationAirportIdentifier->getCountry(),
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude(), $destinationAirportIdentifier->getTimezone());
 
-            $distance = (new GetDistanceProcessor())
-                ->process(array(
-                    "aLatitude" => $originAirportIdentifier->getLatitude(), 
-                    "aLongitude" => $originAirportIdentifier->getLongitude(),
-                    "bLatitude" => $destinationAirportIdentifier->getLatitude(), 
-                    "bLongitude" => $destinationAirportIdentifier->getLongitude()));
+            $distance = $geocodingClient->getDistance($originAirportIdentifier->getLatitude(), $originAirportIdentifier->getLongitude(), $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
                 
             return new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival);
         }
@@ -117,7 +111,7 @@
         }
 
         public function getLoggedFlights() : array {
-            global $databaseProvider;
+            global $databaseProvider, $geocodingClient;
         
             $loggedFlights = array();
 
@@ -125,14 +119,9 @@
                 ->statementBuilder("SELECT f.*, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fai.country AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tai.country AS to_airport_country, tai.timezone AS to_airport_timezone, l.* FROM flight_log l LEFT JOIN airport_identifier fai ON l.from_airport_id = fai.id LEFT JOIN airport_identifier tai ON l.to_airport_id = tai.id LEFT JOIN flight_event f ON l.scheduled_departure = f.start ORDER BY actual_departure DESC")
                 ->getResultSet();
                 
-            $getDistanceProcessor = new GetDistanceProcessor();
             foreach ($loggedFlightRows as &$loggedFlightRow) {
-                $distance = $getDistanceProcessor
-                    ->process(array(
-                        "aLatitude" => $loggedFlightRow["from_airport_latitude"], 
-                        "aLongitude" => $loggedFlightRow["from_airport_longitude"],
-                        "bLatitude" => $loggedFlightRow["to_airport_latitude"], 
-                        "bLongitude" => $loggedFlightRow["to_airport_longitude"]));
+                $distance = $geocodingClient->getDistance($loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"], $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"]);
+                
                 $from = new Airport($loggedFlightRow["from_airport_id"], $loggedFlightRow["from"], $loggedFlightRow["from_airport_code"], $loggedFlightRow["from_airport_country"], 
                     $loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"], $loggedFlightRow["from_airport_timezone"]);
                 $to = new Airport($loggedFlightRow["to_airport_id"], $loggedFlightRow["to"], $loggedFlightRow["to_airport_code"], $loggedFlightRow["to_airport_country"], 
