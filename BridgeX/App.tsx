@@ -11,32 +11,12 @@ import {
     View,
 } from "react-native";
 import {
-    AggregateResultRecordType,
-    RecordType,
     initialize,
     requestPermission,
-    aggregateRecord,
-    readRecords
 } from "react-native-health-connect";
-
-const setValue = async (key: string, value: string): Promise<void> => {
-    try {
-        await AsyncStorage.setItem(key, value);
-    }
-    catch (e) {
-        console.error(e);
-    }
-};
-
-const getValue = async (key: string): Promise<string | null> => {
-    try {
-        return await AsyncStorage.getItem(key);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    return null;
-};
+import BackgroundFetch from "react-native-background-fetch";
+import Synchronizer from "./src/Synchronizer";
+import ToastLogger from "./src/ToastLogger";
 
 const askForPermissions = async (): Promise<void> => {
     await initialize();
@@ -47,167 +27,72 @@ const askForPermissions = async (): Promise<void> => {
     ]);
 };
 
-const getFitnessFitnessData = async(recordType: AggregateResultRecordType, start: number, end: number): Promise<any> => {
-    return await aggregateRecord({
-        recordType: recordType,
-        timeRangeFilter: {
-            operator: "between",
-            startTime: new Date(start * 1000).toISOString(),
-            endTime: new Date(end * 1000).toISOString()
-        }
-    });
-};
-
-const getFitnessData = async(recordType: RecordType, start: number, end: number): Promise<any> => {
-    return await readRecords(recordType, {
-        timeRangeFilter: {
-            operator: "between",
-            startTime: new Date(start * 1000).toISOString(),
-            endTime: new Date(end * 1000).toISOString()
-        }
-    });
-};
-
-const getTotalSteps = async (start: number, end: number): Promise<number> => {
-    return (await getFitnessFitnessData("Steps", start, end)).COUNT_TOTAL;
-};
-
-const getTotalDistance = async (start: number, end: number): Promise<number> => {
-    return (await getFitnessFitnessData("Distance", start, end)).DISTANCE.inMeters;
-};
-
-const getTotalCalories = async (start: number, end: number): Promise<number> => {
-    return (await getFitnessFitnessData("TotalCaloriesBurned", start, end)).ENERGY_TOTAL.inKilocalories;
-};
-
-const getTotalTimeInMotion = async (start: number, end: number): Promise<number> => {
-    let totalTimeInMotion = 0;
-
-    const stepRecords = (await getFitnessData("Steps", start, end)).records;
-    for (const stepRecord of stepRecords) {
-        totalTimeInMotion += (Number(new Date(stepRecord.endTime)) - Number(new Date(stepRecord.startTime)))
-    }
-
-    return Math.round(totalTimeInMotion / (60 * 1000));
-};
-
-const updateFitness = async(accessToken: string, start: number, end: number): Promise<void> => {
-    await axios.put(`${baseUrl}/fitness/${start}`, {
-        "steps": await getTotalSteps(start, end),
-        "distance": await getTotalDistance(start, end),
-        "minutes": await getTotalTimeInMotion(start, end),
-        "calories": await getTotalCalories(start, end)
-    }, {
-        headers: {
-            "Authorization": `Bearer ${accessToken}`
-        }
-    });
-}
-
-const synchronize = async() : Promise<void> => {
-    try {
-        const accessToken = (await axios.post(`${baseUrl}/iam`, {
-            "apiKey": apiKey
-        })).data.accessToken;
-
-        const configuration = (await axios.get(`${baseUrl}/configuration?levels=public`, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`
-            }
-        })).data;
-
-        setValue("baseUrl", baseUrl!);
-        setValue("apiKey", apiKey!);
-
-        const jobs = (await axios.get(`${baseUrl}/jobs?action=UpdateFitnessData`, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`
-            }
-        })).data;
-
-        Toast.show({
-            type: "info",
-            text1: "Synchronizace byla zahájena",
-            text2: `Ve frontě je ${jobs.length} záznamů`
-        });
-
-        for (const job of jobs) {
-            try {
-                await updateFitness(accessToken, job.args.start, job.args.start + configuration.fitnessRecordDuration);
-            }
-            catch (e) {
-                console.error(e);
-            }
-            finally {
-                await axios.delete(`${baseUrl}/jobs/${job.id}`, {
-                    headers: {
-                        "Authorization": `Bearer ${accessToken}`
-                    }
-                });
-            }
-        }
-
-        Toast.show({
-            type: "info",
-            text1: "Synchronizace byla úspěšně dokončena"
-        });
-
-        setValue("lastSync", format(new Date(), "dd.MM.yyyy HH:mm"));
-    }
-    catch (e) {
-        Toast.show({
-            type: "error",
-            text1: "Při synchronizaci se vyskytla neočekávaná chyba",
-            text2: (e as Error).message
-        });
-    }
-}
-
 const App = (): React.JSX.Element => {
-    const [lastSync, setLastSync] = useState("N/A");
+    const [baseUrl, setBaseUrl] = useState("");
+    const [apiKey, setApiKey] = useState("");
+    const [lastSync, setLastSync] = useState(new Date(0));
+    
+    const logger = new ToastLogger();
+    const synchronizer = new Synchronizer(logger);
 
-    const fetchAndSetLastSync = async () => {
-        const lastSyncValue = await getValue("lastSync");
-        setLastSync(lastSyncValue !== null ? lastSyncValue : "N/A");
-    }
-
-    const synchronizeAndSetLastSync = async () => {
-        synchronize().then(fetchAndSetLastSync);
-    }
+    const doSynchronizeAndSetLastSync = async () => {
+        await synchronizer.doSynchronize();
+        AsyncStorage.getItem("lastSync").then(value => setLastSync(new Date(Number(value ?? 0))));
+    };
 
     useEffect(() => {
-        fetchAndSetLastSync();
+        AsyncStorage.getItem("baseUrl").then(value => setBaseUrl(value ?? ""));
+        AsyncStorage.getItem("apiKey").then(value => setApiKey(value ?? ""));
+        AsyncStorage.getItem("lastSync").then(value => setLastSync(new Date(Number(value ?? 0))));
+
+        BackgroundFetch.configure({
+            minimumFetchInterval: 15,
+            enableHeadless: true,
+            forceAlarmManager: false,
+            stopOnTerminate: false,
+            startOnBoot: true,
+            requiredNetworkType: BackgroundFetch.NETWORK_TYPE_UNMETERED,
+            requiresBatteryNotLow: true
+        }, async (taskId) => {
+            await synchronizer.synchronize();
+            AsyncStorage.getItem("lastSync").then(value => setLastSync(new Date(Number(value ?? 0))));
+            BackgroundFetch.finish(taskId);
+        }, (e) => {
+            logger.logError("There was an error processing the item", e);
+        });
     }, []);
 
     return (
         <View style={styles.container}>
-            <Text style={[styles.text, { marginVertical: 10 }]}>Poslední synchronizace</Text>
-            <Text style={styles.text}>{lastSync}</Text>
+            <Text style={[styles.text, { marginVertical: 10 }]}>Last synchronization</Text>
+            <Text style={styles.text}>{lastSync.getTime() > 0 ? format(lastSync, "dd.MM.yyyy HH:mm") : "N/A"}</Text>
 
-            <Text style={[styles.text, { marginTop: 30 }]}>Adresa</Text>
+            <Text style={[styles.text, { marginTop: 30 }]}>Service URL</Text>
             <TextInput
                 style={[styles.text, styles.input]}
-                placeholder="Adresa"
-                defaultValue={baseUrl ?? ""}
+                placeholder="Service URL"
+                defaultValue={baseUrl}
                 onChangeText={text => {
-                    baseUrl = text;
+                    setBaseUrl(text);
+                    AsyncStorage.setItem("baseUrl", text);
                 }}
             />
 
-            <Text style={[styles.text, { marginTop: 10 }]}>API klíč</Text>
+            <Text style={[styles.text, { marginTop: 10 }]}>API key</Text>
             <TextInput
                 style={[styles.text, styles.input]}
-                placeholder="API klíč"
-                defaultValue={apiKey ?? ""}
+                placeholder="API key"
+                defaultValue={apiKey}
                 onChangeText={text => {
-                    apiKey = text;
+                    setApiKey(text);
+                    AsyncStorage.setItem("apiKey", text);
                 }}
             />
 
             <View style={{ marginTop: 20 }}>
                 <Button
-                    title="Synchronizovat"
-                    onPress={synchronizeAndSetLastSync}
+                    title="Synchronize"
+                    onPress={doSynchronizeAndSetLastSync}
                 />
             </View>
 
@@ -240,23 +125,6 @@ const styles = StyleSheet.create({
         fontSize: 17
     }
 });
-
-let baseUrl: string | null = null;
-let apiKey: string | null = null;
-
-getValue("baseUrl")
-    .then(response => {
-        if (response) {
-            baseUrl = response;
-        }
-    });
-
-getValue("apiKey")
-    .then(response => {
-        if (response) {
-            apiKey = response;
-        }
-    });
 
 askForPermissions();
 
