@@ -8,11 +8,10 @@
     require_once(dirname(__FILE__) . "/../model/PublicHoliday.php");
     require_once(dirname(__FILE__) . "/../model/Fitness.php");
     require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
-    require_once(dirname(__FILE__) . "/GetStatsProcessor.php");
 
     class GetTripsProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider;
+            global $databaseProvider, $statisticsService;
             
             $result = array();
 
@@ -89,7 +88,7 @@
 
                 $includeStats = isset($input["includeStats"]) && $input["includeStats"] == "true";
                 if ($includeStats || isset($input["tripId"])) {
-                    $stats = $this->getStats($tripRow);                      
+                    $stats = $statisticsService->getTripStatistics($tripRow["trip_id"]);                 
                 }
 
                 $includePublicHolidays = isset($input["includePublicHolidays"]) && $input["includePublicHolidays"] == "true";
@@ -168,13 +167,6 @@
                 ->statementBuilder("SELECT place_id FROM place_summary WHERE trip_id = ? AND layover = 1")
                 ->withParameters($tripRow["trip_id"])
                 ->getResultSetForColumn("place_id");
-        }
-        
-        private function getStats($tripRow) {
-            return (new GetStatsProcessor())
-                ->process(array(
-                    "type" => "trip", 
-                    "id" => $tripRow["trip_id"]));
         }
     
         private function getPublicHolidays($tripRow) {

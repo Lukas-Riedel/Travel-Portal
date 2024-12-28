@@ -1,9 +1,9 @@
 <?php
     class ListStatisticsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $statisticsService;
 
-            $response = $processorProvider->run("GetStats", array("type" => "all"));
+            $response = $statisticsService->getOverallStatistics();
             return $this->createResponse(200, $response);
         }
 

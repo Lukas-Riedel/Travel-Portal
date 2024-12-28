@@ -1,10 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Year.php");
-    require_once(dirname(__FILE__) . "/GetStatsProcessor.php");
 
     class GetYearsProcessor extends Processor {        
         public function process($input) {
-            global $databaseProvider;
+            global $databaseProvider, $statisticsService;
             
             $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
             if (isset($input["year"])) {
@@ -24,7 +23,7 @@
 
                 $includeStats = isset($input["includeStats"]) && $input["includeStats"] == "true";
                 if ($includeStats || isset($input["year"])) {
-                    $stats = $this->getStats($year["id"]);                      
+                    $stats = $statisticsService->getYearStatistics($year["id"]);               
                 }
 
                 $includeHighlights = isset($input["includeHighlights"]) && $input["includeHighlights"] == "true";
@@ -44,13 +43,6 @@
         
         public function requiresAdminRole() {
             return FALSE;
-        }
-        
-        private function getStats($year) {
-            return (new GetStatsProcessor())
-                ->process(array(
-                    "type" => "year", 
-                    "id" => $year));
         }
 
         private function getHighlights($year) {
