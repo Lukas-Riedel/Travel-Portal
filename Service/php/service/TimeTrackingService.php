@@ -76,5 +76,33 @@
 
             return $wasDeleted;
         }
+
+        public function resetOpeningBalances() {
+            global $configuration, $databaseProvider;
+
+            $newEventsDate = "1.1." . date("Y");
+
+            foreach ($configuration["timeOffHours"] as $eventType => $openingBalance) {
+                $carryOverBalance = $databaseProvider
+                    ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking WHERE type = ? AND timestamp < ?")
+                    ->withParameters($eventType, strtotime($newEventsDate))
+                    ->getSingleColumn("balance");
+
+                $databaseProvider
+                    ->statementBuilder("DELETE FROM tracking WHERE type = ? AND timestamp < ?")
+                    ->withParameters($eventType, strtotime($newEventsDate))
+                    ->execute();
+
+                if ($openingBalance > 0) {
+                    $this->createTimeTrackingEvent($eventType, $openingBalance, "Opening balance", $newEventsDate);
+                }
+
+                if ($carryOverBalance > 0) {
+                    $this->createTimeTrackingEvent($eventType, $carryOverBalance, "Carried over from last year", $newEventsDate);
+                }
+            }
+
+            return TRUE;
+        }
     }
 ?>
