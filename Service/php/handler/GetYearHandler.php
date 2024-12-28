@@ -1,16 +1,9 @@
 <?php
     class GetYearHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $yearService;
 
-            $response = $processorProvider->run("GetYears", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
-            }
-            if (count($response) == 1) {
-                return $this->createResponse(200, $response[0]);
-            }
-
+            $response = $yearService->getYear($input["year"]);
             return $this->create404Response("years", $input["year"]);
         }
 

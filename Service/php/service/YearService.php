@@ -1,7 +1,49 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/YearIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/Year.php");
 
     class YearService {
+        public function getYear($year) : ?Year {
+            global $statisticsService, $highlightService;
+
+            $yearIdentifier = $this->getYearIdentifier($year);
+
+            if ($yearIdentifier === NULL) {
+                return NULL;
+            }
+                
+            $stats = $statisticsService->getYearStatistics($year);   
+            $highlights = $highlightService->getYearHighlights($year);   
+
+            new Year($year, $yearIdentifier->getMainHighlight(), $highlights, $stats);
+        }
+
+        public function getYears($includeStats, $includeHighlights) : array {
+            global $databaseProvider, $statisticsService, $highlightService;
+
+            $years = array();
+
+            $yearRows = $databaseProvider
+                ->statementBuilder("SELECT * FROM year_identifier")
+                ->getResultSet();
+
+            foreach ($yearRows as &$yearRow) {
+                $stats = array();
+                if ($includeStats) {
+                    $stats = $statisticsService->getYearStatistics($yearRow["id"]);               
+                }
+
+                $highlights = array();
+                if ($includeHighlights) {
+                    $highlights = $highlightService->getYearHighlights($yearRow["id"]);                      
+                }
+
+                $years[] = new Year($yearRow["id"], $highlightService->getHighlight($yearRow["main_highlight_id"]), $highlights, $stats);
+            }
+
+            return $years;
+        }
+
         public function getYearIdentifier($year) : ?YearIdentifier {
             global $databaseProvider, $highlightService;
             

@@ -1,9 +1,10 @@
 <?php
     class ListYearsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $yearService;
 
-            $response = $processorProvider->run("GetYears", $input);
+            $response = $yearService->getYears(isset($input["includeStats"]) && $input["includeStats"] === "true",
+                isset($input["includeHighlights"]) && $input["includeHighlights"] === "true");
             return $this->createResponse(200, $response);
         }
 
