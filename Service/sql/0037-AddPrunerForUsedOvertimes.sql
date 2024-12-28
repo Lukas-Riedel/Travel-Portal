@@ -1,0 +1,2 @@
+
+INSERT INTO pruner (`name`, `query`) VALUES ('PRUNE_USED_OVERTIMES', 'DELETE FROM tracking WHERE timestamp <= (SELECT COALESCE(MAX(t1.timestamp), 0) FROM tracking t1 WHERE timestamp < UNIX_TIMESTAMP() - (60 * 86400) AND (SELECT SUM(t2.hours) FROM tracking t2 WHERE t2.timestamp <= t1.timestamp AND type = ''OVERTIME'') <= 0 AND type = ''OVERTIME'') AND type = ''OVERTIME''')
