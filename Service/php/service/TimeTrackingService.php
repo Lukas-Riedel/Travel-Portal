@@ -15,7 +15,7 @@
                 ->getSingleRow();
 
             $balance = $databaseProvider
-                ->statementBuilder("SELECT ROUND(SUM(hours), 2) AS balance FROM tracking WHERE timestamp <= ? AND type = ?")
+                ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking WHERE timestamp <= ? AND type = ?")
                 ->withParameters($trackingEventRow["timestamp"], $trackingEventRow["type"])
                 ->getSingleColumn("balance");
 
@@ -24,8 +24,8 @@
                 ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
                 ->execute();
 
-            return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], $trackingEventRow["hours"],
-                $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
+            return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], floatval($trackingEventRow["hours"]),
+                $trackingEventRow["timestamp"], $trackingEventRow["type"], floatval($balance));
         }
 
         public function getTimeTrackingEvents($type = NULL) : array {
@@ -51,11 +51,11 @@
                 $whereClause = $whereClauseBuilder->buildForAnd();
 
                 $balance = $databaseProvider
-                    ->statementBuilder("SELECT ROUND(SUM(hours), 2) AS balance FROM tracking {{WHERE CLAUSE}}", $whereClause)
+                    ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking {{WHERE CLAUSE}}", $whereClause)
                     ->getSingleColumn("balance");
 
-                $timeTrackingEvents[] = new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], $trackingEventRow["hours"],
-                    $trackingEventRow["timestamp"], $trackingEventRow["type"], $balance);
+                $timeTrackingEvents[] = new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], floatval($trackingEventRow["hours"]),
+                    $trackingEventRow["timestamp"], $trackingEventRow["type"], floatval($balance));
             }
 
             return $timeTrackingEvents;
