@@ -1,4 +1,6 @@
 <?php
+    require_once(dirname(__FILE__) . "/../model/Weather.php");
+    require_once(dirname(__FILE__) . "/../model/Sun.php");
     require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Place.php");
     require_once(dirname(__FILE__) . "/../model/Album.php");
@@ -6,14 +8,128 @@
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
-    require_once(dirname(__FILE__) . "/../processor/GetPlacesProcessor.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class PlaceService {
-        public function getRegularPlaces($tripId) : array {
-            return (new GetPlacesProcessor())
-                ->process(array(
-                    "tripId" => $tripId));
+        public function getRegularPlace($placeId) : ?Place {
+            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
+            return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
+        }
+
+        public function getRegularPlaces($categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {
+            return $this->doGetRegularPlaces(NULL, $categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt);
+        }
+
+        private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {            
+            global $databaseProvider, $highlightService, $categoryService, $albumService, $tripService;
+            
+            $places = array();
+
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
+            if ($placeId !== NULL) {
+                $whereClauseBuilder->withClause("place_id = ?", $placeId);
+            }
+            if ($year !== NULL) {
+                $whereClauseBuilder->withClause("DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?", $year);
+            }
+            if ($tripId !== NULL) {
+                $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+            }
+            if ($categoryId !== NULL) {
+                $whereClauseBuilder->withClause("(FIND_IN_SET(?, category_ids) OR ((UNIX_TIMESTAMP() - GET_VARIABLE_TIME_CATEGORY_OFFSET(?) <= start) AND (UNIX_TIMESTAMP() >= end)) OR ((GET_VARIABLE_TIME_CATEGORY_OFFSET(?) IS NOT NULL) AND (place_id IN (SELECT place_id FROM place_permanent))))", $categoryId, $categoryId, $categoryId);
+            }
+            if ($minStart !== NULL) {
+                $whereClauseBuilder->withClause("? <= start", $minStart);
+            }
+            if ($maxEnd !== NULL) {
+                $whereClauseBuilder->withClause("end <= ?", $maxEnd);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+            
+            $placeRows = $databaseProvider
+                ->statementBuilder("SELECT * FROM place_summary {{WHERE CLAUSE}} ORDER BY start", $whereClause)
+                ->getResultSet();
+
+            foreach ($placeRows as &$placeRow) {
+                if (!isset($places[$placeRow["place_id"]])) {
+                    $categories = array();
+                    if ($includeCategories) {
+                        $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                    }                   
+
+                    $highlights = array();             
+                    if ($includeHighlights) {
+                        $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
+                    }
+                    
+                    $excerpt = NULL;
+                    if ($includeExcerpt) {
+                        $excerpt = $placeRow["excerpt"];
+                    }
+                    
+                    $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                        $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, array());
+                }
+                
+                // TODO: Move eventually to ForecastService. Verify whether place_summary is still needed, eventually drop unused columns.
+                $weather = NULL;
+                $sun = NULL;
+                if ($placeRow["end"] > time()) {
+                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL) {
+                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["last_update"]);
+                    }
+
+                    if ($placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL && $placeRow["start_sun_altitude"] !== NULL && $placeRow["end_sun_altitude"] !== NULL && $placeRow["start_sun_azimuth"] !== NULL && $placeRow["end_sun_azimuth"] !== NULL) {
+                        $sun = new Sun($placeRow["sunrise"], $placeRow["sunset"], $placeRow["start_sun_altitude"], $placeRow["end_sun_altitude"], $placeRow["start_sun_azimuth"], $placeRow["end_sun_azimuth"]);
+                    }
+                }
+
+                $album = $albumService->getAlbum($placeRow["album_id"]);    
+                $trip = $tripService->getTripIdentifierById($placeRow["trip_id"]);
+
+                $places[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $weather, $sun, $album, $trip));  
+            }
+
+            // Process permanent places without dates.
+            if ($tripId === NULL) {
+                $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
+                if ($placeId !== NULL) {
+                    $whereClauseBuilder->withClause("pi.id = ?", $placeId);
+                }
+                if ($categoryId !== NULL) {
+                    $whereClauseBuilder->withClause("FIND_IN_SET(?, cs.category_ids)", $categoryId);
+                }
+                $whereClause = $whereClauseBuilder->withClause("pi.id NOT IN (SELECT place_id FROM place_summary)")->buildForAnd();
+
+                $placeRows = $databaseProvider
+                    ->statementBuilder("SELECT pi.*, COALESCE(cs.category_ids, '') AS category_ids FROM place_permanent pp INNER JOIN place_identifier pi ON pp.place_id = pi.id LEFT JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
+                    ->getResultSet();
+                    
+
+            foreach ($placeRows as &$placeRow) {
+                if (!isset($places[$placeRow["place_id"]])) {
+                    $categories = array();
+                    if ($includeCategories) {
+                        $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                    }                   
+
+                    $highlights = array();             
+                    if ($includeHighlights) {
+                        $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
+                    }
+                    
+                    $excerpt = NULL;
+                    if ($includeExcerpt) {
+                        $excerpt = $placeRow["excerpt"];
+                    }
+                    
+                    $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                        $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, array());
+                }
+            }
+            }
+
+            return array_values($places);
         }
 
         public function getCandidatePlace($placeId) : ?Place {
@@ -119,13 +235,6 @@
             }
 
             return array_values($places);
-        }
-
-        public function getRegularPlace($placeId) : ?Place {
-            $places = (new GetPlacesProcessor())
-                ->process(array(
-                    "placeId" => $placeId));
-            return count($places) === 1 ? $places[0] : NULL;
         }
 
         public function getPlaceIdentifier($name, $country) : ?PlaceIdentifier {
@@ -321,7 +430,7 @@
         public function movePlaces($tripId, $offset) : array {
             global $configuration, $googleApiClient;
 
-            $places = $this->getRegularPlaces($tripId);
+            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, TRUE, TRUE, TRUE);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -352,7 +461,7 @@
         public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
             global $configuration, $databaseProvider, $googleApiClient;
 
-            $places = $this->getRegularPlaces($tripId);
+            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, FALSE, FALSE, FALSE);
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {

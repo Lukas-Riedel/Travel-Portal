@@ -1,14 +1,11 @@
 <?php
     class GetPlaceHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $placeService;
+            global $placeService;
 
-            $response = $processorProvider->run("GetPlaces", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
-            }
-            if (count($response) == 1) {
-                return $this->createResponse(200, $response[0]);
+            $response = $placeService->getRegularPlace($input["placeId"]);
+            if ($response !== NULL) {
+                return $this->createResponse(200, $response);
             }
     
             // No regular place found, try candidates instead.

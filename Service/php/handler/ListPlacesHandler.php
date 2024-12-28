@@ -1,14 +1,21 @@
 <?php
     class ListPlacesHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $placeService;
+            global $placeService;
 
             $type = isset($input["type"]) ? $input["type"] : "regular";
             unset($input["type"]);
 
             $response = array();    
             if ($type == "regular") {
-                $response = $processorProvider->run("GetPlaces", $input);
+                $response = $placeService->getRegularPlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
+                    isset($input["tripId"]) ? $input["tripId"] : NULL,
+                    isset($input["year"]) ? $input["year"] : NULL,
+                    isset($input["minStart"]) ? $input["minStart"] : NULL,
+                    isset($input["maxEnd"]) ? $input["maxEnd"] : NULL,
+                    isset($input["includeHighlights"]) && $input["includeHighlights"] === "true",
+                    isset($input["includeCategories"]) && $input["includeCategories"] === "true",
+                    isset($input["includeExcerpt"]) && $input["includeExcerpt"] === "true");
             }
             else if ($type == "candidate") { 
                 $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
