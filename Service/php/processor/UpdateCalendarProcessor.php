@@ -1,5 +1,5 @@
 <?php    
-    require_once(dirname(__FILE__) . "/../ical.php");
+    require_once(dirname(__FILE__) . "/../lib/ical.php");
 
     class UpdateCalendarProcessor extends Processor {
         public function process($input) {
