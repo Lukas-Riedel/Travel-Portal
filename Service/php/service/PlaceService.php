@@ -400,7 +400,7 @@
         }
 
         public function getOrCreatePlaceIdentifier($name, $country, $address) : PlaceIdentifier {            
-            global $databaseProvider, $configuration, $schedulingProvider, $geocodingClient;
+            global $databaseProvider, $configuration, $schedulingProvider, $geocodingService;
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
             if ($placeIdentifier !== NULL) {
@@ -411,7 +411,7 @@
                 throw new InvalidArgumentException("Cannot create an identifier for an unknown country.");
             }
             
-            $location = $geocodingClient->getLocation($address);
+            $location = $geocodingService->getLocation($address);
 
             $databaseProvider
                 ->statementBuilder("INSERT INTO place_identifier (name, country, timezone, latitude, longitude, excerpt) VALUES (?, ?, ?, ?, ?, ?)")
@@ -486,10 +486,10 @@
         }
 
         private function createSpecialPlace($specialPlaceType, $name, $address) : Place {            
-            global $databaseProvider, $configurationService, $geocodingClient;
+            global $databaseProvider, $configurationService, $geocodingService;
 
             $placeTable = $this->resolveSpecialPlaceTable($specialPlaceType);
-            $country = $geocodingClient->getLocation($address)->getCountry();
+            $country = $geocodingService->getLocation($address)->getCountry();
 
             $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
 

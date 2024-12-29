@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Location.php");
     
-    class GeocodingClient {
+    class GeocodingService {
         public function getLocation($address) {
             global $databaseProvider, $configuration, $httpClient;
 

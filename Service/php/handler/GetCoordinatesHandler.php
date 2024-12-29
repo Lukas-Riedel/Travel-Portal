@@ -1,9 +1,9 @@
 <?php
     class GetCoordinatesHandler extends Handler {
         public function handle($input) {
-            global $geocodingClient;
+            global $geocodingService;
 
-            $response = $geocodingClient->getLocation($input["address"]);
+            $response = $geocodingService->getLocation($input["address"]);
             return $this->createResponse(200, $response);
         }
 

@@ -100,13 +100,13 @@
         }
 
         private function processPlaces() {
-            global $databaseProvider, $configuration, $placeService, $googleApiClient, $geocodingClient;
+            global $databaseProvider, $configuration, $placeService, $googleApiClient, $geocodingService;
 
             // Add places to the database.
             foreach ($this->downloadEvents($configuration["calendars"]["places"]) as &$placeEvent) {
                 $name = html_entity_decode($placeEvent["SUMMARY"], ENT_QUOTES | ENT_HTML5);
                 $address = html_entity_decode(str_replace('\\', '', $placeEvent["LOCATION"]), ENT_QUOTES | ENT_HTML5);
-                $resolvedLocation = $geocodingClient->getLocation($address);
+                $resolvedLocation = $geocodingService->getLocation($address);
                 $placeIdentifier = $placeService->getOrCreatePlaceIdentifier($name, $resolvedLocation->getCountry(), $address);
                         
                 $timeOffset = $this->getTimezoneOffset($placeEvent["DTSTART"], $placeIdentifier->getTimezone());
@@ -122,7 +122,7 @@
                     ->execute();
 
                 // Update address to match a common format.
-                // When changing the format, do not forget to update it in GeocodingClient as well.
+                // When changing the format, do not forget to update it in GeocodingService as well.
                 $newAddress = $name . ", " . $resolvedLocation->getCountry() . " (" . $resolvedLocation->getLatitude() . ", " . $resolvedLocation->getLongitude() . ")";
                 if (str_replace(' ', '', $address) != str_replace(' ', '', $newAddress)) {
                     $googleApiClient->updateCalendarEventLocation("places", $placeEvent["UID"], $newAddress);
