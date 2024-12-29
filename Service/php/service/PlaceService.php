@@ -48,7 +48,7 @@
         }
 
         private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {            
-            global $databaseProvider, $highlightService, $categoryService, $albumService, $tripService;
+            global $databaseProvider, $highlightService, $categoryService, $albumService, $tripService, $forecastService;
             
             $places = array();
 
@@ -98,17 +98,11 @@
                         $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, array());
                 }
                 
-                // TODO: Move eventually to ForecastService. Verify whether place_summary is still needed, eventually drop unused columns.
                 $weather = NULL;
                 $sun = NULL;
                 if ($placeRow["end"] > time()) {
-                    if ($placeRow["temperature"] !== NULL && $placeRow["wind"] !== NULL && $placeRow["precipitation"] !== NULL) {
-                        $weather = new Weather($placeRow["temperature"], $placeRow["clouds"], $placeRow["wind"], $placeRow["precipitation"], $placeRow["symbol"], $placeRow["last_update"]);
-                    }
-
-                    if ($placeRow["sunrise"] !== NULL && $placeRow["sunset"] !== NULL && $placeRow["start_sun_altitude"] !== NULL && $placeRow["end_sun_altitude"] !== NULL && $placeRow["start_sun_azimuth"] !== NULL && $placeRow["end_sun_azimuth"] !== NULL) {
-                        $sun = new Sun($placeRow["sunrise"], $placeRow["sunset"], $placeRow["start_sun_altitude"], $placeRow["end_sun_altitude"], $placeRow["start_sun_azimuth"], $placeRow["end_sun_azimuth"]);
-                    }
+                    $weather = $forecastService->getWeatherForecast($placeRow["place_id"], $placeRow["start"]);
+                    $sun = $forecastService->getSunForecast($placeRow["place_id"], $placeRow["start"]);
                 }
 
                 $album = $albumService->getAlbum($placeRow["album_id"]);    
