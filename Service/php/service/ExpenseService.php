@@ -1,10 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Expense.php");
     require_once(dirname(__FILE__) . "/../model/Subscription.php");
-    require_once(dirname(__FILE__) . "/../processor/UpdateCurrenciesProcessor.php");
 
-    class ExpenseService {        
-        public function getExpensesForTrip($tripId) {
+    class ExpenseService {
+        public function getExpensesForTrip($tripId) : array {
             global $databaseProvider;
 
             return $databaseProvider
@@ -41,8 +40,7 @@
                     "type" => "TRIP", 
                     "id" => $tripId), NULL);
 
-            (new UpdateCurrenciesProcessor())
-                ->process(NULL);
+            $this->updateCurrencies();
 
             $expenseRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM _expense_summary ORDER BY id DESC LIMIT 1")
@@ -141,8 +139,7 @@
                     "type" => "TRIP", 
                     "id" => $tripId), NULL);
                     
-            (new UpdateCurrenciesProcessor())
-                ->process(NULL);  
+            $this->updateCurrencies();
 
             return $wasDeleted;
         }
@@ -177,6 +174,38 @@
                     ->execute();
 
                 return $rate;
+        }
+
+        private function updateCurrencies() : void {
+            global $databaseProvider, $configuration;
+
+            // First, list recently used currencies.
+            $newCurrencies = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT currency FROM expense ORDER BY id DESC LIMIT 5")
+                ->getResultSetForColumn("currency");
+
+            // Then, list frequently used currencies.
+            $frequentlyUsedCurrencies = explode(",", $databaseProvider
+                ->statementBuilder("SELECT GROUP_CONCAT(currency SEPARATOR ',') AS currencies FROM (SELECT currency FROM expense GROUP BY currency ORDER BY COUNT(*) DESC) t")
+                ->getSingleColumn("currencies"));
+    
+            foreach ($frequentlyUsedCurrencies as &$currency) {
+                if (!in_array($currency, $newCurrencies)) {
+                    $newCurrencies[] = $currency;
+                }
+            }
+
+            // Last, list all remaining currencies.
+            foreach ($configuration["currencies"] as &$currency) {
+                if (!in_array($currency, $newCurrencies)) {
+                    $newCurrencies[] = $currency;
+                }
+            }
+
+            $databaseProvider
+                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'CURRENCIES'")
+                ->withParameters(json_encode($newCurrencies))
+                ->execute();
         }
     }
 ?>
