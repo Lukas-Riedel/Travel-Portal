@@ -1,14 +1,15 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Weather.php");
     require_once(dirname(__FILE__) . "/../model/Sun.php");
+    require_once(dirname(__FILE__) . "/../lib/suncalc.php");
 
     class ForecastService {
-        public function getWeatherForecast($placeId, $timestamp) : ?Weather {
+        public function getWeatherForecast($placeId, $start) : ?Weather {
             global $databaseProvider;
 
             $actualForecastRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM forecast_actual WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $timestamp)
+                ->withParameters($placeId, $start)
                 ->getSingleRow();
 
             if ($actualForecastRow !== NULL) {
@@ -18,7 +19,7 @@
             
             $historicalForecastRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM forecast_historical WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $timestamp)
+                ->withParameters($placeId, $start)
                 ->getSingleRow();
 
             if ($historicalForecastRow !== NULL) {
@@ -29,12 +30,12 @@
             return NULL;
         }
 
-        public function getSunForecast($placeId, $timestamp) : ?Sun {
+        public function getSunForecast($placeId, $start) : ?Sun {
             global $databaseProvider;
 
             $sunForecastRow = $databaseProvider
                 ->statementBuilder("SELECT * FROM forecast_daylight WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $timestamp)
+                ->withParameters($placeId, $start)
                 ->getSingleRow();
 
             if ($sunForecastRow !== NULL) {
@@ -45,7 +46,29 @@
             return NULL;
         }
 
-        public function updateActualWeatherForecast($placeId, $timestamp, $latitude, $longitude) : void {
+        public function updateDaylightForecast($placeId, $start, $end, $latitude, $longitude) : void {
+            global $databaseProvider;
+
+            $dateTime = new DateTime();
+            $dateTime->setTimestamp(intval($start));
+            $suncalc = new AurorasLive\SunCalc($dateTime, $latitude, $longitude);
+            $sunTimes = $suncalc->getSunTimes();
+            $startSunPosition = $suncalc->getSunPosition($dateTime);
+            $dateTime->setTimestamp(intval($end));
+            $endSunPosition = $suncalc->getSunPosition($dateTime);
+            
+            $databaseProvider
+                ->statementBuilder("DELETE FROM forecast_daylight WHERE place_id = ? AND timestamp = ?")
+                ->withParameters($placeId, $start)
+                ->execute();
+
+            $databaseProvider
+                ->statementBuilder("INSERT INTO forecast_daylight (place_id, timestamp, sunrise, sunset, start_sun_altitude, end_sun_altitude, start_sun_azimuth, end_sun_azimuth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                ->withParameters($placeId, $start, $sunTimes["sunrise"]->getTimestamp(), $sunTimes["sunset"]->getTimestamp(), $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI, $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI)
+                ->execute();
+        }
+
+        public function updateActualWeatherForecast($placeId, $start, $latitude, $longitude) : void {
             global $databaseProvider, $configuration, $httpClient;
         
             $apiResponse = $httpClient->executeRequest("GET", "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($latitude, 4) . "&lon=" . round($longitude, 4),
@@ -58,13 +81,13 @@
             $bestForecast = NULL;
             foreach ($apiResponse["properties"]["timeseries"] as &$forecast) {
                 $forecastTime = strtotime($forecast["time"]);
-                if ($forecastTime > intval($timestamp)) {
+                if ($forecastTime > intval($start)) {
                     break;
                 }
                 $bestForecast = $forecast;
             }         
 
-            if ((strtotime($bestForecast["time"]) + 21600) < intval($timestamp)) {
+            if ((strtotime($bestForecast["time"]) + 21600) < intval($start)) {
                 $bestForecast = NULL;
             }
 
@@ -104,12 +127,12 @@
 
                 $databaseProvider
                     ->statementBuilder("DELETE FROM forecast_actual WHERE place_id = ? AND timestamp = ?")
-                    ->withParameters($placeId, $timestamp)
+                    ->withParameters($placeId, $start)
                     ->execute();
 
                 $databaseProvider
                     ->statementBuilder("INSERT INTO forecast_actual (place_id, timestamp, temperature, wind, precipitation, clouds, symbol, last_update, expiration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                    ->withParameters($placeId, $timestamp, $convertedForecast["temperature"], $convertedForecast["wind"], $convertedForecast["precipitation"], $convertedForecast["clouds"], $convertedForecast["symbol"], $convertedForecast["updatedAt"], (isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + 3600)))
+                    ->withParameters($placeId, $start, $convertedForecast["temperature"], $convertedForecast["wind"], $convertedForecast["precipitation"], $convertedForecast["clouds"], $convertedForecast["symbol"], $convertedForecast["updatedAt"], (isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + 3600)))
                     ->execute();
             }
         }
