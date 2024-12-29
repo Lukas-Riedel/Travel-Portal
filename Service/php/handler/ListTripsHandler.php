@@ -1,18 +1,25 @@
 <?php
     class ListTripsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $tripService;
-
-            $type = isset($input["type"]) ? $input["type"] : "regular";
-            unset($input["type"]);
+            global $tripService;
 
             $response = array();    
-            if ($type == "regular") {
-                $response = $processorProvider->run("GetTrips", $input);
-            }
-            else if ($type == "candidate") { 
+            if (isset($input["type"]) && $input["type"] === "candidate") { 
                 $response = $tripService->getCandidateTrips(isset($input["includeNotes"]) && $input["includeNotes"] === "true",
                     isset($input["includePublicHolidays"]) && $input["includePublicHolidays"] === "true");
+            }
+            else {
+                $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : NULL,
+                    isset($input["includeExpenses"]) && $input["includeExpenses"] === "true",
+                    isset($input["includeStays"]) && $input["includeStays"] === "true",
+                    isset($input["includeFlights"]) && $input["includeFlights"] === "true",
+                    isset($input["includeWatchedFlights"]) && $input["includeWatchedFlights"] === "true",
+                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
+                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
+                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
+                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
+                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
+                    isset($input["includeNotes"]) && $input["includeNotes"] === "true");
             }
 
             return $this->createResponse(200, $response);

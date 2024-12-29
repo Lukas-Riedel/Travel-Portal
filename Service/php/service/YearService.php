@@ -15,7 +15,7 @@
             $stats = $statisticsService->getYearStatistics($year);   
             $highlights = $highlightService->getYearHighlights($year);   
 
-            new Year($year, $yearIdentifier->getMainHighlight(), $highlights, $stats);
+            return new Year($year, $yearIdentifier->getMainHighlight(), $highlights, $stats);
         }
 
         public function getYears($includeStats, $includeHighlights) : array {

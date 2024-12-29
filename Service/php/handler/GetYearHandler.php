@@ -4,6 +4,10 @@
             global $yearService;
 
             $response = $yearService->getYear($input["year"]);
+            if ($response !== NULL) {
+                return $this->createResponse(200, $response);
+            }
+
             return $this->create404Response("years", $input["year"]);
         }
 

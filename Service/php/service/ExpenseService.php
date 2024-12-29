@@ -3,7 +3,18 @@
     require_once(dirname(__FILE__) . "/../model/Subscription.php");
     require_once(dirname(__FILE__) . "/../processor/UpdateCurrenciesProcessor.php");
 
-    class ExpenseService {
+    class ExpenseService {        
+        public function getExpensesForTrip($tripId) {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT * FROM expense_summary WHERE trip_id = ?")
+                ->withParameters($tripId)
+                ->getMappedResultSet(function ($expenseRow) {
+                    return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"], $expenseRow["main_currency_value"], $expenseRow["type"]);
+                });
+        }
+
         public function getExpense($expenseId) : ?Expense {
             global $databaseProvider;
 

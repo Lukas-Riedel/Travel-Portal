@@ -132,5 +132,55 @@
 
             return $loggedFlights;
         }
+
+        public function getFlightsForTrip($tripId) : array {
+            return $this->doGetFlightsForTrip(FlightType::Scheduled, $tripId);
+        }
+
+        public function getWatchedFlightsForTrip($tripId) : array {
+            return $this->doGetFlightsForTrip(FlightType::Watched, $tripId);
+        }
+
+        private function doGetFlightsForTrip($flightType, $tripId) : array {            
+            global $databaseProvider, $geocodingService;
+
+            $table = $this->resolveFlightTable($flightType);
+            $flightRows = $databaseProvider
+                ->statementBuilder("SELECT fe.flight, fe.from, fe.to, COALESCE(fl.actual_departure, fe.start) AS start, COALESCE(fl.actual_arrival, fe.end) AS end, fl.registration, fl.aircraft, fl.from_airport_id, fl.to_airport_id, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fai.country AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tai.country AS to_airport_country, tai.timezone AS to_airport_timezone FROM " . $table . " fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure LEFT JOIN airport_identifier fai ON fl.from_airport_id = fai.id LEFT JOIN airport_identifier tai ON fl.to_airport_id = tai.id  WHERE fe.trip_id = ? ORDER BY start")
+                ->withParameters($tripId)
+                ->getResultSet();
+
+            $result = array();
+            
+            foreach ($flightRows as &$flightRow) {
+                $distance = NULL;
+                if ($flightRow["from_airport_latitude"] != NULL && $flightRow["from_airport_longitude"] != NULL && $flightRow["to_airport_latitude"] != NULL && $flightRow["to_airport_longitude"] != NULL) {
+                    $distance = $geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
+                }
+                $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], $flightRow["from_airport_country"], 
+                    $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
+                $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"], $flightRow["to_airport_country"], 
+                    $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
+
+                $result[] = new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $distance, $from, $to, $flightRow["start"], $flightRow["end"]);
+            }
+    
+            return $result;
+        }
+
+        private function resolveFlightTable($flightType) {
+            if ($flightType === FlightType::Scheduled) {
+                return "flight_event";
+            }
+            if ($flightType === FlightType::Watched) {
+                return "flight_watched_event";
+            }
+            throw new InvalidArgumentException("Unknown flight type " . $flightType . ".");
+        }
+    }
+
+    enum FlightType {
+        case Scheduled;
+        case Watched;
     }
 ?>

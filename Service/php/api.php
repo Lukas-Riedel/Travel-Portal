@@ -35,6 +35,7 @@
     require_once(dirname(__FILE__) . "/client/HttpClient.php");
     require_once(dirname(__FILE__) . "/client/CalendarClient.php");
     require_once(dirname(__FILE__) . "/service/GeocodingService.php");
+    require_once(dirname(__FILE__) . "/service/StayService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -59,6 +60,7 @@
     $statisticsService = new StatisticsService();
     $geocodingService = new GeocodingService();
     $calendarClient = new CalendarClient();
+    $stayService = new StayService();
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

@@ -2,14 +2,108 @@
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Trip.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
-    require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
+    require_once(dirname(__FILE__) . "/../model/Expense.php");
+    require_once(dirname(__FILE__) . "/../model/Note.php");
+    require_once(dirname(__FILE__) . "/../model/Airport.php");
+    require_once(dirname(__FILE__) . "/../model/Stay.php");
+    require_once(dirname(__FILE__) . "/../model/Flight.php");
+    require_once(dirname(__FILE__) . "/../model/PublicHoliday.php");
+    require_once(dirname(__FILE__) . "/../model/Fitness.php");
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {
-            $trips = (new GetTripsProcessor())
-                ->process(array(
-                    "tripId" => $tripId));
-            return count($trips) === 1 ? $trips[0] : NULL;
+            $regularTrips = $this->doGetRegularTrips($tripId, NULL, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE);
+            return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
+        }
+
+        public function getRegularTrips($year, $includeExpenses, $includeStays, $includeFlights,
+            $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
+            $includeStats, $includePublicHolidays) : array {
+            return $this->doGetRegularTrips(NULL, $year, $includeExpenses, $includeStays, $includeFlights,
+                $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
+                $includeStats, $includePublicHolidays);
+        }
+
+        private function doGetRegularTrips($tripId, $year, $includeExpenses, $includeStays, $includeFlights,
+            $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
+            $includeStats, $includePublicHolidays) : array {
+            global $databaseProvider, $statisticsService, $placeService, $expenseService,
+                $stayService, $flightService, $fitnessService, $noteService, $highlightService;
+            
+            $trips = array();
+
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
+            if ($year !== NULL) {
+                $whereClauseBuilder->withClause("year = ?", $year);
+            }
+            if ($tripId !== NULL) {
+                $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            $tripRows = $databaseProvider
+                ->statementBuilder("SELECT * FROM trip_summary {{WHERE CLAUSE}}", $whereClause)
+                ->getResultSet();
+
+            foreach ($tripRows as &$tripRow) {
+                $countries = $placeService->getCountriesForTrip($tripRow["trip_id"]);
+                
+                $expenses = array();
+                if ($includeExpenses) {
+                    $expenses = $expenseService->getExpensesForTrip($tripRow["trip_id"]);            
+                }
+
+                $stays = array();
+                if ($includeStays) {
+                    $stays = $stayService->getStaysForTrip($tripRow["trip_id"]);                        
+                }
+
+                $flights = array();
+                if ($includeFlights) {
+                    $flights = $flightService->getFlightsForTrip($tripRow["trip_id"]);             
+                }
+
+                $watchedFlights = array();
+                if ($includeWatchedFlights) {
+                    $watchedFlights = $flightService->getWatchedFlightsForTrip($tripRow["trip_id"]);
+                }
+
+                $layovers = array();
+                if ($includeLayovers) {
+                    $layovers = $placeService->getLayoversForTrip($tripRow["trip_id"]);                   
+                }
+
+                $fitness = array();
+                if ($includeFitness) {
+                    $fitness = $fitnessService->getFitnessRecordsForTrip($tripRow["trip_id"]);              
+                }
+
+                $notes = array();
+                if ($includeNotes) {
+                    $notes = $noteService->getNotesForTrip($tripRow["trip_id"]);                   
+                }
+
+                $highlights = array();
+                if ($includeHighlights) {
+                    $highlights = $highlightService->getTripHighlights($tripRow["trip_id"]);        
+                }
+
+                $stats = array();
+                if ($includeStats) {
+                    $stats = $statisticsService->getTripStatistics($tripRow["trip_id"]);                 
+                }
+
+                $publicHolidays = array();
+                if ($includePublicHolidays) {
+                    $publicHolidays = $this->getPublicHolidaysForTrip($tripRow["trip_id"], $countries);                               
+                }
+
+                $trips[] = new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $highlightService->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"], $tripRow["end"], $countries,
+                    $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL,
+                    isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays);
+            }
+
+            return $trips;
         }
 
         public function getCandidateTrip($tripId) : ?Trip {
@@ -40,7 +134,7 @@
 
             $notes = array();
             if ($includeNotes) {
-                $notes = $noteService->getNotes($tripId);;
+                $notes = $noteService->getNotesForTrip($tripId);;
             }
 
             $holidays = array();
@@ -220,8 +314,28 @@
             return array_values($holidays);
         }
 
-        // TODO: Make private.
-        public function getPublicHolidaysForCountry($country) : array {
+        private function getPublicHolidaysForTrip($tripId, $countries) {
+            global $tripService, $placeService;
+
+            $holidays = array();
+
+            foreach ($countries as &$country) {
+                $countryHolidays = array();
+                foreach ($tripService->getPublicHolidaysForCountry($country) as &$countryHoliday) {
+                    $countryHolidays[$countryHoliday->getDate()] = $countryHoliday;
+                }
+
+                foreach ($placeService->getDatesForTripAndCountry($tripId, $country) as &$countryDate) {
+                    if (array_key_exists($countryDate, $countryHolidays)) {
+                        $holidays[] = new PublicHoliday($countryHolidays[$countryDate]->getName(), $country, $countryDate);
+                    }
+                }
+            }
+
+            return $holidays;
+        }
+
+        private function getPublicHolidaysForCountry($country) : array {
             global $calendarClient;
 
             $holidays = array();

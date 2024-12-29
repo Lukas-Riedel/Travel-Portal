@@ -3,12 +3,9 @@
         public function handle($input) {
             global $processorProvider, $tripService;
 
-            $response = $processorProvider->run("GetTrips", $input);
-            if ($response instanceof TargetError) {
-                return $this->createResponse(NULL, $response);
-            }
-            if (count($response) == 1) {
-                return $this->createResponse(200, $response[0]);
+            $response = $tripService->getRegularTrip($input["tripId"]);
+            if ($response !== NULL) {
+                return $this->createResponse(200, $response);
             }
     
             // No regular trip found, try candidates instead.

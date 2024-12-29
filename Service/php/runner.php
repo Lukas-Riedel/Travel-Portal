@@ -26,6 +26,7 @@
     require_once(dirname(__FILE__) . "/service/StatisticsService.php");
     require_once(dirname(__FILE__) . "/service/GeocodingService.php");
     require_once(dirname(__FILE__) . "/client/CalendarClient.php");
+    require_once(dirname(__FILE__) . "/service/StayService.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -52,6 +53,7 @@
     $statisticsService = new StatisticsService();
     $geocodingService = new GeocodingService();
     $calendarClient = new CalendarClient();
+    $stayService = new StayService();
     
     $supportedActions = array_filter(array_map(function ($file) {
         $tokens = explode("/", $file);

@@ -11,6 +11,33 @@
     require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class PlaceService {
+        public function getDatesForTripAndCountry($tripId, $country) : array {
+            global $databaseProvider;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(start),'%e.%c.%Y') AS date FROM place_summary WHERE trip_id = ? AND country = ?")
+                ->withParameters($tripId, $country)
+                ->getResultSetForColumn("date");
+        }
+
+        public function getCountriesForTrip($tripId) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT DISTINCT country FROM place_summary WHERE trip_id = ? AND NOT layover GROUP BY country ORDER BY MIN(start)")
+                ->withParameters($tripId)
+                ->getResultSetForColumn("country");
+        }
+
+        public function getLayoversForTrip($tripId) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT place_id FROM place_summary WHERE trip_id = ? AND layover = 1")
+                ->withParameters($tripId)
+                ->getResultSetForColumn("place_id");
+        }
+
         public function getRegularPlace($placeId) : ?Place {
             $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;

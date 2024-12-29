@@ -17,7 +17,7 @@
             return new Note($noteRow["id"], $noteRow["content"]);
         }
 
-        public function getNotes($tripId) {
+        public function getNotesForTrip($tripId) {
             global $databaseProvider;
 
             return $databaseProvider
