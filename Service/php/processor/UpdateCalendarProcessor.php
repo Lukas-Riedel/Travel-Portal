@@ -1,6 +1,5 @@
 <?php    
     require_once(dirname(__FILE__) . "/../ical.php");
-    require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
     class UpdateCalendarProcessor extends Processor {
         public function process($input) {
@@ -414,22 +413,6 @@
             global $configuration, $chatClient;
 
             return $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $country));
-        }
-
-        private function getHolidays() {
-            global $configuration, $databaseProvider;
-
-            $holidays = (new GetPublicHolidaysProcessor())
-                ->process(array(
-                    "country" => $configuration["homeLocation"]["country"]));
-
-            // Update holidays in the configuration for the use in SQL functions.
-            $databaseProvider
-                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'PUBLIC_HOLIDAYS'")
-                ->withParameters(implode(",", array_map(function($holiday) { return $holiday->getDate(); }, $holidays)))
-                ->execute();
-
-            return $holidays;
         }
 
         private function downloadEvents($url) {

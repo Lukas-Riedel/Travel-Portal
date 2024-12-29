@@ -3,7 +3,6 @@
     require_once(dirname(__FILE__) . "/../model/Trip.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
     require_once(dirname(__FILE__) . "/../processor/GetTripsProcessor.php");
-    require_once(dirname(__FILE__) . "/../processor/GetPublicHolidaysProcessor.php");
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {
@@ -44,13 +43,13 @@
                 $notes = $noteService->getNotes($tripId);;
             }
 
-            $publicHolidays = array();
+            $holidays = array();
             if ($includePublicHolidays) {
-                $publicHolidays = $this->getPublicHolidays(explode(",", $tripRow["countries"]));
+                $holidays = $this->getPublicHolidaysForCountries(explode(",", $tripRow["countries"]));
             }
 
             return new Trip($tripRow["id"], $tripRow["name"], NULL, NULL, NULL, NULL, explode(",", $tripRow["countries"]), NULL, 
-                $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
+                $tripRow["days"], NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), $notes, array(), array(), $holidays);
         }
 
         public function getTripIdentifier($name, $year) : ?TripIdentifier {
@@ -207,15 +206,11 @@
             return $googleApiClient->deleteCalendarEvent("trips", $this->getTripEventId($tripId));
         }
     
-        private function getPublicHolidays($countries) {
+        private function getPublicHolidaysForCountries($countries) : array {
             $holidays = array();
 
             foreach ($countries as &$country) {
-                $holidays = (new GetPublicHolidaysProcessor())
-                    ->process(array(
-                        "country" => $country));
-
-                foreach ($holidays as &$holiday) {
+                foreach ($this->getPublicHolidaysForCountry($country) as &$holiday) {
                     $holidays[strtotime($holiday->getDate())] = $holiday;
                 }
             }
@@ -223,6 +218,22 @@
             ksort($holidays);
 
             return array_values($holidays);
+        }
+
+        // TODO: Make private.
+        public function getPublicHolidaysForCountry($country) : array {
+            global $calendarClient;
+
+            $holidays = array();
+            
+            foreach ($calendarClient->getPublicHolidayEvents($country) as &$event) {               
+                if ($event->getStart() > time()) {
+                    $date = getdate($event->getStart());
+                    $holidays[] = new PublicHoliday($event->getSummary(), $country, $date["mday"] . "." . $date["mon"] . "." . $date["year"]);                    
+                }
+            }
+
+            return $holidays;
         }
     }
 ?>

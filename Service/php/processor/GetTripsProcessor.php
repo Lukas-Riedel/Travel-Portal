@@ -7,7 +7,6 @@
     require_once(dirname(__FILE__) . "/../model/Flight.php");
     require_once(dirname(__FILE__) . "/../model/PublicHoliday.php");
     require_once(dirname(__FILE__) . "/../model/Fitness.php");
-    require_once(dirname(__FILE__) . "/GetPublicHolidaysProcessor.php");
 
     class GetTripsProcessor extends Processor {        
         public function process($input) {
@@ -170,7 +169,7 @@
         }
     
         private function getPublicHolidays($tripRow) {
-            global $databaseProvider;
+            global $databaseProvider, $tripService;
 
             $result = array();
 
@@ -179,12 +178,8 @@
                 ->withParameters($tripRow["trip_id"])
                 ->getResultSet();
 
-            $getPublicHolidaysProcessor = new GetPublicHolidaysProcessor();
-
             foreach ($visitedCountryRows as $visitedCountryRow) {
-                $holidays = $getPublicHolidaysProcessor
-                    ->process(array(
-                        "country" => $visitedCountryRow["country"]));
+                $holidays = $tripService->getPublicHolidaysForCountry($visitedCountryRow["country"]);
 
                 $holidaysMap = array();
                 foreach ($holidays as &$holiday) {
