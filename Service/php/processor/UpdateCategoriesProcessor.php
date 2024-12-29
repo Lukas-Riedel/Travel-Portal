@@ -96,9 +96,6 @@
                         "type" => "CATEGORY", 
                         "id" => $categoryId), NULL);
             }
-    
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateRegionAreas", NULL, NULL);
 
             return TRUE;
         }
