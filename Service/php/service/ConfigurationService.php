@@ -27,6 +27,15 @@
                 : array($this->convertTypeName($type) => array($key => $configurationEntryRow["value"]));
         }
 
+        public function updateGoogleCalendarWatchId($watchId) : void {
+            global $databaseProvider;
+
+            $databaseProvider
+                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_CALENDAR_API' AND `key` = 'watchId'")
+                ->withParameters($watchId)
+                ->execute();
+        }
+
         public function updateConfigurationEntryValue($type, $key, $value) : bool {
             global $databaseProvider;
 

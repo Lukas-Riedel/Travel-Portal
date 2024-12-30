@@ -2,29 +2,27 @@
     require_once(dirname(__FILE__) . "/../model/CalendarEvent.php");
     require_once(dirname(__FILE__) . "/../lib/ical.php");
 
-    class CalendarClient {   
-        public function getPlaceEvents() : array {        
-            global $configuration;
+    class CalendarClient {
+        public function watchCalendar($calendar, $watchId) : void {
+            global $configuration, $schedulingProvider, $googleApiClient, $authenticationService;
 
-            return $this->fetchEvents($configuration["calendars"]["places"]);
+            $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
+
+            $googleApiClient->watchCalendar($calendar, $watchId, 
+                BASE_URL . "/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $watchId,
+                "Bearer " . $authenticationResult->getAccessToken());
+                
+            $googleApiClient->watchCalendar($calendar, $watchId, BASE_URL . "/php/runner.php");
+
+            $schedulingProvider
+                ->scheduleJobExecution("UpdateCalendar", array(
+                    "watchId" => $watchId), NULL);
         }
-        
-        public function getTripEvents() : array {        
+
+        public function getEvents($calendar) : array {        
             global $configuration;
 
-            return $this->fetchEvents($configuration["calendars"]["trips"]);
-        }
-        
-        public function getFlightEvents() : array {        
-            global $configuration;
-
-            return $this->fetchEvents($configuration["calendars"]["flights"]);
-        }
-        
-        public function getStayEvents() : array {        
-            global $configuration;
-
-            return $this->fetchEvents($configuration["calendars"]["stays"]);
+            return $this->fetchEvents($configuration["calendars"][$calendar]);
         }
 
         public function getPublicHolidayEvents($country) : array {            
