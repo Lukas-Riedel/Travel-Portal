@@ -40,6 +40,10 @@
                 ->getSingleRow();
 
             if ($existingFitnessRow != NULL && ($steps < $existingFitnessRow["steps"] || $minutes < $existingFitnessRow["minutes"] || $distance < $existingFitnessRow["distance"])) {
+                $databaseProvider
+                    ->statementBuilder("UPDATE fitness SET last_update = UNIX_TIMESTAMP() WHERE timestamp = ?")
+                    ->withParameters($timestamp)
+                    ->execute();
                 return FALSE;
             }
 
