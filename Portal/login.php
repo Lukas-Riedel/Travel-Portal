@@ -15,6 +15,7 @@
         try {
             $accessTokenResponse = $authenticationService->authenticateWithCredentials($_POST["username"], $_POST["password"]);
             setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse->getValidity(), "/");
+            setcookie("refreshToken", $accessTokenResponse->getRefreshToken(), 0, "/");
 
             if (isset($_GET["origin"])) {
                 header("Location: " . $_GET["origin"]);

@@ -498,6 +498,20 @@ class Api {
             return JSON.parse(decodeURIComponent(cachedBearerToken)).accessToken;
         }
         
+        const cachedRefreshToken = document.cookie.match("(^|;)\\s*refreshToken\\s*=\\s*([^;]+)")?.pop();
+        if (cachedRefreshToken !== undefined) {
+            const response = await $.ajax({
+                method: "POST",
+                url: "https://" + this.#hostName + "/iam",
+                data: JSON.stringify({ refreshToken: JSON.parse(decodeURIComponent(cachedRefreshToken)) }),
+                dataType: "json",
+            });
+
+            if (response.status === 200) {
+                return this.#handleIamResponse(response);
+            }
+        }
+        
         const response = await new Promise((resolve, reject) => {
             $.ajax({
                 method: "POST",
@@ -509,9 +523,14 @@ class Api {
             });
         });
 
+        return this.#handleIamResponse(response);
+    }
+
+    #handleIamResponse(response) {
         const expiration = new Date();
         expiration.setTime(expiration.getTime() + (response.validity * 1000));
         document.cookie = "accessToken=" + JSON.stringify(response) + "; expires=" + expiration.toUTCString() + "; path=/";
+        document.cookie = "refreshToken=" + JSON.stringify(response.refreshToken) + "; path=/";
 
         return response.accessToken;
     }

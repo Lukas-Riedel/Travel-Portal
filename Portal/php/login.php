@@ -11,16 +11,33 @@
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $authenticationService = new AuthenticationService();
 
-    if (isset($_GET["apiKey"]) && (!isset($_COOKIE["accessToken"]) || $_COOKIE["accessToken"] === NULL)) {
-        try {
-            $accessTokenResponse = $authenticationService->authenticateWithApiKey($_GET["apiKey"]);
-            setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse->getValidity(), "/");
-
-            header("Location: " . $_SERVER["REQUEST_URI"]);
-            exit();
+    if (!isset($_COOKIE["accessToken"]) || $_COOKIE["accessToken"] === NULL) {
+        if (isset($_GET["apiKey"])) {
+            try {
+                $accessTokenResponse = $authenticationService->authenticateWithApiKey($_GET["apiKey"]);
+                setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse->getValidity(), "/");
+                setcookie("refreshToken", $accessTokenResponse->getRefreshToken(), 0, "/");
+    
+                header("Location: " . $_SERVER["REQUEST_URI"]);
+                exit();
+            }
+            catch (Exception $e) {
+                // Do nothing.
+            }
         }
-        catch (Exception $e) {
-            // Do nothing.
+        
+        if (isset($_COOKIE["refreshToken"]) && $_COOKIE["refreshToken"] !== NULL) {
+            try {
+                $accessTokenResponse = $authenticationService->authenticateWithRefreshToken($_COOKIE["refreshToken"]);
+                setcookie("accessToken", json_encode($accessTokenResponse), time() + $accessTokenResponse->getValidity(), "/");
+                setcookie("refreshToken", $accessTokenResponse->getRefreshToken(), 0, "/");
+    
+                header("Location: " . $_SERVER["REQUEST_URI"]);
+                exit();
+            }
+            catch (Exception $e) {
+                // Do nothing.
+            }
         }
     }
 
