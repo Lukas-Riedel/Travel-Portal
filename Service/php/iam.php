@@ -26,6 +26,9 @@
         else if (isset($requestBody["username"]) && isset($requestBody["password"])) {
             $authenticationResult = $authenticationService->authenticateWithCredentials($requestBody["username"], $requestBody["password"]);
         }
+        else if (isset($requestBody["refreshToken"])) {
+            $authenticationResult = $authenticationService->authenticateWithRefreshToken($requestBody["refreshToken"]);
+        }
         else {
             throw new InvalidArgumentException("Some of the required arguments are missing.");
         }

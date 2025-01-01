@@ -17,13 +17,13 @@
                 throw new AuthenticationException("The access token could not be read.");
             }
     
-            $parts = explode('::', $decoded, 2);
+            $parts = explode("::", $decoded, 2);
             if (count($parts) !== 2) {
                 throw new AuthenticationException("The access token could not be read.");
             }
             
             list($encryptedData, $iv) = $parts;
-            $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], PRIVATE_KEY, 0, $iv);
+            $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], $this->getAccessTokenPrivatekey(), 0, $iv);
             if ($decrypted === FALSE) {
                 throw new AuthenticationException("The access token could not be read.");
             }
@@ -42,6 +42,45 @@
             }
 
             return new AccessToken($decodedAccessToken["roles"], $decodedAccessToken["version"], $decodedAccessToken["expiration"]);
+        }
+
+        public function authenticateWithRefreshToken($refreshToken) : AuthenticationResult {
+            global $configuration;
+
+            if ($refreshToken === NULL) {
+                throw new AuthenticationException("The refresh token was not provided.");
+            }
+
+            $decoded = base64_decode($refreshToken);
+            if ($decoded === FALSE) {
+                throw new AuthenticationException("The refresh token could not be read.");
+            }
+    
+            $parts = explode("::", $decoded, 2);
+            if (count($parts) !== 2) {
+                throw new AuthenticationException("The refresh token could not be read.");
+            }
+            
+            list($encryptedData, $iv) = $parts;
+            $decrypted = openssl_decrypt($encryptedData, $configuration["bearerToken"]["cipher"], $this->getRefreshTokenPrivatekey(), 0, $iv);
+            if ($decrypted === FALSE) {
+                throw new AuthenticationException("The refresh token could not be read.");
+            }
+            
+            $decodedRefreshToken = json_decode($decrypted, TRUE);
+            if ($decodedRefreshToken === NULL) {
+                throw new AuthenticationException("The refresh token could not be read.");
+            }
+    
+            if ($decodedRefreshToken["expiration"] < time()) {
+                throw new AuthenticationException("The refresh token expired at " . $decodedRefreshToken["expiration"] . ".");
+            }
+
+            if ($decodedRefreshToken["version"] !== $configuration["bearerToken"]["version"]) {
+                throw new AuthenticationException("The refresh token version " . $decodedRefreshToken["version"] . " is outdated.");
+            }
+
+            return $this->generateAuthenticationResult($decodedRefreshToken["roles"], $configuration["bearerToken"]["validity"]);
         }
 
         public function authenticateWithCredentials($username, $password) : AuthenticationResult {
@@ -96,10 +135,23 @@
 
             $rawAccessToken = new AccessToken($roles, $configuration["bearerToken"]["version"], time() + $validity);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($configuration["bearerToken"]["cipher"]));
-            $encrypted = openssl_encrypt(json_encode($rawAccessToken), $configuration["bearerToken"]["cipher"], PRIVATE_KEY, 0, $iv);
-            $accessToken = base64_encode($encrypted . '::' . $iv);
+            $encrypted = openssl_encrypt(json_encode($rawAccessToken), $configuration["bearerToken"]["cipher"], $this->getAccessTokenPrivatekey(), 0, $iv);
+            $accessToken = base64_encode($encrypted . "::" . $iv);
+            
+            $rawRefreshToken = new AccessToken($roles, $configuration["bearerToken"]["version"], time() + 12 * $validity);
+            $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($configuration["bearerToken"]["cipher"]));
+            $encrypted = openssl_encrypt(json_encode($rawRefreshToken), $configuration["bearerToken"]["cipher"], $this->getRefreshTokenPrivatekey(), 0, $iv);
+            $refreshToken = base64_encode($encrypted . "::" . $iv);
 
-            return new AuthenticationResult($accessToken, $roles, $validity);
+            return new AuthenticationResult($accessToken, $refreshToken, $roles, $validity);
+        }
+
+        private function getAccessTokenPrivatekey() {
+            return hash_hmac("sha256", "ACCESS_TOKEN", PRIVATE_KEY);
+        }
+
+        private function getRefreshTokenPrivatekey() {
+            return hash_hmac("sha256", "REFRESH_TOKEN", PRIVATE_KEY);
         }
     }
 ?>
