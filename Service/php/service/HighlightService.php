@@ -1,6 +1,5 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
-    require_once(dirname(__FILE__) . "/../processor/UpdateHighlightProcessor.php");
 
     class HighlightService {
         public function getHighlight($highlightId) : ?Highlight {
@@ -116,9 +115,7 @@
 
                 $this->updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier);
 
-                (new UpdateHighlightProcessor())
-                    ->process(array(
-                        "highlightId" => $highlightIdentifier));
+                $this->updateHighlight($highlightIdentifier);
             }
             
            return $this->getHighlight($highlightIdentifier);
@@ -152,6 +149,77 @@
                 ->scheduleJobExecution("UpdateHighlight", NULL, NULL);
                 
             return $wasDeleted;
+        }
+
+        public function updateHighlights() : void {
+            global $configuration;
+
+            $thumbnailFilePaths = $this->doUpdateHighlights(NULL, NULL, FALSE, $configuration["cachePath"]["highlightThumbnail"],
+                $configuration["highlightThumbnailImageSize"], "thumbnail_url");
+            $this->unlinkUnusedFiles($thumbnailFilePaths, $configuration["cachePath"]["highlightThumbnail"]);
+        }
+
+        public function updateHighlight($highlightId) : void {
+            global $configuration;
+
+            $this->doUpdateHighlights($highlightId, NULL, TRUE, $configuration["cachePath"]["highlightThumbnail"],
+                $configuration["highlightThumbnailImageSize"], "thumbnail_url");
+        }
+
+        public function updateHighlightForPhoto($photoId) : void {
+            global $configuration;
+
+            $this->doUpdateHighlights(NULL, $photoId, TRUE, $configuration["cachePath"]["highlightThumbnail"],
+                $configuration["highlightThumbnailImageSize"], "thumbnail_url");
+        }
+
+        private function doUpdateHighlights($highlightId, $photoId, $forceOverwrite, $cachePath, $imageSize, $urlColumnName) : array {
+            global $databaseProvider, $googleApiClient;
+
+            $filePaths = array();
+
+            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
+            if ($highlightId !== NULL) {
+                $whereClauseBuilder->withClause("hi.id = ?", $highlightId);
+            }
+            if ($photoId !== NULL) {
+                $whereClauseBuilder->withClause("hi.photo_id = ?", $photoId);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+            
+            $highlightRows = $databaseProvider
+                ->statementBuilder("SELECT hi.*, pi.external_id FROM highlight_identifier hi INNER JOIN photo_identifier pi ON hi.photo_id = pi.id {{WHERE CLAUSE}}", $whereClause)
+                ->getResultSet();
+
+            foreach ($highlightRows as &$highlightRow) {
+                $fileName = $highlightRow["external_id"] . ".jpg";
+                $filePath = $this->getPhysicalCachePath($cachePath) . "/" . $fileName;
+    
+                if ($forceOverwrite || !file_exists($filePath)) {
+                    $baseUrl = $googleApiClient->getMediaItem($highlightRow["external_id"])["baseUrl"];
+                    file_put_contents($filePath, file_get_contents($baseUrl . "=w" . $imageSize["width"] . "-h" . $imageSize["height"]));
+                }
+    
+                $filePaths[] = $filePath;
+                $imageUrl = BASE_URL . "/" . $cachePath . "/" . $fileName;
+
+                $databaseProvider
+                    ->statementBuilder("UPDATE highlight_identifier SET " . $urlColumnName . " = ? WHERE id = ?")
+                    ->withParameters($imageUrl, $highlightRow["id"])
+                    ->execute();
+            }
+            
+            return $filePaths;
+        }
+
+        private function unlinkUnusedFiles($usedFilePaths, $cachePath) : void {
+            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath($cachePath) . "/*"));
+            $unusedFilePaths = array_diff($existingFilePaths, $usedFilePaths);    
+            array_map("unlink", $unusedFilePaths);
+        }
+
+        private function getPhysicalCachePath($cachePath) : string {
+            return dirname(__FILE__) . "/../../" . $cachePath;
         }
 
         private function resolveHighlightTable($highlightType) : string {
