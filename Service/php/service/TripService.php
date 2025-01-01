@@ -199,7 +199,7 @@
 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
-                    "type" => "TRIP", 
+                    "type" => StatisticsType::Trip->value, 
                     "id" => $tripId), NULL);   
 
             return $wasUpdated;

@@ -41,11 +41,9 @@
         
         private function getHighlights($highlightType, $entityId) : array {
             global $databaseProvider;
-            
-            $highlightTable = $this->resolveHighlightTable($highlightType);
 
             return $databaseProvider
-                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM " . $highlightTable . " ht INNER JOIN highlight_identifier hi ON ht.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE ht.id = ?")
+                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM " . $highlightType->getTableName() . " ht INNER JOIN highlight_identifier hi ON ht.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE ht.id = ?")
                 ->withParameters($entityId)
                 ->getMappedResultSet(function ($highlightRow) { 
                     return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
@@ -99,17 +97,16 @@
             global $databaseProvider;
 
             $highlightIdentifier = $this->getOrCreateHighlightIdentifier($photoId);
-            $highlightTable = $this->resolveHighlightTable($highlightType);
 
             // TODO: Remove the create-if-not-exists semantics.
             $highlightNotExists = $databaseProvider
-                ->statementBuilder("SELECT * FROM " . $highlightTable . " WHERE id = ? AND highlight_id = ?")
+                ->statementBuilder("SELECT * FROM " . $highlightType->getTableName() . " WHERE id = ? AND highlight_id = ?")
                 ->withParameters($entityId, $highlightIdentifier)
                 ->getFirstRow() === NULL;
 
             if ($highlightNotExists) {
                 $databaseProvider
-                    ->statementBuilder("INSERT INTO " . $highlightTable . " (id, highlight_id) VALUES (?, ?)")
+                    ->statementBuilder("INSERT INTO " . $highlightType->getTableName() . " (id, highlight_id) VALUES (?, ?)")
                     ->withParameters($entityId, $highlightIdentifier)
                     ->execute();
 
@@ -141,7 +138,7 @@
             global $databaseProvider, $schedulingProvider;
 
             $wasDeleted = $databaseProvider
-                ->statementBuilder("DELETE FROM " . $this->resolveHighlightTable($highlightType) . " WHERE id = ? AND highlight_id = ?")
+                ->statementBuilder("DELETE FROM " . $highlightType->getTableName() . " WHERE id = ? AND highlight_id = ?")
                 ->withParameters($entityId, $highlightId)
                 ->execute();
 
@@ -222,22 +219,6 @@
             return dirname(__FILE__) . "/../../" . $cachePath;
         }
 
-        private function resolveHighlightTable($highlightType) : string {
-            if ($highlightType === HighlightType::Place) {
-                return "highlight_place";
-            }
-            if ($highlightType === HighlightType::Trip) {
-                return "highlight_trip";
-            }
-            if ($highlightType === HighlightType::Category) {
-                return "highlight_category";
-            }
-            if ($highlightType === HighlightType::Year) {
-                return "highlight_year";
-            }
-            throw new InvalidArgumentException("Unknown highlight type " . $highlightType . ".");
-        }
-
         private function updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier) : bool {
             global $placeService, $tripService, $categoryService, $yearService;
 
@@ -278,5 +259,14 @@
         case Trip;
         case Category;
         case Year;
+
+        public function getTableName() : string {
+            return match ($this) {
+                self::Place => "highlight_place",
+                self::Trip => "highlight_trip",
+                self::Category => "highlight_category",
+                self::Year => "highlight_year"
+            };
+        }
     }
 ?>

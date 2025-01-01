@@ -348,7 +348,7 @@
             foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $tripId), NULL); 
             }   
 
@@ -366,7 +366,7 @@
             foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $tripId), NULL); 
             }   
 
@@ -509,19 +509,18 @@
         private function createSpecialPlace($specialPlaceType, $name, $address) : Place {            
             global $databaseProvider, $configurationService, $geocodingService;
 
-            $placeTable = $this->resolveSpecialPlaceTable($specialPlaceType);
             $country = $geocodingService->getLocation($address)->getCountry();
 
             $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
 
             // TODO: Remove the create-if-not-exists semantics.
             $databaseProvider
-                ->statementBuilder("DELETE FROM " . $placeTable . " WHERE place_id = ?")
+                ->statementBuilder("DELETE FROM " . $specialPlaceType->getTableName() . " WHERE place_id = ?")
                 ->withParameters($placeIdentifier->getId())
                 ->execute();
 
             $databaseProvider
-                ->statementBuilder("INSERT INTO " . $placeTable . " (place_id) VALUES (?)")
+                ->statementBuilder("INSERT INTO " . $specialPlaceType->getTableName() . " (place_id) VALUES (?)")
                 ->withParameters($placeIdentifier->getId())
                 ->execute();
 
@@ -544,7 +543,7 @@
             foreach ($categoryIdsToUpdate as &$categoryIdToUpdate) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "CATEGORY", 
+                        "type" => StatisticsType::Category->value, 
                         "id" => $categoryIdToUpdate), NULL);
             }
 
@@ -556,7 +555,7 @@
             foreach ($yearsToUpdate as &$yearToUpdate) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "YEAR", 
+                        "type" => StatisticsType::Year->value, 
                         "id" => $yearToUpdate), NULL);
             }
 
@@ -571,7 +570,7 @@
             global $databaseProvider;
 
             return $databaseProvider
-                ->statementBuilder("DELETE FROM " . $this->resolveSpecialPlaceTable($specialPlaceType) . " WHERE place_id = ?")
+                ->statementBuilder("DELETE FROM " . $specialPlaceType->getTableName() . " WHERE place_id = ?")
                 ->withParameters($placeId)
                 ->execute() === 1;
         }
@@ -580,16 +579,6 @@
             global $configuration, $chatClient;
 
             return $chatClient->getResponse(sprintf($configuration["chatRequests"]["suggestedExcerpt"], $name, $country));
-        }
-
-        private function resolveSpecialPlaceTable($specialPlaceType) {
-            if ($specialPlaceType === SpecialPlaceType::Candidate) {
-                return "place_candidate";
-            }
-            if ($specialPlaceType === SpecialPlaceType::Permanent) {
-                return "place_permanent";
-            }
-            throw new InvalidArgumentException("Unknown special place type " . $specialPlaceType . ".");
         }
 
         private function getPlaceEventId($placeId, $start) : ?string {
@@ -620,5 +609,12 @@
     enum SpecialPlaceType {
         case Candidate;
         case Permanent;
+
+        public function getTableName() : string {
+            return match ($this) {
+                self::Candidate => "place_candidate",
+                self::Permanent => "place_permanent"
+            };
+        }
     }
 ?>

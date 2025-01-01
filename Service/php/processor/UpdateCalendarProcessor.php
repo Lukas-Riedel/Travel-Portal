@@ -271,7 +271,7 @@
 
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $newPlaceRow["trip_id"]), NULL);
             }
 
@@ -314,7 +314,7 @@
                 if ($removedPlaceRow["trip_id"] != NULL) {
                     $schedulingProvider
                         ->scheduleJobExecution("UpdateStats", array(
-                            "type" => "TRIP", 
+                            "type" => StatisticsType::Trip->value, 
                             "id" => $removedPlaceRow["trip_id"]), NULL);
                 }
                 
@@ -322,7 +322,7 @@
                     foreach (explode(",", $removedPlaceRow["category_ids"]) as &$categoryId) {
                         $schedulingProvider
                             ->scheduleJobExecution("UpdateStats", array(
-                                "type" => "CATEGORY", 
+                                "type" => StatisticsType::Category->value, 
                                 "id" => $categoryId), NULL);
                     }
                 }
@@ -345,7 +345,7 @@
             foreach ($newStayRows as &$newStayRow) {                  
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $newStayRow["trip_id"]), NULL);
             }
 
@@ -358,7 +358,7 @@
                 if ($removedStayRow["trip_id"] != NULL) {
                     $schedulingProvider
                         ->scheduleJobExecution("UpdateStats", array(
-                            "type" => "TRIP", 
+                            "type" => StatisticsType::Trip->value, 
                             "id" => $removedStayRow["trip_id"]), NULL);
                 }
             }
@@ -375,7 +375,7 @@
             foreach ($newFlightRows as &$newFlightRow) {              
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $newFlightRow["trip_id"]), NULL);
             }
 
@@ -396,7 +396,7 @@
                 if ($removedFlightRow["trip_id"] != NULL) {
                     $schedulingProvider
                         ->scheduleJobExecution("UpdateStats", array(
-                            "type" => "TRIP", 
+                            "type" => StatisticsType::Trip->value, 
                             "id" => $removedFlightRow["trip_id"]), NULL);
                 }
             }

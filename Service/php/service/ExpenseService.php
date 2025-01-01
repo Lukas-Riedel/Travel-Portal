@@ -37,7 +37,7 @@
 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
-                    "type" => "TRIP", 
+                    "type" => StatisticsType::Trip->value, 
                     "id" => $tripId), NULL);
 
             $this->updateCurrencies();
@@ -97,7 +97,7 @@
                 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
-                    "type" => "TRIP", 
+                    "type" => StatisticsType::Trip->value, 
                     "id" => $tripId), NULL);
 
             return $wasUpdated;
@@ -115,7 +115,7 @@
                 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
-                    "type" => "TRIP", 
+                    "type" => StatisticsType::Trip->value, 
                     "id" => $tripId), NULL);
 
             return $wasUpdated;
@@ -136,7 +136,7 @@
                 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
-                    "type" => "TRIP", 
+                    "type" => StatisticsType::Trip->value, 
                     "id" => $tripId), NULL);
                     
             $this->updateCurrencies();

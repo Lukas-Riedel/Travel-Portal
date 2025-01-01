@@ -80,7 +80,7 @@
 
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "CATEGORY", 
+                        "type" => StatisticsType::Category->value, 
                         "id" => $categoryId), NULL);
             }
         }
@@ -194,7 +194,7 @@
                 
             $schedulingProvider
                 ->scheduleJobExecution("UpdateStats", array(
-                    "type" => "CATEGORY", 
+                    "type" => StatisticsType::Category->value, 
                     "id" => $categoryId), NULL);
 
             return $wasUpdated;

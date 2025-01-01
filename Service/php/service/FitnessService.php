@@ -65,7 +65,7 @@
             foreach ($parentTripIds as &$parentTripId) {                
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $parentTripId), NULL);
             }
 

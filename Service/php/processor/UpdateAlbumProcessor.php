@@ -207,7 +207,7 @@
             foreach ($changedAlbumRows as &$changedAlbumRow) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateStats", array(
-                        "type" => "TRIP", 
+                        "type" => StatisticsType::Trip->value, 
                         "id" => $changedAlbumRow["trip_id"]), NULL);
 
                 $categoryIds = $databaseProvider
@@ -218,7 +218,7 @@
                 foreach ($categoryIds as &$categoryId) {
                     $schedulingProvider
                         ->scheduleJobExecution("UpdateStats", array(
-                            "type" => "CATEGORY", 
+                            "type" => StatisticsType::Category->value, 
                             "id" => $categoryId), NULL);
                 }
             }
