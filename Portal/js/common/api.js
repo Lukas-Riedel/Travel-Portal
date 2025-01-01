@@ -503,7 +503,7 @@ class Api {
             const response = await $.ajax({
                 method: "POST",
                 url: "https://" + this.#hostName + "/iam",
-                data: JSON.stringify({ refreshToken: JSON.parse(decodeURIComponent(cachedRefreshToken)) }),
+                data: JSON.stringify({ refreshToken: decodeURIComponent(cachedRefreshToken) }),
                 dataType: "json",
             });
 
