@@ -46,6 +46,7 @@
             return NULL;
         }
 
+        // TODO: Accept PlaceIdentifier + start instead.
         public function updateDaylightForecast($placeId, $start, $end, $latitude, $longitude) : void {
             global $databaseProvider;
 
@@ -68,6 +69,7 @@
                 ->execute();
         }
 
+        // TODO: Accept PlaceIdentifier + start instead.
         public function updateHistoricalWeatherForecast($placeId, $start, $latitude, $longitude) : void {
             global $databaseProvider, $configuration, $httpClient;
             
@@ -100,6 +102,7 @@
             }
         }
 
+        // TODO: Accept PlaceIdentifier + start instead.
         public function updateActualWeatherForecast($placeId, $start, $latitude, $longitude) : void {
             global $databaseProvider, $configuration, $httpClient;
         

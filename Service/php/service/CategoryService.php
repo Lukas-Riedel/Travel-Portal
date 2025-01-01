@@ -4,6 +4,87 @@
     require_once(dirname(__FILE__) . "/../lib/GeoPHP/geoPHP.inc");
 
     class CategoryService {
+        public function updateCategories($placeIdentifier) : void {
+            global $databaseProvider, $schedulingProvider, $categoryService;
+
+            // Obtain geographical regions.
+            $geoRegions = $databaseProvider
+                ->statementBuilder("SELECT * FROM region_geographical")
+                ->getMappedResultSet(function($geoRegionRow) {
+                    return array(
+                        "categoryId" => $geoRegionRow["category_id"],
+                        "country" => $geoRegionRow["country"],
+                        "radius" => intval($geoRegionRow["radius"]),
+                        "geoJson" => geoPHP::load($geoRegionRow["json"], "json"));
+                });
+
+            // Obtain composite regions.
+            $compositeRegions = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT category_id FROM region_composite")
+                ->getMappedResultSet(function ($compositeRegionRow) use (&$databaseProvider) {
+                    return array(
+                        "categoryId" => $compositeRegionRow["category_id"],
+                        "includedCategoryIds" => $databaseProvider
+                            ->statementBuilder("SELECT subject_category_id FROM region_composite WHERE category_id = ? AND type = 'INCLUDE'")
+                            ->withParameters($compositeRegionRow["category_id"])
+                            ->getResultSetForColumn("subject_category_id"),
+                        "excludedCategoryIds" => $databaseProvider
+                            ->statementBuilder("SELECT subject_category_id FROM region_composite WHERE category_id = ? AND type = 'EXCLUDE'")
+                            ->withParameters($compositeRegionRow["category_id"])
+                            ->getResultSetForColumn("subject_category_id"));
+                });
+
+            // Assign actual categories.
+            $categoryIds = array();
+            
+            // Country category.
+            $categoryIds[] = $categoryService->getOrCreateCategoryIdentifier($placeIdentifier->getCountry(), "COUNTRY")->getId(); 
+        
+            // Geographical region categories.
+            $point = geoPHP::load("POINT (" . $placeIdentifier->getLongitude() . " " . $placeIdentifier->getLatitude() . ")", "wkt");
+            foreach ($geoRegions as &$geoRegion) {
+                if ($geoRegion["country"] === NULL || $geoRegion["country"] === $placeIdentifier->getCountry()) {
+                    if ($geoRegion["geoJson"]->pointInPolygon($point)) {
+                        $categoryIds[] = $geoRegion["categoryId"];
+                    }
+                    else if ($geoRegion["radius"] > 0) {
+                        foreach ($this->getPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $geoRegion["radius"], 10) as &$pointOnCircle) {
+                            $circlePoint = geoPHP::load("POINT (" . $pointOnCircle[1] . " " . $pointOnCircle[0] . ")", "wkt");
+                            if ($geoRegion["geoJson"]->pointInPolygon($circlePoint)) {
+                                $categoryIds[] = $geoRegion["categoryId"];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Composite region categories.
+            foreach ($compositeRegions as &$compositeRegion) {
+                if ($this->arrayAny($compositeRegion["includedCategoryIds"], function ($includedCategoryId) use (&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
+                    && $this->arrayEvery($compositeRegion["excludedCategoryIds"], function ($excludedCategoryId) use (&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
+                    $categoryIds[] = $compositeRegion["categoryId"];
+                }
+            }
+
+            $databaseProvider
+                ->statementBuilder("DELETE FROM category WHERE place_id = ?")
+                ->withParameters($placeIdentifier->getId())
+                ->execute();
+
+            foreach (array_unique($categoryIds) as &$categoryId) {  
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO category (place_id, category_id) VALUES (?, ?)")
+                    ->withParameters($placeIdentifier->getId(), $categoryId)
+                    ->execute();
+
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => "CATEGORY", 
+                        "id" => $categoryId), NULL);
+            }
+        }
+
         public function getCategoryIdentifierByName($name) : ?CategoryIdentifier {
             global $databaseProvider, $highlightService;
             
@@ -313,6 +394,48 @@
                     ->withParameters($categoryId, $area)
                     ->execute();
             }
+        }
+
+        private function getPointsOnCircle($x, $y, $radiusInKms, $pointsCount) : array {    
+            $points = array();
+    
+            for ($i = 0; $i < $pointsCount; $i++) {
+                $points[] = array($x + $this->positionX($pointsCount, $i, $radiusInKms / 111), $y + $this->positionY($pointsCount, $i, $radiusInKms / 111));
+            }
+    
+            return $points;
+        }
+    
+        private function positionX($numItems, $thisNum, $r) : float {
+            $alpha = 360 / $numItems;
+            $angle = $alpha * $thisNum;
+            $x = $r * cos(deg2rad($angle));
+            return $x;
+        }
+          
+        private function positionY($numItems, $thisNum, $r) : float {
+            $alpha = 360 / $numItems;
+            $angle = $alpha * $thisNum;
+            $y = $r * sin(deg2rad($angle));
+            return $y;
+        }
+
+        private function arrayAny($array, $fn) : bool {
+            foreach ($array as &$value) {
+                if ($fn($value)) {
+                    return TRUE;
+                }
+            }
+            return FALSE;
+        }
+    
+        private function arrayEvery($array, $fn) : bool {
+            foreach ($array as &$value) {
+                if (!$fn($value)) {
+                    return FALSE;
+                }
+            }
+            return TRUE;
         }
     }
 ?>
