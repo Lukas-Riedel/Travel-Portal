@@ -30,9 +30,11 @@
         private function materializeView($viewToMaterialize) {
             $this->connection->begin_transaction();
             $this->connection->query("DELETE FROM view_materialization WHERE view_name = '" . $viewToMaterialize . "'");
+            $this->connection->query("DROP TEMPORARY TABLE IF EXISTS materialized_view");
+            $this->connection->query("CREATE TEMPORARY TABLE materialized_view AS SELECT * FROM " . $viewToMaterialize);
             $this->connection->query("DELETE FROM " . substr($viewToMaterialize, 1));
             $start = microtime(TRUE);
-            $this->connection->query("INSERT INTO " . substr($viewToMaterialize, 1) . " SELECT * FROM " . $viewToMaterialize);
+            $this->connection->query("INSERT INTO " . substr($viewToMaterialize, 1) . " SELECT * FROM materialized_view");
             $_SESSION["materializationDuration"][$viewToMaterialize] = ceil(1000 * (microtime(TRUE) - $start));
             $this->connection->query("INSERT INTO view_materialization (view_name, last_materialization_duration, is_materialization_delayed) VALUES ('" 
                 . $viewToMaterialize . "', " . $_SESSION["materializationDuration"][$viewToMaterialize] . ", 0)");
