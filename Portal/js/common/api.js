@@ -530,7 +530,7 @@ class Api {
         const expiration = new Date();
         expiration.setTime(expiration.getTime() + (response.validity * 1000));
         document.cookie = "accessToken=" + JSON.stringify(response) + "; expires=" + expiration.toUTCString() + "; path=/";
-        document.cookie = "refreshToken=" + JSON.stringify(response.refreshToken) + "; path=/";
+        document.cookie = "refreshToken=" + response.refreshToken + "; path=/";
 
         return response.accessToken;
     }
