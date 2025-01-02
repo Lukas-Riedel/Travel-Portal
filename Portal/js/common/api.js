@@ -500,15 +500,18 @@ class Api {
         
         const cachedRefreshToken = document.cookie.match("(^|;)\\s*refreshToken\\s*=\\s*([^;]+)")?.pop();
         if (cachedRefreshToken !== undefined) {
-            const response = await $.ajax({
-                method: "POST",
-                url: "https://" + this.#hostName + "/iam",
-                data: JSON.stringify({ refreshToken: decodeURIComponent(cachedRefreshToken) }),
-                dataType: "json",
-            });
+            try {                
+                const response = await $.ajax({
+                    method: "POST",
+                    url: "https://" + this.#hostName + "/iam",
+                    data: JSON.stringify({ refreshToken: decodeURIComponent(cachedRefreshToken) }),
+                    dataType: "json",
+                });
 
-            if (response.status === 200) {
                 return this.#handleIamResponse(response);
+            }
+            catch (e) {
+                // Do nothing, the refresh token has expired.
             }
         }
         
