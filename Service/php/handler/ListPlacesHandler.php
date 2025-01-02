@@ -11,6 +11,7 @@
                 $response = $placeService->getRegularPlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
                     isset($input["year"]) ? $input["year"] : NULL,
+                    NULL,
                     isset($input["minStart"]) ? $input["minStart"] : NULL,
                     isset($input["maxEnd"]) ? $input["maxEnd"] : NULL,
                     isset($input["includeHighlights"]) && $input["includeHighlights"] === "true",

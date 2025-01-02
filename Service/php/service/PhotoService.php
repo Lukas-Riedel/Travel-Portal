@@ -78,7 +78,7 @@
                     ->execute();
             }
 
-            if (count($photos) != $previousCount) {
+            if (count($photos) !== $previousCount) {
                 $schedulingProvider
                     ->scheduleJobExecution("UpdateAlbum", array(
                         "albumId" => $albumId), NULL);
@@ -117,6 +117,95 @@
                 ->statementBuilder("INSERT INTO photo_pending (album_id, file_name, position, replaced_photo_id, upload_token) VALUES (?, ?, ?, ?, ?)")
                 ->withParameters($albumId, $fileName, $position, $replacedPhotoId, $uploadToken)
                 ->execute() === 1;
+        }
+
+        private function createGooglePhotos($albumId, $newPhotos, $replacedPhotoId) : array {  
+            global $googleApiClient, $albumService, $photoService;
+
+            $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+            if ($externalAlbumId === NULL) {
+                throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
+            }
+
+            $externalReplacedPhotoId = NULL;
+            if ($replacedPhotoId !== NULL) {
+                $externalReplacedPhotoId = $photoService->getExternalIdentifier($replacedPhotoId);    
+                if ($externalReplacedPhotoId == NULL) {
+                    throw new InvalidArgumentException("A photo with the identifier " . $externalReplacedPhotoId . " does not exist.");
+                }
+            }  
+            
+            $createdPhotos = $googleApiClient->createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId);
+
+            if (isset($createdPhotos[0]["status"]["message"]) && $createdPhotos[0]["status"]["message"] !== "Success") {
+                throw new RuntimeException($createdPhotos[0]["status"]["message"]);
+            }   
+
+            return $createdPhotos;
+        }
+
+        public function createPendingPhotos($albumId) : void {
+            global $databaseProvider, $schedulingProvider;
+            
+            $pendingPhotos = $databaseProvider
+                ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND position IS NOT NULL ORDER BY position LIMIT 50")
+                ->withParameters($albumId)
+                ->getResultSet();
+        
+            while (count($pendingPhotos) > 0) {
+                $newPhotos = array();
+                foreach ($pendingPhotos as &$pendingPhoto) {
+                    $newPhotos[] = array(
+                        "uploadToken" => $pendingPhoto["upload_token"],
+                        "fileName" => $pendingPhoto["file_name"]
+                    );
+
+                    $databaseProvider
+                        ->statementBuilder("DELETE FROM photo_pending WHERE id = ?")
+                        ->withParameters($pendingPhoto["id"])
+                        ->execute();
+                }
+
+                $this->createGooglePhotos($albumId, $newPhotos, NULL);
+                
+                $pendingPhotos = $databaseProvider
+                    ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND position IS NOT NULL ORDER BY position LIMIT 50")
+                    ->withParameters($albumId)
+                    ->getResultSet();
+            }
+            
+            $pendingPhotos = $databaseProvider
+                ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND replaced_photo_id IS NOT NULL")
+                ->withParameters($albumId)
+                ->getResultSet();
+            
+            foreach ($pendingPhotos as &$pendingPhoto) {
+                $newPhoto = array(
+                    "uploadToken" => $pendingPhoto["upload_token"],
+                    "fileName" => $pendingPhoto["file_name"]
+                );
+
+                $databaseProvider
+                    ->statementBuilder("DELETE FROM photo_pending WHERE id = ?")
+                    ->withParameters($pendingPhoto["id"])
+                    ->execute();
+                    
+                $createdMediaItemId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto["replaced_photo_id"])[0]["mediaItem"]["id"];
+
+                $databaseProvider
+                    ->statementBuilder("DELETE FROM photo WHERE id = ?")
+                    ->withParameters($pendingPhoto["replaced_photo_id"])
+                    ->execute();
+
+                $databaseProvider
+                    ->statementBuilder("UPDATE photo_identifier SET external_id = ? WHERE id = ?")
+                    ->withParameters($createdMediaItemId, $pendingPhoto["replaced_photo_id"])
+                    ->execute();
+
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateHighlight", array(
+                        "photoId" => $pendingPhoto["replaced_photo_id"]), NULL);
+            }
         }
     }
 ?>

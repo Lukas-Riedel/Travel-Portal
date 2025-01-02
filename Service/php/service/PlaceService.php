@@ -8,7 +8,6 @@
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
-    require_once(dirname(__FILE__) . "/../processor/UpdateAlbumProcessor.php");
 
     class PlaceService {
         public function getDatesForTripAndCountry($tripId, $country) : array {
@@ -39,15 +38,15 @@
         }
 
         public function getRegularPlace($placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
+            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
-        public function getRegularPlaces($categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {
-            return $this->doGetRegularPlaces(NULL, $categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt);
+        public function getRegularPlaces($categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {
+            return $this->doGetRegularPlaces(NULL, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt);
         }
 
-        private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {            
+        private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {            
             global $databaseProvider, $highlightService, $categoryService, $albumService, $tripService, $forecastService;
             
             $places = array();
@@ -61,6 +60,9 @@
             }
             if ($tripId !== NULL) {
                 $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+            }
+            if ($albumId !== NULL) {
+                $whereClauseBuilder->withClause("album_id = ?", $albumId);
             }
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("(FIND_IN_SET(?, category_ids) OR ((UNIX_TIMESTAMP() - GET_VARIABLE_TIME_CATEGORY_OFFSET(?) <= start) AND (UNIX_TIMESTAMP() >= end)) OR ((GET_VARIABLE_TIME_CATEGORY_OFFSET(?) IS NOT NULL) AND (place_id IN (SELECT place_id FROM place_permanent))))", $categoryId, $categoryId, $categoryId);
@@ -112,7 +114,7 @@
             }
 
             // Process permanent places without dates.
-            if ($tripId === NULL) {
+            if ($tripId === NULL && $albumId === NULL) {
                 $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
                 if ($placeId !== NULL) {
                     $whereClauseBuilder->withClause("pi.id = ?", $placeId);
@@ -125,29 +127,28 @@
                 $placeRows = $databaseProvider
                     ->statementBuilder("SELECT pi.*, COALESCE(cs.category_ids, '') AS category_ids FROM place_permanent pp INNER JOIN place_identifier pi ON pp.place_id = pi.id LEFT JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
                     ->getResultSet();
-                    
 
-            foreach ($placeRows as &$placeRow) {
-                if (!isset($places[$placeRow["place_id"]])) {
-                    $categories = array();
-                    if ($includeCategories) {
-                        $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
-                    }                   
+                foreach ($placeRows as &$placeRow) {
+                    if (!isset($places[$placeRow["place_id"]])) {
+                        $categories = array();
+                        if ($includeCategories) {
+                            $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                        }                   
 
-                    $highlights = array();             
-                    if ($includeHighlights) {
-                        $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
+                        $highlights = array();             
+                        if ($includeHighlights) {
+                            $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
+                        }
+                        
+                        $excerpt = NULL;
+                        if ($includeExcerpt) {
+                            $excerpt = $placeRow["excerpt"];
+                        }
+                        
+                        $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                            $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, array());
                     }
-                    
-                    $excerpt = NULL;
-                    if ($includeExcerpt) {
-                        $excerpt = $placeRow["excerpt"];
-                    }
-                    
-                    $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, array());
                 }
-            }
             }
 
             return array_values($places);
@@ -451,7 +452,7 @@
         public function movePlaces($tripId, $offset) : array {
             global $configuration, $googleApiClient;
 
-            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, TRUE, TRUE, TRUE);
+            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -482,7 +483,7 @@
         public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
             global $configuration, $databaseProvider, $googleApiClient;
 
-            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, FALSE, FALSE, FALSE);
+            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
