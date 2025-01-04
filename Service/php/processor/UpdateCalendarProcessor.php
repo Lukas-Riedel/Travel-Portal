@@ -1,73 +1,64 @@
-<?php    
-    require_once(dirname(__FILE__) . "/../lib/ical.php");
-
+<?php
     class UpdateCalendarProcessor extends Processor {
         public function process($input) {
-            global $configuration, $databaseProvider;
+            global $configuration, $tripService, $placeService, $stayService, $flightService;
 
             if ($input["watchId"] != $configuration["googleCalendarApi"]["watchId"]) {
-                return FALSE;
+                return;
             }
 
-            // Create temporary tables for comparison of old and new data.
-            $databaseProvider
-                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_trip_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_place_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_stay_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_flight_event")
-                ->execute();
+            if (!isset($input["calendar"]) || $input["calendar"] === "trips") {
+                $tripService->deleteAllDayTripsTrips();
+                $tripService->refreshCalendar();
+                $placeService->refreshCalendar();
+                $stayService->refreshCalendar();
+                $flightService->refreshCalendar();
+            }
+            else if ($input["calendar"] === "places") {
+                $placeService->refreshCalendar();
+            }
+            else if ($input["calendar"] === "stays") {
+                $stayService->refreshCalendar();
+            }
+            else if ($input["calendar"] === "flights" || $input["calendar"] === "watchedFlights") {
+                $flightService->refreshCalendar();
+            }
 
-            $databaseProvider
-                ->statementBuilder("CREATE TEMPORARY TABLE old_trip_event AS SELECT * FROM trip_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("CREATE TEMPORARY TABLE old_place_event AS SELECT p.*, ps.album_id, ps.category_ids FROM place_event p INNER JOIN _place_summary ps ON p.id = ps.id")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("CREATE TEMPORARY TABLE old_stay_event AS SELECT * FROM stay_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("CREATE TEMPORARY TABLE old_flight_event AS SELECT * FROM flight_event")
-                ->execute();
+            foreach ($tripService->getTripIdentifiersForDayTrips() as &$tripIdentifier) {
+                $start = strtotime("31.12." . $tripIdentifier->getYear());
+                $end = strtotime("1.1." . $tripIdentifier->getYear());
 
-            // Delete old data.
-            $databaseProvider
-                ->statementBuilder("DELETE FROM trip_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DELETE FROM place_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DELETE FROM stay_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DELETE FROM flight_event")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("DELETE FROM flight_watched_event")
-                ->execute();
-            
-            // Fill tables with new data.
-            $this->processTrips();
-            $this->processPlaces();
-            $this->processStays();
-            $this->processFlights();
-            $this->processWatchedFlights();
-            $this->processDayTrips();
+                foreach ($placeService->getRegularPlaces(NULL, $tripIdentifier->getId(), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE) as &$place) {
+                    foreach ($place->getDates() as &$date) {
+                        if ($date->getStart() < $start) {
+                            $start = $date->getStart();
+                        }
+                        if ($date->getEnd() > $end) {
+                            $end = $date->getEnd();
+                        }
+                    }
+                }
 
-            // Update references, re-compute stuff, etc.
-            $this->postProcessTrips();
-            $this->postProcessPlaces();
-            $this->postProcessStays();
-            $this->postProcessFlights();
+                foreach ($stayService->getStaysForTrip($tripIdentifier->getId()) as &$stay) {
+                    if ($stay->getStart() < $start) {
+                        $start = $stay->getStart();
+                    }
+                    if ($stay->getEnd() > $end) {
+                        $end = $stay->getEnd();
+                    }
+                }
 
-            return TRUE;
+                foreach ($flightService->getFlightsForTrip($tripIdentifier->getId()) as &$flight) {
+                    if ($flight->getStart() < $start) {
+                        $start = $flight->getStart();
+                    }
+                    if ($flight->getEnd() > $end) {
+                        $end = $flight->getEnd();
+                    }
+                }
+
+                $tripService->updateDayTripsTripDates($tripIdentifier->getId(), $start, $end);
+            }
         }
 
         public function getRequiredArguments() {
@@ -78,382 +69,5 @@
             return FALSE;
         }
 
-        // Processors.
-        private function processTrips() {  
-            global $databaseProvider, $configuration, $tripService;    
-                     
-            // Add trips to the database.
-            foreach ($this->downloadEvents($configuration["calendars"]["trips"]) as &$tripEvent) {
-                $name = $tripEvent["SUMMARY"];
-                $year = intval(substr($tripEvent["DTSTART"], 0, 4));
-                $tripIdentifier = $tripService->getOrCreateTripIdentifier($name, $year);
-
-                $start = $this->getTimestamp($tripEvent["DTSTART"]);
-                $end = $this->getTimestamp($tripEvent["DTEND"]);
-                
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO trip_event (id, trip_id, start, end) VALUES (?, ?, ?, ?)")
-                    ->withParameters($tripEvent["UID"], $tripIdentifier->getId(), $start, $end)
-                    ->execute();
-            }
-        }
-
-        private function processPlaces() {
-            global $databaseProvider, $configuration, $placeService, $googleApiClient, $geocodingService;
-
-            // Add places to the database.
-            foreach ($this->downloadEvents($configuration["calendars"]["places"]) as &$placeEvent) {
-                $name = html_entity_decode($placeEvent["SUMMARY"], ENT_QUOTES | ENT_HTML5);
-                $address = html_entity_decode(str_replace('\\', '', $placeEvent["LOCATION"]), ENT_QUOTES | ENT_HTML5);
-                $resolvedLocation = $geocodingService->getLocation($address);
-                $placeIdentifier = $placeService->getOrCreatePlaceIdentifier($name, $resolvedLocation->getCountry(), $address);
-                        
-                $timeOffset = $this->getTimezoneOffset($placeEvent["DTSTART"], $placeIdentifier->getTimezone());
-                $start = $this->getTimestamp($placeEvent["DTSTART"]) - $timeOffset;
-                $end = $this->getTimestamp($placeEvent["DTEND"]) - $timeOffset;     
-
-                $placeEventDescription = $this->getEventDescription($placeEvent);
-                $isLayover = array_key_exists("Layover", $placeEventDescription);
-                        
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO place_event (id, place_id, trip_id, start, end, layover) VALUES (?, ?, GET_TRIP_ID_FOR_INTERVAL(?, ?), ?, ?, ?)")
-                    ->withParameters($placeEvent["UID"], $placeIdentifier->getId(), $start, $end, $start, $end, $isLayover ? 1 : 0)
-                    ->execute();
-
-                // Update address to match a common format.
-                // When changing the format, do not forget to update it in GeocodingService as well.
-                $newAddress = $name . ", " . $resolvedLocation->getCountry() . " (" . $resolvedLocation->getLatitude() . ", " . $resolvedLocation->getLongitude() . ")";
-                if (str_replace(' ', '', $address) != str_replace(' ', '', $newAddress)) {
-                    $googleApiClient->updateCalendarEventLocation("places", $placeEvent["UID"], $newAddress);
-                }
-            }
-        }
-
-        private function processStays() {
-            global $databaseProvider, $configuration;
-
-            // Add stays to the database.
-            foreach ($this->downloadEvents($configuration["calendars"]["stays"]) as &$stayEvent) {
-                $name = str_replace('\\', '', html_entity_decode($stayEvent["SUMMARY"], ENT_QUOTES | ENT_HTML5));
-                $address = str_replace('\\', '', $stayEvent["LOCATION"]);
-
-                $start = $this->getTimestamp($stayEvent["DTSTART"]);
-                $end = $this->getTimestamp($stayEvent["DTEND"]); 
-
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO stay_event (id, name, trip_id, start, end, address) VALUES (?, ?, GET_TRIP_ID_FOR_INTERVAL(?, ?), ?, ?, ?)")
-                    ->withParameters($stayEvent["UID"], $name, $start, $end, $start, $end, $address)
-                    ->execute();
-            }
-        }
-
-        private function processFlights() {
-            $this->doProcessFlights("flights", "flight_event");
-        }
-
-        private function processWatchedFlights() {
-            $this->doProcessFlights("watchedFlights", "flight_watched_event");
-        }
-
-        private function doProcessFlights($calendar, $table) {
-            global $databaseProvider, $configuration;
-
-            // Add flights to the database.
-            foreach ($this->downloadEvents($configuration["calendars"][$calendar]) as &$flightEvent) {
-                preg_match("{(.+) - (.+) \((.+)\)}", $flightEvent["SUMMARY"], $tokens);
-                
-                $from = $tokens[1];
-                $to = $tokens[2];
-                $flight = str_replace(" ", "", $tokens[3]);
-
-                $start = $this->getTimestamp($flightEvent["DTSTART"]);
-                $end = $this->getTimestamp($flightEvent["DTEND"]);
-
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO " . $table . " (id, flight, trip_id, start, end, `from`, `to`) VALUES (?, ?, GET_TRIP_ID_FOR_INTERVAL(?, ?), ?, ?, ?, ?)")
-                    ->withParameters($flightEvent["UID"], $flight, $start, $end, $start, $end, $from, $to)
-                    ->execute();
-            }
-        }
-
-        private function processDayTrips() {
-            global $configuration, $databaseProvider, $tripService;
-
-            // Add day trips to the database.
-            $years = $databaseProvider
-                // This does not pick up years for which there is, e.g., a flight, but no place.
-                ->statementBuilder("SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(start), '%Y') AS year FROM place_event WHERE trip_id IS NULL ORDER BY year")
-                ->getResultSetForColumn("year");
-
-            foreach ($years as &$year) {
-                $tripIdentifier = $tripService->getOrCreateTripIdentifier($configuration["specialTripNames"]["dayTrips"], $year);
-
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO trip_event (trip_id, start, end) VALUES (?, 0, 2147483647)")
-                    ->withParameters($tripIdentifier->getId())
-                    ->execute();
-
-                $databaseProvider
-                    ->statementBuilder("UPDATE place_event SET trip_id = ? WHERE trip_id IS NULL AND DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?")
-                    ->withParameters($tripIdentifier->getId(), $year)
-                    ->execute();
-
-                $databaseProvider
-                    ->statementBuilder("UPDATE stay_event SET trip_id = ? WHERE trip_id IS NULL AND DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?")
-                    ->withParameters($tripIdentifier->getId(), $year)
-                    ->execute();
-
-                $databaseProvider
-                    ->statementBuilder("UPDATE flight_event SET trip_id = ? WHERE trip_id IS NULL AND DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?")
-                    ->withParameters($tripIdentifier->getId(), $year)
-                    ->execute();
-
-                $databaseProvider
-                    ->statementBuilder("UPDATE flight_watched_event SET trip_id = ? WHERE trip_id IS NULL AND DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?")
-                    ->withParameters($tripIdentifier->getId(), $year)
-                    ->execute();
-                    
-                $databaseProvider
-                    ->statementBuilder("UPDATE trip_event SET start = (SELECT MIN(start) FROM place_event WHERE trip_id = ?) WHERE trip_id = ?")
-                    ->withParameters($tripIdentifier->getId(), $tripIdentifier->getId())
-                    ->execute();
-                    
-                $databaseProvider
-                    ->statementBuilder("UPDATE trip_event SET end = (SELECT MAX(start) FROM place_event WHERE trip_id = ?) WHERE trip_id = ?")
-                    ->withParameters($tripIdentifier->getId(), $tripIdentifier->getId())
-                    ->execute();                
-            }
-        }
-        
-        // Post-processors.
-        private function postProcessTrips() {
-            global $databaseProvider, $schedulingProvider, $configuration;
-
-            // Process overlapping trips.
-            $overlappingTripName = $databaseProvider
-                ->statementBuilder("SELECT GET_FULLY_QUALIFIED_TRIP_NAME_FROM_TRIP_ID(te1.trip_id) AS trip FROM trip_event te1 WHERE te1.start < (SELECT MAX(te2.end) FROM trip_event te2 WHERE te2.start < te1.start AND te2.id IS NOT NULL)")
-                ->getFirstColumn("trip");
-
-            if ($overlappingTripName != NULL) {
-                // If there was an error, e.g., when moving a trip and two trips overlap now, don't update the calendar tables so that the action can be reverted.
-                throw new RuntimeException("The trip " . $overlappingTripName . " overlaps with the previous one.");
-            }
-        }
-
-        private function postProcessPlaces() {
-            global $databaseProvider, $configuration, $schedulingProvider, $noteService;
-            
-            // Process new places, renamed places and places for which the start time has changed.
-            $newPlaceRows = $databaseProvider
-                ->statementBuilder("SELECT np.start, np.end, np.place_id, np.trip_id FROM place_event np LEFT JOIN old_place_event op ON op.id = np.id WHERE op.place_id <> np.place_id OR op.start <> np.start")
-                ->getResultSet();
-
-            foreach ($newPlaceRows as &$newPlaceRow) {
-                if (time() < $newPlaceRow["start"]) {
-                    if (time() + $configuration["forecastDaysToCache"] * 86400 > $newPlaceRow["start"]) {
-                        $schedulingProvider
-                            ->scheduleJobExecution("UpdateActualForecast", array(
-                                "placeId" => $newPlaceRow["place_id"],
-                                "start" => $newPlaceRow["start"]), NULL);
-                    }
-                            
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateHistoricalForecast", array(
-                            "placeId" => $newPlaceRow["place_id"],
-                            "start" => $newPlaceRow["start"]), NULL);
-
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateDaylightForecast", array(
-                            "placeId" => $newPlaceRow["place_id"],
-                            "start" => $newPlaceRow["start"],
-                            "end" => $newPlaceRow["end"]), NULL);
-                }
-
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $newPlaceRow["trip_id"]), NULL);
-            }
-
-            // Process new countries in trips (only those visited more than one year ago prior to visiting it).
-            $newCountryInTripRows = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT npi.country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country NOT IN (SELECT opi.country FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id) AND npi.country NOT IN (SELECT country FROM place_summary WHERE start < UNIX_TIMESTAMP() AND start > np.start - (365 * 86400))")
-                ->getResultSet();
-
-            foreach ($newCountryInTripRows as &$newCountryInTripRow) {
-                $entryRequirements = $this->getEntryRequirements($newCountryInTripRow["country"]);
-                $plugTypes = $this->getPlugTypes($newCountryInTripRow["country"]);
-                if ($entryRequirements != NULL && $plugTypes != NULL) {                    
-                    $noteService->createNote($newCountryInTripRow["trip_id"], $newCountryInTripRow["country"] . "<ul><li>" . $entryRequirements . "</li><li>" . $plugTypes . "</li></ul>");
-                }
-            }
-
-            // Process yet non-visited places.
-            $nonVisitedPlaceRows = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT place_id FROM place_event WHERE place_id NOT IN (SELECT DISTINCT place_id FROM place_event WHERE end < UNIX_TIMESTAMP())")
-                ->getResultSet();
-
-            foreach ($nonVisitedPlaceRows as &$nonVisitedPlaceRow) {
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM place_candidate WHERE place_id = ?")
-                    ->withParameters($nonVisitedPlaceRow["place_id"])
-                    ->execute();
-
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO place_candidate (place_id) VALUES (?)")
-                    ->withParameters($nonVisitedPlaceRow["place_id"])
-                    ->execute();
-            }
-
-            // Process removed places.
-            $removedPlaceRows = $databaseProvider
-                ->statementBuilder("SELECT op.trip_id, op.category_ids FROM old_place_event op LEFT JOIN place_event np ON op.id = np.id WHERE np.id IS NULL")
-                ->getResultSet();
-
-            foreach ($removedPlaceRows as &$removedPlaceRow) {
-                if ($removedPlaceRow["trip_id"] != NULL) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateStats", array(
-                            "type" => StatisticsType::Trip->value, 
-                            "id" => $removedPlaceRow["trip_id"]), NULL);
-                }
-                
-                if ($removedPlaceRow["category_ids"] != NULL) {
-                    foreach (explode(",", $removedPlaceRow["category_ids"]) as &$categoryId) {
-                        $schedulingProvider
-                            ->scheduleJobExecution("UpdateStats", array(
-                                "type" => StatisticsType::Category->value, 
-                                "id" => $categoryId), NULL);
-                    }
-                }
-            }
-
-            // Unhide countries in the configuration.
-            $databaseProvider
-                ->statementBuilder("UPDATE configuration SET levels = 'public,modifiable' WHERE type = 'COUNTRIES' AND `key` IN (SELECT country FROM place_identifier)")
-                ->execute();
-        }
-
-        private function postProcessStays() {
-            global $databaseProvider, $schedulingProvider, $configuration;
-
-            // Process new and renamed stays.
-            $newStayRows = $databaseProvider
-                ->statementBuilder("SELECT ns.trip_id FROM stay_event ns LEFT JOIN old_stay_event os ON os.id = ns.id WHERE os.name IS NULL")
-                ->getResultSet();
-
-            foreach ($newStayRows as &$newStayRow) {                  
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $newStayRow["trip_id"]), NULL);
-            }
-
-            // Process removed stays.
-            $removedStayRows = $databaseProvider
-                ->statementBuilder("SELECT os.trip_id FROM old_stay_event os LEFT JOIN stay_event ns ON os.id = ns.id WHERE ns.id IS NULL")
-                ->getResultSet();
-
-            foreach ($removedStayRows as &$removedStayRow) {
-                if ($removedStayRow["trip_id"] != NULL) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateStats", array(
-                            "type" => StatisticsType::Trip->value, 
-                            "id" => $removedStayRow["trip_id"]), NULL);
-                }
-            }
-        }
-
-        private function postProcessFlights() {
-            global $databaseProvider, $schedulingProvider, $configuration;
-
-            // Process new and renamed flights.
-            $newFlightRows = $databaseProvider
-                ->statementBuilder("SELECT nf.trip_id FROM flight_event nf LEFT JOIN old_flight_event of ON of.id = nf.id WHERE of.flight IS NULL")
-                ->getResultSet();
-            
-            foreach ($newFlightRows as &$newFlightRow) {              
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $newFlightRow["trip_id"]), NULL);
-            }
-
-            // Add unknown operators to the configuration.
-            $databaseProvider
-                ->statementBuilder("INSERT INTO configuration (type, levels, `key`, value) SELECT DISTINCT 'AIRLINES', 'public,modifiable', SUBSTR(flight, 1, 2), SUBSTR(flight, 1, 2) FROM flight_event f LEFT JOIN (SELECT `key` AS code FROM configuration WHERE type = 'AIRLINES') c ON SUBSTR(f.flight, 1, 2) = c.code WHERE c.code IS NULL")
-                ->execute();
-            $databaseProvider
-                ->statementBuilder("INSERT INTO configuration (type, levels, `key`, value) SELECT DISTINCT 'AIRLINES', 'public,modifiable', SUBSTR(flight, 1, 2), SUBSTR(flight, 1, 2) FROM flight_watched_event f LEFT JOIN (SELECT `key` AS code FROM configuration WHERE type = 'AIRLINES') c ON SUBSTR(f.flight, 1, 2) = c.code WHERE c.code IS NULL")
-                ->execute();
-
-            // Process removed flights.
-            $removedFlightRows = $databaseProvider
-                ->statementBuilder("SELECT of.trip_id FROM old_flight_event of LEFT JOIN flight_event nf ON of.id = nf.id WHERE nf.id IS NULL")
-                ->getResultSet();
-
-            foreach ($removedFlightRows as &$removedFlightRow) {
-                if ($removedFlightRow["trip_id"] != NULL) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateStats", array(
-                            "type" => StatisticsType::Trip->value, 
-                            "id" => $removedFlightRow["trip_id"]), NULL);
-                }
-            }
-        }
-
-        // Helper functions.
-        private function getEntryRequirements($country) : ?string {
-            global $configuration, $chatClient;
-
-            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["entryRequirements"], $country));
-        }
-
-        private function getPlugTypes($country) : ?string {
-            global $configuration, $chatClient;
-
-            return $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $country));
-        }
-
-        private function downloadEvents($url) {
-            $data = file_get_contents($url);
-            if ($data == FALSE) {
-                throw new RuntimeException("Unable to download file from " . $url . ".");
-            }
-            $ical = new ICal(explode("\n", $data));
-            return isset($ical->cal["VEVENT"]) ? $ical->cal["VEVENT"] : array();
-        }
-
-        private function getEventDescription($event) {
-            if (!array_key_exists("DESCRIPTION", $event)) {
-                return array();
-            }
-
-            $description = array();
-            $descriptionEntries = explode("\\n", $event["DESCRIPTION"]);
-
-            foreach ($descriptionEntries as &$descriptionEntry) {
-                $tokens = explode(":", $descriptionEntry);
-                $key = trim($tokens[0]);
-                $value = (count($tokens) == 1) ? "" : trim(str_replace("\xc2\xa0", " ", $tokens[1]));
-                $description[$key] = ($value == "") ? NULL : $value;
-            }
-
-            return $description;
-        }
-
-        private function getTimestamp($date) {
-            global $configuration;
-
-            return (new DateTime($date, new DateTimeZone($configuration["homeLocation"]["timezone"])))->getTimestamp();
-        }        
-
-        private function getTimezoneOffset($timestamp, $fromTimezone) {
-            global $configuration;
-
-            $timezone = new DateTimeZone($fromTimezone);
-            $dateTimeAtHome = new DateTime($timestamp, new DateTimeZone($configuration["homeLocation"]["timezone"]));
-            return $timezone->getOffset($dateTimeAtHome) - (new DateTimeZone($configuration["homeLocation"]["timezone"]))->getOffset($dateTimeAtHome);
-        }
     }
 ?>

@@ -166,6 +166,79 @@
     
             return $result;
         }
+
+        public function refreshCalendar() : void {
+            global $databaseProvider, $schedulingProvider, $configurationService;
+            
+            $databaseProvider
+                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_flight_event")
+                ->execute();
+            
+            $databaseProvider
+                ->statementBuilder("CREATE TEMPORARY TABLE old_flight_event AS SELECT * FROM flight_event")
+                ->execute();
+
+            $this->doRefreshCalendar(FlightType::Scheduled);
+            $this->doRefreshCalendar(FlightType::Watched);
+
+            // Process new and renamed flights.
+            $newFlightRows = $databaseProvider
+                ->statementBuilder("SELECT nf.trip_id FROM flight_event nf LEFT JOIN old_flight_event of ON of.id = nf.id WHERE of.flight IS NULL")
+                ->getResultSet();
+            
+            foreach ($newFlightRows as &$newFlightRow) {              
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => StatisticsType::Trip->value, 
+                        "id" => $newFlightRow["trip_id"]), NULL);
+            }
+
+            // Add unknown operators to the configuration.
+            $unknownOperators = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT SUBSTR(flight, 1, 2) AS code FROM (SELECT flight FROM flight_event UNION SELECT flight FROM flight_watched_event) f")
+                ->getResultSetForColumn("code");
+
+            foreach ($unknownOperators as &$unknownOperator) {
+                $configurationService->addConfigurationEntryIfNotExists("AIRLINES", array("public", "modifiable"), $unknownOperator, $unknownOperator);
+            }
+
+            // Process removed flights.
+            $removedFlightRows = $databaseProvider
+                ->statementBuilder("SELECT of.trip_id FROM old_flight_event of LEFT JOIN flight_event nf ON of.id = nf.id WHERE nf.id IS NULL")
+                ->getResultSet();
+
+            foreach ($removedFlightRows as &$removedFlightRow) {
+                if ($removedFlightRow["trip_id"] != NULL) {
+                    $schedulingProvider
+                        ->scheduleJobExecution("UpdateStats", array(
+                            "type" => StatisticsType::Trip->value, 
+                            "id" => $removedFlightRow["trip_id"]), NULL);
+                }
+            }
+        }
+        
+        public function doRefreshCalendar($flightType) : void {
+            global $databaseProvider, $calendarClient, $tripService;
+            
+            $databaseProvider
+                ->statementBuilder("DELETE FROM " . $flightType->getTableName())
+                ->execute();
+
+            foreach ($calendarClient->getEvents($flightType->getCalendarName()) as &$flightEvent) {
+                preg_match("{(.+) - (.+) \((.+)\)}", $flightEvent->getSummary(), $tokens);
+                
+                $from = $tokens[1];
+                $to = $tokens[2];
+                $flight = str_replace(" ", "", $tokens[3]);
+                
+                $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($flightEvent->getStart(), $flightEvent->getEnd());
+
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO " . $flightType->getTableName() . " (id, flight, trip_id, start, end, `from`, `to`) VALUES (?, ?, ?, ?, ?, ?, ?)")
+                    ->withParameters($flightEvent->getId(), $flight, $resolvedTripIdentifier->getId(), $flightEvent->getStart(), $flightEvent->getEnd(), $from, $to)
+                    ->execute();
+            }            
+        }
     }
 
     enum FlightType {
@@ -176,6 +249,13 @@
             return match ($this) {
                 self::Scheduled => "flight_event",
                 self::Watched => "flight_watched_event"
+            };
+        }
+
+        public function getCalendarName() : string {
+            return match ($this) {
+                self::Scheduled => "flights",
+                self::Watched => "watchedFlights"
             };
         }
     }

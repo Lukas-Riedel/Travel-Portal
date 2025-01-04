@@ -36,6 +36,19 @@
                 ->execute();
         }
 
+        public function addConfigurationEntryIfNotExists($type, $levels, $key, $value) : void {
+            global $databaseProvider;
+
+            if ($this->getConfigurationEntry($type, $key) !== NULL) {
+                return;
+            }
+
+            $databaseProvider
+                ->statementBuilder("INSERT INTO configuration (type, levels, `key`, value) VALUES (?, ?, ?, ?)")
+                ->withParameters($type, implode(",", $levels), $key, $value)
+                ->execute();
+        }
+
         public function updateConfigurationEntryValue($type, $key, $value) : bool {
             global $databaseProvider;
 

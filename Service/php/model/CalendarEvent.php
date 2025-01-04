@@ -36,7 +36,7 @@
             return $this->end;
         }
 
-        public function getAttributes() : ?string {
+        public function getAttributes() : array {
             return $this->attributes;
         }
 

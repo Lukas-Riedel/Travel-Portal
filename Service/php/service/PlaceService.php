@@ -600,10 +600,147 @@
                 ->getResultSetForColumn("trip_id");
         }
 
-        private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) {
+        private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) : int {
             $timezone = new DateTimeZone($fromTimezone);
             $dateTimeHome = new DateTime(date('m/d/Y H:i:s', $timestamp), new DateTimeZone($toTimezone));
             return $timezone->getOffset($dateTimeHome) - (new DateTimeZone($toTimezone))->getOffset($dateTimeHome);
+        }
+
+        public function refreshCalendar() : void {
+            global $databaseProvider, $calendarClient, $geocodingService, $placeService, $configuration, $tripService,
+                $googleApiClient, $schedulingProvider, $noteService, $chatClient, $configurationService;
+            
+            $databaseProvider
+                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_place_event")
+                ->execute();
+                
+            $databaseProvider
+                ->statementBuilder("CREATE TEMPORARY TABLE old_place_event AS SELECT p.*, ps.album_id, ps.category_ids FROM place_event p INNER JOIN _place_summary ps ON p.id = ps.id")
+                ->execute();
+            
+            $databaseProvider
+                ->statementBuilder("DELETE FROM place_event")
+                ->execute();
+                
+            foreach ($calendarClient->getEvents("places") as &$placeEvent) {
+                $resolvedLocation = $geocodingService->getLocation($placeEvent->getLocation());
+                $placeIdentifier = $placeService->getOrCreatePlaceIdentifier($placeEvent->getSummary(), $resolvedLocation->getCountry(), $placeEvent->getLocation());
+                        
+                $timeOffset = $this->getTimezoneOffset($placeEvent->getStart(), $configuration["homeLocation"]["timezone"], $placeIdentifier->getTimezone());
+                $start = $placeEvent->getStart() + $timeOffset;
+                $end = $placeEvent->getEnd() + $timeOffset;     
+
+                $isLayover = array_key_exists("Layover", $placeEvent->getAttributes());
+
+                $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
+                        
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO place_event (id, place_id, trip_id, start, end, layover) VALUES (?, ?, ?, ?, ?, ?)")
+                    ->withParameters($placeEvent->getId(), $placeIdentifier->getId(), $resolvedTripIdentifier->getId(), $start, $end, $isLayover ? 1 : 0)
+                    ->execute();
+
+                // Update address to match a common format.
+                // When changing the format, do not forget to update it in GeocodingService as well.
+                // TODO: Create a new class that will take care of de/serialization.
+                $newAddress = $placeEvent->getSummary() . ", " . $resolvedLocation->getCountry() . " (" . $resolvedLocation->getLatitude() . ", " . $resolvedLocation->getLongitude() . ")";
+                if (str_replace(" ", "", $placeEvent->getLocation()) !== str_replace(" ", "", $newAddress)) {
+                    $googleApiClient->updateCalendarEventLocation("places", $placeEvent->getId(), $newAddress);
+                }
+            }
+            
+            // Process new places, renamed places and places for which the start time has changed.
+            $newPlaceRows = $databaseProvider
+                ->statementBuilder("SELECT np.start, np.end, np.place_id, np.trip_id FROM place_event np LEFT JOIN old_place_event op ON op.id = np.id WHERE op.place_id <> np.place_id OR op.start <> np.start")
+                ->getResultSet();
+
+            foreach ($newPlaceRows as &$newPlaceRow) {
+                if (time() < $newPlaceRow["start"]) {
+                    if (time() + $configuration["forecastDaysToCache"] * 86400 > $newPlaceRow["start"]) {
+                        $schedulingProvider
+                            ->scheduleJobExecution("UpdateActualForecast", array(
+                                "placeId" => $newPlaceRow["place_id"],
+                                "start" => $newPlaceRow["start"]), NULL);
+                    }
+                            
+                    $schedulingProvider
+                        ->scheduleJobExecution("UpdateHistoricalForecast", array(
+                            "placeId" => $newPlaceRow["place_id"],
+                            "start" => $newPlaceRow["start"]), NULL);
+
+                    $schedulingProvider
+                        ->scheduleJobExecution("UpdateDaylightForecast", array(
+                            "placeId" => $newPlaceRow["place_id"],
+                            "start" => $newPlaceRow["start"],
+                            "end" => $newPlaceRow["end"]), NULL);
+                }
+
+                $schedulingProvider
+                    ->scheduleJobExecution("UpdateStats", array(
+                        "type" => StatisticsType::Trip->value, 
+                        "id" => $newPlaceRow["trip_id"]), NULL);
+            }
+
+            // Process new countries in trips (only those visited more than one year ago prior to visiting it).
+            $newCountryInTripRows = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT npi.country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country NOT IN (SELECT opi.country FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id) AND npi.country NOT IN (SELECT country FROM place_summary WHERE start < UNIX_TIMESTAMP() AND start > np.start - (365 * 86400))")
+                ->getResultSet();
+
+            foreach ($newCountryInTripRows as &$newCountryInTripRow) {
+                $entryRequirements = $chatClient->getResponse(sprintf($configuration["chatRequests"]["entryRequirements"], $newCountryInTripRow["country"]));
+                $plugTypes = $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $newCountryInTripRow["country"]));
+                if ($entryRequirements != NULL && $plugTypes != NULL) {
+                    $noteService->createHtmlListNote($newCountryInTripRow["trip_id"], $newCountryInTripRow["country"], array($entryRequirements, $plugTypes));
+                }
+            }
+
+            // Process yet non-visited places.
+            $nonVisitedPlaceRows = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT place_id FROM place_event WHERE place_id NOT IN (SELECT DISTINCT place_id FROM place_event WHERE end < UNIX_TIMESTAMP())")
+                ->getResultSet();
+
+            foreach ($nonVisitedPlaceRows as &$nonVisitedPlaceRow) {
+                $databaseProvider
+                    ->statementBuilder("DELETE FROM place_candidate WHERE place_id = ?")
+                    ->withParameters($nonVisitedPlaceRow["place_id"])
+                    ->execute();
+
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO place_candidate (place_id) VALUES (?)")
+                    ->withParameters($nonVisitedPlaceRow["place_id"])
+                    ->execute();
+            }
+
+            // Process removed places.
+            $removedPlaceRows = $databaseProvider
+                ->statementBuilder("SELECT op.trip_id, op.category_ids FROM old_place_event op LEFT JOIN place_event np ON op.id = np.id WHERE np.id IS NULL")
+                ->getResultSet();
+
+            foreach ($removedPlaceRows as &$removedPlaceRow) {
+                if ($removedPlaceRow["trip_id"] != NULL) {
+                    $schedulingProvider
+                        ->scheduleJobExecution("UpdateStats", array(
+                            "type" => StatisticsType::Trip->value, 
+                            "id" => $removedPlaceRow["trip_id"]), NULL);
+                }
+                
+                if ($removedPlaceRow["category_ids"] != NULL) {
+                    foreach (explode(",", $removedPlaceRow["category_ids"]) as &$categoryId) {
+                        $schedulingProvider
+                            ->scheduleJobExecution("UpdateStats", array(
+                                "type" => StatisticsType::Category->value, 
+                                "id" => $categoryId), NULL);
+                    }
+                }
+            }
+
+            // Unhide countries in the configuration.
+            $countries = $databaseProvider
+                ->statementBuilder("SELECT DISTINCT country FROM place_identifier")
+                ->getResultSetForColumn("country");
+
+            foreach ($countries as &$country) {
+                $configurationService->updateConfigurationEntryVisibility(array("public", "modifiable"), "COUNTRIES", $country);
+            }
         }
     }
 

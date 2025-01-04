@@ -16,6 +16,26 @@
             return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
         }
 
+        public function getOrCreateTripIdentifierForEntity($start, $end) : TripIdentifier {
+            $regularTripIdentifier = $this->getTripIdentifierForEntity($start, $end);
+            if ($regularTripIdentifier !== NULL) {
+                return $regularTripIdentifier;
+            }
+
+            return $this->getOrCreateDayTripsTrip(date("Y", $start));
+        }
+
+        private function getTripIdentifierForEntity($start, $end) : ?TripIdentifier {
+            global $databaseProvider;
+
+            $tripId = $databaseProvider
+                ->statementBuilder("SELECT trip_id FROM trip_event WHERE ? >= start AND ? <= end")
+                ->withParameters(($start + $end) / 2, ($start + $end) / 2)
+                ->getFirstColumn("trip_id");
+
+            return $this->getTripIdentifierById($tripId);
+        }
+
         public function getRegularTrips($year, $includeExpenses, $includeStays, $includeFlights,
             $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
             $includeStats, $includePublicHolidays) : array {
@@ -106,6 +126,35 @@
             return $trips;
         }
 
+        public function updateDayTripsTripDates($tripId, $start, $end) : void {
+            global $databaseProvider;
+
+            $databaseProvider
+                ->statementBuilder("UPDATE trip_day_trip SET start = ?, end = ? WHERE trip_id = ?")
+                ->withParameters($start, $end, $tripId)
+                ->execute();
+        }
+
+        private function getOrCreateDayTripsTrip($year) : TripIdentifier {
+            global $databaseProvider, $configuration;
+
+            $tripIdentifier = $this->getOrCreateTripIdentifier($configuration["specialTripNames"]["dayTrips"], $year);
+            
+            $tripRow = $databaseProvider
+                ->statementBuilder("SELECT * FROM trip_day_trip WHERE trip_id = ?")
+                ->withParameters($tripIdentifier->getId())
+                ->getSingleRow();
+            
+            if ($tripRow === NULL) {
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO trip_day_trip (trip_id, start, end) VALUES (?, ?, ?)")
+                    ->withParameters($tripIdentifier->getId(), strtotime("1.1." . $year), strtotime("31.12." . $year))
+                    ->execute();
+            }
+            
+            return $tripIdentifier;
+        }
+
         public function getCandidateTrip($tripId) : ?Trip {
             return $this->doGetCandidateTrip($tripId, TRUE, TRUE);
         }
@@ -160,6 +209,18 @@
 
             return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
                 $highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
+        }
+
+        public function getTripIdentifiersForDayTrips() : array {
+            global $databaseProvider, $highlightService, $configuration;
+            
+            return $databaseProvider
+                ->statementBuilder("SELECT * FROM trip_identifier WHERE name = ?")
+                ->withParameters($configuration["specialTripNames"]["dayTrips"])
+                ->getMappedResultSet(function($tripIdentifierRow) use(&$highlightService) {
+                    return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
+                        $highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
+                });
         }
 
         public function getTripIdentifierById($tripId) : ?TripIdentifier {
@@ -348,6 +409,31 @@
             }
 
             return $holidays;
+        }
+
+        public function refreshCalendar() : void {
+            global $databaseProvider, $calendarClient;
+                
+            $databaseProvider
+                ->statementBuilder("DELETE FROM trip_event")
+                ->execute();
+            
+            foreach ($calendarClient->getEvents("trips") as &$tripEvent) {
+                $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date("Y", $tripEvent->getStart()));
+                
+                $databaseProvider
+                    ->statementBuilder("INSERT INTO trip_event (id, trip_id, start, end) VALUES (?, ?, ?, ?)")
+                    ->withParameters($tripEvent->getId(), $tripIdentifier->getId(), $tripEvent->getStart(), $tripEvent->getEnd())
+                    ->execute();
+            }
+        }
+
+        public function deleteAllDayTripsTrips() : void {
+            global $databaseProvider;            
+            
+            $databaseProvider
+                ->statementBuilder("DELETE FROM trip_day_trip")
+                ->execute();
         }
     }
 ?>

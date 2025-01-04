@@ -50,7 +50,7 @@
                         isset($event["LOCATION"]) ? html_entity_decode(str_replace("\\", "", $event["LOCATION"]), ENT_QUOTES | ENT_HTML5) : NULL,
                         $this->getEventTimestamp($event["DTSTART"]),
                         $this->getEventTimestamp($event["DTEND"]),
-                        isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : NULL);
+                        isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array());
                 }
             }
 

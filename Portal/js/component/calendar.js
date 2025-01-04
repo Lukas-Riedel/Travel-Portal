@@ -230,7 +230,7 @@ function getPlaceButtonsForTripEntry(place) {
 }
 
 function getForecastEntry(forecasts, suns) {
-    if (forecasts.length == 0) {
+    if (forecasts.length == 0 || suns.length == 0) {
         return "";
     }
     
