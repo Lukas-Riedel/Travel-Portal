@@ -3,7 +3,7 @@
 
     class ListPlaceAlbumPhotosHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;            
+            global $photoService;            
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -17,7 +17,7 @@
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
-            $response = $processorProvider->run("GetMediaItems", $input);
+            $response = $photoService->getPhotos($input["albumId"]);
             return $this->createResponse(200, $response);
         }
 
