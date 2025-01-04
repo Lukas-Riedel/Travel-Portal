@@ -80,29 +80,27 @@
         public function resetOpeningBalances() {
             global $configuration, $databaseProvider;
 
-            $newEventsDate = "1.1." . date("Y");
-
             foreach ($configuration["timeOffHours"] as $eventType => $openingBalance) {
                 $carryOverBalance = $databaseProvider
-                    ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking WHERE type = ? AND timestamp < ?")
-                    ->withParameters($eventType, strtotime($newEventsDate))
+                    ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking WHERE type = ? AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))")
+                    ->withParameters($eventType)
                     ->getSingleColumn("balance");
 
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM tracking WHERE type = ? AND timestamp < ?")
-                    ->withParameters($eventType, strtotime($newEventsDate))
-                    ->execute();
+                $wasReset = $databaseProvider
+                    ->statementBuilder("DELETE FROM tracking WHERE type = ? AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))")
+                    ->withParameters($eventType)
+                    ->execute() > 0;
 
-                if ($openingBalance > 0) {
-                    $this->createTimeTrackingEvent($eventType, $openingBalance, "Opening balance", $newEventsDate);
-                }
-
-                if ($carryOverBalance > 0) {
-                    $this->createTimeTrackingEvent($eventType, $carryOverBalance, "Carried over from last year", $newEventsDate);
+                if ($wasReset) {    
+                    if ($carryOverBalance !== NULL && $carryOverBalance > 0) {
+                        $this->createTimeTrackingEvent($eventType, $carryOverBalance, "Carried over from last year", "1.1." . date("Y"));
+                    }
+                    
+                    if ($openingBalance > 0) {
+                        $this->createTimeTrackingEvent($eventType, $openingBalance, "Opening balance", "1.1." . date("Y"));
+                    }
                 }
             }
-
-            return TRUE;
         }
     }
 ?>
