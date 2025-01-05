@@ -1,13 +1,10 @@
 <?php
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
-    require_once(dirname(__FILE__) . "/processor/Processor.php");
-    require_once(dirname(__FILE__) . "/client/HttpClient.php");
+    require_once(dirname(__FILE__) . "/event/EventPublisher.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
-    $authenticationService = new AuthenticationService();
-    $httpClient = new HttpClient();
+    $eventPublisher = new EventPublisher();
     
     $configuration = array();
     if ($databaseProvider->isDatabaseInitialized()) {        
@@ -49,18 +46,6 @@
             $migrationScript = fread($handle, filesize($path));
             fclose($handle);
 
-            $tablesToBackupRow = $databaseProvider
-                ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_NAME NOT LIKE 'cache_%' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
-            $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
-
-            if ($databaseProvider->isDatabaseInitialized()) {
-                $payload = array(
-                    "action" => "BackupDatabase", 
-                    "args" => array(
-                        "tables" => $tablesToBackup));
-                $httpClient->executeRequest("POST", BASE_URL . "/jobs/run", array("Authorization: Bearer " . $authenticationService->authenticateAsAdmin(300)->getAccessToken()), json_encode($payload));
-            }
-
             $migrationScriptFileNameTokens = explode("-", $migrationScriptFileName);
             $delimiter = count($migrationScriptFileNameTokens) == 3 ? str_replace(".sql", "", $migrationScriptFileNameTokens[2]) : ";";
 
@@ -99,6 +84,14 @@
             ->query("INSERT INTO users (username, password, api_key, roles) VALUES ('guest', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER')");
         $databaseProvider
             ->query("INSERT INTO users (username, password, api_key, roles) VALUES ('admin', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER,ADMIN')");
+    }
+    
+    if ($databaseProvider->isDatabaseInitialized()) {
+        $tablesToBackupRow = $databaseProvider
+            ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_NAME NOT LIKE 'cache_%' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
+        $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
+
+        $eventPublisher->publishApplicationStartedEvent($tablesToBackup);
     }
     
     http_response_code(200);

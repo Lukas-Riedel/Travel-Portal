@@ -186,5 +186,66 @@
             }
             return $sum / $count;
         }
+
+        public function onActualWeatherForecastChanged($message) {
+            global $placeService;
+
+            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
+            $this->updateActualWeatherForecast($placeIdentifier->getId(), $message["start"], $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+        }
+
+        public function onHistoricalWeatherForecastChanged($message) {
+            global $placeService;
+
+            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
+            $this->updateHistoricalWeatherForecast($placeIdentifier->getId(), $message["start"], $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+        }
+
+        public function onDaylightForecastChanged($message) {
+            global $placeService;
+
+            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
+            $this->updateDaylightForecast($placeIdentifier->getId(), $message["start"], $message["end"], $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $databaseProvider, $scheduler;
+
+            if ($message["action"] === "FETCH_ACTUAL_WEATHER_FORECAST" && $message["timeSinceLastExecution"] > 300) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT pi.id AS placeId, p.start FROM place_event p LEFT JOIN place_identifier pi ON p.place_id = pi.id LEFT JOIN forecast_actual fa ON p.place_id = fa.place_id AND p.start = fa.timestamp WHERE UNIX_TIMESTAMP() < p.start AND UNIX_TIMESTAMP() + GET_CONFIGURATION('FORECAST_DAYS_TO_CACHE') * 86400 > p.start AND (fa.expiration IS NULL OR fa.expiration < UNIX_TIMESTAMP())")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishActualWeatherForecastChanged($args["placeId"], $args["start"]);
+                }
+                
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+
+            if ($message["action"] === "FETCH_HISTORICAL_WEATHER_FORECAST" && $message["timeSinceLastExecution"] > 300) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT pi.id AS placeId, p.start FROM place_event p LEFT JOIN place_identifier pi ON p.place_id = pi.id LEFT JOIN forecast_historical fh ON p.place_id = fh.place_id AND p.start = fh.timestamp WHERE fh.place_id IS NULL AND p.start > UNIX_TIMESTAMP()")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishHistoricalWeatherForecastChanged($args["placeId"], $args["start"]);
+                }
+                
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+
+            if ($message["action"] === "FETCH_DAYLIGHT_FORECAST" && $message["timeSinceLastExecution"] > 300) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT pi.id AS placeId, p.start, p.end FROM place_event p LEFT JOIN place_identifier pi ON p.place_id = pi.id LEFT JOIN forecast_daylight fd ON p.place_id = fd.place_id AND p.start = fd.timestamp WHERE fd.place_id IS NULL AND p.start > UNIX_TIMESTAMP()")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishDaylightForecastChanged($args["placeId"], $args["start"]);
+                }
+                
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+        }
     }
 ?>

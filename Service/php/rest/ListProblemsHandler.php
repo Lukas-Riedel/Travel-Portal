@@ -1,9 +1,9 @@
 <?php
+    require_once(dirname(__FILE__) . "/../processor/GetProblemsReportProcessor.php");
+
     class ListProblemsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
-
-            $response = $processorProvider->run("GetProblemsReport", $input);
+            $response = (new GetProblemsReportProcessor())->getReport();
             return $this->createResponse(200, $response);
         }
 

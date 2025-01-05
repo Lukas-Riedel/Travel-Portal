@@ -3,7 +3,7 @@
     
     class CreateTripExpenseHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $expenseService;
+            global $expenseService;
 
             $response = (new GetTripHandler())
                 ->handle(array(

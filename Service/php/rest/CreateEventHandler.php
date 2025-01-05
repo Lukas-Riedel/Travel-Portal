@@ -1,10 +1,10 @@
 <?php
-    class ScheduleJobHandler extends Handler {
+    class CreateEventHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $eventPublisher;
 
-            $response = $processorProvider->run("SubmitJob", array("type" => "schedule") + $input);    
-            return $this->createResponse(204, $response);
+            $eventPublisher->publishEvent(Event::fromName($input["name"]), $input["args"]);
+            return $this->createResponse(204, NULL);
         }
 
         public function getRequiredRole() {
@@ -16,11 +16,11 @@
         }
 
         public function getTag() {
-            return "Jobs";
+            return "Events";
         }
 
         public function getPath() {
-            return "/jobs/schedule";
+            return "/events";
         }
 
         public function getParameters() {
@@ -32,16 +32,16 @@
         }
         
         public function getShortDescription() {
-            return "Schedule a job";
+            return "Create an event";
         }
         
         public function getLongDescription() {
-            return "Schedules a job. The job is added to a job queue and eventually processed.";
+            return "Creates an event. The event is added to the queue and eventually processed.";
         }
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Submitted job", '{"action":"UpdateCalendar","args":{"watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
+                $this->createRequestExample("Event", '{"name":"CalendarChanged","args":{"calendar":"trips","watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
         }
 
         public function getResponseExamples() {

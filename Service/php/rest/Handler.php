@@ -44,7 +44,7 @@
         }
 
         protected function create403ResponseExample() {
-            return $this->createResponseExample("Insufficient permissions", 403, '{"code":403,"error":"AuthorizationException","message":"The user is not authorized to perform this action.","details":{"endpoint":"/jobs/run","arguments":{"action":"UpdateCalendar","args":{"watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}},"trace":["#0 {main}"],"ipAddress":"89.103.191.6"}}');
+            return $this->createResponseExample("Insufficient permissions", 403, '{"code":403,"error":"AuthorizationException","message":"The user is not authorized to perform this action.","details":{"endpoint":"/events","arguments":{"name":"CalendarChanged","args":{"calendar":"trips","watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}},"trace":["#0 {main}"],"ipAddress":"89.103.191.6"}}');
         }
 
         protected function create404ResponseExample() {

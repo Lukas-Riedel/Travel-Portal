@@ -4,19 +4,15 @@
 
     class CalendarClient {
         public function watchCalendar($calendar, $watchId) : void {
-            global $configuration, $schedulingProvider, $googleApiClient, $authenticationService;
+            global $configuration, $googleApiClient, $authenticationService;
 
             $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
 
             $googleApiClient->watchCalendar($calendar, $watchId, 
-                BASE_URL . "/jobs/schedule?action=UpdateCalendar&args[watchId]=" . $watchId,
+                BASE_URL . "/events?name=CalendarChanged&args[watchId]=" . $watchId . "&args[calendar]=" . $calendar,
                 "Bearer " . $authenticationResult->getAccessToken());
                 
             $googleApiClient->watchCalendar($calendar, $watchId, BASE_URL . "/php/runner.php");
-
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateCalendar", array(
-                    "watchId" => $watchId), NULL);
         }
 
         public function getEvents($calendar) : array {        

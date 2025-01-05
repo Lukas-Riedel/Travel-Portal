@@ -91,28 +91,20 @@ class Api {
         return this.#sendRequest("GET", "coordinates/" + address);
     }
 
-    async runJob(action, args) {
-        return this.#sendRequest("POST", "jobs/run", 
+    async createEvent(action, args) {
+        return this.#sendRequest("POST", "events", 
             {
                 action: action,
                 args: args
             });
     }
 
-    async scheduleJob(action, args) {
-        return this.#sendRequest("POST", "jobs/schedule", 
-            {
-                action: action,
-                args: args
-            });
+    async listEvents(name) {
+        return this.#sendRequest("GET", "events?name=" + name);
     }
 
-    async listJobs(action) {
-        return this.#sendRequest("GET", "jobs/" + action);
-    }
-
-    async removeJob(jobId) {
-        return this.#sendRequest("DELETE", "jobs/" + jobId);
+    async removeEvent(eventId) {
+        return this.#sendRequest("DELETE", "events/" + eventId);
     }
 
     async createCandidatePlace(name, address) {

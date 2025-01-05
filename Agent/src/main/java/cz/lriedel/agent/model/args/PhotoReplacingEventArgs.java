@@ -4,9 +4,9 @@ import org.apache.commons.lang3.Validate;
 
 import java.nio.file.Path;
 
-public record ReplacePhotoArgs(long placeId, long albumId, long replacedPhotoId, Path path) {
+public record PhotoReplacingEventArgs(long placeId, long albumId, long replacedPhotoId, Path path) {
 
-    public ReplacePhotoArgs {
+    public PhotoReplacingEventArgs {
         Validate.isTrue(placeId > 0, "Invalid place identifier.");
         Validate.isTrue(albumId > 0, "Invalid album identifier.");
         Validate.isTrue(replacedPhotoId > 0, "Invalid photo identifier.");

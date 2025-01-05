@@ -102,5 +102,22 @@
                 }
             }
         }
+
+        public function onVacationReset($message) : void {
+            $this->resetOpeningBalances();
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $scheduler;
+
+            if ($message["action"] === "RESET_OPENING_BALANCES") {
+                $timeSinceBeginningOfYear = strtotime("1.1." . date("Y", time()));
+
+                if ($timeSinceBeginningOfYear < $message["timeSinceLastExecution"]) {
+                    $eventPublisher->publishVacationResetEvent();                        
+                    $scheduler->recordEventsTriggered($message["action"]);
+                }
+            }
+        }
     }
 ?>

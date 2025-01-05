@@ -1,5 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/../processor/UpdateStatsProcessor.php");
     require_once(dirname(__FILE__) . "/../model/Statistics.php");
 
     class StatisticsService {
@@ -31,27 +30,23 @@
         }
 
         private function doUpdateCategoryStatistics($start, $end, $categoryId) : void {
-            global $schedulingProvider;
+            global $eventPublisher;
 
             $this->updateStatistics(StatisticsType::Category, $start, $end, $categoryId, $categoryId);
 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Overall->value), NULL);
+            $eventPublisher->publishStatisticsChangedEvent();
         }
         
         public function updateYearStatistics($year) : void {     
-            global $schedulingProvider;
+            global $eventPublisher;
 
             $this->updateStatistics(StatisticsType::Year, strtotime("1.1." . $year), strtotime("31.12." . $year), NULL, $year);
 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Overall->value), NULL);
+            $eventPublisher->publishStatisticsChangedEvent();
         }
         
         public function updateTripStatistics($trip) : void {    
-            global $schedulingProvider, $configuration;
+            global $eventPublisher, $configuration;
             
             if (in_array($trip->getName(), $configuration["specialTripNames"])) {
                 throw new InvalidArgumentException("Unable to update statistics for the '" . $trip->getName() . " " . $trip->getYear() . "' trip.");
@@ -59,14 +54,8 @@
 
             $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), $trip->getEnd(), NULL, $trip->getId());
 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Year->value, 
-                    "id" => $trip->getYear()), NULL);
-
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Overall->value), NULL);
+            $eventPublisher->publishYearStatisticsChangedEvent($trip->getYear());
+            $eventPublisher->publishStatisticsChangedEvent();
         }
 
         public function updateOverallStatistics() : void {     
@@ -194,6 +183,75 @@
                 ->getMappedResultSet(function ($statisticsRow) {
                     return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], TRUE), $statisticsRow["unit"]);
                 });
+        }
+
+        public function onStatisticsChanged($message) {
+            global $categoryService, $tripService;
+
+            if (isset($message["year"])) {
+                $this->updateYearStatistics($message["year"]);
+            }
+            else if (isset($message["tripId"])) {
+                $trip = $tripService->getRegularTrip($message["tripId"]);
+                if ($trip !== NULL) {
+                    $this->updateTripStatistics($trip);
+                }
+            }
+            else if (isset($message["categoryId"])) {
+                $categoryIdentifier = $categoryService->getCategoryIdentifier($message["categoryId"]);
+                if ($categoryIdentifier !== NULL) {
+                    $this->updateCategoryStatistics($categoryIdentifier);
+                }
+            }
+            else {
+                $this->updateOverallStatistics();
+            }
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $scheduler, $configuration, $databaseProvider;
+
+            if ($message["action"] === "UPDATE_OVERALL_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
+                $eventPublisher->publishStatisticsChangedEvent();
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+            
+            if ($message["action"] === "UPDATE_TRIP_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT trip_id AS id FROM trip_summary WHERE start < UNIX_TIMESTAMP() AND name <> GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishTripStatisticsChangedEvent($args["id"]);
+                }
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+            
+            if ($message["action"] === "UPDATE_YEAR_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT DISTINCT year AS id FROM trip_summary WHERE start < UNIX_TIMESTAMP() AND name <> GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishYearStatisticsChangedEvent($args["id"]);
+                }
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+            
+            if ($message["action"] === "UPDATE_CATEGORY_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT id FROM category_identifier")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishCategoryStatisticsChangedEvent($args["id"]);
+                }
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
         }
     }
         

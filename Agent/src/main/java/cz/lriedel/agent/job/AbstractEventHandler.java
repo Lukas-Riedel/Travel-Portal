@@ -6,22 +6,22 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 @Slf4j
-public abstract class AbstractJob<JOB_ARGS> implements Job<JOB_ARGS> {
+public abstract class AbstractEventHandler<EVENT_ARGS> implements EventHandler<EVENT_ARGS> {
 
     protected final ObjectMapper objectMapper;
 
-    private final Class<JOB_ARGS> jobArgsClass;
+    private final Class<EVENT_ARGS> eventArgsClass;
 
-    protected AbstractJob(ObjectMapper objectMapper, Class<JOB_ARGS> jobArgsClass) {
+    protected AbstractEventHandler(ObjectMapper objectMapper, Class<EVENT_ARGS> eventArgsClass) {
         this.objectMapper = objectMapper;
-        this.jobArgsClass = jobArgsClass;
+        this.eventArgsClass = eventArgsClass;
     }
 
     public final void run(Map<String, Object> args) {
-        JOB_ARGS convertedArgs = objectMapper.convertValue(args, jobArgsClass);
+        EVENT_ARGS convertedArgs = objectMapper.convertValue(args, eventArgsClass);
         log.info("Starting processing of '{}'...", convertedArgs);
         long start = System.currentTimeMillis();
-        run(convertedArgs);
+        handle(convertedArgs);
         log.info("Processing of '{}' ended in {} seconds.", convertedArgs, (System.currentTimeMillis() - start) / 1000);
     }
 }

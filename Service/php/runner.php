@@ -4,9 +4,6 @@
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/LoggingProvider.php");
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/provider/SchedulingProvider.php");
-    require_once(dirname(__FILE__) . "/provider/ProcessorProvider.php");
-    require_once(dirname(__FILE__) . "/processor/Processor.php");
     require_once(dirname(__FILE__) . "/service/PlaceService.php");
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
     require_once(dirname(__FILE__) . "/service/PhotoService.php");
@@ -29,13 +26,15 @@
     require_once(dirname(__FILE__) . "/service/StayService.php");
     require_once(dirname(__FILE__) . "/service/ForecastService.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/service/PlatformService.php");
+    require_once(dirname(__FILE__) . "/event/Scheduler.php");
+    require_once(dirname(__FILE__) . "/event/EventManager.php");
+    require_once(dirname(__FILE__) . "/event/EventPublisher.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $loggingProvider = new LoggingProvider($databaseProvider);
-    $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
-    $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, FALSE);
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
@@ -53,59 +52,33 @@
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
     $statisticsService = new StatisticsService();
+    $platformService = new PlatformService();
     $geocodingService = new GeocodingService();
     $calendarClient = new CalendarClient();
     $stayService = new StayService();
     $forecastService = new ForecastService();
     $authenticationService = new AuthenticationService();
-    
-    $supportedActions = array_filter(array_map(function ($file) {
-        $tokens = explode("/", $file);
-        return str_replace("Processor.php", "", $tokens[count($tokens) - 1]);
-    }, glob(dirname(__FILE__) . "/processor/*")), function ($action) {
-        return $action !== "";
-    });
+    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
+    $services = array($placeService, $highlightService, $photoService, $tripService, $albumService, $categoryService,
+        $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,
+        $fitnessService, $statisticsService, $geocodingService, $stayService, $forecastService, $authenticationService, $platformService);
+        
+    $eventManager = new EventManager($services);
+    $eventPublisher = new EventPublisher();
+    
+    $onError = function($level, $message, $file, $line) {
+        throw new RuntimeException($message);
+    };
+    set_error_handler($onError);
+    
     $key = ftok(__FILE__, 1);
     $semaphore = sem_get($key);
 
     if (sem_acquire($semaphore, TRUE)) {
-        while (($jobExecution = getNextScheduledJobExecution()) != NULL) {
-            $processorProvider->run($jobExecution["processor"], $jobExecution["args"]);
-            terminateJobExecution($jobExecution["id"]);
-        }
-
+        $eventManager->handleEvents();
         sem_release($semaphore);
     }
-
-    function getNextScheduledJobExecution() {
-        global $databaseProvider, $supportedActions;
-
-        $nextJob = $databaseProvider
-            ->statementBuilder("SELECT * FROM queue_job WHERE FIND_IN_SET(processor, ?) ORDER BY priority ASC LIMIT 1")
-            ->withParameters(implode(",", $supportedActions))
-            ->getSingleRow();
-
-        if ($nextJob != NULL) {    
-            $nextJob = array(
-                "id" => $nextJob["id"],
-                "processor" => $nextJob["processor"],
-                "args" => json_decode($nextJob["args"], TRUE)
-            );
-        }
-
-        return $nextJob;
-    }
-
-    function terminateJobExecution($id) {
-        global $databaseProvider;
-
-        $databaseProvider
-	        ->materializeViews();
-
-        $databaseProvider
-            ->statementBuilder("DELETE FROM queue_job WHERE id = ?")
-            ->withParameters($id)
-            ->execute();
-    }
+    
+    restore_error_handler();
 ?>

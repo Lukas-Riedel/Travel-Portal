@@ -11,15 +11,12 @@ import SynchronizationHandler from "./SynchronizationHandler";
 import SynchronizationHandlerConfiguration from "./SynchronizationHandlerConfiguration";
 
 export class FitnessSynchronizationHandler implements SynchronizationHandler {
-    async synchronize(args: any, configuration: SynchronizationHandlerConfiguration): Promise<void> {
-        const start = args.start;
-        const end = args.start + configuration.configuration.fitnessRecordDuration;
-        
-        await axios.put(`${configuration.baseUrl}/fitness/${start}`, {
-            "steps": await this._getTotalSteps(start, end),
-            "distance": await this._getTotalDistance(start, end),
-            "minutes": await this._getTotalTimeInMotion(start, end),
-            "calories": await this._getTotalCalories(start, end)
+    async synchronize(args: any, configuration: SynchronizationHandlerConfiguration): Promise<void> {        
+        await axios.put(`${configuration.baseUrl}/fitness/${args.start}`, {
+            "steps": await this._getTotalSteps(args.start, args.end),
+            "distance": await this._getTotalDistance(args.start, args.end),
+            "minutes": await this._getTotalTimeInMotion(args.start, args.end),
+            "calories": await this._getTotalCalories(args.start, args.end)
         }, configuration.requestConfig);
     }
     

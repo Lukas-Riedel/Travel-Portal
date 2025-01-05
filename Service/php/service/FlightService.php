@@ -67,7 +67,7 @@
 
         public function logFlight($flight, $tripId, $originAirportName, $originAirportCode, $destinationAirportName, $destinationAirportCode,
             $scheduledDeparture, $actualDeparture, $scheduledArrival, $actualArrival, $registration, $aircraft) : Flight {
-            global $databaseProvider, $schedulingProvider, $geocodingService;
+            global $databaseProvider, $eventPublisher, $geocodingService;
             
             $originAirportIdentifier = $this->getOrCreateAirportIdentifier($originAirportCode);
             $destinationAirportIdentifier = $this->getOrCreateAirportIdentifier($destinationAirportCode);
@@ -83,10 +83,7 @@
                 ->execute();
 
             if ($tripId !== NULL) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $tripId), NULL);
+                $eventPublisher->publishTripStatisticsChangedEvent($tripId);
             }
 
             $from = new Airport($originAirportIdentifier->getId(), $originAirportName, $originAirportIdentifier->getCode(), $originAirportIdentifier->getCountry(), 
@@ -168,7 +165,7 @@
         }
 
         public function refreshCalendar() : void {
-            global $databaseProvider, $schedulingProvider, $configurationService;
+            global $databaseProvider, $eventPublisher, $configurationService;
             
             $databaseProvider
                 ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_flight_event")
@@ -186,11 +183,8 @@
                 ->statementBuilder("SELECT nf.trip_id FROM flight_event nf LEFT JOIN old_flight_event of ON of.id = nf.id WHERE of.flight IS NULL")
                 ->getResultSet();
             
-            foreach ($newFlightRows as &$newFlightRow) {              
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $newFlightRow["trip_id"]), NULL);
+            foreach ($newFlightRows as &$newFlightRow) {
+                $eventPublisher->publishTripStatisticsChangedEvent($newFlightRow["trip_id"]);
             }
 
             // Add unknown operators to the configuration.
@@ -209,10 +203,7 @@
 
             foreach ($removedFlightRows as &$removedFlightRow) {
                 if ($removedFlightRow["trip_id"] != NULL) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateStats", array(
-                            "type" => StatisticsType::Trip->value, 
-                            "id" => $removedFlightRow["trip_id"]), NULL);
+                    $eventPublisher->publishTripStatisticsChangedEvent($newFlightRow["trip_id"]);
                 }
             }
         }
@@ -238,6 +229,42 @@
                     ->withParameters($flightEvent->getId(), $flight, $resolvedTripIdentifier->getId(), $flightEvent->getStart(), $flightEvent->getEnd(), $from, $to)
                     ->execute();
             }            
+        }
+
+        public function onCalendarChanged($message) {
+            global $configuration;
+
+            if (($message["calendar"] === "flights" || $message["calendar"] === "watchedFlights")
+                && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+                $this->refreshCalendar();
+            }
+        }
+
+        public function onFlightArrived($message) : void {            
+            $this->fetchAndLogFlight($message["flight"], $message["tripId"], $message["from"], $message["to"], $message["scheduledDeparture"]);
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $scheduler, $databaseProvider;
+
+            if ($message["action"] === "LOG_FLIGHTS") {
+                $interval = $databaseProvider
+                    ->statementBuilder("SELECT IF((SELECT end FROM flight_event fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure WHERE fl.actual_arrival IS NULL ORDER BY fe.end ASC LIMIT 1) < UNIX_TIMESTAMP() - ?, 14400, ? + end + (SELECT AVG(actual_arrival - scheduled_arrival) FROM flight_log WHERE scheduled_arrival > UNIX_TIMESTAMP() - 365 * 86400 AND actual_arrival - scheduled_arrival > 0) - UNIX_TIMESTAMP() FROM flight_event fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure WHERE fl.actual_arrival IS NULL ORDER BY fe.end ASC LIMIT 1)) AS interval")
+                    ->withParameters($message["timeSinceLastExecution"], $message["timeSinceLastExecution"])
+                    ->getSingleColumn("interval");
+
+                if ($message["timeSinceLastExecution"] > $interval) {
+                    $argsList = $databaseProvider
+                        ->statementBuilder("SELECT f.start AS scheduledDeparture, f.flight AS flight, f.`from` AS `from`, f.`to` AS `to`, f.trip_id AS tripId FROM flight_event f LEFT JOIN flight_log lf ON f.flight = lf.flight AND f.start = lf.scheduled_departure WHERE lf.flight IS NULL AND end < UNIX_TIMESTAMP()")
+                        ->getResultSet();
+
+                    foreach ($argsList as &$args) {
+                        $eventPublisher->publishFlightArrivedEvent($args["flight"], $args["tripId"], $args["from"], $args["to"], $args["scheduledDeparture"]);
+                    }
+                    
+                    $scheduler->recordEventsTriggered($message["action"]);
+                }
+            }
         }
     }
 

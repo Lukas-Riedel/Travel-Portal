@@ -1,10 +1,10 @@
 <?php
-    class RemoveJobHandler extends Handler {
+    class ListEventsHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $eventManager;
 
-            $response = $processorProvider->run("RemoveJob", $input);
-            return $this->createResponse(204, $response);
+            $response = $eventManager->getEvents($input["name"]);
+            return $this->createResponse(200, $response);
         }
 
         public function getRequiredRole() {
@@ -16,28 +16,28 @@
         }
 
         public function getTag() {
-            return "Jobs";
+            return "Events";
         }
 
         public function getPath() {
-            return "/jobs/{jobId}";
+            return "/events";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("jobId", "integer", 352299));
+                $this->createQueryParameter("name", "string", "MovementDetected", TRUE));
         }
 
         public function getMethod() {
-            return "DELETE";
+            return "GET";
         }
         
         public function getShortDescription() {
-            return "Remove a job with the specified identifier";
+            return "Retrieve a collection of pending events with the specified name";
         }
         
         public function getLongDescription() {
-            return "Removes a job with the specified identifier.";
+            return "Retrieves a collection of pending events with the specified name. No locking is provided, which means that the event can be concurrently processed by multiple peers.";
         }
         
         public function getRequestExamples() {
@@ -46,7 +46,7 @@
 
         public function getResponseExamples() {
             return array(
-                $this->create204ResponseExample(),
+                $this->createResponseExample("Pending events", 200, '[{"id":352299,"args":{"type":"YEAR","id":2024}},{"id":352300,"args":{"type":"CATEGORY","id":2}},{"id":352301,"args":{"type":"CATEGORY","id":3}},{"id":352302,"args":{"type":"ALL"}}]'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

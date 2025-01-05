@@ -26,7 +26,7 @@
         }
 
         public function createExpense($tripId, $value, $currency, $type, $description, $subscriptionId) : Expense {            
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
                       
             $exchangeRate = $this->getExchangeRate($currency);
 
@@ -35,10 +35,7 @@
                 ->withParameters($tripId, $value, $currency, $exchangeRate, $type, $description, $subscriptionId)
                 ->execute();   
 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Trip->value, 
-                    "id" => $tripId), NULL);
+            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
 
             $this->updateCurrencies();
 
@@ -88,23 +85,20 @@
         }
 
         public function updateExpenseValue($expenseId, $value, $tripId) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
             
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE expense SET value = ? WHERE id = ?")
                 ->withParameters($value, $expenseId)
                 ->execute() === 1;
                 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Trip->value, 
-                    "id" => $tripId), NULL);
+            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
 
             return $wasUpdated;
         }
 
         public function updateExpenseCurrency($expenseId, $currency, $tripId) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
 
             $exchangeRate = $this->getExchangeRate($currency);
 
@@ -113,16 +107,13 @@
                 ->withParameters($currency, $exchangeRate, $expenseId)
                 ->execute() === 1;
                 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Trip->value, 
-                    "id" => $tripId), NULL);
+            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
 
             return $wasUpdated;
         }
 
         public function removeExpense($expenseId) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
 
             $tripId = $databaseProvider
                 ->statementBuilder("SELECT trip_id FROM expense WHERE id = ?")
@@ -134,10 +125,7 @@
                 ->withParameters($expenseId)
                 ->execute() === 1;
                 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Trip->value, 
-                    "id" => $tripId), NULL);
+            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
                     
             $this->updateCurrencies();
 

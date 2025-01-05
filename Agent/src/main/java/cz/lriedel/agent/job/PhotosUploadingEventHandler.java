@@ -7,20 +7,20 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.lriedel.agent.model.args.UploadPhotosArgs;
+import cz.lriedel.agent.model.args.PhotosUploadingEventArgs;
 
 @Component
-final class UploadPhotosJob extends AbstractJob<UploadPhotosArgs> {
+final class PhotosUploadingEventHandler extends AbstractEventHandler<PhotosUploadingEventArgs> {
 
     private final PhotoService photoService;
 
-    UploadPhotosJob(ObjectMapper objectMapper, PhotoService photoService) {
-        super(objectMapper, UploadPhotosArgs.class);
+    PhotosUploadingEventHandler(ObjectMapper objectMapper, PhotoService photoService) {
+        super(objectMapper, PhotosUploadingEventArgs.class);
         this.photoService = photoService;
     }
 
     @Override
-    public void run(UploadPhotosArgs args) {
+    public void handle(PhotosUploadingEventArgs args) {
         photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(), args.mainPhotoPosition(), args.path());
     }
 }

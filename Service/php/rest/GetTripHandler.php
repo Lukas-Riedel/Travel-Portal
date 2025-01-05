@@ -1,7 +1,7 @@
 <?php
     class GetTripHandler extends Handler {
         public function handle($input) {
-            global $processorProvider, $tripService;
+            global $tripService;
 
             $response = $tripService->getRegularTrip($input["tripId"]);
             if ($response !== NULL) {

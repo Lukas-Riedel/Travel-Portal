@@ -13,7 +13,7 @@ export default class Synchronizer {
     constructor(logger: Logger) {
         this._logger = logger;
         this._handlers = new Map<string, SynchronizationHandler>();
-        this._handlers.set("UpdateFitnessData", new FitnessSynchronizationHandler());
+        this._handlers.set("MovementDetected", new FitnessSynchronizationHandler());
     }
 
     async synchronize(): Promise<void> {
@@ -45,23 +45,22 @@ export default class Synchronizer {
                 }
             };
             
-            const configuration = (await axios.get(`${baseUrl}/configuration?levels=public`, requestConfig)).data;
-            const handlerConfiguration = new SynchronizationHandlerConfiguration(baseUrl, requestConfig, configuration);
+            const handlerConfiguration = new SynchronizationHandlerConfiguration(baseUrl, requestConfig);
 
-            for (const [action, handler] of this._handlers.entries()) {
-                const jobs = (await axios.get(`${baseUrl}/jobs?action=${action}`, requestConfig)).data;
+            for (const [name, handler] of this._handlers.entries()) {
+                const events = (await axios.get(`${baseUrl}/events?name=${name}`, requestConfig)).data;
         
-                this._logger.logInfo("The synchronization has started", `There are ${jobs.length} items in the queue`);    
+                this._logger.logInfo("The synchronization has started", `There are ${events.length} items in the queue`);    
 
-                for (const job of jobs) {
+                for (const event of events) {
                     try {
-                        await handler.synchronize(job.args, handlerConfiguration);
+                        await handler.synchronize(event.args, handlerConfiguration);
                     }
                     catch (e) {
                         this._logger.logError("There was an error processing the item", (e as Error).message);
                     }
                     finally {
-                        await axios.delete(`${baseUrl}/jobs/${job.id}`, requestConfig);
+                        await axios.delete(`${baseUrl}/events/${event.id}`, requestConfig);
                     }
                 }
             }
@@ -72,7 +71,7 @@ export default class Synchronizer {
             await AsyncStorage.setItem("lastSync", String(lastSync.getTime()));
     
             // TODO: Define synchronization interval.
-            const nextSync = new Date(lastSync.getTime() + configuration.fitnessRecordDuration * 1000);
+            const nextSync = new Date(lastSync.getTime() + 1800 * 1000);
 
             await AsyncStorage.setItem("nextSync", String(nextSync.getTime()));
         }

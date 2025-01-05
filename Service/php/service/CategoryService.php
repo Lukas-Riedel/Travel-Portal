@@ -5,7 +5,7 @@
 
     class CategoryService {
         public function updateCategories($placeIdentifier) : void {
-            global $databaseProvider, $schedulingProvider, $categoryService;
+            global $databaseProvider, $eventPublisher, $categoryService;
 
             // Obtain geographical regions.
             $geoRegions = $databaseProvider
@@ -78,10 +78,7 @@
                     ->withParameters($placeIdentifier->getId(), $categoryId)
                     ->execute();
 
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Category->value, 
-                        "id" => $categoryId), NULL);
+                $eventPublisher->publishCategoryStatisticsChangedEvent($categoryId);
             }
         }
 
@@ -185,17 +182,14 @@
         }
 
         public function updateCategoryName($categoryId, $name) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
             
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE category_identifier SET name = ? WHERE id = ?")
                 ->withParameters($name, $categoryId)
                 ->execute() === 1;
                 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Category->value, 
-                    "id" => $categoryId), NULL);
+            $eventPublisher->publishCategoryStatisticsChangedEvent($categoryId);
 
             return $wasUpdated;
         }
@@ -217,7 +211,7 @@
         }
 
         public function createCompositeRegion($name, $category, $includedRegions, $excludedRegions) : CategoryIdentifier {
-            global $databaseProvider, $schedulingProvider, $configuration, $placeService;
+            global $databaseProvider, $eventPublisher, $configuration, $placeService;
 
             // Find out what can the composite regions consist of.
             $referencableRegionNames = $databaseProvider
@@ -258,11 +252,9 @@
                     ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
                     ->execute();
 
-                $placeIdentifiers = $placeService->getPlaceIdentifiersByCategoryId($categoryIdentifier->getId());    
+                $placeIdentifiers = $placeService->getPlaceIdentifiersByCategoryId($subjectCategoryIdentifier->getId());    
                 foreach ($placeIdentifiers as &$placeIdentifier) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateCategories", array(
-                            "placeId" => $placeIdentifier->getId()), NULL);
+                    $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
                 }
             }
 
@@ -274,14 +266,13 @@
                     ->execute();
             }
     
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateRegionAreas", NULL, NULL);
+            $eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
             
             return $categoryIdentifier;
         }
 
         public function createGeographicalRegion($name, $country, $category, $radius, $geoJson) : CategoryIdentifier {
-            global $databaseProvider, $schedulingProvider, $placeService;
+            global $databaseProvider, $eventPublisher, $placeService;
                                     
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
 
@@ -300,19 +291,16 @@
                 : $placeService->getPlaceIdentifiersByCountry($country);
 
             foreach ($placeIdentifiers as &$placeIdentifier) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateCategories", array(
-                        "placeId" => $placeIdentifier->getId()), NULL);
+                $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
             }
     
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateRegionAreas", NULL, NULL);
+            $eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
             
             return $categoryIdentifier;
         }
 
         public function createGeographicalRegionExtensionRegion($name, $country, $category, $latitude, $longitude) : CategoryIdentifier {
-            global $databaseProvider, $schedulingProvider, $placeService;
+            global $databaseProvider, $eventPublisher, $placeService;
             
             $geoJson = json_encode(array(
                 "type" => "Feature", 
@@ -332,9 +320,7 @@
             $placeIdentifiers = $placeService->getPlaceIdentifiersByCoordinates($latitude, $longitude);
 
             foreach ($placeIdentifiers as &$placeIdentifier) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateCategories", array(
-                        "placeId" => $placeIdentifier->getId()), NULL);
+                $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
             }
             
             return $categoryIdentifier;
@@ -436,6 +422,17 @@
                 }
             }
             return TRUE;
+        }
+
+        public function onCategoryCreated($message) : void {
+            $this->updateRegionAreas();
+        }
+
+        public function onPlaceCategoriesChanged($message) : void {
+            global $placeService;
+
+            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
+            $this->updateCategories($placeIdentifier);
         }
     }
 ?>

@@ -1,10 +1,10 @@
 <?php
-    class RunJobHandler extends Handler {
+    class RemoveEventHandler extends Handler {
         public function handle($input) {
-            global $processorProvider;
+            global $eventManager;
 
-            $response = $processorProvider->run("SubmitJob", array("type" => "run") + $input);    
-            return $this->createResponse(200, $response);
+            $response = $eventManager->removeEvent($input["eventId"]);
+            return $this->createResponse(204, $response);
         }
 
         public function getRequiredRole() {
@@ -16,37 +16,37 @@
         }
 
         public function getTag() {
-            return "Jobs";
+            return "Events";
         }
 
         public function getPath() {
-            return "/jobs/run";
+            return "/events/{eventId}";
         }
 
         public function getParameters() {
-            return array();
+            return array(
+                $this->createPathParameter("eventId", "integer", 352299));
         }
 
         public function getMethod() {
-            return "POST";
+            return "DELETE";
         }
         
         public function getShortDescription() {
-            return "Run a job";
+            return "Remove a pending event with the specified identifier";
         }
         
         public function getLongDescription() {
-            return "Runs a job. The job is executed synchronously and its results are returned.";
+            return "Removes a pending event with the specified identifier.";
         }
         
         public function getRequestExamples() {
-            return array(
-                $this->createRequestExample("Submitted job", '{"action":"UpdateCalendar","args":{"watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
+            return array();
         }
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Job results", 200, 'true'),
+                $this->create204ResponseExample(),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

@@ -322,7 +322,7 @@
         }
 
         public function updatePlaceName($placeId, $name) : bool {
-            global $databaseProvider, $googleApiClient, $albumService, $schedulingProvider;
+            global $databaseProvider, $googleApiClient, $albumService, $eventPublisher;
 
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE place_identifier SET name = ?, excerpt = NULL WHERE id = ?")
@@ -347,17 +347,14 @@
             }
             
             foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $tripId), NULL); 
+                $eventPublisher->publishTripStatisticsChangedEvent($tripId);
             }   
 
             return $wasUpdated;
         }
 
         public function updatePlaceLocation($placeId, $latitude, $longitude) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
 
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE place_identifier SET latitude = ?, longitude = ? WHERE id = ?")
@@ -365,10 +362,7 @@
                 ->execute() === 1;
             
             foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $tripId), NULL); 
+                $eventPublisher->publishTripStatisticsChangedEvent($tripId);
             }   
 
             return $wasUpdated;
@@ -422,7 +416,7 @@
         }
 
         public function getOrCreatePlaceIdentifier($name, $country, $address) : PlaceIdentifier {            
-            global $databaseProvider, $configuration, $schedulingProvider, $geocodingService;
+            global $databaseProvider, $configuration, $eventPublisher, $geocodingService;
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
             if ($placeIdentifier !== NULL) {
@@ -442,9 +436,7 @@
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
                 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateCategories", array(
-                    "placeId" => $placeIdentifier->getId()), NULL);
+            $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
 
             return $placeIdentifier;
         }
@@ -532,7 +524,7 @@
         }
 
         public function removePermanentPlace($placeId) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
 
             $wasRemoved = $this->removeSpecialPlace(SpecialPlaceType::Permanent, $placeId);
 
@@ -542,10 +534,7 @@
                 ->getResultSetForColumn("category_id");
 
             foreach ($categoryIdsToUpdate as &$categoryIdToUpdate) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Category->value, 
-                        "id" => $categoryIdToUpdate), NULL);
+                $eventPublisher->publishCategoryStatisticsChangedEvent($categoryIdToUpdate);
             }
 
             $yearsToUpdate = $databaseProvider
@@ -554,10 +543,7 @@
                 ->getResultSetForColumn("year");
 
             foreach ($yearsToUpdate as &$yearToUpdate) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Year->value, 
-                        "id" => $yearToUpdate), NULL);
+                $eventPublisher->publishYearStatisticsChangedEvent($yearToUpdate);
             }
 
             return $wasRemoved;
@@ -608,7 +594,7 @@
 
         public function refreshCalendar() : void {
             global $databaseProvider, $calendarClient, $geocodingService, $placeService, $configuration, $tripService,
-                $googleApiClient, $schedulingProvider, $noteService, $chatClient, $configurationService;
+                $googleApiClient, $eventPublisher, $noteService, $chatClient, $configurationService;
             
             $databaseProvider
                 ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_place_event")
@@ -656,28 +642,14 @@
             foreach ($newPlaceRows as &$newPlaceRow) {
                 if (time() < $newPlaceRow["start"]) {
                     if (time() + $configuration["forecastDaysToCache"] * 86400 > $newPlaceRow["start"]) {
-                        $schedulingProvider
-                            ->scheduleJobExecution("UpdateActualForecast", array(
-                                "placeId" => $newPlaceRow["place_id"],
-                                "start" => $newPlaceRow["start"]), NULL);
+                        $eventPublisher->publishActualWeatherForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
                     }
                             
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateHistoricalForecast", array(
-                            "placeId" => $newPlaceRow["place_id"],
-                            "start" => $newPlaceRow["start"]), NULL);
-
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateDaylightForecast", array(
-                            "placeId" => $newPlaceRow["place_id"],
-                            "start" => $newPlaceRow["start"],
-                            "end" => $newPlaceRow["end"]), NULL);
+                    $eventPublisher->publishHistoricalWeatherForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
+                    $eventPublisher->publishDaylightForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
                 }
 
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $newPlaceRow["trip_id"]), NULL);
+                $eventPublisher->publishTripStatisticsChangedEvent($newPlaceRow["trip_id"]);
             }
 
             // Process new countries in trips (only those visited more than one year ago prior to visiting it).
@@ -717,18 +689,12 @@
 
             foreach ($removedPlaceRows as &$removedPlaceRow) {
                 if ($removedPlaceRow["trip_id"] != NULL) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateStats", array(
-                            "type" => StatisticsType::Trip->value, 
-                            "id" => $removedPlaceRow["trip_id"]), NULL);
+                    $eventPublisher->publishTripStatisticsChangedEvent($removedPlaceRow["trip_id"]);
                 }
                 
                 if ($removedPlaceRow["category_ids"] != NULL) {
                     foreach (explode(",", $removedPlaceRow["category_ids"]) as &$categoryId) {
-                        $schedulingProvider
-                            ->scheduleJobExecution("UpdateStats", array(
-                                "type" => StatisticsType::Category->value, 
-                                "id" => $categoryId), NULL);
+                        $eventPublisher->publishCategoryStatisticsChangedEvent($categoryId);
                     }
                 }
             }
@@ -740,6 +706,14 @@
 
             foreach ($countries as &$country) {
                 $configurationService->updateConfigurationEntryVisibility(array("public", "modifiable"), "COUNTRIES", $country);
+            }
+        }
+
+        public function onCalendarChanged($message) {
+            global $configuration;
+
+            if ($message["calendar"] === "places" && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+                $this->refreshCalendar();
             }
         }
     }

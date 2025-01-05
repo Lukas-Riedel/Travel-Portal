@@ -6,9 +6,9 @@ import org.springframework.lang.Nullable;
 import java.nio.file.Path;
 import java.util.Objects;
 
-public record UploadPhotosArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId, @Nullable Integer mainPhotoPosition, Path path) {
+public record PhotosUploadingEventArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId, @Nullable Integer mainPhotoPosition, Path path) {
     
-    public UploadPhotosArgs {
+    public PhotosUploadingEventArgs {
         Validate.isTrue(placeId > 0, "Invalid place identifier.");
         Validate.isTrue(timestamp != null || albumId != null, "Either timestamp or album identifier must be set.");
         Validate.isTrue(timestamp == null || albumId == null, "Either timestamp or album identifier must be set, but not both.");

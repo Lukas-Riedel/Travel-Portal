@@ -37,7 +37,7 @@
         }
 
         public function getPhotos($albumId) : array {
-            global $databaseProvider, $schedulingProvider, $albumService, $googleApiClient;
+            global $databaseProvider, $eventPublisher, $albumService, $googleApiClient;
 
             $photos = array();
 
@@ -79,9 +79,7 @@
             }
 
             if (count($photos) !== $previousCount) {
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateAlbum", array(
-                        "albumId" => $albumId), NULL);
+                $eventPublisher->publishAlbumChangedEvent($albumId);
             }
 
             return $photos;
@@ -145,7 +143,7 @@
         }
 
         public function createPendingPhotos($albumId) : void {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
             
             $pendingPhotos = $databaseProvider
                 ->statementBuilder("SELECT * FROM photo_pending WHERE album_id = ? AND position IS NOT NULL ORDER BY position LIMIT 50")
@@ -202,9 +200,31 @@
                     ->withParameters($createdMediaItemId, $pendingPhoto["replaced_photo_id"])
                     ->execute();
 
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateHighlight", array(
-                        "photoId" => $pendingPhoto["replaced_photo_id"]), NULL);
+                $eventPublisher->publishHighlightChangedEvent($pendingPhoto["replaced_photo_id"]);
+            }
+        }
+
+        public function onAlbumPhotosChanged($message) : void {
+            global $placeService, $albumService, $eventPublisher;
+
+            $photos = $this->getPhotos($message["albumId"]);
+            $album = $albumService->getAlbum($message["albumId"]);
+
+            if (count($photos) !== $album->getImagesCount()) {
+                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, FALSE, FALSE, FALSE);
+
+                foreach ($places as &$place) {
+                    foreach ($place->getDates() as &$date) {
+                        $trip = $date->getTrip();
+                        if ($trip !== NULL) {
+                            $eventPublisher->publishTripStatisticsChangedEvent($trip->getId());
+                        }
+                    }
+
+                    foreach ($place->getCategories() as &$category) {
+                        $eventPublisher->publishCategoryStatisticsChangedEvent($category->getId());
+                    }
+                }
             }
         }
     }

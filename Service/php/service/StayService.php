@@ -15,7 +15,7 @@
         }
 
         public function refreshCalendar() : void {
-            global $databaseProvider, $calendarClient, $tripService, $schedulingProvider;
+            global $databaseProvider, $calendarClient, $tripService, $eventPublisher;
             
             $databaseProvider
                 ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_stay_event")
@@ -43,11 +43,8 @@
                 ->statementBuilder("SELECT ns.trip_id FROM stay_event ns LEFT JOIN old_stay_event os ON os.id = ns.id WHERE os.name IS NULL")
                 ->getResultSet();
 
-            foreach ($newStayRows as &$newStayRow) {                  
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $newStayRow["trip_id"]), NULL);
+            foreach ($newStayRows as &$newStayRow) {      
+                $eventPublisher->publishTripStatisticsChangedEvent($newStayRow["trip_id"]);
             }
 
             // Process removed stays.
@@ -57,11 +54,16 @@
 
             foreach ($removedStayRows as &$removedStayRow) {
                 if ($removedStayRow["trip_id"] != NULL) {
-                    $schedulingProvider
-                        ->scheduleJobExecution("UpdateStats", array(
-                            "type" => StatisticsType::Trip->value, 
-                            "id" => $removedStayRow["trip_id"]), NULL);
+                    $eventPublisher->publishTripStatisticsChangedEvent($removedStayRow["trip_id"]);
                 }
+            }
+        }
+
+        public function onCalendarChanged($message) {
+            global $configuration;
+
+            if ($message["calendar"] === "stays" && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+                $this->refreshCalendar();
             }
         }
     }
