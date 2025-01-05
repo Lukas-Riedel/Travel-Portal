@@ -3,14 +3,14 @@
 
     class CreatePlaceAlbumHandler extends Handler {
         public function handle($input) {
-            global $albumService, $placeService;
+            global $photoService, $placeService;
             
             $placeIdentifier = $placeService->getPlaceIdentifierById($input["placeId"]);
             if ($placeIdentifier === NULL) {            
                 throw new EntityNotFoundException("place", $input["placeId"]);
             }
 
-            return $this->createResponse(201, $albumService->createAlbum($placeIdentifier, $input["timestamp"]));
+            return $this->createResponse(201, $photoService->createAlbum($placeIdentifier, $input["timestamp"]));
         }
 
         public function getRequiredRole() {

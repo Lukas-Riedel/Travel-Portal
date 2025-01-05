@@ -3,7 +3,7 @@
     
     class RefreshPlaceAlbumHandler extends Handler {
         public function handle($input) {
-            global $albumService;
+            global $photoService;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -17,7 +17,7 @@
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
-            $albumService->updateAlbum($input["albumId"], isset($input["mainPhotoPosition"]) ? $input["mainPhotoPosition"] : NULL);
+            $photoService->updateAlbum($input["albumId"], isset($input["mainPhotoPosition"]) ? $input["mainPhotoPosition"] : NULL);
 
             $response = (new GetPlaceHandler())
                 ->handle(array(

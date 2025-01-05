@@ -61,7 +61,7 @@ function getAdditionalFooterLinks(trip, places) {
     const links = [];
 
     const date = new Date(trip.start * 1000);
-    links.push("<a href=\"https://calendar.google.com/calendar/u/1/r/week/" + date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + "\">Zobrazit v kalendáři</a>");
+    links.push("<a href=\"https://calendar.google.com/calendar/u/0/r/week/" + date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + "\">Zobrazit v kalendáři</a>");
 
     links.push("<a onclick=\"changeName(" + trip.id + ")\">Přejmenovat</a>");
 

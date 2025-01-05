@@ -24,8 +24,8 @@
             $this->publishEvent(Event::AlbumInvalidated, array("albumId" => $albumId));
         }
 
-        public function publishHighlightChangedEvent($photoId) {
-            $this->publishEvent(Event::HighlightChanged, array("photoId" => $photoId));
+        public function publishPhotoInvalidatedEvent($photoId) {
+            $this->publishEvent(Event::PhotoInvalidated, array("photoId" => $photoId));
         }
 
         public function publishPlaceCategoriesChangedEvent($placeId) {
@@ -115,7 +115,7 @@
         case ActualWeatherForecastChanged = 6;
         case DaylightForecastChanged = 7;
         case HistoricalWeatherForecastChanged = 8;
-        case HighlightChanged = 9;
+        case PhotoInvalidated = 9;
         case AllHighlightsChanged = 10;
         case AlbumInvalidated = 11;
         case AllAlbumsInvalidated = 12;

@@ -96,6 +96,10 @@
             return $var == NULL ? "IS NULL" : ("= '" . $this->escape($var) . "'");
         }
 
+        public function getLastInsertedId() {
+            return $this->connection->insert_id;
+        }
+
         private function updateViewsToMaterialize($sql) {            
             if (!isset($_SESSION["materializationDuration"])) {
                 $views = $this->connection->query("SELECT * FROM view_materialization");

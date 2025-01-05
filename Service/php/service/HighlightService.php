@@ -266,7 +266,7 @@
             $this->updateHighlights();
         }
         
-        public function onHighlightChanged($message) {
+        public function onPhotoInvalidated($message) {
             $this->updateHighlightForPhoto($message["photoId"]);
         }
     }

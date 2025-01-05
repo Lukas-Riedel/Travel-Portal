@@ -1,0 +1,339 @@
+<?php
+    require_once(dirname(__FILE__) . "/../model/Album.php");
+    require_once(dirname(__FILE__) . "/../model/Photo.php");
+    require_once(dirname(__FILE__) . "/../model/PendingPhoto.php");
+
+    class PhotoMapper {
+
+        private DatabaseProvider $databaseProvider;
+
+        public function __construct(DatabaseProvider $databaseProvider) {
+            $this->databaseProvider = $databaseProvider;
+        }
+
+        public function selectAlbum(string $albumId) : ?Album {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM album
+                WHERE id = ?
+            SQL;
+
+            $albumRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->getSingleRow();
+            
+            if ($albumRow === NULL) {                
+                return NULL;
+            }
+
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["thumbnail_url"],
+                $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]));
+        }
+
+        public function selectPhoto(string $photoId) : ?Photo {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM photo
+                WHERE id = ?
+            SQL;            
+                
+            $photoRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($photoId)
+                ->getSingleRow();
+
+            if ($photoRow === NULL) {
+                return NULL;
+            }
+
+            // TODO: Obtain a base URL.
+            return new Photo($photoId, NULL, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+                $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
+        }
+
+        public function selectPendingPhotosWithFixedPosition(string $albumId) : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM photo_pending
+                WHERE album_id = ?
+                    AND position IS NOT NULL
+                ORDER BY position
+                LIMIT 50
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->getMappedResultSet(function($photoRow) {
+                    return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
+                        $photoRow["position"], $photoRow["replaced_photo_id"], $photoRow["upload_token"]);
+                });
+        }
+
+        public function selectPendingPhotosWithRelativePosition(string $albumId) : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM photo_pending
+                WHERE album_id = ?
+                    AND replaced_photo_id IS NOT NULL
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->getMappedResultSet(function($photoRow) {
+                    return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
+                        $photoRow["position"], $photoRow["replaced_photo_id"], $photoRow["upload_token"]);
+                });
+        }
+
+        public function selectAlbumId(string $externalId) : ?string {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM album_identifier
+                WHERE external_id = ?
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($externalId)
+                ->getFirstColumn("id");
+        }
+
+        public function selectPhotoId(string $externalId) : ?string {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM photo_identifier
+                WHERE external_id = ?
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($externalId)
+                ->getFirstColumn("id");
+        }
+
+        public function selectAlbumExternalId(string $albumId) : ?string {            
+            $sql = <<<'SQL'
+                SELECT external_id
+                FROM album_identifier
+                WHERE id = ?
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->getFirstColumn("external_id");
+        }
+
+        public function selectPhotoExternalId(string $albumId) : ?string {            
+            $sql = <<<'SQL'
+                SELECT external_id
+                FROM photo_identifier
+                WHERE id = ?
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->getFirstColumn("external_id");
+        }
+
+        public function selectAlbumIdsWithOutdatedPhotos() : array {
+            $sql = <<<'SQL'
+                SELECT a.id
+                FROM album a
+                WHERE a.images_count <> (
+                    SELECT COUNT(*)
+                    FROM photo p
+                    WHERE p.album_id = a.id
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getResultSetForColumn("id");
+        }
+
+        public function insertAlbum(Album $album) : bool {    
+            $sql = <<<'SQL'
+                INSERT INTO album (
+                    name,
+                    id,
+                    main_photo_id,
+                    thumbnail_url,
+                    images_count,
+                    indoor_images_count,
+                    permalink
+                ) 
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    GET_INDOOR_IMAGES_COUNT(?),
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($album->getName(), $album->getId(), $album->getMainPhotoId(), $album->getMainImageUrl(),
+                    $album->getImagesCount(), $album->getId(), $album->getPermalink())
+                ->execute() === 1;
+        }
+
+        public function insertPhoto(Photo $photo, string $albumId) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO photo (
+                    id,
+                    album_id,
+                    focal_length,
+                    aperture,
+                    shutter_speed,
+                    iso,
+                    timestamp,
+                    permalink
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($photo->getId(), $albumId, $photo->getFocalLength(), $photo->getAperture(),
+                    $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink())
+                ->execute() === 1;
+        }
+
+        public function insertPendingPhoto(PendingPhoto $pendingPhoto) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO photo_pending (
+                    album_id,
+                    file_name,
+                    position,
+                    replaced_photo_id,
+                    upload_token
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
+            SQL;
+
+            $wasInserted = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($pendingPhoto->getAlbumId(), $pendingPhoto->getFileName(), $pendingPhoto->getPosition(),
+                    $pendingPhoto->getReplacedPhotoId(), $pendingPhoto->getUploadToken())
+                ->execute() === 1;
+
+            if ($wasInserted) {
+                $pendingPhoto->setId($this->databaseProvider->getLastInsertedId());
+            }
+
+            return $wasInserted;
+        }
+
+        public function insertAlbumId(string $externalId) : bool {    
+            $sql = <<<'SQL'
+                INSERT INTO album_identifier (
+                    external_id
+                )
+                VALUES (
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($externalId)
+                ->execute() === 1;
+        }
+
+        public function insertPhotoId(string $externalId) : bool {    
+            $sql = <<<'SQL'
+                INSERT INTO photo_identifier (
+                    external_id
+                )
+                VALUES (
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($externalId)
+                ->execute() === 1;
+        }
+
+        public function updatePhotoExternalId(string $photoId, string $newExternalId) : bool {
+            $sql = <<<'SQL'
+                UPDATE photo_identifier
+                SET external_id = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($newExternalId, $photoId)
+                ->execute() === 1;
+        }
+
+        public function deleteAlbums(?string $albumId) : int {  
+            $sql = <<<'SQL'
+                DELETE
+                FROM album
+                WHERE :CONDITIONS
+            SQL;
+
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            if ($albumId !== NULL) {
+                $whereClauseBuilder->withClause("id = ?", $albumId);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            return $this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
+                ->execute();
+        }
+
+        public function deletePhotos(string $albumId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM photo
+                WHERE album_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->execute();
+        }
+
+        public function deletePendingPhoto(string $id) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM photo_pending
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($id)
+                ->execute();
+        }
+    }
+?>

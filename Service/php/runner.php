@@ -8,7 +8,6 @@
     require_once(dirname(__FILE__) . "/service/HighlightService.php");
     require_once(dirname(__FILE__) . "/service/PhotoService.php");
     require_once(dirname(__FILE__) . "/service/TripService.php");
-    require_once(dirname(__FILE__) . "/service/AlbumService.php");
     require_once(dirname(__FILE__) . "/service/CategoryService.php");
     require_once(dirname(__FILE__) . "/service/ExpenseService.php");
     require_once(dirname(__FILE__) . "/service/YearService.php");
@@ -37,7 +36,6 @@
     $loggingProvider = new LoggingProvider($databaseProvider);
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
-    $photoService = new PhotoService();
     $tripService = new TripService();
     $categoryService = new CategoryService();
     $expenseService = new ExpenseService();
@@ -60,9 +58,9 @@
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
-    $albumService = new AlbumService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
+    $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
 
-    $services = array($placeService, $highlightService, $photoService, $tripService, $albumService, $categoryService,
+    $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,
         $fitnessService, $statisticsService, $geocodingService, $stayService, $forecastService, $authenticationService, $platformService);
         

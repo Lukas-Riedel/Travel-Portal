@@ -47,7 +47,7 @@
         }
 
         private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {            
-            global $databaseProvider, $highlightService, $categoryService, $albumService, $tripService, $forecastService;
+            global $databaseProvider, $highlightService, $categoryService, $photoService, $tripService, $forecastService;
             
             $places = array();
 
@@ -109,7 +109,7 @@
 
                 $album = NULL;
                 if ($placeRow["album_id"] !== NULL) {
-                    $album = $albumService->getAlbum($placeRow["album_id"]);    
+                    $album = $photoService->getAlbum($placeRow["album_id"]);    
                 }
 
                 $trip = $tripService->getTripIdentifierById($placeRow["trip_id"]);
@@ -170,7 +170,7 @@
         }
         
         private function doGetCandidatePlaces($placeId, $categoryId, $includeHighlights, $includeCategories, $includeExcerpt) : array {
-            global $databaseProvider, $tripService, $albumService, $highlightService, $categoryService;
+            global $databaseProvider, $tripService, $photoService, $highlightService, $categoryService;
 
             $whereClauseBuilder = $databaseProvider->whereClauseBuilder(); 
             if ($placeId !== NULL) {
@@ -196,7 +196,7 @@
                 foreach ($dateRows as &$dateRow) {    
                     $album = NULL;
                     if ($dateRow["album_id"] !== NULL) {
-                        $album = $albumService->getAlbum($dateRow["album_id"]);    
+                        $album = $photoService->getAlbum($dateRow["album_id"]);    
                     }
 
                     $trip = $tripService->getTripIdentifierById($dateRow["trip_id"]);
@@ -330,11 +330,25 @@
         }
         
         public function onAlbumUpdated($message) : void {
-            // TODO: Obtain place identifier for $message["albumId"]. Publish PlaceUpdated event to re-compute statistics.
+            global $eventPublisher;
+            
+            $places = $this->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, FALSE, FALSE, FALSE);
+            foreach ($places as &$place) {
+                foreach ($place->getDates() as &$date) {
+                    $trip = $date->getTrip();
+                    if ($trip !== NULL) {
+                        $eventPublisher->publishTripStatisticsChangedEvent($trip->getId());
+                    }
+                }
+
+                foreach ($place->getCategories() as &$category) {
+                    $eventPublisher->publishCategoryStatisticsChangedEvent($category->getId());
+                }
+            }
         }
 
         public function updatePlaceName($placeId, $name) : bool {
-            global $databaseProvider, $googleApiClient, $albumService, $eventPublisher;
+            global $databaseProvider, $googleApiClient, $photoService, $eventPublisher;
 
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE place_identifier SET name = ?, excerpt = NULL WHERE id = ?")
@@ -346,9 +360,10 @@
                 foreach ($place->getDates() as &$date) {                       
                     $album = $date->getAlbum();
                     if ($album !== NULL) {     
-                        $externalAlbumId = $albumService->getExternalId($album->getId());
+                        // TODO: Move to album service, remove the getAlbumExternalId method
+                        $externalAlbumId = $photoService->getAlbumExternalId($album->getId());
                         $wasUpdated &= $googleApiClient->updateAlbumName($externalAlbumId, str_replace($place->getName(), $name, $album->getName()));
-                        $albumService->updateAlbum($album->getId());
+                        $photoService->updateAlbum($album->getId());
                     }
 
                     $eventId = $this->getPlaceEventId($placeId, $date->getStart());
