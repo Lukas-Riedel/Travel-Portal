@@ -26,11 +26,11 @@
             return $this->name;
         }
 
-        public function getMainPhotoId() : int {
+        public function getMainPhotoId() : ?int {
             return $this->mainPhotoId;
         }
 
-        public function getMainImageUrl() : string {
+        public function getMainImageUrl() : ?string {
             return $this->mainImageUrl;
         }
 

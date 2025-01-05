@@ -1,80 +1,53 @@
 <?php
+    require_once(dirname(__FILE__) . "/AlbumMapper.php");
     require_once(dirname(__FILE__) . "/../model/Album.php");
-    require_once(dirname(__FILE__) . "/../exception/EntityNotFoundException.php");
 
     class AlbumService {
-        public function getAlbum($albumId) : ?Album {
-            global $databaseProvider;
 
-            $albumRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM album WHERE id = ?")
-                ->withParameters($albumId)
-                ->getSingleRow();
-            
-            if ($albumRow === NULL) {                
-                return NULL;
-            }
+        private const FETCH_ALBUMS_ACTION_NAME = "FETCH_ALBUMS";
+        private const FETCH_ALBUMS_ACTION_INTERVAL = 21600;
 
-            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["thumbnail_url"],
-                $albumRow["permalink"], $albumRow["images_count"], $albumRow["indoor_images_count"]);
-        }
+        private const JPG_FILE_EXTENSION = ".jpg";
 
-        public function getAlbumIdentifier($externalId) : ?string {
-            global $databaseProvider;
-            
-            return $databaseProvider
-                ->statementBuilder("SELECT id FROM album_identifier WHERE external_id = ?")
-                ->withParameters($externalId)
-                ->getFirstColumn("id");
-        }
+        private readonly AlbumMapper $albumMapper;
 
-        public function getExternalIdentifier($albumId) : ?string {
-            global $databaseProvider;
-            
-            return $databaseProvider
-                ->statementBuilder("SELECT external_id FROM album_identifier WHERE id = ?")
-                ->withParameters($albumId)
-                ->getFirstColumn("external_id");
+        private readonly GoogleApiClient $googleApiClient;
+
+        private readonly ConfigurationService $configurationService;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
+        
+        public function __construct(DatabaseProvider $databaseProvider, GoogleApiClient $googleApiClient, 
+            ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+            $this->albumMapper = new AlbumMapper($databaseProvider);
+            $this->googleApiClient = $googleApiClient;
+            $this->configurationService = $configurationService;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
         }
         
-        public function getOrCreateAlbumIdentifier($externalId) : string {
-            global $databaseProvider;
-
-            $albumIdentifier = $this->getAlbumIdentifier($externalId);
-            if ($albumIdentifier !== NULL) {
-                return $albumIdentifier;
-            }
-
-            $databaseProvider
-                ->statementBuilder("INSERT INTO album_identifier (external_id) VALUES (?)")
-                ->withParameters($externalId)
-                ->execute();
-
-            return $this->getAlbumIdentifier($externalId);
+        public function getAlbum(string $albumId) : ?Album {
+            return $this->albumMapper->selectAlbum($albumId);
         }
 
-        public function createAlbum($placeId, $timestamp) : Album {
-            global $placeService, $googleApiClient;
+        public function getExternalId(string $albumId) : ?string {
+            return $this->albumMapper->selectExternalId($albumId);
+        }
 
-            $place = $placeService->getRegularPlace($placeId);
-            if ($place === NULL) {            
-                throw new EntityNotFoundException("place", $placeId);
-            }
-
-            $albumName = $this->getAlbumName($place->getName(), $timestamp);
-            $createdAlbumExternalId = $googleApiClient->createAlbum($albumName);
-            $albumId = $this->getOrCreateAlbumIdentifier($createdAlbumExternalId);
+        public function createAlbum(PlaceIdentifier $placeIdentifier, int $timestamp) : Album {
+            $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);
+            $createdAlbumExternalId = $this->googleApiClient->createAlbum($albumName);
+            $albumId = $this->getOrCreateAlbumId($createdAlbumExternalId);
             $this->updateAlbum($albumId);
-
             return $this->getAlbum($albumId);
         }
 
-        public function updateAlbums() : void {
+        public function updateAllAlbums() : void {            
             $filePaths = $this->doUpdateAlbums(NULL, FALSE);
-            $this->unlinkUnusedFiles($filePaths);
+            $this->prunePhysicalCache($filePaths);
         }
 
-        public function updateAlbum($albumId, $mainPhotoPosition = NULL) : void {
+        public function updateAlbum(string $albumId, ?int $mainPhotoPosition = NULL) : void {
             global $photoService;
             
             $photoService->createPendingPhotos($albumId);
@@ -87,20 +60,40 @@
                     throw new RuntimeException("Cannot set main photo because there are only " . count($photos) . " photos in the album.");
                 }
 
-                $this->setAlbumMainPhoto($albumId, $photos[$mainPhotoPosition]->getId());
+                $externalAlbumId = $this->getExternalId($albumId);       
+                if ($externalAlbumId === NULL) {
+                    throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
+                }
+    
+                $externalPhotoId = $photoService->getExternalId($photos[$mainPhotoPosition]->getId());
+                if ($externalPhotoId === NULL) {
+                    throw new InvalidArgumentException("A photo with the identifier " . $photos[$mainPhotoPosition]->getId() . " does not exist.");
+                }
+    
+                $this->googleApiClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
             }
 
             $this->doUpdateAlbums($albumId, TRUE);
         }
 
-        private function unlinkUnusedFiles($usedFilePaths) : void {
-            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath() . "/*"));
-            $unusedFilePaths = array_diff($existingFilePaths, $usedFilePaths);    
-            array_map("unlink", $unusedFilePaths);
+        public function onAllAlbumsInvalidated(mixed $message) : void {
+            $this->updateAllAlbums();
         }
         
-        public function doUpdateAlbums($albumId, $forceOverwrite) : array {
-            global $databaseProvider, $configuration, $eventPublisher, $highlightService, $photoService;
+        public function onAlbumInvalidated(mixed $message) : void {
+            $this->updateAlbum($message["albumId"]);
+        }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            if ($message["action"] === self::FETCH_ALBUMS_ACTION_NAME 
+                && $message["timeSinceLastExecution"] > self::FETCH_ALBUMS_ACTION_INTERVAL) {
+                $this->eventPublisher->publishAllAlbumsInvalidatedEvent();                
+                $this->scheduler->recordEventsTriggered(self::FETCH_ALBUMS_ACTION_NAME);
+            }
+        }
+        
+        private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
+            global $photoService, $highlightService, $databaseProvider;
         
             $filePaths = array();
             $albums = array();
@@ -113,15 +106,19 @@
                     $mainImageUrl = NULL;
 
                     if (isset($album["coverPhotoMediaItemId"])) {
-                        $fileName = $album["coverPhotoMediaItemId"] . ".jpg";
+                        $fileName = $album["coverPhotoMediaItemId"] . self::JPG_FILE_EXTENSION;
                         $filePath = $this->getPhysicalCachePath() . "/" . $fileName;
             
                         if ($forceOverwrite || !file_exists($filePath)) {
-                            file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] . "=w" . $configuration["albumThumbnailImageSize"]["width"] . "-h" . $configuration["albumThumbnailImageSize"]["height"]));
+                            file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] 
+                                . "=w" . $this->configurationService->getConfigurationForTypeAndKey("albumThumbnailImageSize", "width")
+                                . "-h" . $this->configurationService->getConfigurationForTypeAndKey("albumThumbnailImageSize", "height")));
                         }
             
                         $filePaths[] = $filePath;
-                        $mainImageUrl = BASE_URL . "/" . $configuration["cachePath"]["albumThumbnail"] . "/" . $fileName;
+                        $mainImageUrl = $this->configurationService->getBaseUrl() 
+                            . "/" . $this->configurationService->getConfigurationForTypeAndKey("cachePath", "albumThumbnail")
+                            . "/" . $fileName;
                         
                         $mainPhotoId = $photoService->getOrCreatePhotoIdentifier($album["coverPhotoMediaItemId"]);
                     }
@@ -131,18 +128,11 @@
                         $imagesCount = intval($album["mediaItemsCount"]);
                     }
 
-                    $currentAlbumId = $this->getOrCreateAlbumIdentifier($album["id"]);
-        
-                    $albums[] = array(
-                        "id" => $currentAlbumId,
-                        "name" => $album["title"],
-                        "mainPhotoId" => $mainPhotoId,
-                        "mainImageUrl" => $mainImageUrl,
-                        "imagesCount" => $imagesCount,
-                        "permalink" => $album["productUrl"]
-                    );
+                    $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
+                    $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId, $mainImageUrl, $album["productUrl"], $imagesCount, 0);
 
-                    // TODO: This is temporary until there's a proper support for highlights.
+                    // TODO: This is temporary until there is proper support for highlights (Q1/2025).
+                    // Remove $highlightService and $databaseProvider from global variables when removing this code.
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $placeRow = $databaseProvider
                             ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE album_id = ?")
@@ -173,96 +163,64 @@
                 }
             }
         
-            // Cache into a database table.                
-            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if ($albumId !== NULL) {
-                $whereClauseBuilder->withClause("id = ?", $albumId);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
-
-            $databaseProvider
-                ->statementBuilder("DELETE FROM album {{WHERE CLAUSE}}", $whereClause)
-                ->execute();
-        
+            // Persist albums.
+            $this->albumMapper->deleteAlbums($albumId);        
             foreach ($albums as &$album) {
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO album (name, id, main_photo_id, thumbnail_url, images_count, indoor_images_count, permalink) VALUES (?, ?, ?, ?, ?, GET_INDOOR_IMAGES_COUNT(?), ?)")
-                    ->withParameters($album["name"], $album["id"], $album["mainPhotoId"], $album["mainImageUrl"], $album["imagesCount"], $album["id"], $album["permalink"])
-                    ->execute();
+                $this->albumMapper->insertAlbum($album);
             }
 
-            // Process albums where a number of photos has changed. 
-            $changedAlbumIds = array($albumId);            
+            // Trigger an event for updated albums.
+            // As of now, the event is only triggered if the count of photos in the album has changed.
             if ($albumId === NULL) {
-                $changedAlbumIds = $databaseProvider
-                    ->statementBuilder("SELECT id FROM album a WHERE images_count <> (SELECT COUNT(*) FROM photo p WHERE p.album_id = a.id)")
-                    ->getResultSetForColumn("id");
+                $changedAlbumIds = $this->albumMapper->selectAlbumIdsWithOutdatedPhotos();
+                foreach ($changedAlbumIds as &$changedAlbumId) {
+                    $this->eventPublisher->publishAlbumUpdatedEvent($changedAlbumId);
+                }
             }
-
-            foreach ($changedAlbumIds as &$changedAlbumId) {
-                $eventPublisher->publishAlbumPhotosChangedEvent($changedAlbumId);
+            else {
+                $this->eventPublisher->publishAlbumUpdatedEvent($albumId);
             }
 
             return $filePaths;
         }
 
         private function getPhysicalCachePath() : string {
-            global $configuration;
-
-            return dirname(__FILE__) . "/../../" . $configuration["cachePath"]["albumThumbnail"];
+            return dirname(__FILE__) . "/../../" . $this->configurationService->getConfigurationForTypeAndKey("cachePath", "albumThumbnail");
         }
 
-        private function getAlbumName($placeName, $timestamp) : string {
+        private function prunePhysicalCache(array $usedFilePaths) : void {
+            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath() . "/*"));
+            $unusedFilePaths = array_diff($existingFilePaths, $usedFilePaths);    
+            array_map("unlink", $unusedFilePaths);
+        }
+
+        private function getAlbumName(string $placeName, int $timestamp) : string {
             return $placeName . " " . date("j.n.Y", $timestamp);
         }
-    
-        private function getGooglePhotosAlbumResponse($albumId, $pageToken = NULL) : array {
-            global $albumService, $googleApiClient;
+        
+        private function getOrCreateAlbumId(string $externalId) : string {
+            $albumId = $this->albumMapper->selectAlbumId($externalId);
+            if ($albumId !== NULL) {
+                return $albumId;
+            }
 
+            $this->albumMapper->insertAlbumId($externalId);
+
+            return $this->albumMapper->selectAlbumId($externalId);
+        }
+    
+        private function getGooglePhotosAlbumResponse(?string $albumId, ?string $pageToken = NULL) : array {
             if ($albumId === NULL) {
-                return $googleApiClient->getAlbums($pageToken);
+                return $this->googleApiClient->getAlbums($pageToken);
             }
             else {
-                $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+                $externalAlbumId = $this->getExternalId($albumId);
                 if ($externalAlbumId === NULL) {
                     throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
                 }
 
-                $album = $googleApiClient->getAlbum($externalAlbumId);
+                $album = $this->googleApiClient->getAlbum($externalAlbumId);
                 return array("albums" => array($album));
-            }
-        }
-
-        private function setAlbumMainPhoto($albumId, $photoId) {
-            global $photoService, $albumService, $googleApiClient;
-            
-            $externalAlbumId = $albumService->getExternalIdentifier($albumId);       
-            if ($externalAlbumId === NULL) {
-                throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
-            }
-
-            $externalPhotoId = $photoService->getExternalIdentifier($photoId);
-            if ($externalPhotoId === NULL) {
-                throw new InvalidArgumentException("A photo with the identifier " . $photoId . " does not exist.");
-            }
-
-            $googleApiClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
-        }
-
-        public function onAllAlbumsChanged($message) {
-            $this->updateAlbums();
-        }
-        
-        public function onAlbumChanged($message) {
-            $this->updateAlbum($message["albumId"]);
-        }
-
-        public function onSchedulerTriggered($message) : void {
-            global $eventPublisher, $scheduler;
-
-            if ($message["action"] === "FETCH_ALBUMS" && $message["timeSinceLastExecution"] > 21600) {
-                $eventPublisher->publishAllAlbumsChangedEvent();                
-                $scheduler->recordEventsTriggered($message["action"]);
             }
         }
     }

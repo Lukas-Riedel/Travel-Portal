@@ -39,7 +39,6 @@
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
     $tripService = new TripService();
-    $albumService = new AlbumService();
     $categoryService = new CategoryService();
     $expenseService = new ExpenseService();
     $yearService = new YearService();
@@ -58,14 +57,16 @@
     $stayService = new StayService();
     $forecastService = new ForecastService();
     $authenticationService = new AuthenticationService();
+    $eventPublisher = new EventPublisher();
+    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+
+    $albumService = new AlbumService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
 
     $services = array($placeService, $highlightService, $photoService, $tripService, $albumService, $categoryService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,
         $fitnessService, $statisticsService, $geocodingService, $stayService, $forecastService, $authenticationService, $platformService);
         
     $eventManager = new EventManager($services);
-    $eventPublisher = new EventPublisher();
-    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

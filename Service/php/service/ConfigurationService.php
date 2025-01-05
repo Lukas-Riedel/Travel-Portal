@@ -10,6 +10,24 @@
             return $configurationProvider->get(...$levels);
         }
 
+        public function getBaseUrl() : string {
+            return BASE_URL;
+        }
+
+        // TODO
+        public function getConfigurationForType($type) : ?string {
+            global $configuration;
+
+            return $configuration[$type];
+        }
+
+        // TODO
+        public function getConfigurationForTypeAndKey($type, $key) : ?string {
+            global $configuration;
+
+            return $configuration[$type][$key];
+        }
+
         public function getConfigurationEntry($type, $key) : ?array {
             global $databaseProvider;
 

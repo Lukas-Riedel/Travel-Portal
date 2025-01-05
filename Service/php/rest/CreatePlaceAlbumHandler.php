@@ -1,9 +1,16 @@
 <?php
+    require_once(dirname(__FILE__) . "/../exception/EntityNotFoundException.php");
+
     class CreatePlaceAlbumHandler extends Handler {
         public function handle($input) {
-            global $albumService;
+            global $albumService, $placeService;
             
-            return $this->createResponse(201, $albumService->createAlbum($input["placeId"], $input["timestamp"]));
+            $placeIdentifier = $placeService->getPlaceIdentifierById($input["placeId"]);
+            if ($placeIdentifier === NULL) {            
+                throw new EntityNotFoundException("place", $input["placeId"]);
+            }
+
+            return $this->createResponse(201, $albumService->createAlbum($placeIdentifier, $input["timestamp"]));
         }
 
         public function getRequiredRole() {

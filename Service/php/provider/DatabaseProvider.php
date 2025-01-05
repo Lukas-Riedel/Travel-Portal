@@ -60,7 +60,9 @@
 
         public function statementBuilder($sql, $whereClause = NULL) {
             if ($whereClause != NULL) {
+                // TODO: Get rid of {{WHERE CLAUSE}} after it's no longer used.
                 $sql = str_replace("{{WHERE CLAUSE}}", $whereClause["clause"], $sql);
+                $sql = str_replace("WHERE :CONDITIONS", $whereClause["clause"], $sql);
             }
             $builder = new StatementBuilder($this->connection->prepare($sql));
             if ($whereClause != NULL) {

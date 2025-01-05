@@ -107,7 +107,11 @@
                     $sun = $forecastService->getSunForecast($placeRow["place_id"], $placeRow["start"]);
                 }
 
-                $album = $albumService->getAlbum($placeRow["album_id"]);    
+                $album = NULL;
+                if ($placeRow["album_id"] !== NULL) {
+                    $album = $albumService->getAlbum($placeRow["album_id"]);    
+                }
+
                 $trip = $tripService->getTripIdentifierById($placeRow["trip_id"]);
 
                 $places[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $weather, $sun, $album, $trip));  
@@ -190,7 +194,11 @@
                     
                 $dates = array();
                 foreach ($dateRows as &$dateRow) {    
-                    $album = $albumService->getAlbum($dateRow["album_id"]);    
+                    $album = NULL;
+                    if ($dateRow["album_id"] !== NULL) {
+                        $album = $albumService->getAlbum($dateRow["album_id"]);    
+                    }
+
                     $trip = $tripService->getTripIdentifierById($dateRow["trip_id"]);
                     $dates[] = new Date($dateRow["start"], $dateRow["end"], NULL, NULL, $album, $trip);
                 }
@@ -320,6 +328,10 @@
                 ->withParameters($excerpt, $placeId)
                 ->execute() === 1;
         }
+        
+        public function onAlbumUpdated($message) : void {
+            // TODO: Obtain place identifier for $message["albumId"]. Publish PlaceUpdated event to re-compute statistics.
+        }
 
         public function updatePlaceName($placeId, $name) : bool {
             global $databaseProvider, $googleApiClient, $albumService, $eventPublisher;
@@ -334,7 +346,7 @@
                 foreach ($place->getDates() as &$date) {                       
                     $album = $date->getAlbum();
                     if ($album !== NULL) {     
-                        $externalAlbumId = $albumService->getExternalIdentifier($album->getId());
+                        $externalAlbumId = $albumService->getExternalId($album->getId());
                         $wasUpdated &= $googleApiClient->updateAlbumName($externalAlbumId, str_replace($place->getName(), $name, $album->getName()));
                         $albumService->updateAlbum($album->getId());
                     }
@@ -646,7 +658,7 @@
                     }
                             
                     $eventPublisher->publishHistoricalWeatherForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
-                    $eventPublisher->publishDaylightForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
+                    $eventPublisher->publishDaylightForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"], $newPlaceRow["end"]);
                 }
 
                 $eventPublisher->publishTripStatisticsChangedEvent($newPlaceRow["trip_id"]);

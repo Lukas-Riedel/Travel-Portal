@@ -171,7 +171,7 @@ function getUtilitiesComponent(trip) {
 
     // Tools.
     const tools = [
-        { name: "Aktualizovat alba", action: "api.createEvent('AllAlbumsChanged', {})" },
+        { name: "Aktualizovat alba", action: "api.createEvent('AllAlbumsInvalidated', {})" },
         { name: "Aktualizovat kalendář", action: "api.createEvent('CalendarChanged', { calendar: 'trips' watchId: configuration.googleCalendarApi.watchId })" },
         { name: "Přidat předplatné", action: "addSubscription()" },
         { name: "Přidat let", action: "addFlight()" },

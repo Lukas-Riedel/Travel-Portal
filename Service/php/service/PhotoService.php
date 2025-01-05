@@ -1,6 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Photo.php");
 
+    // TODO: Merge all into AlbumService and rename back to PhotoService?
     class PhotoService {
         public function getPhotoIdentifier($externalId) : ?string {
             global $databaseProvider;
@@ -11,7 +12,7 @@
                 ->getFirstColumn("id");
         }
 
-        public function getExternalIdentifier($photoId) : ?string {
+        public function getExternalId($photoId) : ?string {
             global $databaseProvider;
             
             return $databaseProvider
@@ -41,7 +42,7 @@
 
             $photos = array();
 
-            $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+            $externalAlbumId = $albumService->getExternalId($albumId);
             if ($externalAlbumId === NULL) {
                 throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
@@ -79,7 +80,7 @@
             }
 
             if (count($photos) !== $previousCount) {
-                $eventPublisher->publishAlbumChangedEvent($albumId);
+                $eventPublisher->publishAlbumInvalidatedEvent($albumId);
             }
 
             return $photos;
@@ -120,14 +121,14 @@
         private function createGooglePhotos($albumId, $newPhotos, $replacedPhotoId) : array {  
             global $googleApiClient, $albumService, $photoService;
 
-            $externalAlbumId = $albumService->getExternalIdentifier($albumId);
+            $externalAlbumId = $albumService->getExternalId($albumId);
             if ($externalAlbumId === NULL) {
                 throw new InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
 
             $externalReplacedPhotoId = NULL;
             if ($replacedPhotoId !== NULL) {
-                $externalReplacedPhotoId = $photoService->getExternalIdentifier($replacedPhotoId);    
+                $externalReplacedPhotoId = $photoService->getExternalId($replacedPhotoId);    
                 if ($externalReplacedPhotoId == NULL) {
                     throw new InvalidArgumentException("A photo with the identifier " . $externalReplacedPhotoId . " does not exist.");
                 }
@@ -204,25 +205,27 @@
             }
         }
 
-        public function onAlbumPhotosChanged($message) : void {
+        public function onAlbumUpdated($message) : void {
             global $placeService, $albumService, $eventPublisher;
 
-            $photos = $this->getPhotos($message["albumId"]);
             $album = $albumService->getAlbum($message["albumId"]);
-
-            if (count($photos) !== $album->getImagesCount()) {
-                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, FALSE, FALSE, FALSE);
-
-                foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {
-                        $trip = $date->getTrip();
-                        if ($trip !== NULL) {
-                            $eventPublisher->publishTripStatisticsChangedEvent($trip->getId());
+            if ($album !== NULL) {
+                $photos = $this->getPhotos($message["albumId"]);
+    
+                if (count($photos) !== $album->getImagesCount()) {
+                    $places = $placeService->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, FALSE, FALSE, FALSE);
+    
+                    foreach ($places as &$place) {
+                        foreach ($place->getDates() as &$date) {
+                            $trip = $date->getTrip();
+                            if ($trip !== NULL) {
+                                $eventPublisher->publishTripStatisticsChangedEvent($trip->getId());
+                            }
                         }
-                    }
-
-                    foreach ($place->getCategories() as &$category) {
-                        $eventPublisher->publishCategoryStatisticsChangedEvent($category->getId());
+    
+                        foreach ($place->getCategories() as &$category) {
+                            $eventPublisher->publishCategoryStatisticsChangedEvent($category->getId());
+                        }
                     }
                 }
             }

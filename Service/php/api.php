@@ -47,7 +47,6 @@
     $highlightService = new HighlightService();
     $photoService = new PhotoService();
     $tripService = new TripService();
-    $albumService = new AlbumService();
     $categoryService = new CategoryService();
     $fitnessService = new FitnessService();
     $expenseService = new ExpenseService();
@@ -68,6 +67,7 @@
     $eventManager = new EventManager();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+    $albumService = new AlbumService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

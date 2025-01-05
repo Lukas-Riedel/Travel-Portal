@@ -20,8 +20,8 @@
             $this->publishEvent(Event::CategoryCreated, array("categoryId" => $categoryId));
         }
 
-        public function publishAlbumChangedEvent($albumId) {
-            $this->publishEvent(Event::AlbumChanged, array("albumId" => $albumId));
+        public function publishAlbumInvalidatedEvent($albumId) {
+            $this->publishEvent(Event::AlbumInvalidated, array("albumId" => $albumId));
         }
 
         public function publishHighlightChangedEvent($photoId) {
@@ -32,16 +32,16 @@
             $this->publishEvent(Event::PlaceCategoriesChanged, array("placeId" => $placeId));
         }
 
-        public function publishAllAlbumsChangedEvent() : void {
-            $this->publishEvent(Event::AllAlbumsChanged, NULL);
+        public function publishAllAlbumsInvalidatedEvent() : void {
+            $this->publishEvent(Event::AllAlbumsInvalidated, NULL);
         }
 
         public function publishAllHighlightsChangedEvent() : void {
             $this->publishEvent(Event::AllHighlightsChanged, NULL);
         }
 
-        public function publishAlbumPhotosChangedEvent($albumId) : void {
-            $this->publishEvent(Event::AlbumPhotosChanged, array("albumId" => $albumId));
+        public function publishAlbumUpdatedEvent($albumId) : void {
+            $this->publishEvent(Event::AlbumUpdated, array("albumId" => $albumId));
         }
 
         public function publishTripStatisticsChangedEvent($tripId) : void {
@@ -117,10 +117,10 @@
         case HistoricalWeatherForecastChanged = 8;
         case HighlightChanged = 9;
         case AllHighlightsChanged = 10;
-        case AlbumChanged = 11;
-        case AllAlbumsChanged = 12;
+        case AlbumInvalidated = 11;
+        case AllAlbumsInvalidated = 12;
         case PlaceCategoriesChanged = 13;
-        case AlbumPhotosChanged = 14;
+        case AlbumUpdated = 14;
         case CategoryCreated = 15;
         case StatisticsChanged = 16;
 

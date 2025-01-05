@@ -3,16 +3,6 @@
         public function onApplicationStarted($message) {
             global $databaseProvider, $googleApiClient;
 
-            $pruneStatements = $databaseProvider
-            ->statementBuilder("SELECT * FROM pruner")
-            ->getResultSetForColumn("query");
-
-            foreach ($pruneStatements as &$pruneStatement) {
-                $databaseProvider 
-                    ->statementBuilder($pruneStatement)
-                    ->execute();
-            }
-
             $dump = array();
 
             foreach (explode(",", $message["tables"]) as &$table) {
@@ -38,6 +28,16 @@
             }
 
             $googleApiClient->createFile("Backup " . date("d.m.Y H:i:s") . ".sql", NULL, "application/sql", implode("\n", $dump));
+
+            $pruneStatements = $databaseProvider
+                ->statementBuilder("SELECT * FROM pruner")
+                ->getResultSetForColumn("query");
+
+            foreach ($pruneStatements as &$pruneStatement) {
+                $databaseProvider 
+                    ->statementBuilder($pruneStatement)
+                    ->execute();
+            }
         }
 
         public function onSchedulerTriggered($message) : void {
