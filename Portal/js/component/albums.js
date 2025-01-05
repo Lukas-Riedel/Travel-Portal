@@ -333,7 +333,7 @@ async function replacePhoto(placeId, albumId, replacedPhotoId, replacedPhotoPerm
         return;
     }
 
-    await api.scheduleJob("ReplacePhoto", { placeId: placeId, albumId: albumId, replacedPhotoId: replacedPhotoId, path: path });
+    await api.createEvent("PhotoReplacing", { placeId: placeId, albumId: albumId, replacedPhotoId: replacedPhotoId, path: path });
 
     window.open(replacedPhotoPermalink, '_blank').focus();
 }

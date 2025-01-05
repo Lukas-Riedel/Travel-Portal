@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import cz.lriedel.agent.model.Album;
-import cz.lriedel.agent.model.Job;
+import cz.lriedel.agent.model.Event;
 import cz.lriedel.agent.model.request.AlbumPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
 
@@ -59,15 +59,15 @@ public final class ServiceClient {
                 httpEntityProvider.getEmptyHttpEntity(), Album.class)));
     }
 
-    public Job[] listJobs(String jobName) {
+    public Event[] listEvents(String name) {
         return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.exchange(
-                "/jobs?action=" + jobName,
-                HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Job[].class).getBody()));
+                "/events?name=" + name,
+                HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Event[].class).getBody()));
     }
 
-    public void deleteJob(long jobId) {
+    public void removeEvent(long eventId) {
         retryTemplate.execute(context -> restTemplate.exchange(
-                "/jobs/" + jobId,
+                "/events/" + eventId,
                 HttpMethod.DELETE, httpEntityProvider.getEmptyHttpEntity(), Void.class));
     }
 }

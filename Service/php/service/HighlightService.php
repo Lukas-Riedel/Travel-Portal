@@ -135,15 +135,14 @@
         }
 
         private function removeHighlight($highlightType, $entityId, $highlightId) : bool {
-            global $databaseProvider, $schedulingProvider;
+            global $databaseProvider, $eventPublisher;
 
             $wasDeleted = $databaseProvider
                 ->statementBuilder("DELETE FROM " . $highlightType->getTableName() . " WHERE id = ? AND highlight_id = ?")
                 ->withParameters($entityId, $highlightId)
                 ->execute();
 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateHighlight", NULL, NULL);
+            $eventPublisher->publishAllHighlightsChangedEvent();
                 
             return $wasDeleted;
         }
@@ -251,6 +250,24 @@
             }
 
             return FALSE;
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $scheduler;
+
+            if ($message["action"] === "FETCH_HIGHLIGHTS" && $message["timeSinceLastExecution"] > 21600) {
+                $eventPublisher->publishAllHighlightsChangedEvent();
+                
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+        }
+
+        public function onAllHighlightsChanged($message) {
+            $this->updateHighlights();
+        }
+        
+        public function onHighlightChanged($message) {
+            $this->updateHighlightForPhoto($message["photoId"]);
         }
     }
 

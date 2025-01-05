@@ -1,8 +1,4 @@
 // High-level backend communication.
-async function runJob(action, args) {
-    return api.runJob(action, args).then(alertConfirmation);
-}
-
 async function getFutureFlights() {
     return (await api.listTrips(undefined, undefined, undefined, undefined, true)).flatMap(t => t.watchedFlights);
 }

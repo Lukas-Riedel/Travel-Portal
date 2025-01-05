@@ -100,7 +100,7 @@
         }
         
         public function doUpdateAlbums($albumId, $forceOverwrite) : array {
-            global $databaseProvider, $configuration, $schedulingProvider, $highlightService, $photoService;
+            global $databaseProvider, $configuration, $eventPublisher, $highlightService, $photoService;
         
             $filePaths = array();
             $albums = array();
@@ -200,9 +200,7 @@
             }
 
             foreach ($changedAlbumIds as &$changedAlbumId) {
-                $schedulingProvider
-                    ->scheduleJobExecution("GetMediaItems", array(
-                        "albumId" => $changedAlbumId), NULL);
+                $eventPublisher->publishAlbumPhotosChangedEvent($changedAlbumId);
             }
 
             return $filePaths;
@@ -249,6 +247,23 @@
             }
 
             $googleApiClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
+        }
+
+        public function onAllAlbumsChanged($message) {
+            $this->updateAlbums();
+        }
+        
+        public function onAlbumChanged($message) {
+            $this->updateAlbum($message["albumId"]);
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $scheduler;
+
+            if ($message["action"] === "FETCH_ALBUMS" && $message["timeSinceLastExecution"] > 21600) {
+                $eventPublisher->publishAllAlbumsChangedEvent();                
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
         }
     }
 ?>

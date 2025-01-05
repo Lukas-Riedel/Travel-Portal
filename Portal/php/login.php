@@ -3,7 +3,6 @@
     
     require_once(dirname(__FILE__) . "/../api/php/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/../api/php/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/../api/php/processor/Processor.php");
     require_once(dirname(__FILE__) . "/../api/php/service/AuthenticationService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);

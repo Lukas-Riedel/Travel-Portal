@@ -249,7 +249,7 @@
         }
 
         public function updateTripName($tripId, $name) : bool {
-            global $databaseProvider, $googleApiClient, $schedulingProvider;
+            global $databaseProvider, $googleApiClient, $eventPublisher;
 
             $wasUpdated = $databaseProvider
                 ->statementBuilder("UPDATE trip_identifier SET name = ? WHERE id = ?")
@@ -258,10 +258,7 @@
 
             $wasUpdated &= $googleApiClient->updateCalendarEventSummary("trips", $this->getTripEventId($tripId), $name);
 
-            $schedulingProvider
-                ->scheduleJobExecution("UpdateStats", array(
-                    "type" => StatisticsType::Trip->value, 
-                    "id" => $tripId), NULL);   
+            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
 
             return $wasUpdated;
         }
@@ -434,6 +431,27 @@
             $databaseProvider
                 ->statementBuilder("DELETE FROM trip_day_trip")
                 ->execute();
+        }
+
+        public function onCalendarChanged($message) {
+            global $configuration, $placeService, $stayService, $flightService;
+
+            // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
+            if ($message["calendar"] === "trips" && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+                $this->deleteAllDayTripsTrips();
+                $this->refreshCalendar();
+                $placeService->refreshCalendar();
+                $stayService->refreshCalendar();
+                $flightService->refreshCalendar();
+            }
+        }
+        
+        public function onCalendarWatchRenewing($message) {
+            global $calendarClient;
+
+            if ($message["calendar"] === "trips") {
+                $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
+            }
         }
     }
 ?>

@@ -23,7 +23,7 @@
         }
 
         public function updateFitnessRecord($timestamp, $steps, $minutes, $calories, $distance) : bool {
-            global $databaseProvider, $schedulingProvider, $configuration;
+            global $databaseProvider, $eventPublisher, $configuration;
             
             $stepLengthRow = $databaseProvider
                 ->statementBuilder("SELECT AVG(distance / steps) AS average_distance_per_step, MIN(distance / steps) AS minimum_distance_per_step, MAX(distance / steps) AS maximum_distance_per_step FROM fitness")
@@ -62,14 +62,27 @@
                 ->withParameters($timestamp, $timestamp)
                 ->getResultSetForColumn("trip_id");
 
-            foreach ($parentTripIds as &$parentTripId) {                
-                $schedulingProvider
-                    ->scheduleJobExecution("UpdateStats", array(
-                        "type" => StatisticsType::Trip->value, 
-                        "id" => $parentTripId), NULL);
+            foreach ($parentTripIds as &$parentTripId) {    
+                $eventPublisher->publishTripStatisticsChangedEvent($parentTripId);
             }
 
             return TRUE;
+        }
+
+        public function onSchedulerTriggered($message) : void {
+            global $eventPublisher, $scheduler, $configuration, $databaseProvider;
+
+            if ($message["action"] === "FETCH_FITNESS" && $message["timeSinceLastExecution"] > $configuration["fitnessRecordDuration"]) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT x.start AS start, x.start + GET_CONFIGURATION('FITNESS_RECORD_DURATION') AS end FROM (SELECT s.seq AS start FROM fitness_sequence s JOIN (SELECT * FROM trip_event WHERE trip_id NOT IN (SELECT id FROM trip_identifier WHERE name = GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips'))) t WHERE s.seq >= t.start AND s.seq <= t.end AND s.seq <= UNIX_TIMESTAMP() UNION SELECT s.seq AS start FROM fitness_sequence s JOIN (SELECT ps.* FROM place_summary ps INNER JOIN trip_identifier ti ON ps.trip_id = ti.id WHERE ti.name = GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips') AND YEAR(FROM_UNIXTIME(ps.start)) = ti.year) p WHERE s.seq >= p.start - (p.start % 86400) AND s.seq <= 86400 + p.end - (p.end % 86400) AND s.seq <= UNIX_TIMESTAMP()) x LEFT JOIN fitness f ON x.start = f.timestamp WHERE f.timestamp IS NULL OR f.timestamp + (7 * 86400) > f.last_update")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishFitnessActivityDetectedEvent($args["start"], $args["end"]);
+                }
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
         }
     }
 ?>

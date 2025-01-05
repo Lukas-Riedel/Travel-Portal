@@ -7,10 +7,7 @@
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/LoggingProvider.php");
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/provider/SchedulingProvider.php");
-    require_once(dirname(__FILE__) . "/provider/ProcessorProvider.php");
-    require_once(dirname(__FILE__) . "/processor/Processor.php");
-    require_once(dirname(__FILE__) . "/handler/Handler.php");
+    require_once(dirname(__FILE__) . "/rest/Handler.php");
     require_once(dirname(__FILE__) . "/model/TargetError.php");
     require_once(dirname(__FILE__) . "/exception/AuthenticationException.php");
     require_once(dirname(__FILE__) . "/exception/AuthorizationException.php");
@@ -30,6 +27,7 @@
     require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
     require_once(dirname(__FILE__) . "/service/FitnessService.php");
     require_once(dirname(__FILE__) . "/service/StatisticsService.php");
+    require_once(dirname(__FILE__) . "/service/PlatformService.php");
     require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
     require_once(dirname(__FILE__) . "/client/ChatClient.php");
     require_once(dirname(__FILE__) . "/client/HttpClient.php");
@@ -37,6 +35,9 @@
     require_once(dirname(__FILE__) . "/service/GeocodingService.php");
     require_once(dirname(__FILE__) . "/service/StayService.php");
     require_once(dirname(__FILE__) . "/service/ForecastService.php");
+    require_once(dirname(__FILE__) . "/event/Scheduler.php");
+    require_once(dirname(__FILE__) . "/event/EventManager.php");
+    require_once(dirname(__FILE__) . "/event/EventPublisher.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -63,6 +64,10 @@
     $calendarClient = new CalendarClient();
     $stayService = new StayService();
     $forecastService = new ForecastService();
+    $platformService = new PlatformService();
+    $eventManager = new EventManager();
+    $eventPublisher = new EventPublisher();
+    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
@@ -82,12 +87,10 @@
     try {            
         set_error_handler($onError);
         $loggingProvider = new LoggingProvider($databaseProvider);
-        $schedulingProvider = new SchedulingProvider($databaseProvider, $configuration);
-        $processorProvider = new ProcessorProvider($databaseProvider, $schedulingProvider, $loggingProvider, TRUE);
     
         $handlers = array();
-        foreach (array_diff(scandir(dirname(__FILE__) . "/handler"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
-            require_once(dirname(__FILE__) . "/handler/" . $handlerFileName);
+        foreach (array_diff(scandir(dirname(__FILE__) . "/rest"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
+            require_once(dirname(__FILE__) . "/rest/" . $handlerFileName);
             $handlerFileNameTokens = explode(".", $handlerFileName);
             $handler = new $handlerFileNameTokens[0];
             if ($handler->getMethod() == $_SERVER["REQUEST_METHOD"]) {

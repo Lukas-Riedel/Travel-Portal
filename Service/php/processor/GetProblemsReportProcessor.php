@@ -2,8 +2,8 @@
     require_once(dirname(__FILE__) . "/../model/Problem.php");
     require_once(dirname(__FILE__) . "/../model/ProblemValue.php");
 
-    class GetProblemsReportProcessor extends Processor {        
-        public function process($input) {
+    class GetProblemsReportProcessor {        
+        public function getReport() {
             global $databaseProvider;
             
             $result = array();
@@ -34,14 +34,6 @@
             }
 
             return $result;
-        }
-
-        public function getRequiredArguments() {
-            return array();
-        }
-        
-        public function requiresAdminRole() {
-            return FALSE;
         }
     }
 ?>

@@ -171,9 +171,8 @@ function getUtilitiesComponent(trip) {
 
     // Tools.
     const tools = [
-        { name: "Aktualizovat alba", action: "runJob('UpdateAlbum', {})" },
-        { name: "Aktualizovat kalendář", action: "runJob('UpdateCalendar', { watchId: configuration.googleCalendarApi.watchId })" },
-        { name: "Získat GeoJSON s geografickými regiony", action: "getGeoJson()" },
+        { name: "Aktualizovat alba", action: "api.createEvent('AllAlbumsChanged', {})" },
+        { name: "Aktualizovat kalendář", action: "api.createEvent('CalendarChanged', { calendar: 'trips' watchId: configuration.googleCalendarApi.watchId })" },
         { name: "Přidat předplatné", action: "addSubscription()" },
         { name: "Přidat let", action: "addFlight()" },
         { name: "Přidat geografický region", action: "addGeoRegion()" },
@@ -479,12 +478,6 @@ async function addPermanentPlace() {
     if (confirm("Nalezené místo je ve státě " + resolvedAddress.country + " (" + resolvedAddress.latitude + ", " + resolvedAddress.longitude + "). Přeješ si toto místo přidat?")) {
         api.createPermanentPlace(name, address).then(alertConfirmation);
     }
-}
-
-async function getGeoJson() {
-    await navigator.clipboard.writeText(JSON.stringify(await api.runJob("GetGeographicalRegions", {})));
-    
-    alertConfirmation();
 }
 
 function resolveDuplicatedPlaceIdentifiers(places) {
