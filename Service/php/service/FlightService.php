@@ -45,9 +45,9 @@
             $apiResponse = $httpClient->executeRequest("GET", "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=" . $flight);
 
             $selectedFlight = NULL;
-            foreach ($apiResponse["result"]["response"]["data"] as &$flight) {
-                if (($flight["time"]["scheduled"]["departure"] - 3600 <= $scheduledDeparture) && ($flight["time"]["scheduled"]["departure"] + 3600 >= $scheduledDeparture)) {
-                    $selectedFlight = $flight;
+            foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
+                if (($fetchedFlight["time"]["scheduled"]["departure"] - 3600 <= $scheduledDeparture) && ($fetchedFlight["time"]["scheduled"]["departure"] + 3600 >= $scheduledDeparture)) {
+                    $selectedFlight = $fetchedFlight;
                     break;
                 }
             }
