@@ -197,7 +197,7 @@
             
             $payload = array(
                 "albumId" => $externalAlbumId,
-                "newMediaItems" => $newPhotos);
+                "newMediaItems" => $newMediaItems);
                 
             if ($externalReplacedPhotoId !== NULL) {
                 $payload["albumPosition"] = array(
@@ -218,7 +218,7 @@
                 throw new RuntimeException("The photo could not be uploaded.");
             }
 
-            return $data;
+            return $uploadToken;
         }
 
         private function executeRequest($method, $url, $headers = array(), $payload = NULL, $contentType = NULL) : mixed {

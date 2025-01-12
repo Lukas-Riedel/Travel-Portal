@@ -280,7 +280,7 @@
                 );
 
                 $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
-                $createdMediaItemId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto["replaced_photo_id"])[0]["mediaItem"]["id"];
+                $createdMediaItemId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
                 $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdMediaItemId);
                 $this->eventPublisher->publishPhotoInvalidatedEvent($pendingPhoto->getReplacedPhotoId());
             }
@@ -364,7 +364,7 @@
 
             foreach ($createdPhotos as &$createdPhoto) {
                 if (isset($createdPhoto["status"]["message"]) && $createdPhoto["status"]["message"] !== "Success") {
-                    throw new RuntimeException($createdPhotos["status"]["message"]);
+                    throw new RuntimeException($createdPhoto["status"]["message"]);
                 }
             } 
 
