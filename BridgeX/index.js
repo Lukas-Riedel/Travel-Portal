@@ -5,6 +5,8 @@ import {name as appName} from './app.json';
 import Synchronizer from "./src/Synchronizer";
 import ConsoleLogger from './src/ConsoleLogger';
 
+AppRegistry.registerComponent(appName, () => App);
+
 const synchronizationHeadlessTask = async (event) => {
     if (event.timeout) {
         BackgroundFetch.finish(event.taskId);
@@ -17,5 +19,3 @@ const synchronizationHeadlessTask = async (event) => {
 };
 
 BackgroundFetch.registerHeadlessTask(synchronizationHeadlessTask);
-
-AppRegistry.registerComponent(appName, () => App);

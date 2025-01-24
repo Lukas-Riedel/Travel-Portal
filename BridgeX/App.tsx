@@ -5,6 +5,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import {
     Button,
+    PermissionsAndroid,
     StyleSheet,
     Text,
     TextInput,
@@ -17,6 +18,7 @@ import {
 import BackgroundFetch from "react-native-background-fetch";
 import Synchronizer from "./src/Synchronizer";
 import ToastLogger from "./src/ToastLogger";
+import ConsoleLogger from "./src/ConsoleLogger";
 
 const askForPermissions = async (): Promise<void> => {
     await initialize();
@@ -25,6 +27,7 @@ const askForPermissions = async (): Promise<void> => {
         { accessType: "read", recordType: "Distance" },
         { accessType: "read", recordType: "TotalCaloriesBurned" }
     ]);
+    await PermissionsAndroid.request("android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" as any);
 };
 
 const App = (): React.JSX.Element => {
@@ -32,11 +35,13 @@ const App = (): React.JSX.Element => {
     const [apiKey, setApiKey] = useState("");
     const [lastSync, setLastSync] = useState(new Date(0));
     
-    const logger = new ToastLogger();
-    const synchronizer = new Synchronizer(logger);
+    const toastLogger = new ToastLogger();
+
+    const foregroundSynchronizer = new Synchronizer(toastLogger);
+    const backgroundSynchronizer = new Synchronizer(new ConsoleLogger());
 
     const doSynchronizeAndSetLastSync = async () => {
-        await synchronizer.doSynchronize();
+        await foregroundSynchronizer.doSynchronize();
         AsyncStorage.getItem("lastSync").then(value => setLastSync(new Date(Number(value ?? 0))));
     };
 
@@ -54,11 +59,11 @@ const App = (): React.JSX.Element => {
             requiredNetworkType: BackgroundFetch.NETWORK_TYPE_UNMETERED,
             requiresBatteryNotLow: true
         }, async (taskId) => {
-            await synchronizer.synchronize();
+            await backgroundSynchronizer.synchronize();
             AsyncStorage.getItem("lastSync").then(value => setLastSync(new Date(Number(value ?? 0))));
             BackgroundFetch.finish(taskId);
         }, (e) => {
-            logger.logError("There was an error processing the item", e);
+            toastLogger.logError("There was an error processing the item", e);
         });
     }, []);
 

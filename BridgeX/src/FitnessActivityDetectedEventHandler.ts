@@ -44,23 +44,51 @@ export class FitnessActivityDetectedEventHandler implements EventHandler {
     };
 
     async _getAggregatedFitnessData<T extends AggregateResultRecordType>(recordType: T, start: number, end: number): Promise<AggregateResult<T>>  {
-        return await aggregateRecord({
-            recordType: recordType,
-            timeRangeFilter: {
-                operator: "between",
-                startTime: new Date(start * 1000).toISOString(),
-                endTime: new Date(end * 1000).toISOString()
+        const maxRetries = 10000;
+
+        let attempt = 0;
+    
+        // TODO: Find a better mechanism.
+        while (attempt < maxRetries) {
+            try {
+                return await aggregateRecord({
+                    recordType: recordType,
+                    timeRangeFilter: {
+                        operator: "between",
+                        startTime: new Date(start * 1000).toISOString(),
+                        endTime: new Date(end * 1000).toISOString()
+                    }
+                });
+            } catch (error) {
+                ++attempt;
+                console.warn(`Rate limit exceeded. Retrying... (Attempt ${attempt})`);
             }
-        });
+        }
+    
+        throw new Error("Max retries reached. Unable to fetch aggregated fitness data.");
     };
     
     async _getFitnessData<T extends RecordType>(recordType: T, start: number, end: number): Promise<ReadRecordsResult<T>> {
-        return await readRecords(recordType, {
-            timeRangeFilter: {
-                operator: "between",
-                startTime: new Date(start * 1000).toISOString(),
-                endTime: new Date(end * 1000).toISOString()
+        const maxRetries = 10000;
+
+        let attempt = 0;
+    
+        // TODO: Find a better mechanism.
+        while (attempt < maxRetries) {
+            try {
+                return await readRecords(recordType, {
+                    timeRangeFilter: {
+                        operator: "between",
+                        startTime: new Date(start * 1000).toISOString(),
+                        endTime: new Date(end * 1000).toISOString()
+                    }
+                });
+            } catch (error) {
+                ++attempt;
+                console.warn(`Rate limit exceeded. Retrying... (Attempt ${attempt})`);
             }
-        });
+        }
+    
+        throw new Error("Max retries reached. Unable to fetch aggregated fitness data.");
     };
 }
