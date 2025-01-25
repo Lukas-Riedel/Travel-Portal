@@ -5,10 +5,10 @@
 
             $response = FALSE;
             if ($input["type"] == "permanent") {
-                $placeService->removePermanentPlace($input["placeId"]);
+                $response = $placeService->removePermanentPlace($input["placeId"]);
             }
             if ($input["type"] == "candidate") {
-                $placeService->removeCandidatePlace($input["placeId"]);
+                $response = $placeService->removeCandidatePlace($input["placeId"]);
             }
             
             if ($response === FALSE) {                
