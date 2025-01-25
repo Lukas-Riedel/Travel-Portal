@@ -14,16 +14,12 @@
                     NULL,
                     isset($input["minStart"]) ? $input["minStart"] : NULL,
                     isset($input["maxEnd"]) ? $input["maxEnd"] : NULL,
-                    isset($input["includeHighlights"]) && $input["includeHighlights"] === "true",
-                    isset($input["includeCategories"]) && $input["includeCategories"] === "true",
-                    isset($input["includeExcerpt"]) && $input["includeExcerpt"] === "true");
+                    isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
             else if ($type == "candidate") { 
                 $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
-                    isset($input["includeHighlights"]) && $input["includeHighlights"] === "true",
-                    isset($input["includeCategories"]) && $input["includeCategories"] === "true",
-                    isset($input["includeExcerpt"]) && $input["includeExcerpt"] === "true");
+                    isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
 
             return $this->createResponse(200, $response);
@@ -53,9 +49,7 @@
                 $this->createQueryParameter("minStart", "integer", 1716154060),
                 $this->createQueryParameter("maxEnd", "integer", 1716154060),
                 $this->createQueryParameter("type", "string", array("regular", "candidate")),
-                $this->createQueryParameter("includeExcerpt", "boolean", "true"),
-                $this->createQueryParameter("includeCategories", "boolean", "true"),
-                $this->createQueryParameter("includeHighlights", "boolean", "false"));
+                $this->createQueryParameter("include", "string", "EXCERPT,CATEGORIES,HIGHLIGHTS"));
         }
 
         public function getMethod() {

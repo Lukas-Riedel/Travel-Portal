@@ -1,5 +1,5 @@
 async function init(categoryId, isLoggedIn) {
-    const candidatePlaces = await api.listCandidatePlaces(undefined, categoryId, undefined, true);
+    const candidatePlaces = await api.listCandidatePlaces(undefined, categoryId, "CATEGORIES");
 
     // Title.
     $('#title').html(getTitle(isLoggedIn, candidatePlaces));

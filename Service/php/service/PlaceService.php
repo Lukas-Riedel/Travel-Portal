@@ -38,15 +38,16 @@
         }
 
         public function getRegularPlace($placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
+            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL,
+                array(IncludedPlaceEntity::Categories->value, IncludedPlaceEntity::Highlights->value, IncludedPlaceEntity::Excerpt->value));
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
-        public function getRegularPlaces($categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {
-            return $this->doGetRegularPlaces(NULL, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt);
+        public function getRegularPlaces($categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities) : array {
+            return $this->doGetRegularPlaces(NULL, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities);
         }
 
-        private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includeCategories, $includeHighlights, $includeExcerpt) : array {            
+        private function doGetRegularPlaces($placeId, $categoryId, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities) : array {            
             global $databaseProvider, $highlightService, $categoryService, $photoService, $tripService, $forecastService;
             
             $places = array();
@@ -82,17 +83,17 @@
             foreach ($placeRows as &$placeRow) {
                 if (!isset($places[$placeRow["place_id"]])) {
                     $categories = array();
-                    if ($includeCategories) {
+                    if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
                         $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                     }                   
 
-                    $highlights = array();             
-                    if ($includeHighlights) {
+                    $highlights = array();         
+                    if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
                         $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                     }
                     
                     $excerpt = NULL;
-                    if ($includeExcerpt) {
+                    if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
                         $excerpt = $placeRow["excerpt"];
                     }
                     
@@ -135,17 +136,17 @@
                 foreach ($placeRows as &$placeRow) {
                     if (!isset($places[$placeRow["place_id"]])) {
                         $categories = array();
-                        if ($includeCategories) {
+                        if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
                             $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                         }                   
 
-                        $highlights = array();             
-                        if ($includeHighlights) {
+                        $highlights = array();         
+                        if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
                             $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                         }
                         
                         $excerpt = NULL;
-                        if ($includeExcerpt) {
+                        if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
                             $excerpt = $placeRow["excerpt"];
                         }
                         
@@ -159,17 +160,18 @@
         }
 
         public function getCandidatePlace($placeId) : ?Place {
-            $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, TRUE, TRUE, TRUE);
+            $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, TRUE, TRUE,
+                array(IncludedPlaceEntity::Categories->value, IncludedPlaceEntity::Highlights->value, IncludedPlaceEntity::Excerpt->value));
             return count($candidatePlaces) === 1 ? $candidatePlaces[0] : NULL;
         }
 
-        public function getCandidatePlaces($categoryId, $tripId, $includeHighlights, $includeCategories, $includeExcerpt) : array {
+        public function getCandidatePlaces($categoryId, $tripId, $includedEntities) : array {
             return $tripId !== NULL
-                ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includeHighlights, $includeCategories, $includeExcerpt)
-                : $this->doGetCandidatePlaces(NULL, $categoryId, $includeHighlights, $includeCategories, $includeExcerpt);
+                ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includedEntities)
+                : $this->doGetCandidatePlaces(NULL, $categoryId, $includedEntities);
         }
         
-        private function doGetCandidatePlaces($placeId, $categoryId, $includeHighlights, $includeCategories, $includeExcerpt) : array {
+        private function doGetCandidatePlaces($placeId, $categoryId, $includedEntities) : array {
             global $databaseProvider, $tripService, $photoService, $highlightService, $categoryService;
 
             $whereClauseBuilder = $databaseProvider->whereClauseBuilder(); 
@@ -204,17 +206,17 @@
                 }
                 
                 $highlights = array();
-                if ($includeHighlights) {
+                if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                 }
                 
                 $excerpt = NULL;
-                if ($includeExcerpt) {
+                if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
                     $excerpt = $placeRow["excerpt"];
                 }
 
                 $categories = array();
-                if ($includeCategories) {
+                if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
                     $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                 }
 
@@ -225,7 +227,7 @@
             return $places;
         }
 
-        private function doGetCandidatePlacesForTrip($categoryId, $tripId, $includeHighlights, $includeCategories, $includeExcerpt) {
+        private function doGetCandidatePlacesForTrip($categoryId, $tripId, $includedEntities) {
             global $databaseProvider, $tripService, $highlightService, $categoryService;
             
             $whereClauseBuilder = $databaseProvider->whereClauseBuilder(); 
@@ -242,17 +244,17 @@
             foreach ($placeRows as &$placeRow) {
                 if (!isset($places[$placeRow["place_id"]])) {
                     $highlights = array();
-                    if ($includeHighlights) {
+                    if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
                         $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                     }
                     
                     $excerpt = NULL;
-                    if ($includeExcerpt) {
+                    if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
                         $excerpt = $placeRow["excerpt"];
                     }
 
                     $categories = array();
-                    if ($includeCategories) {
+                    if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
                         $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                     }
 
@@ -763,5 +765,11 @@
                 self::Permanent => "place_permanent"
             };
         }
+    }
+
+    enum IncludedPlaceEntity : string {
+        case Excerpt = "EXCERPT";
+        case Categories = "CATEGORIES";
+        case Highlights = "HIGHLIGHTS";
     }
 ?>

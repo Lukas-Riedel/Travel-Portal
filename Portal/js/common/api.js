@@ -125,7 +125,7 @@ class Api {
     }
 
     async listRegularPlaces(tripId = undefined, categoryId = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
-        includeExcerpt = undefined, includeCategories = undefined, includeHighlights = undefined) {
+        include = undefined) {
         return this.#sendRequest("GET", "places", {}, 
             {
                 type: "regular",
@@ -134,22 +134,17 @@ class Api {
                 year: year,
                 minStart: minStart,
                 maxEnd: maxEnd,
-                includeExcerpt: includeExcerpt,
-                includeCategories: includeCategories,
-                includeHighlights: includeHighlights
+                include : include
             });
     }
 
-    async listCandidatePlaces(tripId = undefined, categoryId = undefined,
-        includeExcerpt = undefined, includeCategories = undefined, includeHighlights = undefined) {
+    async listCandidatePlaces(tripId = undefined, categoryId = undefined, include = undefined) {
         return this.#sendRequest("GET", "places", {}, 
             {
                 type: "candidate",
                 tripId: tripId,
                 categoryId: categoryId,
-                includeExcerpt: includeExcerpt,
-                includeCategories: includeCategories,
-                includeHighlights: includeHighlights
+                include: include
             });
     }
 
