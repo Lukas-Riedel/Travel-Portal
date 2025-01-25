@@ -29,12 +29,12 @@
 
             foreach ($yearRows as &$yearRow) {
                 $stats = array();
-                if (in_array(IncludedCategoryEntity::Statistics->value, $includedEntities)) {
+                if (in_array(YearIncludedEntity::Statistics->value, $includedEntities)) {
                     $stats = $statisticsService->getYearStatistics($yearRow["id"]);               
                 }
 
                 $highlights = array();
-                if (in_array(IncludedCategoryEntity::Highlights->value, $includedEntities)) {
+                if (in_array(YearIncludedEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getYearHighlights($yearRow["id"]);                      
                 }
 
@@ -85,7 +85,7 @@
         }
     }
 
-    enum IncludedYearEntity : string {
+    enum YearIncludedEntity : string {
         case Statistics = "STATISTICS";
         case Highlights = "HIGHLIGHTS";
     }

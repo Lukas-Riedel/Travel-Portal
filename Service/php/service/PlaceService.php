@@ -39,7 +39,7 @@
 
         public function getRegularPlace($placeId) : ?Place {
             $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL,
-                array(IncludedPlaceEntity::Categories->value, IncludedPlaceEntity::Highlights->value, IncludedPlaceEntity::Excerpt->value));
+                array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Highlights->value, PlaceIncludedEntity::Excerpt->value));
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
@@ -83,17 +83,17 @@
             foreach ($placeRows as &$placeRow) {
                 if (!isset($places[$placeRow["place_id"]])) {
                     $categories = array();
-                    if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
+                    if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                         $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                     }                   
 
                     $highlights = array();         
-                    if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
+                    if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
                         $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                     }
                     
                     $excerpt = NULL;
-                    if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
+                    if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
                         $excerpt = $placeRow["excerpt"];
                     }
                     
@@ -136,17 +136,17 @@
                 foreach ($placeRows as &$placeRow) {
                     if (!isset($places[$placeRow["place_id"]])) {
                         $categories = array();
-                        if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
+                        if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                             $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                         }                   
 
                         $highlights = array();         
-                        if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
+                        if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
                             $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                         }
                         
                         $excerpt = NULL;
-                        if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
+                        if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
                             $excerpt = $placeRow["excerpt"];
                         }
                         
@@ -161,7 +161,7 @@
 
         public function getCandidatePlace($placeId) : ?Place {
             $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, TRUE, TRUE,
-                array(IncludedPlaceEntity::Categories->value, IncludedPlaceEntity::Highlights->value, IncludedPlaceEntity::Excerpt->value));
+                array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Highlights->value, PlaceIncludedEntity::Excerpt->value));
             return count($candidatePlaces) === 1 ? $candidatePlaces[0] : NULL;
         }
 
@@ -206,17 +206,17 @@
                 }
                 
                 $highlights = array();
-                if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
+                if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                 }
                 
                 $excerpt = NULL;
-                if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
+                if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
                     $excerpt = $placeRow["excerpt"];
                 }
 
                 $categories = array();
-                if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
+                if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                     $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                 }
 
@@ -244,17 +244,17 @@
             foreach ($placeRows as &$placeRow) {
                 if (!isset($places[$placeRow["place_id"]])) {
                     $highlights = array();
-                    if (in_array(IncludedPlaceEntity::Highlights->value, $includedEntities)) {
+                    if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
                         $highlights = $highlightService->getPlaceHighlights($placeRow["place_id"]);                      
                     }
                     
                     $excerpt = NULL;
-                    if (in_array(IncludedPlaceEntity::Excerpt->value, $includedEntities)) {
+                    if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
                         $excerpt = $placeRow["excerpt"];
                     }
 
                     $categories = array();
-                    if (in_array(IncludedPlaceEntity::Categories->value, $includedEntities)) {
+                    if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                         $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
                     }
 
@@ -767,7 +767,7 @@
         }
     }
 
-    enum IncludedPlaceEntity : string {
+    enum PlaceIncludedEntity : string {
         case Excerpt = "EXCERPT";
         case Categories = "CATEGORIES";
         case Highlights = "HIGHLIGHTS";

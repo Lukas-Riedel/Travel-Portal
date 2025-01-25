@@ -12,10 +12,10 @@
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {
-            $regularTrips = $this->doGetRegularTrips($tripId, NULL, array(IncludedTripEntity::Expenses->value, IncludedTripEntity::Stays->value,
-                IncludedTripEntity::Flights->value, IncludedTripEntity::WatchedFlights->value, IncludedTripEntity::Layovers->value,
-                IncludedTripEntity::Fitness->value, IncludedTripEntity::Notes->value, IncludedTripEntity::Highlights->value,
-                IncludedTripEntity::Statistics->value, IncludedTripEntity::PublicHolidays->value));
+            $regularTrips = $this->doGetRegularTrips($tripId, NULL, array(TripIncludedEntity::Expenses->value, TripIncludedEntity::Stays->value,
+                TripIncludedEntity::Flights->value, TripIncludedEntity::WatchedFlights->value, TripIncludedEntity::Layovers->value,
+                TripIncludedEntity::Fitness->value, TripIncludedEntity::Notes->value, TripIncludedEntity::Highlights->value,
+                TripIncludedEntity::Statistics->value, TripIncludedEntity::PublicHolidays->value));
             return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
         }
 
@@ -66,52 +66,52 @@
                 $countries = $placeService->getCountriesForTrip($tripRow["trip_id"]);
                 
                 $expenses = array();
-                if (in_array(IncludedTripEntity::Expenses->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Expenses->value, $includedEntities)) {
                     $expenses = $expenseService->getExpensesForTrip($tripRow["trip_id"]);            
                 }
 
                 $stays = array();
-                if (in_array(IncludedTripEntity::Stays->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Stays->value, $includedEntities)) {
                     $stays = $stayService->getStaysForTrip($tripRow["trip_id"]);                        
                 }
 
                 $flights = array();
-                if (in_array(IncludedTripEntity::Flights->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Flights->value, $includedEntities)) {
                     $flights = $flightService->getFlightsForTrip($tripRow["trip_id"]);             
                 }
 
                 $watchedFlights = array();
-                if (in_array(IncludedTripEntity::WatchedFlights->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::WatchedFlights->value, $includedEntities)) {
                     $watchedFlights = $flightService->getWatchedFlightsForTrip($tripRow["trip_id"]);
                 }
 
                 $layovers = array();
-                if (in_array(IncludedTripEntity::Layovers->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Layovers->value, $includedEntities)) {
                     $layovers = $placeService->getLayoversForTrip($tripRow["trip_id"]);                   
                 }
 
                 $fitness = array();
-                if (in_array(IncludedTripEntity::Fitness->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
                     $fitness = $fitnessService->getFitnessRecordsForTrip($tripRow["trip_id"]);              
                 }
 
                 $notes = array();
-                if (in_array(IncludedTripEntity::Notes->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
                     $notes = $noteService->getNotesForTrip($tripRow["trip_id"]);                   
                 }
 
                 $highlights = array();
-                if (in_array(IncludedTripEntity::Highlights->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getTripHighlights($tripRow["trip_id"]);        
                 }
 
                 $stats = array();
-                if (in_array(IncludedTripEntity::Statistics->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::Statistics->value, $includedEntities)) {
                     $stats = $statisticsService->getTripStatistics($tripRow["trip_id"]);                 
                 }
 
                 $publicHolidays = array();
-                if (in_array(IncludedTripEntity::PublicHolidays->value, $includedEntities)) {
+                if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
                     $publicHolidays = $this->getPublicHolidaysForTrip($tripRow["trip_id"], $countries);                               
                 }
 
@@ -153,7 +153,7 @@
         }
 
         public function getCandidateTrip($tripId) : ?Trip {
-            return $this->doGetCandidateTrip($tripId, array(IncludedTripEntity::Notes->value), array(IncludedTripEntity::PublicHolidays->value));
+            return $this->doGetCandidateTrip($tripId, array(TripIncludedEntity::Notes->value), array(TripIncludedEntity::PublicHolidays->value));
         }
 
         public function getCandidateTrips($includedEntities) : array {
@@ -179,12 +179,12 @@
             }
 
             $notes = array();
-            if (in_array(IncludedTripEntity::Notes->value, $includedEntities)) {
+            if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
                 $notes = $noteService->getNotesForTrip($tripId);;
             }
 
             $holidays = array();
-            if (in_array(IncludedTripEntity::PublicHolidays->value, $includedEntities)) {
+            if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
                 $holidays = $this->getPublicHolidaysForCountries(explode(",", $tripRow["countries"]));
             }
 
@@ -452,7 +452,7 @@
         }
     }
 
-    enum IncludedTripEntity : string {
+    enum TripIncludedEntity : string {
         case Expenses = "EXPENSES";
         case Stays = "STAYS";
         case Flights = "FLIGHTS";

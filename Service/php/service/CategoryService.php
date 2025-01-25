@@ -129,7 +129,7 @@
 
         public function getCategory($categoryId) : ?Category {
             $categories = $this->doGetCategories($categoryId, NULL,
-                array(IncludedCategoryEntity::Highlights->value, IncludedCategoryEntity::Statistics->value));
+                array(CategoryIncludedEntity::Highlights->value, CategoryIncludedEntity::Statistics->value));
             return count($categories) === 1 ? $categories[0] : NULL;
         }
 
@@ -157,12 +157,12 @@
 
             foreach ($categoryRows as &$categoryRow) {                
                 $highlights = array();
-                if (in_array(IncludedCategoryEntity::Highlights->value, $includedEntities)) {
+                if (in_array(CategoryIncludedEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getCategoryHighlights($categoryRow["id"]);                      
                 }
 
                 $stats = array();
-                if (in_array(IncludedCategoryEntity::Statistics->value, $includedEntities)) {
+                if (in_array(CategoryIncludedEntity::Statistics->value, $includedEntities)) {
                     $stats = $statisticsService->getCategoryStatistics($categoryRow["id"]);              
                 }
                 
@@ -437,7 +437,7 @@
         }
     }
 
-    enum IncludedCategoryEntity : string {
+    enum CategoryIncludedEntity : string {
         case Statistics = "STATISTICS";
         case Highlights = "HIGHLIGHTS";
     }
