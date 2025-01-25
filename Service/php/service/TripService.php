@@ -12,7 +12,10 @@
 
     class TripService {
         public function getRegularTrip($tripId) : ?Trip {
-            $regularTrips = $this->doGetRegularTrips($tripId, NULL, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE);
+            $regularTrips = $this->doGetRegularTrips($tripId, NULL, array(IncludedTripEntity::Expenses->value, IncludedTripEntity::Stays->value,
+                IncludedTripEntity::Flights->value, IncludedTripEntity::WatchedFlights->value, IncludedTripEntity::Layovers->value,
+                IncludedTripEntity::Fitness->value, IncludedTripEntity::Notes->value, IncludedTripEntity::Highlights->value,
+                IncludedTripEntity::Statistics->value, IncludedTripEntity::PublicHolidays->value));
             return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
         }
 
@@ -36,17 +39,11 @@
             return $this->getTripIdentifierById($tripId);
         }
 
-        public function getRegularTrips($year, $includeExpenses, $includeStays, $includeFlights,
-            $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
-            $includeStats, $includePublicHolidays) : array {
-            return $this->doGetRegularTrips(NULL, $year, $includeExpenses, $includeStays, $includeFlights,
-                $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
-                $includeStats, $includePublicHolidays);
+        public function getRegularTrips($year, $includedEntities) : array {
+            return $this->doGetRegularTrips(NULL, $year, $includedEntities);
         }
 
-        private function doGetRegularTrips($tripId, $year, $includeExpenses, $includeStays, $includeFlights,
-            $includeWatchedFlights, $includeLayovers, $includeFitness, $includeNotes, $includeHighlights,
-            $includeStats, $includePublicHolidays) : array {
+        private function doGetRegularTrips($tripId, $year, $includedEntities) : array {
             global $databaseProvider, $statisticsService, $placeService, $expenseService,
                 $stayService, $flightService, $fitnessService, $noteService, $highlightService;
             
@@ -69,52 +66,52 @@
                 $countries = $placeService->getCountriesForTrip($tripRow["trip_id"]);
                 
                 $expenses = array();
-                if ($includeExpenses) {
+                if (in_array(IncludedTripEntity::Expenses->value, $includedEntities)) {
                     $expenses = $expenseService->getExpensesForTrip($tripRow["trip_id"]);            
                 }
 
                 $stays = array();
-                if ($includeStays) {
+                if (in_array(IncludedTripEntity::Stays->value, $includedEntities)) {
                     $stays = $stayService->getStaysForTrip($tripRow["trip_id"]);                        
                 }
 
                 $flights = array();
-                if ($includeFlights) {
+                if (in_array(IncludedTripEntity::Flights->value, $includedEntities)) {
                     $flights = $flightService->getFlightsForTrip($tripRow["trip_id"]);             
                 }
 
                 $watchedFlights = array();
-                if ($includeWatchedFlights) {
+                if (in_array(IncludedTripEntity::WatchedFlights->value, $includedEntities)) {
                     $watchedFlights = $flightService->getWatchedFlightsForTrip($tripRow["trip_id"]);
                 }
 
                 $layovers = array();
-                if ($includeLayovers) {
+                if (in_array(IncludedTripEntity::Layovers->value, $includedEntities)) {
                     $layovers = $placeService->getLayoversForTrip($tripRow["trip_id"]);                   
                 }
 
                 $fitness = array();
-                if ($includeFitness) {
+                if (in_array(IncludedTripEntity::Fitness->value, $includedEntities)) {
                     $fitness = $fitnessService->getFitnessRecordsForTrip($tripRow["trip_id"]);              
                 }
 
                 $notes = array();
-                if ($includeNotes) {
+                if (in_array(IncludedTripEntity::Notes->value, $includedEntities)) {
                     $notes = $noteService->getNotesForTrip($tripRow["trip_id"]);                   
                 }
 
                 $highlights = array();
-                if ($includeHighlights) {
+                if (in_array(IncludedTripEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getTripHighlights($tripRow["trip_id"]);        
                 }
 
                 $stats = array();
-                if ($includeStats) {
+                if (in_array(IncludedTripEntity::Statistics->value, $includedEntities)) {
                     $stats = $statisticsService->getTripStatistics($tripRow["trip_id"]);                 
                 }
 
                 $publicHolidays = array();
-                if ($includePublicHolidays) {
+                if (in_array(IncludedTripEntity::PublicHolidays->value, $includedEntities)) {
                     $publicHolidays = $this->getPublicHolidaysForTrip($tripRow["trip_id"], $countries);                               
                 }
 
@@ -156,20 +153,20 @@
         }
 
         public function getCandidateTrip($tripId) : ?Trip {
-            return $this->doGetCandidateTrip($tripId, TRUE, TRUE);
+            return $this->doGetCandidateTrip($tripId, array(IncludedTripEntity::Notes->value), array(IncludedTripEntity::PublicHolidays->value));
         }
 
-        public function getCandidateTrips($includeNotes, $includePublicHolidays) : array {
+        public function getCandidateTrips($includedEntities) : array {
             global $databaseProvider;
 
             return $databaseProvider
                 ->statementBuilder("SELECT DISTINCT trip_id FROM place_candidate_event")
-                ->getMappedResultSet(function ($tripRow) use (&$includeNotes, &$includePublicHolidays) {
-                    return $this->doGetCandidateTrip($tripRow["trip_id"], $includeNotes, $includePublicHolidays);
+                ->getMappedResultSet(function ($tripRow) use (&$includedEntities) {
+                    return $this->doGetCandidateTrip($tripRow["trip_id"], $includedEntities);
                 });            
         }
 
-        private function doGetCandidateTrip($tripId, $includeNotes, $includePublicHolidays) : ?Trip {
+        private function doGetCandidateTrip($tripId, $includedEntities) : ?Trip {
             global $databaseProvider, $noteService;
 
             $tripRow = $databaseProvider
@@ -182,12 +179,12 @@
             }
 
             $notes = array();
-            if ($includeNotes) {
+            if (in_array(IncludedTripEntity::Notes->value, $includedEntities)) {
                 $notes = $noteService->getNotesForTrip($tripId);;
             }
 
             $holidays = array();
-            if ($includePublicHolidays) {
+            if (in_array(IncludedTripEntity::PublicHolidays->value, $includedEntities)) {
                 $holidays = $this->getPublicHolidaysForCountries(explode(",", $tripRow["countries"]));
             }
 
@@ -453,5 +450,18 @@
                 $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
             }
         }
+    }
+
+    enum IncludedTripEntity : string {
+        case Expenses = "EXPENSES";
+        case Stays = "STAYS";
+        case Flights = "FLIGHTS";
+        case WatchedFlights = "WATCHED_FLIGHTS";
+        case Layovers = "LAYOVERS";
+        case Fitness = "FITNESS";
+        case Notes = "NOTES";
+        case Highlights = "HIGHLIGHTS";
+        case Statistics = "STATISTICS";
+        case PublicHolidays = "PUBLIC_HOLIDAYS";
     }
 ?>

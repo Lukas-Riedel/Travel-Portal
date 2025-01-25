@@ -5,21 +5,11 @@
 
             $response = array();    
             if (isset($input["type"]) && $input["type"] === "candidate") { 
-                $response = $tripService->getCandidateTrips(isset($input["includeNotes"]) && $input["includeNotes"] === "true",
-                    isset($input["includePublicHolidays"]) && $input["includePublicHolidays"] === "true");
+                $response = $tripService->getCandidateTrips(isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
             else {
                 $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : NULL,
-                    isset($input["includeExpenses"]) && $input["includeExpenses"] === "true",
-                    isset($input["includeStays"]) && $input["includeStays"] === "true",
-                    isset($input["includeFlights"]) && $input["includeFlights"] === "true",
-                    isset($input["includeWatchedFlights"]) && $input["includeWatchedFlights"] === "true",
-                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
-                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
-                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
-                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
-                    isset($input["includeNotes"]) && $input["includeNotes"] === "true",
-                    isset($input["includeNotes"]) && $input["includeNotes"] === "true");
+                    isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
 
             return $this->createResponse(200, $response);
@@ -45,16 +35,7 @@
             return array(
                 $this->createQueryParameter("year", "integer", 2024),
                 $this->createQueryParameter("type", "string", array("regular", "candidate")),
-                $this->createQueryParameter("includeExpenses", "boolean", "false"),
-                $this->createQueryParameter("includeStays", "boolean", "false"),
-                $this->createQueryParameter("includeFlights", "boolean", "false"),
-                $this->createQueryParameter("includeWatchedFlights", "boolean", "false"),
-                $this->createQueryParameter("includeLayovers", "boolean", "false"),
-                $this->createQueryParameter("includeFitness", "boolean", "false"),
-                $this->createQueryParameter("includeNotes", "boolean", "false"),
-                $this->createQueryParameter("includeHighlights", "boolean", "false"),
-                $this->createQueryParameter("includeStats", "boolean", "false"),
-                $this->createQueryParameter("includePublicHolidays", "boolean", "false"));
+                $this->createQueryParameter("include", "string", "EXPENSES,STAYS,FLIGHTS,WATCHED_FLIGHTS,LAYOVERS,FITNESS,NOTES,HIGHLIGHTS,STATISTICS,PUBLIC_HOLIDAYS"));
         }
 
         public function getMethod() {

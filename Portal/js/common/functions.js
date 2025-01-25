@@ -1,6 +1,6 @@
 // High-level backend communication.
 async function getFutureFlights() {
-    return (await api.listTrips(undefined, undefined, undefined, undefined, true)).flatMap(t => t.watchedFlights);
+    return (await api.listTrips(undefined, "WATCHED_FLIGHTS")).flatMap(t => t.watchedFlights);
 }
 
 async function getPlaces(onlyPast) {
@@ -8,7 +8,7 @@ async function getPlaces(onlyPast) {
 }
 
 async function getLoggedFlights() {
-    return sorted((await api.listTrips(undefined, undefined, undefined, true)).flatMap(t => t.flights).filter(f => f.aircraft != null), (a, b) => b.start - a.start);
+    return sorted((await api.listTrips(undefined, "FLIGHTS")).flatMap(t => t.flights).filter(f => f.aircraft != null), (a, b) => b.start - a.start);
 }
 
 async function getLoggedAirports(loggedFlights = undefined) {

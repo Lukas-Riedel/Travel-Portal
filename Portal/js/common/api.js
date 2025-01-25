@@ -272,31 +272,20 @@ class Api {
         return this.#sendRequest("DELETE", "tracker/" + eventId);
     }
 
-    async listTrips(year = undefined, includeExpenses = undefined, includeStays = undefined, includeFlights = undefined, includeWatchedFlights = undefined,
-        includeLayovers = undefined, includeFitness = undefined, includeNotes = undefined, includeHighlights = undefined, includeStats = undefined, includePublicHolidays = undefined) {
+    async listTrips(year = undefined, include = undefined) {
         return this.#sendRequest("GET", "trips", {}, 
             {
                 type: "regular",
                 year: year,
-                includeExpenses: includeExpenses,
-                includeStays: includeStays,
-                includeFlights: includeFlights,
-                includeWatchedFlights: includeWatchedFlights,
-                includeLayovers: includeLayovers,
-                includeFitness: includeFitness,
-                includeNotes: includeNotes,
-                includeHighlights: includeHighlights,
-                includeStats: includeStats,
-                includePublicHolidays: includePublicHolidays
+                include: include
             });
     }
 
-    async listCandidateTrips(includeNotes = undefined, includePublicHolidays = undefined) {
+    async listCandidateTrips(include = undefined) {
         return this.#sendRequest("GET", "trips", {}, 
             {
                 type: "candidate",
-                includeNotes: includeNotes,
-                includePublicHolidays: includePublicHolidays
+                include: include
             });
     }
 
