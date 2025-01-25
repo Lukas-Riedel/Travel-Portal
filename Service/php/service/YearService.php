@@ -18,7 +18,7 @@
             return new Year($year, $yearIdentifier->getMainHighlight(), $highlights, $stats);
         }
 
-        public function getYears($includeStats, $includeHighlights) : array {
+        public function getYears($includedEntities) : array {
             global $databaseProvider, $statisticsService, $highlightService;
 
             $years = array();
@@ -29,12 +29,12 @@
 
             foreach ($yearRows as &$yearRow) {
                 $stats = array();
-                if ($includeStats) {
+                if (in_array(IncludedCategoryEntity::Statistics->value, $includedEntities)) {
                     $stats = $statisticsService->getYearStatistics($yearRow["id"]);               
                 }
 
                 $highlights = array();
-                if ($includeHighlights) {
+                if (in_array(IncludedCategoryEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getYearHighlights($yearRow["id"]);                      
                 }
 
@@ -83,5 +83,10 @@
                 ->withParameters($highlightIdentifier, $year)
                 ->execute() === 1;
         }
+    }
+
+    enum IncludedYearEntity : string {
+        case Statistics = "STATISTICS";
+        case Highlights = "HIGHLIGHTS";
     }
 ?>

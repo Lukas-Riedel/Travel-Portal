@@ -3,8 +3,7 @@
         public function handle($input) {
             global $yearService;
 
-            $response = $yearService->getYears(isset($input["includeStats"]) && $input["includeStats"] === "true",
-                isset($input["includeHighlights"]) && $input["includeHighlights"] === "true");
+            $response = $yearService->getYears(isset($input["include"]) ? explode(",", $input["include"]) : array());
             return $this->createResponse(200, $response);
         }
 
@@ -26,8 +25,7 @@
 
         public function getParameters() {
             return array(
-                $this->createQueryParameter("includeHighlights", "boolean", "false"),
-                $this->createQueryParameter("includeStats", "boolean", "false"));
+                $this->createQueryParameter("include", "string", "HIGHLIGHTS,STATISTICS"));
         }
 
         public function getMethod() {

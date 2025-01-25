@@ -433,11 +433,10 @@ class Api {
         return this.#sendRequest("DELETE", "trips/" + tripId + "/notes/" + noteId);
     }
 
-    async listYears(includeHighlights = undefined, includeStats = undefined) {
+    async listYears(include) {
         return this.#sendRequest("GET", "years", {}, 
             {
-                includeHighlights: includeHighlights,
-                includeStats: includeStats
+                include: include
             });
     }
 
