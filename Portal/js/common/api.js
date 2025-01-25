@@ -38,12 +38,11 @@ class Api {
             });
     }
 
-    async listCategories(categories = undefined, includeHighlights = undefined, includeStats = undefined) {
+    async listCategories(categories = undefined, include = undefined) {
         return this.#sendRequest("GET", "categories", {},
             {
                 categories: categories,
-                includeHighlights: includeHighlights,
-                includeStats: includeStats
+                include: include
             });
     }
 

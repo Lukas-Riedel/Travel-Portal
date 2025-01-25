@@ -114,7 +114,7 @@
                 $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function getCategoryIdentifiers($categoryIds) : array {
+        public function getCategoryIdentifiers($categoryIds) : array { 
             $categories = array();
 
             foreach ($categoryIds as &$categoryId) {
@@ -128,15 +128,16 @@
         }
 
         public function getCategory($categoryId) : ?Category {
-            $categories = $this->doGetCategories($categoryId, NULL, TRUE, TRUE);
+            $categories = $this->doGetCategories($categoryId, NULL,
+                array(IncludedCategoryEntity::Highlights->value, IncludedCategoryEntity::Statistics->value));
             return count($categories) === 1 ? $categories[0] : NULL;
         }
 
-        public function getCategories($categoryCategories, $includeHighlights, $includeStats) : array {
-            return $this->doGetCategories(NULL, $categoryCategories, $includeHighlights, $includeStats);
+        public function getCategories($categoryCategories, $includedEntities) : array {
+            return $this->doGetCategories(NULL, $categoryCategories, $includedEntities);
         }
 
-        private function doGetCategories($categoryId, $categoryCategories, $includeHighlights, $includeStats) : array {            
+        private function doGetCategories($categoryId, $categoryCategories, $includedEntities) : array {            
             global $databaseProvider, $highlightService, $statisticsService;
             
             $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
@@ -156,12 +157,12 @@
 
             foreach ($categoryRows as &$categoryRow) {                
                 $highlights = array();
-                if ($includeHighlights) {
+                if (in_array(IncludedCategoryEntity::Highlights->value, $includedEntities)) {
                     $highlights = $highlightService->getCategoryHighlights($categoryRow["id"]);                      
                 }
 
                 $stats = array();
-                if ($includeStats) {
+                if (in_array(IncludedCategoryEntity::Statistics->value, $includedEntities)) {
                     $stats = $statisticsService->getCategoryStatistics($categoryRow["id"]);              
                 }
                 
@@ -434,5 +435,10 @@
             $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
             $this->updateCategories($placeIdentifier);
         }
+    }
+
+    enum IncludedCategoryEntity : string {
+        case Statistics = "STATISTICS";
+        case Highlights = "HIGHLIGHTS";
     }
 ?>
