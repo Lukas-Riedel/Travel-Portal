@@ -1,8 +1,34 @@
 on: push
 name: Main Pipeline
 jobs:
-  web-deploy:
-    name: Deploy Web
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      service: ${{ steps.filter.outputs.service }}
+      portal: ${{ steps.filter.outputs.portal }}
+      agent: ${{ steps.filter.outputs.agent }}
+      bridgex: ${{ steps.filter.outputs.bridgex }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4    
+      - name: Filter Paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            service:
+              - 'Service/**'
+            portal:
+              - 'Portal/**'
+            agent:
+              - 'Agent/**'
+            bridgex:
+              - 'BridgeX/**'
+  deploy-service-and-portal:
+    name: Deploy Service and Portal
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.service == 'true' || needs.detect-changes.outputs.portal == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -37,8 +63,10 @@ jobs:
       with:
         method: GET
         url: https://lriedel.cz/api/php/deploy.php
-  maven-verify:
-    name: Build Agent
+  verify-agent:
+    name: Verify Agent
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.agent == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,3 +78,44 @@ jobs:
           distribution: 'temurin'
       - name: Verify
         run: mvn verify -f Agent/pom.xml
+  deploy-bridgex-android:
+    name: Deploy BridgeX Android
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.bridgex == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set Up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Set Up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools: '34.0.0'
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+            node-version: '18'
+      - name: Install dependencies
+        run: |
+            cd BridgeX
+            npm install  # or use `yarn install` if using Yarn
+      - name: Give Gradle Wrapper Execute Permissions
+        run: chmod +x BridgeX/android/gradlew
+      - name: Decode Keystore File
+        run: echo "$ANDROID_KEYSTORE" | base64 -d > BridgeX/android/app/bridgex.keystore
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+      - name: Build APK
+        run: |
+          cd BridgeX/android
+          ./gradlew assembleRelease
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: BridgeX.apk
+          path: BridgeX/android/app/build/outputs/apk/release/app-release.apk

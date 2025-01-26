@@ -1,17 +1,19 @@
 package cz.lriedel.agent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import cz.lriedel.agent.client.ServiceClient;
-import cz.lriedel.agent.job.AbstractEventHandler;
-import cz.lriedel.agent.job.EventHandler;
-import cz.lriedel.agent.model.Event;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.job.AbstractEventHandler;
+import cz.lriedel.agent.job.EventHandler;
+import cz.lriedel.agent.model.Event;
 
 @Component
 final class EventListener {
@@ -36,7 +38,9 @@ final class EventListener {
                 catch (Exception e) {
                     LOGGER.error("Unknown error occurred when processing '{}'.", event, e);
                 }
-                serviceClient.removeEvent(event.id());
+                finally {
+                    serviceClient.removeEvent(event.id());
+                }
             }
         }
     }

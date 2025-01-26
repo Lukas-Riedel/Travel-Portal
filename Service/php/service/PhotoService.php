@@ -16,6 +16,7 @@
         private readonly GoogleApiClient $googleApiClient;
 
         private readonly ConfigurationService $configurationService;
+        
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
