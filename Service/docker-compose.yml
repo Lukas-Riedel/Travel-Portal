@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   service:
     build: .
@@ -13,7 +12,20 @@ services:
       BASE_URL: http://localhost:8080
     depends_on:
       - db
-    command: ["sh", "-c", "wait-for-it db:3306 -s -t 60 -- mkdir -p /var/www/html/php/config && echo '<?php\ndefine(\"DB_NAME\", getenv(\"DB_NAME\"));\ndefine(\"DB_USER\", getenv(\"DB_USER\"));\ndefine(\"DB_PASSWORD\", getenv(\"DB_PASSWORD\"));\ndefine(\"DB_HOST\", getenv(\"DB_HOST\"));\ndefine(\"PRIVATE_KEY\", getenv(\"PRIVATE_KEY\"));\ndefine(\"BASE_URL\", getenv(\"BASE_URL\"));\n?>' > /var/www/html/php/config/secrets.php && php /var/www/html/php/deploy.php && apache2-foreground"]
+    command: >
+      sh -c "wait-for-it db:3306 -s -t 60 && 
+      mkdir -p /var/www/html/php/config && 
+      echo '<?php
+        define(\"DB_NAME\", getenv(\"DB_NAME\"));
+        define(\"DB_USER\", getenv(\"DB_USER\"));
+        define(\"DB_PASSWORD\", getenv(\"DB_PASSWORD\"));
+        define(\"DB_HOST\", getenv(\"DB_HOST\"));
+        define(\"PRIVATE_KEY\", getenv(\"PRIVATE_KEY\"));
+        define(\"BASE_URL\", getenv(\"BASE_URL\"));
+      ?>' > /var/www/html/php/config/secrets.php && 
+      composer install && 
+      php /var/www/html/php/deploy.php && 
+      apache2-foreground"
   db:
     image: mariadb:10.6
     restart: always

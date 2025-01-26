@@ -1,6 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/CalendarEvent.php");
-    require_once(dirname(__FILE__) . "/../lib/ical.php");
+    
+    use ICal\ICal;
 
     class CalendarClient {
         public function watchCalendar($calendar, $watchId) : void {
@@ -32,13 +33,9 @@
         }
 
         private function fetchEvents($url) : array {
-            $data = file_get_contents($url);
-            if ($data === FALSE) {
-                throw new RuntimeException("Unable to fetch calendar from " . $url . ".");
-            }
-            $ical = new ICal(explode("\n", $data));
             $events = array();
 
+            $ical = new ICal($url);
             if (isset($ical->cal["VEVENT"])) {
                 foreach ($ical->cal["VEVENT"] as &$event) {
                     $events[] = new CalendarEvent($event["UID"],

@@ -7,6 +7,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4    
+    - name: Set Up PHP and Composer
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, mysqli
+        coverage: none
+    - name: Install Composer Dependencies
+      run: |
+        cd Service
+        composer install --no-dev --optimize-autoloader
     - name: Prepare Files
       run: |
         mkdir target

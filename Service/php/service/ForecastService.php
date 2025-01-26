@@ -1,7 +1,8 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/Weather.php");
     require_once(dirname(__FILE__) . "/../model/Sun.php");
-    require_once(dirname(__FILE__) . "/../lib/suncalc.php");
+    
+    use AurorasLive\SunCalc;
 
     class ForecastService {
         public function getWeatherForecast($placeId, $start) : ?Weather {
@@ -52,7 +53,7 @@
 
             $dateTime = new DateTime();
             $dateTime->setTimestamp(intval($start));
-            $suncalc = new AurorasLive\SunCalc($dateTime, $latitude, $longitude);
+            $suncalc = new SunCalc($dateTime, $latitude, $longitude);
             $sunTimes = $suncalc->getSunTimes();
             $startSunPosition = $suncalc->getSunPosition($dateTime);
             $dateTime->setTimestamp(intval($end));

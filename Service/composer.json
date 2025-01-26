@@ -1,0 +1,15 @@
+{
+    "name": "lriedel/service",
+    "description": "Backend for Travel Portal",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Service\\": "php/"
+        }
+    },
+    "require": {
+        "phayes/geophp": "^1.2",
+        "johngrogg/ics-parser": "^3.4",
+        "auroras-live/suncalc-php": "*@dev"
+    }
+}

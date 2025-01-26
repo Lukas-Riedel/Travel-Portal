@@ -4,7 +4,6 @@
     require_once(dirname(__FILE__) . "/../model/Category.php");
     require_once(dirname(__FILE__) . "/../model/GeographicalRegion.php");
     require_once(dirname(__FILE__) . "/../model/CompositeRegion.php");
-    require_once(dirname(__FILE__) . "/../lib/GeoPHP/geoPHP.inc");
 
     class CategoryService {
 
