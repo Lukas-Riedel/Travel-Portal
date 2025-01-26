@@ -1,57 +1,45 @@
 <?php
+    require_once(dirname(__FILE__) . "/CategoryMapper.php");
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
     require_once(dirname(__FILE__) . "/../model/Category.php");
+    require_once(dirname(__FILE__) . "/../model/GeographicalRegion.php");
+    require_once(dirname(__FILE__) . "/../model/CompositeRegion.php");
     require_once(dirname(__FILE__) . "/../lib/GeoPHP/geoPHP.inc");
 
     class CategoryService {
-        public function updateCategories($placeIdentifier) : void {
-            global $databaseProvider, $eventPublisher, $categoryService;
 
-            // Obtain geographical regions.
-            $geoRegions = $databaseProvider
-                ->statementBuilder("SELECT * FROM region_geographical")
-                ->getMappedResultSet(function($geoRegionRow) {
-                    return array(
-                        "categoryId" => $geoRegionRow["category_id"],
-                        "country" => $geoRegionRow["country"],
-                        "radius" => intval($geoRegionRow["radius"]),
-                        "geoJson" => geoPHP::load($geoRegionRow["json"], "json"));
-                });
+        private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
-            // Obtain composite regions.
-            $compositeRegions = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT category_id FROM region_composite")
-                ->getMappedResultSet(function ($compositeRegionRow) use (&$databaseProvider) {
-                    return array(
-                        "categoryId" => $compositeRegionRow["category_id"],
-                        "includedCategoryIds" => $databaseProvider
-                            ->statementBuilder("SELECT subject_category_id FROM region_composite WHERE category_id = ? AND type = 'INCLUDE'")
-                            ->withParameters($compositeRegionRow["category_id"])
-                            ->getResultSetForColumn("subject_category_id"),
-                        "excludedCategoryIds" => $databaseProvider
-                            ->statementBuilder("SELECT subject_category_id FROM region_composite WHERE category_id = ? AND type = 'EXCLUDE'")
-                            ->withParameters($compositeRegionRow["category_id"])
-                            ->getResultSetForColumn("subject_category_id"));
-                });
+        private readonly CategoryMapper $categoryMapper;
 
-            // Assign actual categories.
+        private readonly ConfigurationService $configurationService;
+        private readonly EventPublisher $eventPublisher;
+
+        public function __construct(DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
+            HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher) {
+            $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService);
+            $this->configurationService = $configurationService;
+            $this->eventPublisher = $eventPublisher;
+        }
+
+        public function updateCategories(PlaceIdentifier $placeIdentifier) : void {
             $categoryIds = array();
             
-            // Country category.
-            $categoryIds[] = $categoryService->getOrCreateCategoryIdentifier($placeIdentifier->getCountry(), "COUNTRY")->getId(); 
+            // Include country category.
+            $categoryIds[] = $this->getOrCreateCategoryIdentifier($placeIdentifier->getCountry(), "COUNTRY")->getId(); 
         
-            // Geographical region categories.
-            $point = geoPHP::load("POINT (" . $placeIdentifier->getLongitude() . " " . $placeIdentifier->getLatitude() . ")", "wkt");
-            foreach ($geoRegions as &$geoRegion) {
-                if ($geoRegion["country"] === NULL || $geoRegion["country"] === $placeIdentifier->getCountry()) {
-                    if ($geoRegion["geoJson"]->pointInPolygon($point)) {
-                        $categoryIds[] = $geoRegion["categoryId"];
+            // Include geographical region categories.
+            $point = $this->getWktPoint($placeIdentifier->getLongitude(), $placeIdentifier->getLatitude() );
+            foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
+                if ($geographicalRegion->getCountry() === NULL || $geographicalRegion->getCountry() === $placeIdentifier->getCountry()) {
+                    if ($geographicalRegion->getGeoJson()->pointInPolygon($point)) {
+                        $categoryIds[] = $geographicalRegion->getCategoryId();
                     }
-                    else if ($geoRegion["radius"] > 0) {
-                        foreach ($this->getPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $geoRegion["radius"], 10) as &$pointOnCircle) {
-                            $circlePoint = geoPHP::load("POINT (" . $pointOnCircle[1] . " " . $pointOnCircle[0] . ")", "wkt");
-                            if ($geoRegion["geoJson"]->pointInPolygon($circlePoint)) {
-                                $categoryIds[] = $geoRegion["categoryId"];
+                    else if ($geographicalRegion->getRadius() > 0) {
+                        foreach ($this->getWktPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
+                            $geographicalRegion->getRadius(), self::CIRCLE_APPROXIMATION_POINTS_COUNT) as &$pointOnCircle) {
+                            if ($geographicalRegion->getGeoJson()->pointInPolygon($pointOnCircle)) {
+                                $categoryIds[] = $geographicalRegion->getCategoryId();
                                 break;
                             }
                         }
@@ -59,62 +47,34 @@
                 }
             }
 
-            // Composite region categories.
-            foreach ($compositeRegions as &$compositeRegion) {
-                if ($this->arrayAny($compositeRegion["includedCategoryIds"], function ($includedCategoryId) use (&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
-                    && $this->arrayEvery($compositeRegion["excludedCategoryIds"], function ($excludedCategoryId) use (&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
-                    $categoryIds[] = $compositeRegion["categoryId"];
+            // Include composite region categories.
+            foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
+                if ($this->arrayAny($compositeRegion->getIncludedCategoryIds(), function ($includedCategoryId)
+                        use (&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
+                    && $this->arrayEvery($compositeRegion->getExcludedCategoryIds(), function ($excludedCategoryId)
+                        use (&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
+                    $categoryIds[] = $compositeRegion->getCategoryId();
                 }
             }
 
-            $databaseProvider
-                ->statementBuilder("DELETE FROM category WHERE place_id = ?")
-                ->withParameters($placeIdentifier->getId())
-                ->execute();
+            // Persist the categories.
+            $this->categoryMapper->deleteCategories($placeIdentifier->getId());
 
             foreach (array_unique($categoryIds) as &$categoryId) {  
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO category (place_id, category_id) VALUES (?, ?)")
-                    ->withParameters($placeIdentifier->getId(), $categoryId)
-                    ->execute();
-
-                $eventPublisher->publishCategoryStatisticsChangedEvent($categoryId);
+                $this->categoryMapper->insertCategory($placeIdentifier->getId(), $categoryId);
+                $this->eventPublisher->publishCategoryUpdatedEvent($categoryId);
             }
         }
 
-        public function getCategoryIdentifierByName($name) : ?CategoryIdentifier {
-            global $databaseProvider, $highlightService;
-            
-            $categoryIdentifierRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM category_identifier WHERE name = ?")
-                ->withParameters($name)
-                ->getFirstRow();
-
-            if ($categoryIdentifierRow === NULL) {
-                return NULL;
-            }
-
-            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], 
-                $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+        public function getCategoryIdentifierByName(string $name) : ?CategoryIdentifier { 
+            return $this->categoryMapper->selectCategoryIdentifierByName($name);
         }
 
-        public function getCategoryIdentifier($categoryId) : ?CategoryIdentifier {
-            global $databaseProvider, $highlightService;
-            
-            $categoryIdentifierRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM category_identifier WHERE id = ?")
-                ->withParameters($categoryId)
-                ->getSingleRow();
-
-            if ($categoryIdentifierRow === NULL) {
-                return NULL;
-            }
-            
-            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], 
-                $categoryIdentifierRow["category"], $highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+        public function getCategoryIdentifier(string $categoryId) : ?CategoryIdentifier {
+            return $this->categoryMapper->selectCategoryIdentifier($categoryId);
         }
 
-        public function getCategoryIdentifiers($categoryIds) : array { 
+        public function getCategoryIdentifiers(array $categoryIds) : array { 
             $categories = array();
 
             foreach ($categoryIds as &$categoryId) {
@@ -127,99 +87,54 @@
             return $categories;
         }
 
-        public function getCategory($categoryId) : ?Category {
-            $categories = $this->doGetCategories($categoryId, NULL,
-                array(CategoryIncludedEntity::Highlights->value, CategoryIncludedEntity::Statistics->value));
+        public function getCategory(string $categoryId) : ?Category {
+            $categories = $this->categoryMapper->selectCategories($categoryId, CategoryCategory::values(), CategoryIncludedEntity::values());
             return count($categories) === 1 ? $categories[0] : NULL;
         }
 
-        public function getCategories($categoryCategories, $includedEntities) : array {
-            return $this->doGetCategories(NULL, $categoryCategories, $includedEntities);
+        public function getCategories(array $categoryCategories, array $includedEntities) : array {
+            return $this->categoryMapper->selectCategories(NULL, $categoryCategories, $includedEntities);
         }
 
-        private function doGetCategories($categoryId, $categoryCategories, $includedEntities) : array {            
-            global $databaseProvider, $highlightService, $statisticsService;
+        public function updateCategoryMainHighlight(string $categoryId, string $highlightIdentifier) : bool {
+            $wasUpdated = $this->categoryMapper->updateCategoryMainHighlight($categoryId, $highlightIdentifier);
             
-            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if ($categoryId !== NULL) {
-                $whereClauseBuilder->withClause("id = ?", $categoryId);
-            }
-            if ($categoryCategories !== NULL) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(category, ?)", $categoryCategories);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
-
-            $categories = array();
-
-            $categoryRows = $databaseProvider
-                ->statementBuilder("SELECT * FROM category_identifier {{WHERE CLAUSE}}", $whereClause)
-                ->getResultSet();
-
-            foreach ($categoryRows as &$categoryRow) {                
-                $highlights = array();
-                if (in_array(CategoryIncludedEntity::Highlights->value, $includedEntities)) {
-                    $highlights = $highlightService->getCategoryHighlights($categoryRow["id"]);                      
-                }
-
-                $stats = array();
-                if (in_array(CategoryIncludedEntity::Statistics->value, $includedEntities)) {
-                    $stats = $statisticsService->getCategoryStatistics($categoryRow["id"]);              
-                }
-                
-                $categories[] = new Category($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], 
-                    $highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $stats);
+            if ($wasUpdated) {
+                $this->eventPublisher->publishCategoryUpdatedEvent($categoryId);
             }
 
-            return $categories;
+            return $wasUpdated;
         }
 
-        public function updateCategoryMainHighlight($categoryId, $highlightIdentifier) : bool {
-            global $databaseProvider;
-
-            return $databaseProvider
-                ->statementBuilder("UPDATE category_identifier SET main_highlight_id = ? WHERE id = ?")
-                ->withParameters($highlightIdentifier, $categoryId)
-                ->execute() === 1;
-        }
-
-        public function updateCategoryName($categoryId, $name) : bool {
-            global $databaseProvider, $eventPublisher;
+        public function updateCategoryName(string $categoryId, string $name) : bool {            
+            $wasUpdated = $this->categoryMapper->updateCategoryName($categoryId, $name);
             
-            $wasUpdated = $databaseProvider
-                ->statementBuilder("UPDATE category_identifier SET name = ? WHERE id = ?")
-                ->withParameters($name, $categoryId)
-                ->execute() === 1;
-                
-            $eventPublisher->publishCategoryStatisticsChangedEvent($categoryId);
+            if ($wasUpdated) {
+                $this->eventPublisher->publishCategoryUpdatedEvent($categoryId);
+            }
 
             return $wasUpdated;
         }
         
-        public function getOrCreateCategoryIdentifier($name, $category) : CategoryIdentifier { 
-            global $databaseProvider;
-
+        // TODO: Replace string $category by CategoryCategory $category.
+        public function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
             $categoryIdentifier = $this->getCategoryIdentifierByName($name);
             if ($categoryIdentifier !== NULL) {
                 return $categoryIdentifier;
             }
 
-            $databaseProvider
-                ->statementBuilder("INSERT INTO category_identifier (name, category) VALUES (?, ?)")
-                ->withParameters($name, $category)
-                ->execute();
-                
-            return $this->getCategoryIdentifierByName($name);
+            $categoryIdentifier = new CategoryIdentifier(NULL, $name, $category, NULL);
+            $this->categoryMapper->insertCategoryIdentifier($categoryIdentifier);
+
+            return $categoryIdentifier;
         }
 
-        public function createCompositeRegion($name, $category, $includedRegions, $excludedRegions) : CategoryIdentifier {
-            global $databaseProvider, $eventPublisher, $configuration, $placeService;
-
+        // TODO: Replace string $category by CategoryCategory $category.
+        public function createCompositeRegion(string $name, string $category, array $includedRegions, array $excludedRegions) : CategoryIdentifier {
             // Find out what can the composite regions consist of.
-            $referencableRegionNames = $databaseProvider
-                ->statementBuilder("SELECT name FROM category_identifier")
-                ->getResultSetForColumn("name");
+            $referencableRegionNames = $this->categoryMapper->selectAllCategoryNames();
             
-            foreach ($configuration["countries"] as $countryName => $countryConfigurationValue) {
+            foreach ($this->configurationService->getConfigurationKeysForType("countries") as $countryName) {
                 if (!in_array($countryName, $referencableRegionNames)) {
                     $referencableRegionNames[] = $countryName;
                 }
@@ -239,70 +154,47 @@
             }
 
             // Create the region.
-            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);    
-
-            $databaseProvider
-                ->statementBuilder("DELETE FROM region_composite WHERE category_id = ?")
-                ->withParameters($categoryIdentifier->getId())
-                ->execute();
+            $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
+            $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
 
             foreach ($includedRegions as &$includedRegion) {
                 $subjectCategoryIdentifier = $this->getCategoryIdentifierByName($includedRegion);
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'INCLUDE')")
-                    ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
-                    ->execute();
-
-                $placeIdentifiers = $placeService->getPlaceIdentifiersByCategoryId($subjectCategoryIdentifier->getId());    
-                foreach ($placeIdentifiers as &$placeIdentifier) {
-                    $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
-                }
+                $this->categoryMapper->insertCompositeRegionInclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
+                $this->eventPublisher->publishCategoryInvalidatedEvent($subjectCategoryIdentifier->getId());
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
                 $subjectCategoryIdentifier = $this->getCategoryIdentifierByName($excludedRegion);
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO region_composite (category_id, subject_category_id, type) VALUES (?, ?, 'EXCLUDE')")
-                    ->withParameters($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId())
-                    ->execute();
+                $this->categoryMapper->insertCompositeRegionExclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
             }
     
-            $eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
+            $this->eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
             
             return $categoryIdentifier;
         }
 
-        public function createGeographicalRegion($name, $country, $category, $radius, $geoJson) : CategoryIdentifier {
-            global $databaseProvider, $eventPublisher, $placeService;
-                                    
+        // TODO: Replace string $category by CategoryCategory $category.
+        public function createGeographicalRegion(string $name, string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {                                    
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
+            $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $country);
+            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $country, $radius, $geoJson));
 
-            $databaseProvider
-                ->statementBuilder("DELETE FROM region_geographical WHERE category_id = ? AND country " . $databaseProvider->getIsNullOrEqualTo($country))
-                ->withParameters($categoryIdentifier->getId())
-                ->execute();
-                
-            $databaseProvider
-                ->statementBuilder("INSERT INTO region_geographical (category_id, country, json, radius) VALUES (?, ?, ?, ?)")
-                ->withParameters($categoryIdentifier->getId(), $country, $geoJson, $radius)
-                ->execute();
-
-            $placeIdentifiers = $country === NULL
-                ? $placeService->getAllPlaceIdentifiers()
-                : $placeService->getPlaceIdentifiersByCountry($country);
-
-            foreach ($placeIdentifiers as &$placeIdentifier) {
-                $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
+            if ($country === NULL) {
+                foreach ($this->getCategories(array(CategoryCategory::Country), array()) as &$category) {
+                    $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
+                }
+            }
+            else {
+                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifierByName($country)->getId());
             }
     
-            $eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
+            $this->eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
             
             return $categoryIdentifier;
         }
 
-        public function createGeographicalRegionExtensionRegion($name, $country, $category, $latitude, $longitude) : CategoryIdentifier {
-            global $databaseProvider, $eventPublisher, $placeService;
-            
+        // TODO: Replace string $category by CategoryCategory $category.
+        public function createGeographicalRegionExtensionRegion(string $name, string $country, string $category, float $latitude, float $longitude) : CategoryIdentifier {
             $geoJson = json_encode(array(
                 "type" => "Feature", 
                 "geometry" => array(
@@ -312,102 +204,105 @@
                         floatval($latitude)))), TRUE);
             
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
+            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $country, 0, $geoJson));
 
-            $databaseProvider
-                ->statementBuilder("INSERT INTO region_geographical (category_id, country, json, radius) VALUES (?, ?, ?, 0)")
-                ->withParameters($categoryIdentifier->getId(), $country, $geoJson)
-                ->execute();                
-
-            $placeIdentifiers = $placeService->getPlaceIdentifiersByCoordinates($latitude, $longitude);
-
-            foreach ($placeIdentifiers as &$placeIdentifier) {
-                $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
+            // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
+            if ($country === NULL) {
+                foreach ($this->getCategories(array(CategoryCategory::Country), array()) as &$category) {
+                    $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
+                }
             }
-            
+            else {
+                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifierByName($country)->getId());
+            }
+
             return $categoryIdentifier;
         }
 
-        public function updateRegionAreas() : void {
-            global $databaseProvider;
-            
-            $areas = array();
+        public function updateRegionAreas() : void {            
+            $regionAreas = array();
 
-            $geoRegionRows = $databaseProvider
-                ->statementBuilder("SELECT * FROM region_geographical WHERE json NOT LIKE '%Point%'")
-                ->getResultSet();
+            // Include geographical region.
+            foreach ($this->categoryMapper->selectAllNonTrivialGeographicalRegions() as &$geographicalRegion) {
+                $area = $this->getGeoJsonArea($geographicalRegion->getGeoJson());
+                $regionAreas[$geographicalRegion->getCategoryId()] = $area;
 
-            foreach ($geoRegionRows as &$geoRegionRow) {
-                $area = geoPHP::load($geoRegionRow["json"], "json")->getArea();
-                $areas[$geoRegionRow["category_id"]] = $area;
+                if ($geographicalRegion->getCountry() !== NULL) {
+                    $countryCategoryId = $this->getCategoryIdentifierByName($geographicalRegion->getCountry());
 
-                if ($geoRegionRow["country"] !== NULL) {
-                    $countryCategoryId = $this->getCategoryIdentifierByName($geoRegionRow["country"]);
-
+                    // Include country regions.
                     if ($countryCategoryId !== NULL) {
-                        if (!array_key_exists($countryCategoryId->getId(), $areas)) {
-                            $areas[$countryCategoryId->getId()] = 0;
+                        if (!array_key_exists($countryCategoryId->getId(), $regionAreas)) {
+                            $regionAreas[$countryCategoryId->getId()] = 0;
                         }
-                        $areas[$countryCategoryId->getId()] += $area;
+                        $regionAreas[$countryCategoryId->getId()] += $area;
                     }
                 }
             }
 
-            $compositeRegionRows = $databaseProvider
-                ->statementBuilder("SELECT * FROM region_composite")
-                ->getResultSet();
+            // Include composite regions.
+            foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
+                $compositeRegionArea = 0;
 
-            foreach ($compositeRegionRows as &$compositeRegionRow) {
-                if (!array_key_exists($compositeRegionRow["category_id"], $areas)) {
-                    $areas[$compositeRegionRow["category_id"]] = 0;
-                }
-
-                if (array_key_exists($compositeRegionRow["subject_category_id"], $areas)) {
-                    if ($compositeRegionRow["type"] === "INCLUDE") {
-                        $areas[$compositeRegionRow["category_id"]] += $areas[$compositeRegionRow["subject_category_id"]];
-                    }
-                    else if ($compositeRegionRow["type"] === "EXCLUDE") {
-                        $areas[$compositeRegionRow["category_id"]] -= $areas[$compositeRegionRow["subject_category_id"]];
+                foreach ($compositeRegion->getIncludedCategoryIds() as &$includedCategoryId) {
+                    if (array_key_exists($includedCategoryId, $regionAreas)) {
+                        $compositeRegionArea += $regionAreas[$includedCategoryId];
                     }
                 }
+
+                foreach ($compositeRegion->getExcludedCategoryIds() as &$excludedCategoryId) {
+                    if (array_key_exists($excludedCategoryId, $regionAreas)) {
+                        $compositeRegionArea -= $regionAreas[$excludedCategoryId];
+                    }
+                }
+
+                $regionAreas[$compositeRegion->getCategoryId()] = $compositeRegionArea;
             }
 
-            $databaseProvider
-                ->statementBuilder("DELETE FROM region_area")
-                ->execute();
+            // Persist the region areas.
+            $this->categoryMapper->deleteAllRegionAreas();
 
-            foreach ($areas as $categoryId => $area) {
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO region_area (category_id, area) VALUES (?, ?)")
-                    ->withParameters($categoryId, $area)
-                    ->execute();
+            foreach ($regionAreas as $categoryId => $area) {
+                $this->categoryMapper->insertRegionArea($categoryId, $area);
             }
         }
 
-        private function getPointsOnCircle($x, $y, $radiusInKms, $pointsCount) : array {    
+        private function getWktPointsOnCircle(float $x, float $y, int $radiusInKms, int $pointsCount) : array {    
             $points = array();
     
             for ($i = 0; $i < $pointsCount; $i++) {
-                $points[] = array($x + $this->positionX($pointsCount, $i, $radiusInKms / 111), $y + $this->positionY($pointsCount, $i, $radiusInKms / 111));
+                $points[] = $this->getWktPoint(
+                    $y + $this->positionY($pointsCount, $i, $radiusInKms / 111), 
+                    $x + $this->positionX($pointsCount, $i, $radiusInKms / 111)
+                );
             }
     
             return $points;
         }
     
-        private function positionX($numItems, $thisNum, $r) : float {
-            $alpha = 360 / $numItems;
-            $angle = $alpha * $thisNum;
-            $x = $r * cos(deg2rad($angle));
+        private function positionX(int $count, int $index, float $radius) : float {
+            $alpha = 360 / $count;
+            $angle = $alpha * $index;
+            $x = $radius * cos(deg2rad($angle));
             return $x;
         }
           
-        private function positionY($numItems, $thisNum, $r) : float {
-            $alpha = 360 / $numItems;
-            $angle = $alpha * $thisNum;
-            $y = $r * sin(deg2rad($angle));
+        private function positionY(int $count, int $index, float $radius) : float {
+            $alpha = 360 / $count;
+            $angle = $alpha * $index;
+            $y = $radius * sin(deg2rad($angle));
             return $y;
         }
 
-        private function arrayAny($array, $fn) : bool {
+        private function getWktPoint(float $latitude, float $longitude) : mixed {
+            return geoPHP::load("POINT (" . $longitude . " " . $latitude . ")", "wkt");
+        }
+
+        private function getGeoJsonArea(mixed $geoJson) : float {
+            return geoPHP::load($geoJson, "json")->getArea();
+        }
+
+        private function arrayAny(array $array, mixed $fn) : bool {
             foreach ($array as &$value) {
                 if ($fn($value)) {
                     return TRUE;
@@ -416,7 +311,7 @@
             return FALSE;
         }
     
-        private function arrayEvery($array, $fn) : bool {
+        private function arrayEvery(array $array, mixed $fn) : bool {
             foreach ($array as &$value) {
                 if (!$fn($value)) {
                     return FALSE;
@@ -429,16 +324,33 @@
             $this->updateRegionAreas();
         }
 
-        public function onPlaceCategoriesChanged($message) : void {
-            global $placeService;
-
-            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateCategories($placeIdentifier);
+        public function onPlaceUpdated($message) : void {            
+            $this->updateCategories($message["placeIdentifier"]);
         }
     }
 
     enum CategoryIncludedEntity : string {
         case Statistics = "STATISTICS";
         case Highlights = "HIGHLIGHTS";
+        
+        public static function values(): array {
+            return array_map(fn($case) => $case->value, self::cases());
+        }
+    }
+
+    enum CategoryCategory : string {
+        case Continent = "CONTINENT";
+        case Country = "COUNTRY";
+        case Administrative = "ADMINISTRATIVE";
+        case Ocean = "OCEAN";
+        case Sea = "SEA";
+        case Bay = "BAY";
+        case Variable = "VARIABLE";
+        case Island = "ISLAND";
+        case Region = "REGION";
+
+        public static function values(): array {
+            return array_map(fn($case) => $case->value, self::cases());
+        }
     }
 ?>

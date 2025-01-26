@@ -185,6 +185,15 @@
                 });
         }
 
+        public function onCategoryUpdated($message) {
+            global $categoryService;
+
+            $categoryIdentifier = $categoryService->getCategoryIdentifier($message["categoryId"]);
+            if ($categoryIdentifier !== NULL) {
+                $this->updateCategoryStatistics($categoryIdentifier);
+            }
+        }
+
         public function onStatisticsChanged($message) {
             global $categoryService, $tripService;
 
@@ -247,7 +256,7 @@
                     ->getResultSet();
 
                 foreach ($argsList as &$args) {
-                    $eventPublisher->publishCategoryStatisticsChangedEvent($args["id"]);
+                    $eventPublisher->publishCategoryUpdatedEvent($args["id"]);
                 }
                         
                 $scheduler->recordEventsTriggered($message["action"]);

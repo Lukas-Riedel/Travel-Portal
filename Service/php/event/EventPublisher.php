@@ -1,4 +1,5 @@
 <?php
+    // TODO: Make sure messages contain as much information as possible (e.g., PlaceIdentifier instead of string placeId).
     class EventPublisher {
         public function publishActualWeatherForecastChanged($placeId, $start) {
             $this->publishEvent(Event::ActualWeatherForecastChanged, array("placeId" => $placeId, "start" => $start));
@@ -28,8 +29,8 @@
             $this->publishEvent(Event::PhotoInvalidated, array("photoId" => $photoId));
         }
 
-        public function publishPlaceCategoriesChangedEvent($placeId) {
-            $this->publishEvent(Event::PlaceCategoriesChanged, array("placeId" => $placeId));
+        public function publishCategoryInvalidatedEvent($categoryId) {
+            $this->publishEvent(Event::CategoryInvalidated, array("categoryId" => $categoryId));
         }
 
         public function publishAllAlbumsInvalidatedEvent() : void {
@@ -52,8 +53,12 @@
             $this->publishEvent(Event::StatisticsChanged, array("year" => $year));
         }
         
-        public function publishCategoryStatisticsChangedEvent($categoryId) : void {
-            $this->publishEvent(Event::StatisticsChanged, array("categoryId" => $categoryId));
+        public function publishCategoryUpdatedEvent($categoryId) : void {
+            $this->publishEvent(Event::CategoryUpdated, array("categoryId" => $categoryId));
+        }
+        
+        public function publishPlaceUpdatedEvent($placeIdentifier) : void {
+            $this->publishEvent(Event::PlaceUpdated, array("placeIdentifier" => $placeIdentifier));
         }
         
         public function publishStatisticsChangedEvent() : void {
@@ -119,10 +124,12 @@
         case AllHighlightsChanged = 10;
         case AlbumInvalidated = 11;
         case AllAlbumsInvalidated = 12;
-        case PlaceCategoriesChanged = 13;
+        case CategoryInvalidated = 13;
         case AlbumUpdated = 14;
         case CategoryCreated = 15;
-        case StatisticsChanged = 16;
+        case CategoryUpdated = 16;
+        case PlaceUpdated = 17;
+        case StatisticsChanged = 18;
 
         case FitnessActivityDetected = 100;
 

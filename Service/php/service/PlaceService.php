@@ -344,7 +344,7 @@
                 }
 
                 foreach ($place->getCategories() as &$category) {
-                    $eventPublisher->publishCategoryStatisticsChangedEvent($category->getId());
+                    $eventPublisher->publishCategoryUpdatedEvent($category->getId());
                 }
             }
         }
@@ -408,30 +408,6 @@
                 });
         }
 
-        public function getPlaceIdentifiersByCoordinates($latitude, $longitude) : array {
-            global $databaseProvider, $highlightService;
-            
-            return $databaseProvider
-                ->statementBuilder("SELECT * FROM place_identifier WHERE latitude = ? AND longitude = ?")
-                ->withParameters($latitude, $longitude)
-                ->getMappedResultSet(function ($placeIdentifierRow) use (&$highlightService) { 
-                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
-                        $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
-                });
-        }
-
-        public function getPlaceIdentifiersByCountry($country) : array {
-            global $databaseProvider, $highlightService;
-            
-            return $databaseProvider
-                ->statementBuilder("SELECT * FROM place_identifier WHERE country = ?")
-                ->withParameters($country)
-                ->getMappedResultSet(function ($placeIdentifierRow) use (&$highlightService) { 
-                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
-                        $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
-                });
-        }
-
         public function getPlaceIdentifiersByCategoryId($categoryId) : array {
             global $databaseProvider, $highlightService;
             
@@ -465,7 +441,7 @@
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
                 
-            $eventPublisher->publishPlaceCategoriesChangedEvent($placeIdentifier->getId());
+            $eventPublisher->publishCategoryInvalidatedEvent($placeIdentifier->getId());
 
             return $placeIdentifier;
         }
@@ -563,7 +539,7 @@
                 ->getResultSetForColumn("category_id");
 
             foreach ($categoryIdsToUpdate as &$categoryIdToUpdate) {
-                $eventPublisher->publishCategoryStatisticsChangedEvent($categoryIdToUpdate);
+                $eventPublisher->publishCategoryUpdatedEvent($categoryIdToUpdate);
             }
 
             $yearsToUpdate = $databaseProvider
@@ -723,7 +699,7 @@
                 
                 if ($removedPlaceRow["category_ids"] != NULL) {
                     foreach (explode(",", $removedPlaceRow["category_ids"]) as &$categoryId) {
-                        $eventPublisher->publishCategoryStatisticsChangedEvent($categoryId);
+                        $eventPublisher->publishCategoryUpdatedEvent($categoryId);
                     }
                 }
             }
@@ -751,6 +727,15 @@
 
             if ($message["calendar"] === "places") {
                 $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
+            }
+        }
+
+        public function onCategoryInvalidated($message) : void {
+            global $eventPublisher;
+
+            $placeIdentifiers = $this->getPlaceIdentifiersByCategoryId($message["categoryId"]);    
+            foreach ($placeIdentifiers as &$placeIdentifier) {
+                $eventPublisher->publishPlaceUpdatedEvent($placeIdentifier);
             }
         }
     }

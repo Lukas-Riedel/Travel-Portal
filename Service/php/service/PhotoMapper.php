@@ -1,11 +1,7 @@
 <?php
-    require_once(dirname(__FILE__) . "/../model/Album.php");
-    require_once(dirname(__FILE__) . "/../model/Photo.php");
-    require_once(dirname(__FILE__) . "/../model/PendingPhoto.php");
-
     class PhotoMapper {
 
-        private DatabaseProvider $databaseProvider;
+        private readonly DatabaseProvider $databaseProvider;
 
         public function __construct(DatabaseProvider $databaseProvider) {
             $this->databaseProvider = $databaseProvider;

@@ -45,7 +45,6 @@
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
     $tripService = new TripService();
-    $categoryService = new CategoryService();
     $fitnessService = new FitnessService();
     $expenseService = new ExpenseService();
     $yearService = new YearService();
@@ -65,6 +64,7 @@
     $eventManager = new EventManager();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     
     $onError = function($level, $message, $file, $line) {

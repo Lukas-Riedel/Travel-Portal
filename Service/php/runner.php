@@ -37,7 +37,6 @@
     $placeService = new PlaceService();
     $highlightService = new HighlightService();
     $tripService = new TripService();
-    $categoryService = new CategoryService();
     $expenseService = new ExpenseService();
     $yearService = new YearService();
     $noteService = new NoteService();
@@ -57,7 +56,7 @@
     $authenticationService = new AuthenticationService();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
-
+    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
 
     $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService,
