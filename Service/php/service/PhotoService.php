@@ -9,6 +9,8 @@
         private const FETCH_ALBUMS_ACTION_NAME = "FETCH_ALBUMS";
         private const FETCH_ALBUMS_ACTION_INTERVAL = 21600;
 
+        private const PENDING_PHOTOS_EXPIRATION_INTERVAL = 86400;
+
         private const JPG_FILE_EXTENSION = ".jpg";
 
         private readonly PhotoMapper $photoMapper;
@@ -131,7 +133,7 @@
             $uploadToken = $this->googleApiClient->uploadPhoto($data);
 
             $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $position, $replacedPhotoId, $uploadToken);
-            $this->photoMapper->insertPendingPhoto($pendingPhoto);
+            $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             return $pendingPhoto;
         }
 

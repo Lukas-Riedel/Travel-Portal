@@ -54,6 +54,7 @@
                 FROM photo_pending
                 WHERE album_id = ?
                     AND position IS NOT NULL
+                    AND expiration > UNIX_TIMESTAMP()
                 ORDER BY position
                 LIMIT 50
             SQL;
@@ -73,6 +74,7 @@
                 FROM photo_pending
                 WHERE album_id = ?
                     AND replaced_photo_id IS NOT NULL
+                    AND expiration > UNIX_TIMESTAMP()
             SQL;
             
             return $this->databaseProvider
@@ -212,28 +214,30 @@
                 ->execute() === 1;
         }
 
-        public function insertPendingPhoto(PendingPhoto $pendingPhoto) : bool {
+        public function insertPendingPhoto(PendingPhoto $pendingPhoto, int $expirationInterval) : bool {
             $sql = <<<'SQL'
                 INSERT INTO photo_pending (
                     album_id,
                     file_name,
                     position,
                     replaced_photo_id,
-                    upload_token
+                    upload_token,
+                    expiration
                 )
                 VALUES (
                     ?,
                     ?,
                     ?,
                     ?,
-                    ?
+                    ?,
+                    UNIX_TIMESTAMP() + ?
                 )
             SQL;
 
             $wasInserted = $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($pendingPhoto->getAlbumId(), $pendingPhoto->getFileName(), $pendingPhoto->getPosition(),
-                    $pendingPhoto->getReplacedPhotoId(), $pendingPhoto->getUploadToken())
+                    $pendingPhoto->getReplacedPhotoId(), $pendingPhoto->getUploadToken(), $expirationInterval)
                 ->execute() === 1;
 
             if ($wasInserted) {
