@@ -22,11 +22,11 @@
         private $fitness;
         private $notes;
         private $highlights;
-        private $stats;
+        private $statistics;
         private $publicHolidays;
 
         public function __construct($id, $name, $year, $mainHighlight, $start, $end, $countries, $cost, $totalDays, $workingDays,
-            $expectedVacation, $maximumVacation, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays) {
+            $expectedVacation, $maximumVacation, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $statistics, $publicHolidays) {
             $this->id = $id;
             $this->name = $name;
             $this->year = $year;
@@ -45,7 +45,7 @@
             $this->fitness = $fitness;
             $this->notes = $notes;
             $this->highlights = $highlights;
-            $this->stats = $stats;
+            $this->statistics = $statistics;
             $this->publicHolidays = $publicHolidays;
         }
 
@@ -122,7 +122,7 @@
         }
 
         public function getStats() : array {
-            return $this->stats;
+            return $this->statistics;
         }
 
         public function getPublicHolidays() : array {

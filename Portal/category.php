@@ -4,7 +4,7 @@
         "category.js",
         "component/albums.js",
         "component/map.js",
-        "component/stats.js"
+        "component/statistics.js"
     );
 ?>
 <!DOCTYPE html>
@@ -21,7 +21,7 @@
         <h1 id="title"></h1>
         <div class="mainMap" id="map"></div>
         <div id="albums" class="component"></div>
-        <div id="stats" class="component"></div>
+        <div id="statistics" class="component"></div>
         <div id="footer"></div>
     </body>
 </html>

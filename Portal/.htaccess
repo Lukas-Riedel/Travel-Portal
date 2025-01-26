@@ -41,8 +41,8 @@ RewriteRule ^plan/(.+)$ $1 [L,QSA]
 RewriteRule ^trip/?$ trips.php [L,QSA]
 RewriteRule ^trip/(.+)$ $1 [L,QSA]
 
-RewriteRule ^stats/?$ stats.php [L,QSA]
-RewriteRule ^stats/(.+)$ $1 [L,QSA]
+RewriteRule ^statistics/?$ statistics.php [L,QSA]
+RewriteRule ^statistics/(.+)$ $1 [L,QSA]
 
 RewriteRule ^flight/?$ flights.php [L,QSA]
 RewriteRule ^flight/(.+)$ $1 [L,QSA]

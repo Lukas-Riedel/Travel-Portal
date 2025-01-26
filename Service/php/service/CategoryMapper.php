@@ -86,13 +86,13 @@
                         $highlights = $this->highlightService->getCategoryHighlights($categoryRow["id"]);                      
                     }
     
-                    $stats = array();
+                    $statistics = array();
                     if (in_array(CategoryIncludedEntity::Statistics->value, $includedEntities)) {
-                        $stats = $this->statisticsService->getCategoryStatistics($categoryRow["id"]);              
+                        $statistics = $this->statisticsService->getCategoryStatistics($categoryRow["id"]);              
                     }
                     
                     return new Category($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], 
-                        $this->highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $stats);
+                        $this->highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $statistics);
                 });
         }
 

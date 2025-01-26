@@ -7,15 +7,15 @@
         private $category;
         private $mainHighlight;
         private $highlights;
-        private $stats;
+        private $statistics;
 
-        public function __construct($id, $name, $category, $mainHighlight, $highlights, $stats) {
+        public function __construct($id, $name, $category, $mainHighlight, $highlights, $statistics) {
             $this->id = $id;
             $this->name = $name;
             $this->category = $category;
             $this->mainHighlight = $mainHighlight;
             $this->highlights = $highlights;
-            $this->stats = $stats;
+            $this->statistics = $statistics;
         }
 
         public function getId() : int {
@@ -39,7 +39,7 @@
         }
 
         public function getStats() : array {
-            return $this->stats;
+            return $this->statistics;
         }
 
         #[\ReturnTypeWillChange]

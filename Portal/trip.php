@@ -6,7 +6,7 @@
         "component/expensify.js",
         "component/albums.js",
         "component/map.js",
-        "component/stats.js"
+        "component/statistics.js"
     );
 ?>
 <!DOCTYPE html>
@@ -38,6 +38,6 @@
         </div>
         <div id="expensify" class="component"></div>
         <div id="albums" class="component"></div>
-        <div id="stats" class="component"></div>
+        <div id="statistics" class="component"></div>
     </body>
 </html>

@@ -12,10 +12,10 @@
                 return NULL;
             }
                 
-            $stats = $statisticsService->getYearStatistics($year);   
+            $statistics = $statisticsService->getYearStatistics($year);   
             $highlights = $highlightService->getYearHighlights($year);   
 
-            return new Year($year, $yearIdentifier->getMainHighlight(), $highlights, $stats);
+            return new Year($year, $yearIdentifier->getMainHighlight(), $highlights, $statistics);
         }
 
         public function getYears($includedEntities) : array {
@@ -28,9 +28,9 @@
                 ->getResultSet();
 
             foreach ($yearRows as &$yearRow) {
-                $stats = array();
+                $statistics = array();
                 if (in_array(YearIncludedEntity::Statistics->value, $includedEntities)) {
-                    $stats = $statisticsService->getYearStatistics($yearRow["id"]);               
+                    $statistics = $statisticsService->getYearStatistics($yearRow["id"]);               
                 }
 
                 $highlights = array();
@@ -38,7 +38,7 @@
                     $highlights = $highlightService->getYearHighlights($yearRow["id"]);                      
                 }
 
-                $years[] = new Year($yearRow["id"], $highlightService->getHighlight($yearRow["main_highlight_id"]), $highlights, $stats);
+                $years[] = new Year($yearRow["id"], $highlightService->getHighlight($yearRow["main_highlight_id"]), $highlights, $statistics);
             }
 
             return $years;

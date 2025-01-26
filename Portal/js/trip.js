@@ -35,7 +35,7 @@ async function init(tripId, isLoggedIn) {
 
     // Stats.
     if (!isDayTrips(trip) && trip.start < now) {
-        $('#stats').html(getStatsComponent(trip.stats));
+        $('#statistics').html(getStatsComponent(trip.statistics));
     }
 
     // Utilities.

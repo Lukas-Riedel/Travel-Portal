@@ -2,8 +2,8 @@
     session_start();
     $requiredFiles = array(
         "component/map.js",
-        "component/stats.js",
-        "stats.js"
+        "component/statistics.js",
+        "statistics.js"
     );
 ?>
 <!DOCTYPE html>
@@ -20,7 +20,7 @@
     <body>
         <h1 id="title"></h1>
         <div class="mainMap" id="map"></div>
-        <div id="stats" class="component"></div>
+        <div id="statistics" class="component"></div>
         <div id="footer"></div>
     </body>
 </html>

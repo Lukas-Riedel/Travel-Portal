@@ -105,9 +105,9 @@
                     $highlights = $highlightService->getTripHighlights($tripRow["trip_id"]);        
                 }
 
-                $stats = array();
+                $statistics = array();
                 if (in_array(TripIncludedEntity::Statistics->value, $includedEntities)) {
-                    $stats = $statisticsService->getTripStatistics($tripRow["trip_id"]);                 
+                    $statistics = $statisticsService->getTripStatistics($tripRow["trip_id"]);                 
                 }
 
                 $publicHolidays = array();
@@ -117,7 +117,7 @@
 
                 $trips[] = new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $highlightService->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"], $tripRow["end"], $countries,
                     $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL,
-                    isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $stats, $publicHolidays);
+                    isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $layovers, $fitness, $notes, $highlights, $statistics, $publicHolidays);
             }
 
             return $trips;

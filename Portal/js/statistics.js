@@ -1,6 +1,6 @@
 async function init(isLoggedIn) {
     const places = await getPlaces(!isLoggedIn);
-    const stats = await api.listStatistics();
+    const statistics = await api.listStatistics();
 
     // Title.
     $('#title').html(getTitle(places));
@@ -9,7 +9,7 @@ async function init(isLoggedIn) {
     initializeMap("map", places);
 
     // Stats.
-    $('#stats').html(getStatsComponent(stats));
+    $('#statistics').html(getStatsComponent(statistics));
 
     // Footer.
     $('#footer').html(getFooter(isLoggedIn));

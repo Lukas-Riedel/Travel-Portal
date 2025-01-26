@@ -1,7 +1,7 @@
 async function init(year, isLoggedIn) {  
     const trips = await api.listTrips(year, "EXPENSES");
     const places = await api.listRegularPlaces(undefined, undefined, year, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now));
-    const stats = (await api.getYear(year)).stats;
+    const statistics = (await api.getYear(year)).statistics;
 
     // Title.        
     document.title = getDocumentTitle(year);
@@ -21,7 +21,7 @@ async function init(year, isLoggedIn) {
 
     // Stats.
     if (trips.some(trip => trip.end < now)) {
-        $('#stats').html(getStatsComponent(stats));
+        $('#statistics').html(getStatsComponent(statistics));
     }
 
     // Footer.

@@ -13,7 +13,7 @@ async function init(categoryId, isLoggedIn) {
     $('#albums').html(getAlbumsComponentForCategory(places));
 
     // Stats.
-    $('#stats').html(getStatsComponent(category.stats));
+    $('#statistics').html(getStatsComponent(category.statistics));
 
     // Footer.
     $('#footer').html(getLoginLink(isLoggedIn));

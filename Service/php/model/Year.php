@@ -5,13 +5,13 @@
         private $id;
         private $mainHighlight;
         private $highlights;
-        private $stats;
+        private $statistics;
 
-        public function __construct($id, $mainHighlight, $highlights, $stats) {
+        public function __construct($id, $mainHighlight, $highlights, $statistics) {
             $this->id = $id;
             $this->highlights = $highlights;
             $this->mainHighlight = $mainHighlight;
-            $this->stats = $stats;
+            $this->statistics = $statistics;
         }
 
         public function getId() : int {
@@ -27,7 +27,7 @@
         }
 
         public function getStats() : array {
-            return $this->stats;
+            return $this->statistics;
         }
 
         #[\ReturnTypeWillChange]

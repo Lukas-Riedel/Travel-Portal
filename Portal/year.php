@@ -3,7 +3,7 @@
     $requiredFiles = array(
         "year.js",
         "component/expensify.js",
-        "component/stats.js",
+        "component/statistics.js",
         "component/albums.js",
         "component/map.js"
     );
@@ -24,7 +24,7 @@
         <div id="main" class="component"></div>
         <div id="expensify" class="component"></div>
         <div id="albums" class="component"></div>
-        <div id="stats" class="component"></div>
+        <div id="statistics" class="component"></div>
         <div id="footer"></div>
     </body>
 </html>

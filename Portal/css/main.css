@@ -263,7 +263,7 @@ h1 a:hover, h2 a:hover {
     line-height: 200%;
 }
 
-#stats ol, #problems ol {
+#statistics ol, #problems ol {
     list-style-position: inside;
     padding: 0;
     margin: 0;
