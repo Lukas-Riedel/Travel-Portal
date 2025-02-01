@@ -334,7 +334,7 @@
         public function onAlbumUpdated($message) : void {
             global $eventPublisher;
             
-            $places = $this->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, FALSE, FALSE, FALSE);
+            $places = $this->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, array());
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();

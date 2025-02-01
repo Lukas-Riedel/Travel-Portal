@@ -18,7 +18,7 @@
             }
 
             $response = $photoService->uploadPhoto($input["name"], $input["albumId"], isset($input["position"]) ? $input["position"] : NULL, 
-                isset($input["replacePhotoId"]) ? $input["replacePhotoId"] : NULL, $input["data"]);
+                isset($input["replacedPhotoId"]) ? $input["replacedPhotoId"] : NULL, $input["data"]);
             return $this->createResponse(204, $response);
         }
 
