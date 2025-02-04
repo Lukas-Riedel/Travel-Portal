@@ -348,7 +348,7 @@
                 DELETE
                 FROM region_geographical
                 WHERE category_id = ?
-                    AND {$this->databaseProvider->getIsNullOrEqualTo($country)}
+                    AND country {$this->databaseProvider->getIsNullOrEqualTo($country)}
             SQL;
 
             return $this->databaseProvider
