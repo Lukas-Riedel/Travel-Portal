@@ -25,19 +25,19 @@
             $categoryIds = array();
             
             // Include country category.
-            $categoryIds[] = $this->getOrCreateCategoryIdentifier($placeIdentifier->getCountry(), "COUNTRY")->getId(); 
+            $categoryIds[] = $this->getOrCreateCategoryIdentifier($placeIdentifier->getCountry(), CategoryCategory::Country->value)->getId(); 
         
             // Include geographical region categories.
-            $point = $this->getWktPoint($placeIdentifier->getLongitude(), $placeIdentifier->getLatitude() );
+            $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
                 if ($geographicalRegion->getCountry() === NULL || $geographicalRegion->getCountry() === $placeIdentifier->getCountry()) {
-                    if ($geographicalRegion->getGeoJson()->pointInPolygon($point)) {
+                    if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $point)) {
                         $categoryIds[] = $geographicalRegion->getCategoryId();
                     }
                     else if ($geographicalRegion->getRadius() > 0) {
                         foreach ($this->getWktPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
                             $geographicalRegion->getRadius(), self::CIRCLE_APPROXIMATION_POINTS_COUNT) as &$pointOnCircle) {
-                            if ($geographicalRegion->getGeoJson()->pointInPolygon($pointOnCircle)) {
+                            if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $pointOnCircle)) {
                                 $categoryIds[] = $geographicalRegion->getCategoryId();
                                 break;
                             }
@@ -301,6 +301,18 @@
             return geoPHP::load($geoJson, "json")->getArea();
         }
 
+        private function isPointInPolygon(mixed $geoJson, mixed $point) : bool {
+            if (method_exists($geoJson, "pointInPolygon")) {
+                return $geoJson->pointInPolygon($point);
+            }
+
+            $pointInPolygon = FALSE;
+            foreach ($geoJson->getComponents() as &$component) {
+                $pointInPolygon = $component->pointInPolygon($point, $pointInPolygon);
+            }
+            return $pointInPolygon;
+        }
+
         private function arrayAny(array $array, mixed $fn) : bool {
             foreach ($array as &$value) {
                 if ($fn($value)) {
@@ -324,7 +336,9 @@
         }
 
         public function onPlaceUpdated($message) : void {            
-            $this->updateCategories($message["placeIdentifier"]);
+            $this->updateCategories(new PlaceIdentifier($message["placeIdentifier"]["id"], $message["placeIdentifier"]["name"],
+                $message["placeIdentifier"]["country"], $message["placeIdentifier"]["latitude"], $message["placeIdentifier"]["longitude"],
+                $message["placeIdentifier"]["timezone"], $message["placeIdentifier"]["mainHighlight"], $message["placeIdentifier"]["excerpt"]));
         }
     }
 
