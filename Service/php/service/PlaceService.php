@@ -184,7 +184,7 @@
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             $placeRows = $databaseProvider
-                ->statementBuilder("SELECT pcan.*, cs.category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id, ps.excerpt FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan INNER JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
+                ->statementBuilder("SELECT pcan.*, COALESCE(cs.category_ids, '') AS category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id, ps.excerpt FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan LEFT JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
                 ->getResultSet();
 
             $places = array();
@@ -440,8 +440,8 @@
                 ->execute();
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
-                
-            $eventPublisher->publishCategoryInvalidatedEvent($placeIdentifier->getId());
+            
+            $eventPublisher->publishPlaceUpdatedEvent($placeIdentifier);
 
             return $placeIdentifier;
         }
