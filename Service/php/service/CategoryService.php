@@ -223,7 +223,7 @@
 
             // Include geographical region.
             foreach ($this->categoryMapper->selectAllNonTrivialGeographicalRegions() as &$geographicalRegion) {
-                $area = $this->getGeoJsonArea($geographicalRegion->getGeoJson());
+                $area = $geographicalRegion->getGeoJson()->getArea();
                 $regionAreas[$geographicalRegion->getCategoryId()] = $area;
 
                 if ($geographicalRegion->getCountry() !== NULL) {
@@ -295,10 +295,6 @@
 
         private function getWktPoint(float $latitude, float $longitude) : mixed {
             return geoPHP::load("POINT (" . $longitude . " " . $latitude . ")", "wkt");
-        }
-
-        private function getGeoJsonArea(mixed $geoJson) : float {
-            return geoPHP::load($geoJson, "json")->getArea();
         }
 
         private function isPointInPolygon(mixed $geoJson, mixed $point) : bool {
