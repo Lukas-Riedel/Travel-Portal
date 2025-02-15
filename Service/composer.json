@@ -7,8 +7,14 @@
             "Service\\": "php/"
         }
     },
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/Lukas-Riedel/geoPHP.git"
+      }
+    ],
     "require": {
-        "phayes/geophp": "^1.2",
+        "phayes/geophp": "dev-master",
         "johngrogg/ics-parser": "^3.4",
         "auroras-live/suncalc-php": "*@dev"
     }

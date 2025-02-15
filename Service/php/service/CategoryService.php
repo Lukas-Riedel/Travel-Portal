@@ -35,7 +35,7 @@
                         $categoryIds[] = $geographicalRegion->getCategoryId();
                     }
                     else if ($geographicalRegion->getRadius() > 0) {
-                        foreach ($this->getWktPointsOnCircle($placeIdentifier->getLongitude(), $placeIdentifier->getLatitude(),
+                        foreach ($this->getWktPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
                             $geographicalRegion->getRadius(), self::CIRCLE_APPROXIMATION_POINTS_COUNT) as &$pointOnCircle) {
                             if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $pointOnCircle)) {
                                 $categoryIds[] = $geographicalRegion->getCategoryId();
@@ -266,31 +266,29 @@
             }
         }
 
-        private function getWktPointsOnCircle(float $x, float $y, int $radiusInKms, int $pointsCount) : array {    
+        private function getWktPointsOnCircle(float $latitude, float $longitude, int $radiusInKms, int $pointsCount) : array {    
             $points = array();
     
             for ($i = 0; $i < $pointsCount; $i++) {
                 $points[] = $this->getWktPoint(
-                    $y + $this->positionY($pointsCount, $i, $radiusInKms / 111), 
-                    $x + $this->positionX($pointsCount, $i, $radiusInKms / 111)
+                    $latitude + $this->positionLatitude($pointsCount, $i, $radiusInKms / 111), 
+                    $longitude + $this->positionLongitude($pointsCount, $i, $radiusInKms / 111)
                 );
             }
     
             return $points;
         }
     
-        private function positionX(int $count, int $index, float $radius) : float {
+        private function positionLatitude(int $count, int $index, float $radius) : float {
             $alpha = 360 / $count;
             $angle = $alpha * $index;
-            $x = $radius * cos(deg2rad($angle));
-            return $x;
+            return $radius * cos(deg2rad($angle));
         }
           
-        private function positionY(int $count, int $index, float $radius) : float {
+        private function positionLongitude(int $count, int $index, float $radius) : float {
             $alpha = 360 / $count;
             $angle = $alpha * $index;
-            $y = $radius * sin(deg2rad($angle));
-            return $y;
+            return $radius * sin(deg2rad($angle));
         }
 
         private function getWktPoint(float $latitude, float $longitude) : mixed {
