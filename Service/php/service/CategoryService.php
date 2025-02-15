@@ -130,16 +130,13 @@
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createCompositeRegion(string $name, string $category, array $includedRegions, array $excludedRegions) : CategoryIdentifier {
-            // Find out what can the composite regions consist of.
-            $referencableRegionNames = $this->categoryMapper->selectAllCategoryNames();
-            
             foreach ($this->configurationService->getConfigurationKeysForType("countries") as $countryName) {
-                if (!in_array($countryName, $referencableRegionNames)) {
-                    $referencableRegionNames[] = $countryName;
-                }
+                $this->getOrCreateCategoryIdentifier($countryName, CategoryCategory::Country->value);
             }
 
             // Verify that all referenced regions exist.
+            $referencableRegionNames = $this->categoryMapper->selectAllCategoryNames();
+
             foreach ($includedRegions as &$includedRegion) {
                 if (!in_array($includedRegion, $referencableRegionNames)) {
                     throw new InvalidArgumentException("The included region '" . $includedRegion . "' does not exist.");
