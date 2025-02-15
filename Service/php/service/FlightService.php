@@ -203,7 +203,7 @@
 
             foreach ($removedFlightRows as &$removedFlightRow) {
                 if ($removedFlightRow["trip_id"] != NULL) {
-                    $eventPublisher->publishTripStatisticsChangedEvent($newFlightRow["trip_id"]);
+                    $eventPublisher->publishTripStatisticsChangedEvent($removedFlightRow["trip_id"]);
                 }
             }
         }
