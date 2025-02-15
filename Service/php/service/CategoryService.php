@@ -305,12 +305,14 @@
             if (method_exists($geoJson, "getComponents")) {
                 $pointInPolygon = FALSE;
                 foreach ($geoJson->getComponents() as &$component) {
-                    $pointInPolygon = $component->pointInPolygon($point, $pointInPolygon);
+                    if ($component->pointInPolygon($point, $pointInPolygon)) {
+                        $pointInPolygon = TRUE;
+                    }
                 }
                 return $pointInPolygon;
             }
 
-            return $geoJson->centroid() == $point->centroid();
+            return $geoJson->equals($point);
         }
 
         private function arrayAny(array $array, mixed $fn) : bool {
