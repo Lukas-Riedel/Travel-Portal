@@ -102,7 +102,7 @@ function getProblemValueName(problemName, problemValue) {
 
 function getProblemResolver(problemName, context) {
     if (problemName == "PLACES_WITHOUT_ADMINISTRATIVE_CATEGORY") {
-        return "addGeoRegionExtensionForPlace(" + context.placeId + ")";
+        return "addGeoRegionExtensionForPlace(" + context.placeId + ", " + JSON.stringify(context.countryGeoJson) + ")";
     }
     if (problemName == "COUNTRIES_WITHOUT_GEOGRAPHICAL_REGIONS") {
         return "addGeoRegion(\"" + context.country + "\")";
@@ -414,7 +414,10 @@ function addGeoRegion(country = undefined) {
     });
 }
 
-async function addGeoRegionExtensionForPlace(placeId) {    
+async function addGeoRegionExtensionForPlace(placeId, countryGeoJson) {
+    await navigator.clipboard.writeText(JSON.stringify(countryGeoJson));
+    alert("Současná reprezentace regionů v daném státě byla zapsána do schránky.");
+
     const regionName = prompt("Zadej název regionu:");
     if (regionName == null || regionName == "") {
         return;
