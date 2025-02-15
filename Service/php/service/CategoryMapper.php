@@ -72,7 +72,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
-                ->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
+                ->withClause("FIND_IN_SET(category, ?)", implode(",", array_map(fn($category) => $category->value, $categoryCategories)));
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("id = ?", $categoryId);
             }
@@ -343,7 +343,7 @@
                 ->execute();
         }
 
-        public function deleteGeographicalRegion(string $categoryId, string $country) : int {
+        public function deleteGeographicalRegion(string $categoryId, ?string $country) : int {
             $sql = <<<SQL
                 DELETE
                 FROM region_geographical

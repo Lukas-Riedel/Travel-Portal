@@ -173,7 +173,7 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegion(string $name, string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {                                    
+        public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {                                    
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
             $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $country);
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $country, $radius, $geoJson));
