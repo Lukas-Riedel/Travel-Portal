@@ -72,7 +72,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
-                ->withClause("FIND_IN_SET(category, ?)", implode(",", array_map(fn($category) => $category->value, $categoryCategories)));
+                ->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("id = ?", $categoryId);
             }

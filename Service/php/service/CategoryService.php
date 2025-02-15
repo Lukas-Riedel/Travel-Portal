@@ -35,7 +35,7 @@
                         $categoryIds[] = $geographicalRegion->getCategoryId();
                     }
                     else if ($geographicalRegion->getRadius() > 0) {
-                        foreach ($this->getWktPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
+                        foreach ($this->getWktPointsOnCircle($placeIdentifier->getLongitude(), $placeIdentifier->getLatitude(),
                             $geographicalRegion->getRadius(), self::CIRCLE_APPROXIMATION_POINTS_COUNT) as &$pointOnCircle) {
                             if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $pointOnCircle)) {
                                 $categoryIds[] = $geographicalRegion->getCategoryId();
@@ -179,7 +179,7 @@
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $country, $radius, $geoJson));
 
             if ($country === NULL) {
-                foreach ($this->getCategories(array(CategoryCategory::Country), array()) as &$category) {
+                foreach ($this->getCategories(array(CategoryCategory::Country->value), array()) as &$category) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
                 }
             }
@@ -207,7 +207,7 @@
 
             // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
             if ($country === NULL) {
-                foreach ($this->getCategories(array(CategoryCategory::Country), array()) as &$category) {
+                foreach ($this->getCategories(array(CategoryCategory::Country->value), array()) as &$category) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
                 }
             }
@@ -302,11 +302,15 @@
                 return $geoJson->pointInPolygon($point);
             }
 
-            $pointInPolygon = FALSE;
-            foreach ($geoJson->getComponents() as &$component) {
-                $pointInPolygon = $component->pointInPolygon($point, $pointInPolygon);
+            if (method_exists($geoJson, "getComponents")) {
+                $pointInPolygon = FALSE;
+                foreach ($geoJson->getComponents() as &$component) {
+                    $pointInPolygon = $component->pointInPolygon($point, $pointInPolygon);
+                }
+                return $pointInPolygon;
             }
-            return $pointInPolygon;
+
+            return $geoJson->centroid() == $point->centroid();
         }
 
         private function arrayAny(array $array, mixed $fn) : bool {
