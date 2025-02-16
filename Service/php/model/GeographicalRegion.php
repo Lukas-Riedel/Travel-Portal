@@ -1,13 +1,13 @@
 <?php
     class GeographicalRegion implements JsonSerializable {        
         private $categoryId;
-        private $country;
+        private $countryCategoryId;
         private $radius;
         private $geoJson;
 
-        public function __construct($categoryId, $country, $radius, $geoJson) {
+        public function __construct($categoryId, $countryCategoryId, $radius, $geoJson) {
             $this->categoryId = $categoryId;
-            $this->country = $country;
+            $this->countryCategoryId = $countryCategoryId;
             $this->radius = $radius;
             $this->geoJson = $geoJson;
         }
@@ -16,8 +16,8 @@
             return $this->categoryId;
         }
 
-        public function getCountry() : ?string {
-            return $this->country;
+        public function getCountryCategoryId() : ?string {
+            return $this->countryCategoryId;
         }
 
         public function getRadius() : int {

@@ -105,7 +105,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($geographicalRegionRow) {
-                    return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country"],
+                    return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country_category_id"],
                         intval($geographicalRegionRow["radius"]), geoPHP::load($geographicalRegionRow["json"], "json"));
                 });
         }
@@ -120,7 +120,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($geographicalRegionRow) {
-                    return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country"],
+                    return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country_category_id"],
                         intval($geographicalRegionRow["radius"]), geoPHP::load($geographicalRegionRow["json"], "json"));
                 });
         }
@@ -208,7 +208,7 @@
             $sql = <<<'SQL'
                 INSERT INTO region_geographical (
                     category_id,
-                    country,
+                    country_category_id,
                     radius,
                     json
                 )
@@ -222,7 +222,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($geographicalRegion->getCategoryId(), $geographicalRegion->getCountry(),
+                ->withParameters($geographicalRegion->getCategoryId(), $geographicalRegion->getCountryCategoryId(),
                     $geographicalRegion->getRadius(), $geographicalRegion->getGeoJson())
                 ->execute() === 1;
         }
@@ -343,12 +343,12 @@
                 ->execute();
         }
 
-        public function deleteGeographicalRegion(string $categoryId, ?string $country) : int {
+        public function deleteGeographicalRegion(string $categoryId, ?string $countryCategoryId) : int {
             $sql = <<<SQL
                 DELETE
                 FROM region_geographical
                 WHERE category_id = ?
-                    AND country {$this->databaseProvider->getIsNullOrEqualTo($country)}
+                    AND country_category_id {$this->databaseProvider->getIsNullOrEqualTo($countryCategoryId)}
             SQL;
 
             return $this->databaseProvider

@@ -25,12 +25,14 @@
             $categoryIds = array();
             
             // Include country category.
-            $categoryIds[] = $this->getOrCreateCategoryIdentifier($placeIdentifier->getCountry(), CategoryCategory::Country->value)->getId(); 
+            $countryCategoryIdentifier = $this->getOrCreateCountryCategoryIdentifier($placeIdentifier->getCountry());
+            $categoryIds[] = $countryCategoryIdentifier->getId();
         
             // Include geographical region categories.
             $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
-                if ($geographicalRegion->getCountry() === NULL || $geographicalRegion->getCountry() === $placeIdentifier->getCountry()) {
+                if ($geographicalRegion->getCountryCategoryId() === NULL
+                    || $geographicalRegion->getCountryCategoryId() === $countryCategoryIdentifier->getId()) {
                     if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $point)) {
                         $categoryIds[] = $geographicalRegion->getCategoryId();
                     }
@@ -130,8 +132,8 @@
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createCompositeRegion(string $name, string $category, array $includedRegions, array $excludedRegions) : CategoryIdentifier {
-            foreach ($this->configurationService->getConfigurationKeysForType("countries") as $countryName) {
-                $this->getOrCreateCategoryIdentifier($countryName, CategoryCategory::Country->value);
+            foreach ($this->configurationService->getConfigurationKeysForType("countries") as $country) {
+                $this->getOrCreateCountryCategoryIdentifier($country);
             }
 
             // Verify that all referenced regions exist.
@@ -170,10 +172,11 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {                                    
+        public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {  
+            $countryCategoryId = $country === NULL ? NULL : $this->getOrCreateCountryCategoryIdentifier($country)->getId();                                  
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
-            $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $country);
-            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $country, $radius, $geoJson));
+            $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
+            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson));
 
             if ($country === NULL) {
                 foreach ($this->getCategories(array(CategoryCategory::Country->value), array()) as &$category) {
@@ -199,8 +202,9 @@
                         floatval($longitude), 
                         floatval($latitude)))), TRUE);
             
+            $countryCategoryId = $country === NULL ? NULL : $this->getOrCreateCountryCategoryIdentifier($country)->getId();   
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
-            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $country, 0, $geoJson));
+            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, 0, $geoJson));
 
             // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
             if ($country === NULL) {
@@ -223,15 +227,13 @@
                 $area = $geographicalRegion->getGeoJson()->getArea();
                 $regionAreas[$geographicalRegion->getCategoryId()] = $area;
 
-                if ($geographicalRegion->getCountry() !== NULL) {
-                    $countryCategoryId = $this->getCategoryIdentifierByName($geographicalRegion->getCountry());
-
-                    // Include country regions.
-                    if ($countryCategoryId !== NULL) {
-                        if (!array_key_exists($countryCategoryId->getId(), $regionAreas)) {
-                            $regionAreas[$countryCategoryId->getId()] = 0;
+                // Include country regions.
+                if ($geographicalRegion->getCountryCategoryId() !== NULL) {
+                    if ($geographicalRegion->getCountryCategoryId() !== NULL) {
+                        if (!array_key_exists($geographicalRegion->getCountryCategoryId(), $regionAreas)) {
+                            $regionAreas[$geographicalRegion->getCountryCategoryId()] = 0;
                         }
-                        $regionAreas[$countryCategoryId->getId()] += $area;
+                        $regionAreas[$geographicalRegion->getCountryCategoryId()] += $area;
                     }
                 }
             }
@@ -261,6 +263,14 @@
             foreach ($regionAreas as $categoryId => $area) {
                 $this->categoryMapper->insertRegionArea($categoryId, $area);
             }
+        }
+
+        private function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {
+            if (!in_array($country, $this->configurationService->getConfigurationKeysForType("countries"))) {
+                throw new InvalidArgumentException("The country '" . $country . "' does not exist.");
+            }
+
+            return $this->getOrCreateCategoryIdentifier($country, CategoryCategory::Country->value);
         }
 
         private function getWktPointsOnCircle(float $latitude, float $longitude, int $radiusInKms, int $pointsCount) : array {    
