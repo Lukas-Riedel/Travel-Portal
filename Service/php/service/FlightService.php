@@ -8,7 +8,7 @@
             global $databaseProvider;
             
             $airportIdentifierRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM airport_identifier WHERE code = ?")
+                ->statementBuilder("SELECT ai.*, ci.name AS country FROM airport_identifier ai INNER JOIN category_identifier ci ON ai.country_category_id = ci.id WHERE code = ?")
                 ->withParameters($code)
                 ->getFirstRow();
 
@@ -21,7 +21,7 @@
         }
         
         public function getOrCreateAirportIdentifier($code) : AirportIdentifier {
-            global $databaseProvider, $geocodingService;
+            global $databaseProvider, $geocodingService, $categoryService;
 
             $airportIdentifier = $this->getAirportIdentifier($code);
             if ($airportIdentifier !== NULL) {
@@ -31,8 +31,9 @@
             $location = $geocodingService->getLocation($code . " Airport");
             
             $databaseProvider
-                ->statementBuilder("INSERT INTO airport_identifier (code, latitude, longitude, country, timezone) VALUES (?, ?, ?, ?, ?)")
-                ->withParameters($code, $location->getLatitude(), $location->getLongitude(), $location->getCountry(), $location->getTimezone())
+                ->statementBuilder("INSERT INTO airport_identifier (code, latitude, longitude, country_category_id, timezone) VALUES (?, ?, ?, ?, ?)")
+                ->withParameters($code, $location->getLatitude(), $location->getLongitude(),
+                    $categoryService->getOrCreateCountryCategoryIdentifier($location->getCountry())->getId(), $location->getTimezone())
                 ->execute();
 
             return $this->getAirportIdentifier($code);
@@ -113,7 +114,7 @@
             $loggedFlights = array();
 
             $loggedFlightRows = $databaseProvider
-                ->statementBuilder("SELECT f.*, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fai.country AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tai.country AS to_airport_country, tai.timezone AS to_airport_timezone, l.* FROM flight_log l LEFT JOIN airport_identifier fai ON l.from_airport_id = fai.id LEFT JOIN airport_identifier tai ON l.to_airport_id = tai.id LEFT JOIN flight_event f ON l.scheduled_departure = f.start ORDER BY actual_departure DESC")
+                ->statementBuilder("SELECT f.*, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fci.name AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tci.name AS to_airport_country, tai.timezone AS to_airport_timezone, l.* FROM flight_log l LEFT JOIN airport_identifier fai ON l.from_airport_id = fai.id LEFT JOIN category_identifier fci ON fai.country_category_id = fci.id LEFT JOIN airport_identifier tai ON l.to_airport_id = tai.id LEFT JOIN category_identifier tci ON tai.country_category_id = tci.id LEFT JOIN flight_event f ON l.scheduled_departure = f.start ORDER BY actual_departure DESC")
                 ->getResultSet();
                 
             foreach ($loggedFlightRows as &$loggedFlightRow) {
@@ -142,7 +143,7 @@
             global $databaseProvider, $geocodingService;
 
             $flightRows = $databaseProvider
-                ->statementBuilder("SELECT fe.flight, fe.from, fe.to, COALESCE(fl.actual_departure, fe.start) AS start, COALESCE(fl.actual_arrival, fe.end) AS end, fl.registration, fl.aircraft, fl.from_airport_id, fl.to_airport_id, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fai.country AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tai.country AS to_airport_country, tai.timezone AS to_airport_timezone FROM " . $flightType->getTableName() . " fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure LEFT JOIN airport_identifier fai ON fl.from_airport_id = fai.id LEFT JOIN airport_identifier tai ON fl.to_airport_id = tai.id  WHERE fe.trip_id = ? ORDER BY start")
+                ->statementBuilder("SELECT fe.flight, fe.from, fe.to, COALESCE(fl.actual_departure, fe.start) AS start, COALESCE(fl.actual_arrival, fe.end) AS end, fl.registration, fl.aircraft, fl.from_airport_id, fl.to_airport_id, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fci.name AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tci.name AS to_airport_country, tai.timezone AS to_airport_timezone FROM " . $flightType->getTableName() . " fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure LEFT JOIN airport_identifier fai ON fl.from_airport_id = fai.id LEFT JOIN category_identifier fci ON fai.country_category_id = fci.id LEFT JOIN airport_identifier tai ON fl.to_airport_id = tai.id LEFT JOIN category_identifier tci ON tai.country_category_id = tci.id WHERE fe.trip_id = ? ORDER BY start")
                 ->withParameters($tripId)
                 ->getResultSet();
 
