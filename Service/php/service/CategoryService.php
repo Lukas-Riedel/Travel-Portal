@@ -1,6 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/CategoryMapper.php");
     require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
+    require_once(dirname(__FILE__) . "/../model/CategoryMetadata.php");
     require_once(dirname(__FILE__) . "/../model/Category.php");
     require_once(dirname(__FILE__) . "/../model/GeographicalRegion.php");
     require_once(dirname(__FILE__) . "/../model/CompositeRegion.php");
@@ -116,6 +117,18 @@
 
             return $wasUpdated;
         }
+
+        public function updateCategoryColor(string $categoryId, string $color) : bool {            
+            return $this->categoryMapper->updateCategoryColor($categoryId, $color);
+        }
+
+        public function updateCategoryUnicode(string $categoryId, string $unicode) : bool {            
+            return $this->categoryMapper->updateCategoryUnicode($categoryId, $unicode);
+        }
+
+        public function updateCategoryPublicHolidaysCalendar(string $categoryId, string $publicHolidaysCalendar) : bool {            
+            return $this->categoryMapper->updateCategoryPublicHolidaysCalendar($categoryId, $publicHolidaysCalendar);
+        }
         
         // TODO: Replace string $category by CategoryCategory $category.
         public function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
@@ -124,7 +137,7 @@
                 return $categoryIdentifier;
             }
 
-            $categoryIdentifier = new CategoryIdentifier(NULL, $name, $category, NULL);
+            $categoryIdentifier = new CategoryIdentifier(NULL, $name, $category, NULL, NULL);
             $this->categoryMapper->insertCategoryIdentifier($categoryIdentifier);
 
             return $categoryIdentifier;

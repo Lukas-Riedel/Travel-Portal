@@ -40,8 +40,10 @@
                 return NULL;
             }
 
-            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], 
-                $categoryIdentifierRow["category"], $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+            $metadata = $categoryIdentifierRow["color"] === NULL && $categoryIdentifierRow["unicode"] === NULL && $categoryIdentifierRow["public_holidays_calendar"] === NULL
+                ? NULL : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], $categoryIdentifierRow["category"],
+                $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
         public function selectCategoryIdentifier(string $categoryId) : ?CategoryIdentifier {
@@ -60,8 +62,10 @@
                 return NULL;
             }
 
-            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], 
-                $categoryIdentifierRow["category"], $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+            $metadata = $categoryIdentifierRow["color"] === NULL && $categoryIdentifierRow["unicode"] === NULL && $categoryIdentifierRow["public_holidays_calendar"] === NULL
+                ? NULL : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], $categoryIdentifierRow["category"],
+                $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
         public function selectCategories(?string $categoryId, array $categoryCategories, array $includedEntities) : array {
@@ -91,7 +95,9 @@
                         $statistics = $this->statisticsService->getCategoryStatistics($categoryRow["id"]);              
                     }
                     
-                    return new Category($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], 
+                    $metadata = $categoryRow["color"] === NULL && $categoryRow["unicode"] === NULL && $categoryRow["public_holidays_calendar"] === NULL
+                        ? NULL : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
+                    return new Category($categoryRow["id"], $categoryRow["name"], $categoryRow["category"], $metadata,
                         $this->highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $statistics);
                 });
         }
@@ -314,6 +320,45 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($name, $categoryId)
+                ->execute() === 1;
+        }
+
+        public function updateCategoryColor(string $categoryId, string $color) : bool {
+            $sql = <<<'SQL'
+                UPDATE category_identifier
+                SET color = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($color, $categoryId)
+                ->execute() === 1;
+        }
+
+        public function updateCategoryUnicode(string $categoryId, string $unicode) : bool {
+            $sql = <<<'SQL'
+                UPDATE category_identifier
+                SET unicode = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($unicode, $categoryId)
+                ->execute() === 1;
+        }
+
+        public function updateCategoryPublicHolidaysCalendar(string $categoryId, string $publicHolidaysCalendar) : bool {
+            $sql = <<<'SQL'
+                UPDATE category_identifier
+                SET public_holidays_calendar = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($publicHolidaysCalendar, $categoryId)
                 ->execute() === 1;
         }
 

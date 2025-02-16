@@ -63,7 +63,7 @@
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Created category", 201, '{"id":151,"name":"Ústecký kraj","category":"ADMINISTRATIVE"}'),
+                $this->createResponseExample("Created category", 201, '{"id":151,"name":"Ústecký kraj","category":"ADMINISTRATIVE","metadata":null}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

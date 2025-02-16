@@ -1,18 +1,21 @@
 <?php
     require_once(dirname(__FILE__) . "/Highlight.php");
+    require_once(dirname(__FILE__) . "/CategoryMetadata.php");
 
     class Category implements JsonSerializable {        
         private $id;
         private $name;
         private $category;
+        private $metadata;
         private $mainHighlight;
         private $highlights;
         private $statistics;
 
-        public function __construct($id, $name, $category, $mainHighlight, $highlights, $statistics) {
+        public function __construct($id, $name, $category, $metadata, $mainHighlight, $highlights, $statistics) {
             $this->id = $id;
             $this->name = $name;
             $this->category = $category;
+            $this->metadata = $metadata;
             $this->mainHighlight = $mainHighlight;
             $this->highlights = $highlights;
             $this->statistics = $statistics;
@@ -28,6 +31,10 @@
 
         public function getCategory() : string {
             return $this->category;
+        }
+
+        public function getMetadata() : ?CategoryMetadata {
+            return $this->metadata;
         }
 
         public function getMainHighlight() : ?Highlight {
