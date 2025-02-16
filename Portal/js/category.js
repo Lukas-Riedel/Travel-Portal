@@ -1,10 +1,10 @@
 async function init(categoryId, isLoggedIn) {
-    const places = await api.listRegularPlaces(undefined, categoryId, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now));
+    const places = await api.listRegularPlaces(undefined, categoryId, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now), "CATEGORIES");
     const category = await api.getCategory(categoryId);
 
     // Title.
-    document.title = getDocumentTitle(getCategoryPrettyName(category.name), places);
-    $('#title').html(getTitle(getCategoryPrettyName(category.name), places));
+    document.title = getDocumentTitle(category, places);
+    $('#title').html(getTitle(category, places));
     
     // Map.
     initializeMap("map", places);
@@ -20,9 +20,11 @@ async function init(categoryId, isLoggedIn) {
 }
 
 function getDocumentTitle(category, places) {
-    return getCountries(places).map(country => configuration.countries[country].emoji).join("") + " " + category;
+    return (category.metadata != null ? getEmoji(category.metadata.unicode) 
+        : getCountries(places).map(country => configuration.countries[country].emoji).join("")) + " " + getCategoryPrettyName(category.name);
 }
 
 function getTitle(category, places) {
-    return category + "<br>" + getCountries(places).map(getFlagImage).join(" ");
+    return getCategoryPrettyName(category.name) + "<br>" + (category.metadata != null ? getFlagImageForUnicode(category.metadata.unicode)
+        : getCountries(places).map(getFlagImage).join(" "));
 }

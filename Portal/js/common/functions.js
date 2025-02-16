@@ -44,11 +44,32 @@ function loadPage(initFunction) {
         configuration.albumThumbnailImageSize.height = newImageHeight;
         configuration.albumsPerRow = Math.floor($(window).width() / configuration.albumThumbnailImageSize.width);
         configuration.maximumCalendarEntriesPerRow = Math.floor($(window).width() / configuration.calendarEntryMinimumWidth);
-        Object.keys(configuration.countries).forEach(country => configuration.countries[country].emoji = configuration.countries[country].unicode.split("-").map(c => "0x" + c).map(c => Number(c)).map(c => String.fromCodePoint(c)).join(""));
+        configuration.countries = {};
+        (await api.listCategories("COUNTRY")).forEach(category => {
+            configuration.countries[category.name] = {
+                color: category.metadata.color,
+                unicode: category.metadata.unicode,
+                emoji: getEmoji(category.metadata.unicode),
+                publicHolidaysCalendar: category.metadata.publicHolidaysCalendar
+            };
+        });
         const afterInitFunctionEvent = new Event("afterInitFunction");
         await initFunction();
         document.dispatchEvent(afterInitFunctionEvent);
     });    
+}
+
+function getEmoji(unicode) {
+    return unicode.split("-").map(c => "0x" + c).map(c => Number(c)).map(c => String.fromCodePoint(c)).join("");
+}
+
+function findMostSpecificCategoryMetadata(categories) {
+    for (const category of reversed(categories)) {
+        if (category.metadata != null) {
+            return category.metadata;
+        }
+    }
+    return undefined;
 }
 
 function getPlacePrettyName(placeName) {
@@ -484,8 +505,16 @@ function getFlagImage(country) {
     return "<img style=\"width: 1em; height: 1em; vertical-align: -0.15em\" src=\"" + getFlagImageUrl(country) + "\">";
 }
 
+function getFlagImageForUnicode(unicode) {
+    return "<img style=\"width: 1em; height: 1em; vertical-align: -0.15em\" src=\"" + getFlagImageUrlForUnicode(unicode) + "\">";
+}
+
 function getFlagImageUrl(country) {
-    return "https://" + location.hostname + "/img/flags/" + configuration.countries[country].unicode + ".svg";
+    return getFlagImageUrlForUnicode(configuration.countries[country].unicode);
+}
+
+function getFlagImageUrlForUnicode(unicode) {
+    return "https://" + location.hostname + "/img/flags/" + unicode + ".svg";
 }
 
 function createDate(timestamp, keepHomeTimeZone) {

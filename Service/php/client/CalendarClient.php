@@ -23,13 +23,15 @@
         }
 
         public function getPublicHolidayEvents($country) : array {            
-            global $configuration;
+            global $categoryService;
 
-            if ($configuration["countries"][$country]["publicHolidaysCalendar"] === NULL) {
+            $categoryIdentifier = $categoryService->getCategoryIdentifierByName($country);
+            if ($categoryIdentifier === NULL || $categoryIdentifier->getMetadata() === NULL
+                || $categoryIdentifier->getMetadata()->getPublicHolidaysCalendar() === NULL) {
                 return array();
             }
 
-            return $this->fetchEvents($configuration["countries"][$country]["publicHolidaysCalendar"]);
+            return $this->fetchEvents($categoryIdentifier->getMetadata()->getPublicHolidaysCalendar());
         }
 
         private function fetchEvents($url) : array {
