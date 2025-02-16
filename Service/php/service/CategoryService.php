@@ -265,7 +265,7 @@
             }
         }
 
-        private function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {
+        public function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {
             if (!in_array($country, $this->configurationService->getConfigurationKeysForType("countries"))) {
                 throw new InvalidArgumentException("The country '" . $country . "' does not exist.");
             }

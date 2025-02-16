@@ -170,7 +170,7 @@
             global $databaseProvider, $noteService;
 
             $tripRow = $databaseProvider
-                ->statementBuilder("SELECT ti.id, ti.name, tc.days, tc.countries FROM (SELECT trip_id, CEIL(MAX(end) / 86400) AS days, GROUP_CONCAT(DISTINCT pi.country SEPARATOR ',') AS countries FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id GROUP BY pce.trip_id) tc INNER JOIN trip_identifier ti ON tc.trip_id = ti.id WHERE ti.id = ? ORDER BY ti.name")
+                ->statementBuilder("SELECT ti.id, ti.name, tc.days, tc.countries FROM (SELECT trip_id, CEIL(MAX(end) / 86400) AS days, GROUP_CONCAT(DISTINCT ci.name SEPARATOR ',') AS countries FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_identifier ci ON pi.country_category_id = ci.id GROUP BY pce.trip_id) tc INNER JOIN trip_identifier ti ON tc.trip_id = ti.id WHERE ti.id = ? ORDER BY ti.name")
                 ->withParameters($tripId)
                 ->getSingleRow();
 

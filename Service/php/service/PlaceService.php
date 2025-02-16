@@ -130,7 +130,7 @@
                 $whereClause = $whereClauseBuilder->withClause("pi.id NOT IN (SELECT place_id FROM place_summary)")->buildForAnd();
 
                 $placeRows = $databaseProvider
-                    ->statementBuilder("SELECT pi.*, COALESCE(cs.category_ids, '') AS category_ids FROM place_permanent pp INNER JOIN place_identifier pi ON pp.place_id = pi.id LEFT JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
+                    ->statementBuilder("SELECT pi.*, ci.name AS country, COALESCE(cs.category_ids, '') AS category_ids FROM place_permanent pp INNER JOIN place_identifier pi ON pp.place_id = pi.id INNER JOIN category_identifier ci ON pi.country_category_id = ci.id LEFT JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
                     ->getResultSet();
 
                 foreach ($placeRows as &$placeRow) {
@@ -184,7 +184,7 @@
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             $placeRows = $databaseProvider
-                ->statementBuilder("SELECT pcan.*, COALESCE(cs.category_ids, '') AS category_ids FROM (SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id UNION SELECT place_id, name, country, latitude, longitude, timezone, main_highlight_id, excerpt FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id, ps.excerpt FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan LEFT JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
+                ->statementBuilder("SELECT pcan.*, COALESCE(cs.category_ids, '') AS category_ids FROM (SELECT pc.place_id, pi.name, ci.name AS country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pi.excerpt FROM place_candidate pc INNER JOIN place_identifier pi ON pc.place_id = pi.id INNER JOIN category_identifier ci ON pi.country_category_id = ci.id UNION SELECT pce.place_id, pi.name, ci.name AS country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pi.excerpt FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_identifier ci ON pi.country_category_id = ci.id UNION SELECT ps.place_id, ps.name, ps.country, ps.latitude, ps.longitude, ps.timezone, ps.main_highlight_id, ps.excerpt FROM place_event p INNER JOIN place_summary ps ON p.place_id = ps.place_id WHERE ps.start < UNIX_TIMESTAMP() GROUP BY ps.name, ps.country HAVING (MAX(ps.start) < UNIX_TIMESTAMP() - GET_CONFIGURATION('DAYS_BEFORE_APPEARING_IN_PLAN') * 86400) OR MAX(ps.album_id) IS NULL) pcan LEFT JOIN category_summary cs ON pcan.place_id = cs.place_id {{WHERE CLAUSE}} ORDER BY country, name", $whereClause)
                 ->getResultSet();
 
             $places = array();
@@ -237,7 +237,7 @@
             $whereClause = $whereClauseBuilder->withClause("trip_id = ?", $tripId)->buildForAnd();
 
             $placeRows = $databaseProvider
-                ->statementBuilder("SELECT pce.place_id, pi.name, pi.country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pi.excerpt, pce.start, pce.end, cs.category_ids FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
+                ->statementBuilder("SELECT pce.place_id, pi.name, ci.name AS country, pi.latitude, pi.longitude, pi.timezone, pi.main_highlight_id, pi.excerpt, pce.start, pce.end, cs.category_ids FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_identifier ci ON pi.country_category_id = ci.id INNER JOIN category_summary cs ON pi.id = cs.place_id {{WHERE CLAUSE}}", $whereClause)
                 ->getResultSet();
 
             $places = array();            
@@ -273,7 +273,7 @@
             global $databaseProvider, $highlightService;
 
             $placeIdentifierRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM place_identifier WHERE name = ? AND country = ?")
+                ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id WHERE pi.name = ? AND ci.name = ?")
                 ->withParameters($name, $country)
                 ->getFirstRow();
 
@@ -301,7 +301,7 @@
             global $databaseProvider, $highlightService;
             
             $placeIdentifierRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM place_identifier WHERE id = ?")
+                ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id WHERE pi.id = ?")
                 ->withParameters($placeId)
                 ->getSingleRow();
 
@@ -401,7 +401,7 @@
             global $databaseProvider, $highlightService;
             
             return $databaseProvider
-                ->statementBuilder("SELECT * FROM place_identifier")
+                ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id")
                 ->getMappedResultSet(function ($placeIdentifierRow) use (&$highlightService) { 
                     return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
                         $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
@@ -412,7 +412,7 @@
             global $databaseProvider, $highlightService;
             
             return $databaseProvider
-                ->statementBuilder("SELECT * FROM place_identifier WHERE id IN (SELECT place_id FROM category WHERE category_id = ?)")
+                ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id WHERE pi.id IN (SELECT place_id FROM category WHERE category_id = ?)")
                 ->withParameters($categoryId)
                 ->getMappedResultSet(function ($placeIdentifierRow) use (&$highlightService) { 
                     return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
@@ -421,7 +421,7 @@
         }
 
         public function getOrCreatePlaceIdentifier($name, $country, $address) : PlaceIdentifier {            
-            global $databaseProvider, $configuration, $eventPublisher, $geocodingService;
+            global $databaseProvider, $configuration, $eventPublisher, $geocodingService, $categoryService;
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
             if ($placeIdentifier !== NULL) {
@@ -435,8 +435,9 @@
             $location = $geocodingService->getLocation($address);
 
             $databaseProvider
-                ->statementBuilder("INSERT INTO place_identifier (name, country, timezone, latitude, longitude, excerpt) VALUES (?, ?, ?, ?, ?, ?)")
-                ->withParameters($name, $country, $location->getTimezone(), $location->getLatitude(), $location->getLongitude(), $this->getSuggestedExcerpt($name, $country))
+                ->statementBuilder("INSERT INTO place_identifier (name, country_category_id, timezone, latitude, longitude, excerpt) VALUES (?, ?, ?, ?, ?, ?)")
+                ->withParameters($name, $categoryService->getOrCreateCountryCategoryIdentifier($country)->getId(), $location->getTimezone(),
+                    $location->getLatitude(), $location->getLongitude(), $this->getSuggestedExcerpt($name, $country))
                 ->execute();
 
             $placeIdentifier = $this->getPlaceIdentifier($name, $country);
@@ -659,7 +660,7 @@
 
             // Process new countries in trips (only those visited more than one year ago prior to visiting it).
             $newCountryInTripRows = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT npi.country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country NOT IN (SELECT opi.country FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id) AND npi.country NOT IN (SELECT country FROM place_summary WHERE start < UNIX_TIMESTAMP() AND start > np.start - (365 * 86400))")
+                ->statementBuilder("SELECT DISTINCT ci.name AS country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id INNER JOIN category_identifier ci ON npi.country_category_id = ci.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country_category_id NOT IN (SELECT opi.country_category_id FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id) AND ci.name NOT IN (SELECT country FROM place_summary WHERE start < UNIX_TIMESTAMP() AND start > np.start - (365 * 86400))")
                 ->getResultSet();
 
             foreach ($newCountryInTripRows as &$newCountryInTripRow) {
@@ -706,7 +707,7 @@
 
             // Unhide countries in the configuration.
             $countries = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT country FROM place_identifier")
+                ->statementBuilder("SELECT DISTINCT ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id")
                 ->getResultSetForColumn("country");
 
             foreach ($countries as &$country) {
