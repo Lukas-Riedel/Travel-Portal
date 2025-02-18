@@ -27,6 +27,12 @@
             return array_keys($configuration[$type]);
         }
 
+        public function getConfigurationValuesForType($type) : array {
+            global $configuration;
+
+            return array_values($configuration[$type]);
+        }
+
         // TODO
         public function getConfigurationForTypeAndKey($type, $key) : ?string {
             global $configuration;

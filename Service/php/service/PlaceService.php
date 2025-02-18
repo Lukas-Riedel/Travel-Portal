@@ -522,8 +522,6 @@
                 ->statementBuilder("INSERT INTO " . $specialPlaceType->getTableName() . " (place_id) VALUES (?)")
                 ->withParameters($placeIdentifier->getId())
                 ->execute();
-
-            $configurationService->updateConfigurationEntryVisibility(array("public", "modifiable"), "COUNTRIES", $placeIdentifier->getCountry());
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(), array(), array(), array());
@@ -703,15 +701,6 @@
                         $eventPublisher->publishCategoryUpdatedEvent($categoryId);
                     }
                 }
-            }
-
-            // Unhide countries in the configuration.
-            $countries = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id")
-                ->getResultSetForColumn("country");
-
-            foreach ($countries as &$country) {
-                $configurationService->updateConfigurationEntryVisibility(array("public", "modifiable"), "COUNTRIES", $country);
             }
         }
 
