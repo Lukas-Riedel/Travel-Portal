@@ -11,6 +11,4 @@
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
     $scheduler->schedule();
-
-    require_once(dirname(__FILE__) . "/runner.php");
 ?>
