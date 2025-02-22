@@ -12,8 +12,6 @@
             $googleApiClient->watchCalendar($calendar, $watchId, 
                 BASE_URL . "/events?name=CalendarChanged&args[watchId]=" . $watchId . "&args[calendar]=" . $calendar,
                 "Bearer " . $authenticationResult->getAccessToken());
-                
-            $googleApiClient->watchCalendar($calendar, $watchId, BASE_URL . "/php/runner.php");
         }
 
         public function getEvents($calendar) : array {        
