@@ -4,7 +4,7 @@
             $payload = array(
                 "album" => array(
                     "title" => $albumName));
-            $apiResponse = $this->executeRequest("POST", "https://photoslibrary.googleapis.com/v1/albums", array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/albums", array(), $payload);
 
             if (!isset($apiResponse["id"])) {
                 throw new RuntimeException("The album could not be created. " . $apiResponse["message"]);
@@ -30,7 +30,7 @@
                  . "--" . $separator . "--";
 
             $contentType = "multipart/related;boundary=" . $separator;
-            $this->executeRequest("POST", "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", array(), $payload, $contentType);
+            $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", array(), $payload, $contentType);
 
             // TODO: Return whether the file was created.
             return TRUE;
@@ -52,14 +52,14 @@
                 $payload["location"] = $address;
             }
              
-            $this->executeRequest("POST", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events", array(), $payload);
+            $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events", array(), $payload);
                     
             // TODO: Return whether the event was created.
             return TRUE;
         }
 
         public function deleteCalendarEvent($calendar, $eventId) : bool {
-            $this->executeRequest("DELETE", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId));
+            $this->executeRequest(HttpMethod::DELETE, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId));
 
             // TODO: Return whether the event was deleted.
             return TRUE;
@@ -68,7 +68,7 @@
         public function updateCalendarEventSummary($calendar, $eventId, $name) : bool {
             $payload = array(
                 "summary" => $name);
-            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -77,7 +77,7 @@
         public function updateCalendarEventLocation($calendar, $eventId, $location) : bool {
             $payload = array(
                 "location" => $location);
-            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -93,7 +93,7 @@
                 "end" => array(
                     "dateTime" => date(DATE_RFC3339, $end),
                     "timeZone" => $configuration["homeLocation"]["timezone"]));
-            $this->executeRequest("PATCH", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -112,7 +112,7 @@
                 $payload["token"] = $token;
             }
 
-            $this->executeRequest("POST", "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/watch", array(), $payload);
+            $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/watch", array(), $payload);
             
             // TODO: Return whether the calendar is watched now.
             return TRUE;
@@ -121,7 +121,7 @@
         public function updateAlbumName($externalId, $name) : bool {
             $payload = array(
                 "title" => $name);
-            $this->executeRequest("PATCH", "https://photoslibrary.googleapis.com/v1/albums/" . $externalId . "?updateMask=title", array(), $payload);
+            $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/albums/" . $externalId . "?updateMask=title", array(), $payload);
                         
             // TODO: Return whether the album was updated.
             return TRUE;
@@ -130,7 +130,7 @@
         public function updateAlbumMainPhoto($externalAlbumId, $externalPhotoId) : bool {
             $payload = array(
                 "coverPhotoMediaItemId" => $externalPhotoId);
-            $this->executeRequest("PATCH", "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", array(), $payload);
+            $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", array(), $payload);
                         
             // TODO: Return whether the album was updated.
             return TRUE;
@@ -143,7 +143,7 @@
                 $queryParameters .= "&pageToken=" . $pageToken;
             }
 
-            $apiResponse = $this->executeRequest("GET", "https://photoslibrary.googleapis.com/v1/albums" . $queryParameters);
+            $apiResponse = $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/albums" . $queryParameters);
 
             if (isset($apiResponse["error"])) {
                 throw new RuntimeException($apiResponse["error"]["message"]);
@@ -153,7 +153,7 @@
         }
 
         public function getAlbum($externalAlbumId) : mixed {
-            $apiResponse = $this->executeRequest("GET", "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId);
+            $apiResponse = $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId);
 
             if (isset($apiResponse["error"])) {
                 throw new RuntimeException($apiResponse["error"]["message"]);
@@ -163,7 +163,7 @@
         }
 
         public function getMediaItem($externalPhotoId) : mixed {
-            $apiResponse = $this->executeRequest("GET", "https://photoslibrary.googleapis.com/v1/mediaItems/" . $externalPhotoId);
+            $apiResponse = $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/mediaItems/" . $externalPhotoId);
                     
             if (isset($apiResponse["error"])) {
                 throw new RuntimeException($apiResponse["error"]["message"]);
@@ -181,7 +181,7 @@
                 $payload["pageToken"] = $pageToken;
             }
 
-            return $this->executeRequest("POST", "https://photoslibrary.googleapis.com/v1/mediaItems:search", array(), $payload);
+            return $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/mediaItems:search", array(), $payload);
         }
 
         public function createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId = NULL) : array {
@@ -205,14 +205,14 @@
                     "relativeMediaItemId" => $externalReplacedPhotoId);
             }
             
-            return $this->executeRequest("POST", "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate", array(), $payload)["newMediaItemResults"];
+            return $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate", array(), $payload)["newMediaItemResults"];
         }
         
         public function uploadPhoto($data) : string {
             $headers = array(
                 "X-Goog-Upload-Content-Type" => "image/jpeg",
                 "X-Goog-Upload-Protocol" => "raw");
-            $uploadToken = $this->executeRequest("POST", "https://photoslibrary.googleapis.com/v1/uploads", $headers, base64_decode($data), "application/octet-stream");
+            $uploadToken = $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/uploads", $headers, base64_decode($data), "application/octet-stream");
                     
             if ($uploadToken === NULL) {
                 throw new RuntimeException("The photo could not be uploaded.");
@@ -259,7 +259,7 @@
                 "grant_type" => "refresh_token",
                 "access_type" => "offline");     
 
-            $response = $httpClient->executeRequest("POST", "https://oauth2.googleapis.com/token", array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+            $response = $httpClient->executeRequest(HttpMethod::POST, "https://oauth2.googleapis.com/token", array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["access_token"])) {
                 throw new RuntimeException("The access token could not be obtained. Response: " . json_encode($response));

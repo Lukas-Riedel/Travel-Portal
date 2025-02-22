@@ -13,7 +13,7 @@
             }
 
             if (isset($input["description"])) {
-                $expenseService->updateExpenseDescription($input["expenseId"], $input["description"]);
+                $expenseService->updateExpenseDescription($input["expenseId"], $input["description"], $input["tripId"]);
             }
 
             if (isset($input["value"])) {

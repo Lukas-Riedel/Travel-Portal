@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $expenseService->removeExpense($input["expenseId"]);
+            $response = $expenseService->removeExpense($input["expenseId"], $input["tripId"]);
             if ($response === FALSE) {                
                 return $this->create404Response("trip_expenses", $input["expenseId"]);
             }

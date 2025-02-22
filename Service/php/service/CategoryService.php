@@ -13,6 +13,7 @@
         private readonly CategoryMapper $categoryMapper;
 
         private readonly ConfigurationService $configurationService;
+        
         private readonly EventPublisher $eventPublisher;
 
         public function __construct(DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
@@ -145,7 +146,7 @@
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createCompositeRegion(string $name, string $category, array $includedRegions, array $excludedRegions) : CategoryIdentifier {
-            foreach ($this->configurationService->getConfigurationKeysForType("countries") as $country) {
+            foreach ($this->configurationService->getConfigurationValuesForType("countryNames") as $country) {
                 $this->getOrCreateCountryCategoryIdentifier($country);
             }
 

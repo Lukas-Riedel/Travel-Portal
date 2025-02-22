@@ -1,9 +1,9 @@
 <?php
     class HttpClient {
-        public function executeRequest($method, $url, $headers = array(), $payload = NULL, $includeResponseHeaders = FALSE) {            
+        public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = NULL, $includeResponseHeaders = FALSE) {            
             $curl = curl_init($url);
 
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
             curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
             curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.1) Gecko/20061204 Firefox/2.0.0.1');
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
@@ -13,7 +13,7 @@
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     
             if ($payload !== NULL) {
-                curl_setopt($curl, $method === "GET" ? CURLOPT_GETFIELDS : CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($curl, $method === HttpMethod::GET ? CURLOPT_GETFIELDS : CURLOPT_POSTFIELDS, $payload);
             }     
             
             $response = curl_exec($curl);
@@ -65,5 +65,14 @@
     
             return $headers;
         }
+    }
+
+    enum HttpMethod : string {
+        case GET = "GET";
+        case POST = "POST";
+        case PATCH = "PATCH";
+        case PUT = "PUT";
+        case DELETE = "DELETE";
+        case HEAD = "HEAD";
     }
 ?>

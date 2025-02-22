@@ -83,7 +83,7 @@
             $startDate = date("Y-m-d", $oneYearAgoTimestamp - 3 * 86400);
             $endDate = date("Y-m-d", $oneYearAgoTimestamp + 3 * 86400);
         
-            $apiResponse = $httpClient->executeRequest("GET", "https://archive-api.open-meteo.com/v1/archive?latitude=" . $latitude . "&longitude=" . $longitude . "&start_date=" . $startDate . "&end_date=" . $endDate . "&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=" . $configuration["homeLocation"]["timezone"] . "&windspeed_unit=ms&timeformat=unixtime");
+            $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://archive-api.open-meteo.com/v1/archive?latitude=" . $latitude . "&longitude=" . $longitude . "&start_date=" . $startDate . "&end_date=" . $endDate . "&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=" . $configuration["homeLocation"]["timezone"] . "&windspeed_unit=ms&timeformat=unixtime");
             
             $result = array(
                 "temperature" => $this->getAverage($apiResponse["daily"]["temperature_2m_max"]),
@@ -107,7 +107,7 @@
         public function updateActualWeatherForecast($placeId, $start, $latitude, $longitude) : void {
             global $databaseProvider, $configuration, $httpClient;
         
-            $apiResponse = $httpClient->executeRequest("GET", "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($latitude, 4) . "&lon=" . round($longitude, 4),
+            $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($latitude, 4) . "&lon=" . round($longitude, 4),
                 array("User-Agent: " . BASE_URL . " " . $configuration["contactEmail"]), NULL, TRUE);
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {

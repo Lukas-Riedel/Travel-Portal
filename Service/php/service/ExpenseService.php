@@ -1,199 +1,141 @@
 <?php
+    require_once(dirname(__FILE__) . "/ExpenseMapper.php");
     require_once(dirname(__FILE__) . "/../model/Expense.php");
     require_once(dirname(__FILE__) . "/../model/Subscription.php");
 
     class ExpenseService {
-        public function getExpensesForTrip($tripId) : array {
-            global $databaseProvider;
 
-            return $databaseProvider
-                ->statementBuilder("SELECT * FROM expense_summary WHERE trip_id = ?")
-                ->withParameters($tripId)
-                ->getMappedResultSet(function ($expenseRow) {
-                    return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"], $expenseRow["main_currency_value"], $expenseRow["type"]);
-                });
+        private const GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT = "https://v6.exchangerate-api.com/v6/%s/latest/%s";
+
+        private readonly ExpenseMapper $expenseMapper;
+        
+        private readonly HttpClient $httpClient;
+        
+        private readonly ConfigurationService $configurationService;
+
+        private readonly EventPublisher $eventPublisher;
+
+        public function __construct(DatabaseProvider $databaseProvider, HttpClient $httpClient,
+            ConfigurationService $configurationService, EventPublisher $eventPublisher) {
+            $this->expenseMapper = new ExpenseMapper($databaseProvider);
+            $this->httpClient = $httpClient;
+            $this->configurationService = $configurationService;
+            $this->eventPublisher = $eventPublisher;
         }
 
-        public function getExpense($expenseId) : ?Expense {
-            global $databaseProvider;
-
-            $expenseRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM _expense_summary WHERE id = ?")
-                ->withParameters($expenseId)
-                ->getSingleRow();
-            
-            return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"], $expenseRow["main_currency_value"], $expenseRow["type"]);
+        public function getExpensesForTrip(string $tripId) : array {
+            return $this->expenseMapper->selectExpensesForTrip($tripId);
         }
 
-        public function createExpense($tripId, $value, $currency, $type, $description, $subscriptionId) : Expense {            
-            global $databaseProvider, $eventPublisher;
-                      
+        public function getExpense(string $expenseId) : ?Expense {
+            return $this->expenseMapper->selectExpense($expenseId);
+        }
+
+        // TODO: Replace string $type by ExpenseType $type.
+        public function createExpense(string $tripId, float $value, string $currency, string $type, string $description, ?string $subscriptionId) : Expense {                      
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $databaseProvider
-                ->statementBuilder("INSERT INTO expense (trip_id, value, currency, exchange_rate, type, description, timestamp, subscription_id) VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), ?)")
-                ->withParameters($tripId, $value, $currency, $exchangeRate, $type, $description, $subscriptionId)
-                ->execute();   
+            $expense = new Expense(NULL, $description, $value, $currency, $exchangeRate, $type);
+            $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
 
-            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
+            $this->eventPublisher->publishExpenseCreatedEvent($expense->getId(), $tripId);
 
-            $this->updateCurrencies();
-
-            $expenseRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM _expense_summary ORDER BY id DESC LIMIT 1")
-                ->getSingleRow();
-            
-            return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"], $expenseRow["main_currency_value"], $expenseRow["type"]);
+            return $expense;
         }
 
-        public function createSubscription($value, $currency, $description, $expiration) : Subscription {
-            global $databaseProvider;
-                        
+        public function createSubscription(float $value, string $currency, string $description, int $expiration) : Subscription {                        
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $databaseProvider
-                ->statementBuilder("INSERT INTO expense_subscription (value, currency, exchange_rate, description, expiration) VALUES (?, ?, ?, ?, ?)")
-                ->withParameters($value, $currency, $exchangeRate, $description, $expiration)
-                ->execute();
-                
-            $subscriptionRow = $databaseProvider
-                ->statementBuilder("SELECT *, value * exchange_rate AS main_currency_value FROM expense_subscription ORDER BY id DESC LIMIT 1")
-                ->getSingleRow();
-                
-            return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
-                $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]);
+            $subscription = new Subscription(NULL, $description, $value, $currency, $exchangeRate, $expiration);
+            $this->expenseMapper->insertSubscription($subscription);
+
+            return $subscription;
         }
 
         public function getActiveSubscriptions() : array {
-            global $databaseProvider;            
-
-            return $databaseProvider
-                ->statementBuilder("SELECT *, value * exchange_rate AS main_currency_value FROM expense_subscription WHERE expiration > UNIX_TIMESTAMP()")
-                ->getMappedResultSet(function ($subscriptionRow) { 
-                    return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
-                        $subscriptionRow["currency"], $subscriptionRow["main_currency_value"], $subscriptionRow["expiration"]); 
-                });
+            return $this->expenseMapper->selectAllActiveSubscriptions();
         }
  
-        public function updateExpenseDescription($expenseId, $description) : bool {
-            global $databaseProvider;
-            
-            return $databaseProvider
-                ->statementBuilder("UPDATE expense SET description = ? WHERE id = ?")
-                ->withParameters($description, $expenseId)
-                ->execute() === 1;
-        }
-
-        public function updateExpenseValue($expenseId, $value, $tripId) : bool {
-            global $databaseProvider, $eventPublisher;
-            
-            $wasUpdated = $databaseProvider
-                ->statementBuilder("UPDATE expense SET value = ? WHERE id = ?")
-                ->withParameters($value, $expenseId)
-                ->execute() === 1;
+        public function updateExpenseDescription(string $expenseId, string $description, string $tripId) : bool {   
+            $wasUpdated = $this->expenseMapper->updateExpenseDescription($expenseId, $description);
                 
-            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
+            $this->eventPublisher->publishExpenseUpdatedEvent($expenseId, $tripId);
 
             return $wasUpdated;
         }
 
-        public function updateExpenseCurrency($expenseId, $currency, $tripId) : bool {
-            global $databaseProvider, $eventPublisher;
+        public function updateExpenseValue(string $expenseId, float $value, string $tripId) : bool {            
+            $wasUpdated = $this->expenseMapper->updateExpenseValue($expenseId, $value);
+                
+            $this->eventPublisher->publishExpenseUpdatedEvent($expenseId, $tripId);
 
+            return $wasUpdated;
+        }
+
+        public function updateExpenseCurrency(string $expenseId, string $currency, string $tripId) : bool {
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $wasUpdated = $databaseProvider
-                ->statementBuilder("UPDATE expense SET currency = ?, exchange_rate = ? WHERE id = ?")
-                ->withParameters($currency, $exchangeRate, $expenseId)
-                ->execute() === 1;
+            $wasUpdated = $this->expenseMapper->updateExpenseCurrency($expenseId, $currency, $exchangeRate);
                 
-            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
+            $this->eventPublisher->publishExpenseUpdatedEvent($expenseId, $tripId);
 
             return $wasUpdated;
         }
 
-        public function removeExpense($expenseId) : bool {
-            global $databaseProvider, $eventPublisher;
-
-            $tripId = $databaseProvider
-                ->statementBuilder("SELECT trip_id FROM expense WHERE id = ?")
-                ->withParameters($expenseId)
-                ->getSingleColumn("trip_id");
-
-            $wasDeleted = $databaseProvider
-                ->statementBuilder("DELETE FROM expense WHERE id = ?")
-                ->withParameters($expenseId)
-                ->execute() === 1;
+        public function removeExpense(string $expenseId, string $tripId) : bool {
+            $wasDeleted = $this->expenseMapper->deleteExpense($expenseId) > 0;
                 
-            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
-                    
-            $this->updateCurrencies();
+            $this->eventPublisher->publishExpenseRemovedEvent($expenseId, $tripId);
 
             return $wasDeleted;
         }
 
-        public function getExchangeRate($currency) : float {      
-                global $databaseProvider, $configuration, $httpClient;
-                
-                if ($currency === $configuration["mainCurrency"]) {
-                    return 1;
-                }
-    
-                $cachedRate = $databaseProvider
-                    ->statementBuilder("SELECT exchange_rate FROM cache_exchange_rate WHERE currency = ?")
-                    ->withParameters($currency)
-                    ->getSingleColumn("exchange_rate");
-    
-                if ($cachedRate != NULL) {
-                    return $cachedRate;
-                }    
-        
-                $apiResponse = $httpClient->executeRequest("GET", "https://v6.exchangerate-api.com/v6/88f93f800acc098fbf682685/latest/" . $configuration["mainCurrency"]);
-                
-                if ($apiResponse === NULL || !array_key_exists($currency, $apiResponse["conversion_rates"])) {
-                    return 0;
-                }
-        
-                $rate = (1 / doubleval($apiResponse["conversion_rates"][$currency]));
+        private function getExchangeRate(string $currency) : float {       
+            $mainCurrency = $this->configurationService->getConfigurationForType("mainCurrency");
+            if ($currency === $mainCurrency) {
+                return 1;
+            }
 
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO cache_exchange_rate (currency, exchange_rate, last_update) VALUES (?, ?, UNIX_TIMESTAMP())")
-                    ->withParameters($currency, $rate)
-                    ->execute();
+            $cachedExchangeRate = $this->expenseMapper->selectExchangeRate($currency);    
+            if ($cachedExchangeRate !== NULL) {
+                return $cachedExchangeRate;
+            }    
+    
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT,
+                $this->configurationService->getConfigurationForType("exchangeRateApiKey"), $mainCurrency));         
+            if ($apiResponse === NULL) {
+                return 0;
+            }
 
-                return $rate;
+            $validity = $this->configurationService->getConfigurationForTypeAndKey("autoPurgeRetentionDays", "exchangeRates") * 86400;
+            foreach ($apiResponse["conversion_rates"] as $currency => $rawExchangeRate) {
+                if ($currency !== $mainCurrency) {
+                    $this->expenseMapper->insertExchangeRate($currency, 1 / doubleval($rawExchangeRate), $validity);
+                }
+            }
+
+            $exchangeRate = $this->expenseMapper->selectExchangeRate($currency);
+            return $exchangeRate !== NULL ? $exchangeRate : 0;
         }
+    }
 
-        private function updateCurrencies() : void {
-            global $databaseProvider, $configuration;
+    enum ExpenseType : string {
+        case Flight = "FLIGHT";
+        case Hotel = "HOTEL";
+        case Attraction = "ATTRACTION";
+        case IntercityTransport = "INTERCITY_TRANSPORT";
+        case PublicTransport = "PUBLIC_TRANSPORT";
+        case OrganizedTour = "ORGANIZED_TOUR";
+        case CarRental = "CAR_RENTAL";
+        case Fuel = "FUEL";
+        case CityTax = "CITY_TAX";
+        case Parking = "PARKING";
+        case AirportTransfer = "AIRPORT_TRANSFER";
+        case Visa = "VISA";
+        case Other = "OTHER";
 
-            // First, list recently used currencies.
-            $newCurrencies = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT currency FROM expense ORDER BY id DESC LIMIT 5")
-                ->getResultSetForColumn("currency");
-
-            // Then, list frequently used currencies.
-            $frequentlyUsedCurrencies = explode(",", $databaseProvider
-                ->statementBuilder("SELECT GROUP_CONCAT(currency SEPARATOR ',') AS currencies FROM (SELECT currency FROM expense GROUP BY currency ORDER BY COUNT(*) DESC) t")
-                ->getSingleColumn("currencies"));
-    
-            foreach ($frequentlyUsedCurrencies as &$currency) {
-                if (!in_array($currency, $newCurrencies)) {
-                    $newCurrencies[] = $currency;
-                }
-            }
-
-            // Last, list all remaining currencies.
-            foreach ($configuration["currencies"] as &$currency) {
-                if (!in_array($currency, $newCurrencies)) {
-                    $newCurrencies[] = $currency;
-                }
-            }
-
-            $databaseProvider
-                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'CURRENCIES'")
-                ->withParameters(json_encode($newCurrencies))
-                ->execute();
+        public static function values(): array {
+            return array_map(fn($case) => $case->value, self::cases());
         }
     }
 ?>

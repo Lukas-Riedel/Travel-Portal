@@ -155,7 +155,8 @@
             }
             
             foreach ($_SESSION["viewDependencies"] as $table => $dependentViews) {
-                if (str_contains($sql, "DELETE FROM " . $table) || str_contains($sql, "INSERT INTO " . $table) || str_contains($sql, "UPDATE " . $table)) {
+                $normalizedSql = preg_replace("/\s+/", " ", $sql);
+                if (str_contains($normalizedSql, "DELETE FROM " . $table) || str_contains($normalizedSql, "INSERT INTO " . $table) || str_contains($normalizedSql, "UPDATE " . $table)) {
                     foreach ($dependentViews as &$dependentView) {   
                         if (!in_array($dependentView, $this->viewsToMaterialize)) {
                             $this->viewsToMaterialize[] = $dependentView;

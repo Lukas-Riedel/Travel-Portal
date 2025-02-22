@@ -194,6 +194,33 @@
             }
         }
 
+        public function onExpenseCreated($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onExpenseUpdated($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onExpenseRemoved($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
         public function onStatisticsChanged($message) {
             global $categoryService, $tripService;
 

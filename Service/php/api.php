@@ -48,7 +48,6 @@
     $highlightService = new HighlightService();
     $tripService = new TripService();
     $fitnessService = new FitnessService();
-    $expenseService = new ExpenseService();
     $yearService = new YearService();
     $noteService = new NoteService();
     $flightService = new FlightService();
@@ -68,6 +67,7 @@
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
+    $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

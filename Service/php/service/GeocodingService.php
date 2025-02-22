@@ -53,7 +53,7 @@
 
             // Geocoding request.
             if ($country === NULL || $latitude === NULL || $longitude === NULL) {
-                $apiResponse = $httpClient->executeRequest("GET", "https://maps.googleapis.com/maps/api/geocode/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&language=en&address=" . rawurlencode($address));
+                $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://maps.googleapis.com/maps/api/geocode/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&language=en&address=" . rawurlencode($address));
     
                 if ($apiResponse["status"] === "OK") {
                     if (count($apiResponse["results"]) > 0) {
@@ -74,7 +74,7 @@
 
             // Timezone request.
             if ($latitude !== NULL && $longitude !== NULL && $timezone === NULL) {    
-                $apiResponse = $httpClient->executeRequest("GET", "https://maps.googleapis.com/maps/api/timezone/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&location=" . $latitude . "," . $longitude . "&timestamp=0");
+                $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://maps.googleapis.com/maps/api/timezone/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&location=" . $latitude . "," . $longitude . "&timestamp=0");
                 
                 if (array_key_exists("timeZoneId", $apiResponse)) {
                     $timezone = $apiResponse["timeZoneId"];

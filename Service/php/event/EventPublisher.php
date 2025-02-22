@@ -56,6 +56,18 @@
         public function publishCategoryUpdatedEvent($categoryId) : void {
             $this->publishEvent(Event::CategoryUpdated, array("categoryId" => $categoryId));
         }
+
+        public function publishExpenseCreatedEvent($expenseId, $tripId) : void {
+            $this->publishEvent(Event::ExpenseCreated, array("expenseId" => $expenseId, "tripId" => $tripId));
+        }
+
+        public function publishExpenseUpdatedEvent($expenseId, $tripId) : void {
+            $this->publishEvent(Event::ExpenseUpdated, array("expenseId" => $expenseId, "tripId" => $tripId));
+        }
+
+        public function publishExpenseRemovedEvent($expenseId, $tripId) : void {
+            $this->publishEvent(Event::ExpenseRemoved, array("expenseId" => $expenseId, "tripId" => $tripId));
+        }
         
         public function publishPlaceUpdatedEvent($placeIdentifier) : void {
             $this->publishEvent(Event::PlaceUpdated, array("placeIdentifier" => $placeIdentifier));
@@ -128,8 +140,11 @@
         case AlbumUpdated = 14;
         case CategoryCreated = 15;
         case CategoryUpdated = 16;
-        case PlaceUpdated = 17;
-        case StatisticsChanged = 18;
+        case ExpenseCreated = 17;
+        case ExpenseUpdated = 18;
+        case ExpenseRemoved = 19;
+        case PlaceUpdated = 20;
+        case StatisticsChanged = 21;
 
         case FitnessActivityDetected = 100;
 
