@@ -19,7 +19,7 @@
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($expenseRow) {
                     return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
-                        $expenseRow["currency"], $expenseRow["exchange_rate"], $expenseRow["type"]);
+                        $expenseRow["currency"], $expenseRow["exchange_rate"], $expenseRow["type"], $expenseRow["main_currency_value"]);
                 });
         }
 
@@ -36,7 +36,7 @@
                 ->getSingleRow();
 
             return $expenseRow === NULL ? NULL : new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
-                $expenseRow["currency"], $expenseRow["exchange_rate"], $expenseRow["type"]);
+                $expenseRow["currency"], $expenseRow["exchange_rate"], $expenseRow["type"], $expenseRow["main_currency_value"]);
         }
 
         public function selectAllActiveSubscriptions() : array {

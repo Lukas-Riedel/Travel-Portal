@@ -35,7 +35,7 @@
         public function createExpense(string $tripId, float $value, string $currency, string $type, string $description, ?string $subscriptionId) : Expense {                      
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $expense = new Expense(NULL, $description, $value, $currency, $exchangeRate, $type);
+            $expense = new Expense(NULL, $description, $value, $currency, $exchangeRate, $type, $exchangeRate * $value);
             $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
 
             $this->eventPublisher->publishExpenseCreatedEvent($expense->getId(), $tripId);

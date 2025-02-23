@@ -6,14 +6,16 @@
         private $currency;
         private $exchangeRate;
         private $type;
+        private $mainCurrencyValue;
 
-        public function __construct($id, $description, $value, $currency, $exchangeRate, $type) {
+        public function __construct($id, $description, $value, $currency, $exchangeRate, $type, $mainCurrencyValue) {
             $this->id = $id;
             $this->description = $description;
             $this->value = $value;
             $this->currency = $currency;
             $this->exchangeRate = $exchangeRate;
             $this->type = $type;
+            $this->mainCurrencyValue = $mainCurrencyValue;
         }
 
         public function getId() : int {
@@ -41,7 +43,7 @@
         }
 
         public function getMainCurrencyValue() : float {
-            return $this->value * $this->exchangeRate;
+            return $this->mainCurrencyValue;
         }
 
         public function getType() : string {
@@ -50,8 +52,7 @@
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return get_object_vars($this) + array(
-                "mainCurrencyValue" => $this->getMainCurrencyValue());
+            return get_object_vars($this);
         }
     }
 ?>
