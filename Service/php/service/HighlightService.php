@@ -45,7 +45,7 @@
             return $databaseProvider
                 ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM " . $highlightType->getTableName() . " ht INNER JOIN highlight_identifier hi ON ht.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE ht.id = ?")
                 ->withParameters($entityId)
-                ->getMappedResultSet(function ($highlightRow) { 
+                ->getMappedResultSet(function($highlightRow) { 
                     return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
                         $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
                 });

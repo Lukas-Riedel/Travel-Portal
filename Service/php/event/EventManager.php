@@ -27,7 +27,7 @@
             return $databaseProvider
                 ->statementBuilder("SELECT * FROM queue_event WHERE event = ?")
                 ->withParameters($name)
-                ->getMappedResultSet(function ($event) {
+                ->getMappedResultSet(function($event) {
                     return array(
                         "id" => $event["id"],
                         "args" => json_decode($event["args"], TRUE)

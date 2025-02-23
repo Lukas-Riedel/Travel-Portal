@@ -17,7 +17,7 @@
                 $handlers[] = new $handlerFileNameTokens[0];
             }
 
-            $tags = array_unique(array_map(function ($handler) { return $handler->getTag(); }, $handlers));
+            $tags = array_unique(array_map(function($handler) { return $handler->getTag(); }, $handlers));
 
             $paths = array();
             foreach ($handlers as &$handler) {
@@ -26,14 +26,14 @@
                 }
 
                 $paths[$handler->getPath()][strtolower($handler->getMethod())] = $this->getApiEndpoint($handler);
-                uksort($paths[$handler->getPath()], function ($a, $b) use (&$methodsOrder) { return $methodsOrder[$a] - $methodsOrder[$b]; });
+                uksort($paths[$handler->getPath()], function($a, $b) use (&$methodsOrder) { return $methodsOrder[$a] - $methodsOrder[$b]; });
             }
             ksort($paths);
 
             return $this->createResponse(200, array(
                 "openapi" => "3.0.1",
                 "info" => array("title" => "Travel Portal API", "version" => "1.0.0"),
-                "tags" => array_map(function ($tag) { return array("name" => $tag); }, $tags),
+                "tags" => array_map(function($tag) { return array("name" => $tag); }, $tags),
                 "servers" => array(array("url" => BASE_URL)),
                 "paths" => $paths,
                 "security" => array(

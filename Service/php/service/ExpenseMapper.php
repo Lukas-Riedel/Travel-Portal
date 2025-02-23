@@ -17,7 +17,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
-                ->getMappedResultSet(function ($expenseRow) {
+                ->getMappedResultSet(function($expenseRow) {
                     return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
                         $expenseRow["currency"], $expenseRow["exchange_rate"], $expenseRow["type"]);
                 });
@@ -48,7 +48,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->getMappedResultSet(function ($subscriptionRow) {
+                ->getMappedResultSet(function($subscriptionRow) {
                     return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
                         $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"]);
                 });

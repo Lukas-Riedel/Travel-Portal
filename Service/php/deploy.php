@@ -17,7 +17,7 @@
     };
 
     $migrationScriptsBasePath = dirname(__FILE__) . "/../sql/";
-    $migrationScriptFileNames = array_map(function ($path) { 
+    $migrationScriptFileNames = array_map(function($path) { 
         $tokens = explode("/", $path);
         return $tokens[count($tokens) - 1];
      }, array_filter((array) glob($migrationScriptsBasePath . "*")));

@@ -52,9 +52,9 @@
 
             // Include composite region categories.
             foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
-                if ($this->arrayAny($compositeRegion->getIncludedCategoryIds(), function ($includedCategoryId)
+                if ($this->arrayAny($compositeRegion->getIncludedCategoryIds(), function($includedCategoryId)
                         use (&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
-                    && $this->arrayEvery($compositeRegion->getExcludedCategoryIds(), function ($excludedCategoryId)
+                    && $this->arrayEvery($compositeRegion->getExcludedCategoryIds(), function($excludedCategoryId)
                         use (&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
                     $categoryIds[] = $compositeRegion->getCategoryId();
                 }

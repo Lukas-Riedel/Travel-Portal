@@ -9,7 +9,7 @@
             return $databaseProvider
                 ->statementBuilder("SELECT * FROM stay_event WHERE trip_id = ? ORDER BY start")
                 ->withParameters($tripId)
-                ->getMappedResultSet(function ($stayRow) {
+                ->getMappedResultSet(function($stayRow) {
                     return new Stay($stayRow["name"], $stayRow["address"], $stayRow["start"], $stayRow["end"]);
                 });
         }

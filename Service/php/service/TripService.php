@@ -188,7 +188,7 @@
 
             return $databaseProvider
                 ->statementBuilder("SELECT DISTINCT trip_id FROM place_candidate_event")
-                ->getMappedResultSet(function ($tripRow) use (&$includedEntities) {
+                ->getMappedResultSet(function($tripRow) use (&$includedEntities) {
                     return $this->doGetCandidateTrip($tripRow["trip_id"], $includedEntities);
                 });            
         }

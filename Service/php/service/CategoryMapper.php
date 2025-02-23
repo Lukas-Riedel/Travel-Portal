@@ -84,7 +84,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
-                ->getMappedResultSet(function ($categoryRow) use ($includedEntities) {
+                ->getMappedResultSet(function($categoryRow) use ($includedEntities) {
                     $highlights = array();
                     if (in_array(CategoryIncludedEntity::Highlights->value, $includedEntities)) {
                         $highlights = $this->highlightService->getCategoryHighlights($categoryRow["id"]);                      

@@ -68,7 +68,7 @@
         public function updateCalendarEventSummary($calendar, $eventId, $name) : bool {
             $payload = array(
                 "summary" => $name);
-            $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest(HttpMethod::PATCH, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -77,7 +77,7 @@
         public function updateCalendarEventLocation($calendar, $eventId, $location) : bool {
             $payload = array(
                 "location" => $location);
-            $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest(HttpMethod::PATCH, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -93,7 +93,7 @@
                 "end" => array(
                     "dateTime" => date(DATE_RFC3339, $end),
                     "timeZone" => $configuration["homeLocation"]["timezone"]));
-            $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $this->executeRequest(HttpMethod::PATCH, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
             return TRUE;
@@ -121,7 +121,7 @@
         public function updateAlbumName($externalId, $name) : bool {
             $payload = array(
                 "title" => $name);
-            $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/albums/" . $externalId . "?updateMask=title", array(), $payload);
+            $this->executeRequest(HttpMethod::PATCH, "https://photoslibrary.googleapis.com/v1/albums/" . $externalId . "?updateMask=title", array(), $payload);
                         
             // TODO: Return whether the album was updated.
             return TRUE;

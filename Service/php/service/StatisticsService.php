@@ -180,7 +180,7 @@
 
             return $databaseProvider
                 ->statementBuilder("SELECT name, value, unit FROM " . $statisticsType->getTableName() . " {{WHERE CLAUSE}}", $whereClause)
-                ->getMappedResultSet(function ($statisticsRow) {
+                ->getMappedResultSet(function($statisticsRow) {
                     return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], TRUE), $statisticsRow["unit"]);
                 });
         }
@@ -226,6 +226,15 @@
 
             $trips = $tripService->getTripsContainingInterval($message["start"], $message["end"]);
             foreach ($trips as &$trip) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onFlightLogged($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
                 $this->updateTripStatistics($trip);
             }
         }

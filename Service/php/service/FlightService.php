@@ -1,49 +1,61 @@
 <?php
+    require_once(dirname(__FILE__) . "/FlightMapper.php");
     require_once(dirname(__FILE__) . "/../model/Flight.php");
     require_once(dirname(__FILE__) . "/../model/Airport.php");
     require_once(dirname(__FILE__) . "/../model/AirportIdentifier.php");
 
     class FlightService {
-        public function getAirportIdentifier($code) : ?AirportIdentifier {
-            global $databaseProvider;
-            
-            $airportIdentifierRow = $databaseProvider
-                ->statementBuilder("SELECT ai.*, ci.name AS country FROM airport_identifier ai INNER JOIN category_identifier ci ON ai.country_category_id = ci.id WHERE code = ?")
-                ->withParameters($code)
-                ->getFirstRow();
 
-            if ($airportIdentifierRow === NULL) {
-                return NULL;
-            }
-            
-            return new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"], $airportIdentifierRow["country"], 
-                $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
+        private const AIRPORT_LOCATION_FORMAT = "%s Airport";
+        private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
+        private const EXPECTED_FLIGHT_STATUS = "Landed";
+
+        private readonly FlightMapper $flightMapper;
+
+        private readonly GeocodingService $geocodingService;
+
+        private readonly HttpClient $httpClient;
+
+        private readonly ConfigurationService $configurationService;
+
+        private readonly GoogleApiClient $googleApiClient;
+
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
+
+        public function __construct(DatabaseProvider $databaseProvider, GeocodingService $geocodingService, CategoryService $categoryService,
+            HttpClient $httpClient, ConfigurationService $configurationService, GoogleApiClient $googleApiClient, EventPublisher $eventPublisher,
+            Scheduler $scheduler) {
+            $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService);
+            $this->geocodingService = $geocodingService;
+            $this->httpClient = $httpClient;
+            $this->configurationService = $configurationService;
+            $this->googleApiClient = $googleApiClient;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
+        }
+
+        public function getAirportIdentifier(string $code) : ?AirportIdentifier {
+            return $this->flightMapper->selectAirportIdentifier($code);
         }
         
-        public function getOrCreateAirportIdentifier($code) : AirportIdentifier {
-            global $databaseProvider, $geocodingService, $categoryService;
-
-            $airportIdentifier = $this->getAirportIdentifier($code);
+        public function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {
+            $airportIdentifier = $this->flightMapper->selectAirportIdentifier($code);
             if ($airportIdentifier !== NULL) {
                 return $airportIdentifier;
             }
             
-            $location = $geocodingService->getLocation($code . " Airport");
-            
-            $databaseProvider
-                ->statementBuilder("INSERT INTO airport_identifier (code, latitude, longitude, country_category_id, timezone) VALUES (?, ?, ?, ?, ?)")
-                ->withParameters($code, $location->getLatitude(), $location->getLongitude(),
-                    $categoryService->getOrCreateCountryCategoryIdentifier($location->getCountry())->getId(), $location->getTimezone())
-                ->execute();
+            $location = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $code));
+            $airportIdentifier = new AirportIdentifier(NULL, $code, $location->getCountry(), $location->getLatitude(),
+                $location->getLongitude(), $location->getTimezone());                
+            $this->flightMapper->insertAirportIdentifier($airportIdentifier);
 
-            return $this->getAirportIdentifier($code);
+            return $airportIdentifier;
         }
 
-        public function fetchAndLogFlight($flight, $tripId, $originAirportName, $destinationAirportName, $scheduledDeparture) : Flight {
-            global $httpClient;
-
+        public function fetchAndLogFlight(string $flight, string $tripId, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
             date_default_timezone_set("UTC");
-            $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=" . $flight);
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
 
             $selectedFlight = NULL;
             foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
@@ -57,89 +69,59 @@
                 throw new RuntimeException("Cannot log the flight " . $flight . " departing at " . $scheduledDeparture . ". Is the departure time correct?");
             }
             
-            if (!str_starts_with($selectedFlight["status"]["text"], "Landed")) {
-                throw new RuntimeException("Cannot log the flight " . $flight . " because its status is \"" . $selectedFlight["status"]["text"] . "\" (shall be \"Landed\").");
+            if (!str_starts_with($selectedFlight["status"]["text"], self::EXPECTED_FLIGHT_STATUS)) {
+                throw new RuntimeException("Cannot log the flight " . $flight . " because its status is \"" . $selectedFlight["status"]["text"] . "\" (shall be \"" . self::EXPECTED_FLIGHT_STATUS . "\").");
             }
 
             return $this->logFlight($flight, $tripId, $originAirportName, $selectedFlight["airport"]["origin"]["code"]["iata"], $destinationAirportName,
-                $selectedFlight["airport"]["destination"]["code"]["iata"], $selectedFlight["time"]["scheduled"]["departure"], $selectedFlight["time"]["real"]["departure"],
-                $selectedFlight["time"]["scheduled"]["arrival"], $selectedFlight["time"]["real"]["arrival"], $selectedFlight["aircraft"]["registration"], $selectedFlight["aircraft"]["model"]["code"]);
+                $selectedFlight["airport"]["destination"]["code"]["iata"], intval($selectedFlight["time"]["scheduled"]["departure"]), intval($selectedFlight["time"]["real"]["departure"]),
+                intval($selectedFlight["time"]["scheduled"]["arrival"]), intval($selectedFlight["time"]["real"]["arrival"]), $selectedFlight["aircraft"]["registration"], $selectedFlight["aircraft"]["model"]["code"]);
         }
 
-        public function logFlight($flight, $tripId, $originAirportName, $originAirportCode, $destinationAirportName, $destinationAirportCode,
-            $scheduledDeparture, $actualDeparture, $scheduledArrival, $actualArrival, $registration, $aircraft) : Flight {
-            global $databaseProvider, $eventPublisher, $geocodingService;
-            
+        public function logFlight(string $flight, string $tripId, string $originAirportName, string $originAirportCode, string $destinationAirportName, string $destinationAirportCode,
+            int $scheduledDeparture, int $actualDeparture, int $scheduledArrival, int $actualArrival, string $registration, string $aircraft) : Flight {            
             $originAirportIdentifier = $this->getOrCreateAirportIdentifier($originAirportCode);
             $destinationAirportIdentifier = $this->getOrCreateAirportIdentifier($destinationAirportCode);
-
-            $databaseProvider
-                ->statementBuilder("DELETE FROM flight_log WHERE flight = ? AND actual_departure = ? AND actual_arrival = ?")
-                ->withParameters($flight, $actualDeparture, $actualArrival)
-                ->execute();
-
-            $databaseProvider
-                ->statementBuilder("INSERT INTO flight_log (flight, registration, aircraft, from_airport_id, to_airport_id, scheduled_departure, actual_departure, scheduled_arrival, actual_arrival) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                ->withParameters($flight, $registration, $aircraft, $originAirportIdentifier->getId(), $destinationAirportIdentifier->getId(), $scheduledDeparture, $actualDeparture, $scheduledArrival, $actualArrival)
-                ->execute();
-
-            if ($tripId !== NULL) {
-                $eventPublisher->publishTripStatisticsChangedEvent($tripId);
-            }
 
             $from = new Airport($originAirportIdentifier->getId(), $originAirportName, $originAirportIdentifier->getCode(), $originAirportIdentifier->getCountry(), 
                 $originAirportIdentifier->getLatitude(), $originAirportIdentifier->getLongitude(), $originAirportIdentifier->getTimezone());
             $to = new Airport($destinationAirportIdentifier->getId(), $destinationAirportName, $destinationAirportIdentifier->getCode(), $destinationAirportIdentifier->getCountry(),
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude(), $destinationAirportIdentifier->getTimezone());
-
-            $distance = $geocodingService->getDistance($originAirportIdentifier->getLatitude(), $originAirportIdentifier->getLongitude(), $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
+            $distance = $this->geocodingService->getDistance($originAirportIdentifier->getLatitude(), $originAirportIdentifier->getLongitude(),
+                $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
                 
-            return new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival);
+
+            $this->flightMapper->deleteLoggedFlight($flight, $actualDeparture, $actualArrival);
+            $result = new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival);
+            $this->flightMapper->insertFlight($result, $scheduledDeparture, $scheduledArrival);
+
+            $this->eventPublisher->publishFlightLoggedEvent($tripId);
+
+            return $result;
         }
 
-        public function createFlight($flight, $originAirportName, $destinationAirportName, $scheduledDeparture, $scheduledArrival) : Flight {
-            global $googleApiClient;
-
-            $eventName = $originAirportName . " - " . $destinationAirportName . " (" . substr($flight, 0, 2) . " " . substr($flight, 2) . ")";
-            $googleApiClient->createCalendarEvent("flights", $eventName, NULL, $scheduledDeparture, $scheduledArrival);
+        public function createFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
+            $this->googleApiClient->createCalendarEvent(FlightType::Scheduled->getCalendarName(),
+                $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), NULL, $scheduledDeparture, $scheduledArrival);
             
             $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
             $to = new Airport(NULL, $destinationAirportName, NULL, NULL, NULL, NULL, NULL);
             return new Flight($flight, NULL, NULL, NULL, $from, $to, $scheduledDeparture, $scheduledArrival);
         }
 
-        public function getLoggedFlights() : array {
-            global $databaseProvider, $geocodingService;
-        
-            $loggedFlights = array();
-
-            $loggedFlightRows = $databaseProvider
-                ->statementBuilder("SELECT f.*, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fci.name AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tci.name AS to_airport_country, tai.timezone AS to_airport_timezone, l.* FROM flight_log l LEFT JOIN airport_identifier fai ON l.from_airport_id = fai.id LEFT JOIN category_identifier fci ON fai.country_category_id = fci.id LEFT JOIN airport_identifier tai ON l.to_airport_id = tai.id LEFT JOIN category_identifier tci ON tai.country_category_id = tci.id LEFT JOIN flight_event f ON l.scheduled_departure = f.start ORDER BY actual_departure DESC")
-                ->getResultSet();
-                
-            foreach ($loggedFlightRows as &$loggedFlightRow) {
-                $distance = $geocodingService->getDistance($loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"], $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"]);
-                
-                $from = new Airport($loggedFlightRow["from_airport_id"], $loggedFlightRow["from"], $loggedFlightRow["from_airport_code"], $loggedFlightRow["from_airport_country"], 
-                    $loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"], $loggedFlightRow["from_airport_timezone"]);
-                $to = new Airport($loggedFlightRow["to_airport_id"], $loggedFlightRow["to"], $loggedFlightRow["to_airport_code"], $loggedFlightRow["to_airport_country"], 
-                    $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"], $loggedFlightRow["to_airport_timezone"]);
-
-                $loggedFlights[] = new Flight($loggedFlightRow["flight"], $loggedFlightRow["registration"], $loggedFlightRow["aircraft"], $distance, $from, $to, $loggedFlightRow["actual_departure"], $loggedFlightRow["actual_arrival"]);
-            }
-
-            return $loggedFlights;
+        public function getLoggedFlights() : array {        
+            return $this->flightMapper->selectAllLoggedFlights();
         }
 
-        public function getFlightsForTrip($tripId) : array {
+        public function getFlightsForTrip(string $tripId) : array {
             return $this->doGetFlightsForTrip(FlightType::Scheduled, $tripId);
         }
 
-        public function getWatchedFlightsForTrip($tripId) : array {
+        public function getWatchedFlightsForTrip(string $tripId) : array {
             return $this->doGetFlightsForTrip(FlightType::Watched, $tripId);
         }
 
-        private function doGetFlightsForTrip($flightType, $tripId) : array {            
+        private function doGetFlightsForTrip(FlightType $flightType, string $tripId) : array {            
             global $databaseProvider, $geocodingService;
 
             $flightRows = $databaseProvider
@@ -163,6 +145,10 @@
             }
     
             return $result;
+        }
+
+        private function getFlightEventName(string $flight, string $originAirportName, string $destinationAirportName) : string {
+            return $originAirportName . " - " . $destinationAirportName . " (" . substr($flight, 0, 2) . " " . substr($flight, 2) . ")";
         }
 
         public function refreshCalendar() : void {

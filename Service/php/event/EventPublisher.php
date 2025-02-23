@@ -101,6 +101,10 @@
             $this->publishEvent(Event::SchedulerTriggered, array("action" => $action, "timeSinceLastExecution" => $timeSinceLastExecution));
         }
 
+        public function publishFlightLoggedEvent($tripId) : void {
+            $this->publishEvent(Event::FlightLogged, array("tripId" => $tripId));
+        }
+
         public function publishFlightArrivedEvent($flight, $tripId, $from, $to, $scheduledDeparture) : void {
             $this->publishEvent(Event::FlightArrived, array("flight" => $flight, "tripId" => $tripId, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
         }
@@ -149,7 +153,8 @@
         case ExpenseRemoved = 19;
         case PlaceUpdated = 20;
         case FitnessDataUpdated = 21;
-        case StatisticsChanged = 22;
+        case FlightLogged = 22;
+        case StatisticsChanged = 23;
 
         case FitnessActivityDetected = 100;
 

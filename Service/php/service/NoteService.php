@@ -31,7 +31,7 @@
             return $databaseProvider
                 ->statementBuilder("SELECT id, content FROM note WHERE trip_id = ?")
                 ->withParameters($tripId)
-                ->getMappedResultSet(function ($noteRow) {
+                ->getMappedResultSet(function($noteRow) {
                     return new Note($noteRow["id"], $noteRow["content"]);
                 });
         }
