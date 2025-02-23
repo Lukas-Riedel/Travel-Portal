@@ -93,6 +93,10 @@
             $this->publishEvent(Event::CalendarWatchRenewing, array("calendar" => $calendar, "watchId" => $watchId));
         }
 
+        public function publishFitnessDataUpdatedEvent($start, $end) : void {
+            $this->publishEvent(Event::FitnessDataUpdated, array("start" => $start, "end" => $end));
+        }
+
         public function publishSchedulerTriggeredEvent($action, $timeSinceLastExecution) : void {
             $this->publishEvent(Event::SchedulerTriggered, array("action" => $action, "timeSinceLastExecution" => $timeSinceLastExecution));
         }
@@ -144,7 +148,8 @@
         case ExpenseUpdated = 18;
         case ExpenseRemoved = 19;
         case PlaceUpdated = 20;
-        case StatisticsChanged = 21;
+        case FitnessDataUpdated = 21;
+        case StatisticsChanged = 22;
 
         case FitnessActivityDetected = 100;
 

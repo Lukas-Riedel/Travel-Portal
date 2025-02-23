@@ -49,7 +49,7 @@ function getCalendarDatesForTrip(trip, places, isLoggedIn) {
             title: getDayOfWeek(convertedDate) + " " + getDateString(convertedDate),
             calendar: getCalendarEntry(calendar[date], isLoggedIn ? getPlaceButtonsForTripEntry : undefined, undefined),
             weather: getForecastEntry(calendar[date].map(place => place.weather).filter(weather => weather != null), calendar[date].map(place => place.sun).filter(sun => sun != null)),
-            fitness: getFitnessEntry(trip.fitness[dates.indexOf(date)], trip.fitness)
+            fitness: convertedDate.getTime() / 1000 < now ? getFitnessEntry(trip.fitness[dates.indexOf(date)], trip.fitness) : ""
         };
     });    
 }

@@ -221,6 +221,15 @@
             }
         }
 
+        public function onFitnessDataUpdated($message) {
+            global $tripService;
+
+            $trips = $tripService->getTripsContainingInterval($message["start"], $message["end"]);
+            foreach ($trips as &$trip) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
         public function onStatisticsChanged($message) {
             global $categoryService, $tripService;
 

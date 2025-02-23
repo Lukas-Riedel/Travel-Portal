@@ -44,7 +44,6 @@
     $configurationService = new ConfigurationService();
     $flightService = new FlightService();
     $timeTrackingService = new TimeTrackingService();
-    $fitnessService = new FitnessService();
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
@@ -60,6 +59,7 @@
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
+    $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
 
     $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,

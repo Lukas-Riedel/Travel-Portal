@@ -19,6 +19,17 @@
             return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
         }
 
+        public function getTripsContainingInterval($start, $end) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT DISTINCT trip_id FROM trip_summary WHERE start <= ? AND end >= ?")
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($tripRow) {
+                    return $this->getRegularTrip($tripRow["trip_id"]);
+                });
+        }
+
         public function getOrCreateTripIdentifierForEntity($start, $end) : TripIdentifier {
             $regularTripIdentifier = $this->getTripIdentifierForEntity($start, $end);
             if ($regularTripIdentifier !== NULL) {
@@ -92,7 +103,23 @@
 
                 $fitness = array();
                 if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
-                    $fitness = $fitnessService->getFitnessRecordsForTrip($tripRow["trip_id"]);              
+                    $startOfDays = array();
+
+                    $tripPlaces = $placeService->getRegularPlaces(NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL, array());
+                    foreach ($tripPlaces as &$tripPlace) {
+                        foreach ($tripPlace->getDates() as &$date) {
+                            // TODO: Calculate start of days based on the timezone of the client (i.e., an extra GET parameter with timezone).
+                            $startOfDay = $date->getStart() - ($date->getStart() % 86400);
+                            if (!in_array($startOfDay, $startOfDays)) {
+                                $startOfDays[] = $startOfDay;
+                            }
+                        }
+                    }
+                    sort($startOfDays);
+
+                    foreach ($startOfDays as &$startOfDay) {
+                        $fitness[] = $fitnessService->getFitnessRecordForDay($startOfDay);
+                    }
                 }
 
                 $notes = array();

@@ -450,7 +450,7 @@
         public function movePlaces($tripId, $offset) : array {
             global $configuration, $googleApiClient;
 
-            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, NULL, TRUE, TRUE, TRUE);
+            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, NULL, array());
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -481,7 +481,7 @@
         public function archivePlaces($tripId, $tripStart, $archivedTripId) : array {
             global $configuration, $databaseProvider, $googleApiClient;
 
-            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
+            $places = $this->getRegularPlaces(NULL, $tripId, NULL, NULL, NULL, NULL, array());
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
