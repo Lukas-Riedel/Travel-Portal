@@ -4,13 +4,14 @@
     use ICal\ICal;
 
     class CalendarClient {
-        public function watchCalendar($calendar, $watchId) : void {
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
+        public function watchCalendar(string $calendar) : void {
             global $configuration, $googleApiClient, $authenticationService;
 
             $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
 
-            $googleApiClient->watchCalendar($calendar, $watchId, 
-                BASE_URL . "/events?name=CalendarChanged&args[watchId]=" . $watchId . "&args[calendar]=" . $calendar,
+            $googleApiClient->watchCalendar($calendar, 
+                BASE_URL . "/events?name=" . Event::CalendarChanged->name . "&args[calendar]=" . $calendar,
                 "Bearer " . $authenticationResult->getAccessToken());
         }
 
@@ -68,5 +69,13 @@
 
             return $attributes;
         }
+    }
+
+    enum Calendar : string {
+        case Trips = "trips";
+        case Places = "places";
+        case Stays = "stays";
+        case Flights = "flights";
+        case WatchedFlights = "watchedFlights";
     }
 ?>

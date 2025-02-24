@@ -465,7 +465,7 @@
         public function loadPlaces($candidateTripId, $startOffset) : array {
             global $googleApiClient;
 
-            $places = $this->doGetCandidatePlacesForTrip(NULL, $candidateTripId, TRUE, TRUE, TRUE);
+            $places = $this->doGetCandidatePlacesForTrip(NULL, $candidateTripId, array());
 
             foreach ($places as &$place) {
                 $address = $place->getName() . ", " . $place->getCountry() . " (" . $place->getLatitude() . ", " . $place->getLongitude() . ")";
@@ -494,7 +494,7 @@
                 }
             }
             
-            return $this->doGetCandidatePlacesForTrip(NULL, $archivedTripId, TRUE, TRUE, TRUE);
+            return $this->doGetCandidatePlacesForTrip(NULL, $archivedTripId, array());
         }
 
         public function createPermanentPlace($name, $address) : Place {
@@ -707,7 +707,7 @@
         public function onCalendarChanged($message) {
             global $configuration;
 
-            if ($message["calendar"] === "places" && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+            if ($message["calendar"] === "places") {
                 $this->refreshCalendar();
             }
         }
@@ -716,7 +716,7 @@
             global $calendarClient;
 
             if ($message["calendar"] === "places") {
-                $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
+                $calendarClient->watchCalendar($message["calendar"]);
             }
         }
 

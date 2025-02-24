@@ -461,12 +461,12 @@
             global $configuration, $placeService, $stayService, $flightService;
 
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
-            if ($message["calendar"] === "trips" && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+            if ($message["calendar"] === "trips") {
                 $this->deleteAllDayTripsTrips();
                 $this->refreshCalendar();
                 $placeService->refreshCalendar();
                 $stayService->refreshCalendar();
-                $flightService->refreshCalendar();
+                $flightService->refreshCalendar($this);
             }
         }
         
@@ -474,7 +474,7 @@
             global $calendarClient;
 
             if ($message["calendar"] === "trips") {
-                $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
+                $calendarClient->watchCalendar($message["calendar"]);
             }
         }
     }

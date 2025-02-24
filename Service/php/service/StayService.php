@@ -62,7 +62,7 @@
         public function onCalendarChanged($message) {
             global $configuration;
 
-            if ($message["calendar"] === "stays" && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
+            if ($message["calendar"] === "stays") {
                 $this->refreshCalendar();
             }
         }
@@ -71,7 +71,7 @@
             global $calendarClient;
 
             if ($message["calendar"] === "stays") {
-                $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
+                $calendarClient->watchCalendar($message["calendar"]);
             }
         }
     }

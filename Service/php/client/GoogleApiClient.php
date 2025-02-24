@@ -130,7 +130,7 @@
         public function updateAlbumMainPhoto($externalAlbumId, $externalPhotoId) : bool {
             $payload = array(
                 "coverPhotoMediaItemId" => $externalPhotoId);
-            $this->executeRequest(HttpMethod::GET, "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", array(), $payload);
+            $this->executeRequest(HttpMethod::PATCH, "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", array(), $payload);
                         
             // TODO: Return whether the album was updated.
             return TRUE;

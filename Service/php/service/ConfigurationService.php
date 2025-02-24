@@ -12,6 +12,11 @@
 
         public function getBaseUrl() : string {
             return BASE_URL;
+        }        
+
+        public function onFlightLogged($message) {
+            $airlineCode = substr($message["flight"], 0, 2);
+            $this->addConfigurationEntryIfNotExists("AIRLINES", array("public", "modifiable"), $airlineCode, $airlineCode);
         }
 
         // TODO
@@ -55,15 +60,6 @@
             return $key == NULL 
                 ? array($this->convertTypeName($type) => $configurationEntryRow["value"])
                 : array($this->convertTypeName($type) => array($key => $configurationEntryRow["value"]));
-        }
-
-        public function updateGoogleCalendarWatchId($watchId) : void {
-            global $databaseProvider;
-
-            $databaseProvider
-                ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_CALENDAR_API' AND `key` = 'watchId'")
-                ->withParameters($watchId)
-                ->execute();
         }
 
         public function addConfigurationEntryIfNotExists($type, $levels, $key, $value) : void {

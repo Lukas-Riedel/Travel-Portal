@@ -54,7 +54,6 @@
                 $timestampsToUpdate = $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate();
 
                 foreach ($timestampsToUpdate as &$timestampToUpdate) {
-                    // TODO: Rename the event to something more descriptive.
                     $this->eventPublisher->publishFitnessActivityDetectedEvent($timestampToUpdate, $timestampToUpdate + $fitnessRecordDuration);
                 }
                         

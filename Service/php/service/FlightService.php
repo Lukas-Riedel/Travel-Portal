@@ -6,9 +6,14 @@
 
     class FlightService {
 
+        private const LOG_FLIGHTS_ACTION_NAME = "LOG_FLIGHTS";
+        private const LOG_FLIGHTS_INTERVAL_FOR_DELAYED_FLIGHTS = 14400;
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
         private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
         private const EXPECTED_FLIGHT_STATUS = "Landed";
+        private const FLIGHT_EVENT_NAME_FORMAT = "%s - %s (%s %s)";
+        private const FLIGHT_EVENT_NAME_PATTERN = "{(.+) - (.+) \((.+)\)}";
+        private const OLD_FLIGHT_EVENT_TEMPORARY_TABLE = "old_flight_event";
 
         private readonly FlightMapper $flightMapper;
 
@@ -16,7 +21,7 @@
 
         private readonly HttpClient $httpClient;
 
-        private readonly ConfigurationService $configurationService;
+        private readonly CalendarClient $calendarClient;
 
         private readonly GoogleApiClient $googleApiClient;
 
@@ -24,12 +29,12 @@
         private readonly Scheduler $scheduler;
 
         public function __construct(DatabaseProvider $databaseProvider, GeocodingService $geocodingService, CategoryService $categoryService,
-            HttpClient $httpClient, ConfigurationService $configurationService, GoogleApiClient $googleApiClient, EventPublisher $eventPublisher,
+            HttpClient $httpClient, CalendarClient $calendarClient, GoogleApiClient $googleApiClient, EventPublisher $eventPublisher,
             Scheduler $scheduler) {
             $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
             $this->httpClient = $httpClient;
-            $this->configurationService = $configurationService;
+            $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -95,13 +100,13 @@
             $result = new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival);
             $this->flightMapper->insertFlight($result, $scheduledDeparture, $scheduledArrival);
 
-            $this->eventPublisher->publishFlightLoggedEvent($tripId);
+            $this->eventPublisher->publishFlightLoggedEvent($flight, $tripId);
 
             return $result;
         }
 
         public function createFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
-            $this->googleApiClient->createCalendarEvent(FlightType::Scheduled->getCalendarName(),
+            $this->googleApiClient->createCalendarEvent(FlightType::Scheduled->getCalendar(),
                 $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), NULL, $scheduledDeparture, $scheduledArrival);
             
             $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
@@ -114,124 +119,75 @@
         }
 
         public function getFlightsForTrip(string $tripId) : array {
-            return $this->doGetFlightsForTrip(FlightType::Scheduled, $tripId);
+            return $this->flightMapper->selectFlightsForTrip(FlightType::Scheduled, $tripId);
         }
 
         public function getWatchedFlightsForTrip(string $tripId) : array {
-            return $this->doGetFlightsForTrip(FlightType::Watched, $tripId);
+            return $this->flightMapper->selectFlightsForTrip(FlightType::Watched, $tripId);
         }
 
-        private function doGetFlightsForTrip(FlightType $flightType, string $tripId) : array {            
-            global $databaseProvider, $geocodingService;
+        public function refreshCalendar(TripService $tripService) : void {
+            $this->flightMapper->createFlightEventTemporaryTable(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
 
-            $flightRows = $databaseProvider
-                ->statementBuilder("SELECT fe.flight, fe.from, fe.to, COALESCE(fl.actual_departure, fe.start) AS start, COALESCE(fl.actual_arrival, fe.end) AS end, fl.registration, fl.aircraft, fl.from_airport_id, fl.to_airport_id, fai.code AS from_airport_code, fai.latitude AS from_airport_latitude, fai.longitude AS from_airport_longitude, fci.name AS from_airport_country, fai.timezone AS from_airport_timezone, tai.code AS to_airport_code, tai.latitude AS to_airport_latitude, tai.longitude AS to_airport_longitude, tci.name AS to_airport_country, tai.timezone AS to_airport_timezone FROM " . $flightType->getTableName() . " fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure LEFT JOIN airport_identifier fai ON fl.from_airport_id = fai.id LEFT JOIN category_identifier fci ON fai.country_category_id = fci.id LEFT JOIN airport_identifier tai ON fl.to_airport_id = tai.id LEFT JOIN category_identifier tci ON tai.country_category_id = tci.id WHERE fe.trip_id = ? ORDER BY start")
-                ->withParameters($tripId)
-                ->getResultSet();
+            $this->doRefreshCalendar(FlightType::Scheduled, $tripService);
+            $this->doRefreshCalendar(FlightType::Watched, $tripService);
 
-            $result = array();
-            
-            foreach ($flightRows as &$flightRow) {
-                $distance = NULL;
-                if ($flightRow["from_airport_latitude"] != NULL && $flightRow["from_airport_longitude"] != NULL && $flightRow["to_airport_latitude"] != NULL && $flightRow["to_airport_longitude"] != NULL) {
-                    $distance = $geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
-                }
-                $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], $flightRow["from_airport_country"], 
-                    $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
-                $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"], $flightRow["to_airport_country"], 
-                    $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
-
-                $result[] = new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $distance, $from, $to, $flightRow["start"], $flightRow["end"]);
+            $affectedTripIds = $this->flightMapper->selectTripIdsForCreatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishFlightEventCreatedEvent($affectedTripId);
             }
-    
-            return $result;
-        }
-
-        private function getFlightEventName(string $flight, string $originAirportName, string $destinationAirportName) : string {
-            return $originAirportName . " - " . $destinationAirportName . " (" . substr($flight, 0, 2) . " " . substr($flight, 2) . ")";
-        }
-
-        public function refreshCalendar() : void {
-            global $databaseProvider, $eventPublisher, $configurationService;
             
-            $databaseProvider
-                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_flight_event")
-                ->execute();
-            
-            $databaseProvider
-                ->statementBuilder("CREATE TEMPORARY TABLE old_flight_event AS SELECT * FROM flight_event")
-                ->execute();
-
-            $this->doRefreshCalendar(FlightType::Scheduled);
-            $this->doRefreshCalendar(FlightType::Watched);
-
-            // Process new and renamed flights.
-            $newFlightRows = $databaseProvider
-                ->statementBuilder("SELECT nf.trip_id FROM flight_event nf LEFT JOIN old_flight_event of ON of.id = nf.id WHERE of.flight IS NULL")
-                ->getResultSet();
-            
-            foreach ($newFlightRows as &$newFlightRow) {
-                $eventPublisher->publishTripStatisticsChangedEvent($newFlightRow["trip_id"]);
+            $affectedTripIds = $this->flightMapper->selectTripIdsForUpdatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishFlightEventUpdatedEvent($affectedTripId);
             }
-
-            // Add unknown operators to the configuration.
-            $unknownOperators = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT SUBSTR(flight, 1, 2) AS code FROM (SELECT flight FROM flight_event UNION SELECT flight FROM flight_watched_event) f")
-                ->getResultSetForColumn("code");
-
-            foreach ($unknownOperators as &$unknownOperator) {
-                $configurationService->addConfigurationEntryIfNotExists("AIRLINES", array("public", "modifiable"), $unknownOperator, $unknownOperator);
-            }
-
-            // Process removed flights.
-            $removedFlightRows = $databaseProvider
-                ->statementBuilder("SELECT of.trip_id FROM old_flight_event of LEFT JOIN flight_event nf ON of.id = nf.id WHERE nf.id IS NULL")
-                ->getResultSet();
-
-            foreach ($removedFlightRows as &$removedFlightRow) {
-                if ($removedFlightRow["trip_id"] != NULL) {
-                    $eventPublisher->publishTripStatisticsChangedEvent($removedFlightRow["trip_id"]);
-                }
+            
+            $affectedTripIds = $this->flightMapper->selectTripIdsForDeletedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishFlightEventDeletedEvent($affectedTripId);
             }
         }
         
-        public function doRefreshCalendar($flightType) : void {
-            global $databaseProvider, $calendarClient, $tripService;
-            
-            $databaseProvider
-                ->statementBuilder("DELETE FROM " . $flightType->getTableName())
-                ->execute();
+        private function doRefreshCalendar(FlightType $flightType, TripService $tripService) : void {        
+            $this->flightMapper->deleteAllFlightEvents($flightType);
 
-            foreach ($calendarClient->getEvents($flightType->getCalendarName()) as &$flightEvent) {
-                preg_match("{(.+) - (.+) \((.+)\)}", $flightEvent->getSummary(), $tokens);
-                
-                $from = $tokens[1];
-                $to = $tokens[2];
-                $flight = str_replace(" ", "", $tokens[3]);
-                
+            $flightEvents = $this->calendarClient->getEvents($flightType->getCalendar()->value);
+            foreach ($flightEvents as &$flightEvent) {
+                $parsedFlightEventName = $this->parseFlightEventName($flightEvent->getSummary());                
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($flightEvent->getStart(), $flightEvent->getEnd());
 
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO " . $flightType->getTableName() . " (id, flight, trip_id, start, end, `from`, `to`) VALUES (?, ?, ?, ?, ?, ?, ?)")
-                    ->withParameters($flightEvent->getId(), $flight, $resolvedTripIdentifier->getId(), $flightEvent->getStart(), $flightEvent->getEnd(), $from, $to)
-                    ->execute();
+                $from = new Airport(NULL, $parsedFlightEventName["from"], NULL, NULL, NULL, NULL, NULL);
+                $to = new Airport(NULL, $parsedFlightEventName["to"], NULL, NULL, NULL, NULL, NULL);
+                $flight = new Flight($parsedFlightEventName["flight"], NULL, NULL, NULL, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd());
+
+                $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());
             }            
         }
 
-        public function onCalendarChanged($message) {
-            global $configuration;
+        private function getFlightEventName(string $flight, string $originAirportName, string $destinationAirportName) : string {
+            return sprintf(self::FLIGHT_EVENT_NAME_FORMAT, $originAirportName, $destinationAirportName, substr($flight, 0, 2), substr($flight, 2));
+        }
 
-            if (($message["calendar"] === "flights" || $message["calendar"] === "watchedFlights")
-                && $message["watchId"] === $configuration["googleCalendarApi"]["watchId"]) {
-                $this->refreshCalendar();
+        private function parseFlightEventName(string $flightEventName) : mixed {
+            preg_match(self::FLIGHT_EVENT_NAME_PATTERN, $flightEventName, $tokens);
+            return array(
+                "from" => $tokens[1],
+                "to" => $tokens[2],
+                "flight" => str_replace(" ", "", $tokens[3]));
+        }
+
+        public function onCalendarChanged($message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
+
+            if ($message["calendar"] === Calendar::Flights->value || $message["calendar"] === Calendar::WatchedFlights->value) {
+                $this->refreshCalendar($tripService);
             }
         }
 
-        public function onCalendarWatchRenewing($message) {
-            global $calendarClient;
-
-            if ($message["calendar"] === "flights" || $message["calendar"] === "watchedFlights") {
-                $calendarClient->watchCalendar($message["calendar"], $message["watchId"]);
+        public function onCalendarWatchRenewing($message) : void {
+            if ($message["calendar"] === Calendar::Flights->value || $message["calendar"] === Calendar::WatchedFlights->value) {
+                $this->calendarClient->watchCalendar($message["calendar"]);
             }
         }
 
@@ -240,24 +196,20 @@
         }
 
         public function onSchedulerTriggered($message) : void {
-            global $eventPublisher, $scheduler, $databaseProvider;
+            if ($message["action"] === self::LOG_FLIGHTS_ACTION_NAME) {
+                $firstNonLoggedFlight = $this->flightMapper->selectFirstNonLoggedFlight();
+                if ($firstNonLoggedFlight === NULL) {
+                    return;
+                }
 
-            if ($message["action"] === "LOG_FLIGHTS") {
-                $interval = $databaseProvider
-                    ->statementBuilder("SELECT IF((SELECT end FROM flight_event fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure WHERE fl.actual_arrival IS NULL ORDER BY fe.end ASC LIMIT 1) < UNIX_TIMESTAMP() - ?, 14400, (SELECT ? + end + (SELECT AVG(actual_arrival - scheduled_arrival) FROM flight_log WHERE scheduled_arrival > UNIX_TIMESTAMP() - 365 * 86400 AND actual_arrival - scheduled_arrival > 0) - UNIX_TIMESTAMP() FROM flight_event fe LEFT JOIN flight_log fl ON fe.flight = fl.flight AND fe.start = fl.scheduled_departure WHERE fl.actual_arrival IS NULL ORDER BY fe.end ASC LIMIT 1)) AS scheduler_interval")
-                    ->withParameters($message["timeSinceLastExecution"], $message["timeSinceLastExecution"])
-                    ->getSingleColumn("scheduler_interval");
+                $loggingInterval = $firstNonLoggedFlight->getEnd() < time() - $message["timeSinceLastExecution"]
+                    ? self::LOG_FLIGHTS_INTERVAL_FOR_DELAYED_FLIGHTS // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
+                    : $message["timeSinceLastExecution"] + $firstNonLoggedFlight->getEnd() + $this->flightMapper->selectAverageDelay() - time();
 
-                if ($message["timeSinceLastExecution"] > $interval) {
-                    $argsList = $databaseProvider
-                        ->statementBuilder("SELECT f.start AS scheduledDeparture, f.flight AS flight, f.`from` AS `from`, f.`to` AS `to`, f.trip_id AS tripId FROM flight_event f LEFT JOIN flight_log lf ON f.flight = lf.flight AND f.start = lf.scheduled_departure WHERE lf.flight IS NULL AND end < UNIX_TIMESTAMP()")
-                        ->getResultSet();
-
-                    foreach ($argsList as &$args) {
-                        $eventPublisher->publishFlightArrivedEvent($args["flight"], $args["tripId"], $args["from"], $args["to"], $args["scheduledDeparture"]);
-                    }
-                    
-                    $scheduler->recordEventsTriggered($message["action"]);
+                if ($message["timeSinceLastExecution"] > $loggingInterval) {
+                    $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $this->flightMapper->selectTripIdForFlight($firstNonLoggedFlight),
+                        $firstNonLoggedFlight->getFrom()->getName(), $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
+                    $this->scheduler->recordEventsTriggered(self::LOG_FLIGHTS_ACTION_NAME);
                 }
             }
         }
@@ -274,10 +226,10 @@
             };
         }
 
-        public function getCalendarName() : string {
+        public function getCalendar() : Calendar {
             return match ($this) {
-                self::Scheduled => "flights",
-                self::Watched => "watchedFlights"
+                self::Scheduled => Calendar::Flights,
+                self::Watched => Calendar::WatchedFlights
             };
         }
     }

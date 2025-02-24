@@ -85,12 +85,24 @@
             $this->publishEvent(Event::ApplicationStarted, array("tables" => $tables));
         }
         
-        public function publishCalendarChangedEvent($calendar, $watchId) : void {
-            $this->publishEvent(Event::CalendarChanged, array("calendar" => $calendar, "watchId" => $watchId));
+        public function publishFlightEventCreatedEvent($tripId) : void {
+            $this->publishEvent(Event::FlightEventCreated, array("tripId" => $tripId));
         }
         
-        public function publishCalendarWatchRenewingEvent($calendar, $watchId) : void {
-            $this->publishEvent(Event::CalendarWatchRenewing, array("calendar" => $calendar, "watchId" => $watchId));
+        public function publishFlightEventUpdatedEvent($tripId) : void {
+            $this->publishEvent(Event::FlightEventUpdated, array("tripId" => $tripId));
+        }
+        
+        public function publishFlightEventDeletedEvent($tripId) : void {
+            $this->publishEvent(Event::FlightEventDeleted, array("tripId" => $tripId));
+        }
+        
+        public function publishCalendarChangedEvent($calendar) : void {
+            $this->publishEvent(Event::CalendarChanged, array("calendar" => $calendar));
+        }
+        
+        public function publishCalendarWatchRenewingEvent($calendar) : void {
+            $this->publishEvent(Event::CalendarWatchRenewing, array("calendar" => $calendar));
         }
 
         public function publishFitnessDataUpdatedEvent($start, $end) : void {
@@ -101,8 +113,8 @@
             $this->publishEvent(Event::SchedulerTriggered, array("action" => $action, "timeSinceLastExecution" => $timeSinceLastExecution));
         }
 
-        public function publishFlightLoggedEvent($tripId) : void {
-            $this->publishEvent(Event::FlightLogged, array("tripId" => $tripId));
+        public function publishFlightLoggedEvent($flight, $tripId) : void {
+            $this->publishEvent(Event::FlightLogged, array("flight" => $flight, "tripId" => $tripId));
         }
 
         public function publishFlightArrivedEvent($flight, $tripId, $from, $to, $scheduledDeparture) : void {
@@ -154,7 +166,10 @@
         case PlaceUpdated = 20;
         case FitnessDataUpdated = 21;
         case FlightLogged = 22;
-        case StatisticsChanged = 23;
+        case FlightEventCreated = 23;
+        case FlightEventUpdated = 24;
+        case FlightEventDeleted = 25;
+        case StatisticsChanged = 26;
 
         case FitnessActivityDetected = 100;
 

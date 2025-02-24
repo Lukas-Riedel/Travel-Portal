@@ -239,6 +239,33 @@
             }
         }
 
+        public function onFlightEventCreated($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onFlightEventUpdated($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onFlightEventDeleted($message) {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
         public function onStatisticsChanged($message) {
             global $categoryService, $tripService;
 

@@ -44,10 +44,8 @@
             global $configuration, $configurationService, $scheduler, $eventPublisher;
 
             if ($message["action"] === "WATCH_CALENDAR" && $message["timeSinceLastExecution"] > 82800) {
-                $watchId = bin2hex(random_bytes(16));
-                $configurationService->updateGoogleCalendarWatchId($watchId);
                 foreach ($configuration["calendars"] as $calendar => $url) {
-                    $eventPublisher->publishCalendarWatchRenewingEvent($calendar, $watchId);
+                    $eventPublisher->publishCalendarWatchRenewingEvent($calendar);
                 }
 
                 $scheduler->recordEventsTriggered($message["action"]);
