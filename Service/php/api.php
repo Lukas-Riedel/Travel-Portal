@@ -58,7 +58,6 @@
     $geocodingService = new GeocodingService();
     $calendarClient = new CalendarClient();
     $stayService = new StayService();
-    $forecastService = new ForecastService();
     $platformService = new PlatformService();
     $eventManager = new EventManager();
     $eventPublisher = new EventPublisher();
@@ -68,6 +67,7 @@
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
     $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
+    $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

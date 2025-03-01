@@ -1,114 +1,101 @@
 <?php
+    require_once(dirname(__FILE__) . "/ForecastMapper.php");
     require_once(dirname(__FILE__) . "/../model/Weather.php");
     require_once(dirname(__FILE__) . "/../model/Sun.php");
     
     use AurorasLive\SunCalc;
 
     class ForecastService {
-        public function getWeatherForecast($placeId, $start) : ?Weather {
-            global $databaseProvider;
 
-            $actualForecastRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM forecast_actual WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $start)
-                ->getSingleRow();
+        private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME = "FETCH_ACTUAL_WEATHER_FORECAST";
+        private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME = "FETCH_HISTORICAL_WEATHER_FORECAST";
+        private const FETCH_DAYLIGHT_FORECAST_ACTION_NAME = "FETCH_DAYLIGHT_FORECAST";
+        private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
+        private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
+        private const FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL = 300;
+        private const GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://archive-api.open-meteo.com/v1/archive?latitude=%s&longitude=%s&start_date=%s&end_date=%s&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=%s&windspeed_unit=ms&timeformat=unixtime";
+        private const GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s";
+        private const HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER = 2;
+        private const ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE = 9;
+        private const YMD_DATE_FORMAT = "Y-m-d";
 
-            if ($actualForecastRow !== NULL) {
-                return new Weather($actualForecastRow["temperature"], $actualForecastRow["clouds"], $actualForecastRow["wind"],
-                    $actualForecastRow["precipitation"], $actualForecastRow["symbol"], $actualForecastRow["last_update"]);
-            }
-            
-            $historicalForecastRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM forecast_historical WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $start)
-                ->getSingleRow();
+        private readonly ForecastMapper $forecastMapper;
 
-            if ($historicalForecastRow !== NULL) {
-                return new Weather($historicalForecastRow["temperature"], NULL, $historicalForecastRow["wind"],
-                    $historicalForecastRow["precipitation"], NULL, time());
-            }
+        private readonly HttpClient $httpClient;
 
-            return NULL;
+        private readonly ConfigurationService $configurationService;
+
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
+
+        public function __construct(DatabaseProvider $databaseProvider, HttpClient $httpClient, ConfigurationService $configurationService,
+            EventPublisher $eventPublisher, Scheduler $scheduler) {
+            $this->forecastMapper = new ForecastMapper($databaseProvider);
+            $this->httpClient = $httpClient;
+            $this->configurationService = $configurationService;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
         }
 
-        public function getSunForecast($placeId, $start) : ?Sun {
-            global $databaseProvider;
-
-            $sunForecastRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM forecast_daylight WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $start)
-                ->getSingleRow();
-
-            if ($sunForecastRow !== NULL) {
-                return new Sun($sunForecastRow["sunrise"], $sunForecastRow["sunset"], $sunForecastRow["start_sun_altitude"], 
-                    $sunForecastRow["end_sun_altitude"], $sunForecastRow["start_sun_azimuth"], $sunForecastRow["end_sun_azimuth"]);
-            }
-
-            return NULL;
+        public function getWeatherForecast(string $placeId, int $timestamp) : ?Weather {
+            $actualForecast = $this->forecastMapper->selectActualWeatherForecast($placeId, $timestamp);
+            return $actualForecast !== NULL
+                ? $actualForecast 
+                : $this->forecastMapper->selectHistoricalWeatherForecast($placeId, $timestamp);
         }
 
-        // TODO: Accept PlaceIdentifier + start instead.
-        public function updateDaylightForecast($placeId, $start, $end, $latitude, $longitude) : void {
-            global $databaseProvider;
+        public function getDaylightForecast(string $placeId, int $timestamp) : ?Sun {
+            return $this->forecastMapper->selectDaylightForecast($placeId, $timestamp);
+        }
 
+        public function updateDaylightForecast(PlaceIdentifier $placeIdentifier, int $start, int $end) : void {
             $dateTime = new DateTime();
-            $dateTime->setTimestamp(intval($start));
-            $suncalc = new SunCalc($dateTime, $latitude, $longitude);
+            $dateTime->setTimestamp($start);
+            $suncalc = new SunCalc($dateTime, $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             $sunTimes = $suncalc->getSunTimes();
             $startSunPosition = $suncalc->getSunPosition($dateTime);
-            $dateTime->setTimestamp(intval($end));
+            $dateTime->setTimestamp($end);
             $endSunPosition = $suncalc->getSunPosition($dateTime);
-            
-            $databaseProvider
-                ->statementBuilder("DELETE FROM forecast_daylight WHERE place_id = ? AND timestamp = ?")
-                ->withParameters($placeId, $start)
-                ->execute();
 
-            $databaseProvider
-                ->statementBuilder("INSERT INTO forecast_daylight (place_id, timestamp, sunrise, sunset, start_sun_altitude, end_sun_altitude, start_sun_azimuth, end_sun_azimuth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-                ->withParameters($placeId, $start, $sunTimes["sunrise"]->getTimestamp(), $sunTimes["sunset"]->getTimestamp(), $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI, $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI)
-                ->execute();
+            $daylightForecast = new Sun($sunTimes["sunrise"]->getTimestamp(), $sunTimes["sunset"]->getTimestamp(),
+                $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI,
+                $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI);
+            
+            $this->forecastMapper->deleteDaylightForecast($placeIdentifier->getId(), $start);
+            $this->forecastMapper->insertDaylightForecast($daylightForecast, $placeIdentifier->getId(), $start);
         }
 
-        // TODO: Accept PlaceIdentifier + start instead.
-        public function updateHistoricalWeatherForecast($placeId, $start, $latitude, $longitude) : void {
-            global $databaseProvider, $configuration, $httpClient;
-            
-            $timestamp = intval($start);
+        public function updateHistoricalWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {
             $oneYearAgoTimestamp = $timestamp;
-            while ($oneYearAgoTimestamp > (time() - 10 * 86400)) {
+            while ($oneYearAgoTimestamp > time() - (1 + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER) * 86400) {
                 $oneYearAgoTimestamp -= 86400 * 365;
             } 
     
-            $startDate = date("Y-m-d", $oneYearAgoTimestamp - 3 * 86400);
-            $endDate = date("Y-m-d", $oneYearAgoTimestamp + 3 * 86400);
+            $startDate = date(self::YMD_DATE_FORMAT, $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * 86400);
+            $endDate = date(self::YMD_DATE_FORMAT, $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * 86400);
         
-            $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://archive-api.open-meteo.com/v1/archive?latitude=" . $latitude . "&longitude=" . $longitude . "&start_date=" . $startDate . "&end_date=" . $endDate . "&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=" . $configuration["homeLocation"]["timezone"] . "&windspeed_unit=ms&timeformat=unixtime");
-            
-            $result = array(
-                "temperature" => $this->getAverage($apiResponse["daily"]["temperature_2m_max"]),
-                "wind" => $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]),
-                "precipitation" => $this->getAverage($apiResponse["daily"]["precipitation_sum"]) / 24);
-    
-            if ($result["temperature"] !== NULL && $result["wind"] !== NULL && $result["precipitation"] !== NULL) {    
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM forecast_historical WHERE place_id = ? AND timestamp = ?")
-                    ->withParameters($placeId, $timestamp)
-                    ->execute();
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
+                $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $startDate, $endDate,
+                $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone")));
 
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO forecast_historical (place_id, timestamp, temperature, wind, precipitation) VALUES (?, ?, ?, ?, ?)")
-                    ->withParameters($placeId, $timestamp, $result["temperature"], $result["wind"], $result["precipitation"])
-                    ->execute();
+            if (!isset($apiResponse["daily"])) {
+                throw new RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));
             }
+
+            $temperature = $this->getAverage($apiResponse["daily"]["temperature_2m_max"]);
+            $windspeed = $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]);
+            $precipitation = $this->getAverage($apiResponse["daily"]["precipitation_sum"]) / 24;
+
+            $historicalForecast = new Weather($temperature, NULL, $windspeed, $precipitation, NULL, time());
+    
+            $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
+            $this->forecastMapper->insertHistoricalWeatherForecast($historicalForecast, $placeIdentifier->getId(), $timestamp);
         }
 
-        // TODO: Accept PlaceIdentifier + start instead.
-        public function updateActualWeatherForecast($placeId, $start, $latitude, $longitude) : void {
-            global $databaseProvider, $configuration, $httpClient;
-        
-            $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" . round($latitude, 4) . "&lon=" . round($longitude, 4),
-                array("User-Agent: " . BASE_URL . " " . $configuration["contactEmail"]), NULL, TRUE);
+        public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
+                round($placeIdentifier->getLatitude(), 4), round($placeIdentifier->getLongitude(), 4)),
+                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationForType("contactEmail")), NULL, TRUE);
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {
                 throw new RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));
@@ -117,135 +104,135 @@
             $bestForecast = NULL;
             foreach ($apiResponse["properties"]["timeseries"] as &$forecast) {
                 $forecastTime = strtotime($forecast["time"]);
-                if ($forecastTime > intval($start)) {
+                if ($forecastTime > $timestamp) {
                     break;
                 }
                 $bestForecast = $forecast;
             }         
 
-            if ((strtotime($bestForecast["time"]) + 21600) < intval($start)) {
-                $bestForecast = NULL;
+            if ($bestForecast === NULL || strtotime($bestForecast["time"]) + 21600 < $timestamp) {
+                return;
             }
 
-            if ($bestForecast != NULL) {
-                $convertedForecast = array();
-                $convertedForecast["temperature"] = $bestForecast["data"]["instant"]["details"]["air_temperature"];
-                $convertedForecast["clouds"] = $bestForecast["data"]["instant"]["details"]["cloud_area_fraction"];
-                $convertedForecast["wind"] = $bestForecast["data"]["instant"]["details"]["wind_speed"];
-                $convertedForecast["symbol"] = NULL;
-                $convertedForecast["precipitation"] = 0;
-                $convertedForecast["updatedAt"] = strtotime($apiResponse["properties"]["meta"]["updated_at"]);
-                
-                if (array_key_exists("next_1_hours", $bestForecast["data"])) {
-                    if (array_key_exists("summary", $bestForecast["data"]["next_1_hours"])) {
-                        if (array_key_exists("symbol_code", $bestForecast["data"]["next_1_hours"]["summary"])) {
-                            $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_1_hours"]["summary"]["symbol_code"])[0];
-                        }
-                    }
-                    if (array_key_exists("details", $bestForecast["data"]["next_1_hours"])) {
-                        if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_1_hours"]["details"])) {
-                            $convertedForecast["precipitation"] = $bestForecast["data"]["next_1_hours"]["details"]["precipitation_amount"];
-                        }
-                    }
-                }                        
-                else if (array_key_exists("next_6_hours", $bestForecast["data"])) {
-                    if (array_key_exists("summary", $bestForecast["data"]["next_6_hours"])) {
-                        if (array_key_exists("symbol_code", $bestForecast["data"]["next_6_hours"]["summary"])) {
-                            $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_6_hours"]["summary"]["symbol_code"])[0];
-                        }
-                    }
-                    if (array_key_exists("details", $bestForecast["data"]["next_6_hours"])) {
-                        if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_6_hours"]["details"])) {
-                            $convertedForecast["precipitation"] = $bestForecast["data"]["next_6_hours"]["details"]["precipitation_amount"] / 6;
-                        }
+            $convertedForecast = array(
+                "temperature" => $bestForecast["data"]["instant"]["details"]["air_temperature"],
+                "clouds" => $bestForecast["data"]["instant"]["details"]["cloud_area_fraction"],
+                "wind" => $bestForecast["data"]["instant"]["details"]["wind_speed"],
+                "symbol" => NULL,
+                "precipitation" => 0,
+                "updatedAt" => strtotime($apiResponse["properties"]["meta"]["updated_at"]));
+            
+            if (array_key_exists("next_1_hours", $bestForecast["data"])) {
+                if (array_key_exists("summary", $bestForecast["data"]["next_1_hours"])) {
+                    if (array_key_exists("symbol_code", $bestForecast["data"]["next_1_hours"]["summary"])) {
+                        $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_1_hours"]["summary"]["symbol_code"])[0];
                     }
                 }
-
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM forecast_actual WHERE place_id = ? AND timestamp = ?")
-                    ->withParameters($placeId, $start)
-                    ->execute();
-
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO forecast_actual (place_id, timestamp, temperature, wind, precipitation, clouds, symbol, last_update, expiration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                    ->withParameters($placeId, $start, $convertedForecast["temperature"], $convertedForecast["wind"], $convertedForecast["precipitation"], $convertedForecast["clouds"], $convertedForecast["symbol"], $convertedForecast["updatedAt"], (isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + 3600)))
-                    ->execute();
+                if (array_key_exists("details", $bestForecast["data"]["next_1_hours"])) {
+                    if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_1_hours"]["details"])) {
+                        $convertedForecast["precipitation"] = $bestForecast["data"]["next_1_hours"]["details"]["precipitation_amount"];
+                    }
+                }
+            }                        
+            else if (array_key_exists("next_6_hours", $bestForecast["data"])) {
+                if (array_key_exists("summary", $bestForecast["data"]["next_6_hours"])) {
+                    if (array_key_exists("symbol_code", $bestForecast["data"]["next_6_hours"]["summary"])) {
+                        $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_6_hours"]["summary"]["symbol_code"])[0];
+                    }
+                }
+                if (array_key_exists("details", $bestForecast["data"]["next_6_hours"])) {
+                    if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_6_hours"]["details"])) {
+                        $convertedForecast["precipitation"] = $bestForecast["data"]["next_6_hours"]["details"]["precipitation_amount"] / 6;
+                    }
+                }
             }
+
+            $actualForecast = new Weather($convertedForecast["temperature"], $convertedForecast["clouds"], $convertedForecast["wind"],
+                $convertedForecast["precipitation"], $convertedForecast["symbol"], $convertedForecast["updatedAt"]);
+            $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + 3600);
+
+            $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
+            $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp, $expiration);
         }
     
-        private function getAverage($values) {
-            $sum = 0;
-            $count = 0;
-            foreach ($values as &$value) {
-                if ($value !== NULL) {
-                    $sum += $value;
-                    $count += 1;
-                }
-            }
-            if ($count === 0) {
-                return NULL;
-            }
-            return $sum / $count;
+        private function getAverage(array $values) : ?float {
+            return count($values) === 0 ? NULL : (array_sum($values) / count($values));
         }
 
-        public function onActualWeatherForecastChanged($message) {
+        public function onActualWeatherForecastUpdated($message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 
             $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateActualWeatherForecast($placeIdentifier->getId(), $message["start"], $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+            $this->updateActualWeatherForecast($placeIdentifier, $message["start"]);
         }
 
-        public function onHistoricalWeatherForecastChanged($message) {
+        public function onHistoricalWeatherForecastUpdated($message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 
             $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateHistoricalWeatherForecast($placeIdentifier->getId(), $message["start"], $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+            $this->updateHistoricalWeatherForecast($placeIdentifier, $message["start"]);
         }
 
-        public function onDaylightForecastChanged($message) {
+        public function onDaylightForecastUpdated($message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 
             $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateDaylightForecast($placeIdentifier->getId(), $message["start"], $message["end"], $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+            $this->updateDaylightForecast($placeIdentifier, $message["start"], $message["end"]);
         }
 
         public function onSchedulerTriggered($message) : void {
-            global $eventPublisher, $databaseProvider, $scheduler;
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
 
-            if ($message["action"] === "FETCH_ACTUAL_WEATHER_FORECAST" && $message["timeSinceLastExecution"] > 300) {
-                $argsList = $databaseProvider
-                    ->statementBuilder("SELECT pi.id AS placeId, p.start FROM place_event p LEFT JOIN place_identifier pi ON p.place_id = pi.id LEFT JOIN forecast_actual fa ON p.place_id = fa.place_id AND p.start = fa.timestamp WHERE UNIX_TIMESTAMP() < p.start AND UNIX_TIMESTAMP() + GET_CONFIGURATION('FORECAST_DAYS_TO_CACHE') * 86400 > p.start AND (fa.expiration IS NULL OR fa.expiration < UNIX_TIMESTAMP())")
-                    ->getResultSet();
+            if ($message["action"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
+                && $message["timeSinceLastExecution"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
+                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, time(),
+                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array());
 
-                foreach ($argsList as &$args) {
-                    $eventPublisher->publishActualWeatherForecastChanged($args["placeId"], $args["start"]);
+                foreach ($places as &$place) {
+                    foreach ($place->getDates() as &$date) {
+                        $forecastExpiration = $this->forecastMapper->selectActualWeatherForecastExpiration($place->getId(), $date->getStart());
+
+                        if ($forecastExpiration < time()) {
+                            $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
+                        }
+                    }
                 }
                 
-                $scheduler->recordEventsTriggered($message["action"]);
+                $this->scheduler->recordEventsTriggered(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME);
             }
 
-            if ($message["action"] === "FETCH_HISTORICAL_WEATHER_FORECAST" && $message["timeSinceLastExecution"] > 300) {
-                $argsList = $databaseProvider
-                    ->statementBuilder("SELECT pi.id AS placeId, p.start FROM place_event p LEFT JOIN place_identifier pi ON p.place_id = pi.id LEFT JOIN forecast_historical fh ON p.place_id = fh.place_id AND p.start = fh.timestamp WHERE fh.place_id IS NULL AND p.start > UNIX_TIMESTAMP()")
-                    ->getResultSet();
-
-                foreach ($argsList as &$args) {
-                    $eventPublisher->publishHistoricalWeatherForecastChanged($args["placeId"], $args["start"]);
-                }
+            if ($message["action"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
+                && $message["timeSinceLastExecution"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
+                    $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, time(), NULL, array());
+    
+                    foreach ($places as &$place) {
+                        foreach ($place->getDates() as &$date) {    
+                            if ($date->getWeather() === NULL) {
+                                $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
+                            }
+                        }
+                    }
                 
-                $scheduler->recordEventsTriggered($message["action"]);
+                $this->scheduler->recordEventsTriggered(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME);
             }
 
-            if ($message["action"] === "FETCH_DAYLIGHT_FORECAST" && $message["timeSinceLastExecution"] > 300) {
-                $argsList = $databaseProvider
-                    ->statementBuilder("SELECT pi.id AS placeId, p.start, p.end FROM place_event p LEFT JOIN place_identifier pi ON p.place_id = pi.id LEFT JOIN forecast_daylight fd ON p.place_id = fd.place_id AND p.start = fd.timestamp WHERE fd.place_id IS NULL AND p.start > UNIX_TIMESTAMP()")
-                    ->getResultSet();
+            if ($message["action"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
+                && $message["timeSinceLastExecution"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
+                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, time(), NULL, array());
 
-                foreach ($argsList as &$args) {
-                    $eventPublisher->publishDaylightForecastChanged($args["placeId"], $args["start"], $args["end"]);
+                foreach ($places as &$place) {
+                    foreach ($place->getDates() as &$date) {    
+                        if ($date->getSun() === NULL) {
+                            $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                        }
+                    }
                 }
                 
-                $scheduler->recordEventsTriggered($message["action"]);
+                $this->scheduler->recordEventsTriggered(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME);
             }
         }
     }

@@ -105,7 +105,7 @@
                 $sun = NULL;
                 if ($placeRow["end"] > time()) {
                     $weather = $forecastService->getWeatherForecast($placeRow["place_id"], $placeRow["start"]);
-                    $sun = $forecastService->getSunForecast($placeRow["place_id"], $placeRow["start"]);
+                    $sun = $forecastService->getDaylightForecast($placeRow["place_id"], $placeRow["start"]);
                 }
 
                 $album = NULL;
@@ -638,19 +638,19 @@
                 }
             }
             
-            // Process new places, renamed places and places for which the start time has changed.
+            // Process new places, renamed places and places for which the start/end time has changed.
             $newPlaceRows = $databaseProvider
-                ->statementBuilder("SELECT np.start, np.end, np.place_id, np.trip_id FROM place_event np LEFT JOIN old_place_event op ON op.id = np.id WHERE op.place_id <> np.place_id OR op.start <> np.start")
+                ->statementBuilder("SELECT np.start, np.end, np.place_id, np.trip_id FROM place_event np LEFT JOIN old_place_event op ON op.id = np.id WHERE op.place_id <> np.place_id OR op.start <> np.start OR op.end <> np.end")
                 ->getResultSet();
 
             foreach ($newPlaceRows as &$newPlaceRow) {
                 if (time() < $newPlaceRow["start"]) {
                     if (time() + $configuration["forecastDaysToCache"] * 86400 > $newPlaceRow["start"]) {
-                        $eventPublisher->publishActualWeatherForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
+                        $eventPublisher->publishActualWeatherForecastUpdated($newPlaceRow["place_id"], $newPlaceRow["start"]);
                     }
                             
-                    $eventPublisher->publishHistoricalWeatherForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"]);
-                    $eventPublisher->publishDaylightForecastChanged($newPlaceRow["place_id"], $newPlaceRow["start"], $newPlaceRow["end"]);
+                    $eventPublisher->publishHistoricalWeatherForecastUpdated($newPlaceRow["place_id"], $newPlaceRow["start"]);
+                    $eventPublisher->publishDaylightForecastUpdated($newPlaceRow["place_id"], $newPlaceRow["start"], $newPlaceRow["end"]);
                 }
 
                 $eventPublisher->publishTripStatisticsChangedEvent($newPlaceRow["trip_id"]);

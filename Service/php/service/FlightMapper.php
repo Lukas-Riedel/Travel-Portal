@@ -281,7 +281,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($flight->getFlight(), $flight->getRegistration(), $flight->getAircraft(), $flight->getFrom()->getId(), 
                     $flight->getTo()->getId(), $scheduledDeparture, $flight->getStart(), $scheduledArrival, $flight->getEnd())
-                ->execute();
+                ->execute() === 1;
         }
 
         public function insertFlightEvent(FlightType $flightType, Flight $flight, string $eventId, string $tripId) : bool {
@@ -310,7 +310,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($eventId, $tripId, $flight->getFlight(), $flight->getFrom()->getName(),
                     $flight->getTo()->getName(), $flight->getStart(), $flight->getEnd())
-                ->execute();
+                ->execute() === 1;
         }
 
         public function deleteLoggedFlight(string $flight, string $actualDeparture, string $actualArrival) : int {

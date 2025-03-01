@@ -1,16 +1,16 @@
 <?php
     // TODO: Make sure messages contain as much information as possible (e.g., PlaceIdentifier instead of string placeId).
     class EventPublisher {
-        public function publishActualWeatherForecastChanged($placeId, $start) {
-            $this->publishEvent(Event::ActualWeatherForecastChanged, array("placeId" => $placeId, "start" => $start));
+        public function publishActualWeatherForecastUpdated($placeId, $start) {
+            $this->publishEvent(Event::ActualWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
         }
         
-        public function publishHistoricalWeatherForecastChanged($placeId, $start) {
-            $this->publishEvent(Event::HistoricalWeatherForecastChanged, array("placeId" => $placeId, "start" => $start));
+        public function publishHistoricalWeatherForecastUpdated($placeId, $start) {
+            $this->publishEvent(Event::HistoricalWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
         }
         
-        public function publishDaylightForecastChanged($placeId, $start, $end) {
-            $this->publishEvent(Event::DaylightForecastChanged, array("placeId" => $placeId, "start" => $start, "end" => $end));
+        public function publishDaylightForecastUpdated($placeId, $start, $end) {
+            $this->publishEvent(Event::DaylightForecastUpdated, array("placeId" => $placeId, "start" => $start, "end" => $end));
         }
 
         public function publishFitnessActivityDetectedEvent($start, $end) {
@@ -149,9 +149,9 @@
         case VacationReset = 3;
         case CalendarChanged = 4;
         case FlightArrived = 5;
-        case ActualWeatherForecastChanged = 6;
-        case DaylightForecastChanged = 7;
-        case HistoricalWeatherForecastChanged = 8;
+        case ActualWeatherForecastUpdated = 6;
+        case DaylightForecastUpdated = 7;
+        case HistoricalWeatherForecastUpdated = 8;
         case PhotoInvalidated = 9;
         case AllHighlightsChanged = 10;
         case AlbumInvalidated = 11;

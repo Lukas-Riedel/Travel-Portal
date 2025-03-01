@@ -7,7 +7,8 @@
     class FlightService {
 
         private const LOG_FLIGHTS_ACTION_NAME = "LOG_FLIGHTS";
-        private const LOG_FLIGHTS_INTERVAL_FOR_DELAYED_FLIGHTS = 14400;
+        private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 14400;
+        private const UTC_TIMEZONE = "UTC";
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
         private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
         private const EXPECTED_FLIGHT_STATUS = "Landed";
@@ -59,7 +60,7 @@
         }
 
         public function fetchAndLogFlight(string $flight, string $tripId, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
-            date_default_timezone_set("UTC");
+            date_default_timezone_set(self::UTC_TIMEZONE);
             $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
 
             $selectedFlight = NULL;
@@ -203,7 +204,7 @@
                 }
 
                 $loggingInterval = $firstNonLoggedFlight->getEnd() < time() - $message["timeSinceLastExecution"]
-                    ? self::LOG_FLIGHTS_INTERVAL_FOR_DELAYED_FLIGHTS // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
+                    ? self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
                     : $message["timeSinceLastExecution"] + $firstNonLoggedFlight->getEnd() + $this->flightMapper->selectAverageDelay() - time();
 
                 if ($message["timeSinceLastExecution"] > $loggingInterval) {
