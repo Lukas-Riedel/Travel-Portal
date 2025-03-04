@@ -84,7 +84,7 @@
                 if (!isset($places[$placeRow["place_id"]])) {
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
-                        $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                        $categories = $categoryService->getCategoryIdentifiersById(explode(",", $placeRow["category_ids"]));
                     }                   
 
                     $highlights = array();         
@@ -137,7 +137,7 @@
                     if (!isset($places[$placeRow["place_id"]])) {
                         $categories = array();
                         if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
-                            $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                            $categories = $categoryService->getCategoryIdentifiersById(explode(",", $placeRow["category_ids"]));
                         }                   
 
                         $highlights = array();         
@@ -217,7 +217,7 @@
 
                 $categories = array();
                 if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
-                    $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                    $categories = $categoryService->getCategoryIdentifiersById(explode(",", $placeRow["category_ids"]));
                 }
 
                 $places[] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
@@ -255,7 +255,7 @@
 
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
-                        $categories = $categoryService->getCategoryIdentifiers(explode(",", $placeRow["category_ids"]));
+                        $categories = $categoryService->getCategoryIdentifiersById(explode(",", $placeRow["category_ids"]));
                     }
 
                     $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],

@@ -234,7 +234,7 @@
                 }
             }
             else if ($highlightType === HighlightType::Category) {
-                $categoryIdentifier = $categoryService->getCategoryIdentifier($entityId);
+                $categoryIdentifier = $categoryService->getCategoryIdentifierById($entityId);
                 if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
                     return $categoryService->updateCategoryMainHighlight($entityId, $highlightIdentifier);
                 }

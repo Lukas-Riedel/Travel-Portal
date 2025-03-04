@@ -69,19 +69,19 @@
             }
         }
 
-        public function getCategoryIdentifierByName(string $name) : ?CategoryIdentifier { 
+        public function getCategoryIdentifier(string $name) : ?CategoryIdentifier { 
             return $this->categoryMapper->selectCategoryIdentifierByName($name);
         }
 
-        public function getCategoryIdentifier(string $categoryId) : ?CategoryIdentifier {
+        public function getCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
             return $this->categoryMapper->selectCategoryIdentifier($categoryId);
         }
 
-        public function getCategoryIdentifiers(array $categoryIds) : array { 
+        public function getCategoryIdentifiersById(array $categoryIds) : array { 
             $categories = array();
 
             foreach ($categoryIds as &$categoryId) {
-                $category = $this->getCategoryIdentifier($categoryId);
+                $category = $this->getCategoryIdentifierById($categoryId);
                 if ($category !== NULL) {
                     $categories[] = $category;
                 }
@@ -133,7 +133,7 @@
         
         // TODO: Replace string $category by CategoryCategory $category.
         public function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
-            $categoryIdentifier = $this->getCategoryIdentifierByName($name);
+            $categoryIdentifier = $this->getCategoryIdentifier($name);
             if ($categoryIdentifier !== NULL) {
                 return $categoryIdentifier;
             }
@@ -170,13 +170,13 @@
             $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
 
             foreach ($includedRegions as &$includedRegion) {
-                $subjectCategoryIdentifier = $this->getCategoryIdentifierByName($includedRegion);
+                $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
                 $this->categoryMapper->insertCompositeRegionInclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
                 $this->eventPublisher->publishCategoryInvalidatedEvent($subjectCategoryIdentifier->getId());
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
-                $subjectCategoryIdentifier = $this->getCategoryIdentifierByName($excludedRegion);
+                $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedRegion);
                 $this->categoryMapper->insertCompositeRegionExclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
             }
     
@@ -198,7 +198,7 @@
                 }
             }
             else {
-                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifierByName($country)->getId());
+                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifier($country)->getId());
             }
     
             $this->eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
@@ -227,7 +227,7 @@
                 }
             }
             else {
-                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifierByName($country)->getId());
+                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifier($country)->getId());
             }
 
             return $categoryIdentifier;

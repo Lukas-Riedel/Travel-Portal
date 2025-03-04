@@ -24,7 +24,7 @@
         public function getPublicHolidayEvents($country) : array {            
             global $categoryService;
 
-            $categoryIdentifier = $categoryService->getCategoryIdentifierByName($country);
+            $categoryIdentifier = $categoryService->getCategoryIdentifier($country);
             if ($categoryIdentifier === NULL || $categoryIdentifier->getMetadata() === NULL
                 || $categoryIdentifier->getMetadata()->getPublicHolidaysCalendar() === NULL) {
                 return array();

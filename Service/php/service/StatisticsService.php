@@ -188,7 +188,7 @@
         public function onCategoryUpdated($message) {
             global $categoryService;
 
-            $categoryIdentifier = $categoryService->getCategoryIdentifier($message["categoryId"]);
+            $categoryIdentifier = $categoryService->getCategoryIdentifierById($message["categoryId"]);
             if ($categoryIdentifier !== NULL) {
                 $this->updateCategoryStatistics($categoryIdentifier);
             }
@@ -279,7 +279,7 @@
                 }
             }
             else if (isset($message["categoryId"])) {
-                $categoryIdentifier = $categoryService->getCategoryIdentifier($message["categoryId"]);
+                $categoryIdentifier = $categoryService->getCategoryIdentifierById($message["categoryId"]);
                 if ($categoryIdentifier !== NULL) {
                     $this->updateCategoryStatistics($categoryIdentifier);
                 }

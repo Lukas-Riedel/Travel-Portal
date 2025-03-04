@@ -165,7 +165,7 @@
         }
         
         private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
-            global $highlightService, $databaseProvider;
+            global $highlightService, $databaseProvider, $categoryService;
         
             $filePaths = array();
             $albums = array();
@@ -203,8 +203,8 @@
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
                     $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId, $mainImageUrl, $album["productUrl"], $imagesCount, 0);
 
-                    // TODO: This is temporary until there is proper support for highlights (Q1/2025).
-                    // Remove $highlightService and $databaseProvider from global variables when removing this code.
+                    // TODO: This is temporary until there is proper support for highlights (Q2/2025).
+                    // Remove global variables when removing this code.
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $placeRow = $databaseProvider
                             ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE album_id = ?")
@@ -220,7 +220,10 @@
                             }    
     
                             foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
-                                $highlightService->createCategoryHighlight($categoryId, $mainPhotoId);
+                                $categoryIdentifier = $categoryService->getCategoryIdentifierById($categoryId);
+                                if ($categoryIdentifier !== NULL && $categoryIdentifier->getCategory() !== CategoryCategory::Variable->value) {
+                                    $highlightService->createCategoryHighlight($categoryId, $mainPhotoId);
+                                }
                             }
                         }
                     }  

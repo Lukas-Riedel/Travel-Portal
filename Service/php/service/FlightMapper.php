@@ -72,7 +72,7 @@
                 ->getSingleRow();
 
             return $airportIdentifierRow === NULL ? NULL : new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
-                $this->categoryService->getCategoryIdentifier($airportIdentifierRow["country_category_id"])->getName(),
+                $this->categoryService->getCategoryIdentifierById($airportIdentifierRow["country_category_id"])->getName(),
                 $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
         }
 
@@ -106,9 +106,9 @@
                     $distance = $this->geocodingService->getDistance($loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"],
                         $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"]);
                     
-                    $from = new Airport($loggedFlightRow["from_airport_id"], $loggedFlightRow["from"], $loggedFlightRow["from_airport_code"], $this->categoryService->getCategoryIdentifier($loggedFlightRow["from_airport_country_category_id"])->getName(), 
+                    $from = new Airport($loggedFlightRow["from_airport_id"], $loggedFlightRow["from"], $loggedFlightRow["from_airport_code"], $this->categoryService->getCategoryIdentifierById($loggedFlightRow["from_airport_country_category_id"])->getName(), 
                         $loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"], $loggedFlightRow["from_airport_timezone"]);
-                    $to = new Airport($loggedFlightRow["to_airport_id"], $loggedFlightRow["to"], $loggedFlightRow["to_airport_code"], $this->categoryService->getCategoryIdentifier($loggedFlightRow["to_airport_country_category_id"])->getName(), 
+                    $to = new Airport($loggedFlightRow["to_airport_id"], $loggedFlightRow["to"], $loggedFlightRow["to_airport_code"], $this->categoryService->getCategoryIdentifierById($loggedFlightRow["to_airport_country_category_id"])->getName(), 
                         $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"], $loggedFlightRow["to_airport_timezone"]);
 
                     return new Flight($loggedFlightRow["flight"], $loggedFlightRow["registration"], $loggedFlightRow["aircraft"], $distance, $from, $to, $loggedFlightRow["actual_departure"], $loggedFlightRow["actual_arrival"]);
@@ -159,10 +159,10 @@
                     }             
 
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
-                        $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifier($flightRow["from_airport_country_category_id"])->getName(), 
+                        $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
                         $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
                     $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"],
-                        $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifier($flightRow["to_airport_country_category_id"])->getName(), 
+                        $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
                         $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
 
                     return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $distance, $from, $to, $flightRow["start"], $flightRow["end"]);
