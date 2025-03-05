@@ -10,7 +10,7 @@
 
             $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
 
-            $googleApiClient->watchCalendar($calendar, 
+            $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
                 BASE_URL . "/events?name=" . Event::CalendarChanged->name . "&args[calendar]=" . $calendar,
                 "Bearer " . $authenticationResult->getAccessToken());
         }
