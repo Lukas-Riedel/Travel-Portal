@@ -34,7 +34,8 @@
             $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
                 if ($geographicalRegion->getCountryCategoryId() === NULL
-                    || $geographicalRegion->getCountryCategoryId() === $countryCategoryIdentifier->getId()) {
+                    // TODO: '==' must be here because '===' doesn't work, find out why.
+                    || $geographicalRegion->getCountryCategoryId() == $countryCategoryIdentifier->getId()) {
                     if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $point)) {
                         $categoryIds[] = $geographicalRegion->getCategoryId();
                     }
@@ -70,14 +71,14 @@
         }
 
         public function getCategoryIdentifier(string $name) : ?CategoryIdentifier { 
-            return $this->categoryMapper->selectCategoryIdentifierByName($name);
+            return $this->categoryMapper->selectCategoryIdentifier($name);
         }
 
         public function getCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
-            return $this->categoryMapper->selectCategoryIdentifier($categoryId);
+            return $this->categoryMapper->selectCategoryIdentifierById($categoryId);
         }
 
-        public function getCategoryIdentifiersById(array $categoryIds) : array { 
+        public function getCategoryIdentifiersByIds(array $categoryIds) : array { 
             $categories = array();
 
             foreach ($categoryIds as &$categoryId) {
@@ -192,13 +193,13 @@
             $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson));
 
-            if ($country === NULL) {
+            if ($countryCategoryId === NULL) {
                 foreach ($this->getCategories(array(CategoryCategory::Country->value), array()) as &$category) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
                 }
             }
             else {
-                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifier($country)->getId());
+                $this->eventPublisher->publishCategoryInvalidatedEvent($countryCategoryId);
             }
     
             $this->eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());

@@ -24,7 +24,7 @@
                 ->getResultSetForColumn("name");
         }
 
-        public function selectCategoryIdentifierByName(string $name) : ?CategoryIdentifier {
+        public function selectCategoryIdentifier(string $name) : ?CategoryIdentifier {
             $sql = <<<'SQL'
                 SELECT *
                 FROM category_identifier
@@ -46,7 +46,7 @@
                 $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function selectCategoryIdentifier(string $categoryId) : ?CategoryIdentifier {
+        public function selectCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
             $sql = <<<'SQL'
                 SELECT *
                 FROM category_identifier
