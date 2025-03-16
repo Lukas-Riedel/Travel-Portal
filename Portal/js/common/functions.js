@@ -47,10 +47,10 @@ function loadPage(initFunction) {
         configuration.countries = {};
         (await api.listCategories("COUNTRY")).forEach(category => {
             configuration.countries[category.name] = {
-                color: category.metadata.color,
-                unicode: category.metadata.unicode,
-                emoji: getEmoji(category.metadata.unicode),
-                publicHolidaysCalendar: category.metadata.publicHolidaysCalendar
+                color: category.metadata == null ? "#FF00FF" : category.metadata.color,
+                unicode: category.metadata == null ? "2753" : category.metadata.unicode,
+                emoji: getEmoji(category.metadata == null ? "2753" : category.metadata.unicode),
+                publicHolidaysCalendar: category.metadata == null ? null : category.metadata.publicHolidaysCalendar
             };
         });
         const afterInitFunctionEvent = new Event("afterInitFunction");
