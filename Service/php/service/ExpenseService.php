@@ -108,9 +108,9 @@
             }
 
             $validity = $this->configurationService->getConfigurationForTypeAndKey("autoPurgeRetentionDays", "exchangeRates") * 86400;
-            foreach ($apiResponse["conversion_rates"] as $currency => $rawExchangeRate) {
-                if ($currency !== $mainCurrency) {
-                    $this->expenseMapper->insertExchangeRate($currency, 1 / doubleval($rawExchangeRate), $validity);
+            foreach ($apiResponse["conversion_rates"] as $rawCurrency => $rawExchangeRate) {
+                if ($rawCurrency !== $mainCurrency) {
+                    $this->expenseMapper->insertExchangeRate($rawCurrency, 1 / doubleval($rawExchangeRate), $validity);
                 }
             }
 

@@ -86,14 +86,28 @@
         public function updateCalendarEventDates($calendar, $eventId, $start, $end) : bool {
             global $configuration;
 
-            $payload = array(
-                "start" => array(
-                    "dateTime" => date(DATE_RFC3339, $start),
-                    "timeZone" => $configuration["homeLocation"]["timezone"]),
-                "end" => array(
-                    "dateTime" => date(DATE_RFC3339, $end),
-                    "timeZone" => $configuration["homeLocation"]["timezone"]));
-            $this->executeRequest(HttpMethod::PATCH, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
+            $requestUrl = "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId);
+            $event = $this->executeRequest(HttpMethod::GET, $requestUrl);
+
+            if (!array_key_exists("start", $event) || !array_key_exists("end", $event)) {
+                return FALSE;
+            }
+
+            if (array_key_exists("dateTime", $event["start"])) {
+                $event["start"]["dateTime"] = date(DATE_RFC3339, $start);
+            }
+            else {
+                $event["start"]["date"] = date("Y-m-d", $start);
+            }
+
+            if (array_key_exists("dateTime", $event["end"])) {
+                $event["end"]["dateTime"] = date(DATE_RFC3339, $end);
+            }
+            else {
+                $event["end"]["date"] = date("Y-m-d", $end);
+            }
+
+            $this->executeRequest(HttpMethod::PUT, $requestUrl, array(), $event);
 
             // TODO: Return whether the event was updated.
             return TRUE;
