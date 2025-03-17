@@ -107,7 +107,7 @@
         }
 
         public function createFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
-            $this->googleApiClient->createCalendarEvent(FlightType::Scheduled->getCalendar(),
+            $this->googleApiClient->createCalendarEvent(FlightType::Scheduled->getCalendar()->value,
                 $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), NULL, $scheduledDeparture, $scheduledArrival);
             
             $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
