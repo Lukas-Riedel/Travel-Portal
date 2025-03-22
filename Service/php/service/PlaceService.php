@@ -656,19 +656,6 @@
                 $eventPublisher->publishTripStatisticsChangedEvent($newPlaceRow["trip_id"]);
             }
 
-            // Process new countries in trips (only those visited more than one year ago prior to visiting it).
-            $newCountryInTripRows = $databaseProvider
-                ->statementBuilder("SELECT DISTINCT ci.name AS country, np.trip_id FROM place_event np INNER JOIN place_identifier npi ON np.place_id = npi.id INNER JOIN category_identifier ci ON npi.country_category_id = ci.id WHERE np.start > UNIX_TIMESTAMP() AND npi.country_category_id NOT IN (SELECT opi.country_category_id FROM old_place_event op INNER JOIN place_identifier opi ON op.place_id = opi.id WHERE op.trip_id = np.trip_id) AND ci.name NOT IN (SELECT country FROM place_summary WHERE start < UNIX_TIMESTAMP() AND start > np.start - (365 * 86400))")
-                ->getResultSet();
-
-            foreach ($newCountryInTripRows as &$newCountryInTripRow) {
-                $entryRequirements = $chatClient->getResponse(sprintf($configuration["chatRequests"]["entryRequirements"], $newCountryInTripRow["country"]));
-                $plugTypes = $chatClient->getResponse(sprintf($configuration["chatRequests"]["plugTypes"], $newCountryInTripRow["country"]));
-                if ($entryRequirements != NULL && $plugTypes != NULL) {
-                    $noteService->createHtmlListNote($newCountryInTripRow["trip_id"], $newCountryInTripRow["country"], array($entryRequirements, $plugTypes));
-                }
-            }
-
             // Process yet non-visited places.
             $nonVisitedPlaceRows = $databaseProvider
                 ->statementBuilder("SELECT DISTINCT place_id FROM place_event WHERE place_id NOT IN (SELECT DISTINCT place_id FROM place_event WHERE end < UNIX_TIMESTAMP())")
