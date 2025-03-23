@@ -3,7 +3,8 @@
         public function handle($input) {
             global $timeTrackingService;
     
-            $response = $timeTrackingService->createTimeTrackingEvent($input["type"], $input["hours"], $input["description"], $input["date"]);
+            $response = $timeTrackingService->createTimeTrackingEvent($input["type"], doubleval($input["hours"]),
+                $input["description"], strtotime($input["date"]) + 9 * 3600);
             return $this->createResponse(201, $response);
         }
 

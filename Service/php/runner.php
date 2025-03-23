@@ -40,7 +40,7 @@
     $tripService = new TripService();
     $yearService = new YearService();
     $configurationService = new ConfigurationService();
-    $timeTrackingService = new TimeTrackingService();
+    $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();

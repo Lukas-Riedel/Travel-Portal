@@ -1,106 +1,62 @@
 <?php
+    require_once(dirname(__FILE__) . "/TimeTrackingMapper.php");
     require_once(dirname(__FILE__) . "/../model/TimeTrackingEvent.php");
 
     class TimeTrackingService {
-        public function createTimeTrackingEvent($type, $hours, $description, $date) : TimeTrackingEvent {
-            global $databaseProvider;
-        
-            $databaseProvider
-                ->statementBuilder("INSERT INTO tracking (type, hours, description, timestamp) VALUES (?, ?, ?, ?)")
-                ->withParameters($type, doubleval($hours), $description, strtotime($date) + 9 * 3600)
-                ->execute();
-                
-            $trackingEventRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM tracking ORDER BY id DESC LIMIT 1")
-                ->getSingleRow();
 
-            $balance = $databaseProvider
-                ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking WHERE timestamp <= ? AND type = ?")
-                ->withParameters($trackingEventRow["timestamp"], $trackingEventRow["type"])
-                ->getSingleColumn("balance");
+        private const CARRIED_OVER_DESCRIPTION = "Carried over from last year";
+        private const OPENING_BALANCE_DESCRIPTION = "Opening balance";
+        private const BEGINNING_OF_YEAR = "1.1.";
 
-            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
-            $databaseProvider
-                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
-                ->execute();
+        private const RESET_OPENING_BALANCES_ACTION_NAME = "RESET_OPENING_BALANCES";
 
-            return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], floatval($trackingEventRow["hours"]),
-                $trackingEventRow["timestamp"], $trackingEventRow["type"], floatval($balance));
+        private readonly TimeTrackingMapper $timeTrackingMapper;
+
+        private readonly ConfigurationService $configurationService;
+
+        public function __construct(DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
+            $this->timeTrackingMapper = new TimeTrackingMapper($databaseProvider);
+            $this->configurationService = $configurationService;
         }
 
-        public function getTimeTrackingEvents($type = NULL) : array {
-            global $databaseProvider;
-            
-            $timeTrackingEvents = array();
-
-            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if ($type !== NULL) {
-                $whereClauseBuilder->withClause("type = ?", $type);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
-
-            $trackingEventRows = $databaseProvider
-                ->statementBuilder("SELECT * FROM tracking {{WHERE CLAUSE}} ORDER BY timestamp DESC, id DESC", $whereClause)
-                ->getResultSet();
-
-            foreach ($trackingEventRows as &$trackingEventRow) {
-                $whereClauseBuilder = $databaseProvider->whereClauseBuilder()->withClause("timestamp <= ?", $trackingEventRow["timestamp"]);
-                if ($type !== NULL) {
-                    $whereClauseBuilder->withClause("type = ?", $type);
-                }
-                $whereClause = $whereClauseBuilder->buildForAnd();
-
-                $balance = $databaseProvider
-                    ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking {{WHERE CLAUSE}}", $whereClause)
-                    ->getSingleColumn("balance");
-
-                $timeTrackingEvents[] = new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], floatval($trackingEventRow["hours"]),
-                    $trackingEventRow["timestamp"], $trackingEventRow["type"], floatval($balance));
-            }
-
-            return $timeTrackingEvents;
+        // TODO: Replace string $type by TimeTrackingEventType $category.
+        public function createTimeTrackingEvent(string $type, float $hours, string $description, int $timestamp) : TimeTrackingEvent {
+            $timeTrackingEvent = new TimeTrackingEvent(NULL, $description, $hours, $timestamp, $type,
+                $hours + $this->timeTrackingMapper->selectBalance($type, $timestamp));
+            $this->timeTrackingMapper->insertTimeTrackingEvent($timeTrackingEvent);
+            return $timeTrackingEvent;
         }
 
-        public function removeTimeTrackingEvent($eventId) : bool {            
-            global $databaseProvider;
-
-            $wasDeleted = $databaseProvider
-                ->statementBuilder("DELETE FROM tracking WHERE id = ?")
-                ->withParameters($eventId)
-                ->execute() === 1;
-
-            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
-            $databaseProvider
-                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
-                ->execute();
-
-            return $wasDeleted;
+        // TODO: Replace string $type by TimeTrackingEventType $category.
+        public function getTimeTrackingEvents(?string $type = NULL) : array {  
+            return $this->timeTrackingMapper->selectTimeTrackingEvents($type);
         }
 
-        public function resetOpeningBalances() {
-            global $configuration, $databaseProvider;
+        public function removeTimeTrackingEvent(string $eventId) : bool {
+            return $this->timeTrackingMapper->deleteTimeTrackingEvent($eventId) > 0;
+        }
 
-            foreach ($configuration["timeOffHours"] as $eventType => $openingBalance) {
-                $carryOverBalance = $databaseProvider
-                    ->statementBuilder("SELECT SUM(hours) AS balance FROM tracking WHERE type = ? AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))")
-                    ->withParameters($eventType)
-                    ->getSingleColumn("balance");
+        public function resetOpeningBalances() : void {
+            foreach ($this->configurationService->getConfigurationKeysForType("timeOffHours") as &$eventType) {
+                $openingBalance = floatval($this->configurationService->getConfigurationForTypeAndKey("timeOffHours", $eventType));
 
-                $wasReset = $databaseProvider
-                    ->statementBuilder("DELETE FROM tracking WHERE type = ? AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))")
-                    ->withParameters($eventType)
-                    ->execute() > 0;
+                $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);
+                $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 
                 if ($wasReset) {    
                     if ($carryOverBalance !== NULL && $carryOverBalance > 0) {
-                        $this->createTimeTrackingEvent($eventType, $carryOverBalance, "Carried over from last year", "1.1." . date("Y"));
+                        $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $this->getBeginningOfCurrentYear());
                     }
                     
                     if ($openingBalance > 0) {
-                        $this->createTimeTrackingEvent($eventType, $openingBalance, "Opening balance", "1.1." . date("Y"));
+                        $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $this->getBeginningOfCurrentYear());
                     }
                 }
             }
+        }
+
+        private function getBeginningOfCurrentYear() : string {
+            return self::BEGINNING_OF_YEAR . date("Y");
         }
 
         public function onVacationReset(mixed $message) : void {
@@ -110,14 +66,23 @@
         public function onSchedulerTriggered(mixed $message) : void {
             global $eventPublisher, $scheduler;
 
-            if ($message["action"] === "RESET_OPENING_BALANCES") {
-                $timeSinceBeginningOfYear = strtotime("1.1." . date("Y", time()));
+            if ($message["action"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
+                $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
 
-                if ($timeSinceBeginningOfYear < $message["timeSinceLastExecution"]) {
+                // This will keep evaluating to false until the beginning of the next year.
+                // Then, it will be eventually executed.
+                if ($beginningOfCurrentYearTimestamp < $message["timeSinceLastExecution"]) {
                     $eventPublisher->publishVacationResetEvent();                        
-                    $scheduler->recordEventsTriggered($message["action"]);
+                    $scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
                 }
             }
         }
+    }
+
+    enum TimeTrackingEventType : string {
+        case Vacation = "VACATION";
+        case Selfcare = "SELFCARE";
+        case Tenure = "TENURE";
+        case Overtime = "OVERTIME";
     }
 ?>

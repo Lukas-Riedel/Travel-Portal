@@ -20,6 +20,10 @@
             return $this->id;
         }
 
+        public function setId($id) : void {
+            $this->id = $id;
+        }
+
         public function getDescription() : string {
             return $this->description;
         }

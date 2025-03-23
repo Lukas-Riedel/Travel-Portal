@@ -116,7 +116,7 @@
             // TODO: Remove the create-if-not-exists semantics.
             $highlightNotExists = TRUE;
             foreach ($this->getHighlights($highlightType, $entityId) as &$entityHighlight) {
-                if ($entityHighlight->getId() === $highlightId) {
+                if ($entityHighlight->getId() == $highlightId) {
                     $highlightNotExists = FALSE;
                     break;
                 }
