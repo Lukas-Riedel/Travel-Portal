@@ -159,7 +159,7 @@
             return count($values) === 0 ? NULL : (array_sum($values) / count($values));
         }
 
-        public function onActualWeatherForecastUpdated($message) : void {
+        public function onActualWeatherForecastUpdated(mixed $message) : void {
             // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 
@@ -167,7 +167,7 @@
             $this->updateActualWeatherForecast($placeIdentifier, $message["start"]);
         }
 
-        public function onHistoricalWeatherForecastUpdated($message) : void {
+        public function onHistoricalWeatherForecastUpdated(mixed $message) : void {
             // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 
@@ -175,7 +175,7 @@
             $this->updateHistoricalWeatherForecast($placeIdentifier, $message["start"]);
         }
 
-        public function onDaylightForecastUpdated($message) : void {
+        public function onDaylightForecastUpdated(mixed $message) : void {
             // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 
@@ -183,7 +183,7 @@
             $this->updateDaylightForecast($placeIdentifier, $message["start"], $message["end"]);
         }
 
-        public function onSchedulerTriggered($message) : void {
+        public function onSchedulerTriggered(mixed $message) : void {
             // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;
 

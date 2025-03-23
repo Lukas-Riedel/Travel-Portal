@@ -59,7 +59,7 @@
             }
         }
 
-        public function onCalendarChanged($message) {
+        public function onCalendarChanged(mixed $message) : void {
             global $configuration;
 
             if ($message["calendar"] === "stays") {
@@ -67,7 +67,7 @@
             }
         }
 
-        public function onCalendarWatchRenewing($message) {
+        public function onCalendarWatchRenewing(mixed $message) : void {
             global $calendarClient;
 
             if ($message["calendar"] === "stays") {

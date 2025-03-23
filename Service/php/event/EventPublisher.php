@@ -37,8 +37,16 @@
             $this->publishEvent(Event::AllAlbumsInvalidated, NULL);
         }
 
-        public function publishAllHighlightsChangedEvent() : void {
-            $this->publishEvent(Event::AllHighlightsChanged, NULL);
+        public function publishAllHighlightsInvalidatedEvent() : void {
+            $this->publishEvent(Event::AllHighlightsInvalidated, NULL);
+        }
+
+        public function publishHighlightCreatedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
+            $this->publishEvent(Event::HighlightCreated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
+        }
+
+        public function publishHighlightRemovedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
+            $this->publishEvent(Event::HighlightRemoved, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
         public function publishAlbumUpdatedEvent($albumId) : void {
@@ -153,7 +161,7 @@
         case DaylightForecastUpdated = 7;
         case HistoricalWeatherForecastUpdated = 8;
         case PhotoInvalidated = 9;
-        case AllHighlightsChanged = 10;
+        case AllHighlightsInvalidated = 10;
         case AlbumInvalidated = 11;
         case AllAlbumsInvalidated = 12;
         case CategoryInvalidated = 13;
@@ -169,7 +177,9 @@
         case FlightEventCreated = 23;
         case FlightEventUpdated = 24;
         case FlightEventDeleted = 25;
-        case StatisticsChanged = 26;
+        case HighlightCreated = 26;
+        case HighlightRemoved = 27;
+        case StatisticsChanged = 28;
 
         case FitnessActivityDetected = 100;
 

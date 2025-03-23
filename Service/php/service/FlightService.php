@@ -177,7 +177,7 @@
                 "flight" => str_replace(" ", "", $tokens[3]));
         }
 
-        public function onCalendarChanged($message) : void {
+        public function onCalendarChanged(mixed $message) : void {
             // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
@@ -186,17 +186,17 @@
             }
         }
 
-        public function onCalendarWatchRenewing($message) : void {
+        public function onCalendarWatchRenewing(mixed $message) : void {
             if ($message["calendar"] === Calendar::Flights->value || $message["calendar"] === Calendar::WatchedFlights->value) {
                 $this->calendarClient->watchCalendar($message["calendar"]);
             }
         }
 
-        public function onFlightArrived($message) : void {            
+        public function onFlightArrived(mixed $message) : void {            
             $this->fetchAndLogFlight($message["flight"], $message["tripId"], $message["from"], $message["to"], $message["scheduledDeparture"]);
         }
 
-        public function onSchedulerTriggered($message) : void {
+        public function onSchedulerTriggered(mixed $message) : void {
             if ($message["action"] === self::LOG_FLIGHTS_ACTION_NAME) {
                 $firstNonLoggedFlight = $this->flightMapper->selectFirstNonLoggedFlight();
                 if ($firstNonLoggedFlight === NULL) {

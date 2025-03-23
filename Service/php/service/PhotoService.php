@@ -13,6 +13,10 @@
 
         private const JPG_FILE_EXTENSION = ".jpg";
 
+        private const ALBUM_THUMBNAIL_WIDTH = 350;
+        private const ALBUM_THUMBNAIL_HEIGHT = 233;
+        private const ALBUM_THUMBNAIL_CACHE_PATH = "cache/album";
+
         private readonly PhotoMapper $photoMapper;
 
         private readonly GoogleApiClient $googleApiClient;
@@ -29,7 +33,7 @@
 
         public function __construct(DatabaseProvider $databaseProvider, GoogleApiClient $googleApiClient, 
             ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler) {
-            $this->photoMapper = new PhotoMapper($databaseProvider);
+            $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
@@ -93,7 +97,7 @@
                 foreach ($response["mediaItems"] as &$mediaItem) {
                     $photos[] = new Photo(
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
-                        $mediaItem["baseUrl"],
+                        function() use($mediaItem) { return $mediaItem["baseUrl"]; },
                         $mediaItem["productUrl"],
                         isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
                         isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : NULL,
@@ -136,33 +140,6 @@
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             return $pendingPhoto;
         }
-
-        public function onAllAlbumsInvalidated(mixed $message) : void {
-            $this->updateAllAlbums();
-        }
-        
-        public function onAlbumInvalidated(mixed $message) : void {
-            $this->updateAlbum($message["albumId"]);
-        }
-
-        public function onAlbumUpdated(mixed $message) : void {
-            $album = $this->getAlbum($message["albumId"]);
-            if ($album !== NULL) {
-                $photos = $this->getPhotos($album->getId());
-    
-                if (count($photos) !== $album->getImagesCount()) {
-                    $this->eventPublisher->publishAlbumInvalidatedEvent($album->getId());
-                }
-            }
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_ALBUMS_ACTION_NAME 
-                && $message["timeSinceLastExecution"] > self::FETCH_ALBUMS_ACTION_INTERVAL) {
-                $this->eventPublisher->publishAllAlbumsInvalidatedEvent();                
-                $this->scheduler->recordEventsTriggered(self::FETCH_ALBUMS_ACTION_NAME);
-            }
-        }
         
         private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
             global $highlightService, $databaseProvider, $categoryService;
@@ -183,13 +160,13 @@
             
                         if ($forceOverwrite || !file_exists($filePath)) {
                             file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] 
-                                . "=w" . $this->configurationService->getConfigurationForTypeAndKey("albumThumbnailImageSize", "width")
-                                . "-h" . $this->configurationService->getConfigurationForTypeAndKey("albumThumbnailImageSize", "height")));
+                                . "=w" . self::ALBUM_THUMBNAIL_WIDTH
+                                . "-h" . self::ALBUM_THUMBNAIL_HEIGHT));
                         }
             
                         $filePaths[] = $filePath;
                         $mainImageUrl = $this->configurationService->getBaseUrl() 
-                            . "/" . $this->configurationService->getConfigurationForTypeAndKey("cachePath", "albumThumbnail")
+                            . "/" . self::ALBUM_THUMBNAIL_CACHE_PATH
                             . "/" . $fileName;
                         
                         $mainPhotoId = $this->getOrCreatePhotoId($album["coverPhotoMediaItemId"]);
@@ -293,7 +270,7 @@
         }
 
         private function getPhysicalCachePath() : string {
-            return dirname(__FILE__) . "/../../" . $this->configurationService->getConfigurationForTypeAndKey("cachePath", "albumThumbnail");
+            return dirname(__FILE__) . "/../../" . self::ALBUM_THUMBNAIL_CACHE_PATH;
         }
 
         private function prunePhysicalCache(array $usedFilePaths) : void {
@@ -375,6 +352,33 @@
             } 
 
             return $createdPhotos;
+        }
+
+        public function onAllAlbumsInvalidated(mixed $message) : void {
+            $this->updateAllAlbums();
+        }
+        
+        public function onAlbumInvalidated(mixed $message) : void {
+            $this->updateAlbum($message["albumId"]);
+        }
+
+        public function onAlbumUpdated(mixed $message) : void {
+            $album = $this->getAlbum($message["albumId"]);
+            if ($album !== NULL) {
+                $photos = $this->getPhotos($album->getId());
+    
+                if (count($photos) !== $album->getImagesCount()) {
+                    $this->eventPublisher->publishAlbumInvalidatedEvent($album->getId());
+                }
+            }
+        }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            if ($message["action"] === self::FETCH_ALBUMS_ACTION_NAME 
+                && $message["timeSinceLastExecution"] > self::FETCH_ALBUMS_ACTION_INTERVAL) {
+                $this->eventPublisher->publishAllAlbumsInvalidatedEvent();                
+                $this->scheduler->recordEventsTriggered(self::FETCH_ALBUMS_ACTION_NAME);
+            }
         }
     }
 ?>

@@ -3,8 +3,11 @@
 
         private readonly DatabaseProvider $databaseProvider;
 
-        public function __construct(DatabaseProvider $databaseProvider) {
+        private readonly GoogleApiClient $googleApiClient;
+
+        public function __construct(DatabaseProvider $databaseProvider, GoogleApiClient $googleApiClient) {
             $this->databaseProvider = $databaseProvider;
+            $this->googleApiClient = $googleApiClient;
         }
 
         public function selectAlbum(string $albumId) : ?Album {
@@ -43,8 +46,12 @@
                 return NULL;
             }
 
-            // TODO: Obtain a base URL.
-            return new Photo($photoId, NULL, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+            $urlProvider = function() use($photoId) { 
+                return $this->googleApiClient->getMediaItem($this->selectPhotoExternalId($photoId))["baseUrl"];
+            };
+            $urlProvider->bindTo($this);
+
+            return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
                 $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
         }
 
@@ -125,7 +132,7 @@
                 ->getFirstColumn("external_id");
         }
 
-        public function selectPhotoExternalId(string $albumId) : ?string {            
+        public function selectPhotoExternalId(string $photoId) : ?string {            
             $sql = <<<'SQL'
                 SELECT external_id
                 FROM photo_identifier
@@ -134,7 +141,7 @@
             
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($albumId)
+                ->withParameters($photoId)
                 ->getFirstColumn("external_id");
         }
 

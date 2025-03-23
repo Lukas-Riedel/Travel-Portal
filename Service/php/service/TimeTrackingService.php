@@ -103,11 +103,11 @@
             }
         }
 
-        public function onVacationReset($message) : void {
+        public function onVacationReset(mixed $message) : void {
             $this->resetOpeningBalances();
         }
 
-        public function onSchedulerTriggered($message) : void {
+        public function onSchedulerTriggered(mixed $message) : void {
             global $eventPublisher, $scheduler;
 
             if ($message["action"] === "RESET_OPENING_BALANCES") {

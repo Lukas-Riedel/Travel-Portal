@@ -1,272 +1,205 @@
 <?php
+    require_once(dirname(__FILE__) . "/HighlightMapper.php");
     require_once(dirname(__FILE__) . "/../model/Highlight.php");
 
     class HighlightService {
-        public function getHighlight($highlightId) : ?Highlight {
-            global $databaseProvider, $photoService;            
-                
-            $highlightRow = $databaseProvider
-                ->statementBuilder("SELECT * FROM highlight_identifier WHERE id = ?")
-                ->withParameters($highlightId)
-                ->getSingleRow();
+        
+        private const FETCH_HIGHLIGHTS_ACTION_NAME = "FETCH_HIGHLIGHTS";
+        private const FETCH_HIGHLIGHTS_ACTION_INTERVAL = 21600;
+        
+        private const JPG_FILE_EXTENSION = ".jpg";
 
-            if ($highlightRow === NULL) {
-                return NULL;
-            }
+        private readonly HighlightMapper $highlightMapper;
 
-            $photo = $photoService->getPhoto($highlightRow["photo_id"]);
-            if ($photo === NULL) {
-                return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], NULL, NULL, NULL, NULL, NULL);;
-            }
-            
-            return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
-                $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp());
+        private readonly PhotoService $photoService;
+
+        private readonly ConfigurationService $configurationService;
+        
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
+
+        public function __construct(DatabaseProvider $databaseProvider, PhotoService $photoService,
+            ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+            $this->highlightMapper = new HighlightMapper($databaseProvider, $photoService);
+            $this->photoService = $photoService;
+            $this->configurationService = $configurationService;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
         }
 
-        public function getPlaceHighlights($placeId) : array {
+        public function getHighlight(?string $highlightId) : ?Highlight {
+            return $highlightId === NULL ? NULL : $this->highlightMapper->selectHighlight($highlightId);
+        }
+
+        public function getPlaceHighlights(string $placeId) : array {
             return $this->getHighlights(HighlightType::Place, $placeId);
         }
 
-        public function getCategoryHighlights($categoryId) : array {
+        public function getCategoryHighlights(string $categoryId) : array {
             return $this->getHighlights(HighlightType::Category, $categoryId);
         }
 
-        public function getYearHighlights($year) : array {
+        public function getYearHighlights(int $year) : array {
             return $this->getHighlights(HighlightType::Year, $year);
         }
 
-        public function getTripHighlights($tripId) : array {
+        public function getTripHighlights(string $tripId) : array {
             return $this->getHighlights(HighlightType::Trip, $tripId);
         }
-        
-        private function getHighlights($highlightType, $entityId) : array {
-            global $databaseProvider;
 
-            return $databaseProvider
-                ->statementBuilder("SELECT hi.*, p.focal_length, p.aperture, p.shutter_speed, p.iso, p.timestamp FROM " . $highlightType->getTableName() . " ht INNER JOIN highlight_identifier hi ON ht.highlight_id = hi.id LEFT JOIN photo p ON hi.photo_id = p.id WHERE ht.id = ?")
-                ->withParameters($entityId)
-                ->getMappedResultSet(function($highlightRow) { 
-                    return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["focal_length"], 
-                        $highlightRow["aperture"], $highlightRow["shutter_speed"], $highlightRow["iso"], $highlightRow["timestamp"]);
-                });
-
-        }
-
-        public function getHighlightIdentifier($photoId) : ?string {
-            global $databaseProvider;
-            
-            return $databaseProvider
-                ->statementBuilder("SELECT id FROM highlight_identifier WHERE photo_id = ?")
-                ->withParameters($photoId)
-                ->getFirstColumn("id");
-        }
-        
-        public function getOrCreateHighlightIdentifier($photoId) : string {
-            global $databaseProvider;
-
-            $highlightIdentifier = $this->getHighlightIdentifier($photoId);
-            if ($highlightIdentifier !== NULL) {
-                return $highlightIdentifier;
-            }
-
-            $databaseProvider
-                ->statementBuilder("INSERT INTO highlight_identifier (photo_id) VALUES (?)")
-                ->withParameters($photoId)
-                ->execute();
-
-            return $this->getHighlightIdentifier($photoId);
-        }
-
-        public function createPlaceHighlight($placeId, $photoId) : Highlight {
+        public function createPlaceHighlight(string $placeId, string $photoId) : Highlight {
             return $this->createHighlight(HighlightType::Place, $placeId, $photoId);
         }
 
-        public function createTripHighlight($tripId, $photoId) : Highlight {
+        public function createTripHighlight(string $tripId, string $photoId) : Highlight {
             return $this->createHighlight(HighlightType::Trip, $tripId, $photoId);
         }
 
-        public function createCategoryHighlight($categoryId, $photoId) : Highlight {
+        public function createCategoryHighlight(string $categoryId, string $photoId) : Highlight {
             return $this->createHighlight(HighlightType::Category, $categoryId, $photoId);
         }
 
-        public function createYearHighlight($year, $photoId) : Highlight {
+        public function createYearHighlight(int $year, string $photoId) : Highlight {
             return $this->createHighlight(HighlightType::Year, $year, $photoId);
         }
 
-        private function createHighlight($highlightType, $entityId, $photoId) : Highlight {
-            global $databaseProvider;
-
-            $highlightIdentifier = $this->getOrCreateHighlightIdentifier($photoId);
-
-            // TODO: Remove the create-if-not-exists semantics.
-            $highlightNotExists = $databaseProvider
-                ->statementBuilder("SELECT * FROM " . $highlightType->getTableName() . " WHERE id = ? AND highlight_id = ?")
-                ->withParameters($entityId, $highlightIdentifier)
-                ->getFirstRow() === NULL;
-
-            if ($highlightNotExists) {
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO " . $highlightType->getTableName() . " (id, highlight_id) VALUES (?, ?)")
-                    ->withParameters($entityId, $highlightIdentifier)
-                    ->execute();
-
-                $this->updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier);
-
-                $this->updateHighlight($highlightIdentifier);
-            }
-            
-           return $this->getHighlight($highlightIdentifier);
-        }
-
-        public function removePlaceHighlight($placeId, $highlightId) : bool {
+        public function removePlaceHighlight(string $placeId, string $highlightId) : bool {
             return $this->removeHighlight(HighlightType::Place, $placeId, $highlightId);
         }
 
-        public function removeTripHighlight($tripId, $highlightId) : bool {
+        public function removeTripHighlight(string $tripId, string $highlightId) : bool {
             return $this->removeHighlight(HighlightType::Trip, $tripId, $highlightId);
         }
 
-        public function removeCategoryHighlight($categoryId, $highlightId) : bool {
+        public function removeCategoryHighlight(string $categoryId, string $highlightId) : bool {
             return $this->removeHighlight(HighlightType::Category, $categoryId, $highlightId);
         }
 
-        public function removeYearHighlight($year, $highlightId) : bool {
+        public function removeYearHighlight(int $year, string $highlightId) : bool {
             return $this->removeHighlight(HighlightType::Year, $year, $highlightId);
         }
+        
+        public function getOrCreateHighlightId(string $photoId) : string {
+            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
+            if ($highlightId !== NULL) {
+                return $highlightId;
+            }
 
-        private function removeHighlight($highlightType, $entityId, $highlightId) : bool {
-            global $databaseProvider, $eventPublisher;
+            $this->highlightMapper->insertHighlightId($photoId);
 
-            $wasDeleted = $databaseProvider
-                ->statementBuilder("DELETE FROM " . $highlightType->getTableName() . " WHERE id = ? AND highlight_id = ?")
-                ->withParameters($entityId, $highlightId)
-                ->execute();
-
-            $eventPublisher->publishAllHighlightsChangedEvent();
-                
-            return $wasDeleted;
+            return $this->highlightMapper->selectHighlightId($photoId);
         }
 
         public function updateHighlights() : void {
-            global $configuration;
-
-            $thumbnailFilePaths = $this->doUpdateHighlights(NULL, NULL, FALSE, $configuration["cachePath"]["highlightThumbnail"],
-                $configuration["highlightThumbnailImageSize"], "thumbnail_url");
-            $this->unlinkUnusedFiles($thumbnailFilePaths, $configuration["cachePath"]["highlightThumbnail"]);
+            // TODO: Do the same also for the full size.
+            $thumbnailFilePaths = $this->doUpdateHighlights(HighlightSize::Thumbnail, NULL, NULL, FALSE);
+            $this->unlinkUnusedFiles($thumbnailFilePaths, HighlightSize::Thumbnail);
         }
 
-        public function updateHighlight($highlightId) : void {
-            global $configuration;
-
-            $this->doUpdateHighlights($highlightId, NULL, TRUE, $configuration["cachePath"]["highlightThumbnail"],
-                $configuration["highlightThumbnailImageSize"], "thumbnail_url");
+        public function updateHighlight(string $highlightId) : void {
+            // TODO: Do the same also for the full size.
+            $this->doUpdateHighlights(HighlightSize::Thumbnail, $highlightId, NULL, TRUE);
         }
 
-        public function updateHighlightForPhoto($photoId) : void {
-            global $configuration;
-
-            $this->doUpdateHighlights(NULL, $photoId, TRUE, $configuration["cachePath"]["highlightThumbnail"],
-                $configuration["highlightThumbnailImageSize"], "thumbnail_url");
+        public function updateHighlightForPhoto(string $photoId) : void {
+            // TODO: Do the same also for the full size.
+            $this->doUpdateHighlights(HighlightSize::Thumbnail, NULL, $photoId, TRUE);
+        }
+        
+        private function getHighlights(HighlightType $highlightType, string $entityId) : array {
+            return $this->highlightMapper->selectHighlights($highlightType, $entityId);
         }
 
-        private function doUpdateHighlights($highlightId, $photoId, $forceOverwrite, $cachePath, $imageSize, $urlColumnName) : array {
-            global $databaseProvider, $googleApiClient;
+        private function createHighlight(HighlightType $highlightType, string $entityId, string $photoId) : Highlight {
+            $highlightId = $this->getOrCreateHighlightId($photoId);
 
+            // TODO: Remove the create-if-not-exists semantics.
+            $highlightNotExists = TRUE;
+            foreach ($this->getHighlights($highlightType, $entityId) as &$entityHighlight) {
+                if ($entityHighlight->getId() === $highlightId) {
+                    $highlightNotExists = FALSE;
+                    break;
+                }
+            }
+
+            if ($highlightNotExists) {
+                $this->highlightMapper->insertHighlight($highlightType, $entityId, $highlightId);
+
+                $this->eventPublisher->publishHighlightCreatedEvent($highlightType, $entityId, $highlightId);
+                $this->updateHighlight($highlightId);
+            }
+            
+           return $this->getHighlight($highlightId);
+        }
+
+        private function removeHighlight(HighlightType $highlightType, string $entityId, string $highlightId) : bool {
+            $wasRemoved = $this->highlightMapper->deleteHighlight($highlightType, $entityId, $highlightId) === 1;
+            if ($wasRemoved) {
+                $this->eventPublisher->publishHighlightRemovedEvent($highlightType, $entityId, $highlightId);
+            }        
+            return $wasRemoved;
+        }
+
+        private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $forceOverwrite) : array {
             $filePaths = array();
 
-            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if ($highlightId !== NULL) {
-                $whereClauseBuilder->withClause("hi.id = ?", $highlightId);
-            }
-            if ($photoId !== NULL) {
-                $whereClauseBuilder->withClause("hi.photo_id = ?", $photoId);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
-            
-            $highlightRows = $databaseProvider
-                ->statementBuilder("SELECT hi.*, pi.external_id FROM highlight_identifier hi INNER JOIN photo_identifier pi ON hi.photo_id = pi.id {{WHERE CLAUSE}}", $whereClause)
-                ->getResultSet();
-
-            foreach ($highlightRows as &$highlightRow) {
-                $fileName = $highlightRow["external_id"] . ".jpg";
-                $filePath = $this->getPhysicalCachePath($cachePath) . "/" . $fileName;
+            $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
+            foreach ($highlights as &$highlight) {
+                $fileName = $highlight->getId() . self::JPG_FILE_EXTENSION;
+                $filePath = $this->getPhysicalCachePath($highlightSize) . "/" . $fileName;
     
                 if ($forceOverwrite || !file_exists($filePath)) {
-                    $baseUrl = $googleApiClient->getMediaItem($highlightRow["external_id"])["baseUrl"];
-                    file_put_contents($filePath, file_get_contents($baseUrl . "=w" . $imageSize["width"] . "-h" . $imageSize["height"]));
+                    $photoId = $this->highlightMapper->selectPhotoId($highlight->getId());
+
+                    if ($photoId !== NULL) {
+                        $photo = $this->photoService->getPhoto($photoId);
+
+                        if ($photo !== NULL) {
+                            file_put_contents($filePath, file_get_contents($photo->getUrl()
+                                . "=w" . $highlightSize->getWidth()
+                                . "-h" . $highlightSize->getHeight()));
+                        }
+                    }
                 }
     
                 $filePaths[] = $filePath;
-                $imageUrl = BASE_URL . "/" . $cachePath . "/" . $fileName;
+                $imageUrl = $this->configurationService->getBaseUrl()
+                    . "/" . $highlightSize->getCachePath()
+                    . "/" . $fileName;
 
-                $databaseProvider
-                    ->statementBuilder("UPDATE highlight_identifier SET " . $urlColumnName . " = ? WHERE id = ?")
-                    ->withParameters($imageUrl, $highlightRow["id"])
-                    ->execute();
+                $this->highlightMapper->updateHighlightImageUrl($highlightSize, $highlight->getId(), $imageUrl);
             }
             
             return $filePaths;
         }
 
-        private function unlinkUnusedFiles($usedFilePaths, $cachePath) : void {
-            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath($cachePath) . "/*"));
+        private function unlinkUnusedFiles(array $usedFilePaths, HighlightSize $highlightSize) : void {
+            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath($highlightSize) . "/*"));
             $unusedFilePaths = array_diff($existingFilePaths, $usedFilePaths);    
             array_map("unlink", $unusedFilePaths);
         }
 
-        private function getPhysicalCachePath($cachePath) : string {
-            return dirname(__FILE__) . "/../../" . $cachePath;
+        private function getPhysicalCachePath(HighlightSize $highlightSize) : string {
+            return dirname(__FILE__) . "/../../" . $highlightSize->getCachePath();
         }
 
-        private function updateEntityMainHighlightIfNull($entityId, $highlightType, $highlightIdentifier) : bool {
-            global $placeService, $tripService, $categoryService, $yearService;
-
-            if ($highlightType === HighlightType::Place) {
-                $placeIdentifier = $placeService->getPlaceIdentifierById($entityId);
-                if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
-                    return $placeService->updatePlaceMainHighlight($entityId, $highlightIdentifier);
-                }
-            }
-            else if ($highlightType === HighlightType::Trip) {
-                $tripIdentifier = $tripService->getTripIdentifierById($entityId);
-                if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
-                    return $tripService->updateTripMainHighlight($entityId, $highlightIdentifier);
-                }
-            }
-            else if ($highlightType === HighlightType::Category) {
-                $categoryIdentifier = $categoryService->getCategoryIdentifierById($entityId);
-                if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
-                    return $categoryService->updateCategoryMainHighlight($entityId, $highlightIdentifier);
-                }
-            }
-            else if ($highlightType === HighlightType::Year) {
-                $yearIdentifier = $yearService->getYearIdentifier($entityId);
-                if ($yearIdentifier !== NULL && $yearIdentifier->getMainHighlight() === NULL) {
-                    return $yearService->updateYearMainHighlight($entityId, $highlightIdentifier);
-                }
-            }
-            else {
-                throw new InvalidArgumentException("Unknown highlight type " . $highlightType . ".");
-            }
-
-            return FALSE;
-        }
-
-        public function onSchedulerTriggered($message) : void {
-            global $eventPublisher, $scheduler;
-
-            if ($message["action"] === "FETCH_HIGHLIGHTS" && $message["timeSinceLastExecution"] > 21600) {
-                $eventPublisher->publishAllHighlightsChangedEvent();
-                
-                $scheduler->recordEventsTriggered($message["action"]);
+        public function onSchedulerTriggered(mixed $message) : void {
+            if ($message["action"] === self::FETCH_HIGHLIGHTS_ACTION_NAME
+                && $message["timeSinceLastExecution"] > self::FETCH_HIGHLIGHTS_ACTION_INTERVAL) {
+                $this->eventPublisher->publishAllHighlightsInvalidatedEvent();                
+                $this->scheduler->recordEventsTriggered(self::FETCH_HIGHLIGHTS_ACTION_NAME);
             }
         }
 
-        public function onAllHighlightsChanged($message) {
+        public function onAllHighlightsInvalidated(mixed $message) : void {
+            $this->updateHighlights();
+        }
+
+        public function onHighlightRemovedChanged(mixed $message) : void {
             $this->updateHighlights();
         }
         
-        public function onPhotoInvalidated($message) {
+        public function onPhotoInvalidated(mixed $message) : void {
             $this->updateHighlightForPhoto($message["photoId"]);
         }
     }
@@ -283,6 +216,39 @@
                 self::Trip => "highlight_trip",
                 self::Category => "highlight_category",
                 self::Year => "highlight_year"
+            };
+        }
+    }
+
+    enum HighlightSize {
+        case Full;
+        case Thumbnail;
+
+        public function getUrlColumnName() : string {
+            return match($this) {
+                self::Full => "full_url",
+                self::Thumbnail => "thumbnail_url"
+            };
+        }
+
+        public function getWidth() : int {
+            return match($this) {
+                self::Full => 6000,
+                self::Thumbnail => 350
+            };
+        }
+
+        public function getHeight() : int {
+            return match($this) {
+                self::Full => 4000,
+                self::Thumbnail => 233
+            };
+        }
+
+        public function getCachePath() : string {
+            return match($this) {
+                self::Full => "cache/highlight/full",
+                self::Thumbnail => "cache/highlight/thumbnail"
             };
         }
     }

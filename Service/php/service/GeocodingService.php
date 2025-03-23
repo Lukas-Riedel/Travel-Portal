@@ -5,8 +5,10 @@
     class GeocodingService {
 
         private const EARTH_RADIUS_KM = 6378;
+        
         private const UNKNOWN_COUNTRY_KEY = "UNKNOWN";
         private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+), (.+)\)}";
+
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
 

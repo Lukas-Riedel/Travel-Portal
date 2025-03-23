@@ -83,6 +83,15 @@
                 ->withParameters($highlightIdentifier, $year)
                 ->execute() === 1;
         }
+
+        public function onHighlightCreated(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Year->name) {
+                $yearIdentifier = $this->getYearIdentifier($message["entityId"]);
+                if ($yearIdentifier !== NULL && $yearIdentifier->getMainHighlight() === NULL) {
+                    $this->updateYearMainHighlight($message["entityId"], $message["highlightId"]);
+                }
+            }
+        }
     }
 
     enum YearIncludedEntity : string {

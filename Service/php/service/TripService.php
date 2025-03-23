@@ -457,7 +457,7 @@
                 ->execute();
         }
 
-        public function onCalendarChanged($message) {
+        public function onCalendarChanged(mixed $message) : void {
             global $configuration, $placeService, $stayService, $flightService;
 
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
@@ -470,11 +470,20 @@
             }
         }
         
-        public function onCalendarWatchRenewing($message) {
+        public function onCalendarWatchRenewing(mixed $message) : void {
             global $calendarClient;
 
             if ($message["calendar"] === "trips") {
                 $calendarClient->watchCalendar($message["calendar"]);
+            }
+        }
+
+        public function onHighlightCreated(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Trip->name) {
+                $tripIdentifier = $this->getTripIdentifierById($message["entityId"]);
+                if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
+                    $this->updateTripMainHighlight($message["entityId"], $message["highlightId"]);
+                }
             }
         }
     }

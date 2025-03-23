@@ -331,7 +331,7 @@
                 ->execute() === 1;
         }
         
-        public function onAlbumUpdated($message) : void {
+        public function onAlbumUpdated(mixed $message) : void {
             global $eventPublisher;
             
             $places = $this->getRegularPlaces(NULL, NULL, NULL, $message["albumId"], NULL, NULL, array(PlaceIncludedEntity::Categories->value));
@@ -691,7 +691,7 @@
             }
         }
 
-        public function onCalendarChanged($message) {
+        public function onCalendarChanged(mixed $message) : void {
             global $configuration;
 
             if ($message["calendar"] === "places") {
@@ -699,7 +699,7 @@
             }
         }
 
-        public function onCalendarWatchRenewing($message) {
+        public function onCalendarWatchRenewing(mixed $message) : void {
             global $calendarClient;
 
             if ($message["calendar"] === "places") {
@@ -707,12 +707,21 @@
             }
         }
 
-        public function onCategoryInvalidated($message) : void {
+        public function onCategoryInvalidated(mixed $message) : void {
             global $eventPublisher;
 
             $placeIdentifiers = $this->getPlaceIdentifiersByCategoryId($message["categoryId"]);    
             foreach ($placeIdentifiers as &$placeIdentifier) {
                 $eventPublisher->publishPlaceUpdatedEvent($placeIdentifier);
+            }
+        }
+
+        public function onHighlightCreated(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Place->name) {
+                $placeIdentifier = $this->getPlaceIdentifierById($message["entityId"]);
+                if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
+                    $this->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
+                }
             }
         }
     }

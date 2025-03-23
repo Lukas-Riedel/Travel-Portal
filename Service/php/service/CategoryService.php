@@ -353,14 +353,23 @@
             return TRUE;
         }
 
-        public function onCategoryCreated($message) : void {
+        public function onCategoryCreated(mixed $message) : void {
             $this->updateRegionAreas();
         }
 
-        public function onPlaceUpdated($message) : void {            
+        public function onPlaceUpdated(mixed $message) : void {            
             $this->updateCategories(new PlaceIdentifier($message["placeIdentifier"]["id"], $message["placeIdentifier"]["name"],
                 $message["placeIdentifier"]["country"], $message["placeIdentifier"]["latitude"], $message["placeIdentifier"]["longitude"],
                 $message["placeIdentifier"]["timezone"], $message["placeIdentifier"]["mainHighlight"], $message["placeIdentifier"]["excerpt"]));
+        }
+
+        public function onHighlightCreated(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Category->name) {
+                $categoryIdentifier = $this->getCategoryIdentifierById($message["entityId"]);
+                if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
+                    $this->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
+                }
+            }
         }
     }
 

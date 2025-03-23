@@ -1,6 +1,6 @@
 <?php
     class PlatformService {        
-        public function onApplicationStarted($message) {
+        public function onApplicationStarted(mixed $message) : void {
             global $databaseProvider, $googleApiClient;
 
             $dump = array();
@@ -40,7 +40,7 @@
             }
         }
 
-        public function onSchedulerTriggered($message) : void {
+        public function onSchedulerTriggered(mixed $message) : void {
             global $configuration, $configurationService, $scheduler, $eventPublisher;
 
             if ($message["action"] === "WATCH_CALENDAR" && $message["timeSinceLastExecution"] > 82800) {

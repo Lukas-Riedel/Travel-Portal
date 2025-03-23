@@ -47,7 +47,7 @@
             return TRUE;
         }
 
-        public function onSchedulerTriggered($message) : void {
+        public function onSchedulerTriggered(mixed $message) : void {
             if ($message["action"] === self::FETCH_FITNESS_ACTION_NAME
                 && $message["timeSinceLastExecution"] > $this->configurationService->getConfigurationForType("fitnessRecordDuration")) {
                 $fitnessRecordDuration = $this->configurationService->getConfigurationForType("fitnessRecordDuration");

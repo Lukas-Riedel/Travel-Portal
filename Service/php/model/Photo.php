@@ -1,7 +1,7 @@
 <?php
     class Photo implements JsonSerializable {        
         private $id;
-        private $url;
+        private $urlProvider;
         private $permalink;
         private $focalLength;
         private $aperture;
@@ -9,9 +9,9 @@
         private $iso;
         private $timestamp;
 
-        public function __construct($id, $url, $permalink, $focalLength, $aperture, $shutterSpeed, $iso, $timestamp) {
+        public function __construct($id, $urlProvider, $permalink, $focalLength, $aperture, $shutterSpeed, $iso, $timestamp) {
             $this->id = $id;
-            $this->url = $url;
+            $this->urlProvider = $urlProvider;
             $this->permalink = $permalink;
             $this->focalLength = $focalLength;
             $this->aperture = $aperture;
@@ -25,7 +25,8 @@
         }
 
         public function getUrl() : string {
-            return $this->url;
+            // Compute the URL only when it is needed to avoid unnecessary Google API calls.
+            return ($this->urlProvider)();
         }
 
         public function getPermalink() : string {
@@ -54,7 +55,7 @@
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return get_object_vars($this);
+            return array_merge(array_diff_key(get_object_vars($this), ["urlProvider" => null]), ["url" => ($this->urlProvider)()]);
         }
     }
 ?>

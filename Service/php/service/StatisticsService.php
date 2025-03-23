@@ -185,7 +185,7 @@
                 });
         }
 
-        public function onCategoryUpdated($message) {
+        public function onCategoryUpdated(mixed $message) : void {
             global $categoryService;
 
             $categoryIdentifier = $categoryService->getCategoryIdentifierById($message["categoryId"]);
@@ -194,7 +194,7 @@
             }
         }
 
-        public function onExpenseCreated($message) {
+        public function onExpenseCreated(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -203,7 +203,7 @@
             }
         }
 
-        public function onExpenseUpdated($message) {
+        public function onExpenseUpdated(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -212,7 +212,7 @@
             }
         }
 
-        public function onExpenseRemoved($message) {
+        public function onExpenseRemoved(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -221,7 +221,7 @@
             }
         }
 
-        public function onFitnessDataUpdated($message) {
+        public function onFitnessDataUpdated(mixed $message) : void {
             global $tripService;
 
             $trips = $tripService->getTripsContainingInterval($message["start"], $message["end"]);
@@ -230,7 +230,7 @@
             }
         }
 
-        public function onFlightLogged($message) {
+        public function onFlightLogged(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -239,7 +239,7 @@
             }
         }
 
-        public function onFlightEventCreated($message) {
+        public function onFlightEventCreated(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -248,7 +248,7 @@
             }
         }
 
-        public function onFlightEventUpdated($message) {
+        public function onFlightEventUpdated(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -257,7 +257,7 @@
             }
         }
 
-        public function onFlightEventDeleted($message) {
+        public function onFlightEventDeleted(mixed $message) : void {
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -266,7 +266,7 @@
             }
         }
 
-        public function onStatisticsChanged($message) {
+        public function onStatisticsChanged(mixed $message) : void {
             global $categoryService, $tripService;
 
             if (isset($message["year"])) {
@@ -289,7 +289,7 @@
             }
         }
 
-        public function onSchedulerTriggered($message) : void {
+        public function onSchedulerTriggered(mixed $message) : void {
             global $eventPublisher, $scheduler, $configuration, $databaseProvider;
 
             if ($message["action"] === "UPDATE_OVERALL_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {

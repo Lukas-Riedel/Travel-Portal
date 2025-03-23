@@ -14,7 +14,7 @@
             return BASE_URL;
         }        
 
-        public function onFlightLogged($message) {
+        public function onFlightLogged(mixed $message) : void {
             $airlineCode = substr($message["flight"], 0, 2);
             $this->addConfigurationEntryIfNotExists("AIRLINES", array("public", "modifiable"), $airlineCode, $airlineCode);
         }

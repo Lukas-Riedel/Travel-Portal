@@ -37,11 +37,10 @@ function loadPage(initFunction) {
     $(document).ready(async () => {
         api = new Api("lriedel.cz/api"); // TODO
         configuration = await api.listConfigurationEntries("public");
-        const albumsPerRow = $(window).width() / configuration.albumThumbnailImageSize.width;
-        const newImageWidth = albumsPerRow - Math.floor(albumsPerRow) > 0.9 ? ($(window).width() / Math.ceil(albumsPerRow)) * 0.95 : configuration.albumThumbnailImageSize.width;
-        const newImageHeight = newImageWidth / configuration.albumThumbnailImageSize.width * configuration.albumThumbnailImageSize.height;
-        configuration.albumThumbnailImageSize.width = newImageWidth;
-        configuration.albumThumbnailImageSize.height = newImageHeight;
+        const albumsPerRow = $(window).width() / 350;
+        const newImageWidth = albumsPerRow - Math.floor(albumsPerRow) > 0.9 ? ($(window).width() / Math.ceil(albumsPerRow)) * 0.95 : 350;
+        const newImageHeight = newImageWidth / 350 * 233;
+        configuration.albumThumbnailImageSize = {"width": newImageWidth, "height": newImageHeight};
         configuration.albumsPerRow = Math.floor($(window).width() / configuration.albumThumbnailImageSize.width);
         configuration.maximumCalendarEntriesPerRow = Math.floor($(window).width() / configuration.calendarEntryMinimumWidth);
         configuration.countries = {};
