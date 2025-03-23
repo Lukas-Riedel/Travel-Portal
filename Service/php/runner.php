@@ -39,7 +39,6 @@
     $placeService = new PlaceService();
     $tripService = new TripService();
     $yearService = new YearService();
-    $noteService = new NoteService();
     $configurationService = new ConfigurationService();
     $timeTrackingService = new TimeTrackingService();
     $googleApiClient = new GoogleApiClient();
@@ -52,6 +51,7 @@
     $authenticationService = new AuthenticationService();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+    $noteService = new NoteService($databaseProvider);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     $highlightService = new HighlightService($databaseProvider, $photoService, $configurationService, $eventPublisher, $scheduler);

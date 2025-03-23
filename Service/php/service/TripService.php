@@ -343,7 +343,7 @@
             $placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
             $this->removeCandidateTrip($candidateTripId);
 
-            $noteService->updateNotesOwner($candidateTripId, $targetTripId);
+            $noteService->updateNoteTripId($candidateTripId, $targetTripId);
             
             return $targetTrip;
         }
@@ -362,7 +362,7 @@
             $placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier->getId());
             $this->deleteTripEvent($tripId);
 
-            $noteService->updateNotesOwner($tripId, $archivedTripIdentifier->getId());
+            $noteService->updateNoteTripId($tripId, $archivedTripIdentifier->getId());
             
             return $this->getCandidateTrip($archivedTripIdentifier->getId());
         }

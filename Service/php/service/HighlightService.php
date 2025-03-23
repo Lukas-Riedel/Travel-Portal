@@ -133,7 +133,7 @@
         }
 
         private function removeHighlight(HighlightType $highlightType, string $entityId, string $highlightId) : bool {
-            $wasRemoved = $this->highlightMapper->deleteHighlight($highlightType, $entityId, $highlightId) === 1;
+            $wasRemoved = $this->highlightMapper->deleteHighlight($highlightType, $entityId, $highlightId) > 0;
             if ($wasRemoved) {
                 $this->eventPublisher->publishHighlightRemovedEvent($highlightType, $entityId, $highlightId);
             }        
