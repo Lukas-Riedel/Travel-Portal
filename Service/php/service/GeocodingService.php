@@ -8,6 +8,7 @@
         
         private const UNKNOWN_COUNTRY_KEY = "UNKNOWN";
         private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+), (.+)\)}";
+        private const CACHED_ADDRESS_FORMAT = "%s, %s (%s, %s)";
 
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
@@ -22,6 +23,10 @@
             $this->geocodingMapper = new GeocodingMapper($databaseProvider);
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
+        }
+
+        public function getAddress(string $placeName, Location $location) : string {
+            return sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(), $location->getLatitude(), $location->getLongitude());
         }
 
         public function getLocation(string $address) : Location {

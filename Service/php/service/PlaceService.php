@@ -630,9 +630,7 @@
                     ->execute();
 
                 // Update address to match a common format.
-                // When changing the format, do not forget to update it in GeocodingService as well.
-                // TODO: Create a new class that will take care of de/serialization.
-                $newAddress = $placeEvent->getSummary() . ", " . $resolvedLocation->getCountry() . " (" . $resolvedLocation->getLatitude() . ", " . $resolvedLocation->getLongitude() . ")";
+                $newAddress = $geocodingService->getAddress($placeEvent->getSummary(), $resolvedLocation);
                 if (str_replace(" ", "", $placeEvent->getLocation()) !== str_replace(" ", "", $newAddress)) {
                     $googleApiClient->updateCalendarEventLocation("places", $placeEvent->getId(), $newAddress);
                 }

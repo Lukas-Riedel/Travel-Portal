@@ -2,14 +2,6 @@
     require_once(dirname(__FILE__) . "/../model/Note.php");
 
     class NoteService {
-        public function createHtmlListNote($tripId, $name, $items) : Note {
-            $itemsString = "";
-            foreach ($items as &$item) {
-                $itemsString .= "<li>" . $item . "</li>";
-            }
-            return $this->createNote($tripId, $name . "<ul>" . $itemsString . "</ul>");
-        }
-
         public function createNote($tripId, $content) : Note {
             global $databaseProvider;
 
