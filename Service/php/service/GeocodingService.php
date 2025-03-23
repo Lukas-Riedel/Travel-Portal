@@ -1,59 +1,76 @@
 <?php
+    require_once(dirname(__FILE__) . "/GeocodingMapper.php");
     require_once(dirname(__FILE__) . "/../model/Location.php");
     
     class GeocodingService {
-        public function getLocation($address) {
-            global $databaseProvider, $configuration, $httpClient;
 
-            $locationRow = $databaseProvider
-                ->statementBuilder("SELECT address, country, timezone, latitude, longitude FROM cache_location WHERE address = ? ORDER BY last_access DESC")
-                ->withParameters($address)
-                ->getFirstRow();
+        private const EARTH_RADIUS_KM = 6378;
+        private const UNKNOWN_COUNTRY_KEY = "UNKNOWN";
+        private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+), (.+)\)}";
+        private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
+        private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
 
-            if ($locationRow !== NULL) {
-                $databaseProvider
-                    ->statementBuilder("UPDATE cache_location SET last_access = UNIX_TIMESTAMP() WHERE address = ?")
-                    ->withParameters($locationRow["address"])
-                    ->execute();
-
-                $country = NULL;
-                if ($locationRow["country"] === NULL) {
-                    $country = $configuration["countryNames"]["UNKNOWN"];
-                }
-                else if (array_key_exists($locationRow["country"], $configuration["countryNames"])) {
-                    $country = $configuration["countryNames"][$locationRow["country"]];
-                }
-                else {
-                    throw new RuntimeException("Unknown country " . $locationRow["country"] . " encountered.");
-                }
-
-                return new Location($country, $locationRow["latitude"], $locationRow["longitude"], $locationRow["timezone"]);
-            }
+        private readonly GeocodingMapper $geocodingMapper;
         
+        private readonly ConfigurationService $configurationService;
+
+        private readonly HttpClient $httpClient;
+
+        public function __construct(DatabaseProvider $databaseProvider, ConfigurationService $configurationService, HttpClient $httpClient) {
+            $this->geocodingMapper = new GeocodingMapper($databaseProvider);
+            $this->configurationService = $configurationService;
+            $this->httpClient = $httpClient;
+        }
+
+        public function getLocation(string $address) : Location {
+            $location = $this->doGetLocation($address);
+            if ($location !== NULL) {
+                return $location;
+            }
+
+            $this->createLocation($address);
+            return $this->doGetLocation($address);
+        }
+
+        private function doGetLocation(string $address) : ?Location {
+            $location = $this->geocodingMapper->selectLocation($address);
+            if ($location === NULL) {
+                return NULL;
+            }
+
+            $country = NULL;
+            if ($location->getCountry() === NULL) {
+                // TODO: Remove the UNKNOWN country, use null instead.
+                $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", self::UNKNOWN_COUNTRY_KEY);
+            }
+            else if ($this->configurationService->existsForTypeAndKey("countryNames", $location->getCountry())) {
+                $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", $location->getCountry());
+            }
+            else {
+                throw new RuntimeException("Unknown country '" . $location->getCountry() . "' encountered.");
+            }
+
+            return new Location($country, $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
+        }
+
+        private function createLocation(string $address) : void {        
             $country = NULL;
             $latitude = NULL;
             $longitude = NULL;
             $timezone = NULL;
 
             // Quick path - read all necessary data (except timezone) from the address string.
-            preg_match("{.+, (.+) \((.+), (.+)\)}", $address, $tokens);
-            if (count($tokens) == 4) {
-                $countryCandidate = $databaseProvider
-                    ->statementBuilder("SELECT `key` FROM configuration WHERE type = 'COUNTRY_NAMES' AND value = ?")
-                    ->withParameters($tokens[1])
-                    ->getSingleColumn("key");
-
-                if ($countryCandidate !== NULL) {
-                    $country = $countryCandidate;
-                }
-
+            preg_match(self::CACHED_ADDRESS_PATTERN, $address, $tokens);
+            if (count($tokens) === 4) {
+                $country = $this->configurationService->getConfigurationKeyForTypeAndValue("countryNames", $tokens[1]);
                 $latitude = $tokens[2];
                 $longitude = $tokens[3];
             }
 
             // Geocoding request.
             if ($country === NULL || $latitude === NULL || $longitude === NULL) {
-                $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://maps.googleapis.com/maps/api/geocode/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&language=en&address=" . rawurlencode($address));
+                $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT,
+                    $this->configurationService->getConfigurationForTypeAndKey("googleMapsApiKeys", "ipAddress"), rawurlencode($address)));
     
                 if ($apiResponse["status"] === "OK") {
                     if (count($apiResponse["results"]) > 0) {
@@ -74,32 +91,24 @@
 
             // Timezone request.
             if ($latitude !== NULL && $longitude !== NULL && $timezone === NULL) {    
-                $apiResponse = $httpClient->executeRequest(HttpMethod::GET, "https://maps.googleapis.com/maps/api/timezone/json?key=" . $configuration["googleMapsApiKeys"]["ipAddress"] . "&location=" . $latitude . "," . $longitude . "&timestamp=0");
+                $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, 
+                    $this->configurationService->getConfigurationForTypeAndKey("googleMapsApiKeys", "ipAddress"), $latitude, $longitude));
                 
                 if (array_key_exists("timeZoneId", $apiResponse)) {
                     $timezone = $apiResponse["timeZoneId"];
                 }
             }
-    
-            $databaseProvider
-                ->statementBuilder("INSERT INTO cache_location (address, country, timezone, latitude, longitude, last_access) VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP())")
-                ->withParameters($address, $country, $timezone, $latitude, $longitude)
-                ->execute();
 
-            return $this->getLocation($address);
+            $this->geocodingMapper->insertLocation(new Location($country, $latitude, $longitude, $timezone), $address);
         }
 
-        public function getDistance($lat1, $lon1, $lat2, $lon2) : float {            
-            $deltaLatitude = $lat2 - $lat1;
-            $deltaLongitude = $lon2 - $lon1;
-
-            $alpha = $deltaLatitude / 2;
-            $beta = $deltaLongitude / 2;
-
-            $a = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin(deg2rad($beta)) * sin(deg2rad($beta));
+        public function getDistance(float $aLatitude, float $aLongitude, float $bLatitude, float $bLongitude) : float {
+            $alpha = ($bLatitude - $aLatitude) / 2;
+            $beta = ($bLongitude - $aLongitude) / 2;
+            $a = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($aLatitude))
+                * cos(deg2rad($bLatitude)) * sin(deg2rad($beta)) * sin(deg2rad($beta));
             $c = asin(min(1, sqrt($a)));
-
-            return 2 * 6378 * $c;
+            return 2 * self::EARTH_RADIUS_KM * $c;
         }
     }
 ?>

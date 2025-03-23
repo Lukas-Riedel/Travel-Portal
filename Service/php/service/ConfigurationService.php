@@ -45,6 +45,25 @@
             return $configuration[$type][$key];
         }
 
+        // TODO
+        public function getConfigurationKeyForTypeAndValue($type, $value) : ?string {
+            global $configuration, $databaseProvider;
+
+            foreach ($this->getConfigurationKeysForType($type) as $key) {
+                if ($configuration[$type][$key] === $value) {
+                    return $key;
+                }
+            }
+
+            return NULL;
+        }
+
+        public function existsForTypeAndKey($type, $key) : bool {
+            global $configuration;
+
+            return array_key_exists($key, $configuration[$type]);
+        }
+
         public function getConfigurationEntry($type, $key) : ?array {
             global $databaseProvider;
 
