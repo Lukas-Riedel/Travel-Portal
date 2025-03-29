@@ -182,7 +182,7 @@
 
                     // TODO: This is temporary until there is proper support for highlights (Q2/2025).
                     // Remove global variables when removing this code.
-                    if (isset($album["coverPhotoMediaItemId"])) {
+                    if ($albumId !== NULL && isset($album["coverPhotoMediaItemId"])) {
                         $placeRow = $databaseProvider
                             ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE album_id = ?")
                             ->withParameters($currentAlbumId)
