@@ -288,7 +288,7 @@
                     ->execute();
 
                 $placeIdentifierRow = $databaseProvider
-                    ->statementBuilder("SELECT * FROM place_identifier WHERE name = ? AND country = ?")
+                    ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id WHERE pi.name = ? AND ci.name = ?")
                     ->withParameters($name, $country)
                     ->getFirstRow();
             }
