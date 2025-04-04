@@ -127,29 +127,16 @@
             return $this->flightMapper->selectFlightsForTrip(FlightType::Watched, $tripId);
         }
 
-        public function refreshCalendar(TripService $tripService) : void {
-            $this->flightMapper->createFlightEventTemporaryTable(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-
-            $this->doRefreshCalendar(FlightType::Scheduled, $tripService);
-            $this->doRefreshCalendar(FlightType::Watched, $tripService);
-
-            $affectedTripIds = $this->flightMapper->selectTripIdsForCreatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishFlightEventCreatedEvent($affectedTripId);
-            }
-            
-            $affectedTripIds = $this->flightMapper->selectTripIdsForUpdatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishFlightEventUpdatedEvent($affectedTripId);
-            }
-            
-            $affectedTripIds = $this->flightMapper->selectTripIdsForDeletedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishFlightEventDeletedEvent($affectedTripId);
+        public function refreshCalendar(array $flightTypes, TripService $tripService) : void {
+            foreach ($flightTypes as &$flightType) {
+                $this->doRefreshCalendar($flightType, $tripService);
             }
         }
         
-        private function doRefreshCalendar(FlightType $flightType, TripService $tripService) : void {        
+        private function doRefreshCalendar(FlightType $flightType, TripService $tripService) : void {   
+            if ($flightType === FlightType::Scheduled) {
+                $this->flightMapper->createFlightEventTemporaryTable(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+            }     
             $this->flightMapper->deleteAllFlightEvents($flightType);
 
             $flightEvents = $this->calendarClient->getEvents($flightType->getCalendar()->value);
@@ -162,7 +149,24 @@
                 $flight = new Flight($parsedFlightEventName["flight"], NULL, NULL, NULL, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd());
 
                 $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());
-            }            
+            }   
+
+            if ($flightType === FlightType::Scheduled) {
+                $affectedTripIds = $this->flightMapper->selectTripIdsForCreatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publishFlightEventCreatedEvent($affectedTripId);
+                }
+                
+                $affectedTripIds = $this->flightMapper->selectTripIdsForUpdatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publishFlightEventUpdatedEvent($affectedTripId);
+                }
+                
+                $affectedTripIds = $this->flightMapper->selectTripIdsForDeletedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publishFlightEventDeletedEvent($affectedTripId);
+                }
+            }              
         }
 
         private function getFlightEventName(string $flight, string $originAirportName, string $destinationAirportName) : string {
@@ -181,14 +185,18 @@
             // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
-            if ($message["calendar"] === Calendar::Flights->value || $message["calendar"] === Calendar::WatchedFlights->value) {
-                $this->refreshCalendar($tripService);
+            foreach (FlightType::cases() as &$flightType) {
+                if ($flightType->getCalendar()->value === $message["calendar"]) {
+                    $this->refreshCalendar(array($flightType), $tripService);
+                }
             }
         }
 
         public function onCalendarWatchRenewing(mixed $message) : void {
-            if ($message["calendar"] === Calendar::Flights->value || $message["calendar"] === Calendar::WatchedFlights->value) {
-                $this->calendarClient->watchCalendar($message["calendar"]);
+            foreach (FlightType::cases() as &$flightType) {
+                if ($flightType->getCalendar()->value === $message["calendar"]) {
+                    $this->calendarClient->watchCalendar($flightType->getCalendar()->value);
+                }
             }
         }
 

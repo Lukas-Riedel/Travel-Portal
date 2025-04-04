@@ -466,7 +466,7 @@
                 $this->refreshCalendar();
                 $placeService->refreshCalendar();
                 $stayService->refreshCalendar($this);
-                $flightService->refreshCalendar($this);
+                $flightService->refreshCalendar(FlightType::cases(), $this);
             }
         }
         
