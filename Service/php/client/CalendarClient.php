@@ -15,6 +15,7 @@
                 "Bearer " . $authenticationResult->getAccessToken());
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function getEvents($calendar) : array {        
             global $configuration;
 

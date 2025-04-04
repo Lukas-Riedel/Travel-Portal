@@ -465,7 +465,7 @@
                 $this->deleteAllDayTripsTrips();
                 $this->refreshCalendar();
                 $placeService->refreshCalendar();
-                $stayService->refreshCalendar();
+                $stayService->refreshCalendar($this);
                 $flightService->refreshCalendar($this);
             }
         }

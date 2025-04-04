@@ -105,6 +105,18 @@
             $this->publishEvent(Event::FlightEventDeleted, array("tripId" => $tripId));
         }
         
+        public function publishStayEventCreatedEvent($tripId) : void {
+            $this->publishEvent(Event::StayEventCreated, array("tripId" => $tripId));
+        }
+        
+        public function publishStayEventUpdatedEvent($tripId) : void {
+            $this->publishEvent(Event::StayEventUpdated, array("tripId" => $tripId));
+        }
+        
+        public function publishStayEventDeletedEvent($tripId) : void {
+            $this->publishEvent(Event::StayEventDeleted, array("tripId" => $tripId));
+        }
+        
         public function publishCalendarChangedEvent($calendar) : void {
             $this->publishEvent(Event::CalendarChanged, array("calendar" => $calendar));
         }
@@ -177,9 +189,12 @@
         case FlightEventCreated = 23;
         case FlightEventUpdated = 24;
         case FlightEventDeleted = 25;
-        case HighlightCreated = 26;
-        case HighlightRemoved = 27;
-        case StatisticsChanged = 28;
+        case StayEventCreated = 26;
+        case StayEventUpdated = 27;
+        case StayEventDeleted = 28;
+        case HighlightCreated = 29;
+        case HighlightRemoved = 30;
+        case StatisticsChanged = 31;
 
         case FitnessActivityDetected = 100;
 

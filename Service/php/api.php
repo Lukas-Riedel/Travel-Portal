@@ -54,12 +54,12 @@
     $httpClient = new HttpClient();
     $statisticsService = new StatisticsService();
     $calendarClient = new CalendarClient();
-    $stayService = new StayService();
     $platformService = new PlatformService();
     $eventManager = new EventManager();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
     $noteService = new NoteService($databaseProvider);
+    $stayService = new StayService($databaseProvider, $calendarClient, $googleApiClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     $highlightService = new HighlightService($databaseProvider, $photoService, $configurationService, $eventPublisher, $scheduler);

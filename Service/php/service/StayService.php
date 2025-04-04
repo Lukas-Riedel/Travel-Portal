@@ -1,77 +1,69 @@
 <?php
+    require_once(dirname(__FILE__) . "/StayMapper.php");
     require_once(dirname(__FILE__) . "/../model/Stay.php");
 
     class StayService {
+
+        private const OLD_STAY_EVENT_TEMPORARY_TABLE = "old_stay_event";
+
+        private readonly StayMapper $stayMapper;
+
+        private readonly CalendarClient $calendarClient;
+
+        private readonly GoogleApiClient $googleApiClient;
+
+        private readonly EventPublisher $eventPublisher;
+
+        public function __construct(DatabaseProvider $databaseProvider, CalendarClient $calendarClient,
+            GoogleApiClient $googleApiClient, EventPublisher $eventPublisher) {
+            $this->stayMapper = new StayMapper($databaseProvider);
+            $this->calendarClient = $calendarClient;
+            $this->googleApiClient = $googleApiClient;
+            $this->eventPublisher = $eventPublisher;
+        }
         
         public function getStaysForTrip($tripId) : array {
-            global $databaseProvider;
-
-            return $databaseProvider
-                ->statementBuilder("SELECT * FROM stay_event WHERE trip_id = ? ORDER BY start")
-                ->withParameters($tripId)
-                ->getMappedResultSet(function($stayRow) {
-                    return new Stay($stayRow["name"], $stayRow["address"], $stayRow["start"], $stayRow["end"]);
-                });
+            return $this->stayMapper->selectStaysForTrip($tripId);
         }
 
-        public function refreshCalendar() : void {
-            global $databaseProvider, $calendarClient, $tripService, $eventPublisher;
-            
-            $databaseProvider
-                ->statementBuilder("DROP TEMPORARY TABLE IF EXISTS old_stay_event")
-                ->execute();
-
-            $databaseProvider
-                ->statementBuilder("CREATE TEMPORARY TABLE old_stay_event AS SELECT * FROM stay_event")
-                ->execute();
-
-            $databaseProvider
-                ->statementBuilder("DELETE FROM stay_event")
-                ->execute();
+        public function refreshCalendar(TripService $tripService) : void {
+            $this->stayMapper->createStayEventTemporaryTable(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            $this->stayMapper->deleteAllStayEvents();
                 
-            foreach ($calendarClient->getEvents("stays") as &$stayEvent) {
+            $stayEvents = $this->calendarClient->getEvents(Calendar::Stays->value);
+            foreach ($stayEvents as &$stayEvent) {
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($stayEvent->getStart(), $stayEvent->getEnd());
-
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO stay_event (id, name, trip_id, start, end, address) VALUES (?, ?, ?, ?, ?, ?)")
-                    ->withParameters($stayEvent->getId(), $stayEvent->getSummary(), $resolvedTripIdentifier->getId(), $stayEvent->getStart(), $stayEvent->getEnd(), $stayEvent->getLocation())
-                    ->execute();
+                $this->stayMapper->insertStayEvent($stayEvent, $stayEvent->getId(), $resolvedTripIdentifier->getId());
             }
-
-            // Process new and renamed stays.
-            $newStayRows = $databaseProvider
-                ->statementBuilder("SELECT ns.trip_id FROM stay_event ns LEFT JOIN old_stay_event os ON os.id = ns.id WHERE os.name IS NULL")
-                ->getResultSet();
-
-            foreach ($newStayRows as &$newStayRow) {      
-                $eventPublisher->publishTripStatisticsChangedEvent($newStayRow["trip_id"]);
+            
+            $affectedTripIds = $this->stayMapper->selectTripIdsForCreatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishStayEventCreatedEvent($affectedTripId);
             }
-
-            // Process removed stays.
-            $removedStayRows = $databaseProvider
-                ->statementBuilder("SELECT os.trip_id FROM old_stay_event os LEFT JOIN stay_event ns ON os.id = ns.id WHERE ns.id IS NULL")
-                ->getResultSet();
-
-            foreach ($removedStayRows as &$removedStayRow) {
-                if ($removedStayRow["trip_id"] != NULL) {
-                    $eventPublisher->publishTripStatisticsChangedEvent($removedStayRow["trip_id"]);
-                }
+            
+            $affectedTripIds = $this->stayMapper->selectTripIdsForUpdatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishStayEventUpdatedEvent($affectedTripId);
+            }
+            
+            $affectedTripIds = $this->stayMapper->selectTripIdsForDeletedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishStayEventDeletedEvent($affectedTripId);
             }
         }
 
         public function onCalendarChanged(mixed $message) : void {
-            global $configuration;
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
 
-            if ($message["calendar"] === "stays") {
-                $this->refreshCalendar();
+            if ($message["calendar"] === Calendar::Stays->value) {
+                $this->refreshCalendar($tripService);
             }
         }
 
         public function onCalendarWatchRenewing(mixed $message) : void {
-            global $calendarClient;
-
-            if ($message["calendar"] === "stays") {
-                $calendarClient->watchCalendar($message["calendar"]);
+            if ($message["calendar"] === Calendar::Stays->value) {
+                $this->calendarClient->watchCalendar(Calendar::Stays->value);
             }
         }
     }

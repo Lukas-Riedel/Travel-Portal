@@ -328,7 +328,7 @@
                 ->execute();
         }
 
-        public function deleteAllFlightevents(FlightType $flightType) : int {
+        public function deleteAllFlightEvents(FlightType $flightType) : int {
             $sql = <<<SQL
                 DELETE
                 FROM {$flightType->getTableName()}

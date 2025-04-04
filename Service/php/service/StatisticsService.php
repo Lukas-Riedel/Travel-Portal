@@ -266,6 +266,33 @@
             }
         }
 
+        public function onStayEventCreated(mixed $message) : void {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onStayEventUpdated(mixed $message) : void {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onStayEventDeleted(mixed $message) : void {
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
         public function onStatisticsChanged(mixed $message) : void {
             global $categoryService, $tripService;
 
