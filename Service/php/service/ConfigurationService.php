@@ -39,7 +39,7 @@
         }
 
         // TODO
-        public function getConfigurationForTypeAndKey($type, $key) : ?string {
+        public function getConfigurationForTypeAndKey($type, $key) : mixed {
             global $configuration;
 
             return $configuration[$type][$key];

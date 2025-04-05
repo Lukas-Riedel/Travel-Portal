@@ -52,7 +52,8 @@ function getCategoriesComponent(place) {
 }
 
 function getLabelsComponent(place, isLoggedIn) {
-    const labels = place.labels.map(label => formatLabel(label, place.id, isLoggedIn));
+    const labels = place.labels.filter(label => isLoggedIn || configuration.labels.public.indexOf(label.name) != -1)
+        .map(label => formatLabel(label, place.id, isLoggedIn));
     if (labels.length === 0) {
         return "";
     }

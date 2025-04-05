@@ -61,7 +61,7 @@
     $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
-    $labelService = new LabelService($databaseProvider);
+    $labelService = new LabelService($databaseProvider, $configurationService);
 
     $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService, $labelService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,

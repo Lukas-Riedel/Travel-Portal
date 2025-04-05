@@ -112,7 +112,7 @@ async function addUsefulLink(tripId) {
 }
 
 async function addPlaceLabel(placeId) {
-    const name = prompt("Zadej název štítku:");
+    const name = prompt("Zadej název štítku:\n\nDostupné hodnoty: " + configuration.labels.public.concat(configuration.labels.private).join(", "));
     if (name == null || name == "") {
         return;
     }

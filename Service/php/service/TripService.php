@@ -105,7 +105,7 @@
                 if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
                     $startOfDays = array();
 
-                    $tripPlaces = $placeService->getRegularPlaces(NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL, array());
+                    $tripPlaces = $placeService->getRegularPlaces(NULL, NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL, array());
                     foreach ($tripPlaces as &$tripPlace) {
                         foreach ($tripPlace->getDates() as &$date) {
                             // TODO: Calculate start of days based on the timezone of the client (i.e., an extra GET parameter with timezone).
