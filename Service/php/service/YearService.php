@@ -92,6 +92,22 @@
                 }
             }
         }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            global $databaseProvider, $eventPublisher, $scheduler;
+            
+            if ($message["action"] === "UPDATE_YEAR_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT DISTINCT year AS id FROM trip_summary WHERE start < UNIX_TIMESTAMP() AND name <> GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishYearStatisticsInvalidatedEvent($args["id"]);
+                }
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
+            }
+        }
     }
 
     enum YearIncludedEntity : string {

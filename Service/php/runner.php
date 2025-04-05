@@ -44,18 +44,18 @@
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
-    $statisticsService = new StatisticsService();
     $platformService = new PlatformService();
     $calendarClient = new CalendarClient();
     $authenticationService = new AuthenticationService();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+    $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $googleApiClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     $highlightService = new HighlightService($databaseProvider, $photoService, $configurationService, $eventPublisher, $scheduler);
-    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
+    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher, $scheduler);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
     $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
@@ -64,6 +64,7 @@
     $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,
         $fitnessService, $statisticsService, $geocodingService, $stayService, $forecastService, $authenticationService, $platformService);
+    $statisticsService->setStatisticsProviders(array($placeService, $tripService, $yearService, $stayService, $photoService, $categoryService, $expenseService, $fitnessService, $flightService));
         
     $eventManager = new EventManager($services);
     

@@ -52,22 +52,24 @@
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
-    $statisticsService = new StatisticsService();
     $calendarClient = new CalendarClient();
     $platformService = new PlatformService();
     $eventManager = new EventManager();
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+    $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $googleApiClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
     $highlightService = new HighlightService($databaseProvider, $photoService, $configurationService, $eventPublisher, $scheduler);
-    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
+    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher, $scheduler);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
     $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
+
+    $statisticsService->setStatisticsProviders(array($placeService, $tripService, $yearService, $stayService, $photoService, $categoryService, $expenseService, $fitnessService, $flightService));
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

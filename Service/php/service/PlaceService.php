@@ -339,7 +339,7 @@
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
                     if ($trip !== NULL) {
-                        $eventPublisher->publishTripStatisticsChangedEvent($trip->getId());
+                        $eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
                     }
                 }
 
@@ -376,7 +376,7 @@
             }
             
             foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
-                $eventPublisher->publishTripStatisticsChangedEvent($tripId);
+                $eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
             }   
 
             return $wasUpdated;
@@ -391,7 +391,7 @@
                 ->execute() === 1;
             
             foreach ($this->getContainedTripIdentifiers($placeId) as &$tripId) {
-                $eventPublisher->publishTripStatisticsChangedEvent($tripId);
+                $eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
             }   
 
             return $wasUpdated;
@@ -547,7 +547,7 @@
                 ->getResultSetForColumn("year");
 
             foreach ($yearsToUpdate as &$yearToUpdate) {
-                $eventPublisher->publishYearStatisticsChangedEvent($yearToUpdate);
+                $eventPublisher->publishYearStatisticsInvalidatedEvent($yearToUpdate);
             }
 
             return $wasRemoved;
@@ -651,7 +651,7 @@
                     $eventPublisher->publishDaylightForecastUpdated($newPlaceRow["place_id"], $newPlaceRow["start"], $newPlaceRow["end"]);
                 }
 
-                $eventPublisher->publishTripStatisticsChangedEvent($newPlaceRow["trip_id"]);
+                $eventPublisher->publishTripStatisticsInvalidatedEvent($newPlaceRow["trip_id"]);
             }
 
             // Process yet non-visited places.
@@ -678,7 +678,7 @@
 
             foreach ($removedPlaceRows as &$removedPlaceRow) {
                 if ($removedPlaceRow["trip_id"] != NULL) {
-                    $eventPublisher->publishTripStatisticsChangedEvent($removedPlaceRow["trip_id"]);
+                    $eventPublisher->publishTripStatisticsInvalidatedEvent($removedPlaceRow["trip_id"]);
                 }
                 
                 if ($removedPlaceRow["category_ids"] != NULL) {

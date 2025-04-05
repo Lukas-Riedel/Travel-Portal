@@ -7,6 +7,9 @@
     require_once(dirname(__FILE__) . "/../model/CompositeRegion.php");
 
     class CategoryService {
+        
+        private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
+        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 604800;
 
         private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
@@ -15,12 +18,14 @@
         private readonly ConfigurationService $configurationService;
         
         private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
         public function __construct(DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
-            HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher) {
+            HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
         }
 
         public function updateCategories(PlaceIdentifier $placeIdentifier) : void {
@@ -371,13 +376,24 @@
                 }
             }
         }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            if ($message["action"] === self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME 
+                && $message["timeSinceLastExecution"] > self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL) {
+                $categories = $this->getCategories(CategoryCategory::values(), array());
+                foreach ($categories as &$category) {
+                    $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
+                }                        
+                $this->scheduler->recordEventsTriggered(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME);
+            }
+        }
     }
 
     enum CategoryIncludedEntity : string {
         case Statistics = "STATISTICS";
         case Highlights = "HIGHLIGHTS";
         
-        public static function values(): array {
+        public static function values() : array {
             return array_map(fn($case) => $case->value, self::cases());
         }
     }
@@ -393,7 +409,7 @@
         case Island = "ISLAND";
         case Region = "REGION";
 
-        public static function values(): array {
+        public static function values() : array {
             return array_map(fn($case) => $case->value, self::cases());
         }
     }

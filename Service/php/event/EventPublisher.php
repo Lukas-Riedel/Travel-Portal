@@ -53,12 +53,16 @@
             $this->publishEvent(Event::AlbumUpdated, array("albumId" => $albumId));
         }
 
-        public function publishTripStatisticsChangedEvent($tripId) : void {
-            $this->publishEvent(Event::StatisticsChanged, array("tripId" => $tripId));
+        public function publishTripStatisticsInvalidatedEvent($tripId) : void {
+            $this->publishEvent(Event::TripStatisticsInvalidated, array("tripId" => $tripId));
         }
         
-        public function publishYearStatisticsChangedEvent($year) : void {
-            $this->publishEvent(Event::StatisticsChanged, array("year" => $year));
+        public function publishYearStatisticsInvalidatedEvent($year) : void {
+            $this->publishEvent(Event::YearStatisticsInvalidated, array("year" => $year));
+        }
+        
+        public function publishCategoryStatisticsInvalidatedEvent($categoryId) : void {
+            $this->publishEvent(Event::CategoryStatisticsInvalidated, array("categoryId" => $categoryId));
         }
         
         public function publishCategoryUpdatedEvent($categoryId) : void {
@@ -141,6 +145,22 @@
             $this->publishEvent(Event::FlightArrived, array("flight" => $flight, "tripId" => $tripId, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
         }
 
+        public function publishYearStatisticsUpdatedEvent($year) : void {
+            $this->publishEvent(Event::YearStatisticsUpdated, array("year" => $year));
+        }
+
+        public function publishCategoryStatisticsUpdatedEvent($categoryId) : void {
+            $this->publishEvent(Event::CategoryStatisticsUpdated, array("categoryId" => $categoryId));
+        }
+
+        public function publishTripStatisticsUpdatedEvent($tripId, $year) : void {
+            $this->publishEvent(Event::TripStatisticsUpdated, array("tripId" => $tripId, "year" => $year));
+        }
+
+        public function publishOverallStatisticsInvalidatedEvent() : void {
+            $this->publishEvent(Event::OverallStatisticsInvalidated, NULL);
+        }
+
         public function publishEvent($event, $args) : void {
             global $databaseProvider;
 
@@ -163,6 +183,7 @@
     }
 
     enum Event : int {
+        // TODO: Invalidations first, then updates.
         case ApplicationStarted = 0;
         case SchedulerTriggered = 1;
         case CalendarWatchRenewing = 2;
@@ -195,6 +216,13 @@
         case HighlightCreated = 29;
         case HighlightRemoved = 30;
         case StatisticsChanged = 31;
+        case YearStatisticsUpdated = 32;
+        case TripStatisticsUpdated = 33;
+        case CategoryStatisticsUpdated = 34;
+        case OverallStatisticsInvalidated = 35;
+        case YearStatisticsInvalidated = 36;
+        case TripStatisticsInvalidated = 37;
+        case CategoryStatisticsInvalidated = 38;
 
         case FitnessActivityDetected = 100;
 

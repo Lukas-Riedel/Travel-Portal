@@ -1,16 +1,44 @@
 <?php
+    require_once(dirname(__FILE__) . "/StatisticsMapper.php");
     require_once(dirname(__FILE__) . "/../model/Statistics.php");
+    require_once(dirname(__FILE__) . "/../model/KeyValuePair.php");
 
     class StatisticsService {
-        public function getCategoryStatistics($categoryId) : array {    
+        
+        private const UPDATE_OVERALL_STATISTICS_ACTION_NAME = "UPDATE_OVERALL_STATISTICS";
+        private const UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL = 604800;
+
+        private const STATISTICS_VALUES_COUNT_LIMIT = 5;
+
+        private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s";
+        private const END_OF_YEAR_DATE_FORMAT = "31/12/%s";
+
+        private readonly StatisticsMapper $statisticsMapper;
+
+        private readonly ConfigurationService $configurationService;
+        
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
+
+        private array $statisticsProviders = array();
+
+        public function __construct(DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
+            EventPublisher $eventPublisher, Scheduler $scheduler) {
+            $this->statisticsMapper = new StatisticsMapper($databaseProvider);
+            $this->configurationService = $configurationService;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
+        }
+
+        public function getCategoryStatistics(string $categoryId) : array {    
             return $this->getStatistics(StatisticsType::Category, $categoryId);
         }
         
-        public function getYearStatistics($year) : array {     
+        public function getYearStatistics(int $year) : array {     
             return $this->getStatistics(StatisticsType::Year, $year);
         }
         
-        public function getTripStatistics($tripId) : array {         
+        public function getTripStatistics(string $tripId) : array {         
             return $this->getStatistics(StatisticsType::Trip, $tripId);
         }
 
@@ -18,120 +46,66 @@
             return $this->getStatistics(StatisticsType::Overall, NULL);          
         }
         
-        public function updateCategoryStatistics($categoryIdentifier) : void {    
-            global $configuration;
-
-            if (array_key_exists($categoryIdentifier->getName(), $configuration["variableTimeCategories"])) {
-                $this->doUpdateCategoryStatistics(time() - $configuration["variableTimeCategories"][$categoryIdentifier->getName()], time(), $categoryIdentifier->getId());
+        public function updateCategoryStatistics(CategoryIdentifier $categoryIdentifier) : void {    
+            if ($this->isVariableTimeCategory($categoryIdentifier)) {
+                $variableTimeCategoryInterval = $this->configurationService->getConfigurationEntry("variableTimeCategories", $categoryIdentifier->getName());
+                $this->updateStatistics(StatisticsType::Category, time() - $variableTimeCategoryInterval, time(), 
+                    $categoryIdentifier->getId(), $categoryIdentifier->getId());
             }
             else {
-                $this->doUpdateCategoryStatistics(0, time(), $categoryIdentifier->getId());
+                $this->updateStatistics(StatisticsType::Category, 0, time(), $categoryIdentifier->getId(), $categoryIdentifier->getId());
             }
-        }
-
-        private function doUpdateCategoryStatistics($start, $end, $categoryId) : void {
-            global $eventPublisher;
-
-            $this->updateStatistics(StatisticsType::Category, $start, $end, $categoryId, $categoryId);
-
-            $eventPublisher->publishStatisticsChangedEvent();
+            $this->eventPublisher->publishCategoryStatisticsUpdatedEvent($categoryIdentifier->getId());
         }
         
-        public function updateYearStatistics($year) : void {     
-            global $eventPublisher;
-
-            $this->updateStatistics(StatisticsType::Year, strtotime("1.1." . $year), strtotime("31.12." . $year), NULL, $year);
-
-            $eventPublisher->publishStatisticsChangedEvent();
+        public function updateYearStatistics(int $year) : void {
+            $this->updateStatistics(StatisticsType::Year, $this->getBeginningOfYearTimestamp($year), $this->getEndOfYearTimestamp($year), NULL, $year);
+            $this->eventPublisher->publishYearStatisticsUpdatedEvent($year);
         }
-        
-        public function updateTripStatistics($trip) : void {    
-            global $eventPublisher, $configuration;
-            
-            if (in_array($trip->getName(), $configuration["specialTripNames"])) {
+
+        public function updateTripStatistics(Trip $trip) : void {            
+            if ($this->isSpecialTrip($trip)) {
                 throw new InvalidArgumentException("Unable to update statistics for the '" . $trip->getName() . " " . $trip->getYear() . "' trip.");
             }  
 
             $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), $trip->getEnd(), NULL, $trip->getId());
-
-            $eventPublisher->publishYearStatisticsChangedEvent($trip->getYear());
-            $eventPublisher->publishStatisticsChangedEvent();
+            $this->eventPublisher->publishTripStatisticsUpdatedEvent($trip->getId(), $trip->getYear());
         }
 
         public function updateOverallStatistics() : void {     
             $this->updateStatistics(StatisticsType::Overall, 0, time(), NULL, NULL);          
         }
 
-        private function updateStatistics($statisticsType, $start, $end, $categoryId, $entityId) : void {
-            global $configuration, $databaseProvider;
+        public function setStatisticsProviders(array $statisticsProviders) : void {
+            $this->statisticsProviders = array($this);
+            // TODO: Uncomment. Remove above.
+            // $this->statisticsProviders = $statisticsProviders;
+        }
 
+        // TODO: Remove. Move to individual services (statistics providers).
+        private function fetchStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statisticsRecords = array();
 
             // Compute fact statistics.
             foreach ($this->computeStatistics($statisticsType, StatisticsKind::Fact, $start, $end, $categoryId) as &$fact) {
                 foreach ($fact["computedRows"] as &$computedRow) {
-                    if ($computedRow[array_key_first($computedRow)] !== NULL) {
-                        $statisticsRecords[] = array(
-                            "name" => $fact["name"], 
-                            "value" => $this->convert($computedRow[array_key_first($computedRow)]), 
-                            "unit" => $fact["unit"]
-                        );
-                    }
+                    $statisticsRecords[] = new Statistics($fact["name"], $computedRow[array_key_first($computedRow)], $fact["unit"]);
                 }
             }
 
             // Compute standings statistics.
             foreach ($this->computeStatistics($statisticsType, StatisticsKind::Standings, $start, $end, $categoryId) as &$standings) {
-                $standingsStatistics = array();
-                $i = 0;
-
+                $keyValuePairs = array();
                 foreach ($standings["computedRows"] as &$computedRow) {
-                    $standingsStatistics[] = array(
-                        "key" => $computedRow[array_key_first($computedRow)], 
-                        "value" => $this->convert($computedRow[array_key_last($computedRow)]));
-
-                    if (++$i >= $configuration["standingsStatsLimit"]) {
-                        break;
-                    }
+                    $keyValuePairs[] = new KeyValuePair($computedRow[array_key_first($computedRow)], $computedRow[array_key_last($computedRow)]);
                 }
-
-                if (!empty($standingsStatistics)) {
-                    $statisticsRecords[] = array(
-                        "name" => $standings["name"], 
-                        "value" => $standingsStatistics,
-                        "unit" => $standings["unit"]
-                    );
-                }
+                $statisticsRecords[] = new Statistics($standings["name"], $keyValuePairs, $standings["unit"]);
             }
 
-            // Persist statistics.
-            if ($entityId === NULL) {
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM " . $statisticsType->getTableName())
-                    ->execute();
-    
-                foreach ($statisticsRecords as &$statisticsRecord) {
-                    $databaseProvider
-                        ->statementBuilder("INSERT INTO " . $statisticsType->getTableName() . " (last_update, name, value, unit) VALUES (UNIX_TIMESTAMP(), ?, ?, ?)")
-                        ->withParameters($statisticsRecord["name"], json_encode($statisticsRecord["value"], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG), $statisticsRecord["unit"])
-                        ->execute();
-                }
-            }
-            else {
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM " . $statisticsType->getTableName() . " WHERE id = ?")
-                    ->withParameters($entityId)
-                    ->execute();
-                
-                foreach ($statisticsRecords as &$statisticsRecord) {
-                    $databaseProvider
-                        ->statementBuilder("INSERT INTO " . $statisticsType->getTableName() . " (id, last_update, name, value, unit) VALUES (?, UNIX_TIMESTAMP(), ?, ?, ?)")
-                        ->withParameters($entityId, $statisticsRecord["name"], json_encode($statisticsRecord["value"], JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG), $statisticsRecord["unit"])
-                        ->execute();
-                }
-            }
-        }        
+            return $statisticsRecords;
+        }    
 
+        // TODO: Remove.
         private function computeStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId) : array {
             global $databaseProvider;       
             
@@ -161,31 +135,56 @@
                 });
         }
 
-        private function convert($value) {
-            return is_numeric($value) ? floatval($value) : $value;
+        private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
+            $this->statisticsMapper->deleteAllStatisticsRecords($statisticsType, $entityId);
+
+            foreach ($this->statisticsProviders as &$statisticsProvider) {
+                $fetchedStatisticsRecords = $statisticsProvider->fetchStatistics($statisticsType, $start, $end, $categoryId, $entityId);
+                foreach ($fetchedStatisticsRecords as &$fetchedStatisticsRecord) {
+                    if ($fetchedStatisticsRecord->hasValue()) {
+                        $this->statisticsMapper->insertStatisticsRecord($statisticsType,
+                            $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT), $entityId);
+                    }
+                }
+            }
         }
 
-        private function getStatistics($statisticsType, $entityId) {
-            global $databaseProvider;
-            
-            if ($statisticsType !== StatisticsType::Overall && $entityId === NULL) {
-                throw new InvalidArgumentException("The argument 'id' is required.");
-            }
-            
-            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if ($entityId !== NULL) {
-                $whereClauseBuilder->withClause("id = ?", $entityId);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
+        private function isVariableTimeCategory(CategoryIdentifier $categoryIdentifier) : bool {
+            return in_array($categoryIdentifier->getName(), $this->configurationService->getConfigurationKeysForType("variableTimeCategories"));
+        }
 
-            return $databaseProvider
-                ->statementBuilder("SELECT name, value, unit FROM " . $statisticsType->getTableName() . " {{WHERE CLAUSE}}", $whereClause)
-                ->getMappedResultSet(function($statisticsRow) {
-                    return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], TRUE), $statisticsRow["unit"]);
-                });
+        private function isSpecialTrip(Trip $trip) : bool {
+            return in_array($trip->getName(), $this->configurationService->getConfigurationValuesForType("specialTripNames"));
+        }
+        
+        private function getBeginningOfYearTimestamp(int $year) : int {
+            return strtotime(sprintf(self::BEGINNING_OF_YEAR_DATE_FORMAT, $year));
+        }
+        
+        private function getEndOfYearTimestamp(int $year) : int {
+            return strtotime(sprintf(self::END_OF_YEAR_DATE_FORMAT, $year));
+        }
+
+        private function getStatistics(StatisticsType $statisticsType, ?string $entityId) {
+            if ($statisticsType !== StatisticsType::Overall && $entityId === NULL) {
+                throw new InvalidArgumentException("The entity identifier is required.");
+            }
+            
+            return $this->statisticsMapper->selectStatisticsRecords($statisticsType, $entityId);
         }
 
         public function onCategoryUpdated(mixed $message) : void {
+            // TODO: Introduce the CategoryService $categoryService field after moving this method to a new listener class.
+            global $categoryService;
+
+            $categoryIdentifier = $categoryService->getCategoryIdentifierById($message["categoryId"]);
+            if ($categoryIdentifier !== NULL) {
+                $this->updateCategoryStatistics($categoryIdentifier);
+            }
+        }
+
+        public function onCategoryStatisticsInvalidated(mixed $message) : void {
+            // TODO: Introduce the CategoryService $categoryService field after moving this method to a new listener class.
             global $categoryService;
 
             $categoryIdentifier = $categoryService->getCategoryIdentifierById($message["categoryId"]);
@@ -195,6 +194,7 @@
         }
 
         public function onExpenseCreated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -204,6 +204,7 @@
         }
 
         public function onExpenseUpdated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -213,6 +214,7 @@
         }
 
         public function onExpenseRemoved(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -222,6 +224,7 @@
         }
 
         public function onFitnessDataUpdated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trips = $tripService->getTripsContainingInterval($message["start"], $message["end"]);
@@ -231,6 +234,7 @@
         }
 
         public function onFlightLogged(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -240,6 +244,7 @@
         }
 
         public function onFlightEventCreated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -249,6 +254,7 @@
         }
 
         public function onFlightEventUpdated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -258,6 +264,7 @@
         }
 
         public function onFlightEventDeleted(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -267,6 +274,7 @@
         }
 
         public function onStayEventCreated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -276,6 +284,7 @@
         }
 
         public function onStayEventUpdated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -285,6 +294,7 @@
         }
 
         public function onStayEventDeleted(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 
             $trip = $tripService->getRegularTrip($message["tripId"]);
@@ -293,72 +303,41 @@
             }
         }
 
-        public function onStatisticsChanged(mixed $message) : void {
-            global $categoryService, $tripService;
+        public function onYearStatisticsUpdated(mixed $message) : void {
+            $this->updateOverallStatistics();
+        }
 
-            if (isset($message["year"])) {
-                $this->updateYearStatistics($message["year"]);
-            }
-            else if (isset($message["tripId"])) {
-                $trip = $tripService->getRegularTrip($message["tripId"]);
-                if ($trip !== NULL) {
-                    $this->updateTripStatistics($trip);
-                }
-            }
-            else if (isset($message["categoryId"])) {
-                $categoryIdentifier = $categoryService->getCategoryIdentifierById($message["categoryId"]);
-                if ($categoryIdentifier !== NULL) {
-                    $this->updateCategoryStatistics($categoryIdentifier);
-                }
-            }
-            else {
-                $this->updateOverallStatistics();
+        public function onCategoryStatisticsUpdated(mixed $message) : void {
+            $this->updateOverallStatistics();
+        }
+
+        public function onTripStatisticsUpdated(mixed $message) : void {
+            $this->updateYearStatistics($message["year"]);
+        }
+
+        public function onOverallStatisticsInvalidated(mixed $message) : void {
+            $this->updateOverallStatistics();
+        }
+
+        public function onYearStatisticsInvalidated(mixed $message) : void {
+            $this->updateYearStatistics($message["year"]);
+        }
+
+        public function onTripStatisticsInvalidated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
             }
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            global $eventPublisher, $scheduler, $configuration, $databaseProvider;
-
-            if ($message["action"] === "UPDATE_OVERALL_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
-                $eventPublisher->publishStatisticsChangedEvent();
-                        
-                $scheduler->recordEventsTriggered($message["action"]);
-            }
-            
-            if ($message["action"] === "UPDATE_TRIP_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
-                $argsList = $databaseProvider
-                    ->statementBuilder("SELECT trip_id AS id FROM trip_summary WHERE start < UNIX_TIMESTAMP() AND name <> GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')")
-                    ->getResultSet();
-
-                foreach ($argsList as &$args) {
-                    $eventPublisher->publishTripStatisticsChangedEvent($args["id"]);
-                }
-                        
-                $scheduler->recordEventsTriggered($message["action"]);
-            }
-            
-            if ($message["action"] === "UPDATE_YEAR_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
-                $argsList = $databaseProvider
-                    ->statementBuilder("SELECT DISTINCT year AS id FROM trip_summary WHERE start < UNIX_TIMESTAMP() AND name <> GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')")
-                    ->getResultSet();
-
-                foreach ($argsList as &$args) {
-                    $eventPublisher->publishYearStatisticsChangedEvent($args["id"]);
-                }
-                        
-                $scheduler->recordEventsTriggered($message["action"]);
-            }
-            
-            if ($message["action"] === "UPDATE_CATEGORY_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
-                $argsList = $databaseProvider
-                    ->statementBuilder("SELECT id FROM category_identifier")
-                    ->getResultSet();
-
-                foreach ($argsList as &$args) {
-                    $eventPublisher->publishCategoryUpdatedEvent($args["id"]);
-                }
-                        
-                $scheduler->recordEventsTriggered($message["action"]);
+            if ($message["action"] === self::UPDATE_OVERALL_STATISTICS_ACTION_NAME
+                && $message["timeSinceLastExecution"] > self::UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL) {
+                $this->eventPublisher->publishOverallStatisticsInvalidatedEvent();                        
+                $this->scheduler->recordEventsTriggered(self::UPDATE_OVERALL_STATISTICS_ACTION_NAME);
             }
         }
     }

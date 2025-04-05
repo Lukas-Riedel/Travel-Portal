@@ -282,7 +282,8 @@
 
             $wasUpdated &= $googleApiClient->updateCalendarEventSummary("trips", $this->getTripEventId($tripId), $name);
 
-            $eventPublisher->publishTripStatisticsChangedEvent($tripId);
+            // TODO: Publish TripUpdatedEvent instead.
+            $eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
 
             return $wasUpdated;
         }
@@ -484,6 +485,22 @@
                 if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
                     $this->updateTripMainHighlight($message["entityId"], $message["highlightId"]);
                 }
+            }
+        }
+
+        public function onSchedulerTriggered(mixed $message) : void {            
+            global $databaseProvider, $eventPublisher, $scheduler;
+
+            if ($message["action"] === "UPDATE_TRIP_STATISTICS" && $message["timeSinceLastExecution"] > 604800) {
+                $argsList = $databaseProvider
+                    ->statementBuilder("SELECT trip_id AS id FROM trip_summary WHERE start < UNIX_TIMESTAMP() AND name <> GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')")
+                    ->getResultSet();
+
+                foreach ($argsList as &$args) {
+                    $eventPublisher->publishTripStatisticsInvalidatedEvent($args["id"]);
+                }
+                        
+                $scheduler->recordEventsTriggered($message["action"]);
             }
         }
     }

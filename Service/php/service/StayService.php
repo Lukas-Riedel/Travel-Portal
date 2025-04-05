@@ -33,7 +33,8 @@
             $stayEvents = $this->calendarClient->getEvents(Calendar::Stays->value);
             foreach ($stayEvents as &$stayEvent) {
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($stayEvent->getStart(), $stayEvent->getEnd());
-                $this->stayMapper->insertStayEvent($stayEvent, $stayEvent->getId(), $resolvedTripIdentifier->getId());
+                $stay = new Stay($stayEvent->getSummary(), $stayEvent->getLocation(), $stayEvent->getStart(), $stayEvent->getEnd());
+                $this->stayMapper->insertStayEvent($stay, $stayEvent->getId(), $resolvedTripIdentifier->getId());
             }
             
             $affectedTripIds = $this->stayMapper->selectTripIdsForCreatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
