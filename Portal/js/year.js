@@ -1,6 +1,6 @@
 async function init(year, isLoggedIn) {  
     const trips = await api.listTrips(year, "EXPENSES");
-    const places = await api.listRegularPlaces(undefined, undefined, year, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now));
+    const places = await api.listRegularPlaces(undefined, undefined, undefined, year, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now));
     const statistics = (await api.getYear(year)).statistics;
 
     // Title.        

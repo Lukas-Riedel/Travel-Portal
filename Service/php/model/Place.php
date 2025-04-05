@@ -12,9 +12,10 @@
         private $excerpt;
         private $categories;
         private $highlights;
+        private $labels;
         private $dates;
 
-        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight, $excerpt, $categories, $highlights, $dates) {
+        public function __construct($id, $name, $country, $latitude, $longitude, $timezone, $mainHighlight, $excerpt, $categories, $highlights, $labels, $dates) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
@@ -25,6 +26,7 @@
             $this->excerpt = $excerpt;
             $this->categories = $categories;
             $this->highlights = $highlights;
+            $this->labels = $labels;
             $this->dates = $dates;
         }
 
@@ -66,6 +68,10 @@
 
         public function getHighlights() : array {
             return $this->highlights;
+        }
+
+        public function getLabels() : array {
+            return $this->labels;
         }
 
         public function getDates() : array {

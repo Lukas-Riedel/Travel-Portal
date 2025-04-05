@@ -15,6 +15,9 @@ RewriteRule ^trip/(.+)$ $1 [L,QSA]
 RewriteRule ^category/([^/]+)/?$ category.php?categoryId=$1 [L,QSA]
 RewriteRule ^category/(.+)$ $1 [L,QSA]
 
+RewriteRule ^label/([^/]+)/?$ label.php?label=$1 [L,QSA]
+RewriteRule ^label/(.+)$ $1 [L,QSA]
+
 RewriteRule ^plan/trip/([^/]+)/?$ plans_trip.php?tripId=$1 [L,QSA]
 RewriteRule ^plan/trip/(.+)$ $1 [L,QSA]
 RewriteRule ^plan/trip/?$ plans_trips.php [L,QSA]

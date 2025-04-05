@@ -9,6 +9,7 @@
             $response = array();    
             if ($type == "regular") {
                 $response = $placeService->getRegularPlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
+                    isset($input["label"]) ? $input["label"] : NULL,
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
                     isset($input["year"]) ? $input["year"] : NULL,
                     NULL,

@@ -22,6 +22,7 @@
                 <h1 id="name"></h1>
                 <div id="dates"></div>
                 <div id="categories"></div>
+                <div id="labels"></div>
             </div>
             <div id="map"></div>
         </div>

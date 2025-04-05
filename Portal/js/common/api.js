@@ -124,13 +124,14 @@ class Api {
             });
     }
 
-    async listRegularPlaces(tripId = undefined, categoryId = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
+    async listRegularPlaces(tripId = undefined, categoryId = undefined, label = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
         include = undefined) {
         return this.#sendRequest("GET", "places", {}, 
             {
                 type: "regular",
                 tripId: tripId,
                 categoryId: categoryId,
+                label: label,
                 year: year,
                 minStart: minStart,
                 maxEnd: maxEnd,
@@ -418,8 +419,19 @@ class Api {
             });
     }
 
+    async createPlaceLabel(placeId, name) {
+        return this.#sendRequest("POST", "places/" + placeId + "/labels", 
+            {
+                name: name
+            });
+    }
+
     async removeTripNote(tripId, noteId) {
         return this.#sendRequest("DELETE", "trips/" + tripId + "/notes/" + noteId);
+    }
+
+    async removePlaceLabel(placeId, labelId) {
+        return this.#sendRequest("DELETE", "places/" + placeId + "/labels/" + labelId);
     }
 
     async listYears(include) {

@@ -19,6 +19,9 @@ async function init(placeId, isLoggedIn) {
     
     // Categories.
     $('#categories').html(getCategoriesComponent(place));
+    
+    // Labels.
+    $('#labels').html(getLabelsComponent(place, isLoggedIn));
 
     // Albums.
     $('#albums').html(getAlbumsComponentForPlace(place, isLoggedIn));
@@ -30,7 +33,8 @@ async function init(placeId, isLoggedIn) {
     $('#footer').html(getFooter(isLoggedIn, [ 
         "<a onclick=\"changeLocation(" + place.id + ")\">Upravit polohu</a>", 
         "<a onclick=\"changeName(" + place.id + ")\">Přejmenovat</a>", 
-        "<a onclick=\"changeExcerpt(" + place.id + ", '" + place.excerpt + "')\">Změnit excerpt</a>" ]));
+        "<a onclick=\"changeExcerpt(" + place.id + ", '" + place.excerpt + "')\">Změnit excerpt</a>", 
+        "<a onclick=\"addPlaceLabel(" + place.id + ")\">Přidat štítek</a>" ]));
 }
 
 function getDocumentTitle(place) {
@@ -45,6 +49,20 @@ function getCategoriesComponent(place) {
     return getListComponent("Kategorie", place.categories.map(category => 
         "<a href=\"https://" + location.hostname + "/category/" + category.id + "\">" + getCategoryPrettyName(category.name) + "</a>"
     ));
+}
+
+function getLabelsComponent(place, isLoggedIn) {
+    const labels = place.labels.map(label => formatLabel(label, place.id, isLoggedIn));
+    if (labels.length === 0) {
+        return "";
+    }
+
+    return getListComponent("Štítky", labels);
+}
+
+function formatLabel(label, placeId, showRemoveButton) {
+    return "<a href=\"https://" + location.hostname + "/label/" + label.name + "\">" + label.name + "</a>"
+        + (showRemoveButton ? " <a style=\"color: red;\" onclick=\"removeLabel(" + label.id + ", " + placeId + ")\">Odstranit</a>" : "");
 }
 
 function getDatesComponent(place) {

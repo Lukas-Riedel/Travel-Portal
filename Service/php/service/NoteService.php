@@ -20,11 +20,11 @@
             return $this->noteMapper->selectNotesForTrip($tripId);
         }
 
-        public function removeNote($noteId) : bool {
+        public function removeNote(string $noteId) : bool {
             return $this->noteMapper->deleteNote($noteId) > 0;
         }
 
-        public function updateNoteTripId($oldTripId, $newTripId) : bool {   
+        public function updateNoteTripId(string $oldTripId, string $newTripId) : bool {   
             return $this->noteMapper->updateNoteTripId($oldTripId, $newTripId);    
         }
     }

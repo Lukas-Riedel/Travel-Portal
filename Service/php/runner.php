@@ -28,6 +28,7 @@
     require_once(dirname(__FILE__) . "/service/ForecastService.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
     require_once(dirname(__FILE__) . "/service/PlatformService.php");
+    require_once(dirname(__FILE__) . "/service/LabelService.php");
     require_once(dirname(__FILE__) . "/event/Scheduler.php");
     require_once(dirname(__FILE__) . "/event/EventManager.php");
     require_once(dirname(__FILE__) . "/event/EventPublisher.php");
@@ -60,8 +61,9 @@
     $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
+    $labelService = new LabelService($databaseProvider);
 
-    $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService,
+    $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService, $labelService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,
         $fitnessService, $statisticsService, $geocodingService, $stayService, $forecastService, $authenticationService, $platformService);
     $statisticsService->setStatisticsProviders(array($placeService, $tripService, $yearService, $stayService, $photoService, $categoryService, $expenseService, $fitnessService, $flightService));

@@ -4,7 +4,7 @@ async function getFutureFlights() {
 }
 
 async function getPlaces(onlyPast) {
-    return api.listRegularPlaces(undefined, undefined, undefined, undefined, onlyPast ? Math.round(now) : Number.MAX_SAFE_INTEGER);
+    return api.listRegularPlaces(undefined, undefined, undefined, undefined, undefined, onlyPast ? Math.round(now) : Number.MAX_SAFE_INTEGER);
 }
 
 async function getLoggedFlights() {
@@ -109,6 +109,15 @@ async function addUsefulLink(tripId) {
     }
 
     api.createTripNote(tripId, "<a href=\"" + link + "\">" + name + "</a>").then(reload);
+}
+
+async function addPlaceLabel(placeId) {
+    const name = prompt("Zadej název štítku:");
+    if (name == null || name == "") {
+        return;
+    }
+
+    api.createPlaceLabel(placeId, name).then(reload);
 }
 
 function getPublicHolidaysComponent(trip, isLoggedIn) {
@@ -271,6 +280,12 @@ async function doGetFeaturedTrip(trip) {
 function removeNote(id, tripId) {
     if (confirm("Opravdu chceš odstranit vybranou poznámku?")) {
         api.removeTripNote(tripId, id).then(reload);
+    }
+}
+
+function removeLabel(id, placeId) {
+    if (confirm("Opravdu chceš odstranit vybraný štítek?")) {
+        api.removePlaceLabel(placeId, id).then(reload);
     }
 }
 
