@@ -59,9 +59,9 @@
             // Include composite region categories.
             foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
                 if ($this->arrayAny($compositeRegion->getIncludedCategoryIds(), function($includedCategoryId)
-                        use (&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
+                        use(&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
                     && $this->arrayEvery($compositeRegion->getExcludedCategoryIds(), function($excludedCategoryId)
-                        use (&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
+                        use(&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
                     $categoryIds[] = $compositeRegion->getCategoryId();
                 }
             }
@@ -106,13 +106,7 @@
         }
 
         public function updateCategoryMainHighlight(string $categoryId, string $highlightIdentifier) : bool {
-            $wasUpdated = $this->categoryMapper->updateCategoryMainHighlight($categoryId, $highlightIdentifier);
-            
-            if ($wasUpdated) {
-                $this->eventPublisher->publishCategoryUpdatedEvent($categoryId);
-            }
-
-            return $wasUpdated;
+            return $this->categoryMapper->updateCategoryMainHighlight($categoryId, $highlightIdentifier);
         }
 
         public function updateCategoryName(string $categoryId, string $name) : bool {            

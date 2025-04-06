@@ -47,7 +47,6 @@
     $authenticationService = new AuthenticationService();
     $placeService = new PlaceService();
     $tripService = new TripService();
-    $yearService = new YearService();
     $configurationService = new ConfigurationService();
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $googleApiClient = new GoogleApiClient();
@@ -70,6 +69,7 @@
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
     $labelService = new LabelService($databaseProvider, $configurationService);
+    $yearService = new YearService($databaseProvider, $highlightService, $statisticsService, $eventPublisher, $scheduler);
 
     $statisticsService->setStatisticsProviders(array($placeService, $tripService, $yearService, $stayService, $photoService, $categoryService, $expenseService, $fitnessService, $flightService));
     

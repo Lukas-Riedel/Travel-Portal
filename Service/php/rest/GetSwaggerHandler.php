@@ -26,7 +26,7 @@
                 }
 
                 $paths[$handler->getPath()][strtolower($handler->getMethod())] = $this->getApiEndpoint($handler);
-                uksort($paths[$handler->getPath()], function($a, $b) use (&$methodsOrder) { return $methodsOrder[$a] - $methodsOrder[$b]; });
+                uksort($paths[$handler->getPath()], function($a, $b) use(&$methodsOrder) { return $methodsOrder[$a] - $methodsOrder[$b]; });
             }
             ksort($paths);
 

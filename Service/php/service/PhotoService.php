@@ -97,7 +97,7 @@
                 foreach ($response["mediaItems"] as &$mediaItem) {
                     $photos[] = new Photo(
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
-                        function() use($mediaItem) { return $mediaItem["baseUrl"]; },
+                        function() use(&$mediaItem) { return $mediaItem["baseUrl"]; },
                         $mediaItem["productUrl"],
                         isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
                         isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : NULL,

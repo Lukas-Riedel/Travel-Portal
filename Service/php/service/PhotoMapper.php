@@ -46,7 +46,7 @@
                 return NULL;
             }
 
-            $urlProvider = function() use($photoId) { 
+            $urlProvider = function() use(&$photoId) { 
                 return $this->googleApiClient->getMediaItem($this->selectPhotoExternalId($photoId))["baseUrl"];
             };
             $urlProvider->bindTo($this);

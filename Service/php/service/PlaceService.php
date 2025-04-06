@@ -423,7 +423,7 @@
             
             return $databaseProvider
                 ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id")
-                ->getMappedResultSet(function($placeIdentifierRow) use (&$highlightService) { 
+                ->getMappedResultSet(function($placeIdentifierRow) use(&$highlightService) { 
                     return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
                         $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
                 });
@@ -435,7 +435,7 @@
             return $databaseProvider
                 ->statementBuilder("SELECT pi.*, ci.name AS country FROM place_identifier pi INNER JOIN category_identifier ci ON pi.country_category_id = ci.id WHERE pi.id IN (SELECT place_id FROM category WHERE category_id = ?)")
                 ->withParameters($categoryId)
-                ->getMappedResultSet(function($placeIdentifierRow) use (&$highlightService) { 
+                ->getMappedResultSet(function($placeIdentifierRow) use(&$highlightService) { 
                     return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $placeIdentifierRow["country"], $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
                         $placeIdentifierRow["timezone"], $highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
                 });
