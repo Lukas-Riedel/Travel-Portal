@@ -129,6 +129,13 @@
             return $this->publicHolidays;
         }
 
+        public function withOffset(int $offset) : Trip {
+            return new Trip($this->id, $this->name, $this->year, $this->mainHighlight, $this->start + $offset, $this->end + $offset, $this->countries, $this->cost,
+                $this->days->getTotal(), $this->days->getWorking(), $this->vacation === NULL ? NULL : $this->vacation->getExpected(), 
+                $this->vacation === NULL ? NULL : $this->vacation->getMaximum(), $this->expenses, $this->stays, $this->flights, 
+                $this->watchedFlights, $this->layovers, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->publicHolidays);
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

@@ -41,7 +41,7 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Event", '{"name":"CalendarChanged","args":{"calendar":"trips","watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
+                $this->createRequestExample("Event", '{"name":"CalendarInvalidated","args":{"calendar":"trips","watchId":"314f1767-a7e8-4e53-90a0-a392cc99eb5c"}}'));
         }
 
         public function getResponseExamples() {

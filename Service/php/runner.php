@@ -38,7 +38,6 @@
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $loggingProvider = new LoggingProvider($databaseProvider);
     $placeService = new PlaceService();
-    $tripService = new TripService();
     $configurationService = new ConfigurationService();
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $googleApiClient = new GoogleApiClient();
@@ -62,6 +61,8 @@
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
     $labelService = new LabelService($databaseProvider, $configurationService);
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService, $eventPublisher, $scheduler);
+    $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService,
+        $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher, $scheduler);
 
     $services = array($placeService, $highlightService, $photoService, $tripService, $photoService, $categoryService, $labelService,
         $expenseService, $yearService, $noteService, $configurationService, $flightService, $timeTrackingService,

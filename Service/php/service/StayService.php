@@ -53,7 +53,7 @@
             }
         }
 
-        public function onCalendarChanged(mixed $message) : void {
+        public function onCalendarInvalidated(mixed $message) : void {
             // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 

@@ -36,6 +36,7 @@
             return TRUE;
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function createCalendarEvent($calendar, $name, $address, $start, $end) : bool {    
             global $configuration;        
             
@@ -58,6 +59,7 @@
             return TRUE;
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function deleteCalendarEvent($calendar, $eventId) : bool {
             $this->executeRequest(HttpMethod::DELETE, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId));
 
@@ -65,6 +67,7 @@
             return TRUE;
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function updateCalendarEventSummary($calendar, $eventId, $name) : bool {
             $payload = array(
                 "summary" => $name);
@@ -74,6 +77,7 @@
             return TRUE;
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function updateCalendarEventLocation($calendar, $eventId, $location) : bool {
             $payload = array(
                 "location" => $location);
@@ -83,6 +87,7 @@
             return TRUE;
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function updateCalendarEventDates($calendar, $eventId, $start, $end) : bool {
             global $configuration;
 
@@ -113,6 +118,7 @@
             return TRUE;
         }
 
+        // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function watchCalendar($calendar, $channelId, $url, $token = NULL) : bool {
             global $configuration;
                     
@@ -285,6 +291,7 @@
             return $_SESSION["googleApiAccessToken"];
         }
 
+        // TODO: Move to Calendar enum.
         private function getCalendarIdentifier($name) : string {            
             global $configuration;
     

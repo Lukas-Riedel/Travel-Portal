@@ -28,6 +28,24 @@
                 ->getResultSetForColumn("country");
         }
 
+        public function getCountriesForCandidateTrip($tripId) : array {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT DISTINCT ci.name FROM place_candidate_event pce INNER JOIN place_identifier pi ON pce.place_id = pi.id INNER JOIN category_identifier ci ON pi.country_category_id = ci.id WHERE pce.trip_id = ?")
+                ->withParameters($tripId)
+                ->getResultSetForColumn("name");
+        }
+
+        public function getDaysForCandidateTrip($tripId) : int {
+            global $databaseProvider;
+
+            return $databaseProvider
+                ->statementBuilder("SELECT CEIL(MAX(end) / 86400) AS days FROM place_candidate_event WHERE trip_id = ?")
+                ->withParameters($tripId)
+                ->getSingleColumn("days");
+        }
+
         public function getLayoversForTrip($tripId) : array {
             global $databaseProvider;
 
@@ -120,7 +138,10 @@
                     $album = $photoService->getAlbum($placeRow["album_id"]);    
                 }
 
-                $trip = $tripService->getTripIdentifierById($placeRow["trip_id"]);
+                $trip = NULL;
+                if ($placeRow["trip_id"] !== NULL) {
+                    $trip = $tripService->getTripIdentifierById($placeRow["trip_id"]);
+                }
 
                 $places[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $weather, $sun, $album, $trip));  
             }
@@ -710,7 +731,7 @@
             }
         }
 
-        public function onCalendarChanged(mixed $message) : void {
+        public function onCalendarInvalidated(mixed $message) : void {
             global $configuration;
 
             if ($message["calendar"] === "places") {

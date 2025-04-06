@@ -121,8 +121,20 @@
             $this->publishEvent(Event::StayEventDeleted, array("tripId" => $tripId));
         }
         
-        public function publishCalendarChangedEvent($calendar) : void {
-            $this->publishEvent(Event::CalendarChanged, array("calendar" => $calendar));
+        public function publishTripEventCreatedEvent($tripId) : void {
+            $this->publishEvent(Event::TripEventCreated, array("tripId" => $tripId));
+        }
+        
+        public function publishTripEventUpdatedEvent($tripId) : void {
+            $this->publishEvent(Event::TripEventUpdated, array("tripId" => $tripId));
+        }
+        
+        public function publishTripEventDeletedEvent($tripId) : void {
+            $this->publishEvent(Event::TripEventDeleted, array("tripId" => $tripId));
+        }
+        
+        public function publishCalendarInvalidatedEvent($calendar) : void {
+            $this->publishEvent(Event::CalendarInvalidated, array("calendar" => $calendar));
         }
         
         public function publishCalendarWatchRenewingEvent($calendar) : void {
@@ -161,6 +173,10 @@
             $this->publishEvent(Event::OverallStatisticsInvalidated, NULL);
         }
 
+        public function publishTripUpdatedEvent($tripId) : void {
+            $this->publishEvent(Event::TripUpdated, array("tripId" => $tripId));
+        }
+
         public function publishEvent($event, $args) : void {
             global $databaseProvider;
 
@@ -183,12 +199,12 @@
     }
 
     enum Event : int {
-        // TODO: Invalidations first, then updates.
+        // TODO: Invalidations first, then updates. Order this enum.
         case ApplicationStarted = 0;
         case SchedulerTriggered = 1;
         case CalendarWatchRenewing = 2;
         case VacationReset = 3;
-        case CalendarChanged = 4;
+        case CalendarInvalidated = 4;
         case FlightArrived = 5;
         case ActualWeatherForecastUpdated = 6;
         case DaylightForecastUpdated = 7;
@@ -223,6 +239,10 @@
         case YearStatisticsInvalidated = 36;
         case TripStatisticsInvalidated = 37;
         case CategoryStatisticsInvalidated = 38;
+        case TripUpdated = 39;
+        case TripEventCreated = 40;
+        case TripEventUpdated = 41;
+        case TripEventDeleted = 42;
 
         case FitnessActivityDetected = 100;
 

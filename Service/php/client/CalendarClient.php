@@ -1,5 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../model/CalendarEvent.php");
+    require_once(dirname(__FILE__) . "/../model/PublicHoliday.php");
     
     use ICal\ICal;
 
@@ -11,7 +12,7 @@
             $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
-                BASE_URL . "/events?name=" . Event::CalendarChanged->name . "&args[calendar]=" . $calendar,
+                BASE_URL . "/events?name=" . Event::CalendarInvalidated->name . "&args[calendar]=" . $calendar,
                 "Bearer " . $authenticationResult->getAccessToken());
         }
 
@@ -21,8 +22,54 @@
 
             return $this->fetchEvents($configuration["calendars"][$calendar]);
         }
+    
+        public function getPublicHolidaysForCountries($countries) : array {
+            $holidays = array();
 
-        public function getPublicHolidayEvents($country) : array {            
+            foreach ($countries as &$country) {
+                foreach ($this->getPublicHolidaysForCountry($country) as &$holiday) {
+                    $holidays[strtotime($holiday->getDate())] = $holiday;
+                }
+            }
+
+            ksort($holidays);
+
+            return array_values($holidays);
+        }
+
+        public function getPublicHolidaysForDatesInCountries(callable $countryDatesProvider, $countries) {
+            $holidays = array();
+
+            foreach ($countries as &$country) {
+                $countryHolidays = array();
+                foreach ($this->getPublicHolidaysForCountry($country) as &$countryHoliday) {
+                    $countryHolidays[$countryHoliday->getDate()] = $countryHoliday;
+                }
+
+                foreach ($countryDatesProvider($country) as &$countryDate) {
+                    if (array_key_exists($countryDate, $countryHolidays)) {
+                        $holidays[] = new PublicHoliday($countryHolidays[$countryDate]->getName(), $country, $countryDate);
+                    }
+                }
+            }
+
+            return $holidays;
+        }
+
+        public function getPublicHolidaysForCountry($country) : array {
+            $holidays = array();
+            
+            foreach ($this->getPublicHolidayEvents($country) as &$event) {               
+                if ($event->getStart() > time()) {
+                    $date = getdate($event->getStart());
+                    $holidays[] = new PublicHoliday($event->getSummary(), $country, $date["mday"] . "." . $date["mon"] . "." . $date["year"]);                    
+                }
+            }
+
+            return $holidays;
+        }
+
+        private function getPublicHolidayEvents($country) : array {            
             global $categoryService;
 
             $categoryIdentifier = $categoryService->getCategoryIdentifier($country);

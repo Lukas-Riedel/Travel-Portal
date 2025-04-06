@@ -303,6 +303,36 @@
             }
         }
 
+        public function onTripEventCreated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onTripEventUpdated(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onTripEventDeleted(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
         public function onYearStatisticsUpdated(mixed $message) : void {
             $this->updateOverallStatistics();
         }
