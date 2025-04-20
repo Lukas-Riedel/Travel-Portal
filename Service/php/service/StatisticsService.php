@@ -65,7 +65,7 @@
 
         public function updateTripStatistics(Trip $trip) : void {            
             if ($this->isSpecialTrip($trip)) {
-                throw new InvalidArgumentException("Unable to update statistics for the '" . $trip->getName() . " " . $trip->getYear() . "' trip.");
+                return;
             }  
 
             $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), $trip->getEnd(), NULL, $trip->getId());

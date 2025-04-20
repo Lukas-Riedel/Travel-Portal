@@ -263,6 +263,8 @@
                         }
                     }
 
+                    // TODO: Extend the functionality for flights and stays.
+
                     $this->tripMapper->updateDayTripsTripDates($trip->getId(), $minStart, $maxEnd);
                 }
             }
