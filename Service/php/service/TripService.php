@@ -242,6 +242,32 @@
             $this->tripMapper->deleteAllDayTripsTrips();
         }
 
+        public function updateAllDayTripsTripsDates() : void {
+            $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
+            $trips = $this->getRegularTrips(NULL, array());
+            
+            foreach ($trips as &$trip) {
+                if ($trip->getName() === $dayTripsTripName) {
+                    $places = $this->placeService->getRegularPlaces(NULL, NULL, $trip->getId(), NULL, NULL, NULL, NULL, array());
+                    $minStart = PHP_INT_MAX;
+                    $maxEnd = PHP_INT_MIN;
+
+                    foreach ($places as &$place) {
+                        foreach ($place->getDates() as &$date) {
+                            if ($date->getStart() < $minStart) {
+                                $minStart = $date->getStart();
+                            }
+                            if ($date->getEnd() > $maxEnd) {
+                                $maxEnd = $date->getEnd();
+                            }
+                        }
+                    }
+
+                    $this->tripMapper->updateDayTripsTripDates($trip->getId(), $minStart, $maxEnd);
+                }
+            }
+        }
+
         public function onCalendarInvalidated(mixed $message) : void {
             // TODO: Replace by fields after moving to the separate listener class.
             global $stayService, $flightService;
@@ -253,6 +279,7 @@
                 $this->placeService->refreshCalendar();
                 $stayService->refreshCalendar($this);
                 $flightService->refreshCalendar(FlightType::cases(), $this);
+                $this->updateAllDayTripsTripsDates();
             }
         }
         

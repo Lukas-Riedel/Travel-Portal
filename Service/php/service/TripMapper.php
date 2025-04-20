@@ -363,6 +363,20 @@
                 ->execute() === 1;
         }
 
+        public function updateDayTripsTripDates(string $tripId, int $start, int $end) : bool {
+            $sql = <<<'SQL'
+                UPDATE trip_day_trip
+                SET start = ?,
+                    end = ?
+                WHERE trip_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end, $tripId)
+                ->execute() === 1;
+        }
+
         public function updateTripMainHighlight(string $tripId, string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE trip_identifier
