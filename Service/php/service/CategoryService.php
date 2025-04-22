@@ -83,6 +83,14 @@
             return $this->categoryMapper->selectCategoryIdentifierById($categoryId);
         }
 
+        public function getCategoryIdsForPlace(string $placeId) : array { 
+            return $this->categoryMapper->selectCategoryIdsForPlace($placeId);
+        }
+
+        public function getCategoryIdentifiersForPlace(string $placeId) : array { 
+            return $this->categoryMapper->selectCategoryIdentifiersForPlace($placeId);
+        }
+
         public function getCategoryIdentifiersByIds(array $categoryIds) : array { 
             $categories = array();
 

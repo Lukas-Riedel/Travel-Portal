@@ -1,5 +1,5 @@
 async function init(categoryId, isLoggedIn) {
-    const places = await api.listRegularPlaces(undefined, categoryId, undefined, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now), "CATEGORIES");
+    const places = await api.listRegularPlaces(undefined, categoryId, undefined, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now), "CATEGORIES,DATES");
     const category = await api.getCategory(categoryId);
 
     // Title.

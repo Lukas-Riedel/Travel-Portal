@@ -174,6 +174,39 @@
                 ->getResultSetForColumn("subject_category_id");
         }
 
+        public function selectCategoryIdsForPlace(string $placeId) : array {            
+            $sql = <<<'SQL'
+                SELECT category_id
+                FROM category
+                WHERE place_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($placeId)
+                ->getResultSetForColumn("category_id");
+        }
+
+        public function selectCategoryIdentifiersForPlace(string $placeId) : array {            
+            $sql = <<<'SQL'
+                SELECT ci.*
+                FROM category c
+                INNER JOIN category_identifier ci
+                    ON c.category_id = ci.id
+                WHERE c.place_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($placeId)
+                ->getMappedResultSet(function($categoryRow) {
+                    $metadata = $categoryRow["color"] === NULL && $categoryRow["unicode"] === NULL && $categoryRow["public_holidays_calendar"] === NULL
+                        ? NULL : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
+                    return new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], $categoryRow["category"],
+                        $metadata, $this->highlightService->getHighlight($categoryRow["main_highlight_id"]));
+                });
+        }
+
         public function insertCategory(string $placeId, string $categoryId) : bool {    
             $sql = <<<'SQL'
                 INSERT INTO category (

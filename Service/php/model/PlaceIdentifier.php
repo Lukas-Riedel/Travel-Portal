@@ -26,6 +26,10 @@
             return $this->id;
         }
 
+        public function setId($id) : void {
+            $this->id = $id;
+        }
+
         public function getName() : string {
             return $this->name;
         }
@@ -52,6 +56,10 @@
 
         public function getExcerpt() : ?string {
             return $this->excerpt;
+        }
+
+        public function getLocation() : Location {
+            return new Location($this->country, $this->latitude, $this->longitude, $this->timezone);
         }
 
         #[\ReturnTypeWillChange]

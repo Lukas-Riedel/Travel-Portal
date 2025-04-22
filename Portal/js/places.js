@@ -1,5 +1,5 @@
 async function init(isLoggedIn) {
-    const places = await getPlaces(!isLoggedIn);
+    const places = await getPlaces(!isLoggedIn, "DATES");
 
     // Title.
     $('#title').html(getTitle(places));

@@ -147,10 +147,6 @@
             return $wasUpdated;
         }
 
-        public function removeCandidateTrip(string $tripId) : bool {
-            return $this->tripMapper->deleteCandidateTrip($tripId) > 0;
-        }
-
         public function moveTrip(string $tripId, int $start) : Trip {            
             $trip = $this->getRegularTrip($tripId);
             if ($trip === NULL) {
@@ -171,7 +167,6 @@
             }
 
             $this->placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
-            $this->removeCandidateTrip($candidateTripId);
 
             $this->noteService->updateNoteTripId($candidateTripId, $targetTripId);
             
@@ -185,7 +180,7 @@
             }
             
             $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), NULL);
-            $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier->getId());
+            $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
             $this->deleteTripEvent($tripId);
 
             $this->noteService->updateNoteTripId($tripId, $archivedTripIdentifier->getId());
@@ -278,7 +273,7 @@
             if ($message["calendar"] === Calendar::Trips->value) {
                 $this->deleteAllDayTripsTrips();
                 $this->refreshCalendar();
-                $this->placeService->refreshCalendar();
+                $this->placeService->refreshCalendar($this);
                 $stayService->refreshCalendar($this);
                 $flightService->refreshCalendar(FlightType::cases(), $this);
                 $this->updateAllDayTripsTripsDates();

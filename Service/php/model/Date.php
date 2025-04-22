@@ -7,14 +7,16 @@
     class Date implements JsonSerializable {        
         private $start;
         private $end;
+        private $layover;
         private $weather;
         private $sun;
         private $album;
         private $trip;
 
-        public function __construct($start, $end, $weather, $sun, $album, $trip) {
+        public function __construct($start, $end, $layover, $weather, $sun, $album, $trip) {
             $this->start = $start;
             $this->end = $end;
+            $this->layover = $layover;
             $this->weather = $weather;
             $this->sun = $sun;
             $this->album = $album;
@@ -27,6 +29,10 @@
 
         public function getEnd() : int {
             return $this->end;
+        }
+
+        public function isLayover() : bool {
+            return $this->layover;
         }
 
         public function getWeather() : ?Weather {

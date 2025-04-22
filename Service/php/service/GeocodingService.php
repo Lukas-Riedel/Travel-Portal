@@ -6,7 +6,6 @@
 
         private const EARTH_RADIUS_KM = 6378;
         
-        private const UNKNOWN_COUNTRY_KEY = "UNKNOWN";
         private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+), (.+)\)}";
         private const CACHED_ADDRESS_FORMAT = "%s, %s (%s, %s)";
 
@@ -48,7 +47,7 @@
             $country = NULL;
             if ($location->getCountry() === NULL) {
                 // TODO: Remove the UNKNOWN country, use null instead.
-                $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", self::UNKNOWN_COUNTRY_KEY);
+                $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", "UNKNOWN");
             }
             else if ($this->configurationService->existsForTypeAndKey("countryNames", $location->getCountry())) {
                 $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", $location->getCountry());

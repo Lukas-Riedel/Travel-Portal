@@ -26,11 +26,6 @@
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        // TODO: Delete ASAP.
-        public function getAlbumExternalId(string $albumId) : ?string {
-            return $this->photoMapper->selectAlbumExternalId($albumId);
-        }
-
         public function __construct(DatabaseProvider $databaseProvider, GoogleApiClient $googleApiClient, 
             ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
@@ -127,6 +122,13 @@
             }
 
             return $photos;
+        }
+
+        public function updateAlbumName(string $albumId, string $oldPlaceName, string $newPlaceName) : bool {
+            $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
+            $wasUpdated = $this->googleApiClient->updateAlbumName($externalAlbumId, str_replace($oldPlaceName, $newPlaceName, $this->getAlbum($albumId)->getName()));
+            $this->updateAlbum($albumId);
+            return $wasUpdated;
         }
 
         public function uploadPhoto(string $fileName, string $albumId, ?int $position, ?string $replacedPhotoId, string $data) : PendingPhoto {

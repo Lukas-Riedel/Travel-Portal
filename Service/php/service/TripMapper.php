@@ -403,19 +403,6 @@
                 ->execute() === 1;
         }
 
-        public function deleteCandidateTrip(string $tripId) : int {
-            $sql = <<<'SQL'
-                DELETE
-                FROM place_candidate_event
-                WHERE trip_id = ?
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($tripId)
-                ->execute();
-        }
-
         public function deleteAllTripEvents() : int {
             $sql = <<<'SQL'
                 DELETE

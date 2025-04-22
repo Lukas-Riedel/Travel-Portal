@@ -5,7 +5,7 @@ async function init(placeId, isLoggedIn) {
         location.replace("https://www.google.com/maps/search/" + place.name + ", " + place.country);
     }
 
-    const places = await getPlaces(!isLoggedIn);
+    const places = await getPlaces(!isLoggedIn, "DATES");
 
     // Title.
     document.title = getDocumentTitle(place);

@@ -3,8 +3,8 @@ async function getFutureFlights() {
     return (await api.listTrips(undefined, "WATCHED_FLIGHTS")).flatMap(t => t.watchedFlights);
 }
 
-async function getPlaces(onlyPast) {
-    return api.listRegularPlaces(undefined, undefined, undefined, undefined, undefined, onlyPast ? Math.round(now) : Number.MAX_SAFE_INTEGER);
+async function getPlaces(onlyPast, include = "") {
+    return api.listRegularPlaces(undefined, undefined, undefined, undefined, undefined, onlyPast ? Math.round(now) : Number.MAX_SAFE_INTEGER, include);
 }
 
 async function getLoggedFlights() {
@@ -243,7 +243,7 @@ async function addPlaceCandidate() {
 }
 
 async function doGetFeaturedTrip(trip) {
-    const places = await api.listRegularPlaces(trip.id);
+    const places = await api.listRegularPlaces(trip.id, undefined, undefined, undefined, undefined, undefined, "DATES");
     const calendar = getCalendarDatesForTrip(trip, places, false).filter(date => date.date > now - 86400).slice(0, configuration.maximumNextTripCalendarEntries);
 
     const headerRowColumns = [

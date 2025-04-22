@@ -82,6 +82,16 @@
             $this->dates[] = $date;
         }
 
+        public function getPlaceIdentifier() : PlaceIdentifier {
+            return new PlaceIdentifier($this->id, $this->name, $this->country, $this->latitude, $this->longitude, $this->timezone, $this->mainHighlight, $this->excerpt);
+        }
+
+        public function withUpdatedDates($dates) : Place {
+            $newPlace = clone $this;
+            $newPlace->dates = $dates;
+            return $newPlace;
+        }
+
         public function findAlbum($albumId) : ?Album {
             foreach ($this->getDates() as &$date) {
                 $album = $date->getAlbum();

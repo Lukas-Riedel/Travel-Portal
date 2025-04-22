@@ -251,6 +251,10 @@
             return $result;
         }
 
+        public function getMappedResultSetForColumn($column, $fn) {
+            return array_map($fn, $this->getResultSetForColumn($column));
+        }
+
         public function getSingleRow() {
             $resultSet = $this->getResultSet();
             return count($resultSet) === 1 ? $resultSet[0] : NULL;

@@ -467,7 +467,7 @@ class Api {
             $.ajax({
                 method: method,
                 url: "https://" + this.#hostName + "/" + url + queryString,
-                data: JSON.stringify(data),
+                data: Object.keys(data).length ? JSON.stringify(data) : undefined,
                 dataType: "json",
                 headers: {
                     "Authorization": "Bearer " + (await this.#getBearerToken())

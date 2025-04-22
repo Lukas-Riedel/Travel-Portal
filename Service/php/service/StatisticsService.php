@@ -273,6 +273,116 @@
             }
         }
 
+        public function onPlaceUpdated(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            foreach ($placeService->getRegularPlace($message["placeId"]) as &$place) {
+                $tripIdsToUpdate = array();
+                foreach ($place->getDates() as &$date) {
+                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                        $tripIdsToUpdate[] = $date->getTrip()->getId();
+                    }
+                }
+
+                foreach ($tripIdsToUpdate as &$tripId) {
+                    $this->updateTripStatistics($tripId);
+                }
+
+                foreach ($place->getCategories() as &$category) {
+                    $this->updateCategoryStatistics($category->getIdentifier());
+                }
+            }
+        }
+
+        public function onPlaceDeleted(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            foreach ($placeService->getRegularPlace($message["placeId"]) as &$place) {
+                $tripIdsToUpdate = array();
+                foreach ($place->getDates() as &$date) {
+                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                        $tripIdsToUpdate[] = $date->getTrip()->getId();
+                    }
+                }
+
+                foreach ($tripIdsToUpdate as &$tripId) {
+                    $this->updateTripStatistics($tripId);
+                }
+
+                foreach ($place->getCategories() as &$category) {
+                    $this->updateCategoryStatistics($category->getIdentifier());
+                }
+            }
+        }
+
+        public function onPlaceEventCreated(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            foreach ($placeService->getRegularPlace($message["placeId"]) as &$place) {
+                $tripIdsToUpdate = array();
+                foreach ($place->getDates() as &$date) {
+                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                        $tripIdsToUpdate[] = $date->getTrip()->getId();
+                    }
+                }
+
+                foreach ($tripIdsToUpdate as &$tripId) {
+                    $this->updateTripStatistics($tripId);
+                }
+
+                foreach ($place->getCategories() as &$category) {
+                    $this->updateCategoryStatistics($category->getIdentifier());
+                }
+            }
+        }
+
+        public function onPlaceEventUpdated(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            foreach ($placeService->getRegularPlace($message["placeId"]) as &$place) {
+                $tripIdsToUpdate = array();
+                foreach ($place->getDates() as &$date) {
+                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                        $tripIdsToUpdate[] = $date->getTrip()->getId();
+                    }
+                }
+
+                foreach ($tripIdsToUpdate as &$tripId) {
+                    $this->updateTripStatistics($tripId);
+                }
+
+                foreach ($place->getCategories() as &$category) {
+                    $this->updateCategoryStatistics($category->getIdentifier());
+                }
+            }
+        }
+
+        public function onPlaceEventDeleted(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            foreach ($placeService->getRegularPlace($message["placeId"]) as &$place) {
+                $tripIdsToUpdate = array();
+                foreach ($place->getDates() as &$date) {
+                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                        $tripIdsToUpdate[] = $date->getTrip()->getId();
+                    }
+                }
+
+                foreach ($tripIdsToUpdate as &$tripId) {
+                    $this->updateTripStatistics($tripId);
+                }
+
+                foreach ($place->getCategories() as &$category) {
+                    $this->updateCategoryStatistics($category->getIdentifier());
+                }
+            }
+        }
+
         public function onStayEventCreated(mixed $message) : void {
             // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
@@ -294,6 +404,16 @@
         }
 
         public function onStayEventDeleted(mixed $message) : void {
+            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
+            global $tripService;
+
+            $trip = $tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== NULL) {
+                $this->updateTripStatistics($trip);
+            }
+        }
+
+        public function onTripUpdated(mixed $message) : void {
             // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
             global $tripService;
 

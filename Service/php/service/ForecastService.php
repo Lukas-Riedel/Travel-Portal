@@ -183,6 +183,44 @@
             $this->updateDaylightForecast($placeIdentifier, $message["start"], $message["end"]);
         }
 
+        public function onPlaceEventCreated(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            $place = $placeService->getRegularPlace($message["placeId"]);
+            foreach ($place->getDates() as &$date) {
+                if (time() < $date->getStart()) {
+                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400 > $date->getStart()) {
+                        $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
+                    }
+                            
+                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
+                    $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                }
+
+                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($date->getTrip()->getId());
+            }
+        }
+
+        public function onPlaceEventUpdated(mixed $message) : void {
+            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
+            global $placeService;
+
+            $place = $placeService->getRegularPlace($message["placeId"]);
+            foreach ($place->getDates() as &$date) {
+                if (time() < $date->getStart()) {
+                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400 > $date->getStart()) {
+                        $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
+                    }
+                            
+                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
+                    $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                }
+
+                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($date->getTrip()->getId());
+            }
+        }
+
         public function onSchedulerTriggered(mixed $message) : void {
             // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
             global $placeService;

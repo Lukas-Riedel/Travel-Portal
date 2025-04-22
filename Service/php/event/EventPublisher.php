@@ -177,6 +177,22 @@
             $this->publishEvent(Event::TripUpdated, array("tripId" => $tripId));
         }
 
+        public function publishPlaceDeletedEvent($placeIdentifier) : void {
+            $this->publishEvent(Event::PlaceDeleted, array("placeIdentifier" => $placeIdentifier));
+        }
+
+        public function publishPlaceEventCreatedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceEventCreated, array("placeId" => $placeId));
+        }
+
+        public function publishPlaceEventUpdatedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceEventUpdated, array("placeId" => $placeId));
+        }
+        
+        public function publishPlaceEventDeletedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceEventDeleted, array("placeId" => $placeId));
+        }
+
         public function publishEvent($event, $args) : void {
             global $databaseProvider;
 
@@ -200,6 +216,8 @@
 
     enum Event : int {
         // TODO: Invalidations first, then updates. Order this enum.
+        // TODO: Unify Removed/Deleted.
+        // TODO: Remove unused.
         case ApplicationStarted = 0;
         case SchedulerTriggered = 1;
         case CalendarWatchRenewing = 2;
@@ -243,6 +261,10 @@
         case TripEventCreated = 40;
         case TripEventUpdated = 41;
         case TripEventDeleted = 42;
+        case PlaceDeleted = 43;
+        case PlaceEventCreated = 44;
+        case PlaceEventUpdated = 45;
+        case PlaceEventDeleted = 46;
 
         case FitnessActivityDetected = 100;
 
