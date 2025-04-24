@@ -2,6 +2,7 @@
     session_start();
 
     require_once(dirname(__FILE__) . "/../vendor/autoload.php");
+    require_once(dirname(__FILE__) . "/config/secrets.php");
     
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/LoggingProvider.php");
@@ -44,7 +45,7 @@
     $httpClient = new HttpClient();
     $platformService = new PlatformService();
     $calendarClient = new CalendarClient();
-    $authenticationService = new AuthenticationService();
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
     $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher, $scheduler);

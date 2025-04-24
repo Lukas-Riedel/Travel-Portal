@@ -1,4 +1,5 @@
 <?php
+    require_once(dirname(__FILE__) . "/config/secrets.php");
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/event/EventPublisher.php");

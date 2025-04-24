@@ -1,6 +1,4 @@
 <?php
-    require_once(dirname(__FILE__) . "/../config/secrets.php");
-
     class DatabaseProvider {
 
         private $connection;

@@ -1,4 +1,5 @@
 <?php
+    require_once(dirname(__FILE__) . "/../api/php/config/secrets.php");
     require_once(dirname(__FILE__) . "/../api/php/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/../api/php/provider/ConfigurationProvider.php");
 

@@ -1,14 +1,17 @@
 <?php
     session_start();
     
+    require_once(dirname(__FILE__) . "/../api/php/config/secrets.php");
     require_once(dirname(__FILE__) . "/../api/php/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/../api/php/provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/../api/php/service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/../api/php/service/ConfigurationService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService();
+    $configurationService = new ConfigurationService();
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
 
     if (!isset($_COOKIE["accessToken"]) || $_COOKIE["accessToken"] === NULL) {
         if (isset($_GET["apiKey"])) {

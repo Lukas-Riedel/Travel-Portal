@@ -5,6 +5,7 @@
     session_start();
 
     require_once(dirname(__FILE__) . "/../vendor/autoload.php");
+    require_once(dirname(__FILE__) . "/config/secrets.php");
     
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/LoggingProvider.php");
@@ -44,8 +45,8 @@
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService();
     $configurationService = new ConfigurationService();
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();

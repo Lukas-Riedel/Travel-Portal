@@ -2,15 +2,18 @@
     header('Access-Control-Allow-Origin: *');
     header('Content-Type: application/json');
     
+    require_once(dirname(__FILE__) . "/config/secrets.php");
     require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/model/TargetError.php");
     require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $authenticationService = new AuthenticationService();
+    $configurationService = new ConfigurationService();
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
 
     $requestBody = json_decode(file_get_contents('php://input'), TRUE);
 
