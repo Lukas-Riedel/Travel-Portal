@@ -1,8 +1,8 @@
 <?php
     require_once(dirname(__FILE__) . "/PhotoMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Album.php");
-    require_once(dirname(__FILE__) . "/../model/Photo.php");
-    require_once(dirname(__FILE__) . "/../model/PendingPhoto.php");
+    require_once(dirname(__FILE__) . "/../Model/Album.php");
+    require_once(dirname(__FILE__) . "/../Model/Photo.php");
+    require_once(dirname(__FILE__) . "/../Model/PendingPhoto.php");
 
     class PhotoService {
 

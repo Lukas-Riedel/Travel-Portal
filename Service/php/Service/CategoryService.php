@@ -1,10 +1,10 @@
 <?php
     require_once(dirname(__FILE__) . "/CategoryMapper.php");
-    require_once(dirname(__FILE__) . "/../model/CategoryIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/CategoryMetadata.php");
-    require_once(dirname(__FILE__) . "/../model/Category.php");
-    require_once(dirname(__FILE__) . "/../model/GeographicalRegion.php");
-    require_once(dirname(__FILE__) . "/../model/CompositeRegion.php");
+    require_once(dirname(__FILE__) . "/../Model/CategoryIdentifier.php");
+    require_once(dirname(__FILE__) . "/../Model/CategoryMetadata.php");
+    require_once(dirname(__FILE__) . "/../Model/Category.php");
+    require_once(dirname(__FILE__) . "/../Model/GeographicalRegion.php");
+    require_once(dirname(__FILE__) . "/../Model/CompositeRegion.php");
 
     class CategoryService {
         

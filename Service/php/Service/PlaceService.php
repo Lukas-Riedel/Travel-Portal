@@ -1,8 +1,8 @@
 <?php
     require_once(dirname(__FILE__) . "/PlaceMapper.php");
-    require_once(dirname(__FILE__) . "/../model/PlaceIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/Place.php");
-    require_once(dirname(__FILE__) . "/../model/Date.php");
+    require_once(dirname(__FILE__) . "/../Model/PlaceIdentifier.php");
+    require_once(dirname(__FILE__) . "/../Model/Place.php");
+    require_once(dirname(__FILE__) . "/../Model/Date.php");
 
     class PlaceService {
         

@@ -1,6 +1,6 @@
 <?php
-    require_once(dirname(__FILE__) . "/../model/Problem.php");
-    require_once(dirname(__FILE__) . "/../model/ProblemValue.php");
+    require_once(dirname(__FILE__) . "/../Model/Problem.php");
+    require_once(dirname(__FILE__) . "/../Model/ProblemValue.php");
 
     class GetProblemsReportProcessor {        
         public function getReport() {

@@ -1,5 +1,5 @@
 <?php
-    require_once(dirname(__FILE__) . "/../model/TargetError.php");
+    require_once(dirname(__FILE__) . "/../Model/TargetError.php");
 
     abstract class Handler {
         abstract public function handle($input);

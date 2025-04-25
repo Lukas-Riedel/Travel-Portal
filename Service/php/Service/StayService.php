@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/StayMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Stay.php");
+    require_once(dirname(__FILE__) . "/../Model/Stay.php");
 
     class StayService {
 

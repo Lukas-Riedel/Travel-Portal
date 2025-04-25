@@ -1,5 +1,5 @@
 <?php
-    require_once(dirname(__FILE__) . "/../model/TargetError.php");
+    require_once(dirname(__FILE__) . "/../Model/TargetError.php");
 
     class EventManager {
 

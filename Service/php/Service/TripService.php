@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/TripMapper.php");
-    require_once(dirname(__FILE__) . "/../model/TripIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/Trip.php");
+    require_once(dirname(__FILE__) . "/../Model/TripIdentifier.php");
+    require_once(dirname(__FILE__) . "/../Model/Trip.php");
 
     class TripService {
 

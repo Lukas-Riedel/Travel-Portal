@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/HighlightMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Highlight.php");
+    require_once(dirname(__FILE__) . "/../Model/Highlight.php");
 
     class HighlightService {
         

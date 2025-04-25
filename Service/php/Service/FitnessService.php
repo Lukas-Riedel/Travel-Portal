@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/FitnessMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Fitness.php");
+    require_once(dirname(__FILE__) . "/../Model/Fitness.php");
 
     class FitnessService {
         

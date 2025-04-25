@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/TimeTrackingMapper.php");
-    require_once(dirname(__FILE__) . "/../model/TimeTrackingEvent.php");
+    require_once(dirname(__FILE__) . "/../Model/TimeTrackingEvent.php");
 
     class TimeTrackingService {
 

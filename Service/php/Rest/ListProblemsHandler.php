@@ -1,5 +1,5 @@
 <?php
-    require_once(dirname(__FILE__) . "/../processor/GetProblemsReportProcessor.php");
+    require_once(dirname(__FILE__) . "/../Processor/GetProblemsReportProcessor.php");
 
     class ListProblemsHandler extends Handler {
         public function handle($input) {

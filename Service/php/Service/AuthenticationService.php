@@ -1,9 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/AuthenticationMapper.php");
-    require_once(dirname(__FILE__) . "/../model/User.php");
-    require_once(dirname(__FILE__) . "/../model/AccessToken.php");
-    require_once(dirname(__FILE__) . "/../model/AuthenticationResult.php");
-    require_once(dirname(__FILE__) . "/../exception/AuthenticationException.php");
+    require_once(dirname(__FILE__) . "/../Model/User.php");
+    require_once(dirname(__FILE__) . "/../Model/AccessToken.php");
+    require_once(dirname(__FILE__) . "/../Model/AuthenticationResult.php");
+    require_once(dirname(__FILE__) . "/../Exception/AuthenticationException.php");
 
     class AuthenticationService {
 

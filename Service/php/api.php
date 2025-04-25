@@ -7,40 +7,40 @@
     require_once(dirname(__FILE__) . "/../vendor/autoload.php");
     require_once(dirname(__FILE__) . "/config/secrets.php");
     
-    require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/provider/LoggingProvider.php");
-    require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/rest/Handler.php");
-    require_once(dirname(__FILE__) . "/model/TargetError.php");
-    require_once(dirname(__FILE__) . "/exception/AuthenticationException.php");
-    require_once(dirname(__FILE__) . "/exception/AuthorizationException.php");
-    require_once(dirname(__FILE__) . "/exception/EntityNotFoundException.php");
-    require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
-    require_once(dirname(__FILE__) . "/service/PlaceService.php");
-    require_once(dirname(__FILE__) . "/service/HighlightService.php");
-    require_once(dirname(__FILE__) . "/service/PhotoService.php");
-    require_once(dirname(__FILE__) . "/service/TripService.php");
-    require_once(dirname(__FILE__) . "/service/FlightService.php");
-    require_once(dirname(__FILE__) . "/service/CategoryService.php");
-    require_once(dirname(__FILE__) . "/service/ExpenseService.php");
-    require_once(dirname(__FILE__) . "/service/YearService.php");
-    require_once(dirname(__FILE__) . "/service/NoteService.php");
-    require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
-    require_once(dirname(__FILE__) . "/service/TimeTrackingService.php");
-    require_once(dirname(__FILE__) . "/service/LabelService.php");
-    require_once(dirname(__FILE__) . "/service/FitnessService.php");
-    require_once(dirname(__FILE__) . "/service/StatisticsService.php");
-    require_once(dirname(__FILE__) . "/service/PlatformService.php");
-    require_once(dirname(__FILE__) . "/client/GoogleApiClient.php");
-    require_once(dirname(__FILE__) . "/client/ChatClient.php");
-    require_once(dirname(__FILE__) . "/client/HttpClient.php");
-    require_once(dirname(__FILE__) . "/client/CalendarClient.php");
-    require_once(dirname(__FILE__) . "/service/GeocodingService.php");
-    require_once(dirname(__FILE__) . "/service/StayService.php");
-    require_once(dirname(__FILE__) . "/service/ForecastService.php");
-    require_once(dirname(__FILE__) . "/event/Scheduler.php");
-    require_once(dirname(__FILE__) . "/event/EventManager.php");
-    require_once(dirname(__FILE__) . "/event/EventPublisher.php");
+    require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/Provider/LoggingProvider.php");
+    require_once(dirname(__FILE__) . "/Provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/Rest/Handler.php");
+    require_once(dirname(__FILE__) . "/Model/TargetError.php");
+    require_once(dirname(__FILE__) . "/Exception/AuthenticationException.php");
+    require_once(dirname(__FILE__) . "/Exception/AuthorizationException.php");
+    require_once(dirname(__FILE__) . "/Exception/EntityNotFoundException.php");
+    require_once(dirname(__FILE__) . "/Service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/Service/PlaceService.php");
+    require_once(dirname(__FILE__) . "/Service/HighlightService.php");
+    require_once(dirname(__FILE__) . "/Service/PhotoService.php");
+    require_once(dirname(__FILE__) . "/Service/TripService.php");
+    require_once(dirname(__FILE__) . "/Service/FlightService.php");
+    require_once(dirname(__FILE__) . "/Service/CategoryService.php");
+    require_once(dirname(__FILE__) . "/Service/ExpenseService.php");
+    require_once(dirname(__FILE__) . "/Service/YearService.php");
+    require_once(dirname(__FILE__) . "/Service/NoteService.php");
+    require_once(dirname(__FILE__) . "/Service/ConfigurationService.php");
+    require_once(dirname(__FILE__) . "/Service/TimeTrackingService.php");
+    require_once(dirname(__FILE__) . "/Service/LabelService.php");
+    require_once(dirname(__FILE__) . "/Service/FitnessService.php");
+    require_once(dirname(__FILE__) . "/Service/StatisticsService.php");
+    require_once(dirname(__FILE__) . "/Service/PlatformService.php");
+    require_once(dirname(__FILE__) . "/Client/GoogleApiClient.php");
+    require_once(dirname(__FILE__) . "/Client/ChatClient.php");
+    require_once(dirname(__FILE__) . "/Client/HttpClient.php");
+    require_once(dirname(__FILE__) . "/Client/CalendarClient.php");
+    require_once(dirname(__FILE__) . "/Service/GeocodingService.php");
+    require_once(dirname(__FILE__) . "/Service/StayService.php");
+    require_once(dirname(__FILE__) . "/Service/ForecastService.php");
+    require_once(dirname(__FILE__) . "/Event/Scheduler.php");
+    require_once(dirname(__FILE__) . "/Event/EventManager.php");
+    require_once(dirname(__FILE__) . "/Event/EventPublisher.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
@@ -95,8 +95,8 @@
         $loggingProvider = new LoggingProvider($databaseProvider);
     
         $handlers = array();
-        foreach (array_diff(scandir(dirname(__FILE__) . "/rest"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
-            require_once(dirname(__FILE__) . "/rest/" . $handlerFileName);
+        foreach (array_diff(scandir(dirname(__FILE__) . "/Rest"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
+            require_once(dirname(__FILE__) . "/Rest/" . $handlerFileName);
             $handlerFileNameTokens = explode(".", $handlerFileName);
             $handler = new $handlerFileNameTokens[0];
             if ($handler->getMethod() == $_SERVER["REQUEST_METHOD"]) {

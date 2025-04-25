@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/NoteMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Note.php");
+    require_once(dirname(__FILE__) . "/../Model/Note.php");
 
     class NoteService {
 

@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/ForecastMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Weather.php");
-    require_once(dirname(__FILE__) . "/../model/Sun.php");
+    require_once(dirname(__FILE__) . "/../Model/Weather.php");
+    require_once(dirname(__FILE__) . "/../Model/Sun.php");
     
     use AurorasLive\SunCalc;
 

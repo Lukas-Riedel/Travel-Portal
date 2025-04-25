@@ -3,11 +3,11 @@
     header('Content-Type: application/json');
     
     require_once(dirname(__FILE__) . "/config/secrets.php");
-    require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/model/TargetError.php");
-    require_once(dirname(__FILE__) . "/service/AuthenticationService.php");
-    require_once(dirname(__FILE__) . "/service/ConfigurationService.php");
+    require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/Provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/Model/TargetError.php");
+    require_once(dirname(__FILE__) . "/Service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/Service/ConfigurationService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);

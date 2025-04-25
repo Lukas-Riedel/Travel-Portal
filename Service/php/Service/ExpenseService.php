@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/ExpenseMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Expense.php");
-    require_once(dirname(__FILE__) . "/../model/Subscription.php");
+    require_once(dirname(__FILE__) . "/../Model/Expense.php");
+    require_once(dirname(__FILE__) . "/../Model/Subscription.php");
 
     class ExpenseService {
 

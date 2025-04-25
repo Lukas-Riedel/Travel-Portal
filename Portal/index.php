@@ -1,8 +1,8 @@
 <?php
     if (isset($_GET["code"])) {
     
-        require_once(dirname(__FILE__) . "/api/php/provider/DatabaseProvider.php");
-        require_once(dirname(__FILE__) . "/api/php/provider/ConfigurationProvider.php");
+        require_once(dirname(__FILE__) . "/api/php/Provider/DatabaseProvider.php");
+        require_once(dirname(__FILE__) . "/api/php/Provider/ConfigurationProvider.php");
         require_once(dirname(__FILE__) . "/api/php/login.php");
 
         $databaseProvider = new DatabaseProvider(TRUE);

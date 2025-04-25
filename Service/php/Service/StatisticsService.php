@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/StatisticsMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Statistics.php");
-    require_once(dirname(__FILE__) . "/../model/KeyValuePair.php");
+    require_once(dirname(__FILE__) . "/../Model/Statistics.php");
+    require_once(dirname(__FILE__) . "/../Model/KeyValuePair.php");
 
     class StatisticsService {
         

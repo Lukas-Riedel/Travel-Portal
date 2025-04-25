@@ -1,6 +1,6 @@
 <?php
-    require_once(dirname(__FILE__) . "/../model/CalendarEvent.php");
-    require_once(dirname(__FILE__) . "/../model/PublicHoliday.php");
+    require_once(dirname(__FILE__) . "/../Model/CalendarEvent.php");
+    require_once(dirname(__FILE__) . "/../Model/PublicHoliday.php");
     
     use ICal\ICal;
 

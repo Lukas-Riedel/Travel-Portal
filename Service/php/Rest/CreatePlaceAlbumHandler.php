@@ -1,5 +1,5 @@
 <?php
-    require_once(dirname(__FILE__) . "/../exception/EntityNotFoundException.php");
+    require_once(dirname(__FILE__) . "/../Exception/EntityNotFoundException.php");
 
     class CreatePlaceAlbumHandler extends Handler {
         public function handle($input) {

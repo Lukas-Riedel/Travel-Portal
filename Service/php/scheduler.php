@@ -1,9 +1,9 @@
 <?php
     require_once(dirname(__FILE__) . "/config/secrets.php");
-    require_once(dirname(__FILE__) . "/provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/event/EventPublisher.php");
-    require_once(dirname(__FILE__) . "/event/Scheduler.php");
+    require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/Provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/Event/EventPublisher.php");
+    require_once(dirname(__FILE__) . "/Event/Scheduler.php");
 
     $databaseProvider = new DatabaseProvider(FALSE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);

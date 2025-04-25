@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/YearMapper.php");
-    require_once(dirname(__FILE__) . "/../model/YearIdentifier.php");
-    require_once(dirname(__FILE__) . "/../model/Year.php");
+    require_once(dirname(__FILE__) . "/../Model/YearIdentifier.php");
+    require_once(dirname(__FILE__) . "/../Model/Year.php");
 
     class YearService {
         

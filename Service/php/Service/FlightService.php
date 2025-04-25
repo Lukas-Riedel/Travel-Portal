@@ -1,8 +1,8 @@
 <?php
     require_once(dirname(__FILE__) . "/FlightMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Flight.php");
-    require_once(dirname(__FILE__) . "/../model/Airport.php");
-    require_once(dirname(__FILE__) . "/../model/AirportIdentifier.php");
+    require_once(dirname(__FILE__) . "/../Model/Flight.php");
+    require_once(dirname(__FILE__) . "/../Model/Airport.php");
+    require_once(dirname(__FILE__) . "/../Model/AirportIdentifier.php");
 
     class FlightService {
 

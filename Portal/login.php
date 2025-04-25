@@ -2,10 +2,10 @@
     session_start();
     
     require_once(dirname(__FILE__) . "/api/php/config/secrets.php");
-    require_once(dirname(__FILE__) . "/api/php/provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/api/php/provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/api/php/service/AuthenticationService.php");
-    require_once(dirname(__FILE__) . "/api/php/service/ConfigurationService.php");
+    require_once(dirname(__FILE__) . "/api/php/Provider/DatabaseProvider.php");
+    require_once(dirname(__FILE__) . "/api/php/Provider/ConfigurationProvider.php");
+    require_once(dirname(__FILE__) . "/api/php/Service/AuthenticationService.php");
+    require_once(dirname(__FILE__) . "/api/php/Service/ConfigurationService.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);

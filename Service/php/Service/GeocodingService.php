@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/GeocodingMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Location.php");
+    require_once(dirname(__FILE__) . "/../Model/Location.php");
     
     class GeocodingService {
 

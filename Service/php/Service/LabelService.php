@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/LabelMapper.php");
-    require_once(dirname(__FILE__) . "/../model/Label.php");
+    require_once(dirname(__FILE__) . "/../Model/Label.php");
 
     class LabelService {
 
