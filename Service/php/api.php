@@ -1,79 +1,11 @@
 <?php
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
+    header("Access-Control-Allow-Origin: *");
+    header("Content-Type: application/json");
+
+    use Service\Service\Authentication\AuthenticationException;
     
-    session_start();
-
-    require_once(dirname(__FILE__) . "/../vendor/autoload.php");
-    require_once(dirname(__FILE__) . "/config/secrets.php");
-    
-    require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/Provider/LoggingProvider.php");
-    require_once(dirname(__FILE__) . "/Provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/Rest/Handler.php");
-    require_once(dirname(__FILE__) . "/Model/TargetError.php");
-    require_once(dirname(__FILE__) . "/Exception/AuthenticationException.php");
-    require_once(dirname(__FILE__) . "/Exception/AuthorizationException.php");
-    require_once(dirname(__FILE__) . "/Exception/EntityNotFoundException.php");
-    require_once(dirname(__FILE__) . "/Service/AuthenticationService.php");
-    require_once(dirname(__FILE__) . "/Service/PlaceService.php");
-    require_once(dirname(__FILE__) . "/Service/HighlightService.php");
-    require_once(dirname(__FILE__) . "/Service/PhotoService.php");
-    require_once(dirname(__FILE__) . "/Service/TripService.php");
-    require_once(dirname(__FILE__) . "/Service/FlightService.php");
-    require_once(dirname(__FILE__) . "/Service/CategoryService.php");
-    require_once(dirname(__FILE__) . "/Service/ExpenseService.php");
-    require_once(dirname(__FILE__) . "/Service/YearService.php");
-    require_once(dirname(__FILE__) . "/Service/NoteService.php");
-    require_once(dirname(__FILE__) . "/Service/ConfigurationService.php");
-    require_once(dirname(__FILE__) . "/Service/TimeTrackingService.php");
-    require_once(dirname(__FILE__) . "/Service/LabelService.php");
-    require_once(dirname(__FILE__) . "/Service/FitnessService.php");
-    require_once(dirname(__FILE__) . "/Service/StatisticsService.php");
-    require_once(dirname(__FILE__) . "/Service/PlatformService.php");
-    require_once(dirname(__FILE__) . "/Client/GoogleApiClient.php");
-    require_once(dirname(__FILE__) . "/Client/ChatClient.php");
-    require_once(dirname(__FILE__) . "/Client/HttpClient.php");
-    require_once(dirname(__FILE__) . "/Client/CalendarClient.php");
-    require_once(dirname(__FILE__) . "/Service/GeocodingService.php");
-    require_once(dirname(__FILE__) . "/Service/StayService.php");
-    require_once(dirname(__FILE__) . "/Service/ForecastService.php");
-    require_once(dirname(__FILE__) . "/Event/Scheduler.php");
-    require_once(dirname(__FILE__) . "/Event/EventManager.php");
-    require_once(dirname(__FILE__) . "/Event/EventPublisher.php");
-
-    $databaseProvider = new DatabaseProvider(TRUE);
-    $configurationProvider = new ConfigurationProvider($databaseProvider);
-    $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
-    $configurationService = new ConfigurationService();
-    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
-    $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
-    $googleApiClient = new GoogleApiClient();
-    $chatClient = new ChatClient();
-    $httpClient = new HttpClient();
-    $calendarClient = new CalendarClient();
-    $platformService = new PlatformService();
-    $eventManager = new EventManager();
-    $eventPublisher = new EventPublisher();
-    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
-    $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
-    $noteService = new NoteService($databaseProvider);
-    $stayService = new StayService($databaseProvider, $calendarClient, $googleApiClient, $eventPublisher);
-    $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
-    $photoService = new PhotoService($databaseProvider, $googleApiClient, $configurationService, $eventPublisher, $scheduler);
-    $highlightService = new HighlightService($databaseProvider, $photoService, $configurationService, $eventPublisher, $scheduler);
-    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher, $scheduler);
-    $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
-    $fitnessService = new FitnessService($databaseProvider, $configurationService, $eventPublisher, $scheduler);
-    $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher, $scheduler);
-    $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $scheduler);
-    $labelService = new LabelService($databaseProvider, $configurationService);
-    $yearService = new YearService($databaseProvider, $highlightService, $statisticsService, $eventPublisher, $scheduler);
-    $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher, $scheduler);
-    $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService,
-        $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher, $scheduler);
-
-    $statisticsService->setStatisticsProviders(array($placeService, $tripService, $yearService, $stayService, $photoService, $categoryService, $expenseService, $fitnessService, $flightService));
+    $delayViewMaterializationIfNeeded = TRUE;
+    require_once(dirname(__FILE__) . "/bootstrap.php");
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);

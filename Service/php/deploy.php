@@ -1,11 +1,6 @@
 <?php
-    require_once(dirname(__FILE__) . "/config/secrets.php");
-    require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/Provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/Event/EventPublisher.php");
-
-    $databaseProvider = new DatabaseProvider(FALSE);
-    $eventPublisher = new EventPublisher();
+    $delayViewMaterializationIfNeeded = FALSE;
+    require_once(dirname(__FILE__) . "/bootstrap.php");
     
     $configuration = array();
     if ($databaseProvider->isDatabaseInitialized()) {        

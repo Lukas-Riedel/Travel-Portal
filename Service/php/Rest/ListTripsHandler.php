@@ -35,7 +35,7 @@
             return array(
                 $this->createQueryParameter("year", "integer", 2024),
                 $this->createQueryParameter("type", "string", array("regular", "candidate")),
-                $this->createQueryParameter("include", "string", "EXPENSES,STAYS,FLIGHTS,WATCHED_FLIGHTS,LAYOVERS,FITNESS,NOTES,HIGHLIGHTS,STATISTICS,PUBLIC_HOLIDAYS"));
+                $this->createQueryParameter("include", "string", "EXPENSES,STAYS,FLIGHTS,WATCHED_FLIGHTS,FITNESS,NOTES,HIGHLIGHTS,STATISTICS,PUBLIC_HOLIDAYS"));
         }
 
         public function getMethod() {

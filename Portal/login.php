@@ -1,17 +1,14 @@
 <?php
     session_start();
     
-    require_once(dirname(__FILE__) . "/api/php/config/secrets.php");
-    require_once(dirname(__FILE__) . "/api/php/Provider/DatabaseProvider.php");
-    require_once(dirname(__FILE__) . "/api/php/Provider/ConfigurationProvider.php");
-    require_once(dirname(__FILE__) . "/api/php/Service/AuthenticationService.php");
-    require_once(dirname(__FILE__) . "/api/php/Service/ConfigurationService.php");
+    $delayViewMaterializationIfNeeded = TRUE;
+    require_once(dirname(__FILE__) . "/api/php/bootstrap.php");
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
     $configurationService = new ConfigurationService();
-    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
+    $authenticationService = new Service\Service\Authentication\AuthenticationService($databaseProvider, $configurationService);
 
     if (isset($_POST["username"]) && isset($_POST["password"])) {
         try {

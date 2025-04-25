@@ -1,5 +1,5 @@
 function initializeMapForTrip(id, trip, places) {
-    return initializeMap(id, places.filter(place => trip.layovers.indexOf(place.id) == -1));
+    return initializeMap(id, places.filter(place => place.dates.every(date => !date.layover)));
 }
 
 function initializeMapWithFlightPaths(id, flights, airports) {

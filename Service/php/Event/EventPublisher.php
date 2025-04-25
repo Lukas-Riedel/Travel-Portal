@@ -1,4 +1,6 @@
 <?php
+    use Service\Service\Highlight\HighlightType;
+    
     // TODO: Make sure messages contain as much information as possible (e.g., PlaceIdentifier instead of string placeId).
     class EventPublisher {
         public function publishActualWeatherForecastUpdated($placeId, $start) {

@@ -557,7 +557,7 @@ function getTableCell(column, isHeader) {
 }
 
 function getCountriesWithoutLayovers(trip, places) {
-    return getCountries(places.filter(place => trip.layovers.indexOf(place.id) == -1));
+    return getCountries(places.filter(place => place.dates.every(date => !date.layover)));
 }
 
 function getCountries(places) {
