@@ -252,7 +252,7 @@
                         $startOfDays = array();
     
                         // TODO: Include fitness records for all days, not only those with a visited place. Some frontend adjustments are needed.
-                        $tripPlaces = $this->placeService->getRegularPlaces(NULL, NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL, array());
+                        $tripPlaces = $this->placeService->getRegularPlaces(NULL, NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value));
                         foreach ($tripPlaces as &$tripPlace) {
                             foreach ($tripPlace->getDates() as &$date) {
                                 // TODO: Calculate start of days based on the timezone of the client (i.e., an extra GET parameter with timezone).

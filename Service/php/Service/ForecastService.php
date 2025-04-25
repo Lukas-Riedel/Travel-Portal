@@ -228,7 +228,7 @@
             if ($message["action"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
                 $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array());
+                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value));
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
@@ -245,7 +245,7 @@
 
             if ($message["action"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                    $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array());
+                    $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value));
     
                     foreach ($places as &$place) {
                         foreach ($place->getDates() as &$date) {    
@@ -260,7 +260,7 @@
 
             if ($message["action"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
-                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array());
+                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value));
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    

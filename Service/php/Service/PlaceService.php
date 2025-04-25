@@ -152,7 +152,7 @@
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array());
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value));
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -183,7 +183,7 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array());
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value));
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -320,7 +320,7 @@
         public function onAlbumUpdated(mixed $message) : void {
             global $eventPublisher;
             
-            $places = $this->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL, array(PlaceIncludedEntity::Categories->value));
+            $places = $this->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value));
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
