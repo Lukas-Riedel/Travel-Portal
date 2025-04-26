@@ -120,10 +120,10 @@
     }
 
     enum Calendar : string {
-        case Trips = "trips";
-        case Places = "places";
-        case Stays = "stays";
-        case Flights = "flights";
-        case WatchedFlights = "watchedFlights";
+        case Trips = "TRIPS";
+        case Places = "PLACES";
+        case Stays = "STAYS";
+        case Flights = "FLIGHTS";
+        case WatchedFlights = "WATCHED_FLIGHTS";
     }
 ?>
