@@ -78,23 +78,26 @@
         }
 
         // TODO: Remove after statistics rework. Move to individual services (statistics providers).
-        private function fetchStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : array {
+        private function fetchStatistics(StatisticsType $statisticsType, StatisticsKind $statisticsKind,
+            int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statisticsRecords = array();
 
-            // Compute fact statistics.
-            foreach ($this->computeStatistics($statisticsType, StatisticsKind::Fact, $start, $end, $categoryId) as &$fact) {
-                foreach ($fact["computedRows"] as &$computedRow) {
-                    $statisticsRecords[] = new Statistics($fact["name"], $computedRow[array_key_first($computedRow)], $fact["unit"]);
+            if ($statisticsKind === StatisticsKind::Fact) {
+                foreach ($this->computeStatistics($statisticsType, StatisticsKind::Fact, $start, $end, $categoryId) as &$fact) {
+                    foreach ($fact["computedRows"] as &$computedRow) {
+                        $statisticsRecords[] = new Statistics($fact["name"], $computedRow[array_key_first($computedRow)], $fact["unit"]);
+                    }
                 }
             }
-
-            // Compute standings statistics.
-            foreach ($this->computeStatistics($statisticsType, StatisticsKind::Standings, $start, $end, $categoryId) as &$standings) {
-                $keyValuePairs = array();
-                foreach ($standings["computedRows"] as &$computedRow) {
-                    $keyValuePairs[] = new KeyValuePair($computedRow[array_key_first($computedRow)], $computedRow[array_key_last($computedRow)]);
+            
+            if ($statisticsKind === StatisticsKind::Standings) {
+                foreach ($this->computeStatistics($statisticsType, StatisticsKind::Standings, $start, $end, $categoryId) as &$standings) {
+                    $keyValuePairs = array();
+                    foreach ($standings["computedRows"] as &$computedRow) {
+                        $keyValuePairs[] = new KeyValuePair($computedRow[array_key_first($computedRow)], $computedRow[array_key_last($computedRow)]);
+                    }
+                    $statisticsRecords[] = new Statistics($standings["name"], $keyValuePairs, $standings["unit"]);
                 }
-                $statisticsRecords[] = new Statistics($standings["name"], $keyValuePairs, $standings["unit"]);
             }
 
             return $statisticsRecords;
@@ -133,12 +136,14 @@
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
             $this->statisticsMapper->deleteAllStatisticsRecords($statisticsType, $entityId);
 
-            foreach ($this->statisticsProviders as &$statisticsProvider) {
-                $fetchedStatisticsRecords = $statisticsProvider->fetchStatistics($statisticsType, $start, $end, $categoryId, $entityId);
-                foreach ($fetchedStatisticsRecords as &$fetchedStatisticsRecord) {
-                    if ($fetchedStatisticsRecord->hasValue()) {
-                        $this->statisticsMapper->insertStatisticsRecord($statisticsType,
-                            $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT), $entityId);
+            foreach (StatisticsKind::cases() as &$statisticsKind) {
+                foreach ($this->statisticsProviders as &$statisticsProvider) {
+                    $fetchedStatisticsRecords = $statisticsProvider->fetchStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId, $entityId);
+                    foreach ($fetchedStatisticsRecords as &$fetchedStatisticsRecord) {
+                        if ($fetchedStatisticsRecord->hasValue()) {
+                            $this->statisticsMapper->insertStatisticsRecord($statisticsType,
+                                $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT), $entityId);
+                        }
                     }
                 }
             }
