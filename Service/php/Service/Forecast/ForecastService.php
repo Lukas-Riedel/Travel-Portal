@@ -3,20 +3,12 @@
     
     use AurorasLive\SunCalc;
     use Service\Service\Place\PlaceIdentifier;
-    use Service\Service\Place\PlaceIncludedEntity;
 
     class ForecastService {
 
-        private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME = "FETCH_ACTUAL_WEATHER_FORECAST";
-        private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME = "FETCH_HISTORICAL_WEATHER_FORECAST";
-        private const FETCH_DAYLIGHT_FORECAST_ACTION_NAME = "FETCH_DAYLIGHT_FORECAST";
-        private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
-        private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
-        private const FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL = 300;
         private const GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://archive-api.open-meteo.com/v1/archive?latitude=%s&longitude=%s&start_date=%s&end_date=%s&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=%s&windspeed_unit=ms&timeformat=unixtime";
         private const GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s";
         private const HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER = 2;
-        private const ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE = 9;
         private const YMD_DATE_FORMAT = "Y-m-d";
 
         private readonly ForecastMapper $forecastMapper;
@@ -25,16 +17,15 @@
 
         private readonly \ConfigurationService $configurationService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
-
-        public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient, \ConfigurationService $configurationService,
-            \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient, \ConfigurationService $configurationService) {
             $this->forecastMapper = new ForecastMapper($databaseProvider);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
-            $this->eventPublisher = $eventPublisher;
-            $this->scheduler = $scheduler;
+        }
+
+        public function isActualWeatherForecastExpired(string $placeId, int $timestamp) : bool {
+            $actualForecastExpiration = $this->forecastMapper->selectActualWeatherForecastExpiration($placeId, $timestamp);
+            return $actualForecastExpiration === NULL || $actualForecastExpiration < time();
         }
 
         public function getWeatherForecast(string $placeId, int $timestamp) : ?Weather {
@@ -157,121 +148,6 @@
     
         private function getAverage(array $values) : ?float {
             return count($values) === 0 ? NULL : (array_sum($values) / count($values));
-        }
-
-        public function onActualWeatherForecastUpdated(mixed $message) : void {
-            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
-            global $placeService;
-
-            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateActualWeatherForecast($placeIdentifier, $message["start"]);
-        }
-
-        public function onHistoricalWeatherForecastUpdated(mixed $message) : void {
-            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
-            global $placeService;
-
-            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateHistoricalWeatherForecast($placeIdentifier, $message["start"]);
-        }
-
-        public function onDaylightForecastUpdated(mixed $message) : void {
-            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
-            global $placeService;
-
-            $placeIdentifier = $placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->updateDaylightForecast($placeIdentifier, $message["start"], $message["end"]);
-        }
-
-        public function onPlaceEventCreated(mixed $message) : void {
-            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
-            global $placeService;
-
-            $place = $placeService->getRegularPlace($message["placeId"]);
-            foreach ($place->getDates() as &$date) {
-                if (time() < $date->getStart()) {
-                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400 > $date->getStart()) {
-                        $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
-                    }
-                            
-                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
-                    $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
-                }
-
-                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($date->getTrip()->getId());
-            }
-        }
-
-        public function onPlaceEventUpdated(mixed $message) : void {
-            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
-            global $placeService;
-
-            $place = $placeService->getRegularPlace($message["placeId"]);
-            foreach ($place->getDates() as &$date) {
-                if (time() < $date->getStart()) {
-                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400 > $date->getStart()) {
-                        $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
-                    }
-                            
-                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
-                    $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
-                }
-
-                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($date->getTrip()->getId());
-            }
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            // TODO: Introduce the PlaceService $placeService field after moving this method to a new listener class.
-            global $placeService;
-
-            if ($message["action"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
-                && $message["timeSinceLastExecution"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value));
-
-                foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {
-                        $forecastExpiration = $this->forecastMapper->selectActualWeatherForecastExpiration($place->getId(), $date->getStart());
-
-                        if ($forecastExpiration < time()) {
-                            $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
-                        }
-                    }
-                }
-                
-                $this->scheduler->recordEventsTriggered(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME);
-            }
-
-            if ($message["action"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
-                && $message["timeSinceLastExecution"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                    $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value));
-    
-                    foreach ($places as &$place) {
-                        foreach ($place->getDates() as &$date) {    
-                            if ($date->getWeather() === NULL) {
-                                $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
-                            }
-                        }
-                    }
-                
-                $this->scheduler->recordEventsTriggered(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME);
-            }
-
-            if ($message["action"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
-                && $message["timeSinceLastExecution"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
-                $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value));
-
-                foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {    
-                        if ($date->getSun() === NULL) {
-                            $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
-                        }
-                    }
-                }
-                
-                $this->scheduler->recordEventsTriggered(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME);
-            }
         }
     }
 ?>

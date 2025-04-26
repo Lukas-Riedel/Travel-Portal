@@ -1,0 +1,42 @@
+<?php
+    namespace Service\Service\TimeTracking;
+
+    class TimeTrackingServiceListener {
+        
+        private const BEGINNING_OF_YEAR = "1.1.";
+
+        private const RESET_OPENING_BALANCES_ACTION_NAME = "RESET_OPENING_BALANCES";
+
+        private readonly TimeTrackingService $timeTrackingService;
+
+        private readonly \EventPublisher $eventPublisher;
+        private readonly \Scheduler $scheduler;
+
+        public function __construct(TimeTrackingService $timeTrackingService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+            $this->timeTrackingService = $timeTrackingService;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
+        }
+
+        public function onVacationReset(mixed $message) : void {
+            $this->timeTrackingService->resetOpeningBalances($this->getBeginningOfCurrentYear());
+        }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            if ($message["action"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
+                $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
+
+                // This will keep evaluating to false until the beginning of the next year.
+                // Then, it will be eventually executed.
+                if ($beginningOfCurrentYearTimestamp < $message["timeSinceLastExecution"]) {
+                    $this->eventPublisher->publishVacationResetEvent();                        
+                    $this->scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
+                }
+            }
+        }
+
+        private function getBeginningOfCurrentYear() : string {
+            return self::BEGINNING_OF_YEAR . date("Y");
+        }
+    }
+?>

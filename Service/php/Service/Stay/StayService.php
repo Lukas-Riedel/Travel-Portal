@@ -49,20 +49,5 @@
                 $this->eventPublisher->publishStayEventDeletedEvent($affectedTripId);
             }
         }
-
-        public function onCalendarInvalidated(mixed $message) : void {
-            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
-            global $tripService;
-
-            if ($message["calendar"] === \Calendar::Stays->value) {
-                $this->refreshCalendar($tripService);
-            }
-        }
-
-        public function onCalendarWatchRenewing(mixed $message) : void {
-            if ($message["calendar"] === \Calendar::Stays->value) {
-                $this->calendarClient->watchCalendar(\Calendar::Stays->value);
-            }
-        }
     }
 ?>

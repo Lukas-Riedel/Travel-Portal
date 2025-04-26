@@ -5,9 +5,6 @@
 
         private const CARRIED_OVER_DESCRIPTION = "Carried over from last year";
         private const OPENING_BALANCE_DESCRIPTION = "Opening balance";
-        private const BEGINNING_OF_YEAR = "1.1.";
-
-        private const RESET_OPENING_BALANCES_ACTION_NAME = "RESET_OPENING_BALANCES";
 
         private readonly TimeTrackingMapper $timeTrackingMapper;
 
@@ -35,7 +32,7 @@
             return $this->timeTrackingMapper->deleteTimeTrackingEvent($eventId) > 0;
         }
 
-        public function resetOpeningBalances() : void {
+        public function resetOpeningBalances(string $beginningOfYearDate) : void {
             foreach ($this->configurationService->getConfigurationKeysForType("timeOffHours") as &$eventType) {
                 $openingBalance = floatval($this->configurationService->getConfigurationForTypeAndKey("timeOffHours", $eventType));
 
@@ -44,35 +41,12 @@
 
                 if ($wasReset) {    
                     if ($carryOverBalance !== NULL && $carryOverBalance > 0) {
-                        $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $this->getBeginningOfCurrentYear());
+                        $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearDate);
                     }
                     
                     if ($openingBalance > 0) {
-                        $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $this->getBeginningOfCurrentYear());
+                        $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearDate);
                     }
-                }
-            }
-        }
-
-        private function getBeginningOfCurrentYear() : string {
-            return self::BEGINNING_OF_YEAR . date("Y");
-        }
-
-        public function onVacationReset(mixed $message) : void {
-            $this->resetOpeningBalances();
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            global $eventPublisher, $scheduler;
-
-            if ($message["action"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
-                $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
-
-                // This will keep evaluating to false until the beginning of the next year.
-                // Then, it will be eventually executed.
-                if ($beginningOfCurrentYearTimestamp < $message["timeSinceLastExecution"]) {
-                    $eventPublisher->publishVacationResetEvent();                        
-                    $scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
                 }
             }
         }

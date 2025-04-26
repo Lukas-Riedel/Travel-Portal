@@ -6,9 +6,6 @@
 
     class PhotoService {
 
-        private const FETCH_ALBUMS_ACTION_NAME = "FETCH_ALBUMS";
-        private const FETCH_ALBUMS_ACTION_INTERVAL = 21600;
-
         private const PENDING_PHOTOS_EXPIRATION_INTERVAL = 86400;
 
         private const JPG_FILE_EXTENSION = ".jpg";
@@ -17,6 +14,8 @@
         private const ALBUM_THUMBNAIL_HEIGHT = 233;
         private const ALBUM_THUMBNAIL_CACHE_PATH = "cache/album";
 
+        private const DMY_DATE_FORMAT = "j.n.Y";
+
         private readonly PhotoMapper $photoMapper;
 
         private readonly \GoogleApiClient $googleApiClient;
@@ -24,15 +23,13 @@
         private readonly \ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
 
         public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient, 
-            \ConfigurationService $configurationService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+            \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
             $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
-            $this->scheduler = $scheduler;
         }
         
         public function getAlbum(string $albumId) : ?Album {
@@ -282,7 +279,7 @@
         }
 
         private function getAlbumName(string $placeName, int $timestamp) : string {
-            return $placeName . " " . date("j.n.Y", $timestamp);
+            return $placeName . " " . date(self::DMY_DATE_FORMAT, $timestamp);
         }
         
         private function getOrCreateAlbumId(string $externalId) : string {
@@ -354,33 +351,6 @@
             } 
 
             return $createdPhotos;
-        }
-
-        public function onAllAlbumsInvalidated(mixed $message) : void {
-            $this->updateAllAlbums();
-        }
-        
-        public function onAlbumInvalidated(mixed $message) : void {
-            $this->updateAlbum($message["albumId"]);
-        }
-
-        public function onAlbumUpdated(mixed $message) : void {
-            $album = $this->getAlbum($message["albumId"]);
-            if ($album !== NULL) {
-                $photos = $this->getPhotos($album->getId());
-    
-                if (count($photos) !== $album->getImagesCount()) {
-                    $this->eventPublisher->publishAlbumInvalidatedEvent($album->getId());
-                }
-            }
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_ALBUMS_ACTION_NAME 
-                && $message["timeSinceLastExecution"] > self::FETCH_ALBUMS_ACTION_INTERVAL) {
-                $this->eventPublisher->publishAllAlbumsInvalidatedEvent();                
-                $this->scheduler->recordEventsTriggered(self::FETCH_ALBUMS_ACTION_NAME);
-            }
         }
     }
 ?>

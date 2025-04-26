@@ -88,20 +88,6 @@
                 ->withParameters($tripId)
                 ->getSingleColumn("days");
         }
-
-        public function selectLayoversForTrip(string $tripId) : array {
-            $sql = <<<'SQL'
-                SELECT place_id
-                FROM place_summary
-                WHERE trip_id = ?
-                    AND layover
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($tripId)
-                ->getResultSetForColumn("place_id");
-        }
         
         public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities) : array {
             // TODO: Introduce a property for TripService $tripService.

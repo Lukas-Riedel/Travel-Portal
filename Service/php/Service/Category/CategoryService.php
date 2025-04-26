@@ -2,14 +2,10 @@
     namespace Service\Service\Category;
     
     use Service\Service\Highlight\HighlightService;
-    use Service\Service\Highlight\HighlightType;
     use Service\Service\Place\PlaceIdentifier;
     use Service\Service\Statistics\StatisticsService;
 
     class CategoryService {
-        
-        private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
-        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 604800;
 
         private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
@@ -18,14 +14,12 @@
         private readonly \ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
 
         public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService,
-            HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+            HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
-            $this->scheduler = $scheduler;
         }
 
         public function updateCategories(PlaceIdentifier $placeIdentifier) : void {
@@ -137,19 +131,6 @@
 
         public function updateCategoryPublicHolidaysCalendar(string $categoryId, string $publicHolidaysCalendar) : bool {            
             return $this->categoryMapper->updateCategoryPublicHolidaysCalendar($categoryId, $publicHolidaysCalendar);
-        }
-        
-        // TODO: Replace string $category by CategoryCategory $category.
-        public function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
-            $categoryIdentifier = $this->getCategoryIdentifier($name);
-            if ($categoryIdentifier !== NULL) {
-                return $categoryIdentifier;
-            }
-
-            $categoryIdentifier = new CategoryIdentifier(NULL, $name, CategoryCategory::from($category), NULL, NULL);
-            $this->categoryMapper->insertCategoryIdentifier($categoryIdentifier);
-
-            return $categoryIdentifier;
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
@@ -307,6 +288,19 @@
     
             return $points;
         }
+        
+        // TODO: Replace string $category by CategoryCategory $category.
+        private function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
+            $categoryIdentifier = $this->getCategoryIdentifier($name);
+            if ($categoryIdentifier !== NULL) {
+                return $categoryIdentifier;
+            }
+
+            $categoryIdentifier = new CategoryIdentifier(NULL, $name, CategoryCategory::from($category), NULL, NULL);
+            $this->categoryMapper->insertCategoryIdentifier($categoryIdentifier);
+
+            return $categoryIdentifier;
+        }
     
         private function positionLatitude(int $count, int $index, float $radius) : float {
             $alpha = 360 / $count;
@@ -358,36 +352,6 @@
                 }
             }
             return TRUE;
-        }
-
-        public function onCategoryCreated(mixed $message) : void {
-            $this->updateRegionAreas();
-        }
-
-        public function onPlaceUpdated(mixed $message) : void {            
-            $this->updateCategories(new PlaceIdentifier($message["placeIdentifier"]["id"], $message["placeIdentifier"]["name"],
-                $message["placeIdentifier"]["country"], $message["placeIdentifier"]["latitude"], $message["placeIdentifier"]["longitude"],
-                $message["placeIdentifier"]["timezone"], $message["placeIdentifier"]["mainHighlight"], $message["placeIdentifier"]["excerpt"]));
-        }
-
-        public function onHighlightCreated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Category->name) {
-                $categoryIdentifier = $this->getCategoryIdentifierById($message["entityId"]);
-                if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
-                    $this->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
-                }
-            }
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME 
-                && $message["timeSinceLastExecution"] > self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL) {
-                $categories = $this->getCategories(CategoryCategory::values(), array());
-                foreach ($categories as &$category) {
-                    $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
-                }                        
-                $this->scheduler->recordEventsTriggered(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME);
-            }
         }
     }
 ?>

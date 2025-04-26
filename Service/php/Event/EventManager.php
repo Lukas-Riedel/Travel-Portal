@@ -5,17 +5,17 @@
 
         private $eventHandlers;
 
-        public function __construct($services = array()) {
+        public function __construct($listeners = array()) {
             $this->eventHandlers = array();
 
-            foreach ($services as &$service) {
-                foreach (get_class_methods($service) as &$method) {
+            foreach ($listeners as &$listener) {
+                foreach (get_class_methods($listener) as &$method) {
                     if (str_starts_with($method, "on")) {
                         $handledEvent = substr($method, 2);
                         if (!isset($this->eventHandlers[$handledEvent])) {
                             $this->eventHandlers[$handledEvent] = array();
                         }
-                        $this->eventHandlers[$handledEvent][] = $service;
+                        $this->eventHandlers[$handledEvent][] = $listener;
                     }
                 }
             }

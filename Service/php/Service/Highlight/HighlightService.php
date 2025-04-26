@@ -5,9 +5,6 @@
 
     class HighlightService {
         
-        private const FETCH_HIGHLIGHTS_ACTION_NAME = "FETCH_HIGHLIGHTS";
-        private const FETCH_HIGHLIGHTS_ACTION_INTERVAL = 21600;
-        
         private const JPG_FILE_EXTENSION = ".jpg";
 
         private readonly HighlightMapper $highlightMapper;
@@ -17,15 +14,13 @@
         private readonly \ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
 
         public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService,
-        \ConfigurationService $configurationService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
             $this->highlightMapper = new HighlightMapper($databaseProvider, $photoService);
             $this->photoService = $photoService;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
-            $this->scheduler = $scheduler;
         }
 
         public function getHighlight(?string $highlightId) : ?Highlight {
@@ -79,17 +74,6 @@
         public function removeYearHighlight(int $year, string $highlightId) : bool {
             return $this->removeHighlight(HighlightType::Year, $year, $highlightId);
         }
-        
-        public function getOrCreateHighlightId(string $photoId) : string {
-            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
-            if ($highlightId !== NULL) {
-                return $highlightId;
-            }
-
-            $this->highlightMapper->insertHighlightId($photoId);
-
-            return $this->highlightMapper->selectHighlightId($photoId);
-        }
 
         public function updateHighlights() : void {
             // TODO: Do the same also for the full size.
@@ -109,6 +93,17 @@
         
         private function getHighlights(HighlightType $highlightType, string $entityId) : array {
             return $this->highlightMapper->selectHighlights($highlightType, $entityId);
+        }
+        
+        private function getOrCreateHighlightId(string $photoId) : string {
+            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
+            if ($highlightId !== NULL) {
+                return $highlightId;
+            }
+
+            $this->highlightMapper->insertHighlightId($photoId);
+
+            return $this->highlightMapper->selectHighlightId($photoId);
         }
 
         private function createHighlight(HighlightType $highlightType, string $entityId, string $photoId) : Highlight {
@@ -182,26 +177,6 @@
 
         private function getPhysicalCachePath(HighlightSize $highlightSize) : string {
             return dirname(__FILE__) . "/../../../" . $highlightSize->getCachePath();
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_HIGHLIGHTS_ACTION_NAME
-                && $message["timeSinceLastExecution"] > self::FETCH_HIGHLIGHTS_ACTION_INTERVAL) {
-                $this->eventPublisher->publishAllHighlightsInvalidatedEvent();                
-                $this->scheduler->recordEventsTriggered(self::FETCH_HIGHLIGHTS_ACTION_NAME);
-            }
-        }
-
-        public function onAllHighlightsInvalidated(mixed $message) : void {
-            $this->updateHighlights();
-        }
-
-        public function onHighlightRemovedChanged(mixed $message) : void {
-            $this->updateHighlights();
-        }
-        
-        public function onPhotoInvalidated(mixed $message) : void {
-            $this->updateHighlightForPhoto($message["photoId"]);
         }
     }
 ?>

@@ -2,25 +2,23 @@
     namespace Service\Service\Fitness;
 
     class FitnessService {
-        
-        private const FETCH_FITNESS_ACTION_NAME = "FETCH_FITNESS";
+
+        const FITNESS_RECORD_DURATION = 1800;
 
         private readonly FitnessMapper $fitnessMapper;
 
-        private readonly \ConfigurationService $configurationService;
-
         private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService,
-            \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
             $this->fitnessMapper = new FitnessMapper($databaseProvider);
-            $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
-            $this->scheduler = $scheduler;
         }
 
-        public function getFitnessRecordForDay(int $timestamp) : Fitness {
+        public function getFitnessRecordTimestampsToUpdate() : array {
+            return $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate();
+        }
+
+        public function getFitnessRecordForDate(int $timestamp) : Fitness {
             return $this->fitnessMapper->selectFitnessRecordForInterval($timestamp, $timestamp + 86400);
         }
 
@@ -37,27 +35,12 @@
 
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
 
-            $fitnessRecordDuration = $this->configurationService->getConfigurationForType("fitnessRecordDuration");
-            $fitnessRecord = new Fitness($steps, min($minutes, $fitnessRecordDuration / 60), $calories, $distance);
+            $fitnessRecord = new Fitness($steps, min($minutes, self::FITNESS_RECORD_DURATION / 60), $calories, $distance);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
-            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + $fitnessRecordDuration);
+            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION);
 
             return TRUE;
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_FITNESS_ACTION_NAME
-                && $message["timeSinceLastExecution"] > $this->configurationService->getConfigurationForType("fitnessRecordDuration")) {
-                $fitnessRecordDuration = $this->configurationService->getConfigurationForType("fitnessRecordDuration");
-                $timestampsToUpdate = $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate();
-
-                foreach ($timestampsToUpdate as &$timestampToUpdate) {
-                    $this->eventPublisher->publishFitnessActivityDetectedEvent($timestampToUpdate, $timestampToUpdate + $fitnessRecordDuration);
-                }
-                        
-                $this->scheduler->recordEventsTriggered(self::FETCH_FITNESS_ACTION_NAME);
-            }
         }
 
         private function getCorrectedDistance(float $distance, int $steps) : float {

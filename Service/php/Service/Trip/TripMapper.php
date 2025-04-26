@@ -272,7 +272,7 @@
                         sort($startOfDays);
     
                         foreach ($startOfDays as &$startOfDay) {
-                            $fitness[] = $this->fitnessService->getFitnessRecordForDay($startOfDay);
+                            $fitness[] = $this->fitnessService->getFitnessRecordForDate($startOfDay);
                         }
                     }
     

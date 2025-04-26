@@ -6,7 +6,6 @@
     use Service\Service\Geocoding\GeocodingService;
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
-    use Service\Service\Highlight\HighlightType;
     use Service\Service\Photo\PhotoService;
     use Service\Service\Trip\TripIdentifier;
     use Service\Service\Trip\TripService;
@@ -14,7 +13,7 @@
     class PlaceService {
         
         private const OLD_PLACE_EVENT_TEMPORARY_TABLE = "old_place_event";
-        private const UTC_DATE_TIME_FORMAT = "m/d/Y H:i:s";
+        private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
         
         private readonly PlaceMapper $placeMapper;
@@ -63,10 +62,6 @@
             return $this->placeMapper->selectDaysForCandidateTrip($tripId);
         }
 
-        public function getLayoversForTrip(string $tripId) : array {
-            return $this->placeMapper->selectLayoversForTrip($tripId);
-        }
-
         public function getRegularPlace(string $placeId) : ?Place {
             $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values());
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
@@ -85,28 +80,6 @@
             return $tripId !== NULL
                 ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includedEntities)
                 : $this->doGetCandidatePlaces(NULL, $categoryId, $includedEntities);
-        }
-
-        public function getPlaceIdentifier(string $name, string $country) : ?PlaceIdentifier {
-            return $this->placeMapper->selectPlaceIdentifier($name, $country);
-        }
-
-        public function getOrCreatePlaceIdentifier(string $name, string $country, string $address) : PlaceIdentifier {            
-            $placeIdentifier = $this->getPlaceIdentifier($name, $country);
-            if ($placeIdentifier !== NULL) {
-                return $placeIdentifier;
-            }
-
-            if ($country === $this->configurationService->getConfigurationForTypeAndKey("countryNames", "UNKNOWN")) {
-                throw new \InvalidArgumentException("Cannot create an identifier for an unknown country.");
-            }
-            
-            $location = $this->geocodingService->getLocation($address);
-            $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getId(), $location->getTimezone(),
-                $location->getLatitude(), $location->getLongitude(), NULL, $this->getSuggestedExcerpt($name, $country));
-            $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
-
-            return $placeIdentifier;
         }
 
         public function getPlaceIdentifierById(string $placeId) : ?PlaceIdentifier {
@@ -264,6 +237,24 @@
             }
         }
 
+        private function getOrCreatePlaceIdentifier(string $name, string $country, string $address) : PlaceIdentifier {            
+            $placeIdentifier = $this->placeMapper->selectPlaceIdentifier($name, $country);
+            if ($placeIdentifier !== NULL) {
+                return $placeIdentifier;
+            }
+
+            if ($country === $this->configurationService->getConfigurationForTypeAndKey("countryNames", "UNKNOWN")) {
+                throw new \InvalidArgumentException("Cannot create an identifier for an unknown country.");
+            }
+            
+            $location = $this->geocodingService->getLocation($address);
+            $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getId(),
+                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, $this->getSuggestedExcerpt($name, $country));
+            $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
+
+            return $placeIdentifier;
+        }
+
         private function removeSpecialPlace(SpecialPlaceType $specialPlaceType, string $placeId) : bool {
             $wasRemoved = $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
 
@@ -280,7 +271,7 @@
 
         private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) : int {
             $timezone = new \DateTimeZone($fromTimezone);
-            $dateTimeHome = new \DateTime(date(self::UTC_DATE_TIME_FORMAT, $timestamp), new \DateTimeZone($toTimezone));
+            $dateTimeHome = new \DateTime(date(self::MDY_HMS_DATE_TIME_FORMAT, $timestamp), new \DateTimeZone($toTimezone));
             return $timezone->getOffset($dateTimeHome) - (new \DateTimeZone($toTimezone))->getOffset($dateTimeHome);
         }
 
@@ -319,62 +310,6 @@
                 if ($firstDate->getStart() > time()) {
                     $this->placeMapper->deleteSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
                     $this->placeMapper->insertSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
-                }
-            }
-        }
-        
-        public function onAlbumUpdated(mixed $message) : void {
-            global $eventPublisher;
-            
-            $places = $this->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value));
-            foreach ($places as &$place) {
-                foreach ($place->getDates() as &$date) {
-                    $trip = $date->getTrip();
-                    if ($trip !== NULL) {
-                        $eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
-                    }
-                }
-
-                foreach ($place->getCategories() as &$category) {
-                    $eventPublisher->publishCategoryUpdatedEvent($category->getId());
-                }
-            }
-        }
-
-        public function onCalendarInvalidated(mixed $message) : void {
-            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
-            global $tripService;
-
-            if ($message["calendar"] === \Calendar::Places->value) {
-                $this->refreshCalendar($tripService);
-            }
-        }
-
-        public function onCalendarWatchRenewing(mixed $message) : void {
-            global $calendarClient;
-
-            if ($message["calendar"] === \Calendar::Places->value) {
-                $calendarClient->watchCalendar($message["calendar"]);
-            }
-        }
-
-        public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, array());
-            foreach ($places as &$place) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier());
-            }
-            
-            $places = $this->getCandidatePlaces($message["categoryId"], NULL, array());
-            foreach ($places as &$place) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier());
-            }
-        }
-
-        public function onHighlightCreated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Place->name) {
-                $placeIdentifier = $this->getPlaceIdentifierById($message["entityId"]);
-                if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
-                    $this->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
                 }
             }
         }

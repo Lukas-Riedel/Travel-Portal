@@ -81,45 +81,6 @@
                 $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
         }
 
-        public function selectAllLoggedFlights() : array {
-            $sql = <<<'SQL'
-                SELECT f.*,
-                    l.*,
-                    fai.code AS from_airport_code, 
-                    fai.latitude AS from_airport_latitude, 
-                    fai.longitude AS from_airport_longitude, 
-                    fai.country_category_id AS from_airport_country_category_id, 
-                    fai.timezone AS from_airport_timezone, 
-                    tai.code AS to_airport_code, 
-                    tai.latitude AS to_airport_latitude, 
-                    tai.longitude AS to_airport_longitude, 
-                    tai.country_category_id AS to_airport_country_category_id,
-                    tai.timezone AS to_airport_timezone
-                FROM flight_log l
-                LEFT JOIN airport_identifier fai
-                    ON l.from_airport_id = fai.id
-                LEFT JOIN airport_identifier tai
-                    ON l.to_airport_id = tai.id
-                LEFT JOIN flight_event f 
-                    ON l.scheduled_departure = f.start
-                ORDER BY actual_departure DESC
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->getMappedResultSet(function($loggedFlightRow) {                    
-                    $distance = $this->geocodingService->getDistance($loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"],
-                        $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"]);
-                    
-                    $from = new Airport($loggedFlightRow["from_airport_id"], $loggedFlightRow["from"], $loggedFlightRow["from_airport_code"], $this->categoryService->getCategoryIdentifierById($loggedFlightRow["from_airport_country_category_id"])->getName(), 
-                        $loggedFlightRow["from_airport_latitude"], $loggedFlightRow["from_airport_longitude"], $loggedFlightRow["from_airport_timezone"]);
-                    $to = new Airport($loggedFlightRow["to_airport_id"], $loggedFlightRow["to"], $loggedFlightRow["to_airport_code"], $this->categoryService->getCategoryIdentifierById($loggedFlightRow["to_airport_country_category_id"])->getName(), 
-                        $loggedFlightRow["to_airport_latitude"], $loggedFlightRow["to_airport_longitude"], $loggedFlightRow["to_airport_timezone"]);
-
-                    return new Flight($loggedFlightRow["flight"], $loggedFlightRow["registration"], $loggedFlightRow["aircraft"], $distance, $from, $to, $loggedFlightRow["actual_departure"], $loggedFlightRow["actual_arrival"]);
-                });
-        }
-
         public function selectFlightsForTrip(FlightType $flightType, string $tripId) : array {
             $sql = <<<SQL
                 SELECT fe.flight,

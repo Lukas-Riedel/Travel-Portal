@@ -7,8 +7,6 @@
 
     class FlightService {
 
-        private const LOG_FLIGHTS_ACTION_NAME = "LOG_FLIGHTS";
-        private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 14400;
         private const UTC_TIMEZONE = "UTC";
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
         private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
@@ -28,36 +26,27 @@
         private readonly \GoogleApiClient $googleApiClient;
 
         private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
 
         public function __construct(\DatabaseProvider $databaseProvider, GeocodingService $geocodingService, CategoryService $categoryService,
-            \HttpClient $httpClient, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher,
-            \Scheduler $scheduler) {
+            \HttpClient $httpClient, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
             $this->httpClient = $httpClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
-            $this->scheduler = $scheduler;
         }
 
-        public function getAirportIdentifier(string $code) : ?AirportIdentifier {
-            return $this->flightMapper->selectAirportIdentifier($code);
+        public function getFirstNonLoggedFlight() : ?Flight {
+            return $this->flightMapper->selectFirstNonLoggedFlight();
         }
-        
-        public function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {
-            $airportIdentifier = $this->flightMapper->selectAirportIdentifier($code);
-            if ($airportIdentifier !== NULL) {
-                return $airportIdentifier;
-            }
-            
-            $location = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $code));
-            $airportIdentifier = new AirportIdentifier(NULL, $code, $location->getCountry(), $location->getLatitude(),
-                $location->getLongitude(), $location->getTimezone());                
-            $this->flightMapper->insertAirportIdentifier($airportIdentifier);
 
-            return $airportIdentifier;
+        public function getAverageFlightDelay() : int {
+            return $this->flightMapper->selectAverageDelay();
+        }
+
+        public function getTripIdForFlight(Flight $flight) : ?string {
+            return $this->flightMapper->selectTripIdForFlight($flight);
         }
 
         public function fetchAndLogFlight(string $flight, string $tripId, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
@@ -116,10 +105,6 @@
             return new Flight($flight, NULL, NULL, NULL, $from, $to, $scheduledDeparture, $scheduledArrival);
         }
 
-        public function getLoggedFlights() : array {        
-            return $this->flightMapper->selectAllLoggedFlights();
-        }
-
         public function getFlightsForTrip(string $tripId) : array {
             return $this->flightMapper->selectFlightsForTrip(FlightType::Scheduled, $tripId);
         }
@@ -132,6 +117,20 @@
             foreach ($flightTypes as &$flightType) {
                 $this->doRefreshCalendar($flightType, $tripService);
             }
+        }
+        
+        private function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {
+            $airportIdentifier = $this->flightMapper->selectAirportIdentifier($code);
+            if ($airportIdentifier !== NULL) {
+                return $airportIdentifier;
+            }
+            
+            $location = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $code));
+            $airportIdentifier = new AirportIdentifier(NULL, $code, $location->getCountry(), $location->getLatitude(),
+                $location->getLongitude(), $location->getTimezone());                
+            $this->flightMapper->insertAirportIdentifier($airportIdentifier);
+
+            return $airportIdentifier;
         }
         
         private function doRefreshCalendar(FlightType $flightType, TripService $tripService) : void {   
@@ -180,48 +179,6 @@
                 "from" => $tokens[1],
                 "to" => $tokens[2],
                 "flight" => str_replace(" ", "", $tokens[3]));
-        }
-
-        public function onCalendarInvalidated(mixed $message) : void {
-            // TODO: Introduce the TripService $tripService field after moving this method to a new listener class.
-            global $tripService;
-
-            foreach (FlightType::cases() as &$flightType) {
-                if ($flightType->getCalendar()->value === $message["calendar"]) {
-                    $this->refreshCalendar(array($flightType), $tripService);
-                }
-            }
-        }
-
-        public function onCalendarWatchRenewing(mixed $message) : void {
-            foreach (FlightType::cases() as &$flightType) {
-                if ($flightType->getCalendar()->value === $message["calendar"]) {
-                    $this->calendarClient->watchCalendar($flightType->getCalendar()->value);
-                }
-            }
-        }
-
-        public function onFlightArrived(mixed $message) : void {            
-            $this->fetchAndLogFlight($message["flight"], $message["tripId"], $message["from"], $message["to"], $message["scheduledDeparture"]);
-        }
-
-        public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::LOG_FLIGHTS_ACTION_NAME) {
-                $firstNonLoggedFlight = $this->flightMapper->selectFirstNonLoggedFlight();
-                if ($firstNonLoggedFlight === NULL) {
-                    return;
-                }
-
-                $loggingInterval = $firstNonLoggedFlight->getEnd() < time() - $message["timeSinceLastExecution"]
-                    ? self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
-                    : $message["timeSinceLastExecution"] + $firstNonLoggedFlight->getEnd() + $this->flightMapper->selectAverageDelay() - time();
-
-                if ($message["timeSinceLastExecution"] > $loggingInterval) {
-                    $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $this->flightMapper->selectTripIdForFlight($firstNonLoggedFlight),
-                        $firstNonLoggedFlight->getFrom()->getName(), $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
-                    $this->scheduler->recordEventsTriggered(self::LOG_FLIGHTS_ACTION_NAME);
-                }
-            }
         }
     }
 ?>
