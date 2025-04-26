@@ -22,21 +22,19 @@
             $this->eventPublisher = $eventPublisher;
         }
         
-        public function onAlbumUpdated(mixed $message) : void {
-            global $eventPublisher;
-            
+        public function onAlbumUpdated(mixed $message) : void {            
             $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL,
                 NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value));
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
                     if ($trip !== NULL) {
-                        $eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
+                        $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
                     }
                 }
 
                 foreach ($place->getCategories() as &$category) {
-                    $eventPublisher->publishCategoryUpdatedEvent($category->getId());
+                    $this->eventPublisher->publishCategoryUpdatedEvent($category->getId());
                 }
             }
         }

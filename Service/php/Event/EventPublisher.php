@@ -87,10 +87,6 @@
             $this->publishEvent(Event::PlaceUpdated, array("placeIdentifier" => $placeIdentifier));
         }
         
-        public function publishStatisticsChangedEvent() : void {
-            $this->publishEvent(Event::StatisticsChanged, NULL);
-        }
-        
         public function publishVacationResetEvent() : void {
             $this->publishEvent(Event::VacationReset, NULL);
         }
@@ -133,10 +129,6 @@
         
         public function publishTripEventDeletedEvent($tripId) : void {
             $this->publishEvent(Event::TripEventDeleted, array("tripId" => $tripId));
-        }
-        
-        public function publishCalendarInvalidatedEvent($calendar) : void {
-            $this->publishEvent(Event::CalendarInvalidated, array("calendar" => $calendar));
         }
         
         public function publishCalendarWatchRenewingEvent($calendar) : void {
@@ -251,7 +243,6 @@
         case StayEventDeleted = 28;
         case HighlightCreated = 29;
         case HighlightRemoved = 30;
-        case StatisticsChanged = 31;
         case YearStatisticsUpdated = 32;
         case TripStatisticsUpdated = 33;
         case CategoryStatisticsUpdated = 34;
