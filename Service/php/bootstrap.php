@@ -58,6 +58,7 @@
     $httpClient = new HttpClient();
     $calendarClient = new CalendarClient();
     
+    $loggingProvider = new LoggingProvider($databaseProvider);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
 
@@ -86,7 +87,7 @@
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
 
-    $statisticsService->setStatisticsProviders(array($placeService, $tripService, $yearService, $stayService, $photoService, $categoryService, $expenseService, $fitnessService, $flightService));
+    $statisticsService->setStatisticsProviders(array($stayService));
     
     // Events consuming.
     $listeners = array(
@@ -101,6 +102,7 @@
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
         new TripServiceListener($tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
-        new YearServiceListener($yearService, $eventPublisher, $scheduler));
+        new YearServiceListener($yearService, $eventPublisher, $scheduler),
+        $platformService);
     $eventManager = new EventManager($listeners);
 ?>

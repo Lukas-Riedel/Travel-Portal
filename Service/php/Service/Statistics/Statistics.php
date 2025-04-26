@@ -4,9 +4,9 @@
     class Statistics implements \JsonSerializable {        
         private readonly string $name;
         private readonly mixed $value;
-        private readonly string $unit;
+        private readonly StatisticsUnit $unit;
 
-        public function __construct(string $name, mixed $value, string $unit) {
+        public function __construct(string $name, mixed $value, StatisticsUnit $unit) {
             $this->name = $name;
             $this->value = $this->convert($value);
             $this->unit = $unit;
@@ -20,7 +20,7 @@
             return $this->value;
         }
 
-        public function getUnit() : string {
+        public function getUnit() : StatisticsUnit {
             return $this->unit;
         }
 

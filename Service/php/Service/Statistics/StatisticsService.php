@@ -72,9 +72,9 @@
         }
 
         public function setStatisticsProviders(array $statisticsProviders) : void {
-            $this->statisticsProviders = array($this);
-            // TODO: Uncomment after statistics rework. Remove above.
-            // $this->statisticsProviders = $statisticsProviders;
+            $this->statisticsProviders = $statisticsProviders;
+            // TODO: Remove after statistics rework.
+            $this->statisticsProviders[] = $this;
         }
 
         // TODO: Remove after statistics rework. Move to individual services (statistics providers).
@@ -85,7 +85,9 @@
             if ($statisticsKind === StatisticsKind::Fact) {
                 foreach ($this->computeStatistics($statisticsType, StatisticsKind::Fact, $start, $end, $categoryId) as &$fact) {
                     foreach ($fact["computedRows"] as &$computedRow) {
-                        $statisticsRecords[] = new Statistics($fact["name"], $computedRow[array_key_first($computedRow)], $fact["unit"]);
+                        if ($computedRow[array_key_first($computedRow)] != NULL) {
+                            $statisticsRecords[] = new Statistics($fact["name"], $computedRow[array_key_first($computedRow)], StatisticsUnit::from($fact["unit"]));
+                        }
                     }
                 }
             }
@@ -94,16 +96,18 @@
                 foreach ($this->computeStatistics($statisticsType, StatisticsKind::Standings, $start, $end, $categoryId) as &$standings) {
                     $keyValuePairs = array();
                     foreach ($standings["computedRows"] as &$computedRow) {
-                        $keyValuePairs[] = new KeyValuePair($computedRow[array_key_first($computedRow)], $computedRow[array_key_last($computedRow)]);
+                        if ($computedRow[array_key_first($computedRow)] != NULL && $computedRow[array_key_last($computedRow)] != NULL) {
+                            $keyValuePairs[] = new KeyValuePair($computedRow[array_key_first($computedRow)], $computedRow[array_key_last($computedRow)]);
+                        }
                     }
-                    $statisticsRecords[] = new Statistics($standings["name"], $keyValuePairs, $standings["unit"]);
+                    $statisticsRecords[] = new Statistics($standings["name"], $keyValuePairs, StatisticsUnit::from($standings["unit"]));
                 }
             }
 
             return $statisticsRecords;
         }    
 
-        // TODO: Remove.
+            // TODO: Remove after statistics rework.
         private function computeStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId) : array {
             global $databaseProvider;       
             

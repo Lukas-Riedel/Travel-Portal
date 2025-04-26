@@ -25,7 +25,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($statisticsRow) {
-                    return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], TRUE), $statisticsRow["unit"]);
+                    return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], TRUE), StatisticsUnit::from($statisticsRow["unit"]));
                 });
         }
 
@@ -49,7 +49,7 @@
                 return $this->databaseProvider
                     ->statementBuilder($sql)
                     ->withParameters($statistics->getName(), json_encode($statistics->getValue(), JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG),
-                        $statistics->getUnit())
+                        $statistics->getUnit()->value)
                     ->execute() === 1;
             }
             else {
@@ -73,7 +73,7 @@
                 return $this->databaseProvider
                     ->statementBuilder($sql)
                     ->withParameters($entityId, $statistics->getName(), json_encode($statistics->getValue(), 
-                        JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG), $statistics->getUnit())
+                        JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG), $statistics->getUnit()->value)
                     ->execute() === 1;
             }
         }
