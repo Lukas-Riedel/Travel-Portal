@@ -3,9 +3,14 @@
     
     use Service\Service\Category\CategoryService;
     use Service\Service\Geocoding\GeocodingService;
+    use Service\Service\Statistics\Statistics;
+    use Service\Service\Statistics\StatisticsKind;
+    use Service\Service\Statistics\StatisticsProvider;
+    use Service\Service\Statistics\StatisticsType;
+    use Service\Service\Statistics\StatisticsUnit;
     use Service\Service\Trip\TripService;
 
-    class FlightService {
+    class FlightService implements StatisticsProvider {
 
         private const UTC_TIMEZONE = "UTC";
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
@@ -15,9 +20,26 @@
         private const FLIGHT_EVENT_NAME_PATTERN = "{(.+) - (.+) \((.+)\)}";
         private const OLD_FLIGHT_EVENT_TEMPORARY_TABLE = "old_flight_event";
 
+        private const TOTAL_FLIGHTS_COUNT_STATISTICS_NAME = "TOTAL_FLIGHTS_COUNT";
+        private const TOTAL_AIRBORNE_DISTANCE_STATISTICS_NAME = "TOTAL_AIRBORNE_DISTANCE";
+        private const TOTAL_AIRBORNE_TIME_STATISTICS_NAME = "TOTAL_AIRBORNE_TIME";
+        private const AVERAGE_FLIGHT_DURATION_STATISTICS_NAME = "AVERAGE_FLIGHT_DURATION";
+        private const AVERAGE_FLIGHT_DELAY = "AVERAGE_FLIGHT_DELAY";
+        private const TOTAL_VISITED_AIRPORTS_COUNT_STATISTICS_NAME = "TOTAL_VISITED_AIRPORTS_COUNT";
+        private const MOST_USED_AIRCRAFTS_STATISTICS_NAME = "MOST_USED_AIRCRAFTS";
+        private const MOST_USED_AIRLINES_STATISTICS_NAME = "MOST_USED_AIRLINES";
+        private const SHORTEST_FLIGHTS_STATISTICS_NAME = "SHORTEST_FLIGHTS";
+        private const LONGEST_FLIGHTS_STATISTICS_NAME = "LONGEST_FLIGHTS";
+        private const MOST_USED_AIRPORTS_STATISTICS_NAME = "MOST_USED_AIRPORTS";
+        private const MOST_USED_FLIGHTS_STATISTICS_NAME = "MOST_USED_FLIGHTS";
+        private const MOST_USED_AIRCRAFT_REGISTRATIONS_STATISTICS_NAME = "MOST_USED_AIRCRAFT_REGISTRATIONS";
+        private const MOST_DELAYED_FLIGHTS_STATISTICS_NAME = "MOST_DELAYED_FLIGHTS";
+
         private readonly FlightMapper $flightMapper;
 
         private readonly GeocodingService $geocodingService;
+        
+        private readonly \ConfigurationService $configurationService;
 
         private readonly \HttpClient $httpClient;
 
@@ -28,13 +50,107 @@
         private readonly \EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, GeocodingService $geocodingService, CategoryService $categoryService,
-            \HttpClient $httpClient, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
-            $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService);
+            \ConfigurationService $configurationService, \HttpClient $httpClient, \CalendarClient $calendarClient,
+            \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
+            $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService, $configurationService);
             $this->geocodingService = $geocodingService;
+            $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
+        }
+        
+        public function fetchStatistics(StatisticsType $statisticsType, StatisticsKind $statisticsKind,
+            int $start, int $end, ?string $categoryId, ?string $entityId) : array {
+            $statistics = array();
+
+            if ($statisticsKind === StatisticsKind::Fact) {
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $totalFlightsCount = $this->flightMapper->selectTotalFlightsCount($start, $end);
+                    if ($totalFlightsCount > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_FLIGHTS_COUNT_STATISTICS_NAME, $totalFlightsCount, StatisticsUnit::Flights);
+                    }
+                    
+                    $totalVisitedAirportsCount = $this->flightMapper->selectTotalVisitedAirportsCount($start, $end);
+                    if ($totalVisitedAirportsCount > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_VISITED_AIRPORTS_COUNT_STATISTICS_NAME, $totalVisitedAirportsCount, StatisticsUnit::Airports);
+                    }
+                }
+
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {                    
+                    $totalAirborneDistance = $this->flightMapper->selectTotalAirborneDistance($start, $end);
+                    if ($totalAirborneDistance > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_AIRBORNE_DISTANCE_STATISTICS_NAME, $totalAirborneDistance, StatisticsUnit::Kilometers);
+                    }
+                    
+
+                    $totalAirborneTime = $this->flightMapper->selectTotalAirborneTime($start, $end);
+                    if ($totalAirborneTime > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_AIRBORNE_TIME_STATISTICS_NAME, $totalAirborneTime, StatisticsUnit::Duration);
+                    }
+                    
+                    $averageFlightDuration = $this->flightMapper->selectAverageFlightDuration($start, $end);
+                    if ($averageFlightDuration > 0) {
+                        $statistics[] = new Statistics(self::AVERAGE_FLIGHT_DURATION_STATISTICS_NAME, $averageFlightDuration, StatisticsUnit::Duration);
+                    }
+                }
+
+                if ($statisticsType === StatisticsType::Overall) {
+                    $averageFlightDelay = $this->flightMapper->selectAverageFlightDelay();
+                    if ($averageFlightDelay > 0) {
+                        $statistics[] = new Statistics(self::AVERAGE_FLIGHT_DELAY, $averageFlightDelay, StatisticsUnit::Duration);
+                    }
+                }
+            }
+            
+            if ($statisticsKind === StatisticsKind::Standings) {                
+                if ($statisticsType === StatisticsType::Overall) {
+                    $mostUsedFlights = $this->flightMapper->selectMostUsedFlights($start, $end);
+                    if (count($mostUsedFlights) > 0) {
+                        $statistics[] = new Statistics(self::MOST_USED_FLIGHTS_STATISTICS_NAME, $mostUsedFlights, StatisticsUnit::Flights);
+                    }
+                    
+                    $mostUsedAircraftRegistrations = $this->flightMapper->selectMostUsedAircraftRegistrations($start, $end);
+                    if (count($mostUsedAircraftRegistrations) > 0) {
+                        $statistics[] = new Statistics(self::MOST_USED_AIRCRAFT_REGISTRATIONS_STATISTICS_NAME, $mostUsedAircraftRegistrations, StatisticsUnit::Flights);
+                    }
+                }
+
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $mostUsedAircrafts = $this->flightMapper->selectMostUsedAircrafts($start, $end);
+                    if (count($mostUsedAircrafts) > 0) {
+                        $statistics[] = new Statistics(self::MOST_USED_AIRCRAFTS_STATISTICS_NAME, $mostUsedAircrafts, StatisticsUnit::Flights);
+                    }
+                    
+                    $mostUsedAirlines = $this->flightMapper->selectMostUsedAirlines($start, $end);
+                    if (count($mostUsedAirlines) > 0) {
+                        $statistics[] = new Statistics(self::MOST_USED_AIRLINES_STATISTICS_NAME, $mostUsedAirlines, StatisticsUnit::Flights);
+                    }
+                    
+                    $mostUsedAirports = $this->flightMapper->selectMostUsedAirports($start, $end);
+                    if (count($mostUsedAirports) > 0) {
+                        $statistics[] = new Statistics(self::MOST_USED_AIRPORTS_STATISTICS_NAME, $mostUsedAirports, StatisticsUnit::Flights);
+                    }
+
+                    $shortestFlights = $this->flightMapper->selectShortestFlights($start, $end);
+                    if (count($shortestFlights) > 0) {
+                        $statistics[] = new Statistics(self::SHORTEST_FLIGHTS_STATISTICS_NAME, $shortestFlights, StatisticsUnit::Duration);
+                    }
+
+                    $longestFlights = $this->flightMapper->selectLongestFlights($start, $end);
+                    if (count($longestFlights) > 0) {
+                        $statistics[] = new Statistics(self::LONGEST_FLIGHTS_STATISTICS_NAME, $longestFlights, StatisticsUnit::Duration);
+                    }
+
+                    $mostDelayedFlights = $this->flightMapper->selectMostDelayedFlights($start, $end);
+                    if (count($mostDelayedFlights) > 0) {
+                        $statistics[] = new Statistics(self::MOST_DELAYED_FLIGHTS_STATISTICS_NAME, $mostDelayedFlights, StatisticsUnit::Duration);
+                    }
+                }
+            }
+
+            return $statistics;
         }
 
         public function getFirstNonLoggedFlight() : ?Flight {
@@ -42,7 +158,7 @@
         }
 
         public function getAverageFlightDelay() : int {
-            return $this->flightMapper->selectAverageDelay();
+            return $this->flightMapper->selectAverageFlightDelay();
         }
 
         public function getTripIdForFlight(Flight $flight) : ?string {

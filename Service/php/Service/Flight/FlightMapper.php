@@ -3,7 +3,8 @@
 
     use Service\Service\Category\CategoryService;
     use Service\Service\Geocoding\GeocodingService;
-    
+    use Service\Service\Statistics\KeyValuePair;
+
     class FlightMapper {
 
         private readonly \DatabaseProvider $databaseProvider;
@@ -12,10 +13,14 @@
 
         private readonly GeocodingService $geocodingService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, CategoryService $categoryService, GeocodingService $geocodingService) {
+        private readonly \ConfigurationService $configurationService;
+
+        public function __construct(\DatabaseProvider $databaseProvider, CategoryService $categoryService,
+            GeocodingService $geocodingService, \ConfigurationService $configurationService) {
             $this->databaseProvider = $databaseProvider;
             $this->categoryService = $categoryService;
             $this->geocodingService = $geocodingService;
+            $this->configurationService = $configurationService;
         }
 
         public function selectTripIdsForCreatedFlightEvents(string $oldFlightEventTableName) : array {
@@ -79,6 +84,314 @@
             return $airportIdentifierRow === NULL ? NULL : new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
                 $this->categoryService->getCategoryIdentifierById($airportIdentifierRow["country_category_id"])->getName(),
                 $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
+        }
+
+        public function selectAirportIdentifierById(string $airportId) : ?AirportIdentifier {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM airport_identifier
+                WHERE id = ?
+            SQL;
+
+            $airportIdentifierRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($airportId)
+                ->getSingleRow();
+
+            return $airportIdentifierRow === NULL ? NULL : new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
+                $this->categoryService->getCategoryIdentifierById($airportIdentifierRow["country_category_id"])->getName(),
+                $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
+        }
+
+        public function selectTotalAirborneDistance(int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT from_airport_id,
+                    to_airport_id
+                FROM flight_log 
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+            SQL;
+
+            $flightRows = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getResultSet();
+
+            $distance = 0;
+            foreach ($flightRows as &$flightRow) {
+                $fromAirport = $this->selectAirportIdentifierById($flightRow["from_airport_id"]);
+                $toAirport = $this->selectAirportIdentifierById($flightRow["to_airport_id"]);
+                $distance += $this->geocodingService->getDistance($fromAirport->getLatitude(), $fromAirport->getLongitude(),
+                    $toAirport->getLatitude(), $toAirport->getLongitude());
+            }
+            return intval($distance);
+        }
+
+        public function selectTotalFlightsCount(int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT COUNT(*) AS flights_count
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+            SQL;
+
+            return intval($this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getSingleColumn("flights_count"));
+        }
+
+        public function selectTotalVisitedAirportsCount(int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT COUNT(DISTINCT airport_id) AS airports_count
+                FROM (
+                    SELECT scheduled_departure AS time,
+                        from_airport_id airport_id
+                    FROM flight_log
+                    UNION
+                    SELECT scheduled_arrival AS time,
+                        to_airport_id airport_id
+                    FROM flight_log
+                ) x
+                WHERE time >= ?
+                    AND time <= ?
+            SQL;
+
+            return intval($this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getSingleColumn("airports_count"));
+        }
+
+        public function selectTotalAirborneTime(int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT SUM(actual_arrival - actual_departure) AS total_duration
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+            SQL;
+
+            return intval($this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getSingleColumn("total_duration"));
+        }
+
+        public function selectAverageFlightDuration(int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT AVG(actual_arrival - actual_departure) AS average_duration
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+            SQL;
+
+            return intval($this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getSingleColumn("average_duration"));
+        }
+
+        public function selectMostUsedAircrafts(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT aircraft,
+                    COUNT(*) flights_count
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+                GROUP BY aircraft
+                ORDER BY COUNT(*) DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($flightRow["aircraft"], $flightRow["flights_count"]);
+                });
+        }
+
+        public function selectShortestFlights(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT from_airport_id,
+                    to_airport_id,
+                    FROM_UNIXTIME(actual_departure, '%d.%m.%Y') AS flight_date,
+                    actual_arrival - actual_departure AS flight_duration
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+                ORDER BY actual_arrival - actual_departure ASC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($this->selectAirportNameById($flightRow["from_airport_id"]) . " - " 
+                        . $this->selectAirportNameById($flightRow["to_airport_id"]) . " @ "
+                        . $flightRow["flight_date"], $flightRow["flight_duration"]);
+                });
+        }
+        
+        public function selectLongestFlights(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT from_airport_id,
+                    to_airport_id,
+                    FROM_UNIXTIME(actual_departure, '%d.%m.%Y') AS flight_date,
+                    actual_arrival - actual_departure AS flight_duration
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+                ORDER BY actual_arrival - actual_departure DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($this->selectAirportNameById($flightRow["from_airport_id"]) . " - " 
+                        . $this->selectAirportNameById($flightRow["to_airport_id"]) . " @ "
+                        . $flightRow["flight_date"], $flightRow["flight_duration"]);
+                });
+        }
+        
+        public function selectMostDelayedFlights(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT from_airport_id,
+                    to_airport_id,
+                    FROM_UNIXTIME(actual_departure, '%d.%m.%Y') AS flight_date,
+                    actual_arrival - scheduled_arrival AS flight_delay
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ? 
+                    AND actual_arrival > scheduled_arrival
+                ORDER BY actual_arrival - scheduled_arrival DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($this->selectAirportNameById($flightRow["from_airport_id"]) . " - " 
+                        . $this->selectAirportNameById($flightRow["to_airport_id"]) . " @ "
+                        . $flightRow["flight_date"], $flightRow["flight_delay"]);
+                });
+        }
+        
+        public function selectMostUsedAirports(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT airport_id,
+                    COUNT(*) AS flights_count
+                FROM (
+                    SELECT scheduled_departure AS time,
+                        from_airport_id airport_id
+                    FROM flight_log 
+                    UNION 
+                    SELECT scheduled_arrival AS time, 
+                        to_airport_id airport_id 
+                    FROM flight_log
+                ) x
+                WHERE time >= ?
+                    AND time <= ?
+                GROUP BY airport_id
+                ORDER BY COUNT(*) DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($this->selectAirportNameById($flightRow["airport_id"]) . " ("
+                        . $this->selectAirportIdentifierById($flightRow["airport_id"])->getCode() . ")", $flightRow["flights_count"]);
+                });
+        }
+        
+        public function selectMostUsedFlights(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT from_airport_id,
+                    to_airport_id,
+                    flight,
+                    COUNT(*) AS flights_count
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+                GROUP BY flight
+                HAVING COUNT(*) > 1
+                ORDER BY COUNT(*) DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($this->selectAirportNameById($flightRow["from_airport_id"]) . " - " 
+                        . $this->selectAirportNameById($flightRow["to_airport_id"]) . " (" 
+                        . $flightRow["flight"] . ")", $flightRow["flights_count"]);
+                });
+        }
+        
+        public function selectMostUsedAircraftRegistrations(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT registration,
+                    SUBSTRING(flight, 1, 2) AS airline_code,
+                    COUNT(*) AS flights_count
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+                GROUP BY registration
+                ORDER BY COUNT(*) DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($flightRow["registration"] . " @ "
+                        . $this->configurationService->getConfigurationForTypeAndKey("airlines", $flightRow["airline_code"]),
+                        $flightRow["flights_count"]);
+                });
+        }
+
+        public function selectAirportNameById(string $airportId) : ?string {
+            $sql = <<<'SQL'
+                SELECT f.`from` AS name
+                FROM flight_event f 
+                INNER JOIN flight_log lf 
+                    ON f.flight = lf.flight
+                        AND f.start = lf.scheduled_departure
+                        AND lf.from_airport_id = ?
+                UNION
+                SELECT f.`to` AS name
+                FROM flight_event f 
+                INNER JOIN flight_log lf
+                    ON f.flight = lf.flight
+                        AND f.start = lf.scheduled_departure
+                        AND lf.to_airport_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($airportId, $airportId)
+                ->getFirstColumn("name");
+        }
+
+        public function selectMostUsedAirlines(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT SUBSTRING(flight, 1, 2) AS airline_code,
+                    COUNT(*) AS flights_count
+                FROM flight_log
+                WHERE scheduled_departure >= ?
+                    AND scheduled_arrival <= ?
+                GROUP BY SUBSTRING(flight, 1, 2)
+                ORDER BY COUNT(*) DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($flightRow) {
+                    return new KeyValuePair($this->configurationService->getConfigurationForTypeAndKey("airlines", $flightRow["airline_code"]),
+                        $flightRow["flights_count"]);
+                });
         }
 
         public function selectFlightsForTrip(FlightType $flightType, string $tripId) : array {
@@ -174,7 +487,7 @@
             return new Flight($flightRow["flight"], NULL, NULL, NULL, $from, $to, $flightRow["start"], $flightRow["end"]);
         }
 
-        public function selectAverageDelay() : int {
+        public function selectAverageFlightDelay() : int {
             $sql = <<<'SQL'
                 SELECT AVG(actual_arrival - scheduled_arrival) AS average_delay
                 FROM flight_log 

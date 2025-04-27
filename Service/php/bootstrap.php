@@ -80,14 +80,15 @@
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
     $fitnessService = new FitnessService($databaseProvider, $eventPublisher);
-    $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
+    $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $configurationService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
     $labelService = new LabelService($databaseProvider, $configurationService);
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
 
-    $statisticsService->setStatisticsProviders(array($stayService));
+    $statisticsProviders = array($stayService, $flightService);
+    $statisticsService->setStatisticsProviders($statisticsProviders);
     
     // Events consuming.
     $listeners = array(
