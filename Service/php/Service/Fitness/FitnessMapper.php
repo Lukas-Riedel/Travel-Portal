@@ -5,8 +5,7 @@
 
     class FitnessMapper {
 
-        private const ONE_DAY_SECONDS = 86400;     
-        private const ONE_MINUTE_SECONDS = 60;   
+        private const ONE_DAY_SECONDS = 86400;    
         private const DMY_DATE_FORMAT = "j.n.Y";
 
         private readonly \DatabaseProvider $databaseProvider;
@@ -18,7 +17,7 @@
         public function selectAverageFitnessRecordForInterval(int $start, int $end) : Fitness { 
             $sql = <<<'SQL'
                 SELECT ROUND(SUM(steps) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS steps,
-                    ROUND(SUM(minutes) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS minutes,
+                    ROUND(SUM(seconds) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS seconds,
                     ROUND(SUM(calories) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS calories,
                     ROUND(SUM(distance) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS distance
                 FROM fitness
@@ -31,7 +30,7 @@
                 ->withParameters($start, $end)
                 ->getSingleRow();
 
-            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["minutes"]),
+            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
                 intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
         }
         
@@ -105,16 +104,16 @@
 
             $sql = <<<'SQL'
                 SELECT timestamp,
-                    minutes
+                    seconds
                 FROM (
                     SELECT timestamp - (timestamp % 86400) AS timestamp,
-                        SUM(minutes) AS minutes
+                        SUM(seconds) AS seconds
                     FROM fitness
                     GROUP BY timestamp - (timestamp % 86400)
                 ) x
                 WHERE timestamp >= ?
                     AND timestamp < ?
-                ORDER BY minutes DESC
+                ORDER BY seconds DESC
             SQL;
 
             return $this->databaseProvider
@@ -127,7 +126,7 @@
                         return NULL;
                     }
                     return new KeyValuePair(implode(", ", array_map(fn($place) => $place->getName(), $places))
-                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), self::ONE_MINUTE_SECONDS * $fitnessRow["minutes"]);
+                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), $fitnessRow["seconds"]);
                 });
         }
         
@@ -137,16 +136,16 @@
 
             $sql = <<<'SQL'
                 SELECT timestamp,
-                    minutes
+                    seconds
                 FROM (
                     SELECT timestamp - (timestamp % 86400) AS timestamp,
-                        SUM(minutes) AS minutes
+                        SUM(seconds) AS seconds
                     FROM fitness
                     GROUP BY timestamp - (timestamp % 86400)
                 ) x
                 WHERE timestamp >= ?
                     AND timestamp < ?
-                ORDER BY minutes ASC
+                ORDER BY seconds ASC
             SQL;
 
             return $this->databaseProvider
@@ -159,14 +158,14 @@
                         return NULL;
                     }
                     return new KeyValuePair(implode(", ", array_map(fn($place) => $place->getName(), $places))
-                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), self::ONE_MINUTE_SECONDS * $fitnessRow["minutes"]);
+                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), $fitnessRow["seconds"]);
                 });
         }
 
         public function selectFitnessRecordForInterval(int $start, int $end) : Fitness { 
             $sql = <<<'SQL'
                 SELECT SUM(steps) AS steps,
-                    SUM(minutes) AS minutes,
+                    SUM(seconds) AS seconds,
                     SUM(calories) AS calories,
                     SUM(distance) AS distance
                 FROM fitness
@@ -179,14 +178,14 @@
                 ->withParameters($start, $end)
                 ->getSingleRow();
 
-            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["minutes"]),
+            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
                 intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
         }
 
         public function selectFitnessRecord(int $timestamp) : ?Fitness {
             $sql = <<<'SQL'
                 SELECT steps,
-                    minutes,
+                    seconds,
                     calories,
                     distance
                 FROM fitness
@@ -198,7 +197,7 @@
                 ->withParameters($timestamp)
                 ->getSingleRow();
 
-            return $fitnessRow === NULL ? NULL : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["minutes"]),
+            return $fitnessRow === NULL ? NULL : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
                 intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
         }
 
@@ -292,7 +291,7 @@
                     timestamp, 
                     last_update, 
                     steps, 
-                    minutes, 
+                    seconds, 
                     calories, 
                     distance
                 )
@@ -308,7 +307,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getMinutes(), $fitness->getCalories(), $fitness->getDistance())
+                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getCalories(), $fitness->getDistance())
                 ->execute() === 1;
         }
 

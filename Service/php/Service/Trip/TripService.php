@@ -25,7 +25,6 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
         private const YEAR_FORMAT = "Y";
-        private const ONE_MINUTE_SECONDS = 60;
 
         private const AVERAGE_TRIP_LENGTH_STATISTICS_NAME = "AVERAGE_TRIP_LENGTH";
         private const LONGEST_TRIPS_STATISTICS_NAME = "LONGEST_TRIPS";
@@ -96,7 +95,7 @@
                             $averageFitnessRecord = $this->fitnessService->getAverageFitnessRecordForInterval($trip->getStart(), $trip->getEnd());
                             // TODO: Make this more robust. Don't rely on a fact that no two trips can have the same count of steps or minutes in motion.
                             $averageSteps[$averageFitnessRecord->getSteps()] = new KeyValuePair($trip->getFullName(), $averageFitnessRecord->getSteps());
-                            $averageMinutes[$averageFitnessRecord->getMinutes()] = new KeyValuePair($trip->getFullName(), self::ONE_MINUTE_SECONDS * $averageFitnessRecord->getMinutes());
+                            $averageMinutes[$averageFitnessRecord->getSeconds()] = new KeyValuePair($trip->getFullName(), $averageFitnessRecord->getSeconds());
                         }                        
                     }
 

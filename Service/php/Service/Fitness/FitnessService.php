@@ -10,7 +10,6 @@
     class FitnessService implements StatisticsProvider {
 
         const FITNESS_RECORD_DURATION = 1800;
-        private const ONE_MINUTE_SECONDS = 60;
 
         private const TOTAL_STEPS_COUNT_STATISTICS_NAME = "TOTAL_STEPS_COUNT";
         private const AVERAGE_STEPS_PER_DAY_STATISTICS_NAME = "AVERAGE_STEPS_PER_DAY";
@@ -47,12 +46,12 @@
                         $statistics[] = new Statistics(self::AVERAGE_STEPS_PER_DAY_STATISTICS_NAME, $averageFitness->getSteps(), StatisticsUnit::Steps);
                     }
                     
-                    if ($totalFitness->getMinutes() > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_TIME_IN_MOTION_STATISTICS_NAME, self::ONE_MINUTE_SECONDS * $totalFitness->getMinutes(), StatisticsUnit::Duration);
+                    if ($totalFitness->getSeconds() > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_TIME_IN_MOTION_STATISTICS_NAME, $totalFitness->getSeconds(), StatisticsUnit::Duration);
                     }
                     
-                    if ($averageFitness->getMinutes() > 0) {
-                        $statistics[] = new Statistics(self::AVERAGE_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, self::ONE_MINUTE_SECONDS * $averageFitness->getMinutes(), StatisticsUnit::Duration);
+                    if ($averageFitness->getSeconds() > 0) {
+                        $statistics[] = new Statistics(self::AVERAGE_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, $averageFitness->getSeconds(), StatisticsUnit::Duration);
                     }
                 }
             }
@@ -94,20 +93,20 @@
             return $this->fitnessMapper->selectAverageFitnessRecordForInterval($start, $end);
         }
 
-        public function updateFitnessRecord(int $timestamp, int $steps, int $minutes, float $calories, float $distance) : bool {
+        public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance) : bool {
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
 
             if ($existingFitnessRecord !== NULL && ($steps < $existingFitnessRecord->getSteps()
-                || $minutes < $existingFitnessRecord->getMinutes()|| $distance < $existingFitnessRecord->getDistance())) {
+                || $seconds < $existingFitnessRecord->getSeconds()|| $distance < $existingFitnessRecord->getDistance())) {
                 $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
                 return FALSE;
             }
 
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
 
-            $fitnessRecord = new Fitness($steps, min($minutes, self::FITNESS_RECORD_DURATION / 60), $calories, $distance);
+            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION), $calories, $distance);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
             $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION);

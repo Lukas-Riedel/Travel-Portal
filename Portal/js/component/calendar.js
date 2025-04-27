@@ -263,7 +263,7 @@ function getFitnessEntry(fitness, allFitnessData) {
 
     const steps = fitness.steps + " kroků";
     const distance = (Math.round(fitness.distance / 10) / 100) + " kilometrů";
-    const minutes = fitness.minutes + " minut";
+    const minutes = Math.round(fitness.seconds / 60) + " minut";
     const calories = Math.round(fitness.calories) + " kcal";
 
     return "<div class=\"fitness\">"

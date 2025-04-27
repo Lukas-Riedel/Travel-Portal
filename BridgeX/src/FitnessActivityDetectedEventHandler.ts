@@ -15,7 +15,7 @@ export class FitnessActivityDetectedEventHandler implements EventHandler {
         await axios.put(`${configuration.baseUrl}/fitness/${args.start}`, {
             "steps": await this._getTotalSteps(args.start, args.end),
             "distance": await this._getTotalDistance(args.start, args.end),
-            "minutes": await this._getTotalTimeInMotion(args.start, args.end),
+            "seconds": await this._getTotalTimeInMotion(args.start, args.end),
             "calories": await this._getTotalCalories(args.start, args.end)
         }, configuration.requestConfig);
     }
@@ -40,7 +40,7 @@ export class FitnessActivityDetectedEventHandler implements EventHandler {
             totalTimeInMotion += (Number(new Date(stepRecord.endTime)) - Number(new Date(stepRecord.startTime)))
         }
     
-        return Math.round(totalTimeInMotion / (60 * 1000));
+        return Math.round(totalTimeInMotion / 1000);
     };
 
     async _getAggregatedFitnessData<T extends AggregateResultRecordType>(recordType: T, start: number, end: number): Promise<AggregateResult<T>>  {

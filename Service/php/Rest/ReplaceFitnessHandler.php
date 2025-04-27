@@ -4,7 +4,8 @@
             global $fitnessService;
     
             $response = $fitnessService->updateFitnessRecord($input["timestamp"], $input["steps"],
-                $input["minutes"], $input["calories"], $input["distance"]);
+                // TODO: Remove support for minutes one day.
+                isset($input["minutes"]) ? (60 * $input["minutes"]) : $input["seconds"], $input["calories"], $input["distance"]);
             return $this->createResponse(204, $response);
         }
 
@@ -43,7 +44,7 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Replace fitness record", '{"steps":2209,"minutes":23,"calories":149.2189295472,"distance":2037.8251443548}'));
+                $this->createRequestExample("Replace fitness record", '{"steps":2209,"seconds":1384,"calories":149.2189295472,"distance":2037.8251443548}'));
         }
 
         public function getResponseExamples() {

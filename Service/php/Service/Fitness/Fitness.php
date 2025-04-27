@@ -4,13 +4,13 @@
 
     class Fitness implements \JsonSerializable {        
         private readonly int $steps;
-        private readonly int $minutes;
+        private readonly int $seconds;
         private readonly float $calories;
         private readonly float $distance;
 
-        public function __construct(int $steps, int $minutes, float $calories, float $distance) {
+        public function __construct(int $steps, int $seconds, float $calories, float $distance) {
             $this->steps = $steps;
-            $this->minutes = $minutes;
+            $this->seconds = $seconds;
             $this->calories = $calories;
             $this->distance = $distance;
         }
@@ -19,8 +19,8 @@
             return $this->steps;
         }
 
-        public function getMinutes() : int {
-            return $this->minutes;
+        public function getSeconds() : int {
+            return $this->seconds;
         }
 
         public function getCalories() : float {
