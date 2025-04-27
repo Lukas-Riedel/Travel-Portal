@@ -8,6 +8,7 @@
     use Service\Service\Note\NoteService;
     use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
+    use Service\Service\Statistics\KeyValuePair;
     use Service\Service\Statistics\StatisticsService;
     use Service\Service\Stay\StayService;
 
@@ -16,6 +17,8 @@
         private readonly \DatabaseProvider $databaseProvider;
 
         private readonly \CalendarClient $calendarClient;
+
+        private readonly \ConfigurationService $configurationService;
 
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
@@ -26,11 +29,12 @@
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, PlaceService $placeService, StayService $stayService,
-            FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService, NoteService $noteService,
-            HighlightService $highlightService, StatisticsService $statisticsService) {
+        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \ConfigurationService $configurationService,
+            PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,FitnessService $fitnessService,
+            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService) {
             $this->databaseProvider = $databaseProvider;
             $this->calendarClient = $calendarClient;
+            $this->configurationService = $configurationService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
             $this->flightService = $flightService;
@@ -134,6 +138,61 @@
 
             return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
                 $this->highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
+        }
+
+        public function selectAverageTripLength(int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT ROUND(AVG(days)) AS average_trip_length
+                FROM trip_summary
+                WHERE name <> ?
+                    AND start >= ?
+                    AND end <= ?
+            SQL;
+
+            return intval($this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips"), $start, $end)
+                ->getSingleColumn("average_trip_length"));
+        }
+        
+        public function selectLongestTrips(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT name,
+                    year,
+                    days
+                FROM trip_summary
+                WHERE name <> ?
+                    AND start >= ?
+                    AND end <= ?
+                ORDER BY days DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips"), $start, $end)
+                ->getMappedResultSet(function($tripRow) {
+                    return new KeyValuePair($tripRow["name"] . " " . $tripRow["year"], $tripRow["days"]);
+                });
+        }
+        
+        public function selectShortestTrips(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT name,
+                    year,
+                    days
+                FROM trip_summary
+                WHERE name <> ?
+                    AND start >= ?
+                    AND end <= ?
+                ORDER BY days ASC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips"), $start, $end)
+                ->getMappedResultSet(function($tripRow) {
+                    return new KeyValuePair($tripRow["name"] . " " . $tripRow["year"], $tripRow["days"]);
+                });
         }
 
         public function selectCandidateTrips(?string $tripId, array $includedEntities) : array {

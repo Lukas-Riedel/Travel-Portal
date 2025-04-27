@@ -8,17 +8,26 @@
     use Service\Service\Note\NoteService;
     use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
+    use Service\Service\Statistics\Statistics;
+    use Service\Service\Statistics\StatisticsKind;
+    use Service\Service\Statistics\StatisticsProvider;
+    use Service\Service\Statistics\StatisticsType;
+    use Service\Service\Statistics\StatisticsUnit;
     use Service\Service\Statistics\StatisticsService;
     use Service\Service\Stay\StayService;
     use Service\Service\Year\YearService;
 
-    class TripService {
+    class TripService implements StatisticsProvider {
 
         private const OLD_TRIP_EVENT_TEMPORARY_TABLE = "old_trip_event";
 
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
         private const YEAR_FORMAT = "Y";
+
+        private const AVERAGE_TRIP_LENGTH_STATISTICS_NAME = "AVERAGE_TRIP_LENGTH";
+        private const LONGEST_TRIPS_STATISTICS_NAME = "LONGEST_TRIPS";
+        private const SHORTEST_TRIPS_STATISTICS_NAME = "SHORTEST_TRIPS";
 
         private readonly TripMapper $tripMapper;
 
@@ -36,7 +45,8 @@
         public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, \ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, \EventPublisher $eventPublisher) {
-            $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService);
+            $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $configurationService, $placeService,
+                $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService);
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
             $this->configurationService = $configurationService;
@@ -44,6 +54,37 @@
             $this->yearService = $yearService;
             $this->noteService = $noteService;
             $this->eventPublisher = $eventPublisher;
+        }
+
+        public function fetchStatistics(StatisticsType $statisticsType, StatisticsKind $statisticsKind,
+            int $start, int $end, ?string $categoryId, ?string $entityId) : array {
+            $statistics = array();
+
+            if ($statisticsKind === StatisticsKind::Fact) {
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $averageTripLength = $this->tripMapper->selectAverageTripLength($start, $end);
+                    if ($averageTripLength > 0) {
+                        $statistics[] = new Statistics(self::AVERAGE_TRIP_LENGTH_STATISTICS_NAME, $averageTripLength, StatisticsUnit::Days);
+                    }
+                }
+            }
+            
+
+            if ($statisticsKind === StatisticsKind::Fact) {
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {                    
+                    $longestTrips = $this->tripMapper->selectLongestTrips($start, $end);
+                    if (count($longestTrips) > 0) {
+                        $statistics[] = new Statistics(self::LONGEST_TRIPS_STATISTICS_NAME, $longestTrips, StatisticsUnit::Days);
+                    }
+                    
+                    $shortestTrips = $this->tripMapper->selectShortestTrips($start, $end);
+                    if (count($shortestTrips) > 0) {
+                        $statistics[] = new Statistics(self::LONGEST_TRIPS_STATISTICS_NAME, $shortestTrips, StatisticsUnit::Days);
+                    }
+                }
+            }
+
+            return $statistics;
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {

@@ -32,6 +32,10 @@
         private const NORTHERNMOST_PLACES_STATISTICS_NAME = "NORTHERNMOST_PLACES";
         private const SOUTHERNMOST_PLACES_STATISTICS_NAME = "SOUTHERNMOST_PLACES";
         private const LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME = "LEAST_RECENTLY_VISITED_PLACES";
+        private const TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_COUNT";
+        private const TOTAL_TRAVEL_DAYS_PER_COUNTRY_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_PER_COUNTRY";
+        private const LAST_VISIT_STATISTICS_NAME = "LAST_VISIT";
+        private const MOST_VISITED_PLACES_STATISTICS_NAME = "MOST_VISITED_PLACES";
         
         private readonly PlaceMapper $placeMapper;
 
@@ -68,7 +72,15 @@
             int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statistics = array();
 
-            if ($statisticsKind === StatisticsKind::Fact) {
+            if ($statisticsKind === StatisticsKind::Fact) {                
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
+                    || $statisticsType === StatisticsType::Category) {
+                    $totalTravelDaysCount = $this->placeMapper->selectTotalTravelDaysCount($start, $end, $categoryId);
+                    if ($totalTravelDaysCount > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME, $totalTravelDaysCount, StatisticsUnit::Days);
+                    }
+                }
+
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Trip || $statisticsType === StatisticsType::Category) {
                     $visitedPlacesCount = $this->placeMapper->selectVisitedPlacesCount($start, $end, $categoryId);
@@ -83,10 +95,22 @@
                         $statistics[] = new Statistics(self::TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME, $visitedCountriesCount, StatisticsUnit::Countries);
                     }
                 }
+
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
+                    $lastVisit = $this->placeMapper->selectLastVisit($start, $end, $categoryId);
+                    if ($lastVisit > 0) {
+                        $statistics[] = new Statistics(self::LAST_VISIT_STATISTICS_NAME, $lastVisit, StatisticsUnit::BeforeDaysTimestamp);
+                    }
+                }
             }
             
             if ($statisticsKind === StatisticsKind::Standings) {  
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $travelDaysCountByCountry = $this->placeMapper->selectTotalTravelDaysCountByCountry($start, $end);
+                    if (count($travelDaysCountByCountry) > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_PER_COUNTRY_STATISTICS_NAME, $travelDaysCountByCountry, StatisticsUnit::Days);
+                    }
+
                     $visitedPlacesCountByCountry = $this->placeMapper->selectVisitedPlacesCountByCountry($start, $end);
                     if (count($visitedPlacesCountByCountry) > 0) {
                         $statistics[] = new Statistics(self::VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME, $visitedPlacesCountByCountry, StatisticsUnit::Places);
@@ -132,6 +156,14 @@
                     $leastRecentlyVisitedPlaces = $this->placeMapper->selectLeastRecentlyVisitedPlaces($start, $end, $categoryId);
                     if (count($leastRecentlyVisitedPlaces) > 0) {
                         $statistics[] = new Statistics(self::LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME, $leastRecentlyVisitedPlaces, StatisticsUnit::BeforeDaysTimestamp);
+                    }
+                }
+                
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
+                    || $statisticsType === StatisticsType::Category) {
+                    $mostVisitedPlaces = $this->placeMapper->selectMostVisitedPlaces($start, $end, $categoryId);
+                    if (count($mostVisitedPlaces) > 0) {
+                        $statistics[] = new Statistics(self::MOST_VISITED_PLACES_STATISTICS_NAME, $mostVisitedPlaces, StatisticsUnit::Visits);
                     }
                 }
             }

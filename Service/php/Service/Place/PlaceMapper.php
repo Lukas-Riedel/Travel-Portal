@@ -125,6 +125,32 @@
                 ->getSingleColumn("places_count"));
         }
 
+        public function selectLastVisit(int $start, int $end, ?string $categoryId) : int {
+            $sql = <<<'SQL'
+                SELECT MAX(end) AS last_visit
+                FROM place_event
+                WHERE :CONDITIONS
+            SQL;
+
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("start >= ?", $start)
+                ->withClause("end <= ?", $end);
+            
+            if ($categoryId !== NULL) {
+                $allowedPlaceIds = $this->categoryService->getPlaceIdsForCategory($categoryId);
+                if (count($allowedPlaceIds) === 0) {
+                    return 0;
+                }
+                $whereClauseBuilder->withClause("place_id IN (" . implode(", ", array_fill(0, count($allowedPlaceIds), "?")) . ")", ...$allowedPlaceIds);
+            }
+            
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            return ($this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
+                ->getSingleColumn("last_visit"));
+        }
+
         public function selectVisitedPlacesCountByCountry(int $start, int $end) : array {
             $sql = <<<'SQL'
                 SELECT pi.country_category_id,
@@ -144,6 +170,32 @@
                 ->getMappedResultSet(function($placeIdentifierRow) {
                     return new KeyValuePair($this->categoryService->getCategoryIdentifierById($placeIdentifierRow["country_category_id"])->getName(),
                         $placeIdentifierRow["places_count"]);
+                });            
+        }
+
+        public function selectTotalTravelDaysCountByCountry(int $start, int $end) : array {
+            $sql = <<<'SQL'
+                SELECT pi.country_category_id,
+                    COUNT(DISTINCT ROUND(start / 86400)) AS travel_days_count
+                FROM place_event pe
+                INNER JOIN place_identifier pi
+                    ON pe.place_id = pi.id
+                WHERE pe.start >= ?
+                    AND pe.end <= ?
+                    AND pi.country_category_id <> ?
+                GROUP BY pi.country_category_id
+                ORDER BY COUNT(DISTINCT FLOOR(start / 86400)) DESC
+            SQL;
+
+            $homeCountryCategoryId = $this->categoryService->getOrCreateCountryCategoryIdentifier(
+                $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "country"))->getId();
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end, $homeCountryCategoryId)
+                ->getMappedResultSet(function($placeIdentifierRow) {
+                    return new KeyValuePair($this->categoryService->getCategoryIdentifierById($placeIdentifierRow["country_category_id"])->getName(),
+                        $placeIdentifierRow["travel_days_count"]);
                 });            
         }
 
@@ -309,6 +361,70 @@
                 ->getMappedResultSet(function($placeIdentifierRow) {
                     return new KeyValuePair($placeIdentifierRow["name"], $placeIdentifierRow["last_visit"]);
                 });
+        }
+
+        public function selectMostVisitedPlaces(int $start, int $end, ?string $categoryId) : array {
+            $sql = <<<'SQL'
+                SELECT pi.name,
+                    COUNT(DISTINCT pe.trip_id) AS visits_count
+                FROM place_event pe
+                INNER JOIN place_identifier pi
+                    ON pe.place_id = pi.id
+                WHERE :CONDITIONS
+                GROUP BY pi.id
+                HAVING COUNT(DISTINCT pe.trip_id) > 1
+                ORDER BY COUNT(DISTINCT pe.trip_id) DESC, MAX(pe.start) ASC
+            SQL;
+            
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("pe.start >= ?", $start)
+                ->withClause("pe.end <= ?", $end);
+            
+            if ($categoryId !== NULL) {
+                $allowedPlaceIds = $this->categoryService->getPlaceIdsForCategory($categoryId);
+                if (count($allowedPlaceIds) === 0) {
+                    return array();
+                }
+                $whereClauseBuilder->withClause("pi.id IN (" . implode(", ", array_fill(0, count($allowedPlaceIds), "?")) . ")", ...$allowedPlaceIds);
+            }
+
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            return $this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
+                ->getMappedResultSet(function($placeIdentifierRow) {
+                    return new KeyValuePair($placeIdentifierRow["name"], $placeIdentifierRow["visits_count"]);
+                });
+        }
+
+        public function selectTotalTravelDaysCount(int $start, int $end, ?string $categoryId) : int {
+            $sql = <<<'SQL'
+                SELECT COUNT(*) AS days_count
+                FROM (
+                    SELECT *
+                    FROM place_event
+                    WHERE :CONDITIONS
+                    GROUP BY FLOOR(start / 86400)
+                ) x
+            SQL;
+
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("start >= ?", $start)
+                ->withClause("end <= ?", $end);
+            
+            if ($categoryId !== NULL) {
+                $allowedPlaceIds = $this->categoryService->getPlaceIdsForCategory($categoryId);
+                if (count($allowedPlaceIds) === 0) {
+                    return 0;
+                }
+                $whereClauseBuilder->withClause("place_id IN (" . implode(", ", array_fill(0, count($allowedPlaceIds), "?")) . ")", ...$allowedPlaceIds);
+            }
+            
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            return intval($this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
+                ->getSingleColumn("days_count"));
         }
 
         public function selectFurthestPlaces(int $start, int $end) : array {
