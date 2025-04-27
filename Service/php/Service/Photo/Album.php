@@ -4,8 +4,8 @@
     class Album implements \JsonSerializable {        
         private readonly string $id;
         private readonly string $name;
-        private readonly string $mainPhotoId;
-        private readonly string $mainImageUrl;
+        private readonly ?string $mainPhotoId;
+        private readonly ?string $mainImageUrl;
         private readonly string $permalink;
         private readonly int $imagesCount;
         private readonly int $indoorImagesCount;
