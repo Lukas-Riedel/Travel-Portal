@@ -7,14 +7,31 @@
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Photo\PhotoService;
+    use Service\Service\Statistics\Statistics;
+    use Service\Service\Statistics\StatisticsKind;
+    use Service\Service\Statistics\StatisticsProvider;
+    use Service\Service\Statistics\StatisticsType;
+    use Service\Service\Statistics\StatisticsUnit;
     use Service\Service\Trip\TripIdentifier;
     use Service\Service\Trip\TripService;
 
-    class PlaceService {
+    class PlaceService implements StatisticsProvider {
         
         private const OLD_PLACE_EVENT_TEMPORARY_TABLE = "old_place_event";
         private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
+
+        private const TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_COUNTRIES_COUNT";
+        private const TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_PLACES_COUNT";
+        private const FURTHEST_PLACES_STATISTICS_NAME = "FURTHEST_PLACES";
+        private const FURTHEST_COUNTRIES_STATISTICS_NAME = "FURTHEST_COUNTRIES";
+        private const VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME = "VISITED_PLACES_PER_COUNTRY";
+        private const VISITED_PLACES_PER_CATEGORY_STATISTICS_NAME = "VISITED_PLACES_PER_CATEGORY";
+        private const WESTERNMOST_PLACES_STATISTICS_NAME = "WESTERNMOST_PLACES";
+        private const EASTERNMOST_PLACES_STATISTICS_NAME = "EASTERNMOST_PLACES";
+        private const NORTHERNMOST_PLACES_STATISTICS_NAME = "NORTHERNMOST_PLACES";
+        private const SOUTHERNMOST_PLACES_STATISTICS_NAME = "SOUTHERNMOST_PLACES";
+        private const LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME = "LEAST_RECENTLY_VISITED_PLACES";
         
         private readonly PlaceMapper $placeMapper;
 
@@ -35,7 +52,8 @@
             \GoogleApiClient $googleApiClient, \ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             GeocodingService $geocodingService, \EventPublisher $eventPublisher) {
-            $this->placeMapper = new PlaceMapper($databaseProvider, $categoryService, $labelService, $forecastService, $photoService, $highlightService);
+            $this->placeMapper = new PlaceMapper($databaseProvider, $configurationService, $categoryService, $labelService, $forecastService,
+                $photoService, $highlightService, $geocodingService);
             $this->chatClient = $chatClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
@@ -44,6 +62,81 @@
             $this->photoService = $photoService;
             $this->geocodingService = $geocodingService;
             $this->eventPublisher = $eventPublisher;
+        }
+
+        public function fetchStatistics(StatisticsType $statisticsType, StatisticsKind $statisticsKind,
+            int $start, int $end, ?string $categoryId, ?string $entityId) : array {
+            $statistics = array();
+
+            if ($statisticsKind === StatisticsKind::Fact) {
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
+                    || $statisticsType === StatisticsType::Trip || $statisticsType === StatisticsType::Category) {
+                    $visitedPlacesCount = $this->placeMapper->selectVisitedPlacesCount($start, $end, $categoryId);
+                    if ($visitedPlacesCount > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME, $visitedPlacesCount, StatisticsUnit::Places);
+                    }
+                }
+
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $visitedCountriesCount = $this->placeMapper->selectVisitedCountriesCount($start, $end);
+                    if ($visitedCountriesCount > 0) {
+                        $statistics[] = new Statistics(self::TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME, $visitedCountriesCount, StatisticsUnit::Countries);
+                    }
+                }
+            }
+            
+            if ($statisticsKind === StatisticsKind::Standings) {  
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $visitedPlacesCountByCountry = $this->placeMapper->selectVisitedPlacesCountByCountry($start, $end);
+                    if (count($visitedPlacesCountByCountry) > 0) {
+                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME, $visitedPlacesCountByCountry, StatisticsUnit::Places);
+                    }
+                    
+                    $visitedPlacesCountByCategory = $this->placeMapper->selectVisitedPlacesCountByCategory($start, $end);
+                    if (count($visitedPlacesCountByCategory) > 0) {
+                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_CATEGORY_STATISTICS_NAME, $visitedPlacesCountByCategory, StatisticsUnit::Places);
+                    }
+                    
+                    $furthestPlaces = $this->placeMapper->selectFurthestPlaces($start, $end);
+                    if (count($furthestPlaces) > 0) {
+                        $statistics[] = new Statistics(self::FURTHEST_PLACES_STATISTICS_NAME, $furthestPlaces, StatisticsUnit::Kilometers);
+                    }
+                    
+                    $furthestCountries = $this->placeMapper->selectFurthestCountries($start, $end);
+                    if (count($furthestCountries) > 0) {
+                        $statistics[] = new Statistics(self::FURTHEST_COUNTRIES_STATISTICS_NAME, $furthestCountries, StatisticsUnit::Kilometers);
+                    }
+                    
+                    $northernmostCountries = $this->placeMapper->selectNorthernmostPlaces($start, $end);
+                    if (count($northernmostCountries) > 0) {
+                        $statistics[] = new Statistics(self::NORTHERNMOST_PLACES_STATISTICS_NAME, $northernmostCountries, StatisticsUnit::Kilometers);
+                    }
+
+                    $southernmostCountries = $this->placeMapper->selectSouthernmostPlaces($start, $end);
+                    if (count($southernmostCountries) > 0) {
+                        $statistics[] = new Statistics(self::SOUTHERNMOST_PLACES_STATISTICS_NAME, $southernmostCountries, StatisticsUnit::Kilometers);
+                    }
+
+                    $easternmostCountries = $this->placeMapper->selectEasternmostPlaces($start, $end);
+                    if (count($easternmostCountries) > 0) {
+                        $statistics[] = new Statistics(self::EASTERNMOST_PLACES_STATISTICS_NAME, $easternmostCountries, StatisticsUnit::Kilometers);
+                    }
+
+                    $westernmostCountries = $this->placeMapper->selectWesternmostPlaces($start, $end);
+                    if (count($westernmostCountries) > 0) {
+                        $statistics[] = new Statistics(self::WESTERNMOST_PLACES_STATISTICS_NAME, $westernmostCountries, StatisticsUnit::Kilometers);
+                    }
+                }
+                
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
+                    $leastRecentlyVisitedPlaces = $this->placeMapper->selectLeastRecentlyVisitedPlaces($start, $end, $categoryId);
+                    if (count($leastRecentlyVisitedPlaces) > 0) {
+                        $statistics[] = new Statistics(self::LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME, $leastRecentlyVisitedPlaces, StatisticsUnit::BeforeDaysTimestamp);
+                    }
+                }
+            }
+
+            return $statistics;
         }
 
         public function getDatesForTripAndCountry(string $tripId, string $country) : array {

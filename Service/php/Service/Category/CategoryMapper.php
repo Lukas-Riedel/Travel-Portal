@@ -192,6 +192,19 @@
                 ->getResultSetForColumn("category_id");
         }
 
+        public function selectPlaceIdsForCategory(string $categoryId) : array {            
+            $sql = <<<'SQL'
+                SELECT place_id
+                FROM category
+                WHERE category_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($categoryId)
+                ->getResultSetForColumn("place_id");
+        }
+
         public function selectCategoryIdentifiersForPlace(string $placeId) : array {            
             $sql = <<<'SQL'
                 SELECT ci.*

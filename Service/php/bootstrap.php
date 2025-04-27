@@ -87,8 +87,8 @@
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
 
-    $statisticsProviders = array($stayService, $flightService);
-    $statisticsService->setStatisticsProviders($statisticsProviders);
+    $statisticsService->setStatisticsProviders(array_filter(get_defined_vars(), fn($x) => is_object($x)
+        && $x instanceof Service\Service\Statistics\StatisticsProvider));
     
     // Events consuming.
     $listeners = array(

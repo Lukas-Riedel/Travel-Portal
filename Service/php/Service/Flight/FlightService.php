@@ -38,8 +38,6 @@
         private readonly FlightMapper $flightMapper;
 
         private readonly GeocodingService $geocodingService;
-        
-        private readonly \ConfigurationService $configurationService;
 
         private readonly \HttpClient $httpClient;
 
@@ -54,7 +52,6 @@
             \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService, $configurationService);
             $this->geocodingService = $geocodingService;
-            $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
