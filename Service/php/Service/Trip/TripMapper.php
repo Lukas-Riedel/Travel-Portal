@@ -272,7 +272,7 @@
                 ->getResultSetForColumn("trip_id");
         }
         
-        public function selectRegularTrips(?string $tripId, ?int $year, array $includedEntities) : array {
+        public function selectRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM trip_summary
@@ -285,6 +285,12 @@
             }
             if ($tripId !== NULL) {
                 $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+            }
+            if ($start !== NULL) {
+                $whereClauseBuilder->withClause("start >= ?", $start);
+            }
+            if ($end !== NULL) {
+                $whereClauseBuilder->withClause("end <= ?", $end);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 

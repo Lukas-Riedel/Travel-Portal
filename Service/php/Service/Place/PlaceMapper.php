@@ -146,7 +146,7 @@
             
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return ($this->databaseProvider
+            return intval($this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getSingleColumn("last_visit"));
         }
@@ -701,7 +701,7 @@
         }
         
         public function selectCandidatePlacesForTrip(?string $categoryId, string $tripId, array $includedEntities) {         
-            // TODO: Introduce a property instead.
+            // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
             $sql = <<<'SQL'

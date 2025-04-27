@@ -1,12 +1,166 @@
 <?php
     namespace Service\Service\Fitness;
 
+    use Service\Service\Statistics\KeyValuePair;
+
     class FitnessMapper {
+
+        private const ONE_DAY_SECONDS = 86400;     
+        private const ONE_MINUTE_SECONDS = 60;   
+        private const DMY_DATE_FORMAT = "j.n.Y";
 
         private readonly \DatabaseProvider $databaseProvider;
 
         public function __construct(\DatabaseProvider $databaseProvider) {
             $this->databaseProvider = $databaseProvider;
+        }
+
+        public function selectAverageFitnessRecordForInterval(int $start, int $end) : Fitness { 
+            $sql = <<<'SQL'
+                SELECT ROUND(SUM(steps) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS steps,
+                    ROUND(SUM(minutes) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS minutes,
+                    ROUND(SUM(calories) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS calories,
+                    ROUND(SUM(distance) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS distance
+                FROM fitness
+                WHERE timestamp >= ?
+                    AND timestamp < ?
+            SQL;
+
+            $fitnessRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getSingleRow();
+
+            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["minutes"]),
+                intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+        }
+        
+        public function selectMostStepsPerDay(int $start, int $end, ?string $categoryId) : array { 
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $sql = <<<'SQL'
+                SELECT timestamp,
+                    steps
+                FROM (
+                    SELECT timestamp - (timestamp % 86400) AS timestamp,
+                        SUM(steps) AS steps
+                    FROM fitness
+                    GROUP BY timestamp - (timestamp % 86400)
+                ) x
+                WHERE timestamp >= ?
+                    AND timestamp < ?
+                ORDER BY steps DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($fitnessRow) use(&$placeService, &$categoryId) {
+                    $places = $placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $fitnessRow["timestamp"],
+                        $fitnessRow["timestamp"] + self::ONE_DAY_SECONDS, array());
+                    if (count($places) === 0) {
+                        return NULL;
+                    }
+                    return new KeyValuePair(implode(", ", array_map(fn($place) => $place->getName(), $places))
+                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), $fitnessRow["steps"]);
+                });
+        }
+        
+        public function selectLeastStepsPerDay(int $start, int $end, ?string $categoryId) : array { 
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $sql = <<<'SQL'
+                SELECT timestamp,
+                    steps
+                FROM (
+                    SELECT timestamp - (timestamp % 86400) AS timestamp,
+                        SUM(steps) AS steps
+                    FROM fitness
+                    GROUP BY timestamp - (timestamp % 86400)
+                ) x
+                WHERE timestamp >= ?
+                    AND timestamp < ?
+                ORDER BY steps ASC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($fitnessRow) use(&$placeService, &$categoryId) {
+                    $places = $placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $fitnessRow["timestamp"],
+                        $fitnessRow["timestamp"] + self::ONE_DAY_SECONDS, array());
+                    if (count($places) === 0) {
+                        return NULL;
+                    }
+                    return new KeyValuePair(implode(", ", array_map(fn($place) => $place->getName(), $places))
+                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), $fitnessRow["steps"]);
+                });
+        }
+        
+        public function selectMostSecondsInMotionPerDay(int $start, int $end, ?string $categoryId) : array { 
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $sql = <<<'SQL'
+                SELECT timestamp,
+                    minutes
+                FROM (
+                    SELECT timestamp - (timestamp % 86400) AS timestamp,
+                        SUM(minutes) AS minutes
+                    FROM fitness
+                    GROUP BY timestamp - (timestamp % 86400)
+                ) x
+                WHERE timestamp >= ?
+                    AND timestamp < ?
+                ORDER BY minutes DESC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($fitnessRow) use(&$placeService, &$categoryId) {
+                    $places = $placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $fitnessRow["timestamp"],
+                        $fitnessRow["timestamp"] + self::ONE_DAY_SECONDS, array());
+                    if (count($places) === 0) {
+                        return NULL;
+                    }
+                    return new KeyValuePair(implode(", ", array_map(fn($place) => $place->getName(), $places))
+                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), self::ONE_MINUTE_SECONDS * $fitnessRow["minutes"]);
+                });
+        }
+        
+        public function selectLeastSecondsInMotionPerDay(int $start, int $end, ?string $categoryId) : array { 
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $sql = <<<'SQL'
+                SELECT timestamp,
+                    minutes
+                FROM (
+                    SELECT timestamp - (timestamp % 86400) AS timestamp,
+                        SUM(minutes) AS minutes
+                    FROM fitness
+                    GROUP BY timestamp - (timestamp % 86400)
+                ) x
+                WHERE timestamp >= ?
+                    AND timestamp < ?
+                ORDER BY minutes ASC
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($start, $end)
+                ->getMappedResultSet(function($fitnessRow) use(&$placeService, &$categoryId) {
+                    $places = $placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $fitnessRow["timestamp"],
+                        $fitnessRow["timestamp"] + self::ONE_DAY_SECONDS, array());
+                    if (count($places) === 0) {
+                        return NULL;
+                    }
+                    return new KeyValuePair(implode(", ", array_map(fn($place) => $place->getName(), $places))
+                        . " @ " . date(self::DMY_DATE_FORMAT, $fitnessRow["timestamp"]), self::ONE_MINUTE_SECONDS * $fitnessRow["minutes"]);
+                });
         }
 
         public function selectFitnessRecordForInterval(int $start, int $end) : Fitness { 

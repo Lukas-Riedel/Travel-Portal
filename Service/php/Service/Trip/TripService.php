@@ -8,6 +8,7 @@
     use Service\Service\Note\NoteService;
     use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
+    use Service\Service\Statistics\KeyValuePair;
     use Service\Service\Statistics\Statistics;
     use Service\Service\Statistics\StatisticsKind;
     use Service\Service\Statistics\StatisticsProvider;
@@ -24,10 +25,15 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
         private const YEAR_FORMAT = "Y";
+        private const ONE_MINUTE_SECONDS = 60;
 
         private const AVERAGE_TRIP_LENGTH_STATISTICS_NAME = "AVERAGE_TRIP_LENGTH";
         private const LONGEST_TRIPS_STATISTICS_NAME = "LONGEST_TRIPS";
         private const SHORTEST_TRIPS_STATISTICS_NAME = "SHORTEST_TRIPS";
+        private const MOST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME = "MOST_AVERAGE_STEPS_PER_DAY_TRIPS";
+        private const LEAST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME = "LEAST_AVERAGE_STEPS_PER_DAY_TRIPS";
+        private const MOST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME = "MOST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS";
+        private const LEAST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME = "LEAST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS";
 
         private readonly TripMapper $tripMapper;
 
@@ -38,6 +44,7 @@
 
         private readonly PlaceService $placeService;
         private readonly YearService $yearService;
+        private readonly FitnessService $fitnessService;
         private readonly NoteService $noteService;
 
         private readonly \EventPublisher $eventPublisher;
@@ -52,6 +59,7 @@
             $this->configurationService = $configurationService;
             $this->placeService = $placeService;
             $this->yearService = $yearService;
+            $this->fitnessService = $fitnessService;
             $this->noteService = $noteService;
             $this->eventPublisher = $eventPublisher;
         }
@@ -67,10 +75,9 @@
                         $statistics[] = new Statistics(self::AVERAGE_TRIP_LENGTH_STATISTICS_NAME, $averageTripLength, StatisticsUnit::Days);
                     }
                 }
-            }
-            
+            }            
 
-            if ($statisticsKind === StatisticsKind::Fact) {
+            if ($statisticsKind === StatisticsKind::Standings) {
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {                    
                     $longestTrips = $this->tripMapper->selectLongestTrips($start, $end);
                     if (count($longestTrips) > 0) {
@@ -79,7 +86,32 @@
                     
                     $shortestTrips = $this->tripMapper->selectShortestTrips($start, $end);
                     if (count($shortestTrips) > 0) {
-                        $statistics[] = new Statistics(self::LONGEST_TRIPS_STATISTICS_NAME, $shortestTrips, StatisticsUnit::Days);
+                        $statistics[] = new Statistics(self::SHORTEST_TRIPS_STATISTICS_NAME, $shortestTrips, StatisticsUnit::Days);
+                    }
+
+                    $averageSteps = array();
+                    $averageMinutes = array();
+                    foreach ($this->doGetRegularTrips(NULL, NULL, $start, $end, array()) as &$trip) {
+                        if ($trip->getName() !== $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips")) {
+                            $averageFitnessRecord = $this->fitnessService->getAverageFitnessRecordForInterval($trip->getStart(), $trip->getEnd());
+                            // TODO: Make this more robust. Don't rely on a fact that no two trips can have the same count of steps or minutes in motion.
+                            $averageSteps[$averageFitnessRecord->getSteps()] = new KeyValuePair($trip->getFullName(), $averageFitnessRecord->getSteps());
+                            $averageMinutes[$averageFitnessRecord->getMinutes()] = new KeyValuePair($trip->getFullName(), self::ONE_MINUTE_SECONDS * $averageFitnessRecord->getMinutes());
+                        }                        
+                    }
+
+                    if (count($averageSteps) > 0) {
+                        krsort($averageSteps);
+                        $statistics[] = new Statistics(self::MOST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME, array_values($averageSteps), StatisticsUnit::Steps);
+                        ksort($averageSteps);
+                        $statistics[] = new Statistics(self::LEAST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME, array_values($averageSteps), StatisticsUnit::Steps);
+                    }
+                    
+                    if (count($averageMinutes) > 0) {
+                        krsort($averageMinutes);
+                        $statistics[] = new Statistics(self::MOST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME, array_values($averageMinutes), StatisticsUnit::Duration);
+                        ksort($averageMinutes);
+                        $statistics[] = new Statistics(self::LEAST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME, array_values($averageMinutes), StatisticsUnit::Duration);
                     }
                 }
             }
@@ -88,7 +120,7 @@
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {
-            $regularTrips = $this->doGetRegularTrips($tripId, NULL, TripIncludedEntity::values());
+            $regularTrips = $this->doGetRegularTrips($tripId, NULL, NULL, NULL, TripIncludedEntity::values());
             return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
         }
 
@@ -107,7 +139,7 @@
         }
 
         public function getRegularTrips(?int $year, array $includedEntities) : array {
-            return $this->doGetRegularTrips(NULL, $year, $includedEntities);
+            return $this->doGetRegularTrips(NULL, $year, NULL, NULL, $includedEntities);
         }
 
         public function getCandidateTrip(string $tripId) : ?Trip {
@@ -242,8 +274,8 @@
             }
         }
 
-        private function doGetRegularTrips(?string $tripId, ?int $year, array $includedEntities) : array {
-            return $this->tripMapper->selectRegularTrips($tripId, $year, $includedEntities);
+        private function doGetRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities) : array {
+            return $this->tripMapper->selectRegularTrips($tripId, $year, $start, $end, $includedEntities);
         }
 
         private function doGetCandidateTrips(?string $tripId, array $includedEntities) : array {

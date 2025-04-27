@@ -81,12 +81,9 @@
                     }
                 }
 
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
-                    || $statisticsType === StatisticsType::Trip || $statisticsType === StatisticsType::Category) {
-                    $visitedPlacesCount = $this->placeMapper->selectVisitedPlacesCount($start, $end, $categoryId);
-                    if ($visitedPlacesCount > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME, $visitedPlacesCount, StatisticsUnit::Places);
-                    }
+                $visitedPlacesCount = $this->placeMapper->selectVisitedPlacesCount($start, $end, $categoryId);
+                if ($visitedPlacesCount > 0) {
+                    $statistics[] = new Statistics(self::TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME, $visitedPlacesCount, StatisticsUnit::Places);
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {

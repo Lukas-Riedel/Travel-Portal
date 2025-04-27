@@ -237,7 +237,7 @@
         }
 
         public function getMappedResultSet($fn) {
-            return array_map($fn, $this->getResultSet());
+            return array_filter(array_map($fn, $this->getResultSet()), fn($v) => !is_null($v));
         }
 
         public function getResultSetForColumn($column) {
@@ -250,7 +250,7 @@
         }
 
         public function getMappedResultSetForColumn($column, $fn) {
-            return array_map($fn, $this->getResultSetForColumn($column));
+            return array_filter(array_map($fn, $this->getResultSetForColumn($column)), fn($v) => !is_null($v));
         }
 
         public function getSingleRow() {

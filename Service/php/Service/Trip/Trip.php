@@ -57,6 +57,10 @@
             return $this->name;
         }
 
+        public function getFullName() : string {
+            return $this->name . " " . $this->year;
+        }
+
         public function getYear() : ?int {
             return $this->year;
         }
