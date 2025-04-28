@@ -192,6 +192,24 @@
                 ->getResultSetForColumn("category_id");
         }
 
+        public function selectCategoryIdsForCategory(?CategoryCategory $category) : array {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM category_identifier
+                WHERE :CONDITIONS
+            SQL;
+
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            if ($category !== NULL) {
+                $whereClauseBuilder->withClause("category = ?", $category->value);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
+            return $this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
+                ->getResultSetForColumn("id");
+        }
+
         public function selectPlaceIdsForCategory(string $categoryId) : array {            
             $sql = <<<'SQL'
                 SELECT place_id

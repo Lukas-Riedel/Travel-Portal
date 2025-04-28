@@ -3,6 +3,7 @@
 
     use Service\Service\Place\PlaceService;
     use Service\Service\Place\PlaceIncludedEntity;
+    use Service\Service\Place\PlaceSortingStrategy;
 
     class ForecastServiceListener {
 
@@ -54,8 +55,6 @@
                     $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
                     $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
                 }
-
-                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($date->getTrip()->getId());
             }
         }
 
@@ -70,8 +69,6 @@
                     $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
                     $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
                 }
-
-                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($date->getTrip()->getId());
             }
         }
 
@@ -79,7 +76,7 @@
             if ($message["action"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
                 $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value));
+                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
@@ -94,7 +91,7 @@
 
             if ($message["action"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value));
+                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
     
                     foreach ($places as &$place) {
                         foreach ($place->getDates() as &$date) {    
@@ -109,7 +106,7 @@
 
             if ($message["action"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value));
+                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    

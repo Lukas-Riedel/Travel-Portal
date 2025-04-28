@@ -3,19 +3,23 @@
     
     use Service\Service\Highlight\HighlightType;
     use Service\Service\Place\PlaceIdentifier;
+    use Service\Service\Place\PlaceService;
 
     class CategoryServiceListener {
         
         private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
-        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 604800;
+        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 86400 * 14;
 
         private readonly CategoryService $categoryService;
+
+        private readonly PlaceService $placeService;
 
         private readonly \EventPublisher $eventPublisher;
         private readonly \Scheduler $scheduler;
 
-        public function __construct(CategoryService $categoryService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(CategoryService $categoryService, PlaceService $placeService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
             $this->categoryService = $categoryService;
+            $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -24,10 +28,12 @@
             $this->categoryService->updateRegionAreas();
         }
 
+        public function onPlaceCreated(mixed $message) : void {            
+            $this->categoryService->updateCategories($this->placeService->getPlaceIdentifierById($message["placeId"]));
+        }
+
         public function onPlaceUpdated(mixed $message) : void {            
-            $this->categoryService->updateCategories(new PlaceIdentifier($message["placeIdentifier"]["id"], $message["placeIdentifier"]["name"],
-                $message["placeIdentifier"]["country"], $message["placeIdentifier"]["latitude"], $message["placeIdentifier"]["longitude"],
-                $message["placeIdentifier"]["timezone"], $message["placeIdentifier"]["mainHighlight"], $message["placeIdentifier"]["excerpt"]));
+            $this->categoryService->updateCategories($this->placeService->getPlaceIdentifierById($message["placeId"]));
         }
 
         public function onHighlightCreated(mixed $message) : void {

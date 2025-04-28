@@ -10,9 +10,10 @@
         private readonly Airport $to;
         private readonly int $start;
         private readonly int $end;
+        private readonly ?int $delay;
 
         public function __construct(string $flight, ?string $registration, ?string $aircraft,
-            ?float $distance, Airport $from, Airport $to, int $start, int $end) {
+            ?float $distance, Airport $from, Airport $to, int $start, int $end, ?int $delay) {
             $this->flight = $flight;
             $this->registration = $registration;
             $this->aircraft = $aircraft;
@@ -21,6 +22,7 @@
             $this->to = $to;
             $this->start = $start;
             $this->end = $end;
+            $this->delay = $delay;
         }
 
         public function getFlight() : string {
@@ -53,6 +55,14 @@
 
         public function getEnd() : int {
             return $this->end;
+        }
+
+        public function getDelay() : ?int {
+            return $this->delay;
+        }
+
+        public function getDuration() : int {
+            return $this->end - $this->start;
         }
 
         #[\ReturnTypeWillChange]

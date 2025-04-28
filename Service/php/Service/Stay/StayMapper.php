@@ -1,8 +1,6 @@
 <?php
     namespace Service\Service\Stay;
 
-    use Service\Service\Statistics\KeyValuePair;
-
     class StayMapper {
 
         private readonly \DatabaseProvider $databaseProvider;
@@ -11,49 +9,20 @@
             $this->databaseProvider = $databaseProvider;
         }
 
-        public function selectTotalNightsCount(int $start, int $end) : int {
-            $sql = <<<'SQL'
-                SELECT SUM(ROUND((end - start) / 86400) - 1) AS total_nights
+        public function selectStaysForInterval(int $start, int $end, StaySortingStrategy $staySortingStrategy) : array {
+            $sql = <<<SQL
+                SELECT *
                 FROM stay_event
                 WHERE start >= ?
                     AND end <= ?
-            SQL;
-
-            return intval($this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($start, $end)
-                ->getSingleColumn("total_nights"));
-        }
-
-        public function selectAverageNightsCountPerHotel(int $start, int $end) : int {
-            $sql = <<<'SQL'
-                SELECT ROUND(AVG(ROUND((end - start) / 86400) - 1)) AS average_nights
-                FROM stay_event
-                WHERE start >= ?
-                    AND end <= ?
-            SQL;
-
-            return intval($this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($start, $end)
-                ->getSingleColumn("average_nights"));
-        }
-
-        public function selectLongestStays(int $start, int $end) : array {
-            $sql = <<<'SQL'
-                SELECT name,
-                    ROUND((end - start) / 86400) - 1 AS nights
-                FROM stay_event
-                WHERE start >= ?
-                    AND end <= ?
-                ORDER BY ROUND((start - end) / 86400)
+                {$staySortingStrategy->value}
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($stayRow) {
-                    return new KeyValuePair($stayRow["name"], $stayRow["nights"]);
+                    return new Stay($stayRow["name"], $stayRow["address"], $stayRow["start"], $stayRow["end"]);
                 });
         }
 

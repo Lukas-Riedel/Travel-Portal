@@ -1,41 +1,21 @@
 <?php
     namespace Service\Service\Place;
 
+    use Service\Service\Category\CategoryCategory;
     use Service\Service\Category\CategoryService;
     use Service\Service\Label\LabelService;
     use Service\Service\Geocoding\GeocodingService;
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Photo\PhotoService;
-    use Service\Service\Statistics\Statistics;
-    use Service\Service\Statistics\StatisticsKind;
-    use Service\Service\Statistics\StatisticsProvider;
-    use Service\Service\Statistics\StatisticsType;
-    use Service\Service\Statistics\StatisticsUnit;
     use Service\Service\Trip\TripIdentifier;
     use Service\Service\Trip\TripService;
 
-    class PlaceService implements StatisticsProvider {
+    class PlaceService {
         
         private const OLD_PLACE_EVENT_TEMPORARY_TABLE = "old_place_event";
         private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
-
-        private const TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_COUNTRIES_COUNT";
-        private const TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_PLACES_COUNT";
-        private const FURTHEST_PLACES_STATISTICS_NAME = "FURTHEST_PLACES";
-        private const FURTHEST_COUNTRIES_STATISTICS_NAME = "FURTHEST_COUNTRIES";
-        private const VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME = "VISITED_PLACES_PER_COUNTRY";
-        private const VISITED_PLACES_PER_CATEGORY_STATISTICS_NAME = "VISITED_PLACES_PER_CATEGORY";
-        private const WESTERNMOST_PLACES_STATISTICS_NAME = "WESTERNMOST_PLACES";
-        private const EASTERNMOST_PLACES_STATISTICS_NAME = "EASTERNMOST_PLACES";
-        private const NORTHERNMOST_PLACES_STATISTICS_NAME = "NORTHERNMOST_PLACES";
-        private const SOUTHERNMOST_PLACES_STATISTICS_NAME = "SOUTHERNMOST_PLACES";
-        private const LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME = "LEAST_RECENTLY_VISITED_PLACES";
-        private const TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_COUNT";
-        private const TOTAL_TRAVEL_DAYS_PER_COUNTRY_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_PER_COUNTRY";
-        private const LAST_VISIT_STATISTICS_NAME = "LAST_VISIT";
-        private const MOST_VISITED_PLACES_STATISTICS_NAME = "MOST_VISITED_PLACES";
         
         private readonly PlaceMapper $placeMapper;
 
@@ -57,7 +37,7 @@
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             GeocodingService $geocodingService, \EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseProvider, $configurationService, $categoryService, $labelService, $forecastService,
-                $photoService, $highlightService, $geocodingService);
+                $photoService, $highlightService);
             $this->chatClient = $chatClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
@@ -66,106 +46,6 @@
             $this->photoService = $photoService;
             $this->geocodingService = $geocodingService;
             $this->eventPublisher = $eventPublisher;
-        }
-
-        public function fetchStatistics(StatisticsType $statisticsType, StatisticsKind $statisticsKind,
-            int $start, int $end, ?string $categoryId, ?string $entityId) : array {
-            $statistics = array();
-
-            if ($statisticsKind === StatisticsKind::Fact) {                
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
-                    || $statisticsType === StatisticsType::Category) {
-                    $totalTravelDaysCount = $this->placeMapper->selectTotalTravelDaysCount($start, $end, $categoryId);
-                    if ($totalTravelDaysCount > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME, $totalTravelDaysCount, StatisticsUnit::Days);
-                    }
-                }
-
-                $visitedPlacesCount = $this->placeMapper->selectVisitedPlacesCount($start, $end, $categoryId);
-                if ($visitedPlacesCount > 0) {
-                    $statistics[] = new Statistics(self::TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME, $visitedPlacesCount, StatisticsUnit::Places);
-                }
-
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
-                    $visitedCountriesCount = $this->placeMapper->selectVisitedCountriesCount($start, $end);
-                    if ($visitedCountriesCount > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME, $visitedCountriesCount, StatisticsUnit::Countries);
-                    }
-                }
-
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
-                    $lastVisit = $this->placeMapper->selectLastVisit($start, $end, $categoryId);
-                    if ($lastVisit > 0) {
-                        $statistics[] = new Statistics(self::LAST_VISIT_STATISTICS_NAME, $lastVisit, StatisticsUnit::BeforeDaysTimestamp);
-                    }
-                }
-            }
-            
-            if ($statisticsKind === StatisticsKind::Standings) {  
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
-                    $travelDaysCountByCountry = $this->placeMapper->selectTotalTravelDaysCountByCountry($start, $end);
-                    if (count($travelDaysCountByCountry) > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_PER_COUNTRY_STATISTICS_NAME, $travelDaysCountByCountry, StatisticsUnit::Days);
-                    }
-
-                    $visitedPlacesCountByCountry = $this->placeMapper->selectVisitedPlacesCountByCountry($start, $end);
-                    if (count($visitedPlacesCountByCountry) > 0) {
-                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME, $visitedPlacesCountByCountry, StatisticsUnit::Places);
-                    }
-                    
-                    $visitedPlacesCountByCategory = $this->placeMapper->selectVisitedPlacesCountByCategory($start, $end);
-                    if (count($visitedPlacesCountByCategory) > 0) {
-                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_CATEGORY_STATISTICS_NAME, $visitedPlacesCountByCategory, StatisticsUnit::Places);
-                    }
-                    
-                    $furthestPlaces = $this->placeMapper->selectFurthestPlaces($start, $end);
-                    if (count($furthestPlaces) > 0) {
-                        $statistics[] = new Statistics(self::FURTHEST_PLACES_STATISTICS_NAME, $furthestPlaces, StatisticsUnit::Kilometers);
-                    }
-                    
-                    $furthestCountries = $this->placeMapper->selectFurthestCountries($start, $end);
-                    if (count($furthestCountries) > 0) {
-                        $statistics[] = new Statistics(self::FURTHEST_COUNTRIES_STATISTICS_NAME, $furthestCountries, StatisticsUnit::Kilometers);
-                    }
-                    
-                    $northernmostCountries = $this->placeMapper->selectNorthernmostPlaces($start, $end);
-                    if (count($northernmostCountries) > 0) {
-                        $statistics[] = new Statistics(self::NORTHERNMOST_PLACES_STATISTICS_NAME, $northernmostCountries, StatisticsUnit::Kilometers);
-                    }
-
-                    $southernmostCountries = $this->placeMapper->selectSouthernmostPlaces($start, $end);
-                    if (count($southernmostCountries) > 0) {
-                        $statistics[] = new Statistics(self::SOUTHERNMOST_PLACES_STATISTICS_NAME, $southernmostCountries, StatisticsUnit::Kilometers);
-                    }
-
-                    $easternmostCountries = $this->placeMapper->selectEasternmostPlaces($start, $end);
-                    if (count($easternmostCountries) > 0) {
-                        $statistics[] = new Statistics(self::EASTERNMOST_PLACES_STATISTICS_NAME, $easternmostCountries, StatisticsUnit::Kilometers);
-                    }
-
-                    $westernmostCountries = $this->placeMapper->selectWesternmostPlaces($start, $end);
-                    if (count($westernmostCountries) > 0) {
-                        $statistics[] = new Statistics(self::WESTERNMOST_PLACES_STATISTICS_NAME, $westernmostCountries, StatisticsUnit::Kilometers);
-                    }
-                }
-                
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
-                    $leastRecentlyVisitedPlaces = $this->placeMapper->selectLeastRecentlyVisitedPlaces($start, $end, $categoryId);
-                    if (count($leastRecentlyVisitedPlaces) > 0) {
-                        $statistics[] = new Statistics(self::LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME, $leastRecentlyVisitedPlaces, StatisticsUnit::BeforeDaysTimestamp);
-                    }
-                }
-                
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
-                    || $statisticsType === StatisticsType::Category) {
-                    $mostVisitedPlaces = $this->placeMapper->selectMostVisitedPlaces($start, $end, $categoryId);
-                    if (count($mostVisitedPlaces) > 0) {
-                        $statistics[] = new Statistics(self::MOST_VISITED_PLACES_STATISTICS_NAME, $mostVisitedPlaces, StatisticsUnit::Visits);
-                    }
-                }
-            }
-
-            return $statistics;
         }
 
         public function getDatesForTripAndCountry(string $tripId, string $country) : array {
@@ -184,13 +64,17 @@
             return $this->placeMapper->selectDaysForCandidateTrip($tripId);
         }
 
+        public function getVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {
+            return $this->placeMapper->selectVisitedCategoriesForInterval($start, $end, $category, $visitedCategoriesSortingStrategy);
+        }
+
         public function getRegularPlace(string $placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values());
+            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
-        public function getRegularPlaces(?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities) : array {
-            return $this->doGetRegularPlaces(NULL, $categoryId, $label, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities);
+        public function getRegularPlaces(?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->doGetRegularPlaces(NULL, $categoryId, $label, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
 
         public function getCandidatePlace(string $placeId) : ?Place {
@@ -235,7 +119,7 @@
             }
 
             if ($wasUpdated) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($this->getPlaceIdentifierById($placeId));
+                $this->eventPublisher->publishPlaceUpdatedEvent($placeId);
                 $this->updatePlaceExcerpt($placeId, $this->getSuggestedExcerpt($name, $place->getCountry()));
             }
 
@@ -246,14 +130,14 @@
             $wasUpdated = $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude);
             
             if ($wasUpdated) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($this->getPlaceIdentifierById($placeId));
+                $this->eventPublisher->publishPlaceUpdatedEvent($placeId);
             }
 
             return $wasUpdated;
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value));
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -284,7 +168,7 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value));
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -370,9 +254,11 @@
             }
             
             $location = $this->geocodingService->getLocation($address);
-            $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getId(),
+            $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
                 $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, $this->getSuggestedExcerpt($name, $country));
             $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
+            
+            $this->eventPublisher->publishPlaceCreatedEvent($placeIdentifier->getId());
 
             return $placeIdentifier;
         }
@@ -381,7 +267,7 @@
             $wasRemoved = $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
 
             if ($wasRemoved) {
-                $this->eventPublisher->publishPlaceDeletedEvent($this->getPlaceIdentifierById($placeId));
+                $this->eventPublisher->publishPlaceDeletedEvent($placeId);
             }
 
             return $wasRemoved;
@@ -413,8 +299,8 @@
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(), array(), array(), array(), array());
         }
 
-        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities) : array {
-            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $label, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities);
+        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $label, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
         
         private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, array $includedEntities) : array {

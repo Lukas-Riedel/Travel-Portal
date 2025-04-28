@@ -8,7 +8,7 @@
     use Service\Service\Note\NoteService;
     use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
-    use Service\Service\Statistics\KeyValuePair;
+    use Service\Service\Place\PlaceSortingStrategy;
     use Service\Service\Statistics\StatisticsService;
     use Service\Service\Stay\StayService;
 
@@ -140,61 +140,6 @@
                 $this->highlightService->getHighlight($tripIdentifierRow["main_highlight_id"]));
         }
 
-        public function selectAverageTripLength(int $start, int $end) : int {
-            $sql = <<<'SQL'
-                SELECT ROUND(AVG(days)) AS average_trip_length
-                FROM trip_summary
-                WHERE name <> ?
-                    AND start >= ?
-                    AND end <= ?
-            SQL;
-
-            return intval($this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips"), $start, $end)
-                ->getSingleColumn("average_trip_length"));
-        }
-        
-        public function selectLongestTrips(int $start, int $end) : array {
-            $sql = <<<'SQL'
-                SELECT name,
-                    year,
-                    days
-                FROM trip_summary
-                WHERE name <> ?
-                    AND start >= ?
-                    AND end <= ?
-                ORDER BY days DESC
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips"), $start, $end)
-                ->getMappedResultSet(function($tripRow) {
-                    return new KeyValuePair($tripRow["name"] . " " . $tripRow["year"], $tripRow["days"]);
-                });
-        }
-        
-        public function selectShortestTrips(int $start, int $end) : array {
-            $sql = <<<'SQL'
-                SELECT name,
-                    year,
-                    days
-                FROM trip_summary
-                WHERE name <> ?
-                    AND start >= ?
-                    AND end <= ?
-                ORDER BY days ASC
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips"), $start, $end)
-                ->getMappedResultSet(function($tripRow) {
-                    return new KeyValuePair($tripRow["name"] . " " . $tripRow["year"], $tripRow["days"]);
-                });
-        }
-
         public function selectCandidateTrips(?string $tripId, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT *
@@ -272,11 +217,12 @@
                 ->getResultSetForColumn("trip_id");
         }
         
-        public function selectRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities) : array {
-            $sql = <<<'SQL'
+        public function selectRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
+            $sql = <<<SQL
                 SELECT *
                 FROM trip_summary
                 WHERE :CONDITIONS
+                {$tripSortingStrategy->value}
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
@@ -324,7 +270,8 @@
                         $startOfDays = array();
     
                         // TODO: Include fitness records for all days, not only those with a visited place. Some frontend adjustments are needed.
-                        $tripPlaces = $this->placeService->getRegularPlaces(NULL, NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value));
+                        $tripPlaces = $this->placeService->getRegularPlaces(NULL, NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL,
+                            array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
                         foreach ($tripPlaces as &$tripPlace) {
                             foreach ($tripPlace->getDates() as &$date) {
                                 // TODO: Calculate start of days based on the timezone of the client (i.e., an extra GET parameter with timezone).
@@ -337,7 +284,7 @@
                         sort($startOfDays);
     
                         foreach ($startOfDays as &$startOfDay) {
-                            $fitness[] = $this->fitnessService->getFitnessRecordForDate($startOfDay);
+                            $fitness[] = $this->fitnessService->getFitnessRecordForOneDay($startOfDay);
                         }
                     }
     

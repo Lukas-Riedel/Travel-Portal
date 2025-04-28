@@ -1,7 +1,8 @@
 <?php
     use Service\Service\Highlight\HighlightType;
     
-    // TODO: Make sure messages contain as much information as possible (e.g., PlaceIdentifier instead of string placeId).
+    // TODO: Make sure messages contain as least information as possible (e.g., string placeId instead of PlaceIdentifier).
+    // TODO: Go through every event and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
     class EventPublisher {
         public function publishActualWeatherForecastUpdated($placeId, $start) {
             $this->publishEvent(Event::ActualWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
@@ -83,8 +84,12 @@
             $this->publishEvent(Event::ExpenseRemoved, array("expenseId" => $expenseId, "tripId" => $tripId));
         }
         
-        public function publishPlaceUpdatedEvent($placeIdentifier) : void {
-            $this->publishEvent(Event::PlaceUpdated, array("placeIdentifier" => $placeIdentifier));
+        public function publishPlaceUpdatedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceUpdated, array("placeId" => $placeId));
+        }
+        
+        public function publishPlaceCreatedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceCreated, array("placeId" => $placeId));
         }
         
         public function publishVacationResetEvent() : void {
@@ -171,8 +176,8 @@
             $this->publishEvent(Event::TripUpdated, array("tripId" => $tripId));
         }
 
-        public function publishPlaceDeletedEvent($placeIdentifier) : void {
-            $this->publishEvent(Event::PlaceDeleted, array("placeIdentifier" => $placeIdentifier));
+        public function publishPlaceDeletedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceDeleted, array("placeId" => $placeId));
         }
 
         public function publishPlaceEventCreatedEvent($placeId) : void {
@@ -258,6 +263,7 @@
         case PlaceEventCreated = 44;
         case PlaceEventUpdated = 45;
         case PlaceEventDeleted = 46;
+        case PlaceCreated = 47;
 
         case FitnessActivityDetected = 100;
 

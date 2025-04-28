@@ -1,4 +1,7 @@
 <?php
+
+    use Service\Service\Trip\TripSortingStrategy;
+
     class ListTripsHandler extends Handler {
         public function handle($input) {
             global $tripService;
@@ -8,8 +11,8 @@
                 $response = $tripService->getCandidateTrips(isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
             else {
-                $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : NULL,
-                    isset($input["include"]) ? explode(",", $input["include"]) : array());
+                $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : NULL, NULL, NULL,
+                    isset($input["include"]) ? explode(",", $input["include"]) : array(), TripSortingStrategy::StartAscending);
             }
 
             return $this->createResponse(200, $response);

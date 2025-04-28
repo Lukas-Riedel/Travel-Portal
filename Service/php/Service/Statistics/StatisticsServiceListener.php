@@ -8,7 +8,7 @@
     class StatisticsServiceListener {
         
         private const UPDATE_OVERALL_STATISTICS_ACTION_NAME = "UPDATE_OVERALL_STATISTICS";
-        private const UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL = 604800;
+        private const UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL = 86400 * 14;
 
         private readonly StatisticsService $statisticsService;
 
@@ -101,97 +101,112 @@
         }
 
         public function onPlaceUpdated(mixed $message) : void {
-            foreach ($this->placeService->getRegularPlace($message["placeId"]) as &$place) {
-                $tripIdsToUpdate = array();
-                foreach ($place->getDates() as &$date) {
-                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                        $tripIdsToUpdate[] = $date->getTrip()->getId();
-                    }
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === NULL) {
+                return;
+            }
+            
+            $tripIdsToUpdate = array();
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                    $tripIdsToUpdate[] = $date->getTrip()->getId();
                 }
+            }
 
-                foreach ($tripIdsToUpdate as &$tripId) {
-                    $this->statisticsService->updateTripStatistics($tripId);
-                }
+            foreach ($tripIdsToUpdate as &$tripId) {
+                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+            }
 
-                foreach ($place->getCategories() as &$category) {
-                    $this->statisticsService->updateCategoryStatistics($category->getIdentifier());
-                }
+            foreach ($place->getCategories() as &$category) {
+                $this->statisticsService->updateCategoryStatistics($category);
             }
         }
 
         public function onPlaceDeleted(mixed $message) : void {
-            foreach ($this->placeService->getRegularPlace($message["placeId"]) as &$place) {
-                $tripIdsToUpdate = array();
-                foreach ($place->getDates() as &$date) {
-                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                        $tripIdsToUpdate[] = $date->getTrip()->getId();
-                    }
-                }
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === NULL) {
+                return;
+            }
 
-                foreach ($tripIdsToUpdate as &$tripId) {
-                    $this->statisticsService->updateTripStatistics($tripId);
+            $tripIdsToUpdate = array();
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                    $tripIdsToUpdate[] = $date->getTrip()->getId();
                 }
+            }
 
-                foreach ($place->getCategories() as &$category) {
-                    $this->statisticsService->updateCategoryStatistics($category->getIdentifier());
-                }
+            foreach ($tripIdsToUpdate as &$tripId) {
+                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+            }
+
+            foreach ($place->getCategories() as &$category) {
+                $this->statisticsService->updateCategoryStatistics($category);
             }
         }
 
         public function onPlaceEventCreated(mixed $message) : void {
-            foreach ($this->placeService->getRegularPlace($message["placeId"]) as &$place) {
-                $tripIdsToUpdate = array();
-                foreach ($place->getDates() as &$date) {
-                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                        $tripIdsToUpdate[] = $date->getTrip()->getId();
-                    }
-                }
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === NULL) {
+                return;
+            }
 
-                foreach ($tripIdsToUpdate as &$tripId) {
-                    $this->statisticsService->updateTripStatistics($tripId);
-                }
-
-                foreach ($place->getCategories() as &$category) {
-                    $this->statisticsService->updateCategoryStatistics($category->getIdentifier());
+            $tripIdsToUpdate = array();
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                    $tripIdsToUpdate[] = $date->getTrip()->getId();
                 }
             }
+
+            foreach ($tripIdsToUpdate as &$tripId) {
+                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+            }
+
+            foreach ($place->getCategories() as &$category) {
+                $this->statisticsService->updateCategoryStatistics($category);
+            }        
         }
 
         public function onPlaceEventUpdated(mixed $message) : void {
-            foreach ($this->placeService->getRegularPlace($message["placeId"]) as &$place) {
-                $tripIdsToUpdate = array();
-                foreach ($place->getDates() as &$date) {
-                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                        $tripIdsToUpdate[] = $date->getTrip()->getId();
-                    }
-                }
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === NULL) {
+                return;
+            }
 
-                foreach ($tripIdsToUpdate as &$tripId) {
-                    $this->statisticsService->updateTripStatistics($tripId);
+            $tripIdsToUpdate = array();
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                    $tripIdsToUpdate[] = $date->getTrip()->getId();
                 }
+            }
 
-                foreach ($place->getCategories() as &$category) {
-                    $this->statisticsService->updateCategoryStatistics($category->getIdentifier());
-                }
+            foreach ($tripIdsToUpdate as &$tripId) {
+                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+            }
+
+            foreach ($place->getCategories() as &$category) {
+                $this->statisticsService->updateCategoryStatistics($category);
             }
         }
 
         public function onPlaceEventDeleted(mixed $message) : void {
-            foreach ($this->placeService->getRegularPlace($message["placeId"]) as &$place) {
-                $tripIdsToUpdate = array();
-                foreach ($place->getDates() as &$date) {
-                    if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                        $tripIdsToUpdate[] = $date->getTrip()->getId();
-                    }
-                }
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === NULL) {
+                return;
+            }
 
-                foreach ($tripIdsToUpdate as &$tripId) {
-                    $this->statisticsService->updateTripStatistics($tripId);
+            $tripIdsToUpdate = array();
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== NULL && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
+                    $tripIdsToUpdate[] = $date->getTrip()->getId();
                 }
+            }
 
-                foreach ($place->getCategories() as &$category) {
-                    $this->statisticsService->updateCategoryStatistics($category->getIdentifier());
-                }
+            foreach ($tripIdsToUpdate as &$tripId) {
+                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+            }
+
+            foreach ($place->getCategories() as &$category) {
+                $this->statisticsService->updateCategoryStatistics($category);
             }
         }
 

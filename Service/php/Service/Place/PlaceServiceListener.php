@@ -24,7 +24,7 @@
         
         public function onAlbumUpdated(mixed $message) : void {            
             $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL,
-                NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value));
+                NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
@@ -52,14 +52,14 @@
         }
 
         public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, array());
+            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier());
+                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
             
             $places = $this->placeService->getCandidatePlaces($message["categoryId"], NULL, array());
             foreach ($places as &$place) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier());
+                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
         }
 

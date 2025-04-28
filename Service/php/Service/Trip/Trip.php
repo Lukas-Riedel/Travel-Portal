@@ -3,7 +3,9 @@
 
     use Service\Service\Highlight\Highlight;
 
-    class Trip implements \JsonSerializable {        
+    class Trip implements \JsonSerializable {  
+        private const FULL_TRIP_NAME_FORMAT = "%s %d";
+
         private readonly string $id;
         private readonly string $name;
         private readonly ?int $year;
@@ -58,7 +60,7 @@
         }
 
         public function getFullName() : string {
-            return $this->name . " " . $this->year;
+            return sprintf(self::FULL_TRIP_NAME_FORMAT, $this->name, $this->year);
         }
 
         public function getYear() : ?int {
@@ -131,8 +133,8 @@
 
         public function withOffset(int $offset) : Trip {
             return new Trip($this->id, $this->name, $this->year, $this->mainHighlight, $this->start + $offset, $this->end + $offset, $this->countries, $this->cost,
-                $this->days->getTotal(), $this->days->getWorking(), $this->vacation === NULL ? NULL : $this->vacation->getExpected(), 
-                $this->vacation === NULL ? NULL : $this->vacation->getMaximum(), $this->expenses, $this->stays, $this->flights, 
+                $this->days->getTotal(), $this->days->getWorking(), $this->vacation?->getExpected(), 
+                $this->vacation?->getMaximum(), $this->expenses, $this->stays, $this->flights, 
                 $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->publicHolidays);
         }
 

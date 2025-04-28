@@ -10,7 +10,7 @@
     class TripServiceListener {
         
         private const UPDATE_TRIP_STATISTICS_ACTION_NAME = "UPDATE_TRIP_STATISTICS";
-        private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 604800;
+        private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 86400 * 14;
 
         private readonly TripService $tripService;
 
@@ -69,9 +69,9 @@
             if ($message["action"] === self::UPDATE_TRIP_STATISTICS_ACTION_NAME
                 && $message["timeSinceLastExecution"] > self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL) {
                 $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
-                $trips = $this->tripService->getRegularTrips(NULL, array());
+                $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::StartAscending);
                 foreach ($trips as &$trip) {
-                    if ($trip->getStart() > time() && $trip->getName() !== $dayTripsTripName) {
+                    if ($trip->getName() !== $dayTripsTripName) {
                         $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
                     }
                 }                        

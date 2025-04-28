@@ -85,6 +85,10 @@
             return $this->categoryMapper->selectPlaceIdsForCategory($categoryId);
         }
 
+        public function getCategoryIdsForCategory(?CategoryCategory $category) : array {
+            return $this->categoryMapper->selectCategoryIdsForCategory($category);
+        }
+
         public function getCategoryIdentifiersForPlace(string $placeId) : array { 
             return $this->categoryMapper->selectCategoryIdentifiersForPlace($placeId);
         }
@@ -200,7 +204,7 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegionExtensionRegion(string $name, string $country, string $category, float $latitude, float $longitude) : CategoryIdentifier {
+        public function createGeographicalRegionExtensionRegion(string $name, ?string $country, string $category, float $latitude, float $longitude) : CategoryIdentifier {
             $geoJson = json_encode(array(
                 "type" => "Feature", 
                 "geometry" => array(

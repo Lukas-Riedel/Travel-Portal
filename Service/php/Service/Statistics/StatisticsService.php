@@ -63,7 +63,7 @@
                 return;
             }  
 
-            $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), $trip->getEnd(), NULL, $trip->getId());
+            $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), min(time(), $trip->getEnd()), NULL, $trip->getId());
             $this->eventPublisher->publishTripStatisticsUpdatedEvent($trip->getId(), $trip->getYear());
         }
 

@@ -204,7 +204,7 @@
             return $this;
         }
 
-        function withDeferredParameters(...$params) {
+        public function withDeferredParameters(...$params) {
             foreach ($params as &$param) {
                 $this->deferredParams[] = $param;
             } 

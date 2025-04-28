@@ -18,6 +18,10 @@
             return $this->value;
         }
 
+        public function withValue(mixed $value) : KeyValuePair {
+            return new KeyValuePair($this->key, $value);
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

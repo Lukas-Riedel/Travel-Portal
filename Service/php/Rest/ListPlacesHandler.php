@@ -1,4 +1,7 @@
 <?php
+
+    use Service\Service\Place\PlaceSortingStrategy;
+
     class ListPlacesHandler extends Handler {
         public function handle($input) {
             global $placeService;
@@ -15,7 +18,8 @@
                     NULL,
                     isset($input["minStart"]) ? $input["minStart"] : NULL,
                     isset($input["maxEnd"]) ? $input["maxEnd"] : NULL,
-                    isset($input["include"]) ? explode(",", $input["include"]) : array());
+                    isset($input["include"]) ? explode(",", $input["include"]) : array(),
+                    PlaceSortingStrategy::Default);
             }
             else if ($type == "candidate") { 
                 $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
