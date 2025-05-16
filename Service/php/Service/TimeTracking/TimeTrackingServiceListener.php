@@ -26,9 +26,7 @@
             if ($message["action"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
                 $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
 
-                // This will keep evaluating to false until the beginning of the next year.
-                // Then, it will be eventually executed.
-                if ($beginningOfCurrentYearTimestamp < time() - $message["lastTriggered"]) {
+                if ($message["lastTriggered"] < $beginningOfCurrentYearTimestamp) {
                     $this->eventPublisher->publishVacationResetEvent();                        
                     $this->scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
                 }
