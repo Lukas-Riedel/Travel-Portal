@@ -3,7 +3,9 @@
     
     use Service\Service\Highlight\Highlight;
 
-    class TripIdentifier implements \JsonSerializable {        
+    class TripIdentifier implements \JsonSerializable {   
+        private const FULL_TRIP_NAME_FORMAT = "%s %d";
+             
         private ?string $id;
         private readonly string $name;
         private readonly int $year;
@@ -26,6 +28,10 @@
 
         public function getName() : string {
             return $this->name;
+        }
+
+        public function getFullName() : string {
+            return sprintf(self::FULL_TRIP_NAME_FORMAT, $this->name, $this->year);
         }
 
         public function getYear() : ?int {

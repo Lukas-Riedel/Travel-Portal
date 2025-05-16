@@ -120,17 +120,13 @@
         }
 
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
-            $result = array();
-
-            foreach ($records as &$record) {
-                $places = array_map(fn($place) => $place->getName(), $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $record->getTimestamp(),
-                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(), PlaceSortingStrategy::Default));
-                if (count($places) > 0) {
-                    $result[] = new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT, implode(", ", $places), date(self::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
-                }
-            }
-
-            return $result;
+            return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
+                $places = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $record->getTimestamp(),
+                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(), PlaceSortingStrategy::Default);
+                return empty($places) ? NULL : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
+                    implode(", ", array_map(fn($place) => $place->getName(), $places)),
+                    date(self::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
+            }, $records), fn($statistics) => $statistics !== NULL);
         }
     }
 ?>

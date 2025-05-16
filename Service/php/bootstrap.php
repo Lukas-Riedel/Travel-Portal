@@ -40,6 +40,7 @@
     use Service\Service\Note\NoteService;
     use Service\Service\Photo\PhotoService;
     use Service\Service\Photo\PhotoServiceListener;
+    use Service\Service\Photo\PhotoStatisticsProvider;
     use Service\Service\Place\PlaceService;
     use Service\Service\Place\PlaceServiceListener;
     use Service\Service\Place\PlaceStatisticsProvider;
@@ -98,6 +99,7 @@
     $flightStatisticsProvider = new FlightStatisticsProvider($flightService);
     $stayStatisticsProvider = new StayStatisticsProvider($stayService);
     $fitnessStatisticsProvider = new FitnessStatisticsProvider($fitnessService, $placeService, $tripService);
+    $photoStatisticsProvider = new PhotoStatisticsProvider($placeService);
     $statisticsService->setStatisticsProviders(array_filter(get_defined_vars(), fn($x) => is_object($x)
         && $x instanceof Service\Service\Statistics\StatisticsProvider));
     
