@@ -25,7 +25,8 @@
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\CategoryServiceListener;
     use Service\Service\Expense\ExpenseService;
-    use Service\Service\Fitness\FitnessService;
+use Service\Service\Expense\ExpenseStatisticsProvider;
+use Service\Service\Fitness\FitnessService;
     use Service\Service\Fitness\FitnessServiceListener;
     use Service\Service\Fitness\FitnessStatisticsProvider;
     use Service\Service\Flight\FlightService;
@@ -93,15 +94,17 @@
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
 
-    // TODO: Construct the array similarly as for listeners.
-    $placeStatisticsProvider = new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService);
-    $tripStatisticsProvider = new TripStatisticsProvider($tripService);
-    $flightStatisticsProvider = new FlightStatisticsProvider($flightService);
-    $stayStatisticsProvider = new StayStatisticsProvider($stayService);
-    $fitnessStatisticsProvider = new FitnessStatisticsProvider($fitnessService, $placeService, $tripService);
-    $photoStatisticsProvider = new PhotoStatisticsProvider($placeService);
-    $statisticsService->setStatisticsProviders(array_filter(get_defined_vars(), fn($x) => is_object($x)
-        && $x instanceof Service\Service\Statistics\StatisticsProvider));
+    // Statistics providers.
+    $statisticsProviders = array(
+        new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService),
+        new TripStatisticsProvider($tripService),
+        new FlightStatisticsProvider($flightService),
+        new StayStatisticsProvider($stayService),
+        new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
+        new PhotoStatisticsProvider($placeService),
+        new ExpenseStatisticsProvider($tripService)
+    );
+    $statisticsService->setStatisticsProviders($statisticsProviders);
     
     // Events consuming.
     $listeners = array(
@@ -117,6 +120,7 @@
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
         new TripServiceListener($tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
         new YearServiceListener($yearService, $eventPublisher, $scheduler),
-        $platformService);
+        $platformService
+    );
     $eventManager = new EventManager($listeners);
 ?>

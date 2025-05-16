@@ -73,68 +73,6 @@
 
         public function setStatisticsProviders(array $statisticsProviders) : void {
             $this->statisticsProviders = $statisticsProviders;
-            // TODO: Remove after statistics rework.
-            $this->statisticsProviders[] = $this;
-        }
-
-        // TODO: Remove after statistics rework. Move to individual services (statistics providers).
-        private function fetchStatistics(StatisticsType $statisticsType, StatisticsKind $statisticsKind,
-            int $start, int $end, ?string $categoryId, ?string $entityId) : array {
-            $statisticsRecords = array();
-
-            if ($statisticsKind === StatisticsKind::Fact) {
-                foreach ($this->computeStatistics($statisticsType, StatisticsKind::Fact, $start, $end, $categoryId) as &$fact) {
-                    foreach ($fact["computedRows"] as &$computedRow) {
-                        if ($computedRow[array_key_first($computedRow)] != NULL) {
-                            $statisticsRecords[] = new Statistics($fact["name"], $computedRow[array_key_first($computedRow)], StatisticsUnit::from($fact["unit"]));
-                        }
-                    }
-                }
-            }
-            
-            if ($statisticsKind === StatisticsKind::Standings) {
-                foreach ($this->computeStatistics($statisticsType, StatisticsKind::Standings, $start, $end, $categoryId) as &$standings) {
-                    $keyValuePairs = array();
-                    foreach ($standings["computedRows"] as &$computedRow) {
-                        if ($computedRow[array_key_first($computedRow)] != NULL && $computedRow[array_key_last($computedRow)] != NULL) {
-                            $keyValuePairs[] = new KeyValuePair($computedRow[array_key_first($computedRow)], $computedRow[array_key_last($computedRow)]);
-                        }
-                    }
-                    $statisticsRecords[] = new Statistics($standings["name"], $keyValuePairs, StatisticsUnit::from($standings["unit"]));
-                }
-            }
-
-            return $statisticsRecords;
-        }    
-
-            // TODO: Remove after statistics rework.
-        private function computeStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId) : array {
-            global $databaseProvider;       
-            
-            $whereClauseBuilder = $databaseProvider->whereClauseBuilder();
-            if ($statisticsType !== StatisticsType::Overall) {
-                $whereClauseBuilder->withClause("(FIND_IN_SET(?, types) <> 0)", $statisticsType->value);
-            }
-            $whereClause = $whereClauseBuilder->withClause("kind = ?", $statisticsKind->value)->buildForAnd(); 
-
-            return $databaseProvider
-                ->statementBuilder("SELECT name, query, unit FROM definition_statistics {{WHERE CLAUSE}} ORDER BY category", $whereClause)
-                ->getMappedResultSet(function($definitionRow) use(&$databaseProvider, $start, $end, $categoryId) {
-                    $sql = $definitionRow["query"];    
-                    $sql = str_replace("{{start}}", $databaseProvider->escape($start), $sql);
-                    $sql = str_replace("{{end}}", $end > time() ? time() : $databaseProvider->escape($end), $sql);
-                    $sql = str_replace("{{category}}", $categoryId === NULL ? -1 : $databaseProvider->escape($categoryId), $sql);
-
-                    $computedRows = $databaseProvider
-                        ->statementBuilder($sql)
-                        ->getResultSet();
-
-                    return array(
-                        "name" => $definitionRow["name"],
-                        "unit" => $definitionRow["unit"],
-                        "computedRows" => $computedRows
-                    );
-                });
         }
 
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {

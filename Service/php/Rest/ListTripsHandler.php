@@ -12,7 +12,7 @@
             }
             else {
                 $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : NULL, NULL, NULL,
-                    isset($input["include"]) ? explode(",", $input["include"]) : array(), TripSortingStrategy::StartAscending);
+                    isset($input["include"]) ? explode(",", $input["include"]) : array(), TripSortingStrategy::Default);
             }
 
             return $this->createResponse(200, $response);

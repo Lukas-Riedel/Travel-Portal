@@ -69,7 +69,7 @@
             if ($message["action"] === self::UPDATE_TRIP_STATISTICS_ACTION_NAME
                 && time() - $message["lastTriggered"] > self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL) {
                 $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
-                $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::StartAscending);
+                $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::Default);
                 foreach ($trips as &$trip) {
                     if ($trip->getName() !== $dayTripsTripName) {
                         $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());

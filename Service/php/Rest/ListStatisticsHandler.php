@@ -36,15 +36,7 @@
         }
         
         public function getLongDescription() {
-            global $databaseProvider;
-            $statisticsNames = $databaseProvider
-                ->statementBuilder("SELECT CONCAT('``', name, '``') AS name FROM definition_statistics")
-                ->getResultSetForColumn("name");
-                $statisticsUnits = $databaseProvider
-                    ->statementBuilder("SELECT DISTINCT CONCAT('``', unit, '``') AS unit FROM definition_statistics")
-                    ->getResultSetForColumn("unit");
-
-            return "Retrieves a collection of statistics. The allowed statistics types are: " . implode(", ", $statisticsNames) . ". The allowed statistics units are: " . implode(", ", $statisticsUnits);
+            return "Retrieves a collection of statistics.";
         }
         
         public function getRequestExamples() {

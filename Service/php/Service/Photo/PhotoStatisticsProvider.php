@@ -1,7 +1,8 @@
 <?php
     namespace Service\Service\Photo;
 
-    use Service\Service\Place\PlaceIncludedEntity;
+use Service\Service\Category\CategoryCategory;
+use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
     use Service\Service\Place\PlaceSortingStrategy;
     use Service\Service\Statistics\KeyValuePair;
@@ -80,7 +81,7 @@
                     }
 
                     $mostPhotosPerCategory = $this->getStandingsStatistics(fn($place, $date) => array_map(fn($category) => $category->getName(),
-                        $place->getCategories()), $relevantPlaces);
+                        array_filter($place->getCategories(), fn($category) => $category->getCategory() !== CategoryCategory::Variable)), $relevantPlaces);
                     if (count($mostPhotosPerCategory) > 0) {
                         $statistics[] = new Statistics(self::MOST_PHOTOS_PER_CATEGORY_STATISTICS_NAME, $mostPhotosPerCategory, StatisticsUnit::Photos);
                     }

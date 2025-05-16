@@ -135,7 +135,7 @@
         }
 
         private function getStandingsStatistics(array $flights, callable ...$keySelectors) : array {
-            $standings = array_values(array_reduce($flights, function($carry, $flight) use(&$keySelectors) {
+            $standings = array_reduce($flights, function($carry, $flight) use(&$keySelectors) {
                 foreach ($keySelectors as &$keySelector) {
                     $key = $keySelector($flight);
                     $carry[$key] = isset($carry[$key])
@@ -143,7 +143,7 @@
                         : new KeyValuePair($key, 1);
                 }
                 return $carry;
-            }, array()));
+            }, array());
             usort($standings, fn($a, $b) => $b->getValue() <=> $a->getValue());
             return $standings;
         }

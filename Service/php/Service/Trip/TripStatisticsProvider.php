@@ -26,7 +26,7 @@
 
             if ($statisticsKind === StatisticsKind::Fact) {
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
-                    $allTrips = $this->filterDayTripsTrips($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::StartAscending));
+                    $allTrips = $this->filterDayTripsTrips($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default));
                     $averageTripLength = round(array_sum(array_map(fn($trip) => $trip->getDays()->getTotal(), $allTrips)) / max(count($allTrips), 1));
                     if ($averageTripLength > 0) {
                         $statistics[] = new Statistics(self::AVERAGE_TRIP_LENGTH_STATISTICS_NAME, $averageTripLength, StatisticsUnit::Days);
