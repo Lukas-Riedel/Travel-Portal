@@ -11,11 +11,11 @@
 
         public function schedule() {
             $events = $this->databaseProvider
-                ->statementBuilder("SELECT action, UNIX_TIMESTAMP() - last_triggered AS timeSinceLastExecution FROM scheduler")
+                ->statementBuilder("SELECT * FROM scheduler")
                 ->getResultSet();
 
             foreach ($events as &$event) {
-                $this->eventPublisher->publishSchedulerTriggeredEvent($event["action"], $event["timeSinceLastExecution"]);
+                $this->eventPublisher->publishSchedulerTriggeredEvent($event["action"], $event["last_triggered"]);
             }
         }
 

@@ -43,7 +43,7 @@
         public function onSchedulerTriggered(mixed $message) : void {
             global $configuration, $configurationService, $scheduler, $eventPublisher;
 
-            if ($message["action"] === "WATCH_CALENDAR" && $message["timeSinceLastExecution"] > 82800) {
+            if ($message["action"] === "WATCH_CALENDAR" && time() - $message["lastTriggered"] > 82800) {
                 foreach ($configuration["calendars"] as $calendar => $url) {
                     $eventPublisher->publishCalendarWatchRenewingEvent($calendar);
                 }

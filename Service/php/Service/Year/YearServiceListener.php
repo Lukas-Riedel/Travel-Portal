@@ -30,7 +30,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {            
             if ($message["action"] === self::UPDATE_YEAR_STATISTICS_ACTION_NAME
-                && $message["timeSinceLastExecution"] > self::UPDATE_YEAR_STATISTICS_ACTION_INTERVAL) {
+                && time() - $message["lastTriggered"] > self::UPDATE_YEAR_STATISTICS_ACTION_INTERVAL) {
                 $years = $this->yearService->getYears(array());
                 foreach ($years as &$year) {
                     $this->eventPublisher->publishYearStatisticsInvalidatedEvent($year->getId());

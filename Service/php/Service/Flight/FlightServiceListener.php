@@ -53,11 +53,11 @@
                     return;
                 }
 
-                $loggingInterval = $firstNonLoggedFlight->getEnd() < time() - $message["timeSinceLastExecution"]
+                $loggingInterval = $firstNonLoggedFlight->getEnd() < $message["lastTriggered"]
                     ? self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
-                    : $message["timeSinceLastExecution"] + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
+                    : time() - $message["lastTriggered"] + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
 
-                if ($message["timeSinceLastExecution"] > $loggingInterval) {
+                if (time() - $message["lastTriggered"] > $loggingInterval) {
                     $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $this->flightService->getTripIdForFlight($firstNonLoggedFlight),
                         $firstNonLoggedFlight->getFrom()->getName(), $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
                     $this->scheduler->recordEventsTriggered(self::LOG_FLIGHTS_ACTION_NAME);

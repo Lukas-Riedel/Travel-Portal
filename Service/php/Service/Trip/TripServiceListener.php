@@ -67,7 +67,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {            
             if ($message["action"] === self::UPDATE_TRIP_STATISTICS_ACTION_NAME
-                && $message["timeSinceLastExecution"] > self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL) {
+                && time() - $message["lastTriggered"] > self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL) {
                 $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
                 $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::StartAscending);
                 foreach ($trips as &$trip) {

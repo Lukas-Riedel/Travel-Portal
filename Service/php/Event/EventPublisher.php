@@ -144,8 +144,8 @@
             $this->publishEvent(Event::FitnessDataUpdated, array("start" => $start, "end" => $end));
         }
 
-        public function publishSchedulerTriggeredEvent($action, $timeSinceLastExecution) : void {
-            $this->publishEvent(Event::SchedulerTriggered, array("action" => $action, "timeSinceLastExecution" => $timeSinceLastExecution));
+        public function publishSchedulerTriggeredEvent($action, $lastTriggered) : void {
+            $this->publishEvent(Event::SchedulerTriggered, array("action" => $action, "lastTriggered" => $lastTriggered));
         }
 
         public function publishFlightLoggedEvent($flight, $tripId) : void {

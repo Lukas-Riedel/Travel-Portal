@@ -47,7 +47,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($message["action"] === self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME 
-                && $message["timeSinceLastExecution"] > self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL) {
+                && time() - $message["lastTriggered"] > self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL) {
                 $categories = $this->categoryService->getCategories(CategoryCategory::values(), array());
                 foreach ($categories as &$category) {
                     $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
