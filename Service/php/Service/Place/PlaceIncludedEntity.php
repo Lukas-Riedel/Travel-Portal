@@ -7,6 +7,7 @@
         case Highlights = "HIGHLIGHTS";
         case Labels = "LABELS";
         case Dates = "DATES";
+        case NearbyPlaces = "NERBY_PLACES";
 
         public static function values() : array {
             return array_map(fn($case) => $case->value, self::cases());
