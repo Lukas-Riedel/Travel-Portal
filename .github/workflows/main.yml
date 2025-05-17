@@ -20,7 +20,7 @@ jobs:
             service:
               - 'Service/**'
             portal:
-              - 'Portal/**'
+              - 'Portal-Old/**'
             agent:
               - 'Agent/**'
             bridgex:
@@ -48,7 +48,7 @@ jobs:
         mkdir target
         mkdir target/api
         shopt -s dotglob
-        cp -r ./Portal/* target/
+        cp -r ./Portal-Old/* target/
         cp -r ./Service/* target/api/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
