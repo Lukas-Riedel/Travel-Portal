@@ -2,13 +2,14 @@ import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 export default function HighlightCarousel({ name, highlights }) {
+    const [shuffledHighlights] = useState(() => [...highlights].sort(() => Math.random() - 0.5));
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
     useEffect(() => {
         const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % highlights.length), 7000)
         return () => clearInterval(interval)
-    }, [highlights])
+    }, [shuffledHighlights])
 
-    if (highlights.length === 0) {
+    if (shuffledHighlights.length === 0) {
         return null
     }
 
@@ -17,7 +18,7 @@ export default function HighlightCarousel({ name, highlights }) {
             <AnimatePresence mode="sync">
                 <motion.img
                     key={currentHighlightIndex}
-                    src={highlights[currentHighlightIndex].url.full ?? highlights[currentHighlightIndex].url.thumbnail}
+                    src={shuffledHighlights[currentHighlightIndex].url.full ?? shuffledHighlights[currentHighlightIndex].url.thumbnail}
                     alt={name}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -25,9 +26,9 @@ export default function HighlightCarousel({ name, highlights }) {
                     transition={{ duration: 1 }}
                     className="absolute inset-0 h-full w-full object-cover"/>
             </AnimatePresence>
-            {highlights.length > 1 && (
+            {shuffledHighlights.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                    {highlights.map((_, index) => (
+                    {shuffledHighlights.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentHighlightIndex(index)}
