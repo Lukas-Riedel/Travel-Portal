@@ -1,8 +1,6 @@
 export default function TripBar({ trips }) {
     if (trips.length === 0) {
-        return (
-            <hr className="w-full h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />
-        )
+        return null
     }
 
     return (

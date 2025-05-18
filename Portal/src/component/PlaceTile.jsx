@@ -11,6 +11,6 @@ export default function PlaceTile({ place, secondLineText }) {
             firstLineText={place.name}
             secondLineText={secondLineText}
             categories={[place.getMostSpecificCategoryWithMetadata()]}
-            onClick={() => window.location.href = "/place/" + place.id} />
+            to={"/place/" + place.id} />
     )
 }

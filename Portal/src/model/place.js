@@ -33,4 +33,10 @@ export default class Place {
                 .map(trip => [trip.id, trip]))
             .values()]
     }
+
+    getAlbums() {
+        return this.dates
+            .map(date => date.album)
+            .filter(album => album != null)
+    }
 }

@@ -298,7 +298,7 @@ function updateForecastLastUpdateTime(forecasts) {
 }
 
 function getPlaceLink(place) {
-    return "<a href=\"https://" + location.hostname + "/place/" + place.id + "\">" + getPlacePrettyName(place.name) + "</a>";
+    return "<a href=\"https://" + location.hostname + "/new/place/" + place.id + "\">" + getPlacePrettyName(place.name) + "</a>";
 }
 
 function findMinAndMax(values) {

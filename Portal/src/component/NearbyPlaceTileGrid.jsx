@@ -11,12 +11,12 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
     useEffect(() => {
         const approximatedNearbyPlaces = places
             .filter(p => p.id !== place.id)
+            .filter(p => p.mainHighlight)
             .map(p => new Place({ ...p, distance: p.getEuclideanDistanceTo(place) }))
         approximatedNearbyPlaces.sort((a, b) => a.distance - b.distance)
 
         const nearbyPlaces = approximatedNearbyPlaces
             .slice(0, 2 * count)
-            .filter(p => p.id !== place.id)
             .map(p => new Place({ ...p, distance: p.getHaversineDistanceTo(place) }))
         nearbyPlaces.sort((a, b) => a.distance - b.distance)
 

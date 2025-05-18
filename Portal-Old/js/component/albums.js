@@ -108,7 +108,7 @@ function getAlbumsComponentForCategory(places) {
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name) ],
-            action: "href=\"https://" + location.hostname + "/place/" + place.id,            
+            action: "href=\"https://" + location.hostname + "/new/place/" + place.id,            
             imageUrl: place.imageUrl
         };
      }), undefined);
@@ -131,7 +131,7 @@ function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), formatKilometersCount(place.distance) ],
-            action: "href=\"https://" + location.hostname + "/place/" + place.id + "\"",         
+            action: "href=\"https://" + location.hostname + "/new/place/" + place.id + "\"",         
             imageUrl: place.imageUrl
         };
      }), undefined);
@@ -238,7 +238,7 @@ function getButtonsForStandardAlbum(album) {
             image: "img/photo.png"
         },
         { 
-            action: "window.open('../place/" + album.place.id + "/album/" + album.id + "', '_blank')",
+            action: "window.open('../new/place/" + album.place.id + "/album/" + album.id + "', '_blank')",
             image: "img/edit.png"
         },
         { 

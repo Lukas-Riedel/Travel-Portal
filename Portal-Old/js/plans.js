@@ -45,7 +45,7 @@ function getMain(places, showButtons) {
         }
 
         const columns = [
-            { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/place/" + place.id + "\"><strong style=\"color: black\">" + getPlacePrettyName(place.name) + "</strong></a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/new/place/" + place.id + "\"><strong style=\"color: black\">" + getPlacePrettyName(place.name) + "</strong></a>" },
             { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/plan/" + getOnlyElementOrDefault(place.categories.filter(category => category.category === "COUNTRY"), "").id + "\">" + place.country + "</a>" },
             { hideifSimplified: true, content: place.dates.length === 0 ? "Nikdy" : formatBeforeDaysTimestamp(place.dates[place.dates.length - 1].start) }
         ];

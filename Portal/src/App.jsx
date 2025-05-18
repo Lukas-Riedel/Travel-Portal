@@ -1,11 +1,12 @@
 import Place from "./component/Place"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 export default function App() {
     return (
-        <div>            
-            <Place id="2327"/>
-            <Place id="2507"/>
-            <Place id="4834"/>
-        </div>
+        <BrowserRouter basename="/new">
+            <Routes>
+                <Route path="/place/:id" element={<Place />} />
+            </Routes>
+        </BrowserRouter>
     )
 }

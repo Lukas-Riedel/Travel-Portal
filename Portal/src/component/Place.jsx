@@ -8,12 +8,17 @@ import TripBar from "./TripBar.jsx"
 import { getPlace, listRegularPlaces } from "../util/api.js"
 import PlaceContent from "./PlaceContent.jsx"
 import NearbyPlaceTileGrid from "./NearbyPlaceTileGrid.jsx"
+import { useParams } from "react-router-dom"
 
-export default function Place({ id }) {
+export default function Place() {
+    const { id } = useParams()
     const [place, setPlace] = useState(null)
     const [places, setPlaces] = useState([])
 
     useEffect(() => {
+        setPlace(null)
+        setPlaces([])
+
         getPlace(id)
             .then(setPlace)
             .catch(console.error)
@@ -40,6 +45,8 @@ export default function Place({ id }) {
             <PlaceContent place={place} />
             <DateTileGrid place={place} />
             <TripBar trips={place.getPastTrips()} />
+            {place.getAlbums().length > 0 && place.getPastTrips().length === 0
+                && <hr className="w-full h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid
                 place={place}
                 places={places}

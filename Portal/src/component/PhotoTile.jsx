@@ -1,7 +1,12 @@
-export default function PhotoTile({ src, firstLineText, secondLineText, categories, onClick }) {
+import { Link } from "react-router-dom";
+
+export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick }) {
+    const InteractiveElement = to ? Link : "div"
+
     return (
         <div className="relative w-[350px] h-[233px] mx-auto">
-            <a
+            <InteractiveElement
+                to={to}
                 onClick={onClick}
                 className="block cursor-pointer">
                 <img
@@ -31,7 +36,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                         </li>
                     </ul>
                 </div>
-            </a>
+            </InteractiveElement>
         </div>
     )
 }
