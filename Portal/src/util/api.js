@@ -1,4 +1,7 @@
 import axios from "axios"
+import Place from "../model/place"
+
+// TODO: Introduce model classes to return values where missing.
 
 export async function createGeographicalCategory(name, country, category, radius, geoJson) {
     return sendRequest("POST", "/categories",
@@ -107,6 +110,7 @@ export async function createCandidatePlace(name, address) {
             name: name,
             address: address
         })
+        .then(place => new Place(place))
 }
 
 export async function createPermanentPlace(name, address) {
@@ -116,10 +120,11 @@ export async function createPermanentPlace(name, address) {
             name: name,
             address: address
         })
+        .then(place => new Place(place))
 }
 
-export async function listRegularPlaces(tripId = undefined, categoryId = undefined, label = undefined, year = undefined, minStart = undefined, maxEnd = undefined,
-    include = undefined) {
+export async function listRegularPlaces(tripId = undefined, categoryId = undefined, label = undefined,
+    year = undefined, minStart = undefined, maxEnd = undefined, include = undefined) {
     return sendRequest("GET", "/places", {},
         {
             type: "regular",
@@ -131,6 +136,7 @@ export async function listRegularPlaces(tripId = undefined, categoryId = undefin
             maxEnd: maxEnd,
             include: include
         })
+        .then(places => places.map(place => new Place(place)))
 }
 
 export async function listCandidatePlaces(tripId = undefined, categoryId = undefined, include = undefined) {
@@ -141,10 +147,12 @@ export async function listCandidatePlaces(tripId = undefined, categoryId = undef
             categoryId: categoryId,
             include: include
         })
+        .then(places => places.map(place => new Place(place)))
 }
 
 export async function getPlace(placeId) {
     return sendRequest("GET", "/places/" + placeId)
+        .then(place => new Place(place))
 }
 
 export async function updatePlaceName(placeId, name) {
@@ -152,6 +160,7 @@ export async function updatePlaceName(placeId, name) {
         {
             name: name
         })
+        .then(place => new Place(place))
 }
 
 export async function updatePlaceLocation(placeId, latitude, longitude) {
@@ -160,6 +169,7 @@ export async function updatePlaceLocation(placeId, latitude, longitude) {
             latitude: latitude,
             longitude: longitude
         })
+        .then(place => new Place(place))
 }
 
 export async function updatePlaceMainHighlight(placeId, mainHighlightId) {
@@ -167,6 +177,7 @@ export async function updatePlaceMainHighlight(placeId, mainHighlightId) {
         {
             mainHighlightId: mainHighlightId
         })
+        .then(place => new Place(place))
 }
 
 export async function updatePlaceExcerpt(placeId, excerpt) {
@@ -174,6 +185,7 @@ export async function updatePlaceExcerpt(placeId, excerpt) {
         {
             excerpt: excerpt
         })
+        .then(place => new Place(place))
 }
 
 export async function removeCandidatePlace(placeId) {

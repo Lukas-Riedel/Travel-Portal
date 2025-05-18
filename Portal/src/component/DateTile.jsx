@@ -4,10 +4,9 @@ import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen"
 import Counter from "yet-another-react-lightbox/plugins/counter"
 import "yet-another-react-lightbox/styles.css"
 import "yet-another-react-lightbox/plugins/counter.css"
-
 import PhotoTile from "./PhotoTile"
 import LoadingSpin from "./LoadingSpin"
-import { getDateString, getMostSpecificCategoryWithMetadata } from "../util/helpers"
+import { getDateString } from "../util/helpers"
 import { listPlaceAlbumPhotos } from "../util/api"
 
 export default function DateTile({ place, date }) {
@@ -43,7 +42,7 @@ export default function DateTile({ place, date }) {
                 src={date.album.mainImageUrl}
                 firstLineText={place.name}
                 secondLineText={getDateString(date.start)}
-                categories={[getMostSpecificCategoryWithMetadata(place)]}
+                categories={[place.getMostSpecificCategoryWithMetadata()]}
                 onClick={openGallery} />
             {isLoading && (
                 <LoadingSpin/>

@@ -6,7 +6,7 @@ export default function HighlightCarousel({ name, highlights }) {
     useEffect(() => {
         const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % highlights.length), 7000)
         return () => clearInterval(interval)
-    }, [])
+    }, [highlights])
 
     if (highlights.length === 0) {
         return null
@@ -14,7 +14,7 @@ export default function HighlightCarousel({ name, highlights }) {
 
     return (
         <div className="relative w-full aspect-video overflow-hidden rounded-xl shadow-lg">
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="sync">
                 <motion.img
                     key={currentHighlightIndex}
                     src={highlights[currentHighlightIndex].url.full ?? highlights[currentHighlightIndex].url.thumbnail}

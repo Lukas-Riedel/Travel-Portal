@@ -1,20 +1,13 @@
 import DateTile from "./DateTile"
+import TileGrid from "./TileGrid"
 
 export default function DateTileGrid({ place }) {
-    if (place.dates.length === 0) {
-        return null
-    }
-
     return (
-        <div
-            className="grid gap-4 justify-center my-4"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))" }}>
-            {[...place.dates].reverse().map((date, index) => (
-                <DateTile
-                    key={index}
-                    place={place}
-                    date={date} />
-            ))}
-        </div>
+        <TileGrid tiles={[...place.dates].reverse().map((date, index) => (
+            <DateTile
+                key={index}
+                place={place}
+                date={date} />
+        ))} />
     )
 }
