@@ -7,6 +7,7 @@ jobs:
     outputs:
       service: ${{ steps.filter.outputs.service }}
       portal: ${{ steps.filter.outputs.portal }}
+      portal-old: ${{ steps.filter.outputs.portal-old }}
       agent: ${{ steps.filter.outputs.agent }}
       bridgex: ${{ steps.filter.outputs.bridgex }}
     steps:
@@ -20,6 +21,8 @@ jobs:
             service:
               - 'Service/**'
             portal:
+              - 'Portal/**'
+            portal-old:
               - 'Portal-Old/**'
             agent:
               - 'Agent/**'
@@ -28,7 +31,7 @@ jobs:
   deploy-service-and-portal:
     name: Deploy Service and Portal
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.service == 'true' || needs.detect-changes.outputs.portal == 'true' }}
+    if: ${{ needs.detect-changes.outputs.service == 'true' || needs.detect-changes.outputs.portal == 'true' || needs.detect-changes.outputs.portal-old == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -39,17 +42,31 @@ jobs:
         php-version: '8.2'
         extensions: mbstring, mysqli
         coverage: none
+    - name: Set Up Node.js
+      uses: actions/setup-node@v3
+      with:
+          node-version: '18'
     - name: Install Composer Dependencies
       run: |
         cd Service
         composer install --no-dev --optimize-autoloader
+    - name: Install NPM Dependencies
+      run: |
+        cd Portal
+        npm install
+    - name: Build React Project
+      run: |
+        cd Portal
+        VITE_BASE_PATH="/new/" npm run build
     - name: Prepare Files
       run: |
         mkdir target
         mkdir target/api
+        mkdir target/new
         shopt -s dotglob
         cp -r ./Portal-Old/* target/
         cp -r ./Service/* target/api/
+        cp -r ./Portal/dist/* target/new/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -96,15 +113,15 @@ jobs:
         with:
           api-level: 34
           build-tools: '34.0.0'
-      - name: Install Node.js
+      - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
             node-version: '18'
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
             cd BridgeX
-            npm install  # or use `yarn install` if using Yarn
-      - name: Give Gradle Wrapper Execute Permissions
+            npm install
+      - name: Assign Gradle Wrapper Execute Permissions
         run: chmod +x BridgeX/android/gradlew
       - name: Decode Keystore File
         run: echo "$ANDROID_KEYSTORE" | base64 -d > BridgeX/android/app/bridgex.keystore

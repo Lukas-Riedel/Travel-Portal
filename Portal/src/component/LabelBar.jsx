@@ -9,7 +9,7 @@ export default function LabelBar({ labels }) {
                 <a
                     key={index}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"
-                    href={`label/${label.name}`}>
+                    href={`/label/${label.name}`}>
                     {label.name}
                 </a>
             ))}

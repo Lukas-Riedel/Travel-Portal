@@ -71,6 +71,7 @@ export default function Place({ id }) {
             </div>
 
             <DateTileGrid place={place} />
+            
             {trips.length > 0
                 ? <TripBar trips={trips} />
                 : <hr className="w-full h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}

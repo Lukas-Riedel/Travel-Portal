@@ -15,7 +15,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                             {categories.map((category, index) => (
                                 <img
                                     key={index}
-                                    src={`/flags/${category.metadata.unicode}.svg`}
+                                    src={`/img/flags/${category.metadata.unicode}.svg`}
                                     alt={category.name}
                                     className="w-4 h-4 align-middle object-cover mx-1 rounded-xl" />
 

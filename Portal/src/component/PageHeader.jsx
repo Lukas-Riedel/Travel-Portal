@@ -8,7 +8,7 @@ export default function PageHeader({ name, categories }) {
                 {categories.map((category, index) => (
                     <img
                         key={index}
-                        src={`/flags/${category.metadata.unicode}.svg`}
+                        src={`/img/flags/${category.metadata.unicode}.svg`}
                         alt={category.name}
                         className="w-14 object-cover mx-2" />
                 ))}

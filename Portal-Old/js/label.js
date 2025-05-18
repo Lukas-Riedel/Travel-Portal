@@ -1,5 +1,5 @@
 async function init(label, isLoggedIn) {
-    const places = await api.listRegularPlaces(undefined, undefined, label, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now));
+    const places = await api.listRegularPlaces(undefined, undefined, label, undefined, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now), "DATES");
 
     // Title.
     document.title = getDocumentTitle(label, places);

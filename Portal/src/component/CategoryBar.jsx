@@ -9,7 +9,7 @@ export default function CategoryBar({ categories }) {
                 <a
                     key={index}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"
-                    href={`category/${category.id}`}>
+                    href={`/category/${category.id}`}>
                     {category.name}
                 </a>
             ))}
