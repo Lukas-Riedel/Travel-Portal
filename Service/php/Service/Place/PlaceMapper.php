@@ -129,8 +129,11 @@
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($categoryRow) use(&$start, &$end) {
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
-                        array_map(fn($placeId) => $this->selectRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, $start, $end,
-                            array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default)[0], explode(",", $categoryRow["place_ids"])));
+                        array_filter(array_map(function($placeId) use(&$start, &$end) {
+                            $places = $this->selectRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, $start, $end,
+                                array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                            return count($places) === 0 ? NULL : $places[0];
+                        }, explode(",", $categoryRow["place_ids"])), fn($place) => $place !== NULL));
                 });
         }
 
