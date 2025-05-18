@@ -14,14 +14,14 @@
 
         public function getWidth() : int {
             return match($this) {
-                self::Full => 6000,
+                self::Full => 2400,
                 self::Thumbnail => 350
             };
         }
 
         public function getHeight() : int {
             return match($this) {
-                self::Full => 4000,
+                self::Full => 1600,
                 self::Thumbnail => 233
             };
         }

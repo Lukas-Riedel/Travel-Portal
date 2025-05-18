@@ -75,20 +75,23 @@
             return $this->removeHighlight(HighlightType::Year, $year, $highlightId);
         }
 
-        public function updateHighlights() : void {
-            // TODO: Do the same also for the full size.
-            $thumbnailFilePaths = $this->doUpdateHighlights(HighlightSize::Thumbnail, NULL, NULL, FALSE);
-            $this->unlinkUnusedFiles($thumbnailFilePaths, HighlightSize::Thumbnail);
+        public function updateHighlights() : void {      
+            foreach (HighlightSize::cases() as &$highlightSize) {
+                $filePaths = $this->doUpdateHighlights($highlightSize, NULL, NULL, FALSE);
+                $this->unlinkUnusedFiles($filePaths, $highlightSize);
+            }
         }
 
         public function updateHighlight(string $highlightId) : void {
-            // TODO: Do the same also for the full size.
-            $this->doUpdateHighlights(HighlightSize::Thumbnail, $highlightId, NULL, TRUE);
+            foreach (HighlightSize::cases() as &$highlightSize) {
+                $this->doUpdateHighlights($highlightSize, $highlightId, NULL, TRUE);
+            }
         }
 
         public function updateHighlightForPhoto(string $photoId) : void {
-            // TODO: Do the same also for the full size.
-            $this->doUpdateHighlights(HighlightSize::Thumbnail, NULL, $photoId, TRUE);
+            foreach (HighlightSize::cases() as &$highlightSize) {
+                $this->doUpdateHighlights($highlightSize, NULL, $photoId, TRUE);
+            }
         }
         
         private function getHighlights(HighlightType $highlightType, string $entityId) : array {

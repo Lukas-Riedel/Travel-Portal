@@ -21,7 +21,7 @@
             $this->highlightService->updateHighlights();
         }
 
-        public function onHighlightRemovedChanged(mixed $message) : void {
+        public function onHighlightRemoved(mixed $message) : void {
             $this->highlightService->updateHighlights();
         }
         
