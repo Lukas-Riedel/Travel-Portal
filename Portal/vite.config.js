@@ -1,16 +1,3 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import baseConfig from "./vite.config.base"
 
-export default defineConfig({
-  base: process.env.VITE_BASE_PATH || "/",
-  plugins: [react()],
-  server: {
-    proxy: {
-      "/api": {
-        target: "https://lriedel.cz",
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
-});
+export default baseConfig
