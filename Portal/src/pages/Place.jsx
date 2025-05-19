@@ -9,6 +9,7 @@ import PlaceContent from "../components/PlaceContent.jsx"
 import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
 import { useApi } from "../hooks/useApi.js"
+import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
 
 export default function Place() {
     const { placeId } = useParams()
@@ -52,6 +53,7 @@ export default function Place() {
                 place={place}
                 places={places}
                 count={3} />
+            <SunAltitudeBar place={place} />
         </div>
     )
 }
