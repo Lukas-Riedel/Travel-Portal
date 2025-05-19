@@ -58,6 +58,8 @@ jobs:
       run: |
         cd Portal
         VITE_BASE_PATH="/new/" npm run build
+      env:
+        VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
     - name: Prepare Files
       run: |
         mkdir target

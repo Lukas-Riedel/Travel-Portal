@@ -122,7 +122,7 @@ export default function Map({ points }) {
     const computeStrokeWeight = zoom => Math.min(Math.max(zoom * 0.1 - 0.1, 0.3), 1.3)
 
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: "AIzaSyCIfGRMxmDVC5WGyXWPKJOeC8GwtLgKleE",
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
         language: "cs",
         region: "CZ"
     })
