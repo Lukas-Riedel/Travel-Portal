@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react"
-import PageHeader from "./PageHeader.jsx"
-import HighlightCarousel from "./HighlightCarousel.jsx"
-import CategoryBar from "./CategoryBar.jsx"
-import LabelBar from "./LabelBar.jsx"
-import DateTileGrid from "./DateTileGrid.jsx"
-import TripBar from "./TripBar.jsx"
-import { getPlace, listRegularPlaces } from "../util/api.js"
-import PlaceContent from "./PlaceContent.jsx"
-import NearbyPlaceTileGrid from "./NearbyPlaceTileGrid.jsx"
+import PageHeader from "../components/PageHeader.jsx"
+import HighlightCarousel from "../components/HighlightCarousel.jsx"
+import CategoryBar from "../components/CategoryBar.jsx"
+import LabelBar from "../components/LabelBar.jsx"
+import DateTileGrid from "../components/DateTileGrid.jsx"
+import TripBar from "../components/TripBar.jsx"
+import { getPlace, listRegularPlaces } from "../services/service.js"
+import PlaceContent from "../components/PlaceContent.jsx"
+import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
 
 export default function Place() {
-    const { id } = useParams()
+    const { placeId } = useParams()
     const [place, setPlace] = useState(null)
     const [places, setPlaces] = useState([])
 
@@ -19,21 +19,21 @@ export default function Place() {
         setPlace(null)
         setPlaces([])
 
-        getPlace(id)
+        getPlace(placeId)
             .then(setPlace)
             .catch(console.error)
 
         listRegularPlaces()
             .then(setPlaces)
             .catch(console.error)
-    }, [id])
+    }, [placeId])
 
     if (!place) {
         return null
     }
 
     return (
-        <div className="max-w-6xl mt-8 mb-8 rounded-2xl mx-auto p-8 bg-white text-gray-900">
+        <div>
             <PageHeader
                 name={place.name}
                 categories={[place.getMostSpecificCategoryWithMetadata()]} />
@@ -46,7 +46,7 @@ export default function Place() {
             <DateTileGrid place={place} />
             <TripBar trips={place.getPastTrips()} />
             {place.getAlbums().length > 0 && place.getPastTrips().length === 0
-                && <hr className="w-full h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
+                && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid
                 place={place}
                 places={places}

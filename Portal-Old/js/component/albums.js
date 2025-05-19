@@ -238,7 +238,7 @@ function getButtonsForStandardAlbum(album) {
             image: "img/photo.png"
         },
         { 
-            action: "window.open('../new/place/" + album.place.id + "/album/" + album.id + "', '_blank')",
+            action: "window.open('../place/" + album.place.id + "/album/" + album.id + "', '_blank')",
             image: "img/edit.png"
         },
         { 

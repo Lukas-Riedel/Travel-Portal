@@ -1,5 +1,6 @@
 import axios from "axios"
 import Place from "../model/place"
+import { getAccessTokenForUser } from "./iam"
 
 // TODO: Introduce model classes to return values where missing.
 
@@ -465,15 +466,15 @@ export async function createYearHighlight(year, photoId) {
         })
 }
 
-async function sendRequest(method, url, data = {}, args = {}) {
+async function sendRequest(method, path, data = {}, args = {}) {
     const argKeys = Object.keys(args).filter(arg => args[arg] !== undefined)
     const queryString = argKeys.length === 0 ? "" : ("?" + argKeys.map(key => key + "=" + args[key]).join("&"))
 
     try {
-        const token = await getBearerToken()
+        const token = (await getAccessTokenForUser("guest", "guest")).accessToken
         const response = await axios({
-            method,
-            url: "/api" + url + queryString,
+            method: method,
+            url: import.meta.env.VITE_SERVICE_BASE_URL + path + queryString,
             data: Object.keys(data).length ? data : undefined,
             headers: {
                 "Authorization": "Bearer " + token,
@@ -484,26 +485,5 @@ async function sendRequest(method, url, data = {}, args = {}) {
         return response.data
     } catch (error) {
         return Promise.reject(error)
-    }
-}
-
-async function getBearerToken() {
-    // TODO: Cache access and refresh tokens for future use
-    // TODO: Utilize refresh token to obtain a new access token
-
-    try {
-        const response = await axios.post("/api/iam",
-            {
-                username: "guest",
-                password: "guest"
-            },
-            {
-                headers: { "Content-Type": "application/json" }
-            })
-
-        return response.data.accessToken
-    }
-    catch (e) {
-        return Promise.reject(e)
     }
 }

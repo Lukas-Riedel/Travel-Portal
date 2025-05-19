@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react"
-import { formatKilometers } from "../util/formatters.js"
-import Place from "../model/place"
+import { formatKilometers } from "../utils/formatters.js"
+import Place from "../model/place.js"
 import TileGrid from "./TileGrid.jsx"
 import PlaceTile from "./PlaceTile.jsx"
-import { getPlace } from "../util/api.js"
+import { getPlace } from "../services/service.js"
+import { TailSpin } from "react-loader-spinner"
 
 export default function NearbyPlaceTileGrid({ place, places, count }) {
     const [nearbyPlaces, setNearbyPlaces] = useState(null)
 
     useEffect(() => {
+        setNearbyPlaces(null)
+        
         const approximatedNearbyPlaces = places
             .filter(p => p.id !== place.id)
             .filter(p => p.mainHighlight)
@@ -27,7 +30,19 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
     }, [place, places, count])
 
     if (!nearbyPlaces) {
-        return null
+        return (
+            <TileGrid tiles={Array.from({ length: count }, (_, index) => (
+                <div
+                    key={index}
+                    className="relative w-[350px] h-[233px] mx-auto flex items-center justify-center">
+                    <TailSpin
+                        color="black"
+                        height={30}
+                        width={30}
+                    />
+                </div>
+            ))} />
+        )
     }
 
     return (

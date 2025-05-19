@@ -6,8 +6,8 @@ import "yet-another-react-lightbox/styles.css"
 import "yet-another-react-lightbox/plugins/counter.css"
 import PhotoTile from "./PhotoTile"
 import LoadingSpin from "./LoadingSpin"
-import { getDateString } from "../util/helpers"
-import { listPlaceAlbumPhotos } from "../util/api"
+import { getDateString } from "../utils/helpers"
+import { listPlaceAlbumPhotos } from "../services/service"
 
 export default function DateTile({ place, date }) {
     const [isLoading, setIsLoading] = useState(false)
