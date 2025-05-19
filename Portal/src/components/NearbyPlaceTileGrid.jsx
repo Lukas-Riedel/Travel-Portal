@@ -3,15 +3,16 @@ import { formatKilometers } from "../utils/formatters.js"
 import Place from "../model/place.js"
 import TileGrid from "./TileGrid.jsx"
 import PlaceTile from "./PlaceTile.jsx"
-import { getPlace } from "../services/service.js"
 import { TailSpin } from "react-loader-spinner"
+import { useApi } from "../hooks/useApi.js"
 
 export default function NearbyPlaceTileGrid({ place, places, count }) {
     const [nearbyPlaces, setNearbyPlaces] = useState(null)
+    const api = useApi()
 
     useEffect(() => {
         setNearbyPlaces(null)
-        
+
         const approximatedNearbyPlaces = places
             .filter(p => p.id !== place.id)
             .filter(p => p.mainHighlight)
@@ -25,7 +26,7 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
 
         Promise.all(nearbyPlaces
             .slice(0, count)
-            .map(p => getPlace(p.id)))
+            .map(p => api.getPlace(p.id)))
             .then(setNearbyPlaces)
     }, [place, places, count])
 

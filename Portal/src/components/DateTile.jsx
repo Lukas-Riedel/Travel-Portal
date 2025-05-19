@@ -7,9 +7,10 @@ import "yet-another-react-lightbox/plugins/counter.css"
 import PhotoTile from "./PhotoTile"
 import LoadingSpin from "./LoadingSpin"
 import { getDateString } from "../utils/helpers"
-import { listPlaceAlbumPhotos } from "../services/service"
+import { useApi } from "../hooks/useApi"
 
 export default function DateTile({ place, date }) {
+    const api = useApi()
     const [isLoading, setIsLoading] = useState(false)
     const [galleryOpen, setGalleryOpen] = useState(false)
     const [images, setImages] = useState([])
@@ -21,7 +22,7 @@ export default function DateTile({ place, date }) {
         }
 
         setIsLoading(true)
-        listPlaceAlbumPhotos(place.id, date.album.id)
+        api.listPlaceAlbumPhotos(place.id, date.album.id)
             .then(photos => {
                 setImages(photos.map(photo => ({
                     src: photo.url + "=d"

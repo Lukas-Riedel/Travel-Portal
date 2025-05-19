@@ -5,13 +5,14 @@ import CategoryBar from "../components/CategoryBar.jsx"
 import LabelBar from "../components/LabelBar.jsx"
 import DateTileGrid from "../components/DateTileGrid.jsx"
 import TripBar from "../components/TripBar.jsx"
-import { getPlace, listRegularPlaces } from "../services/service.js"
 import PlaceContent from "../components/PlaceContent.jsx"
 import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
+import { useApi } from "../hooks/useApi.js"
 
 export default function Place() {
     const { placeId } = useParams()
+    const api = useApi()
     const [place, setPlace] = useState(null)
     const [places, setPlaces] = useState([])
 
@@ -19,11 +20,11 @@ export default function Place() {
         setPlace(null)
         setPlaces([])
 
-        getPlace(placeId)
+        api.getPlace(placeId)
             .then(setPlace)
             .catch(console.error)
 
-        listRegularPlaces()
+        api.listRegularPlaces()
             .then(setPlaces)
             .catch(console.error)
     }, [placeId])
