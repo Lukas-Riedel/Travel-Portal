@@ -230,6 +230,10 @@ class Api {
             });
     }
 
+    async removePlaceHighlight(placeId, highlightId) {
+        return this.#sendRequest("DELETE", "places/" + placeId + "/highlights/" + highlightId);
+    }
+
     async listProblems() {
         return this.#sendRequest("GET", "problems");
     }

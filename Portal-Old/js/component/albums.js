@@ -51,13 +51,14 @@ function getAlbumsComponentForYear(places, showButtons) {
      }), showButtons ? getButtonsForStandardAlbum : undefined);
 }
 
-function getAlbumsComponentForPhotos(placeId, albumId, photos, showButtons) {
+function getAlbumsComponentForPhotos(place, albumId, photos, showButtons) {
     return getAlbumsComponent(photos.map(photo => {
         return {
             id: photo.id,
             mainPhotoId: photo.id,
             permalink: photo.permalink,
-            place: { id: placeId },
+            timestamp: photo.timestamp,
+            place: place,
             album: { id: albumId },
             index: photos.indexOf(photo) + 1,
             nameTokens: [],
@@ -257,7 +258,8 @@ function getButtonsForStandardAlbum(album) {
 }
 
 function getButtonsForPhotos(photo) {
-    return [
+    const highlight = photo.place.highlights.find(h => h.timestamp == photo.timestamp)
+    let buttons = [
         { 
             action: "window.open('" + photo.permalink + "', '_blank')",
             image: "../../../img/photo.png"
@@ -270,7 +272,19 @@ function getButtonsForPhotos(photo) {
             action: "replacePhoto(" + photo.place.id + ", " + photo.album.id + ", " + photo.id + ", '" + photo.permalink + "')",
             image: "../../../img/edit.png"
         },
+        { 
+            action: "createHighlight(" + photo.place.id + ", " + photo.id + ")",
+            image: "../../../img/add.png"
+        },
     ];
+    if (highlight != undefined) {
+        buttons.push(
+            { 
+                action: "deleteHighlight(" + photo.place.id + ", " + highlight.id + ")",
+                image: "../../../img/x.png"
+            });
+    }
+    return buttons;
 }
 
 function getButtonsForStandardAlbumInTrip(album) {
@@ -336,4 +350,16 @@ async function replacePhoto(placeId, albumId, replacedPhotoId, replacedPhotoPerm
     await api.createEvent("PhotoReplacing", { placeId: placeId, albumId: albumId, replacedPhotoId: replacedPhotoId, path: path });
 
     window.open(replacedPhotoPermalink, '_blank').focus();
+}
+
+async function createHighlight(placeId, photoId) {
+    if (confirm("Chceš vytvořit tento highlight?")) {
+        api.createPlaceHighlight(placeId, photoId).then(alertConfirmation)
+    }
+}
+
+async function deleteHighlight(placeId, highlightId) {
+    if (confirm("Chceš smazat tento highlight?")) {
+        api.removePlaceHighlight(placeId, highlightId).then(alertConfirmation)
+    }
 }

@@ -11,7 +11,7 @@ async function init(placeId, albumId, isLoggedIn) {
     document.title = getDocumentTitle(place);
 
     // Photos.
-    $('#photos').html(getAlbumsComponentForPhotos(placeId, albumId, photos, isLoggedIn));
+    $('#photos').html(getAlbumsComponentForPhotos(place, albumId, photos, isLoggedIn));
 }
 
 function getDocumentTitle(place) {
