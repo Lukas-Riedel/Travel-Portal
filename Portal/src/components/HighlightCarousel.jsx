@@ -14,7 +14,7 @@ export default function HighlightCarousel({ name, highlights }) {
     }
 
     return (
-        <div className="relative w-full aspect-video overflow-hidden rounded-xl shadow-lg">
+        <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg">
             <AnimatePresence mode="sync">
                 <motion.img
                     key={currentHighlightIndex}
@@ -24,7 +24,7 @@ export default function HighlightCarousel({ name, highlights }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1 }}
-                    className="absolute inset-0 h-full w-full object-cover"/>
+                    className="absolute inset-0 h-full w-full object-cover object-center"/>
             </AnimatePresence>
             {shuffledHighlights.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
