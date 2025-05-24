@@ -7,7 +7,7 @@ export default function PlaceTile({ place, secondLineText }) {
 
     return (
         <PhotoTile
-            src={place.mainHighlight.url.full ?? place.mainHighlight.url.thumbnail}
+            src={place.mainHighlight.url.thumbnail ?? place.mainHighlight.url.full}
             firstLineText={place.name}
             secondLineText={secondLineText}
             categories={[place.getMostSpecificCategoryWithMetadata()]}
