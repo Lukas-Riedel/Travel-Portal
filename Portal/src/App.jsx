@@ -3,6 +3,7 @@ import MainLayout from "./layouts/MainLayout"
 import { BrowserRouter, Route, Routes, useSearchParams } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
+import { Toaster } from "sonner"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -11,7 +12,7 @@ function AppContent() {
     useEffect(() => {
         const apiKey = searchParams.get("apiKey")
         if (apiKey) {
-            login({ apiKey: apiKey })
+            login({ apiKey })
         }
 
         if (!accessToken) {
@@ -33,8 +34,11 @@ function AppContent() {
 
 export default function App() {
     return (
-        <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
-            <AppContent />
-        </BrowserRouter>
+        <div>
+            <Toaster position="top-center" offset={96} />
+            <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+                <AppContent />
+            </BrowserRouter>
+        </div>
     )
 }

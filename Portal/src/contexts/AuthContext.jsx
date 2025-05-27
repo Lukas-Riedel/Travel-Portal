@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     }, [accessToken, refreshAccessToken])
 
     return (
-        <AuthContext.Provider value={{ accessToken, login, logout }}>
+        <AuthContext.Provider value={{ accessToken, login, logout, isAdmin: () => accessToken?.roles?.includes("ADMIN") || false }}>
             {children}
         </AuthContext.Provider>
     )

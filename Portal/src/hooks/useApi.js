@@ -93,6 +93,10 @@ export function useApi() {
             })
     }
 
+    async function removeCategoryHighlight(categoryId, highlightId) {
+        return sendRequest("DELETE", "/categories/" + categoryId + "/highlights/" + highlightId)
+    }
+
     async function listConfigurationEntries(levels) {
         return sendRequest("GET", "/configuration", {},
             {
@@ -259,6 +263,10 @@ export function useApi() {
             {
                 photoId: photoId
             })
+    }
+
+    async function removePlaceHighlight(placeId, highlightId) {
+        return sendRequest("DELETE", "/places/" + placeId + "/highlights/" + highlightId)
     }
 
     async function listProblems() {
@@ -443,6 +451,10 @@ export function useApi() {
             })
     }
 
+    async function removeTripHighlight(tripId, highlightId) {
+        return sendRequest("DELETE", "/trips/" + tripId + "/highlights/" + highlightId)
+    }
+
     async function createTripNote(tripId, content) {
         return sendRequest("POST", "/trips/" + tripId + "/notes",
             {
@@ -490,6 +502,10 @@ export function useApi() {
             })
     }
 
+    async function removeYearHighlight(year, highlightId) {
+        return sendRequest("DELETE", "/years/" + year + "/highlights/" + highlightId)
+    }
+
     return {
         createGeographicalCategory,
         createGeographicalExtensionCategory,
@@ -499,6 +515,7 @@ export function useApi() {
         updateCategoryName,
         updateCategoryMainHighlight,
         createCategoryHighlight,
+        removeCategoryHighlight,
         listConfigurationEntries,
         updateConfigurationEntry,
         getCoordinates,
@@ -521,6 +538,7 @@ export function useApi() {
         createPlaceAlbumPhoto,
         listPlaceAlbumPhotos,
         createPlaceHighlight,
+        removePlaceHighlight,
         listProblems,
         listStatistics,
         createSubscription,
@@ -545,6 +563,7 @@ export function useApi() {
         logFlightManually,
         createFlight,
         createTripHighlight,
+        removeTripHighlight,
         createTripNote,
         createPlaceLabel,
         removeTripNote,
@@ -552,6 +571,7 @@ export function useApi() {
         listYears,
         getYear,
         updateYearMainHighlight,
-        createYearHighlight
+        createYearHighlight,
+        removeYearHighlight
     }
 }

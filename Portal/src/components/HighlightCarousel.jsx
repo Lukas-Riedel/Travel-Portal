@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Pause, Play } from "lucide-react"
+import { Pause, Play, Trash2 } from "lucide-react"
+import { useAuth } from "../contexts/AuthContext"
+import { toast } from "sonner"
 
-export default function HighlightCarousel({ name, highlights }) {
-    const [shuffledHighlights] = useState(() => [...highlights].sort(() => Math.random() - 0.5))
+export default function HighlightCarousel({ name, highlights, onHighlightRemoved }) {
+    const { isAdmin } = useAuth()
+    const [shuffledHighlights, setShuffledHighlights] = useState(() => [...highlights].sort(() => Math.random() - 0.5))
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
 
@@ -18,6 +21,35 @@ export default function HighlightCarousel({ name, highlights }) {
 
     if (shuffledHighlights.length === 0) {
         return null
+    }
+
+    const handleRemove = () => {
+        toast("Opravdu chceš odstranit tento highlight?", {
+            action: {
+                label: "Ano",
+                onClick: async () => {
+                    const highlight = shuffledHighlights[currentHighlightIndex]
+                    const newHighlights = [...shuffledHighlights]
+                    newHighlights.splice(currentHighlightIndex, 1)
+                    setShuffledHighlights(newHighlights)
+                    setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
+
+                    if (onHighlightRemoved) {
+                        try {
+                            await onHighlightRemoved(highlight.id)
+                            toast.success("Highlight byl úspěšně odstraněn")
+                        }
+                        catch (error) {
+                            console.error(error)
+                            toast.error("Nepodařilo se odstranit highlight")
+                        }
+                    }
+                }
+            },
+            cancel: {
+                label: "Ne"
+            }
+        })
     }
 
     return (
@@ -44,11 +76,20 @@ export default function HighlightCarousel({ name, highlights }) {
                             ></button>
                         ))}
                     </div>
-                    <button
-                        onClick={() => setIsPaused(previous => !previous)}
-                        className="absolute top-3 right-3 rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
-                        {isPaused ? <Play size={16} /> : <Pause size={16} />}
-                    </button>
+                    <div className="absolute top-3 right-3 flex space-x-2">
+                        <button
+                            onClick={() => setIsPaused(prev => !prev)}
+                            className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                            {isPaused ? <Play size={16} /> : <Pause size={16} />}
+                        </button>
+                        {isAdmin() && (
+                            <button
+                                onClick={handleRemove}
+                                className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                                <Trash2 size={16} />
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

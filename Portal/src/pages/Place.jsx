@@ -41,7 +41,8 @@ export default function Place() {
                 categories={[place.getMostSpecificCategoryWithMetadata()]} />
             <HighlightCarousel
                 name={place.name}
-                highlights={place.highlights} />
+                highlights={place.highlights}
+                onHighlightRemoved={highlightId => api.removePlaceHighlight(placeId, highlightId)} />
             <CategoryBar categories={place.categories} />
             <LabelBar labels={place.labels} />
             <PlaceContent place={place} />
