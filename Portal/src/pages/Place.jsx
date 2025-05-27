@@ -35,14 +35,15 @@ export default function Place() {
     }
 
     return (
-        <div>
+        <>
             <PageHeader
                 name={place.name}
                 categories={[place.getMostSpecificCategoryWithMetadata()]} />
             <HighlightCarousel
                 name={place.name}
                 highlights={place.highlights}
-                onHighlightRemoved={highlightId => api.removePlaceHighlight(placeId, highlightId)} />
+                onHighlightRemoved={highlightId => api.removePlaceHighlight(placeId, highlightId)}
+                onMainHighlightUpdated={highlightId => api.updatePlaceMainHighlight(placeId, highlightId)} />
             <CategoryBar categories={place.categories} />
             <LabelBar labels={place.labels} />
             <PlaceContent place={place} />
@@ -55,6 +56,6 @@ export default function Place() {
                 places={places}
                 count={3} />
             <SunAltitudeBar place={place} />
-        </div>
+        </>
     )
 }

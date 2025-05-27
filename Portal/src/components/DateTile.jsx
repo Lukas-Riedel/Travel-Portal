@@ -38,7 +38,7 @@ export default function DateTile({ place, date }) {
     }
 
     return (
-        <div>
+        <>
             <PhotoTile
                 src={date.album.mainImageUrl}
                 firstLineText={place.name}
@@ -53,6 +53,6 @@ export default function DateTile({ place, date }) {
                 close={() => setGalleryOpen(false)}
                 slides={images}
                 plugins={[Counter, Fullscreen]} />
-        </div>
+        </>
     )
 }

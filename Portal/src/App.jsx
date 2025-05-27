@@ -34,11 +34,11 @@ function AppContent() {
 
 export default function App() {
     return (
-        <div>
+        <>
             <Toaster position="top-center" offset={96} />
             <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
                 <AppContent />
             </BrowserRouter>
-        </div>
+        </>
     )
 }
