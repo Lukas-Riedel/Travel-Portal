@@ -5,7 +5,7 @@ import showInputToast from "./InputToast"
 export default function PageHeader({ name, categories, onNameChanged, onAddressChanged }) {
     const { isAdmin } = useAuth()
 
-    const handleNameChange = () => {
+    const handleNameChanged = () => {
         showInputToast("Zadej nové jméno:",
             name,
             "Jméno bylo úspěšně aktualizováno",
@@ -14,7 +14,7 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
         )
     }
 
-    const handleAddressChange = () => {
+    const handleAddressChanged = () => {
         showInputToast("Zadej novou adresu:",
             name,
             "Adresa byla úspěšně aktualizována",
@@ -31,13 +31,13 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
                 </h1>
                 {onNameChanged && isAdmin() && (
                     <button
-                        onClick={handleNameChange}
+                        onClick={handleNameChanged}
                         className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
                         <SquarePen size={16} />
                     </button>)}
                 {onAddressChanged && isAdmin() && (
                     <button
-                        onClick={handleAddressChange}
+                        onClick={handleAddressChanged}
                         className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
                         <LocationEdit size={16} />
                     </button>)}

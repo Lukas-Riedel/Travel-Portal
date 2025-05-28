@@ -5,7 +5,7 @@ import Counter from "yet-another-react-lightbox/plugins/counter"
 import "yet-another-react-lightbox/styles.css"
 import "yet-another-react-lightbox/plugins/counter.css"
 import PhotoTile from "./PhotoTile"
-import LoadingSpin from "./LoadingSpin"
+import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useApi } from "../hooks/useApi"
 
@@ -46,7 +46,23 @@ export default function DateTile({ place, date }) {
                 categories={[place.getMostSpecificCategoryWithMetadata()]}
                 onClick={openGallery} />
             {isLoading && (
-                <LoadingSpin/>
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999
+                }}>
+                    <TailSpin
+                        color="#ffffff"
+                        height={80}
+                        width={80} />
+                </div>
             )}
             <Lightbox
                 open={galleryOpen}

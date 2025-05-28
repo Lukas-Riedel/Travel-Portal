@@ -23,7 +23,7 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
         return null
     }
 
-    const handleRemove = () => {
+    const handleHighlightRemoved = () => {
         showConfirmToast("Opravdu chceš odstranit tento highlight?",
             "Highlight byl úspěšně odstraněn",
             "Nepodařilo se odstranit highlight",
@@ -37,7 +37,7 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
             })
     }
 
-    const handleMainHighlightUpdate = () => {
+    const handleMainHighlightUpdated = () => {
         showConfirmToast("Opravdu chceš nastavit tento highlight jako hlavní highlight?",
             "Hlavní highlight byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat hlavní highlight",
@@ -79,14 +79,14 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
                         </button>
                         {onMainHighlightUpdated && isAdmin() && (
                             <button
-                                onClick={handleMainHighlightUpdate}
+                                onClick={handleMainHighlightUpdated}
                                 className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
                                 <Star size={16} />
                             </button>
                         )}
                         {onHighlightRemoved && isAdmin() && (
                             <button
-                                onClick={handleRemove}
+                                onClick={handleHighlightRemoved}
                                 className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
                                 <Trash2 size={16} />
                             </button>

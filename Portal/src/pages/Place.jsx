@@ -17,18 +17,17 @@ export default function Place() {
     const [place, setPlace] = useState(null)
     const [places, setPlaces] = useState([])
 
+    const fetchAndSetPlace = () => api.getPlace(placeId).then(setPlace).catch(console.error)
+    const fetchAndSetPlaces = () => api.listRegularPlaces().then(setPlaces).catch(console.error)
+
     useEffect(() => {
         setPlace(null)
-        api.getPlace(placeId)
-            .then(setPlace)
-            .catch(console.error)
+        fetchAndSetPlace()
     }, [placeId])
 
     useEffect(() => {
         setPlaces([])
-        api.listRegularPlaces()
-            .then(setPlaces)
-            .catch(console.error)
+        fetchAndSetPlaces()
     }, [placeId])
 
     if (!place) {
@@ -41,22 +40,21 @@ export default function Place() {
                 name={place.name}
                 categories={[place.getMostSpecificCategoryWithMetadata()]}
                 onNameChanged={name => api.updatePlaceName(placeId, name)}
-                onAddressChanged={async address => {
-                    const coordinates = await api.getCoordinates(address)
-                    setPlace(await api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude))
-                }} />
+                onAddressChanged={address => api.getCoordinates(address).then(coordinates => api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace)} />
             <HighlightCarousel
                 name={place.name}
                 highlights={place.highlights}
                 onHighlightRemoved={highlightId => api.removePlaceHighlight(placeId, highlightId)}
                 onMainHighlightUpdated={highlightId => api.updatePlaceMainHighlight(placeId, highlightId)} />
             <CategoryBar categories={place.categories} />
-            <LabelBar labels={place.labels} />
-            <PlaceContent 
+            <LabelBar
+                labels={place.labels}
+                onLabelAdded={name => api.createPlaceLabel(placeId, name).then(fetchAndSetPlace)} />
+            <PlaceContent
                 place={place}
-                onExcerptChanged={async excerpt => setPlace(await api.updatePlaceExcerpt(placeId, excerpt))}
-                onExcerptRefreshed={async () => setPlace(await api.updatePlaceExcerpt(placeId, null))}
-                onLocationChanged={async (latitude, longitude) => setPlace(await api.updatePlaceLocation(placeId, latitude, longitude))} />
+                onExcerptChanged={excerpt => api.updatePlaceExcerpt(placeId, excerpt).then(setPlace)}
+                onExcerptRefreshed={() => api.updatePlaceExcerpt(placeId, null).then(setPlace)}
+                onLocationChanged={(latitude, longitude) => api.updatePlaceLocation(placeId, latitude, longitude).then(setPlace)} />
             <DateTileGrid place={place} />
             <TripBar trips={place.getPastTrips()} />
             {place.getAlbums().length > 0 && place.getPastTrips().length === 0

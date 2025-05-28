@@ -7,7 +7,7 @@ import showInputToast from "./InputToast.jsx"
 export default function PlaceContent({ place, onExcerptChanged, onExcerptRefreshed, onLocationChanged }) {
     const { isAdmin } = useAuth()
 
-    const handleExcerptChange = () => {
+    const handleExcerptChanged = () => {
         showInputToast("Zadej nový excerpt:",
             place.excerpt,
             "Excerpt byl úspěšně aktualizován",
@@ -16,7 +16,7 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
         )
     }
 
-    const handleExcerptRefresh = () => {
+    const handleExcerptRefreshed = () => {
         showConfirmToast("Opravdu chceš znovu vygenerovat excerpt?",
             "Excerpt byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat excerpt",
@@ -24,7 +24,7 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
         )
     }
 
-    const handleLocationUpdate = (latitude, longitude) => {
+    const handleLocationUpdated = (latitude, longitude) => {
         if (!isAdmin) {
             return
         }
@@ -42,14 +42,14 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
                     {place.excerpt}
                     {onExcerptRefreshed && isAdmin() && (
                         <button
-                            onClick={handleExcerptRefresh}
+                            onClick={handleExcerptRefreshed}
                             className="float-right ml-2 mb-1 rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium inline-flex items-center space-x-2">
                             <RefreshCcw size={16} />
                         </button>
                     )}
                     {onExcerptChanged && isAdmin() && (
                         <button
-                            onClick={handleExcerptChange}
+                            onClick={handleExcerptChanged}
                             className="float-right ml-2 mb-1 rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium inline-flex items-center space-x-2">
                             <SquarePen size={16} />
                         </button>
@@ -59,7 +59,7 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
             <div className="w-full h-full overflow-hidden rounded-lg shadow">
                 <PlaceMap
                     places={[place]}
-                    onRightClick={handleLocationUpdate} />
+                    onRightClick={handleLocationUpdated} />
             </div>
         </div >
     )

@@ -1,6 +1,21 @@
-export default function LabelBar({ labels }) {
-    if (labels.length === 0) {
+import { Plus } from "lucide-react"
+import { useAuth } from "../contexts/AuthContext"
+import showInputToast from "./InputToast"
+
+export default function LabelBar({ labels, onLabelAdded }) {
+    const { isAdmin } = useAuth()
+
+    if (labels.length === 0 && !isAdmin()) {
         return null
+    }
+
+    const handleLabelAdded = () => {
+        showInputToast("Zadej jméno štítku:",
+            name,
+            "Štítek byl úspěšně přidán",
+            "Nepodařilo se přidat štítek",
+            onLabelAdded
+        )
     }
 
     return (
@@ -13,6 +28,13 @@ export default function LabelBar({ labels }) {
                     {label.name}
                 </a>
             ))}
+            {isAdmin() && (
+                <button
+                    onClick={handleLabelAdded}
+                    className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                    <Plus size={16} />
+                </button>
+            )}
         </div>
     )
 }

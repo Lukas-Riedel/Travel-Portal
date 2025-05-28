@@ -6,7 +6,7 @@ export default function showInputToast(promptText, placeholder, success, error, 
         function InputForm() {
             const inputRef = useRef(null)
 
-            const handleSubmit = async () => {
+            const handleSubmitted = async () => {
                 const value = inputRef.current?.value?.trim() || ""
                 if (!value) {
                     return
@@ -41,7 +41,7 @@ export default function showInputToast(promptText, placeholder, success, error, 
                             </button>
                             <button
                                 className="px-3 py-1 rounded bg-black text-white"
-                                onClick={handleSubmit}>
+                                onClick={handleSubmitted}>
                                 OK
                             </button>
                         </div>
