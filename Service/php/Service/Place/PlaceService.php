@@ -96,7 +96,11 @@
             return $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
         }
 
-        public function updatePlaceExcerpt(string $placeId, string $excerpt) : bool {
+        public function updatePlaceExcerpt(string $placeId, ?string $excerpt) : bool {
+            if ($excerpt === NULL) {
+                $placeIdentifier = $this->getPlaceIdentifierById($placeId);
+                $excerpt = $this->getSuggestedExcerpt($placeIdentifier->getName(), $placeIdentifier->getCountry());
+            }
             return $this->placeMapper->updatePlaceExcerpt($placeId, $excerpt);
         }
 

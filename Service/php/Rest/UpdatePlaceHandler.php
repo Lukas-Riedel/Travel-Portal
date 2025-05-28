@@ -20,7 +20,7 @@
                 $placeService->updatePlaceLocation($input["placeId"], $input["latitude"], $input["longitude"]);
             }
 
-            if (isset($input["excerpt"])) {
+            if (array_key_exists("excerpt", $input)) {
                 $placeService->updatePlaceExcerpt($input["placeId"], $input["excerpt"]);
             }
 
