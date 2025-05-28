@@ -25,7 +25,7 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
     }
 
     const handleLocationUpdated = (latitude, longitude) => {
-        if (!isAdmin) {
+        if (!isAdmin()) {
             return
         }
 

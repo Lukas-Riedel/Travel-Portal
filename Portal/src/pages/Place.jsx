@@ -49,7 +49,8 @@ export default function Place() {
             <CategoryBar categories={place.categories} />
             <LabelBar
                 labels={place.labels}
-                onLabelAdded={name => api.createPlaceLabel(placeId, name).then(fetchAndSetPlace)} />
+                onLabelAdded={name => api.createPlaceLabel(placeId, name).then(fetchAndSetPlace)}
+                onLabelRemoved={labelId => api.removePlaceLabel(placeId, labelId).then(fetchAndSetPlace)} />
             <PlaceContent
                 place={place}
                 onExcerptChanged={excerpt => api.updatePlaceExcerpt(placeId, excerpt).then(setPlace)}
