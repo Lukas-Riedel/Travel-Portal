@@ -50,6 +50,7 @@ export default function Place() {
             <LabelBar labels={place.labels} />
             <PlaceContent 
                 place={place}
+                onExcerptChanged={async excerpt => setPlace(await api.updatePlaceExcerpt(placeId, excerpt))}
                 onExcerptRefreshed={async () => setPlace(await api.updatePlaceExcerpt(placeId, null))} />
             <DateTileGrid place={place} />
             <TripBar trips={place.getPastTrips()} />
