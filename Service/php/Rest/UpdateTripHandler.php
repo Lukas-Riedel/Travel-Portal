@@ -3,7 +3,7 @@
 
     class UpdateTripHandler extends Handler {
         public function handle($input) {
-            global $tripService;
+            global $tripService, $databaseProvider;
 
             $response = (new GetTripHandler())
                 ->handle(array(
@@ -22,6 +22,8 @@
                 $tripService->updateTripName($input["tripId"], $input["name"]);
             }
 
+            
+            $databaseProvider->materializeViews();
             return (new GetTripHandler())
                 ->handle(array(
                     "tripId" => $input["tripId"]));

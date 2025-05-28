@@ -19,12 +19,13 @@ export default function Place() {
 
     useEffect(() => {
         setPlace(null)
-        setPlaces([])
-
         api.getPlace(placeId)
             .then(setPlace)
             .catch(console.error)
+    }, [placeId])
 
+    useEffect(() => {
+        setPlaces([])
         api.listRegularPlaces()
             .then(setPlaces)
             .catch(console.error)
@@ -47,7 +48,9 @@ export default function Place() {
                 onMainHighlightUpdated={highlightId => api.updatePlaceMainHighlight(placeId, highlightId)} />
             <CategoryBar categories={place.categories} />
             <LabelBar labels={place.labels} />
-            <PlaceContent place={place} />
+            <PlaceContent 
+                place={place}
+                onExcerptRefreshed={async () => setPlace(await api.updatePlaceExcerpt(placeId, null))} />
             <DateTileGrid place={place} />
             <TripBar trips={place.getPastTrips()} />
             {place.getAlbums().length > 0 && place.getPastTrips().length === 0

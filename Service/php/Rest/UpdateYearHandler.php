@@ -3,7 +3,7 @@
 
     class UpdateYearHandler extends Handler {
         public function handle($input) {
-            global $yearService;
+            global $yearService, $databaseProvider;
 
             $response = (new GetYearHandler())
                 ->handle(array(
@@ -13,6 +13,7 @@
             }     
 
             $yearService->updateYearMainHighlight($input["year"], $input["mainHighlightId"]);
+            $databaseProvider->materializeViews();
     
             return (new GetYearHandler())
                 ->handle(array(

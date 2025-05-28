@@ -3,7 +3,7 @@
 
     class UpdatePlaceHandler extends Handler {
         public function handle($input) {
-            global $placeService;
+            global $placeService, $databaseProvider;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -27,7 +27,8 @@
             if (isset($input["name"])) {
                 $placeService->updatePlaceName($input["placeId"], $input["name"]);
             }
-    
+            
+            $databaseProvider->materializeViews();
             return (new GetPlaceHandler())
                 ->handle(array(
                     "placeId" => $input["placeId"]));

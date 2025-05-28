@@ -3,7 +3,7 @@
 
     class UpdateCategoryHandler extends Handler {
         public function handle($input) {
-            global $categoryService;
+            global $categoryService, $databaseProvider;
 
             $response = (new GetCategoryHandler())
                 ->handle(array(
@@ -32,6 +32,7 @@
                 $categoryService->updateCategoryPublicHolidaysCalendar($input["categoryId"], $input["metadata"]["publicHolidaysCalendar"]);
             }
 
+            $databaseProvider->materializeViews();
             return (new GetCategoryHandler())
                 ->handle(array(
                     "categoryId" => $input["categoryId"]));
