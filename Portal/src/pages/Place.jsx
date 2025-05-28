@@ -40,7 +40,11 @@ export default function Place() {
             <PageHeader
                 name={place.name}
                 categories={[place.getMostSpecificCategoryWithMetadata()]}
-                onNameChanged={name => api.updatePlaceName(placeId, name)} />
+                onNameChanged={name => api.updatePlaceName(placeId, name)}
+                onAddressChanged={async address => {
+                    const coordinates = await api.getCoordinates(address)
+                    setPlace(await api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude))
+                }} />
             <HighlightCarousel
                 name={place.name}
                 highlights={place.highlights}
@@ -51,7 +55,8 @@ export default function Place() {
             <PlaceContent 
                 place={place}
                 onExcerptChanged={async excerpt => setPlace(await api.updatePlaceExcerpt(placeId, excerpt))}
-                onExcerptRefreshed={async () => setPlace(await api.updatePlaceExcerpt(placeId, null))} />
+                onExcerptRefreshed={async () => setPlace(await api.updatePlaceExcerpt(placeId, null))}
+                onLocationChanged={async (latitude, longitude) => setPlace(await api.updatePlaceLocation(placeId, latitude, longitude))} />
             <DateTileGrid place={place} />
             <TripBar trips={place.getPastTrips()} />
             {place.getAlbums().length > 0 && place.getPastTrips().length === 0

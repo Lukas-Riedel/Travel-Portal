@@ -93,7 +93,7 @@ const mapStyles = [
     }
 ]
 
-export default function Map({ points }) {
+export default function Map({ points, onRightClick }) {
     const markersRef = useRef([])
     const onMarkerLoad = marker => {
         markersRef.current.push(marker)
@@ -147,6 +147,7 @@ export default function Map({ points }) {
             mapContainerStyle={{ width: "100%", height: "100%" }}
             onLoad={onMapLoad}
             onZoomChanged={onMapZoomChanged}
+            onRightClick={e => onRightClick(e.latLng.lat(), e.latLng.lng())}
             zoom={defaultMapZoom}
             center={{ lat: points[0]?.latitude ?? 0, lng: points[0]?.longitude ?? 0 }}
             options={{ styles: mapStyles, disableDefaultUI: true, fullscreenControl: true }}>

@@ -38,7 +38,7 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
     }
 
     const handleMainHighlightUpdate = () => {
-        showConfirmToast("Opravdu chceš nastavit tento highlight jako hlavní highlight pro danou entitu?",
+        showConfirmToast("Opravdu chceš nastavit tento highlight jako hlavní highlight?",
             "Hlavní highlight byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat hlavní highlight",
             async () => {

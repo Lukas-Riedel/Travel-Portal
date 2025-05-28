@@ -4,11 +4,11 @@ import showConfirmToast from "./ConfirmToast.jsx"
 import PlaceMap from "./PlaceMap.jsx"
 import showInputToast from "./InputToast.jsx"
 
-export default function PlaceContent({ place, onExcerptChanged, onExcerptRefreshed }) {
+export default function PlaceContent({ place, onExcerptChanged, onExcerptRefreshed, onLocationChanged }) {
     const { isAdmin } = useAuth()
 
     const handleExcerptChange = () => {
-        showInputToast("Zadej nový excerpt pro dané místo:",
+        showInputToast("Zadej nový excerpt:",
             place.excerpt,
             "Excerpt byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat excerpt",
@@ -22,6 +22,17 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
             "Nepodařilo se aktualizovat excerpt",
             onExcerptRefreshed
         )
+    }
+
+    const handleLocationUpdate = (latitude, longitude) => {
+        if (!isAdmin) {
+            return
+        }
+
+        showConfirmToast("Opravdu chceš změnit polohu místa na zvolené souřadnice?",
+            "Poloha místa byla úspěšně aktualizována",
+            "Nepodařilo se aktualizovat polohu místa",
+            async () => onLocationChanged(latitude, longitude))
     }
 
     return (
@@ -46,7 +57,9 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
                 </p>
             </>
             <div className="w-full h-full overflow-hidden rounded-lg shadow">
-                <PlaceMap places={[place]} />
+                <PlaceMap
+                    places={[place]}
+                    onRightClick={handleLocationUpdate} />
             </div>
         </div >
     )
