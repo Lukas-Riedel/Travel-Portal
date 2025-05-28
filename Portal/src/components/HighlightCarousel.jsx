@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Pause, Play, Trash2, Star } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import { toast } from "sonner"
+import showConfirmToast from "./ConfirmToast"
 
 export default function HighlightCarousel({ name, highlights, onHighlightRemoved, onMainHighlightUpdated }) {
     const { isAdmin } = useAuth()
@@ -24,57 +24,27 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
     }
 
     const handleRemove = () => {
-        toast("Opravdu chceš odstranit tento highlight?", {
-            action: {
-                label: "Ano",
-                onClick: async () => {
-                    const highlight = shuffledHighlights[currentHighlightIndex]
-                    const newHighlights = [...shuffledHighlights]
-                    newHighlights.splice(currentHighlightIndex, 1)
-                    setShuffledHighlights(newHighlights)
-                    setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
-
-                    if (onHighlightRemoved) {
-                        try {
-                            await onHighlightRemoved(highlight.id)
-                            toast.success("Highlight byl úspěšně odstraněn")
-                        }
-                        catch (error) {
-                            console.error(error)
-                            toast.error("Nepodařilo se odstranit highlight")
-                        }
-                    }
-                }
-            },
-            cancel: {
-                label: "Ne"
-            }
-        })
+        showConfirmToast("Opravdu chceš odstranit tento highlight?",
+            "Highlight byl úspěšně odstraněn",
+            "Nepodařilo se odstranit highlight",
+            async () => {
+                const highlight = shuffledHighlights[currentHighlightIndex]
+                const newHighlights = [...shuffledHighlights]
+                newHighlights.splice(currentHighlightIndex, 1)
+                setShuffledHighlights(newHighlights)
+                setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
+                return onHighlightRemoved(highlight.id)
+            })
     }
 
     const handleMainHighlightUpdate = () => {
-        toast("Opravdu chceš nastavit tento highlight jako hlavní highlight pro aktivní entitu?", {
-            action: {
-                label: "Ano",
-                onClick: async () => {
-                    const highlight = shuffledHighlights[currentHighlightIndex]
-
-                    if (onMainHighlightUpdated) {
-                        try {
-                            await onMainHighlightUpdated(highlight.id)
-                            toast.success("Hlavní highlight byl úspěšně aktualizován")
-                        }
-                        catch (error) {
-                            console.error(error)
-                            toast.error("Nepodařilo se aktualizovat hlavní highlight")
-                        }
-                    }
-                }
-            },
-            cancel: {
-                label: "Ne"
-            }
-        })
+        showConfirmToast("Opravdu chceš nastavit tento highlight jako hlavní highlight pro danou entitu?",
+            "Hlavní highlight byl úspěšně aktualizován",
+            "Nepodařilo se aktualizovat hlavní highlight",
+            async () => {
+                const highlight = shuffledHighlights[currentHighlightIndex]
+                return onMainHighlightUpdated(highlight.id)
+            })
     }
 
     return (
@@ -107,19 +77,19 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
                             className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
                             {isPaused ? <Play size={16} /> : <Pause size={16} />}
                         </button>
-                        {isAdmin() && (
-                            <>
-                                <button
-                                    onClick={handleMainHighlightUpdate}
-                                    className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
-                                    <Star size={16} />
-                                </button>
-                                <button
-                                    onClick={handleRemove}
-                                    className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
-                                    <Trash2 size={16} />
-                                </button>
-                            </>
+                        {onMainHighlightUpdated && isAdmin() && (
+                            <button
+                                onClick={handleMainHighlightUpdate}
+                                className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                                <Star size={16} />
+                            </button>
+                        )}
+                        {onHighlightRemoved && isAdmin() && (
+                            <button
+                                onClick={handleRemove}
+                                className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                                <Trash2 size={16} />
+                            </button>
                         )}
                     </div>
                 </>

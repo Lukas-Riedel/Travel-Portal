@@ -38,7 +38,8 @@ export default function Place() {
         <>
             <PageHeader
                 name={place.name}
-                categories={[place.getMostSpecificCategoryWithMetadata()]} />
+                categories={[place.getMostSpecificCategoryWithMetadata()]}
+                onNameChanged={name => api.updatePlaceName(placeId, name)} />
             <HighlightCarousel
                 name={place.name}
                 highlights={place.highlights}
