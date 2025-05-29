@@ -56,7 +56,9 @@ export default function Place() {
                 onExcerptChanged={excerpt => api.updatePlaceExcerpt(placeId, excerpt).then(setPlace)}
                 onExcerptRefreshed={() => api.updatePlaceExcerpt(placeId, null).then(setPlace)}
                 onLocationChanged={(latitude, longitude) => api.updatePlaceLocation(placeId, latitude, longitude).then(setPlace)} />
-            <DateTileGrid place={place} />
+            <DateTileGrid
+                place={place}
+                onAlbumRefreshed={albumId => api.refreshPlaceAlbum(placeId, albumId).then(fetchAndSetPlace)} />
             <TripBar trips={place.getPastTrips()} />
             {place.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}

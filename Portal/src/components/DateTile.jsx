@@ -8,9 +8,13 @@ import PhotoTile from "./PhotoTile"
 import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useApi } from "../hooks/useApi"
+import { useAuth } from "../contexts/AuthContext"
+import { ExternalLink, Images, RefreshCcw } from "lucide-react"
+import showConfirmToast from "./ConfirmToast"
 
-export default function DateTile({ place, date }) {
+export default function DateTile({ place, date, onAlbumRefreshed }) {
     const api = useApi()
+    const { isAdmin } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [galleryOpen, setGalleryOpen] = useState(false)
     const [images, setImages] = useState([])
@@ -33,18 +37,47 @@ export default function DateTile({ place, date }) {
             .finally(() => setIsLoading(false))
     }
 
-    if (date.album == null) {
+    const handleAlbumRefreshed = () => {
+        showConfirmToast("Opravdu chceš aktualizovat vybrané album?",
+            "Album bylo úspěšně aktualizováno",
+            "Nepodařilo se aktualizovat album",
+            async () => onAlbumRefreshed(date.album.id)
+        )
+    }
+
+    if (date.album === null) {
         return null
     }
 
     return (
-        <>
+        <div>
             <PhotoTile
                 src={date.album.mainImageUrl}
                 firstLineText={place.name}
                 secondLineText={getDateString(date.start)}
                 categories={[place.getMostSpecificCategoryWithMetadata()]}
                 onClick={openGallery} />
+            {isAdmin() && (
+                <div className="flex justify-center gap-2 mt-2">
+                    <a
+                        href={date.album.permalink}
+                        className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
+                        <ExternalLink size={16} />
+                    </a>
+                    <a
+                        href={`/place/${place.id}/album/${date.album.id}`}
+                        className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
+                        <Images size={16} />
+                    </a>
+                    {onAlbumRefreshed && (
+                        <button
+                            onClick={handleAlbumRefreshed}
+                            className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
+                            <RefreshCcw size={16} />
+                        </button>
+                    )}
+                </div>
+            )}
             {isLoading && (
                 <div style={{
                     position: "fixed",
@@ -69,6 +102,6 @@ export default function DateTile({ place, date }) {
                 close={() => setGalleryOpen(false)}
                 slides={images}
                 plugins={[Counter, Fullscreen]} />
-        </>
+        </div>
     )
 }
