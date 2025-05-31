@@ -10,24 +10,21 @@ import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
 import { useApi } from "../hooks/useApi.js"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
+import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
 
 export default function Place() {
     const { placeId } = useParams()
     const api = useApi()
     const [place, setPlace] = useState(null)
-    const [places, setPlaces] = useState([])
+    const { data: places = [] } = useRegularPlaces()
 
-    const fetchAndSetPlace = () => api.getPlace(placeId).then(setPlace).catch(console.error)
-    const fetchAndSetPlaces = () => api.listRegularPlaces().then(setPlaces).catch(console.error)
+    const fetchAndSetPlace = () => api.getPlace(placeId)
+        .then(setPlace)
+        .catch(console.error)
 
     useEffect(() => {
         setPlace(null)
         fetchAndSetPlace()
-    }, [placeId])
-
-    useEffect(() => {
-        setPlaces([])
-        fetchAndSetPlaces()
     }, [placeId])
 
     if (!place) {
@@ -38,7 +35,7 @@ export default function Place() {
         <>
             <PageHeader
                 name={place.name}
-                categories={[place.getMostSpecificCategoryWithMetadata()]}
+                categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
                 onNameChanged={name => api.updatePlaceName(placeId, name)}
                 onAddressChanged={address => api.getCoordinates(address).then(coordinates => api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace)} />
             <HighlightCarousel

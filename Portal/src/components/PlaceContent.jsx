@@ -56,11 +56,10 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
                     )}
                 </p>
             </>
-            <div className="w-full h-full overflow-hidden rounded-lg shadow">
-                <PlaceMap
-                    places={[place]}
-                    onRightClick={handleLocationUpdated} />
-            </div>
-        </div >
+            <PlaceMap
+                places={[place]}
+                placeMainCategorySelector={place => place.getCategory("MOST_SPECIFIC_WITH_METADATA")}
+                onRightClick={handleLocationUpdated} />
+        </div>
     )
 }

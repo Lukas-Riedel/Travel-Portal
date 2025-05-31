@@ -47,7 +47,7 @@ function getTitle(place) {
 
 function getCategoriesComponent(place) {
     return getListComponent("Kategorie", place.categories.map(category => 
-        "<a href=\"https://" + location.hostname + "/category/" + category.id + "\">" + getCategoryPrettyName(category.name) + "</a>"
+        "<a href=\"https://" + location.hostname + "/new/category/" + category.id + "\">" + getCategoryPrettyName(category.name) + "</a>"
     ));
 }
 

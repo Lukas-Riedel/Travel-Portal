@@ -126,7 +126,16 @@ export default function Map({ points, onRightClick }) {
     })
 
     useEffect(() => {
-        if (!mapRef.current || points.length < 2) {
+        if (!mapRef.current) {
+            return
+        }
+
+        if (points.length == 1) {
+            mapRef.current.setCenter({ 
+                lat: points[0]?.latitude ?? 0, 
+                lng: points[0]?.longitude ?? 0 
+            })
+            mapRef.current.setZoom(defaultMapZoom)
             return
         }
 
@@ -143,35 +152,35 @@ export default function Map({ points, onRightClick }) {
     }
 
     return (
-        <GoogleMap
-            mapContainerStyle={{ width: "100%", height: "100%" }}
-            onLoad={onMapLoad}
-            onZoomChanged={onMapZoomChanged}
-            onRightClick={e => onRightClick(e.latLng.lat(), e.latLng.lng())}
-            zoom={defaultMapZoom}
-            center={{ lat: points[0]?.latitude ?? 0, lng: points[0]?.longitude ?? 0 }}
-            options={{ styles: mapStyles, disableDefaultUI: true, fullscreenControl: true }}>
-            {points.map((point, index) => (
-                <Marker
-                    key={index}
-                    onLoad={onMarkerLoad}
-                    onClick={point.onClick}
-                    position={{ lat: point.latitude, lng: point.longitude }}
-                    title={point.name}
-                    icon={{
-                        path: markerPath,
-                        strokeOpacity: point.color === "#FFFFFF" ? 1 : 0.3,
-                        strokeWeight: computeStrokeWeight(mapRef.current?.getZoom() ?? defaultMapZoom),
-                        strokeColor: "black",
-                        fillColor: point.color,
-                        fillOpacity: 1,
-                        rotation: 0,
-                        scale: computeMarkerScale(mapRef.current?.getZoom() ?? defaultMapZoom),
-                        anchor: new google.maps.Point(19, 52)
-                    }}
-                />
-            )
-            )}
-        </GoogleMap>
+        <div className="w-full h-full overflow-hidden rounded-lg shadow">
+            <GoogleMap
+                mapContainerStyle={{ width: "100%", height: "100%" }}
+                onLoad={onMapLoad}
+                onZoomChanged={onMapZoomChanged}
+                onRightClick={e => onRightClick(e.latLng.lat(), e.latLng.lng())}
+                options={{ styles: mapStyles, disableDefaultUI: true, fullscreenControl: true }}>
+                {points.map((point, index) => (
+                    <Marker
+                        key={index}
+                        onLoad={onMarkerLoad}
+                        onClick={point.onClick}
+                        position={{ lat: point.latitude, lng: point.longitude }}
+                        title={point.name}
+                        icon={{
+                            path: markerPath,
+                            strokeOpacity: point.color === "#FFFFFF" ? 1 : 0.3,
+                            strokeWeight: computeStrokeWeight(mapRef.current?.getZoom() ?? defaultMapZoom),
+                            strokeColor: "black",
+                            fillColor: point.color,
+                            fillOpacity: 1,
+                            rotation: 0,
+                            scale: computeMarkerScale(mapRef.current?.getZoom() ?? defaultMapZoom),
+                            anchor: new google.maps.Point(19, 52)
+                        }}
+                    />
+                )
+                )}
+            </GoogleMap>
+        </div>
     )
 }

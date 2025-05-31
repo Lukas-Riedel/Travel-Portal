@@ -189,7 +189,7 @@ function getAlbumsComponentForCountries(countryCategories, places) {
             permalink: undefined,
             place: undefined,
             nameTokens: [ getFlagImage(country.name), country.name ],
-            action: "href=\"https://" + location.hostname + "/category/" + countryIds[country.name] + "\"",            
+            action: "href=\"https://" + location.hostname + "/new/category/" + countryIds[country.name] + "\"",            
             imageUrl: countryImages[country.name]
         };
      }), undefined);

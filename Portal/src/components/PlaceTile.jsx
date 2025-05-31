@@ -1,7 +1,7 @@
 import PhotoTile from "./PhotoTile"
 
-export default function PlaceTile({ place, secondLineText }) {
-    if (place.mainHighlight == null) {
+export default function PlaceTile({ place, mainCategory, secondLineText }) {
+    if (!place.mainHighlight) {
         return null
     }
 
@@ -10,7 +10,7 @@ export default function PlaceTile({ place, secondLineText }) {
             src={place.mainHighlight.url.thumbnail ?? place.mainHighlight.url.full}
             firstLineText={place.name}
             secondLineText={secondLineText}
-            categories={[place.getMostSpecificCategoryWithMetadata()]}
+            categories={[mainCategory]}
             to={"/place/" + place.id} />
     )
 }

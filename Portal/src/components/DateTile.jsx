@@ -11,6 +11,7 @@ import { useApi } from "../hooks/useApi"
 import { useAuth } from "../contexts/AuthContext"
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
 import showConfirmToast from "./ConfirmToast"
+import { Link } from "react-router-dom"
 
 export default function DateTile({ place, date, onAlbumRefreshed }) {
     const api = useApi()
@@ -55,7 +56,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 src={date.album.mainImageUrl}
                 firstLineText={place.name}
                 secondLineText={getDateString(date.start)}
-                categories={[place.getMostSpecificCategoryWithMetadata()]}
+                categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
                 onClick={openGallery} />
             {isAdmin() && (
                 <div className="flex justify-center gap-2 mt-2">
@@ -64,11 +65,11 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                         className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
                         <ExternalLink size={16} />
                     </a>
-                    <a
-                        href={`/place/${place.id}/album/${date.album.id}`}
+                    <Link
+                        to={`/place/${place.id}/album/${date.album.id}`}
                         className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
                         <Images size={16} />
-                    </a>
+                    </Link>
                     {onAlbumRefreshed && (
                         <button
                             onClick={handleAlbumRefreshed}

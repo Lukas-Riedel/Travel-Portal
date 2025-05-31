@@ -1,6 +1,6 @@
 import Map from "./Map.jsx"
 
-export default function PlaceMap({ places, onRightClick }) {
+export default function PlaceMap({ places, placeMainCategorySelector, onRightClick }) {
     return (
         <Map
             points={places.map(place => {
@@ -8,7 +8,7 @@ export default function PlaceMap({ places, onRightClick }) {
                     name: place.name,
                     latitude: place.latitude,
                     longitude: place.longitude,
-                    color: place.getMostSpecificCategoryWithMetadata().metadata.color,
+                    color: placeMainCategorySelector(place).metadata.color,
                     onClick: () => window.location.href = "/place/" + place.id
                 }
             })}

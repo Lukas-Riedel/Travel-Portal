@@ -3,9 +3,12 @@ export default class Place {
         Object.assign(this, place)
     }
 
-    getMostSpecificCategoryWithMetadata() {
-        return this.categories?.findLast(category => category.metadata != null
-            && category.metadata.color != null && category.metadata.unicode != null)
+    getCategory(type) {
+        if (type === "MOST_SPECIFIC_WITH_METADATA") {
+            return this.categories?.findLast(category => category.metadata != null
+                && category.metadata.color != null && category.metadata.unicode != null)
+        }
+        return this.categories?.findLast(category => category.category === type);
     }
 
     getEuclideanDistanceTo(place) {

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom"
+
 export default function CategoryBar({ categories }) {
     if (categories.length === 0) {
         return null
@@ -6,12 +8,12 @@ export default function CategoryBar({ categories }) {
     return (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {categories.map((category, index) => (
-                <a
+                <Link
                     key={index}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"
-                    href={`/category/${category.id}`}>
+                    to={`/category/${category.id}`}>
                     {category.name}
-                </a>
+                </Link>
             ))}
         </div>
     )

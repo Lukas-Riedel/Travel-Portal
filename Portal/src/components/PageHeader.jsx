@@ -23,7 +23,7 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
         )
     }
 
-    return (
+    return categories.length === 1 ? (
         <div className="flex justify-between items-start mb-6">
             <div className="flex items-center space-x-3">
                 <h1 className="text-5xl font-bold">
@@ -51,6 +51,41 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
                         className="w-14 object-cover mx-2" />
                 ))}
             </div>
-        </div >
+        </div>
+    ) : (
+        <div className="mb-6">
+            <div className="flex justify-center items-start mb-4">
+                <div className="flex items-center space-x-3">
+                    <h1 className="text-5xl mb-3 font-bold text-center">
+                        {name}
+                    </h1>
+                    {onNameChanged && isAdmin() && (
+                        <button
+                            onClick={handleNameChanged}
+                            className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                            <SquarePen size={16} />
+                        </button>
+                    )}
+                    {onAddressChanged && isAdmin() && (
+                        <button
+                            onClick={handleAddressChanged}
+                            className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                            <LocationEdit size={16} />
+                        </button>
+                    )}
+                </div>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3">
+                {categories.map((category, index) => (
+                    <img
+                        key={index}
+                        src={`/img/flags/${category.metadata.unicode}.svg`}
+                        alt={category.name}
+                        className="w-10 h-auto"
+                    />
+                ))}
+            </div>
+        </div>
+
     )
 }

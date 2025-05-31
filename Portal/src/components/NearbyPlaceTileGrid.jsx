@@ -51,6 +51,7 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
             <PlaceTile
                 key={index}
                 place={nearbyPlace}
+                mainCategory={nearbyPlace.getCategory("MOST_SPECIFIC_WITH_METADATA")}
                 secondLineText={formatKilometers(nearbyPlace.getHaversineDistanceTo(place).toFixed(0))} />
         ))} />
     )

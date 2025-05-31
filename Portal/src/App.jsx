@@ -4,6 +4,10 @@ import { BrowserRouter, Route, Routes, useSearchParams } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
+import Category from "./pages/Category"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+
+const queryClient = new QueryClient()
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -28,6 +32,7 @@ function AppContent() {
     return (
         <Routes>
             <Route path="/place/:placeId" element={<MainLayout><Place /></MainLayout>} />
+            <Route path="/category/:categoryId" element={<MainLayout><Category /></MainLayout>} />
         </Routes>
     )
 }
@@ -36,9 +41,11 @@ export default function App() {
     return (
         <>
             <Toaster position="top-center" offset={96} />
-            <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
-                <AppContent />
-            </BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+                <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+                    <AppContent />
+                </BrowserRouter>
+            </QueryClientProvider>
         </>
     )
 }
