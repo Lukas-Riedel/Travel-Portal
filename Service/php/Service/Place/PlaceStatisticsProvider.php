@@ -175,7 +175,7 @@
                 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Category) {
-                    $mostVisitedPlaces = array_filter($relevantPlaces, fn($place) => count($place->getDates()) > 1);
+                    $mostVisitedPlaces = array_filter($relevantPlaces, fn($place) => count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $place->getDates()))) > 1);
                     usort($mostVisitedPlaces, fn($a, $b) => count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $b->getDates()))) <=> count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $a->getDates()))));
                     $mostVisitedPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $place->getDates())))), $mostVisitedPlaces);
 
