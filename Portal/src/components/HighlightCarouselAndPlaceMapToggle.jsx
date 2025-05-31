@@ -9,13 +9,27 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
     const carouselRef = useRef(null)
 
     useEffect(() => {
-        if (!carouselRef.current) {
-            return
+        const updateHeight = () => {
+            if (!carouselRef.current) {
+                return
+            }
+
+            const wasHidden = carouselRef.current.classList.contains("hidden")
+            if (wasHidden) {
+                carouselRef.current.classList.remove("hidden")
+            }
+
+            const newHeight = carouselRef.current.offsetHeight
+            if (newHeight > 0) {
+                setHeight(newHeight)
+            }
+
+            if (wasHidden) {
+                carouselRef.current.classList.add("hidden")
+            }
         }
 
-        const updateHeight = () => setHeight(carouselRef.current.offsetHeight)
         updateHeight()
-
         window.addEventListener("resize", updateHeight)
         return () => window.removeEventListener("resize", updateHeight)
     }, [])
