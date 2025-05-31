@@ -4,7 +4,7 @@ import HighlightCarousel from "./HighlightCarousel"
 import PlaceMap from "./PlaceMap"
 
 export default function HighlightCarouselAndPlaceMapToggle({ entity, places, placeMainCategorySelector, onHighlightRemoved, onMainHighlightUpdated }) {
-    const [showMap, setShowMap] = useState(false)
+    const [showMap, setShowMap] = useState(true)
     const [height, setHeight] = useState(0)
     const carouselRef = useRef(null)
 

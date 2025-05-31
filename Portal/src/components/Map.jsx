@@ -95,13 +95,30 @@ const mapStyles = [
 
 export default function Map({ points, onRightClick }) {
     const markersRef = useRef([])
+    const mapRef = useRef(null)
+    
     const onMarkerLoad = marker => {
         markersRef.current.push(marker)
     }
 
-    const mapRef = useRef(null)
     const onMapLoad = map => {
         mapRef.current = map
+
+        if (points.length == 1) {
+            mapRef.current.setCenter({ 
+                lat: points[0]?.latitude ?? 0, 
+                lng: points[0]?.longitude ?? 0 
+            })
+            mapRef.current.setZoom(defaultMapZoom)
+            return
+        }
+
+        const bounds = new window.google.maps.LatLngBounds()
+        points.forEach(point => {
+            bounds.extend(new window.google.maps.LatLng(point.latitude, point.longitude))
+        })
+
+        mapRef.current.fitBounds(bounds)
     }
 
     const onMapZoomChanged = () => {
@@ -124,28 +141,6 @@ export default function Map({ points, onRightClick }) {
         language: "cs",
         region: "CZ"
     })
-
-    useEffect(() => {
-        if (!mapRef.current) {
-            return
-        }
-
-        if (points.length == 1) {
-            mapRef.current.setCenter({ 
-                lat: points[0]?.latitude ?? 0, 
-                lng: points[0]?.longitude ?? 0 
-            })
-            mapRef.current.setZoom(defaultMapZoom)
-            return
-        }
-
-        const bounds = new window.google.maps.LatLngBounds()
-        points.forEach(point => {
-            bounds.extend(new window.google.maps.LatLng(point.latitude, point.longitude))
-        })
-
-        mapRef.current.fitBounds(bounds)
-    }, [mapRef, points])
 
     if (!isLoaded) {
         return null
