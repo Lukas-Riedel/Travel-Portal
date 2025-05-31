@@ -1,19 +1,17 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useApi } from "../hooks/useApi"
-import { useAuth } from "./AuthContext"
+import { useQuery } from "@tanstack/react-query"
 
 const ConfigContext = createContext()
 
 export function ConfigurationProvider({ children }) {
-    const { accessToken } = useAuth()
     const api = useApi()
-    const [configuration, setConfiguration] = useState(null)
 
-    useEffect(() => {
-        if (accessToken) {
-            api.listConfigurationEntries("public").then(setConfiguration)
-        }
-    }, [api, accessToken])
+    const { data: configuration = null } = useQuery({
+        queryKey: ["publicConfiguration"],
+        queryFn: () => api.listConfigurationEntries("public"),
+        staleTime: 1000 * 60 * 60,
+    })
 
     return (
         <ConfigContext.Provider value={configuration}>

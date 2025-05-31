@@ -5,9 +5,6 @@ import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
 import Category from "./pages/Category"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-
-const queryClient = new QueryClient()
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -41,11 +38,9 @@ export default function App() {
     return (
         <>
             <Toaster position="top-center" offset={96} />
-            <QueryClientProvider client={queryClient}>
-                <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
-                    <AppContent />
-                </BrowserRouter>
-            </QueryClientProvider>
+            <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+                <AppContent />
+            </BrowserRouter>
         </>
     )
 }
