@@ -46,7 +46,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                     {onLabelRemoved && isAdmin() && (
                         <button
                             onClick={() => handleLabelRemoved(label)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors">
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
                             <Trash2 size={16} />
                         </button>
                     )}
@@ -61,7 +61,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                     </span>
                     <button
                         onClick={() => handleLabelAdded(labelName)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors">
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
                         <Plus size={16} />
                     </button>
                 </div>

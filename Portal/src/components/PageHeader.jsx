@@ -32,13 +32,13 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
                 {onNameChanged && isAdmin() && (
                     <button
                         onClick={handleNameChanged}
-                        className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                        className="mt-1 btn-chip-gray">
                         <SquarePen size={16} />
                     </button>)}
                 {onAddressChanged && isAdmin() && (
                     <button
                         onClick={handleAddressChanged}
-                        className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                        className="mt-1 btn-chip-gray">
                         <LocationEdit size={16} />
                     </button>)}
             </div>
@@ -62,14 +62,14 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
                     {onNameChanged && isAdmin() && (
                         <button
                             onClick={handleNameChanged}
-                            className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                            className="mt-1 btn-chip-gray">
                             <SquarePen size={16} />
                         </button>
                     )}
                     {onAddressChanged && isAdmin() && (
                         <button
                             onClick={handleAddressChanged}
-                            className="rounded-full mt-1 bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                            className="mt-1 btn-chip-gray">
                             <LocationEdit size={16} />
                         </button>
                     )}

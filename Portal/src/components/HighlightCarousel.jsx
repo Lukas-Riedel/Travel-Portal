@@ -74,20 +74,20 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
                     <div className="absolute top-3 right-3 flex space-x-2">
                         <button
                             onClick={() => setIsPaused(prev => !prev)}
-                            className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                            className="btn-chip-white">
                             {isPaused ? <Play size={16} /> : <Pause size={16} />}
                         </button>
                         {onMainHighlightUpdated && isAdmin() && (
                             <button
                                 onClick={handleMainHighlightUpdated}
-                                className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                                className="btn-chip-white">
                                 <Star size={16} />
                             </button>
                         )}
                         {onHighlightRemoved && isAdmin() && (
                             <button
                                 onClick={handleHighlightRemoved}
-                                className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2">
+                                className="btn-chip-white">
                                 <Trash2 size={16} />
                             </button>
                         )}

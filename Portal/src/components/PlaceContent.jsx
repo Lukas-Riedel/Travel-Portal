@@ -43,14 +43,14 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
                     {onExcerptRefreshed && isAdmin() && (
                         <button
                             onClick={handleExcerptRefreshed}
-                            className="float-right ml-2 mb-1 rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium inline-flex items-center space-x-2">
+                            className="float-right ml-2 mb-1 btn-chip-gray-inline">
                             <RefreshCcw size={16} />
                         </button>
                     )}
                     {onExcerptChanged && isAdmin() && (
                         <button
                             onClick={handleExcerptChanged}
-                            className="float-right ml-2 mb-1 rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium inline-flex items-center space-x-2">
+                            className="float-right ml-2 mb-1 btn-chip-gray-inline">
                             <SquarePen size={16} />
                         </button>
                     )}

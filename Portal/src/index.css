@@ -12,3 +12,23 @@
 body {
     background-color: #f0f0f0;
 }
+
+.btn-chip-white {
+    @apply rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2
+}
+
+.btn-large-gray {
+    @apply rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2
+}
+
+.btn-icon-hover {
+    @apply rounded-full hover:bg-gray-200 transition-colors
+}
+
+.btn-chip-gray {
+    @apply rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2
+}
+
+.btn-chip-gray-inline {
+    @apply rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-1 text-sm font-medium inline-flex items-center space-x-2
+}

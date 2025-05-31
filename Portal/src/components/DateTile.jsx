@@ -62,18 +62,18 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 <div className="flex justify-center gap-2 mt-2">
                     <a
                         href={date.album.permalink}
-                        className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
+                        className="btn-large-gray">
                         <ExternalLink size={16} />
                     </a>
                     <Link
                         to={`/place/${place.id}/album/${date.album.id}`}
-                        className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
+                        className="btn-large-gray">
                         <Images size={16} />
                     </Link>
                     {onAlbumRefreshed && (
                         <button
                             onClick={handleAlbumRefreshed}
-                            className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2">
+                            className="btn-large-gray">
                             <RefreshCcw size={16} />
                         </button>
                     )}

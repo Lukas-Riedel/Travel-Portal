@@ -11,7 +11,7 @@ export default function MainLayout({ children }) {
             {!isAdmin() && (
                 <div className="flex justify-center mt-5">
                     <button
-                        className="rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-gray-100 transition-colors px-3 py-2 text-sm font-medium inline-flex items-center space-x-2"
+                        className="btn-large-gray"
                         onClick={showLoginToast}>
                         <LogIn size={16} />
                     </button>

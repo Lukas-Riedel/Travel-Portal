@@ -40,10 +40,9 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
                         placeMainCategorySelector={placeMainCategorySelector}
                     />
                 </div>
-
                 <button
                     onClick={() => setShowMap((prev) => !prev)}
-                    className="absolute bottom-2 right-2 rounded-full bg-white/80 backdrop-blur-sm text-black shadow-md hover:bg-white transition-colors px-3 py-1 text-sm font-medium flex items-center space-x-2 z-10">
+                    className="absolute bottom-3 right-3 btn-chip-white">
                     {showMap ? <Images size={16} /> : <Map size={16} />}
                 </button>
             </div>
