@@ -62,7 +62,7 @@ function getLabelsComponent(place, isLoggedIn) {
 }
 
 function formatLabel(label, placeId, showRemoveButton) {
-    return "<a href=\"https://" + location.hostname + "/label/" + label.name + "\">" + label.name + "</a>"
+    return "<a href=\"https://" + location.hostname + "/new/label/" + label.name + "\">" + label.name + "</a>"
         + (showRemoveButton ? " <a style=\"color: red;\" onclick=\"removeLabel(" + label.id + ", " + placeId + ")\">Odstranit</a>" : "");
 }
 

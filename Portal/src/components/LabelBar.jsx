@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext"
 import clsx from "clsx"
 import showConfirmToast from "./ConfirmToast"
 import { useConfiguration } from "../contexts/ConfigContext"
+import { Link } from "react-router-dom"
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
@@ -35,14 +36,14 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                 <div
                     key={index}
                     className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
-                    <a
-                        href={`/label/${label.name}`}
+                    <Link
+                        to={`/label/${label.name}`}
                         className={clsx(
                             "text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full",
                             isAdmin() ? "lg:pr-5" : "lg:pr-0"
                         )}>
                         {label.name}
-                    </a>
+                    </Link>
                     {onLabelRemoved && isAdmin() && (
                         <button
                             onClick={() => handleLabelRemoved(label)}
@@ -56,9 +57,11 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                 <div
                     key={index}
                     className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
-                    <span className="text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full lg:pr-5">
+                    <Link
+                        to={`/label/${labelName}`}
+                        className="text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full lg:pr-5">
                         {labelName}
-                    </span>
+                    </Link>
                     <button
                         onClick={() => handleLabelAdded(labelName)}
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">

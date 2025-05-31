@@ -5,6 +5,7 @@ import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
 import Category from "./pages/Category"
+import Label from "./pages/Label"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -30,6 +31,7 @@ function AppContent() {
         <Routes>
             <Route path="/place/:placeId" element={<MainLayout><Place /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><Category /></MainLayout>} />
+            <Route path="/label/:labelName" element={<MainLayout><Label /></MainLayout>} />
         </Routes>
     )
 }
