@@ -64,7 +64,8 @@ export default function Category() {
                 onHighlightRemoved={highlightId => api.removeCategoryHighlight(categoryId, highlightId)}
                 onMainHighlightUpdated={highlightId => api.updateCategoryMainHighlight(categoryId, highlightId)} />
             <StatisticsPanel statistics={category.statistics} />
-            <PlaceTileGrid places={categoryPlaces}
+            <PlaceTileGrid
+                places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory} />
         </>
     )

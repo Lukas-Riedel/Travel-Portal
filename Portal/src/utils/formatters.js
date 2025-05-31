@@ -6,7 +6,7 @@ export function formatDuration(value, includeSeconds = false) {
     return [
         h > 0 && format(h, ["hodina", "hodiny", "hodin"]),
         m > 0 && format(m, ["minuta", "minuty", "minut"]),
-        (s > 0 || (includeSeconds && h === 0 && m === 0)) && format(s, ["sekunda", "sekundy", "sekund"])
+        (s > 0 || (h === 0 && m === 0)) && includeSeconds && format(s, ["sekunda", "sekundy", "sekund"])
     ].filter(Boolean).join(" ")
 }
 

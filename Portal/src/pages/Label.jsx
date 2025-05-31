@@ -44,7 +44,8 @@ export default function Label() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
-            <PlaceTileGrid places={labelPlaces}
+            <PlaceTileGrid
+                places={labelPlaces}
                 placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
         </>
     )

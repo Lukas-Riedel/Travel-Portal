@@ -29,7 +29,7 @@ export default function StatisticsPanel({ statistics }) {
             lastTimestamp = timestamp
 
             if (!isDragging) {
-                containerRef.current.scrollLeft += delta / 16
+                containerRef.current.scrollLeft += 0.7 * (delta / 16)
 
                 const halfScrollWidth = containerRef.current.scrollWidth / 2
                 if (containerRef.current.scrollLeft >= halfScrollWidth) {
