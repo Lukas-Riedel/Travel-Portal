@@ -6,6 +6,7 @@ import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselA
 import { useAuth } from "../contexts/AuthContext"
 import { getMaxEndTimestamp } from "../utils/helpers"
 import PlaceTileGrid from "../components/PlaceTileGrid"
+import StatisticsPanel from "../components/StatisticsPanel"
 
 export default function Category() {
     const { categoryId } = useParams()
@@ -62,6 +63,7 @@ export default function Category() {
                 placeMainCategorySelector={getPlaceCategory}
                 onHighlightRemoved={highlightId => api.removeCategoryHighlight(categoryId, highlightId)}
                 onMainHighlightUpdated={highlightId => api.updateCategoryMainHighlight(categoryId, highlightId)} />
+            <StatisticsPanel statistics={category.statistics} />
             <PlaceTileGrid places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory} />
         </>

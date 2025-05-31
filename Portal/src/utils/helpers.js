@@ -7,3 +7,7 @@ export function getDateString(timestamp) {
 export function getMaxEndTimestamp(isAdmin) {
     return isAdmin ? Number.MAX_SAFE_INTEGER : Math.round(Date.now() / 1000)
 }
+
+export function decapitalize(str) {
+    return str[0].toLowerCase() + str.slice(1)
+}
