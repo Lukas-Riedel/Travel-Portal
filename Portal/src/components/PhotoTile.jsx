@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { getPrettyName } from "../utils/helpers";
 
 export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick }) {
     const InteractiveElement = to ? Link : "div"
@@ -27,7 +28,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                             ))}
                         </li>
                         <li>
-                            {firstLineText}
+                            {getPrettyName(firstLineText)}
                         </li>
                         <li>
                             {secondLineText && (

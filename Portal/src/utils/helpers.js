@@ -11,3 +11,8 @@ export function getMaxEndTimestamp(isAdmin) {
 export function decapitalize(str) {
     return str[0].toLowerCase() + str.slice(1)
 }
+
+export function getPrettyName(name) {
+    const index = name.indexOf("(")
+    return index === -1 ? name : name.slice(0, index).trim()
+}

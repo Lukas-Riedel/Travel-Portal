@@ -1,6 +1,7 @@
 import { LocationEdit, SquarePen } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showInputToast from "./InputToast"
+import { getPrettyName } from "../utils/helpers"
 
 export default function PageHeader({ name, categories, onNameChanged, onAddressChanged }) {
     const { isAdmin } = useAuth()
@@ -27,7 +28,7 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
         <div className="flex justify-between items-start mb-6">
             <div className="flex items-center space-x-3">
                 <h1 className="text-5xl font-bold">
-                    {name}
+                    {getPrettyName(name)}
                 </h1>
                 {onNameChanged && isAdmin() && (
                     <button
