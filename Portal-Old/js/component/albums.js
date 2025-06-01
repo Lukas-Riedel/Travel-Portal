@@ -100,12 +100,10 @@ function getAlbumsComponentForCategory(places) {
                 id: place.id,
                 name: place.name,
                 country: place.country,
-                imagesCount: place.imagesCount,
-                imagesScore: place.imagesScore,
+                score: place.score,
                 imageUrl: place.mainHighlight.url.thumbnail
             }
-        }).filter(place => place.imagesScore > 0), (a, b) => b.imagesScore - a.imagesScore);
-    places.forEach(place => console.log(place.name + " - " + place.imagesScore + " (" + place.imagesCount + ")"));
+        }).filter(place => place.score > 0), (a, b) => b.score - a.score);
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name) ],
@@ -124,11 +122,10 @@ function getAlbumsComponentForNearbyPlaces(referencePlace, places) {
                 name: place.name,
                 country: place.country,
                 distance: Math.round(getDistance(referencePlace, place)),
-                imagesCount: place.imagesCount,
-                imagesScore: place.imagesScore,
+                score: place.score,
                 imageUrl: place.mainHighlight.url.thumbnail
             }
-        }).filter(place => place.imagesScore > 0).filter(place => place.distance > 0), (a, b) => a.distance - b.distance).slice(0, Math.max(configuration.minimumNearbyPlacesCount, configuration.albumsPerRow));
+        }).filter(place => place.score > 0).filter(place => place.distance > 0), (a, b) => a.distance - b.distance).slice(0, Math.max(configuration.minimumNearbyPlacesCount, configuration.albumsPerRow));
     return getAlbumsComponent(places.map(place => {
         return {
             nameTokens: [ getFlagImage(place.country), getPlacePrettyName(place.name), formatKilometersCount(place.distance) ],
@@ -163,26 +160,22 @@ function getAlbumsComponentForCountries(countryCategories, places) {
             return {
                 name: place.name,
                 country: place.country,
-                imagesCount: place.imagesCount,
-                imagesScore: place.imagesScore
+                score: place.score
             };
-        }).filter(place => place.imagesScore > 0), (a, b) => b.imagesScore - a.imagesScore);
+        }).filter(place => place.score > 0), (a, b) => b.score - a.score);
     const countriesMap = {};
     places.forEach(place => {
         if (!(place.country in countriesMap)) {
             countriesMap[place.country] = {
                 name: place.country,
-                imagesCount: place.imagesCount,
-                imagesScore: place.imagesScore
+                score: place.score
             };
         }
         else {
-            countriesMap[place.country].imagesCount += place.imagesCount;
-            countriesMap[place.country].imagesScore += place.imagesScore;
+            countriesMap[place.country].score += place.score;
         }
     });
-    const countriesArray = sorted(Object.values(countriesMap), (a, b) => b.imagesScore - a.imagesScore);
-    countriesArray.forEach(country => console.log(country.name + " - " + country.imagesScore + " (" + country.imagesCount + ")"));
+    const countriesArray = sorted(Object.values(countriesMap), (a, b) => b.score - a.score);
     return getAlbumsComponent(countriesArray.map(country => {
         return {
             id: undefined,

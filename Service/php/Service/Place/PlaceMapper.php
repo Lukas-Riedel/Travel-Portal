@@ -240,7 +240,7 @@
                     }
                     
                     $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, $labels, array());
+                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $excerpt, $categories, $highlights, $labels, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -312,7 +312,7 @@
                         }
                         
                         $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                            $placeRow["longitude"], $placeRow["timezone"], $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $excerpt, $categories, $highlights, $labels, array());
+                            $placeRow["longitude"], $placeRow["timezone"], $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $excerpt, $categories, $highlights, $labels, array());
                     }
                 }
             }
@@ -367,7 +367,7 @@
                 }
 
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                    $placeRow["longitude"], $placeRow["timezone"], NULL, $excerpt, $categories, $highlights, $labels, array());
+                    $placeRow["longitude"], $placeRow["timezone"], NULL, $placeRow["score"], $excerpt, $categories, $highlights, $labels, array());
             }
             
             return $places;
@@ -422,7 +422,7 @@
                     }
 
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                        $placeRow["longitude"], $placeRow["timezone"], NULL, $excerpt, $categories, $highlights, $labels, array()); 
+                        $placeRow["longitude"], $placeRow["timezone"], NULL, $excerpt, $placeRow["score"], $categories, $highlights, $labels, array()); 
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -451,7 +451,7 @@
             }
 
             return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
-                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
+                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["excerpt"]);
         }
 
         public function selectPlaceIdentifierById(string $placeId) : ?PlaceIdentifier {
@@ -471,7 +471,7 @@
             }
 
             return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
-                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["excerpt"]);
+                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["excerpt"]);
         }
 
         public function selectPlaceEventId(string $placeId, int $start) : ?string {
@@ -545,6 +545,19 @@
                 ->execute() === 1;
         }
 
+        public function updatePlaceScore(string $placeId, float $score) : bool {
+            $sql = <<<'SQL'
+                UPDATE place_identifier
+                SET score = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($score, $placeId)
+                ->execute() === 1;
+        }
+
         public function updatePlaceExcerpt(string $placeId, string $excerpt) : bool {
             $sql = <<<'SQL'
                 UPDATE place_identifier
@@ -580,7 +593,8 @@
                     timezone, 
                     latitude, 
                     longitude, 
-                    excerpt
+                    excerpt,
+                    score
                 )
                 VALUES (
                     ?, 
@@ -595,7 +609,8 @@
             $wasInserted = $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($placeIdentifier->getName(), $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
-                    $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getExcerpt())
+                    $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getExcerpt(),
+                    $placeIdentifier->getScore())
                 ->execute() === 1;
                 
             if ($wasInserted) {

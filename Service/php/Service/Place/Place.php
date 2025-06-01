@@ -12,6 +12,7 @@
         private readonly float $longitude;
         private readonly string $timezone;
         private readonly ?Highlight $mainHighlight;
+        private readonly float $score;
         private readonly ?string $excerpt;
         private readonly array $categories;
         private readonly array $highlights;
@@ -19,7 +20,7 @@
         private array $dates;
 
         public function __construct(string $id, string $name, string $country, float $latitude, float $longitude,
-            string $timezone, ?Highlight $mainHighlight, ?string $excerpt, array $categories,
+            string $timezone, ?Highlight $mainHighlight, float $score, ?string $excerpt, array $categories,
             array $highlights, array $labels, array $dates) {
             $this->id = $id;
             $this->name = $name;
@@ -27,6 +28,7 @@
             $this->latitude = $latitude;
             $this->longitude = $longitude;
             $this->timezone = $timezone;
+            $this->score = $score;
             $this->mainHighlight = $mainHighlight;
             $this->excerpt = $excerpt;
             $this->categories = $categories;
@@ -62,6 +64,10 @@
         public function getMainHighlight() : ?Highlight {
             return $this->mainHighlight;
         }
+    
+        public function getScore() : float {            
+            return $this->score;
+        }
 
         public function getExcerpt() : ?string {
             return $this->excerpt;
@@ -89,7 +95,7 @@
 
         public function getPlaceIdentifier() : PlaceIdentifier {
             return new PlaceIdentifier($this->id, $this->name, $this->country, $this->latitude,
-                $this->longitude, $this->timezone, $this->mainHighlight, $this->excerpt);
+                $this->longitude, $this->timezone, $this->mainHighlight, $this->score, $this->excerpt);
         }
 
         public function withUpdatedDates(array $dates) : Place {
@@ -109,61 +115,9 @@
             return NULL;
         }
 
-        public function getImagesCount() : int {
-            $count = 0;
-            $encounteredAlbums = array();
-    
-            foreach ($this->dates as &$date) {
-                $album = $date->getAlbum();
-
-                if ($album == NULL || in_array($album->getId(), $encounteredAlbums)) {
-                    continue;
-                }
-                $encounteredAlbums[] = $album->getId();
-    
-                $count += $album->getImagesCount();
-            }
-    
-            return $count;
-        }
-    
-        public function getImagesScore() : float {            
-            $buckets = array();
-            $encounteredAlbums = array();
-    
-            foreach ($this->dates as &$date) {
-                $album = $date->getAlbum();
-
-                if ($album == NULL || in_array($album->getId(), $encounteredAlbums)) {
-                    continue;
-                }
-                $encounteredAlbums[] = $album->getId();
-    
-                $tripId = $date->getTrip() == NULL
-                    ? intval($date->getStart() / (86400 * 365))
-                    : $date->getTrip()->getId();
-    
-                if (!isset($buckets[$tripId])) {
-                    $buckets[$tripId] = 0;
-                }
-    
-                $buckets[$tripId] += $this->getRelevantImagesCountForScore($album);
-            }
-    
-            return empty($buckets) ? 0 : max(array_values($buckets));
-        }
-
-        private function getRelevantImagesCountForScore($album) : int {
-            return $album->getImagesCount() == 0 || $album->getIndoorImagesCount() / $album->getImagesCount() > 0.6
-                ? $album->getImagesCount() // This is an indoor-only location.
-                : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
-        }
-
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return get_object_vars($this) + array(
-                "imagesCount" => $this->getImagesCount(), 
-                "imagesScore" => $this->getImagesScore());
+            return get_object_vars($this);
         }
     }
 ?>

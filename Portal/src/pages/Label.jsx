@@ -15,9 +15,8 @@ export default function Label() {
     const api = useApi()
     const [labelPlaces, setLabelPlaces] = useState([])
 
-    // TODO: Remove the "DATES" scope after moving score to backend functions
-    const fetchAndSetLabelPlaces = () => api.listRegularPlaces(undefined, undefined, labelName, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES,DATES")
-        .then(places => places.sort((a, b) => b.imagesScore - a.imagesScore))
+    // TODO: Remove the "CATEGORIES" scope
+    const fetchAndSetLabelPlaces = () => api.listRegularPlaces(undefined, undefined, labelName, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES", "score")
         .then(setLabelPlaces)
         .catch(console.error)
 

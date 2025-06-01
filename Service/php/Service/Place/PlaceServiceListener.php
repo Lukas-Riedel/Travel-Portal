@@ -6,6 +6,8 @@
 
     class PlaceServiceListener {
 
+        private const ONE_YEAR_SECONDS = 365 * 86400;
+
         private readonly PlaceService $placeService;
 
         private readonly TripService $tripService;
@@ -36,6 +38,29 @@
                 foreach ($place->getCategories() as &$category) {
                     $this->eventPublisher->publishCategoryUpdatedEvent($category->getId());
                 }
+
+                $buckets = array();
+                $encounteredAlbums = array();
+                foreach ($this->placeService->getRegularPlace($place->getPlaceIdentifier()->getId())->getDates() as &$date) {
+                    $album = $date->getAlbum();
+                    if ($album !== NULL && !in_array($album->getId(), $encounteredAlbums)) {
+                        $encounteredAlbums[] = $album->getId();
+            
+                        $tripId = $date->getTrip() === NULL
+                            ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
+                            : $date->getTrip()->getId();
+            
+                        if (!isset($buckets[$tripId])) {
+                            $buckets[$tripId] = 0;
+                        }            
+                        
+                        $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
+                            ? $album->getImagesCount() // This is an indoor-only location.
+                            : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
+                    }                    
+                }
+        
+                $this->placeService->updatePlaceScore($place->getPlaceIdentifier()->getId(), empty($buckets) ? 0 : max(array_values($buckets)));
             }
         }
 

@@ -12,10 +12,11 @@
         private readonly float $longitude;
         private readonly string $timezone;
         private readonly ?Highlight $mainHighlight;
+        private readonly float $score;
         private readonly ?string $excerpt;
 
         public function __construct(?string $id, string $name, string $country, float $latitude,
-            float $longitude, string $timezone, ?Highlight $mainHighlight, ?string $excerpt) {
+            float $longitude, string $timezone, ?Highlight $mainHighlight, float $score, ?string $excerpt) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
@@ -23,6 +24,7 @@
             $this->longitude = $longitude;
             $this->timezone = $timezone;
             $this->mainHighlight = $mainHighlight;
+            $this->score = $score;
             $this->excerpt = $excerpt;
         }
 
@@ -56,6 +58,10 @@
 
         public function getMainHighlight() : ?Highlight {
             return $this->mainHighlight;
+        }
+
+        public function getScore() : float {
+            return $this->score;
         }
 
         public function getExcerpt() : ?string {

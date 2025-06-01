@@ -9,8 +9,8 @@ export const useRegularPlaces = () => {
 
     return useQuery({
         queryKey: ["regularPlaces"],
-        // TODO: Remove the "DATES" scope after moving score to backend functions
-        queryFn: () => api.listRegularPlaces(undefined, undefined, undefined, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES,DATES"),
+        // TODO: Remove the "CATEGORIES" scope
+        queryFn: () => api.listRegularPlaces(undefined, undefined, undefined, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES", "score"),
         staleTime: 1000 * 60 * 15,
     })
 }

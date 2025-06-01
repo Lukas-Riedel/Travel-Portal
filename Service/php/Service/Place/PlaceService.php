@@ -96,6 +96,10 @@
             return $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
         }
 
+        public function updatePlaceScore(string $placeId, float $score) : bool {
+            return $this->placeMapper->updatePlaceScore($placeId, $score);
+        }
+
         public function updatePlaceExcerpt(string $placeId, ?string $excerpt) : bool {
             if ($excerpt === NULL) {
                 $placeIdentifier = $this->getPlaceIdentifierById($placeId);
@@ -219,7 +223,7 @@
                 $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
                 $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                    $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(),
+                    $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getExcerpt(),
                     array(), array(), array(), array(new Date($start, $end, $isLayover, NULL, NULL, NULL, $resolvedTripIdentifier)));
 
                 $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
@@ -259,7 +263,7 @@
             
             $location = $this->geocodingService->getLocation($address);
             $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
-                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, $this->getSuggestedExcerpt($name, $country));
+                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, 0, $this->getSuggestedExcerpt($name, $country));
             $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
             
             $this->eventPublisher->publishPlaceCreatedEvent($placeIdentifier->getId());
@@ -300,7 +304,8 @@
             $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getExcerpt(), array(), array(), array(), array());
+                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
+                $placeIdentifier->getExcerpt(), array(), array(), array(), array());
         }
 
         private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {

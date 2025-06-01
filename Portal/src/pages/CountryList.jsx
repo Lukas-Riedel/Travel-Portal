@@ -20,9 +20,8 @@ export default function CountryList() {
         }
 
         setCountries(Object.entries(allPlaces
-            .sort((a, b) => b.imagesScore - a.imagesScore)
             .reduce((acc, place) => {
-                acc[place.country] = (acc[place.country] || 0) + place.imagesCount;
+                acc[place.country] = (acc[place.country] || 0) + place.score;
                 return acc;
             }, {}))
             .sort(([, countA], [, countB]) => countB - countA)

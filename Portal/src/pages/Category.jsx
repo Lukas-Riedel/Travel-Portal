@@ -19,9 +19,8 @@ export default function Category() {
         .then(setCategory)
         .catch(console.error)
 
-    // TODO: Remove the "DATES" scope after moving score to backend functions
-    const fetchAndSetCategoryPlaces = () => api.listRegularPlaces(undefined, categoryId, undefined, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES,DATES")
-        .then(places => places.sort((a, b) => b.imagesScore - a.imagesScore))
+    // TODO: Remove the "CATEGORIES" scope
+    const fetchAndSetCategoryPlaces = () => api.listRegularPlaces(undefined, categoryId, undefined, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES", "score")
         .then(setCategoryPlaces)
         .catch(console.error)
 

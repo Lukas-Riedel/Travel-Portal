@@ -153,7 +153,7 @@ export function useApi() {
     }
 
     async function listRegularPlaces(tripId = undefined, categoryId = undefined, label = undefined,
-        year = undefined, minStart = undefined, maxEnd = undefined, include = undefined) {
+        year = undefined, minStart = undefined, maxEnd = undefined, include = undefined, sort = undefined) {
         return sendRequest("GET", "/places", {},
             {
                 type: "regular",
@@ -163,7 +163,8 @@ export function useApi() {
                 year: year,
                 minStart: minStart,
                 maxEnd: maxEnd,
-                include: include
+                include: include,
+                sort: sort
             })
             .then(places => places.map(place => new Place(place)))
     }
