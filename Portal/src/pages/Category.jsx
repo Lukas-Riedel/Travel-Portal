@@ -11,7 +11,6 @@ export default function Category() {
     const { categoryId } = useParams()
 
     const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight } = useCategory(categoryId)
-    // TODO: Remove the "CATEGORIES" scope
     const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "CATEGORIES", sort: "score" })
 
     const countryCategoriesMap = useMemo(() => new Map(categoryPlaces.map(place => place.getCategory("COUNTRY"))

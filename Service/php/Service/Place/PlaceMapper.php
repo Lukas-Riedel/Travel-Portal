@@ -216,12 +216,17 @@
                 ->withDeferredParameters(...$orderByParameters)
                 ->getResultSet();
 
+            $categoryIdsToCategoryIdentifiersCache = array();
+
             $places = array();
             foreach ($placeRows as &$placeRow) {
                 if (!isset($places[$placeRow["place_id"]])) {
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
-                        $categories = $this->categoryService->getCategoryIdentifiersByIds(explode(",", $placeRow["category_ids"]));
+                        if (!isset($categoryIdsToCategoryIdentifiersCache[$placeRow["category_ids"]])) {
+                            $categoryIdsToCategoryIdentifiersCache[$placeRow["category_ids"]] = $this->categoryService->getCategoryIdentifiersByIds(explode(",", $placeRow["category_ids"]));
+                        }
+                        $categories = $categoryIdsToCategoryIdentifiersCache[$placeRow["category_ids"]];
                     }                   
 
                     $highlights = array();         

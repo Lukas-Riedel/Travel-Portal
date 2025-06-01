@@ -8,7 +8,6 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 export default function Label() {
     const { labelName } = useParams()
 
-    // TODO: Remove the "CATEGORIES" scope
     const labelPlaces = useTimeFilteredRegularPlaces({ labelName, include: "CATEGORIES", sort: "score" })
 
     const countryCategoriesMap = useMemo(() => new Map(labelPlaces.map(place => place.getCategory("COUNTRY"))

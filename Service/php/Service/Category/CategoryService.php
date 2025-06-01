@@ -15,6 +15,8 @@
         
         private readonly \EventPublisher $eventPublisher;
 
+        private array $categoryIdToCategoryIdentifierCache = array();
+
         public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService,
             HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService);
@@ -74,7 +76,10 @@
         }
 
         public function getCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
-            return $this->categoryMapper->selectCategoryIdentifierById($categoryId);
+            if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
+                $this->categoryIdToCategoryIdentifierCache[$categoryId] = $this->categoryMapper->selectCategoryIdentifierById($categoryId);
+            }
+            return $this->categoryIdToCategoryIdentifierCache[$categoryId];
         }
 
         public function getCategoryIdsForPlace(string $placeId) : array { 
