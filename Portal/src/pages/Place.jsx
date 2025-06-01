@@ -8,19 +8,16 @@ import PlaceContent from "../components/PlaceContent.jsx"
 import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
-import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
 import { usePlace } from "../hooks/usePlace.js"
-import { getMaxEndTimestamp } from "../utils/helpers.js"
-import { useAuth } from "../contexts/AuthContext.jsx"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
 export default function Place() {
     const { placeId } = useParams()
-    const { isAdmin } = useAuth()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum } = usePlace(placeId)
-    const places = useRegularPlaces({ maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES" })
+    const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
 
     return place && (
         <>

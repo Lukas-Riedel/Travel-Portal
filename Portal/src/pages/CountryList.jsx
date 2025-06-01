@@ -1,17 +1,13 @@
-import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useCategories } from "../hooks/useCategories"
 import CategoryTileGrid from "../components/CategoryTileGrid.jsx"
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import StatisticsPanel from "../components/StatisticsPanel.jsx"
 import { useStatistics } from "../hooks/useStatistics"
-import { useAuth } from "../contexts/AuthContext.jsx"
-import { getMaxEndTimestamp } from "../utils/helpers.js"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
 export default function CountryList() {
-    const { isAdmin } = useAuth()
-
-    const places = useRegularPlaces({ maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES", sort: "score" })
+    const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
     const countryCategories = useCategories({ categories: "COUNTRY" })
     const statistics = useStatistics()
 
