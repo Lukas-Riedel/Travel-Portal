@@ -4,14 +4,20 @@ import clsx from "clsx"
 import showConfirmToast from "./ConfirmToast"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Link } from "react-router-dom"
+import { useMemo } from "react"
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
     const configuration = useConfiguration()
+    
+    const unassignedLabelNames = useMemo(() => {
+        if (!configuration) {
+            return []
+        }
 
-    if (labels.length === 0 && !isAdmin()) {
-        return null
-    }
+        const assignedLabelNames = labels?.map(label => label.name)
+        return  Object.values(configuration.labels).flat().filter(label => !assignedLabelNames.includes(label))
+    }, [configuration, labels])
 
     const handleLabelAdded = labelName => {
         showConfirmToast(`Opravdu chceš přidat štítek '${labelName}'?`,
@@ -27,10 +33,8 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
             async () => onLabelRemoved(label.id))
     }
 
-    const assignedLabelNames = labels.map(label => label.name)
-    const unassignedLabelNames = configuration ? Object.values(configuration.labels).flat().filter(label => !assignedLabelNames.includes(label)) : []
 
-    return (
+    return (labels?.length > 0 || isAdmin()) && (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {labels.map((label, index) => (
                 <div

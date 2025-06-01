@@ -3,8 +3,7 @@ import { getPrettyName } from "../utils/helpers";
 
 export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick }) {
     const InteractiveElement = to ? Link : "div"
-
-    return (
+    return src && firstLineText && (
         <div className="relative w-[350px] h-[233px] mx-auto">
             <InteractiveElement
                 to={to}
@@ -18,7 +17,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                 <div className="absolute left-0 bottom-0 w-full flex items-center justify-center bg-gradient-to-t from-black via-black/70 to-transparent text-white text-sm uppercase font-medium leading-[170%] py-4 rounded-b-xl">
                     <ul className="list-none m-0 p-0 flex flex-col items-center gap-0.5 text-base">
                         <li>
-                            {categories.map((category, index) => (
+                            {categories?.map((category, index) => (
                                 <img
                                     key={index}
                                     src={`/img/flags/${category.metadata.unicode}.svg`}

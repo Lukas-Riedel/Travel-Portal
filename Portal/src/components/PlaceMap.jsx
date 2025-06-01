@@ -1,7 +1,7 @@
 import Map from "./Map.jsx"
 
 export default function PlaceMap({ places, placeMainCategorySelector, onRightClick }) {
-    return (
+    return places?.length > 0 && (
         <Map
             points={places.map(place => {
                 return {

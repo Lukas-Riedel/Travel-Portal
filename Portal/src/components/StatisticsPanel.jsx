@@ -4,23 +4,25 @@ import { useConfiguration } from "../contexts/ConfigContext"
 import { decapitalize } from "../utils/helpers.js"
 
 export default function StatisticsPanel({ statistics }) {
+    const configuration = useConfiguration()
+
     const containerRef = useRef(null)
     const [isDragging, setIsDragging] = useState(false)
     const isDraggingRef = useRef(false)
     const dragStartX = useRef(0)
     const scrollStartX = useRef(0)
     const animationFrame = useRef(null)
-    const configuration = useConfiguration()
     const [shuffledStatistics] = useState(() => [...statistics].sort(() => Math.random() - 0.5))
 
     useEffect(() => {
-        if (!containerRef.current) {
-            return
-        }
-
         let lastTimestamp = null
+        let cancelled = false
 
         function step(timestamp) {
+            if (cancelled || !containerRef.current) {
+                return
+            }
+
             if (!lastTimestamp) {
                 lastTimestamp = timestamp
             }
@@ -28,7 +30,7 @@ export default function StatisticsPanel({ statistics }) {
             const delta = timestamp - lastTimestamp
             lastTimestamp = timestamp
 
-            if (!isDragging) {
+            if (!isDraggingRef.current) {
                 containerRef.current.scrollLeft += 0.7 * (delta / 16)
 
                 const halfScrollWidth = containerRef.current.scrollWidth / 2
@@ -42,11 +44,12 @@ export default function StatisticsPanel({ statistics }) {
 
         animationFrame.current = requestAnimationFrame(step)
         return () => {
+            cancelled = true
             if (animationFrame.current) {
                 cancelAnimationFrame(animationFrame.current)
             }
         }
-    }, [isDragging])
+    }, [])
 
     function onWindowPointerMove(e) {
         if (!isDraggingRef.current) {
@@ -100,12 +103,8 @@ export default function StatisticsPanel({ statistics }) {
         e.preventDefault()
     }
 
-    if (!shuffledStatistics) {
-        return null
-    }
-
     const doubledStats = [...shuffledStatistics, ...shuffledStatistics]
-    return (
+    return doubledStats.length > 0 && (
         <div
             className="overflow-hidden py-2 my-2 relative bg-white"
             ref={containerRef}

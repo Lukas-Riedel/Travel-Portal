@@ -142,11 +142,7 @@ export default function Map({ points, onRightClick }) {
         region: "CZ"
     })
 
-    if (!isLoaded) {
-        return null
-    }
-
-    return (
+    return isLoaded && (
         <div className="w-full h-full overflow-hidden rounded-lg shadow">
             <GoogleMap
                 mapContainerStyle={{ width: "100%", height: "100%" }}

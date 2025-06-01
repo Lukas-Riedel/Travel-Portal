@@ -1,11 +1,7 @@
 import PhotoTile from "./PhotoTile"
 
 export default function PlaceTile({ place, mainCategory, secondLineText }) {
-    if (!place.mainHighlight) {
-        return null
-    }
-
-    return (
+    return place?.mainHighlight && (
         <PhotoTile
             src={place.mainHighlight.url.thumbnail ?? place.mainHighlight.url.full}
             firstLineText={place.name}

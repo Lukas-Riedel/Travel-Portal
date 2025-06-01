@@ -1,9 +1,5 @@
 export default function TripBar({ trips }) {
-    if (trips.length === 0) {
-        return null
-    }
-
-    return (
+    return trips.length > 0 && (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {[...trips].reverse().map((trip, index) => (
                 <a

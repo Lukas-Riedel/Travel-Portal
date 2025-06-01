@@ -12,6 +12,14 @@ export const useCategory = (categoryId) => {
         staleTime: isAdmin() ? 0 : 1000 * 60 * 60 * 2,
     })
 
-    // TODO: Map to Category object
-    return query.data
+    const setCategory = category => queryClient.setQueryData(["getCategory", categoryId], category)
+    const refetchCategory = _ => query.refetch()
+
+    return {
+        // TODO: Map to Category object
+        category: query.data,
+        updateCategoryName: name => api.updateCategoryName(categoryId, name).then(setCategory),
+        removeCategoryHighlight: highlightId => api.removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),
+        updateCategoryMainHighlight: highlightId => api.updateCategoryMainHighlight(categoryId, highlightId).then(setCategory),
+    }
 }

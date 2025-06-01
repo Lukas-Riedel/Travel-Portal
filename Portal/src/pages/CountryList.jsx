@@ -10,6 +10,7 @@ import { getMaxEndTimestamp } from "../utils/helpers.js"
 
 export default function CountryList() {
     const { isAdmin } = useAuth()
+
     const places = useRegularPlaces({ maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES", sort: "score" })
     const countryCategories = useCategories({ categories: "COUNTRY" })
     const statistics = useStatistics()
@@ -34,11 +35,7 @@ export default function CountryList() {
             .filter(Boolean)
     }, [places, countryCategoriesMap, countryCategories])
 
-    if (places.length === 0 || countries.length === 0 || statistics.length === 0) {
-        return null
-    }
-
-    return (
+    return places?.length > 0 && countries?.length > 0 && statistics?.length > 0 && (
         <>
             <div className="h-[400px] md:h-[700px]">
                 <PlaceMap

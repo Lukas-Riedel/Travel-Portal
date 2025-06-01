@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom"
-import { useApi } from "../hooks/useApi"
 import { useCategory } from "../hooks/useCategory"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import PageHeader from "../components/PageHeader"
@@ -13,8 +12,8 @@ import { useMemo } from "react"
 export default function Category() {
     const { categoryId } = useParams()
     const { isAdmin } = useAuth()
-    const api = useApi()
-    const category = useCategory(categoryId)
+
+    const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight } = useCategory(categoryId)
     // TODO: Remove the "CATEGORIES" scope
     const categoryPlaces = useRegularPlaces({ categoryId, maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES", sort: "score" })
 
@@ -31,22 +30,18 @@ export default function Category() {
         return place.getCategory("MOST_SPECIFIC_WITH_METADATA")
     }
 
-    if (!category || categoryPlaces.length === 0) {
-        return null
-    }
-
-    return (
+    return category && categoryPlaces?.length > 0 && (
         <>
             <PageHeader
                 name={category.name}
                 categories={category.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                onNameChanged={name => api.updateCategoryName(categoryId, name)} />
+                onNameChanged={updateCategoryName} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}
                 places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory}
-                onHighlightRemoved={highlightId => api.removeCategoryHighlight(categoryId, highlightId)}
-                onMainHighlightUpdated={highlightId => api.updateCategoryMainHighlight(categoryId, highlightId)} />
+                onHighlightRemoved={removeCategoryHighlight}
+                onMainHighlightUpdated={updateCategoryMainHighlight} />
             <StatisticsPanel statistics={category.statistics} />
             <PlaceTileGrid
                 places={categoryPlaces}

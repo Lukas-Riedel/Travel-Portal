@@ -7,7 +7,6 @@ import TripBar from "../components/TripBar.jsx"
 import PlaceContent from "../components/PlaceContent.jsx"
 import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
-import { useApi } from "../hooks/useApi.js"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
 import { usePlace } from "../hooks/usePlace.js"
@@ -15,41 +14,38 @@ import { getMaxEndTimestamp } from "../utils/helpers.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function Place() {
-    const { isAdmin } = useAuth()
     const { placeId } = useParams()
-    const api = useApi()
-    const place = usePlace(placeId)
-    const places = useRegularPlaces({ maxEnd: getMaxEndTimestamp(isAdmin()) })
+    const { isAdmin } = useAuth()
 
-    if (!place) {
-        return null
-    }
+    const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
+        updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
+        refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum } = usePlace(placeId)
+    const places = useRegularPlaces({ maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES" })
 
-    return (
+    return place && (
         <>
             <PageHeader
                 name={place.name}
                 categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
-                onNameChanged={name => api.updatePlaceName(placeId, name)}
-                onAddressChanged={address => api.getCoordinates(address).then(coordinates => api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace)} />
+                onNameChanged={updatePlaceName}
+                onAddressChanged={updatePlaceAddress} />
             <HighlightCarousel
-                name={place.name}
                 highlights={place.highlights}
-                onHighlightRemoved={highlightId => api.removePlaceHighlight(placeId, highlightId)}
-                onMainHighlightUpdated={highlightId => api.updatePlaceMainHighlight(placeId, highlightId)} />
+                onHighlightRemoved={removePlaceHighlight}
+                onMainHighlightUpdated={updatePlaceMainHighlight} />
             <CategoryBar categories={place.categories} />
             <LabelBar
                 labels={place.labels}
-                onLabelAdded={name => api.createPlaceLabel(placeId, name).then(fetchAndSetPlace)}
-                onLabelRemoved={labelId => api.removePlaceLabel(placeId, labelId).then(fetchAndSetPlace)} />
+                onLabelAdded={createPlaceLabel}
+                onLabelRemoved={removePlaceLabel} />
             <PlaceContent
                 place={place}
-                onExcerptChanged={excerpt => api.updatePlaceExcerpt(placeId, excerpt).then(setPlace)}
-                onExcerptRefreshed={() => api.updatePlaceExcerpt(placeId, null).then(setPlace)}
-                onLocationChanged={(latitude, longitude) => api.updatePlaceLocation(placeId, latitude, longitude).then(setPlace)} />
+                onExcerptChanged={updatePlaceExcerpt}
+                onExcerptRefreshed={refreshPlaceExcerpt}
+                onLocationChanged={updatePlaceLocation} />
             <DateTileGrid
                 place={place}
-                onAlbumRefreshed={albumId => api.refreshPlaceAlbum(placeId, albumId).then(fetchAndSetPlace)} />
+                onAlbumRefreshed={refreshPlaceAlbum} />
             <TripBar trips={place.getPastTrips()} />
             {place.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}

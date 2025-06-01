@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom"
 
 export default function CategoryBar({ categories }) {
-    if (categories.length === 0) {
-        return null
-    }
-
-    return (
+    return categories?.length > 0 && (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {categories.map((category, index) => (
                 <Link

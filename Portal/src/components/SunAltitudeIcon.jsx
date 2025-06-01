@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import SunCalc from "suncalc"
 
 export default function SunAltitudeIcon({ altitude, place }) {
-    const [time, setTime] = useState(null)
-
     const isSunrise = Object.is(altitude, +0)
     const isSunset = Object.is(altitude, -0)
     const isPositiveRateAltitude = altitude > 0 || isSunrise
 
-    useEffect(() => {
+    const time = useMemo(() => {
         const today = new Date()
         const sunTimes = SunCalc.getTimes(today, place.latitude, place.longitude)
 
@@ -26,18 +24,17 @@ export default function SunAltitudeIcon({ altitude, place }) {
                 || (!isPositiveRateAltitude && previous.altitude > Math.abs(altitude) && current.altitude <= Math.abs(altitude))) {
                 const ratio = (Math.abs(altitude) - previous.altitude) / (current.altitude - previous.altitude)
                 const time = new Date(previous.time.getTime() + ratio * (current.time - previous.time))
-                setTime(time)
+                return time
             }
         }
-    }, [place])
 
-    const icon = isSunrise ? "🌅" : isSunset ? "🌇" : "☀️"
-    const label = isSunrise ? "Východ" : isSunset ? "Západ" : Math.abs(altitude) + "°"
+        return null
+    }, [place])
 
     return (
         <div className="flex flex-col items-center">
-            <div className="text-xl">{icon}</div>
-            <div className="text-sm text-gray-500">{label}</div>
+            <div className="text-xl">{isSunrise ? "🌅" : isSunset ? "🌇" : "☀️"}</div>
+            <div className="text-sm text-gray-500">{isSunrise ? "Východ" : isSunset ? "Západ" : Math.abs(altitude) + "°"}</div>
             <div className="font-semibold">{time ? time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: place.timezone }) : "---"}</div>
         </div>
     )

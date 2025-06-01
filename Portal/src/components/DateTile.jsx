@@ -14,8 +14,10 @@ import { Link } from "react-router-dom"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos"
 
 export default function DateTile({ place, date, onAlbumRefreshed }) {
-    const photos = usePlaceAlbumPhotos(place.id, date.album.id)
     const { isAdmin } = useAuth()
+
+    const photos = usePlaceAlbumPhotos(place?.id, date?.album?.id)
+
     const [isLoading, setIsLoading] = useState(false)
     const [galleryOpen, setGalleryOpen] = useState(false)
     const [images, setImages] = useState([])
@@ -46,11 +48,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
         )
     }
 
-    if (date.album === null) {
-        return null
-    }
-
-    return (
+    return place && date?.album && (
         <div>
             <PhotoTile
                 src={date.album.mainImageUrl}

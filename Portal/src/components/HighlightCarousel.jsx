@@ -4,9 +4,10 @@ import { Pause, Play, Trash2, Star } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
 
-export default function HighlightCarousel({ name, highlights, onHighlightRemoved, onMainHighlightUpdated }) {
+export default function HighlightCarousel({ highlights, onHighlightRemoved, onMainHighlightUpdated }) {
     const { isAdmin } = useAuth()
-    const [shuffledHighlights, setShuffledHighlights] = useState(() => [...highlights].sort(() => Math.random() - 0.5))
+
+    const [shuffledHighlights, setShuffledHighlights] = useState(() => [...(highlights ?? [])].sort(() => Math.random() - 0.5))
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
 
@@ -18,10 +19,6 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
         const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % highlights.length), 7000)
         return () => clearInterval(interval)
     }, [shuffledHighlights, isPaused])
-
-    if (shuffledHighlights.length === 0) {
-        return null
-    }
 
     const handleHighlightRemoved = () => {
         showConfirmToast("Opravdu chceš odstranit tento highlight?",
@@ -47,13 +44,12 @@ export default function HighlightCarousel({ name, highlights, onHighlightRemoved
             })
     }
 
-    return (
+    return shuffledHighlights.length > 0 && (
         <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg">
             <AnimatePresence mode="sync">
                 <motion.img
                     key={currentHighlightIndex}
                     src={shuffledHighlights[currentHighlightIndex].url.full ?? shuffledHighlights[currentHighlightIndex].url.thumbnail}
-                    alt={name}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

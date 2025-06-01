@@ -58,7 +58,7 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
             <div className="flex justify-center items-start mb-4">
                 <div className="flex items-center space-x-3">
                     <h1 className="text-5xl mb-3 font-bold text-center">
-                        {name}
+                        {getPrettyName(name)}
                     </h1>
                     {onNameChanged && isAdmin() && (
                         <button
@@ -87,6 +87,5 @@ export default function PageHeader({ name, categories, onNameChanged, onAddressC
                 ))}
             </div>
         </div>
-
     )
 }

@@ -5,6 +5,7 @@ const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
     const iam = useIam()
+    
     const [accessToken, setAccessToken] = useState(JSON.parse(localStorage.getItem("accessToken") || "null"))
 
     const login = async ({ username, password, apiKey }) => {
