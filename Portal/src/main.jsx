@@ -6,26 +6,26 @@ import { AuthProvider } from "./contexts/AuthContext"
 import { ConfigurationProvider } from "./contexts/ConfigContext"
 import { hydrate, QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { persistQueryClient } from "@tanstack/react-query-persist-client"
+import localforage from "localforage"
 
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            cacheTime: 1000 * 60 * 60,
-            staleTime: 1000 * 60 * 60,
+            cacheTime: 1000 * 60 * 60 * 24,
+            staleTime: 1000 * 60 * 60 * 24,
         },
     },
 })
 
 const persister = {
     persistClient: async (client) => {
-        localStorage.setItem("REACT_QUERY_OFFLINE_CACHE", JSON.stringify(client))
+        await localforage.setItem("REACT_QUERY_OFFLINE_CACHE", client)
     },
     restoreClient: async () => {
-        const cache = localStorage.getItem("REACT_QUERY_OFFLINE_CACHE")
-        return cache ? JSON.parse(cache) : undefined
+        return await localforage.getItem("REACT_QUERY_OFFLINE_CACHE")
     },
     removeClient: async () => {
-        localStorage.removeItem("REACT_QUERY_OFFLINE_CACHE")
+        await localforage.removeItem("REACT_QUERY_OFFLINE_CACHE")
     },
 }
 
@@ -38,7 +38,7 @@ const persister = {
     persistQueryClient({
         queryClient,
         persister,
-        maxAge: 1000 * 60 * 60,
+        maxAge: 1000 * 60 * 60 * 24,
     })
 
     ReactDOM.createRoot(document.getElementById("root")).render(

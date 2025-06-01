@@ -1,16 +1,18 @@
 import { useQuery } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
-import { getMaxEndTimestamp } from "../utils/helpers"
+import Place from "../model/place"
 
-export const useRegularPlaces = () => {
-    const { isAdmin } = useAuth()
+export const useRegularPlaces = ({ tripId, categoryId, labelName, year, minStart, maxEnd, include, sort } = {}) => {
     const api = useApi()
+    const { isAdmin } = useAuth()
 
-    return useQuery({
-        queryKey: ["regularPlaces"],
-        // TODO: Remove the "CATEGORIES" scope
-        queryFn: () => api.listRegularPlaces(undefined, undefined, undefined, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES", "score"),
-        staleTime: 1000 * 60 * 15,
+    const validity = 60 * 60 * 2
+    const query = useQuery({
+        queryKey: ["listRegularPlaces", tripId, categoryId, labelName, year, minStart - (minStart % validity), maxEnd - (maxEnd % validity), include, sort],
+        queryFn: () => api.listRegularPlaces({ tripId, categoryId, labelName, year, minStart, maxEnd, include, sort }),
+        staleTime: isAdmin() ? 0 : 1000 * validity,
     })
+    
+    return (query.data ?? []).map(place => new Place(place))
 }

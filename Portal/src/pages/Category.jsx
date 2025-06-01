@@ -1,45 +1,26 @@
-import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { useApi } from "../hooks/useApi"
+import { useCategory } from "../hooks/useCategory"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import PageHeader from "../components/PageHeader"
 import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
 import { useAuth } from "../contexts/AuthContext"
 import { getMaxEndTimestamp } from "../utils/helpers"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import StatisticsPanel from "../components/StatisticsPanel"
+import { useMemo } from "react"
 
 export default function Category() {
     const { categoryId } = useParams()
     const { isAdmin } = useAuth()
     const api = useApi()
-    const [category, setCategory] = useState(null)
-    const [categoryPlaces, setCategoryPlaces] = useState([])
-
-    const fetchAndSetCategory = () => api.getCategory(categoryId)
-        .then(setCategory)
-        .catch(console.error)
-
+    const category = useCategory(categoryId)
     // TODO: Remove the "CATEGORIES" scope
-    const fetchAndSetCategoryPlaces = () => api.listRegularPlaces(undefined, categoryId, undefined, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES", "score")
-        .then(setCategoryPlaces)
-        .catch(console.error)
+    const categoryPlaces = useRegularPlaces({ categoryId, maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES", sort: "score" })
 
-    useEffect(() => {
-        setCategory(null)
-        fetchAndSetCategory()
-    }, [categoryId])
+    const countryCategoriesMap = useMemo(() => new Map(categoryPlaces.map(place => place.getCategory("COUNTRY"))
+        .map(category => [category.name, category])), [categoryPlaces])
 
-    useEffect(() => {
-        setCategoryPlaces([])
-        fetchAndSetCategoryPlaces()
-    }, [categoryId])
-
-    if (!category || categoryPlaces.length === 0) {
-        return null
-    }
-
-    const countryCategoriesMap = new Map(categoryPlaces.map(place => place.getCategory("COUNTRY"))
-        .map(category => [category.name, category]))
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
             return countryCategoriesMap.get(place.country)
@@ -48,6 +29,10 @@ export default function Category() {
             return category
         }
         return place.getCategory("MOST_SPECIFIC_WITH_METADATA")
+    }
+
+    if (!category || categoryPlaces.length === 0) {
+        return null
     }
 
     return (

@@ -1,36 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
-import { useApi } from "../hooks/useApi"
 import PageHeader from "../components/PageHeader"
-import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
 import { useAuth } from "../contexts/AuthContext"
 import { getMaxEndTimestamp } from "../utils/helpers"
 import PlaceTileGrid from "../components/PlaceTileGrid"
-import StatisticsPanel from "../components/StatisticsPanel"
 import PlaceMap from "../components/PlaceMap"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
 
 export default function Label() {
     const { labelName } = useParams()
     const { isAdmin } = useAuth()
-    const api = useApi()
-    const [labelPlaces, setLabelPlaces] = useState([])
-
     // TODO: Remove the "CATEGORIES" scope
-    const fetchAndSetLabelPlaces = () => api.listRegularPlaces(undefined, undefined, labelName, undefined, undefined, getMaxEndTimestamp(isAdmin()), "CATEGORIES", "score")
-        .then(setLabelPlaces)
-        .catch(console.error)
+    const labelPlaces = useRegularPlaces({ labelName, maxEnd: getMaxEndTimestamp(isAdmin()), include: "CATEGORIES", sort: "score" })
 
-    useEffect(() => {
-        setLabelPlaces([])
-        fetchAndSetLabelPlaces()
-    }, [labelName])
+    const countryCategoriesMap = useMemo(() => new Map(labelPlaces.map(place => place.getCategory("COUNTRY"))
+        .map(category => [category.name, category])), [labelPlaces])
 
     if (labelPlaces.length === 0) {
         return null
     }
-
-    const countryCategoriesMap = new Map(labelPlaces.map(place => place.getCategory("COUNTRY"))
-        .map(category => [category.name, category]))
 
     return (
         <>

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react"
+import { useRef } from "react"
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api"
 
 const defaultMapZoom = 8

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Lightbox from "yet-another-react-lightbox"
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen"
 import Counter from "yet-another-react-lightbox/plugins/counter"
@@ -7,35 +7,35 @@ import "yet-another-react-lightbox/plugins/counter.css"
 import PhotoTile from "./PhotoTile"
 import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
-import { useApi } from "../hooks/useApi"
 import { useAuth } from "../contexts/AuthContext"
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
 import showConfirmToast from "./ConfirmToast"
 import { Link } from "react-router-dom"
+import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos"
 
 export default function DateTile({ place, date, onAlbumRefreshed }) {
-    const api = useApi()
+    const photos = usePlaceAlbumPhotos(place.id, date.album.id)
     const { isAdmin } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [galleryOpen, setGalleryOpen] = useState(false)
     const [images, setImages] = useState([])
 
-    const openGallery = () => {
-        if (images.length > 0) {
+    useEffect(() => {
+        if (isLoading && photos.length > 0) {
+            setImages(photos.map(photo => ({ src: photo.url + "=d" })))
+            setIsLoading(false)
             setGalleryOpen(true)
-            return
         }
+    }, [photos, isLoading])
 
-        setIsLoading(true)
-        api.listPlaceAlbumPhotos(place.id, date.album.id)
-            .then(photos => {
-                setImages(photos.map(photo => ({
-                    src: photo.url + "=d"
-                })))
-                setGalleryOpen(true)
-            })
-            .catch(console.error)
-            .finally(() => setIsLoading(false))
+    const openGallery = () => {
+        if (photos.length > 0) {
+            setImages(photos.map(photo => ({ src: photo.url + "=d" })))
+            setGalleryOpen(true)
+        }
+        else {
+            setIsLoading(true)
+        }
     }
 
     const handleAlbumRefreshed = () => {

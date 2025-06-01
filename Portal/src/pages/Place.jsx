@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react"
 import PageHeader from "../components/PageHeader.jsx"
 import HighlightCarousel from "../components/HighlightCarousel.jsx"
 import CategoryBar from "../components/CategoryBar.jsx"
@@ -11,21 +10,16 @@ import { useParams } from "react-router-dom"
 import { useApi } from "../hooks/useApi.js"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
+import { usePlace } from "../hooks/usePlace.js"
+import { getMaxEndTimestamp } from "../utils/helpers.js"
+import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function Place() {
+    const { isAdmin } = useAuth()
     const { placeId } = useParams()
     const api = useApi()
-    const [place, setPlace] = useState(null)
-    const { data: places = [] } = useRegularPlaces()
-
-    const fetchAndSetPlace = () => api.getPlace(placeId)
-        .then(setPlace)
-        .catch(console.error)
-
-    useEffect(() => {
-        setPlace(null)
-        fetchAndSetPlace()
-    }, [placeId])
+    const place = usePlace(placeId)
+    const places = useRegularPlaces({ maxEnd: getMaxEndTimestamp(isAdmin()) })
 
     if (!place) {
         return null

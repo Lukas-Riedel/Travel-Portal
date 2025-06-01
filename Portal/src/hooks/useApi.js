@@ -60,7 +60,7 @@ export function useApi() {
             })
     }
 
-    async function listCategories(categories = undefined, include = undefined) {
+    async function listCategories({ categories, include } = {}) {
         return sendRequest("GET", "/categories", {},
             {
                 categories: categories,
@@ -152,14 +152,13 @@ export function useApi() {
             .then(place => new Place(place))
     }
 
-    async function listRegularPlaces(tripId = undefined, categoryId = undefined, label = undefined,
-        year = undefined, minStart = undefined, maxEnd = undefined, include = undefined, sort = undefined) {
+    async function listRegularPlaces({ tripId, categoryId, labelName, year, minStart, maxEnd, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "regular",
                 tripId: tripId,
                 categoryId: categoryId,
-                label: label,
+                label: labelName,
                 year: year,
                 minStart: minStart,
                 maxEnd: maxEnd,
@@ -169,7 +168,7 @@ export function useApi() {
             .then(places => places.map(place => new Place(place)))
     }
 
-    async function listCandidatePlaces(tripId = undefined, categoryId = undefined, include = undefined) {
+    async function listCandidatePlaces({ tripId, categoryId, include } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "candidate",
@@ -239,7 +238,7 @@ export function useApi() {
             })
     }
 
-    async function refreshPlaceAlbum(placeId, albumId, mainPhotoPosition = undefined) {
+    async function refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition } = {}) {
         return sendRequest("POST", "/places/" + placeId + "/albums/" + albumId + "/refresh", {},
             {
                 mainPhotoPosition: mainPhotoPosition
@@ -302,7 +301,7 @@ export function useApi() {
             })
     }
 
-    async function listTimeTrackingEvents(type = undefined) {
+    async function listTimeTrackingEvents({ type } = {}) {
         return sendRequest("GET", "/tracker", {},
             {
                 type: type
@@ -313,7 +312,7 @@ export function useApi() {
         return sendRequest("DELETE", "/tracker/" + eventId)
     }
 
-    async function listTrips(year = undefined, include = undefined) {
+    async function listTrips({ year, include } = {}) {
         return sendRequest("GET", "/trips", {},
             {
                 type: "regular",
@@ -322,7 +321,7 @@ export function useApi() {
             })
     }
 
-    async function listCandidateTrips(include = undefined) {
+    async function listCandidateTrips({ include } = {}) {
         return sendRequest("GET", "/trips", {},
             {
                 type: "candidate",
