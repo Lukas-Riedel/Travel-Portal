@@ -5,17 +5,19 @@ const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
     const iam = useIam()
-    
-    const [accessToken, setAccessToken] = useState(JSON.parse(localStorage.getItem("accessToken") || "null"))
+    const [accessToken, setAccessToken] = useState(() => {
+        const stored = localStorage.getItem("accessToken")
+        return stored ? JSON.parse(stored) : null
+    })
 
     const login = async ({ username, password, apiKey }) => {
-        const accessToken = apiKey
+        const token = apiKey
             ? await iam.getAccessTokenForApiKey(apiKey)
             : await iam.getAccessTokenForUser(username, password)
-        accessToken.expiration = Date.now() + accessToken.validity * 1000
 
-        localStorage.setItem("accessToken", JSON.stringify(accessToken))
-        setAccessToken(accessToken)
+        token.expiration = Date.now() + token.validity * 1000
+        localStorage.setItem("accessToken", JSON.stringify(token))
+        setAccessToken(token)
     }
 
     const logout = () => {
@@ -30,25 +32,41 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const { newAccessToken } = await iam.getAccessTokenForRefreshToken(accessToken.refreshToken)
-            newAccessToken.expiration = Date.now() + accessToken.validity * 1000
+            const newToken = await iam.getAccessTokenForRefreshToken(accessToken.refreshToken)
+            newToken.expiration = Date.now() + newToken.validity * 1000
 
-            localStorage.setItem("accessToken", JSON.stringify(newAccessToken))
-            setToken(newAccessToken)
-        }
-        catch {
+            localStorage.setItem("accessToken", JSON.stringify(newToken))
+            setAccessToken(newToken)
+        } catch {
             logout()
         }
-    }, [accessToken])
+    }, [accessToken, iam])
 
     useEffect(() => {
-        if (!accessToken || accessToken.expiration < Date.now()) {
-            refreshAccessToken()
+        if (!accessToken) {
+            return
         }
+
+        const refreshThreshold = 60 * 1000
+        const delay = accessToken.expiration - Date.now() - refreshThreshold
+
+        if (delay <= 0) {
+            refreshAccessToken()
+            return
+        }
+
+        const timeout = setTimeout(refreshAccessToken, delay)
+
+        return () => clearTimeout(timeout)
     }, [accessToken, refreshAccessToken])
 
     return (
-        <AuthContext.Provider value={{ accessToken, login, logout, isAdmin: () => accessToken?.roles?.includes("ADMIN") || false }}>
+        <AuthContext.Provider value={{
+            accessToken,
+            login,
+            logout,
+            isAdmin: () => accessToken?.roles?.includes("ADMIN") || false
+        }}>
             {children}
         </AuthContext.Provider>
     )

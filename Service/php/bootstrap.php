@@ -1,4 +1,5 @@
 <?php
+    // TODO: Remove ASAP.
     session_start();
 
     require_once(dirname(__FILE__) . "/../vendor/autoload.php");
@@ -25,8 +26,8 @@
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\CategoryServiceListener;
     use Service\Service\Expense\ExpenseService;
-use Service\Service\Expense\ExpenseStatisticsProvider;
-use Service\Service\Fitness\FitnessService;
+    use Service\Service\Expense\ExpenseStatisticsProvider;
+    use Service\Service\Fitness\FitnessService;
     use Service\Service\Fitness\FitnessServiceListener;
     use Service\Service\Fitness\FitnessStatisticsProvider;
     use Service\Service\Flight\FlightService;
