@@ -36,7 +36,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
 
     return (labels?.length > 0 || isAdmin()) && (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
-            {labels.map((label, index) => (
+            {labels.filter(label => isAdmin() || !configuration?.labels?.private?.includes(label.name)).map((label, index) => (
                 <div
                     key={index}
                     className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
