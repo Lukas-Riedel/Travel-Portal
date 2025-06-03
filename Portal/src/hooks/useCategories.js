@@ -13,5 +13,5 @@ export const useCategories = ({ categories, include } = {}) => {
     })
     
     // TODO: Map to Category objects
-    return query.data ?? []
+    return query.data
 }

@@ -1,40 +1,29 @@
-import { useState, useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { formatKilometers } from "../utils/formatters.js"
 import Place from "../model/place.js"
 import TileGrid from "./TileGrid.jsx"
 import PlaceTile from "./PlaceTile.jsx"
-import { TailSpin } from "react-loader-spinner"
 
 export default function NearbyPlaceTileGrid({ place, places, count }) {
     const nearbyPlaces = useMemo(() => places
-        .filter(p => p.id !== place.id)
+        ?.filter(p => p.id !== place?.id)
         .filter(p => p.mainHighlight)
-        .map(p => new Place({ ...p, distance: p.getEuclideanDistanceTo(place) }))
+        .map(p => place && new Place({ ...p, distance: p.getEuclideanDistanceTo(place) }))
+        .filter(p => p)
         .sort((a, b) => a.distance - b.distance)
         .slice(0, 2 * count)
-        .map(p => new Place({ ...p, distance: p.getHaversineDistanceTo(place) }))
+        .map(p => place && new Place({ ...p, distance: p.getHaversineDistanceTo(place) }))
+        .filter(p => p)
         .sort((a, b) => a.distance - b.distance)
         .slice(0, count), [place, places, count])
 
-    return nearbyPlaces.length > 0 ? (
-        <TileGrid tiles={nearbyPlaces.map((nearbyPlace, index) => (
+    return (
+        <TileGrid tiles={nearbyPlaces?.map((nearbyPlace, index) => (
             <PlaceTile
                 key={index}
                 place={nearbyPlace}
-                mainCategory={nearbyPlace.getCategory("MOST_SPECIFIC_WITH_METADATA")}
-                secondLineText={formatKilometers(Math.round(nearbyPlace.getHaversineDistanceTo(place)))} />
-        ))} />
-    ) : (
-        <TileGrid tiles={Array.from({ length: count }, (_, index) => (
-            <div
-                key={index}
-                className="relative w-[350px] h-[233px] mx-auto flex items-center justify-center">
-                <TailSpin
-                    color="black"
-                    height={30}
-                    width={30}
-                />
-            </div>
+                mainCategory={nearbyPlace?.getCategory("MOST_SPECIFIC_WITH_METADATA")}
+                secondLineText={formatKilometers(Math.round(nearbyPlace?.getHaversineDistanceTo(place)))} />
         ))} />
     )
 }

@@ -19,20 +19,20 @@ export default function Place() {
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum } = usePlace(placeId)
     const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
 
-    return place && (
+    return (
         <>
             <PageHeader
-                name={place.name}
-                categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                name={place?.name}
+                categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
                 onNameChanged={updatePlaceName}
                 onAddressChanged={updatePlaceAddress} />
             <HighlightCarousel
-                highlights={place.highlights}
+                highlights={place?.highlights}
                 onHighlightRemoved={removePlaceHighlight}
                 onMainHighlightUpdated={updatePlaceMainHighlight} />
-            <CategoryBar categories={place.categories} />
+            <CategoryBar categories={place?.categories} />
             <LabelBar
-                labels={place.labels}
+                labels={place?.labels}
                 onLabelAdded={createPlaceLabel}
                 onLabelRemoved={removePlaceLabel} />
             <PlaceContent
@@ -43,8 +43,8 @@ export default function Place() {
             <DateTileGrid
                 place={place}
                 onAlbumRefreshed={refreshPlaceAlbum} />
-            <TripBar trips={place.getPastTrips()} />
-            {place.getAlbums().length > 0 && place.getPastTrips().length === 0
+            <TripBar trips={place?.getPastTrips()} />
+            {place?.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid
                 place={place}

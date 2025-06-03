@@ -13,5 +13,5 @@ export const useStatistics = () => {
     })
     
     // TODO: Map to Statistics objects
-    return query.data ?? []
+    return query.data
 }

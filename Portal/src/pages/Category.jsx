@@ -13,24 +13,24 @@ export default function Category() {
     const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight } = useCategory(categoryId)
     const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "CATEGORIES", sort: "score" })
 
-    const countryCategoriesMap = useMemo(() => new Map(categoryPlaces.map(place => place.getCategory("COUNTRY"))
+    const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("COUNTRY"))
         .map(category => [category.name, category])), [categoryPlaces])
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
-            return countryCategoriesMap.get(place.country)
+            return countryCategoriesMap.get(place?.country)
         }
-        if (place.country === category.name) {
+        if (place?.country === category?.name) {
             return category
         }
-        return place.getCategory("MOST_SPECIFIC_WITH_METADATA")
+        return place?.getCategory("MOST_SPECIFIC_WITH_METADATA")
     }
 
-    return category && categoryPlaces?.length > 0 && (
+    return (
         <>
             <PageHeader
-                name={category.name}
-                categories={category.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
+                name={category?.name}
+                categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 onNameChanged={updateCategoryName} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}
@@ -38,7 +38,7 @@ export default function Category() {
                 placeMainCategorySelector={getPlaceCategory}
                 onHighlightRemoved={removeCategoryHighlight}
                 onMainHighlightUpdated={updateCategoryMainHighlight} />
-            <StatisticsPanel statistics={category.statistics} />
+            <StatisticsPanel statistics={category?.statistics} />
             <PlaceTileGrid
                 places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory} />

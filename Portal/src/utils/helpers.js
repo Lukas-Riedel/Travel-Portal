@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 
 export function getDateString(timestamp) {
-    return format(new Date(timestamp * 1000), "d.M.yyyy")
+    return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
 }
 
 export function getMaxEndTimestamp(isAdmin) {
@@ -9,10 +9,9 @@ export function getMaxEndTimestamp(isAdmin) {
 }
 
 export function decapitalize(str) {
-    return str[0].toLowerCase() + str.slice(1)
+    return str && (str[0].toLowerCase() + str.slice(1))
 }
 
 export function getPrettyName(name) {
-    const index = name.indexOf("(")
-    return index === -1 ? name : name.slice(0, index).trim()
+    return name?.split("(")[0].trim()
 }

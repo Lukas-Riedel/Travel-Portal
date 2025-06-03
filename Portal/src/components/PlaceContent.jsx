@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext.jsx"
 import showConfirmToast from "./ConfirmToast.jsx"
 import PlaceMap from "./PlaceMap.jsx"
 import showInputToast from "./InputToast.jsx"
+import { TailSpin } from "react-loader-spinner"
 
 export default function PlaceContent({ place, onExcerptChanged, onExcerptRefreshed, onLocationChanged }) {
     const { isAdmin } = useAuth()
@@ -35,31 +36,36 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
             async () => onLocationChanged(latitude, longitude))
     }
 
-    return place && (
+    return place ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <>
-                <p className="text-gray-700 text-justify leading-relaxed relative">
-                    {place.excerpt}
-                    {onExcerptRefreshed && isAdmin() && (
-                        <button
-                            onClick={handleExcerptRefreshed}
-                            className="float-right ml-2 mb-1 btn-chip-gray-inline">
-                            <RefreshCcw size={16} />
-                        </button>
-                    )}
-                    {onExcerptChanged && isAdmin() && (
-                        <button
-                            onClick={handleExcerptChanged}
-                            className="float-right ml-2 mb-1 btn-chip-gray-inline">
-                            <SquarePen size={16} />
-                        </button>
-                    )}
-                </p>
-            </>
+            <p className="text-gray-700 text-justify leading-relaxed relative">
+                {place.excerpt}
+                {onExcerptRefreshed && isAdmin() && (
+                    <button
+                        onClick={handleExcerptRefreshed}
+                        className="float-right ml-2 mb-1 btn-chip-gray-inline">
+                        <RefreshCcw size={16} />
+                    </button>
+                )}
+                {onExcerptChanged && isAdmin() && (
+                    <button
+                        onClick={handleExcerptChanged}
+                        className="float-right ml-2 mb-1 btn-chip-gray-inline">
+                        <SquarePen size={16} />
+                    </button>
+                )}
+            </p>
             <PlaceMap
                 places={[place]}
-                placeMainCategorySelector={place => place.getCategory("MOST_SPECIFIC_WITH_METADATA")}
+                placeMainCategorySelector={place => place?.getCategory("MOST_SPECIFIC_WITH_METADATA")}
                 onRightClick={handleLocationUpdated} />
+        </div>
+    ) : (
+        <div className="flex justify-center items-center min-h-[400px]">
+            <TailSpin
+                color="black"
+                height={80}
+                width={80} />
         </div>
     )
 }

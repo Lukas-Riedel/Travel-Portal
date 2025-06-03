@@ -1,11 +1,11 @@
 import PhotoTile from "./PhotoTile"
 
 export default function CategoryTile({ category }) {
-    return category?.mainHighlight && (
+    return (
         <PhotoTile
-            src={category.mainHighlight.url.thumbnail ?? category.mainHighlight.url.full}
-            firstLineText={category.name}
-            categories={[category]}
-            to={"/category/" + category.id} />
+            src={category?.mainHighlight?.url?.thumbnail ?? category?.mainHighlight?.url?.full}
+            firstLineText={category?.name}
+            categories={category ? [category] : []}
+            to={category ? "/category/" + category?.id : "#"} />
     )
 }

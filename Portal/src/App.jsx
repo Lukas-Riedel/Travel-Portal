@@ -7,6 +7,7 @@ import { Toaster } from "sonner"
 import Category from "./pages/Category"
 import Label from "./pages/Label"
 import CountryList from "./pages/CountryList"
+import ScrollToTop from "./components/ScrollToTop"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -44,6 +45,7 @@ export default function App() {
         <>
             <Toaster position="top-center" offset={96} />
             <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+                <ScrollToTop />
                 <AppContent />
             </BrowserRouter>
         </>

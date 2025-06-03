@@ -48,15 +48,15 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
         )
     }
 
-    return place && date?.album && (
+    return (
         <div>
             <PhotoTile
-                src={date.album.mainImageUrl}
-                firstLineText={place.name}
-                secondLineText={getDateString(date.start)}
-                categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                src={date?.album?.mainImageUrl}
+                firstLineText={place?.name}
+                secondLineText={getDateString(date?.start)}
+                categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
                 onClick={openGallery} />
-            {isAdmin() && (
+            {isAdmin() && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">
                     <a
                         href={date.album.permalink}
@@ -64,7 +64,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                         <ExternalLink size={16} />
                     </a>
                     <Link
-                        to={`/place/${place.id}/album/${date.album.id}`}
+                        to={`/place/${place?.id}/album/${date.album.id}`}
                         className="btn-large-gray">
                         <Images size={16} />
                     </Link>

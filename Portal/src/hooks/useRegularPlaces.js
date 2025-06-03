@@ -14,5 +14,5 @@ export const useRegularPlaces = ({ tripId, categoryId, labelName, year, minStart
         staleTime: isAdmin() ? 0 : 1000 * validity,
     })
     
-    return (query.data ?? []).map(place => new Place(place))
+    return query.data && query.data.map(place => new Place(place))
 }

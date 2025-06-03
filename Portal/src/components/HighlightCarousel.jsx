@@ -3,20 +3,25 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Pause, Play, Trash2, Star } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
+import { TailSpin } from "react-loader-spinner"
 
 export default function HighlightCarousel({ highlights, onHighlightRemoved, onMainHighlightUpdated }) {
     const { isAdmin } = useAuth()
 
-    const [shuffledHighlights, setShuffledHighlights] = useState(() => [...(highlights ?? [])].sort(() => Math.random() - 0.5))
+    const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
+
+    useEffect(() => {
+        setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
+    }, [highlights])
 
     useEffect(() => {
         if (isPaused) {
             return
         }
 
-        const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % highlights.length), 7000)
+        const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % shuffledHighlights.length), 7000)
         return () => clearInterval(interval)
     }, [shuffledHighlights, isPaused])
 
@@ -44,12 +49,16 @@ export default function HighlightCarousel({ highlights, onHighlightRemoved, onMa
             })
     }
 
-    return shuffledHighlights.length > 0 && (
+    if (highlights && shuffledHighlights.length === 0) {
+        return null
+    }
+
+    return shuffledHighlights.length > 0 ? (
         <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg">
             <AnimatePresence mode="sync">
                 <motion.img
                     key={currentHighlightIndex}
-                    src={shuffledHighlights[currentHighlightIndex].url.full ?? shuffledHighlights[currentHighlightIndex].url.thumbnail}
+                    src={shuffledHighlights[currentHighlightIndex]?.url?.full ?? shuffledHighlights[currentHighlightIndex]?.url?.thumbnail}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -90,6 +99,13 @@ export default function HighlightCarousel({ highlights, onHighlightRemoved, onMa
                     </div>
                 </>
             )}
+        </div>
+    ) : (
+        <div className="flex items-center justify-center w-full [aspect-ratio:3/2]">
+            <TailSpin
+                color="black"
+                height={80}
+                width={80} />
         </div>
     )
 }

@@ -12,10 +12,14 @@ export default function CountryList() {
     const statistics = useStatistics()
 
     const countryCategoriesMap = useMemo(() => {
-        return new Map(countryCategories.map(category => [category.name, category]))
+        return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])
 
     const countries = useMemo(() => {
+        if (!places || !countryCategories) {
+            return null
+        }
+
         if (places.length === 0 || countryCategories.length === 0) {
             return []
         }
@@ -31,7 +35,7 @@ export default function CountryList() {
             .filter(Boolean)
     }, [places, countryCategoriesMap, countryCategories])
 
-    return places?.length > 0 && countries?.length > 0 && statistics?.length > 0 && (
+    return (
         <>
             <div className="h-[400px] md:h-[700px]">
                 <PlaceMap

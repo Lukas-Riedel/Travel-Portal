@@ -1,12 +1,12 @@
 import PhotoTile from "./PhotoTile"
 
 export default function PlaceTile({ place, mainCategory, secondLineText }) {
-    return place?.mainHighlight && (
+    return (
         <PhotoTile
-            src={place.mainHighlight.url.thumbnail ?? place.mainHighlight.url.full}
-            firstLineText={place.name}
+            src={place?.mainHighlight?.url?.thumbnail ?? place?.mainHighlight?.url?.full}
+            firstLineText={place?.name}
             secondLineText={secondLineText}
-            categories={[mainCategory]}
-            to={"/place/" + place.id} />
+            categories={mainCategory && [mainCategory]}
+            to={"/place/" + place?.id} />
     )
 }

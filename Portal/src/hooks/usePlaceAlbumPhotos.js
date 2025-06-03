@@ -13,5 +13,5 @@ export const usePlaceAlbumPhotos = (placeId, albumId) => {
     })
     
     // TODO: Map to Photo objects
-    return query.data ?? []
+    return query.data
 }

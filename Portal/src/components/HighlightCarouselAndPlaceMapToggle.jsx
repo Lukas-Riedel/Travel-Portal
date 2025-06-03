@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { Map, Images } from "lucide-react"
+import { useLayoutEffect, useRef, useState } from "react"
+import { Map as MapIcon, Images } from "lucide-react"
 import HighlightCarousel from "./HighlightCarousel"
 import PlaceMap from "./PlaceMap"
 
@@ -8,61 +8,48 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
     const [height, setHeight] = useState(0)
     const carouselRef = useRef(null)
 
-    useEffect(() => {
-        const updateHeight = () => {
-            if (!carouselRef.current) {
-                return
-            }
-
-            const wasHidden = carouselRef.current.classList.contains("hidden")
-            if (wasHidden) {
-                carouselRef.current.classList.remove("hidden")
-            }
-
-            const newHeight = carouselRef.current.offsetHeight
-            if (newHeight > 0) {
-                setHeight(newHeight)
-            }
-
-            if (wasHidden) {
-                carouselRef.current.classList.add("hidden")
-            }
+    useLayoutEffect(() => {
+        if (!carouselRef.current) {
+            return
         }
 
-        updateHeight()
-        window.addEventListener("resize", updateHeight)
-        return () => window.removeEventListener("resize", updateHeight)
+        const width = carouselRef.current.offsetWidth
+        const computedHeight = Math.floor((width * 2) / 3)
+
+        if (computedHeight > 0) {
+            setHeight(computedHeight)
+        }
     }, [])
 
-    return places?.length > 0 && (
-        <div className="relative">
-            <div className="relative">
-                {entity?.highlights?.length > 0 && (
-                    <div
-                        className={showMap ? "hidden" : ""}
-                        ref={carouselRef}>
-                        <HighlightCarousel
-                            highlights={entity.highlights}
-                            onHighlightRemoved={onHighlightRemoved}
-                            onMainHighlightUpdated={onMainHighlightUpdated} />
-                    </div>
-                )}
-                <div
-                    className={showMap ? "" : "hidden"}
-                    style={{ height }}>
+    if (entity && (!Array.isArray(entity.highlights) || entity.highlights.length === 0)) {
+        return null
+    }
+
+    return (
+        <div className="relative w-full">
+            <div
+                ref={carouselRef}
+                style={showMap ? { position: "absolute", left: "-9999px", top: 0, width: "100%" } : { width: "100%" }}>
+                <HighlightCarousel
+                    highlights={entity?.highlights}
+                    onHighlightRemoved={onHighlightRemoved}
+                    onMainHighlightUpdated={onMainHighlightUpdated} />
+            </div>
+            {showMap && (
+                <div style={{ height, width: "100%" }}>
                     <PlaceMap
                         places={places}
-                        placeMainCategorySelector={placeMainCategorySelector}
-                    />
+                        placeMainCategorySelector={placeMainCategorySelector} />
                 </div>
-                {entity?.highlights?.length > 0 && (
-                    <button
-                        onClick={() => setShowMap((prev) => !prev)}
-                        className="absolute bottom-3 right-3 btn-chip-white">
-                        {showMap ? <Images size={16} /> : <Map size={16} />}
-                    </button>
-                )}
-            </div>
+            )}
+
+            {entity && places && (
+                <button
+                    onClick={() => setShowMap((prev) => !prev)}
+                    className="absolute bottom-3 right-3 btn-chip-white">
+                    {showMap ? <Images size={16} /> : <MapIcon size={16} />}
+                </button>
+            )}
         </div>
     )
 }

@@ -19,7 +19,7 @@ export const usePlace = (placeId) => {
     const refetchPlace = _ => query.refetch()
 
     return {
-        place: query.data ? new Place(query.data) : null,
+        place: query.data && new Place(query.data),
         updatePlaceName: name => api.updatePlaceName(placeId, name).then(setPlace),
         updatePlaceAddress: address => api.getCoordinates(address).then(coordinates => api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace),
         removePlaceHighlight: highlightId => api.removePlaceHighlight(placeId, highlightId).then(refetchPlace),
