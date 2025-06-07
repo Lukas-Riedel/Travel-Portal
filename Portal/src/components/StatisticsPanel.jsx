@@ -147,7 +147,7 @@ export default function StatisticsPanel({ statistics }) {
                             </>
                         ) : (
                             <div className="flex-grow flex items-center justify-center">
-                                <div className="items-center justify-center flex h-[148px]">
+                                <div className="items-center justify-center flex h-[120px]">
                                     <TailSpin
                                         color="black"
                                         height={30}
