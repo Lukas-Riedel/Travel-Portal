@@ -12,7 +12,7 @@ export const usePlace = (placeId) => {
     const query = useQuery({
         queryKey: ["getPlace", placeId],
         queryFn: () => api.getPlace(placeId),
-        staleTime: isAdmin() ? 0 : 1000 * 60 * 60 * 2,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
 
     const setPlace = place => queryClient.setQueryData(["getPlace", placeId], place)

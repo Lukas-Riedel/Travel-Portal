@@ -26,7 +26,7 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
     }
 
     const handleLocationUpdated = (latitude, longitude) => {
-        if (!isAdmin()) {
+        if (!isAdmin) {
             return
         }
 
@@ -40,14 +40,14 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <p className="text-gray-700 text-justify leading-relaxed relative">
                 {place.excerpt}
-                {onExcerptRefreshed && isAdmin() && (
+                {onExcerptRefreshed && isAdmin && (
                     <button
                         onClick={handleExcerptRefreshed}
                         className="float-right ml-2 mb-1 btn-chip-gray-inline">
                         <RefreshCcw size={16} />
                     </button>
                 )}
-                {onExcerptChanged && isAdmin() && (
+                {onExcerptChanged && isAdmin && (
                     <button
                         onClick={handleExcerptChanged}
                         className="float-right ml-2 mb-1 btn-chip-gray-inline">

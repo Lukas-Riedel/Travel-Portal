@@ -1,5 +1,5 @@
 async function init(year, isLoggedIn) {  
-    const trips = await api.listTrips(year, "EXPENSES");
+    const trips = await api.listRegularTrips(year, "EXPENSES");
     const places = await api.listRegularPlaces(undefined, undefined, undefined, year, undefined, isLoggedIn ? Number.MAX_SAFE_INTEGER : Math.round(now), "DATES");
     const statistics = (await api.getYear(year)).statistics;
 
@@ -61,7 +61,7 @@ function getContentComponent(trips, displayFutureTrips) {
 
     const contentRowColumnsSelector = trip => {
         const result = [
-            { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
+            { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/new/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
             { hideifSimplified: false, content: getFromDateToDateString(trip.start, trip.end, true, false) },
             { hideifSimplified: true,  content: Math.ceil(trip.days.total) }
         ];

@@ -73,7 +73,7 @@ function getDatesComponent(place) {
 }
 
 function getDateEntry(date) {
-    return getDateString(date.start, true) + " (<a href=\"https://" + location.hostname + "/trip/" + date.trip.id + "\">" + getFullyQualifiedTripName(date.trip) + "</a>)";
+    return getDateString(date.start, true) + " (<a href=\"https://" + location.hostname + "/new/trip/" + date.trip.id + "\">" + getFullyQualifiedTripName(date.trip) + "</a>)";
 }
 
 function getLoginComponent(isLoggedIn) {

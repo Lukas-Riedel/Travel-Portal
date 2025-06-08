@@ -139,7 +139,7 @@ function getAlbumsComponentForTrips(trips) {
     return getAlbumsComponent(trips.map(trip => {
         return {
             nameTokens: isDayTrips(trip) ? [ getTripFlagImages(trip), getFullyQualifiedTripName(trip) ] : [ getTripFlagImages(trip), trip.name, getFromDateToDateString(trip.start, trip.end, true, true) ],
-            action: "href=\"https://" + location.hostname + "/trip/" + trip.id + "\"",
+            action: "href=\"https://" + location.hostname + "/new/trip/" + trip.id + "\"",
             imageUrl: trip.mainHighlight == null ? trip.id : trip.mainHighlight.url.thumbnail
         }
     }), undefined);

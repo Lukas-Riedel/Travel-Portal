@@ -10,8 +10,10 @@ import { useParams } from "react-router-dom"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
 import { usePlace } from "../hooks/usePlace.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
+import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function Place() {
+    const { isAdmin } = useAuth()
     const { placeId } = useParams()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
@@ -43,7 +45,7 @@ export default function Place() {
             <DateTileGrid
                 place={place}
                 onAlbumRefreshed={refreshPlaceAlbum} />
-            <TripBar trips={place?.getPastTrips()} />
+            <TripBar trips={isAdmin ? place?.getAllTrips() : place?.getPastTrips()} />
             {place?.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid

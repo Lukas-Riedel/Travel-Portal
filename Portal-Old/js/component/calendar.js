@@ -44,12 +44,14 @@ function getCalendarDatesForTrip(trip, places, isLoggedIn) {
             }
         });
 
+        const tripStartOfDay = trip.start - (trip.start % 86400);
+        const fitnessIdx = Math.ceil((convertedDate.getTime() / 1000 - tripStartOfDay) / 86400);
         return {
             date: convertedDate.getTime() / 1000, // Apparently important for featured trips only.
             title: getDayOfWeek(convertedDate) + " " + getDateString(convertedDate),
             calendar: getCalendarEntry(calendar[date], isLoggedIn ? getPlaceButtonsForTripEntry : undefined, undefined),
             weather: getForecastEntry(calendar[date].map(place => place.weather).filter(weather => weather != null), calendar[date].map(place => place.sun).filter(sun => sun != null)),
-            fitness: convertedDate.getTime() / 1000 < now ? getFitnessEntry(trip.fitness[dates.indexOf(date)], trip.fitness) : ""
+            fitness: convertedDate.getTime() / 1000 < now ? getFitnessEntry(trip.fitness[fitnessIdx], trip.fitness) : ""
         };
     });    
 }

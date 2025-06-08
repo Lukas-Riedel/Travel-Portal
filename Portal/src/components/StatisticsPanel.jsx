@@ -120,7 +120,7 @@ export default function StatisticsPanel({ statistics }) {
                 {(doubledStats ?? Array.from({ length: loadingStatisticsCount })).map((stat, idx) => (
                     <div
                         key={idx}
-                        className="flex flex-col bg-white text-black px-6 py-3 rounded-xl min-w-[130px] text-center flex-shrink-0 shadow-sm select-none border border-gray-200">
+                        className="flex flex-col bg-white text-black px-6 py-3 rounded-xl min-w-[130px] text-center flex-shrink-0 shadow-md select-none border border-gray-200">
                         {doubledStats ? (
                             <>
                                 <div className="text-sm mb-1.5 tracking-wide font-medium">
@@ -129,8 +129,8 @@ export default function StatisticsPanel({ statistics }) {
                                 <div className="flex-grow flex items-center justify-center">
                                     {Array.isArray(stat?.value) ? (
                                         <ol className="list-decimal list-inside space-y-1 text-xs text-gray-700">
-                                            {stat.value.map((item, i) => (
-                                                <li key={i}>
+                                            {stat.value.map((item, idx) => (
+                                                <li key={idx}>
                                                     <span>{item.key}</span>{" "}
                                                     <span className="text-gray-400">
                                                         ({decapitalize(formatStatisticsUnit(stat?.unit, item?.value, configuration?.mainCurrency ?? "???"))})

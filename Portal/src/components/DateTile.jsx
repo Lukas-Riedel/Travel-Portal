@@ -56,7 +56,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 secondLineText={getDateString(date?.start)}
                 categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
                 onClick={openGallery} />
-            {isAdmin() && date?.album && (
+            {isAdmin && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">
                     <a
                         href={date.album.permalink}

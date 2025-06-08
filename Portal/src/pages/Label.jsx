@@ -11,7 +11,7 @@ export default function Label() {
     const labelPlaces = useTimeFilteredRegularPlaces({ labelName, include: "CATEGORIES", sort: "score" })
 
     const countryCategoriesMap = useMemo(() => new Map(labelPlaces?.map(place => place.getCategory("COUNTRY"))
-        .map(category => [category.name, category])), [labelPlaces])
+        ?.filter(category => category)?.map(category => [category.name, category])), [labelPlaces])
 
     return (
         <>

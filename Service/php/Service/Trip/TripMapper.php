@@ -6,19 +6,17 @@
     use Service\Service\Flight\FlightService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Note\NoteService;
-    use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
-    use Service\Service\Place\PlaceSortingStrategy;
     use Service\Service\Statistics\StatisticsService;
     use Service\Service\Stay\StayService;
 
     class TripMapper {
 
+        private const ONE_DAY_SECONDS = 86400;
+
         private readonly \DatabaseProvider $databaseProvider;
 
         private readonly \CalendarClient $calendarClient;
-
-        private readonly \ConfigurationService $configurationService;
 
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
@@ -29,12 +27,11 @@
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \ConfigurationService $configurationService,
-            PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,FitnessService $fitnessService,
+        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient,
+            PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService) {
             $this->databaseProvider = $databaseProvider;
             $this->calendarClient = $calendarClient;
-            $this->configurationService = $configurationService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
             $this->flightService = $flightService;
@@ -267,24 +264,10 @@
     
                     $fitness = array();
                     if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
-                        $startOfDays = array();
-    
-                        // TODO: Include fitness records for all days, not only those with a visited place. Some frontend adjustments are needed.
-                        $tripPlaces = $this->placeService->getRegularPlaces(NULL, NULL, $tripRow["trip_id"], NULL, NULL, NULL, NULL,
-                            array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
-                        foreach ($tripPlaces as &$tripPlace) {
-                            foreach ($tripPlace->getDates() as &$date) {
-                                // TODO: Calculate start of days based on the timezone of the client (i.e., an extra GET parameter with timezone).
-                                $startOfDay = $date->getStart() - ($date->getStart() % 86400);
-                                if (!in_array($startOfDay, $startOfDays)) {
-                                    $startOfDays[] = $startOfDay;
-                                }
-                            }
-                        }
-                        sort($startOfDays);
-    
-                        foreach ($startOfDays as &$startOfDay) {
+                        $startOfDay = $tripRow["start"] - ($tripRow["start"] % self::ONE_DAY_SECONDS);
+                        while ($startOfDay < $tripRow["end"]) {
                             $fitness[] = $this->fitnessService->getFitnessRecordForOneDay($startOfDay);
+                            $startOfDay += self::ONE_DAY_SECONDS;
                         }
                     }
     

@@ -1,6 +1,6 @@
 async function init(tripId, isLoggedIn) {
     const trip = await api.getTrip(tripId);
-    const places = await api.listCandidatePlaces(trip.id);
+    const places = await api.listCandidatePlaces(trip.id, "DATES");
     
     // Title.
     document.title = getDocumentTitle(trip);

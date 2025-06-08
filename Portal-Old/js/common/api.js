@@ -277,7 +277,7 @@ class Api {
         return this.#sendRequest("DELETE", "tracker/" + eventId);
     }
 
-    async listTrips(year = undefined, include = undefined) {
+    async listRegularTrips(year = undefined, include = undefined) {
         return this.#sendRequest("GET", "trips", {}, 
             {
                 type: "regular",

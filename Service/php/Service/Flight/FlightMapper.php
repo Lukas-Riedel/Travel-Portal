@@ -3,7 +3,6 @@
 
     use Service\Service\Category\CategoryService;
     use Service\Service\Geocoding\GeocodingService;
-    use Service\Service\Statistics\KeyValuePair;
 
     class FlightMapper {
 
@@ -129,10 +128,12 @@
 
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
                         $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
-                        $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
+                        $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"] === NULL ? $this->geocodingService
+                        ->getLocation($flightRow["from"])->getTimezone() : $flightRow["from_airport_timezone"]);
                     $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"],
                         $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
-                        $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
+                        $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"] === NULL ? $this->geocodingService
+                        ->getLocation($flightRow["to"])->getTimezone() : $flightRow["to_airport_timezone"]);
 
                     return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
                 });

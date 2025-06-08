@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react"
 import { useIam } from "../hooks/useIam"
 
 const AuthContext = createContext()
@@ -9,6 +9,8 @@ export const AuthProvider = ({ children }) => {
         const stored = localStorage.getItem("accessToken")
         return stored ? JSON.parse(stored) : null
     })
+
+    const isAdmin = useMemo(() => accessToken?.roles?.includes("ADMIN") || false, [accessToken])
 
     const login = async ({ username, password, apiKey }) => {
         const token = apiKey
@@ -65,7 +67,7 @@ export const AuthProvider = ({ children }) => {
             accessToken,
             login,
             logout,
-            isAdmin: () => accessToken?.roles?.includes("ADMIN") || false
+            isAdmin
         }}>
             {children}
         </AuthContext.Provider>

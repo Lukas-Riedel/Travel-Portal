@@ -75,7 +75,7 @@
             // Geocoding request.
             if ($country === NULL || $latitude === NULL || $longitude === NULL) {
                 $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT,
-                    $this->configurationService->getConfigurationForTypeAndKey("googleMapsApiKeys", "ipAddress"), rawurlencode($address)));
+                    $this->configurationService->getConfigurationForTypeAndKey("googleMapsApiKeys", "ipAddress"), urlencode($address)));
     
                 if ($apiResponse["status"] === "OK") {
                     if (count($apiResponse["results"]) > 0) {

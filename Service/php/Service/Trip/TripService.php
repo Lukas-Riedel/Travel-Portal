@@ -37,7 +37,7 @@
         public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, \ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, \EventPublisher $eventPublisher) {
-            $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $configurationService, $placeService,
+            $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $placeService,
                 $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService);
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;

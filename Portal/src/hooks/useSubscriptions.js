@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
-export const useStatistics = () => {
+export const useSubscriptions = () => {
     const api = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({
-        queryKey: ["listStatistics"],
-        queryFn: () => api.listStatistics(),
+        queryKey: ["listSubscriptions"],
+        queryFn: () => api.listSubscriptions(),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
     })
     

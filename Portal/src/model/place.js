@@ -37,6 +37,15 @@ export default class Place {
             .values()]
     }
 
+    getAllTrips() {
+        return [...new globalThis.Map(
+            this.dates
+                .map(date => date.trip)
+                .filter(trip => trip !== null)
+                .map(trip => [trip.id, trip]))
+            .values()]
+    }
+
     getAlbums() {
         return this.dates
             .map(date => date.album)

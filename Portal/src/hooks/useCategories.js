@@ -9,7 +9,7 @@ export const useCategories = ({ categories, include } = {}) => {
     const query = useQuery({
         queryKey: ["listCategories", categories, include],
         queryFn: () => api.listCategories({ categories, include }),
-        staleTime: isAdmin() ? 0 : 1000 * 60 * 60 * 24,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24,
     })
     
     // TODO: Map to Category objects

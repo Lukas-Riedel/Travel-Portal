@@ -1,7 +1,7 @@
 
 async function init(isLoggedIn) {
     const places = await getPlaces(!isLoggedIn);
-    const trips = await api.listTrips();
+    const trips = await api.listRegularTrips();
 
     // Title.
     $('#title').html(getTitle(places));
@@ -58,7 +58,7 @@ function getFutureTrips(trips, displayFutureTrips) {
     ];
 
     const contentRowColumnsSelector = trip => [
-        { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
+        { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/new/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
         { hideifSimplified: false, content: getFromDateToDateString(trip.start, trip.end, true, false) },
         { hideifSimplified: false, content: "<a style=\"color: black\" href=\"https://" + location.hostname + "/year/" + trip.year + "\">" + trip.year + "</a>" },
         { hideifSimplified: true,  content: Math.ceil(trip.days.total) },

@@ -168,13 +168,14 @@ export function useApi() {
             .then(places => places.map(place => new Place(place)))
     }
 
-    async function listCandidatePlaces({ tripId, categoryId, include } = {}) {
+    async function listCandidatePlaces({ tripId, categoryId, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "candidate",
                 tripId: tripId,
                 categoryId: categoryId,
-                include: include
+                include: include,
+                sort: sort
             })
             .then(places => places.map(place => new Place(place)))
     }
@@ -312,7 +313,7 @@ export function useApi() {
         return sendRequest("DELETE", "/tracker/" + eventId)
     }
 
-    async function listTrips({ year, include } = {}) {
+    async function listRegularTrips({ year, include } = {}) {
         return sendRequest("GET", "/trips", {},
             {
                 type: "regular",
@@ -365,17 +366,7 @@ export function useApi() {
         return sendRequest("DELETE", "/trips/" + tripId)
     }
 
-    async function createTripExpense(tripId, type, description, value, currency) {
-        return sendRequest("POST", "/trips/" + tripId + "/expenses",
-            {
-                type: type,
-                description: description,
-                value: value,
-                currency: currency
-            })
-    }
-
-    async function createTripExpenseWithSubscription(tripId, type, description, value, currency, subscriptionId) {
+    async function createTripExpense(tripId, type, description, value, currency, subscriptionId) {
         return sendRequest("POST", "/trips/" + tripId + "/expenses",
             {
                 type: type,
@@ -546,7 +537,7 @@ export function useApi() {
         createTimeTrackingEvent,
         listTimeTrackingEvents,
         removeTimeTrackingEvent,
-        listTrips,
+        listRegularTrips,
         listCandidateTrips,
         getTrip,
         updateTripName,
@@ -555,7 +546,6 @@ export function useApi() {
         replaceTrip,
         removeTrip,
         createTripExpense,
-        createTripExpenseWithSubscription,
         updateTripExpenseDescription,
         updateTripExpenseValue,
         removeTripExpense,

@@ -8,6 +8,7 @@ import Category from "./pages/Category"
 import Label from "./pages/Label"
 import CountryList from "./pages/CountryList"
 import ScrollToTop from "./components/ScrollToTop"
+import Trip from "./pages/Trip"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -36,6 +37,7 @@ function AppContent() {
             <Route path="/place/:placeId" element={<MainLayout><Place /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><Category /></MainLayout>} />
             <Route path="/label/:labelName" element={<MainLayout><Label /></MainLayout>} />
+            <Route path="/trip/:tripId" element={<MainLayout><Trip /></MainLayout>} />
         </Routes>
     )
 }

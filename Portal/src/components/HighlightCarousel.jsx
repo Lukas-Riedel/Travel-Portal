@@ -54,7 +54,7 @@ export default function HighlightCarousel({ highlights, onHighlightRemoved, onMa
     }
 
     return shuffledHighlights.length > 0 ? (
-        <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg">
+        <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg my-4">
             <AnimatePresence mode="sync">
                 <motion.img
                     key={currentHighlightIndex}
@@ -79,20 +79,20 @@ export default function HighlightCarousel({ highlights, onHighlightRemoved, onMa
                     <div className="absolute top-3 right-3 flex space-x-2">
                         <button
                             onClick={() => setIsPaused(prev => !prev)}
-                            className="btn-chip-white">
+                            className="btn-chip-gray">
                             {isPaused ? <Play size={16} /> : <Pause size={16} />}
                         </button>
-                        {onMainHighlightUpdated && isAdmin() && (
+                        {onMainHighlightUpdated && isAdmin && (
                             <button
                                 onClick={handleMainHighlightUpdated}
-                                className="btn-chip-white">
+                                className="btn-chip-gray">
                                 <Star size={16} />
                             </button>
                         )}
-                        {onHighlightRemoved && isAdmin() && (
+                        {onHighlightRemoved && isAdmin && (
                             <button
                                 onClick={handleHighlightRemoved}
-                                className="btn-chip-white">
+                                className="btn-chip-gray">
                                 <Trash2 size={16} />
                             </button>
                         )}

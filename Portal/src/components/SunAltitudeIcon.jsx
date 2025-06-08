@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react"
+import { Sun, Sunrise, Sunset } from "lucide-react"
+import { useMemo } from "react"
 import SunCalc from "suncalc"
 
 export default function SunAltitudeIcon({ altitude, place }) {
@@ -14,8 +15,8 @@ export default function SunAltitudeIcon({ altitude, place }) {
         const today = new Date()
         const sunTimes = SunCalc.getTimes(today, place?.latitude, place?.longitude)
 
-        const sampled = Array.from({ length: 24 * 60 }, (_, i) => {
-            const time = new Date(+(isNaN(sunTimes.sunrise) ? new Date().setHours(0, 0, 0, 0) : sunTimes.sunrise) + i * 2 * 60 * 1000)
+        const sampled = Array.from({ length: 24 * 60 }, (_, idx) => {
+            const time = new Date(+(isNaN(sunTimes.sunrise) ? new Date().setHours(0, 0, 0, 0) : sunTimes.sunrise) + idx * 2 * 60 * 1000)
             const altitude = (SunCalc.getPosition(time, place?.latitude, place?.longitude).altitude * 180) / Math.PI
             return { time, altitude }
         })
@@ -37,8 +38,8 @@ export default function SunAltitudeIcon({ altitude, place }) {
 
     return (
         <div className="flex flex-col items-center">
-            <div className="text-xl">{isSunrise ? "🌅" : isSunset ? "🌇" : "☀️"}</div>
-            <div className="text-sm text-gray-500">{isSunrise ? "Východ" : isSunset ? "Západ" : Math.abs(altitude) + "°"}</div>
+            <div className="text-xl">{isSunrise ? <Sunrise size={24} /> : isSunset ? <Sunset size={24} /> : <Sun size={24} />}</div>
+            <div className="text-sm text-gray-500 mt-1">{isSunrise ? "Východ" : isSunset ? "Západ" : Math.abs(altitude) + "°"}</div>
             <div className="font-semibold">{time ? time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: place?.timezone }) : "---"}</div>
         </div>
     )

@@ -1,17 +1,22 @@
-import { toast } from "sonner";
+import { toast } from "sonner"
 
 export default function showConfirmToast(question, success, error, onConfirmed) {
-    return toast(question, {
+    const id = toast(question, {
         action: {
             label: "Ano",
             onClick: async () => {
+                toast.dismiss(id)
+                const loadingId = toast.loading("Probíhá zpracování...")
+
                 try {
-                    await onConfirmed();
-                    toast.success(success);
+                    await onConfirmed()
+                    toast.dismiss(loadingId)
+                    toast.success(success)
                 }
                 catch (e) {
-                    console.error(e);
-                    toast.error(error);
+                    console.error(e)
+                    toast.dismiss(loadingId)
+                    toast.error(error)
                 }
             }
         },
@@ -19,4 +24,6 @@ export default function showConfirmToast(question, success, error, onConfirmed) 
             label: "Ne"
         }
     })
+
+    return id
 }

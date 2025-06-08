@@ -8,10 +8,10 @@
              
         private ?string $id;
         private readonly string $name;
-        private readonly int $year;
+        private readonly ?int $year;
         private readonly ?Highlight $mainHighlight;
 
-        public function __construct(?string $id, string $name, int $year, ?Highlight $mainHighlight) {
+        public function __construct(?string $id, string $name, ?int $year, ?Highlight $mainHighlight) {
             $this->id = $id;
             $this->name = $name;
             $this->year = $year;

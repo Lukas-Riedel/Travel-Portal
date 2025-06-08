@@ -1,6 +1,6 @@
 // High-level backend communication.
 async function getFutureFlights() {
-    return (await api.listTrips(undefined, "WATCHED_FLIGHTS")).flatMap(t => t.watchedFlights);
+    return (await api.listRegularTrips(undefined, "WATCHED_FLIGHTS")).flatMap(t => t.watchedFlights);
 }
 
 async function getPlaces(onlyPast, include = "") {
@@ -8,7 +8,7 @@ async function getPlaces(onlyPast, include = "") {
 }
 
 async function getLoggedFlights() {
-    return sorted((await api.listTrips(undefined, "FLIGHTS")).flatMap(t => t.flights).filter(f => f.aircraft != null), (a, b) => b.start - a.start);
+    return sorted((await api.listRegularTrips(undefined, "FLIGHTS")).flatMap(t => t.flights).filter(f => f.aircraft != null), (a, b) => b.start - a.start);
 }
 
 async function getLoggedAirports(loggedFlights = undefined) {
@@ -256,7 +256,7 @@ async function doGetFeaturedTrip(trip) {
     }
 
     const calendarRowColumns = [
-        { hideifSimplified: false, rowspan: 2, content: "<h2 style=\"color: black\">" + getCountriesWithoutLayovers(trip, places).map(getFlagImage).join(" ") + " <a href=\"https://" + location.hostname + "/trip/" + trip.id + "\">" + trip.name + "</a></h2>" },
+        { hideifSimplified: false, rowspan: 2, content: "<h2 style=\"color: black\">" + getCountriesWithoutLayovers(trip, places).map(getFlagImage).join(" ") + " <a href=\"https://" + location.hostname + "/new/trip/" + trip.id + "\">" + trip.name + "</a></h2>" },
         { hideifSimplified: false, rowspan: 2, content: "<h2>" + getFromDateToDateString(trip.start, trip.end, true, false) + "</h2>" }
     ];
 

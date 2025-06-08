@@ -427,7 +427,7 @@
                     }
 
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                        $placeRow["longitude"], $placeRow["timezone"], NULL, $excerpt, $placeRow["score"], $categories, $highlights, $labels, array()); 
+                        $placeRow["longitude"], $placeRow["timezone"], NULL, $placeRow["score"] ?? 0, $excerpt, $categories, $highlights, $labels, array()); 
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {

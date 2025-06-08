@@ -3,7 +3,7 @@ const problemNames = {"FUTURE_COUNTRIES_WITHOUT_PUBLIC_HOLIDAYS_CALENDAR":"Stát
 async function init() {
     const isNextTrip = trip => trip.end > now && !isDayTrips(trip);
 
-    const tripId = getFirstElement((await api.listTrips()).filter(isNextTrip)).id;
+    const tripId = getFirstElement((await api.listRegularTrips()).filter(isNextTrip)).id;
     const trip = await api.getTrip(tripId);
 
     if (trip !== undefined) {

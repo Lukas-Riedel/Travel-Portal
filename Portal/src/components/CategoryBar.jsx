@@ -13,9 +13,9 @@ export default function CategoryBar({ categories }) {
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
                     {name}
                 </Link>
-            )) : Array.from({ length: loadingCategoriesCount }).map((_, i) => (
+            )) : Array.from({ length: loadingCategoriesCount }).map((_, idx) => (
                 <div
-                    key={i}
+                    key={idx}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
                     <div className="mx-4 min-w-[36px] min-h-[24px] flex items-center justify-center">
                         <TailSpin

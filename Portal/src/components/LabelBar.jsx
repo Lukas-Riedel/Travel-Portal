@@ -36,11 +36,11 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
             async () => onLabelRemoved(label?.id))
     }
 
-    return (!labels || labels.length > 0 || isAdmin()) && (
+    return (!labels || labels.length > 0 || isAdmin) && (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {labels ? (
                 <>
-                    {labels.filter(label => isAdmin() || !configuration?.labels?.private?.includes(label.name)).map((label, index) => (
+                    {labels.filter(label => isAdmin || !configuration?.labels?.private?.includes(label.name)).map((label, index) => (
                         <div
                             key={index}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
@@ -48,11 +48,11 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                                 to={`/label/${label?.name}`}
                                 className={clsx(
                                     "text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full",
-                                    isAdmin() ? "lg:pr-5" : "lg:pr-0"
+                                    isAdmin ? "lg:pr-5" : "lg:pr-0"
                                 )}>
                                 {label?.name}
                             </Link>
-                            {onLabelRemoved && isAdmin() && (
+                            {onLabelRemoved && isAdmin && (
                                 <button
                                     onClick={() => handleLabelRemoved(label)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
@@ -61,7 +61,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                             )}
                         </div>
                     ))}
-                    {onLabelAdded && labels && isAdmin() && unassignedLabelNames.map((labelName, index) => (
+                    {onLabelAdded && labels && isAdmin && unassignedLabelNames.map((labelName, index) => (
                         <div
                             key={index}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
@@ -78,9 +78,9 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                         </div>
                     ))}
                 </>
-            ) : Array.from({ length: loadingLabelsCount }).map((_, i) => (
+            ) : Array.from({ length: loadingLabelsCount }).map((_, idx) => (
                 <div
-                    key={i}
+                    key={idx}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
                     <div className="mx-4 min-w-[36px] min-h-[24px] flex items-center justify-center">
                         <TailSpin

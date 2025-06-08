@@ -9,7 +9,7 @@ export const useCategory = (categoryId) => {
     const query = useQuery({
         queryKey: ["getCategory", categoryId],
         queryFn: () => api.getCategory(categoryId),
-        staleTime: isAdmin() ? 0 : 1000 * 60 * 60 * 2,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
 
     const setCategory = category => queryClient.setQueryData(["getCategory", categoryId], category)

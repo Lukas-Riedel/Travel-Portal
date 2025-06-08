@@ -7,7 +7,7 @@ import PlaceTile from "./PlaceTile.jsx"
 export default function NearbyPlaceTileGrid({ place, places, count }) {
     const nearbyPlaces = useMemo(() => places
         ?.filter(p => p.id !== place?.id)
-        ?.filter(p => p.mainHighlight)
+        ?.filter(p => p?.mainHighlight)
         ?.map(p => place && new Place({ ...p, distance: p.getEuclideanDistanceTo(place) }))
         ?.filter(p => p)
         ?.sort((a, b) => a.distance - b.distance)
@@ -18,12 +18,14 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
         ?.slice(0, count), [place, places, count])
 
     return (
-        <TileGrid tiles={nearbyPlaces?.map((nearbyPlace, index) => (
-            <PlaceTile
-                key={index}
-                place={nearbyPlace}
-                mainCategory={nearbyPlace?.getCategory("MOST_SPECIFIC_WITH_METADATA")}
-                secondLineText={formatKilometers(Math.round(nearbyPlace?.getHaversineDistanceTo(place)))} />
-        ))} />
+        <TileGrid>
+            {nearbyPlaces?.map((nearbyPlace, index) => (
+                <PlaceTile
+                    key={index}
+                    place={nearbyPlace}
+                    mainCategory={nearbyPlace?.getCategory("MOST_SPECIFIC_WITH_METADATA")}
+                    secondLineText={formatKilometers(Math.round(nearbyPlace?.getHaversineDistanceTo(place)))} />
+            ))}
+        </TileGrid>
     )
 }

@@ -9,7 +9,7 @@ export const usePlaceAlbumPhotos = (placeId, albumId) => {
     const query = useQuery({
         queryKey: ["listPlaceAlbumPhotos", placeId, albumId],
         queryFn: () => api.listPlaceAlbumPhotos(placeId, albumId),
-        staleTime: isAdmin() ? 0 : 1000 * 60 * 10,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 10,
     })
     
     // TODO: Map to Photo objects

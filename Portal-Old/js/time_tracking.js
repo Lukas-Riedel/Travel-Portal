@@ -92,7 +92,7 @@ function addTimeTrackingEvent(type, factor) {
 }
 
 async function createOvertimeStatement() {
-    const trip = getFirstElement((await api.listTrips()).filter(trip => trip.end > now && !isDayTrips(trip)));
+    const trip = getFirstElement((await api.listRegularTrips()).filter(trip => trip.end > now && !isDayTrips(trip)));
 
     const events = await api.listTimeTrackingEvents();
     const overtimeEvents = reversed(events.filter(event => event.type === 'OVERTIME'));

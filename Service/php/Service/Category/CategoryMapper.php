@@ -229,7 +229,10 @@
                 FROM category c
                 INNER JOIN category_identifier ci
                     ON c.category_id = ci.id
+                LEFT JOIN region_area ra
+                    ON ci.id = ra.category_id
                 WHERE c.place_id = ?
+                ORDER BY ra.area DESC
             SQL;
 
             return $this->databaseProvider
