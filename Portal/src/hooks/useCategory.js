@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useCategory = (categoryId) => {
     const api = useApi()
     const { isAdmin } = useAuth()
+    
+    const queryClient = useQueryClient()
 
     const query = useQuery({
         queryKey: ["getCategory", categoryId],

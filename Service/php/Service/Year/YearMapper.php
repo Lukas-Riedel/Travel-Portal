@@ -41,6 +41,7 @@
                 SELECT *
                 FROM year_identifier
                 WHERE :CONDITIONS
+                ORDER BY id DESC
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();

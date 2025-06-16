@@ -40,8 +40,7 @@ export default function CountryList() {
             <div className="h-[400px] md:h-[700px]">
                 <PlaceMap
                     places={places}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
-                />
+                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
             <StatisticsPanel statistics={statistics} />
             <CategoryTileGrid categories={countries} />

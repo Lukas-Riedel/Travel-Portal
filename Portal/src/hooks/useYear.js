@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
@@ -6,10 +6,12 @@ export const useYear = (year) => {
     const api = useApi()
     const { isAdmin } = useAuth()
 
+    const queryClient = useQueryClient()
+
     const query = useQuery({
         queryKey: ["getYear", year],
         queryFn: () => api.getYear(year),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
     })
 
     const setYear = year => queryClient.setQueryData(["useQuery", year], year)

@@ -10,6 +10,7 @@ import CountryList from "./pages/CountryList"
 import ScrollToTop from "./components/ScrollToTop"
 import Trip from "./pages/Trip"
 import Year from "./pages/Year"
+import YearList from "./pages/YearList"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -36,9 +37,10 @@ function AppContent() {
             <Route path="/" element={<MainLayout><CountryList /></MainLayout>} />
             <Route path="/place" element={<MainLayout><CountryList /></MainLayout>} />
             <Route path="/place/:placeId" element={<MainLayout><Place /></MainLayout>} />
+            <Route path="/trip" element={<MainLayout><YearList /></MainLayout>} />
+            <Route path="/trip/:tripId" element={<MainLayout><Trip /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><Category /></MainLayout>} />
             <Route path="/label/:labelName" element={<MainLayout><Label /></MainLayout>} />
-            <Route path="/trip/:tripId" element={<MainLayout><Trip /></MainLayout>} />
             <Route path="/year/:year" element={<MainLayout><Year /></MainLayout>} />
         </Routes>
     )
