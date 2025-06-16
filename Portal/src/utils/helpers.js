@@ -4,8 +4,24 @@ export function getDateString(timestamp) {
     return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
 }
 
+export function getDateRangeString(start, end) {
+    if (!start || !end) {
+        return null
+    }
+
+    const startDate = new Date(start * 1000)
+    const endDate = new Date(end * 1000)
+
+    if (startDate.getTime() === endDate.getTime()) {
+        return format(startDate, "d.M.yyyy")
+    }
+
+    const startFormat = startDate.getFullYear() !== endDate.getFullYear() ? "d.M.yyyy" : startDate.getMonth() !== endDate.getMonth() ? "d.M" : "d"
+    return `${format(startDate, startFormat)} - ${format(endDate, "d.M.yyyy")}`
+}
+
 export function getMaxEndTimestamp(isAdmin) {
-    return isAdmin ? Number.MAX_SAFE_INTEGER : Math.floor(Date.now () / 1000)
+    return isAdmin ? Number.MAX_SAFE_INTEGER : Math.floor(Date.now() / 1000)
 }
 
 export function decapitalize(str) {

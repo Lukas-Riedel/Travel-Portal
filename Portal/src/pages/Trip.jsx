@@ -82,7 +82,8 @@ export default function Trip() {
                     onNoteCreated={createTripNote}
                     onNoteRemoved={removeTripNote} />
             )}
-            <TripNavigation trip={trip} />
+            {!trip?.isDayTrips() && (
+                <TripNavigation trip={trip} />)}
         </>
     )
 }

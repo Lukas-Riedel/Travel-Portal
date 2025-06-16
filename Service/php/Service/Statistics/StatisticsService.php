@@ -54,7 +54,7 @@
         }
         
         public function updateYearStatistics(int $year) : void {
-            $this->updateStatistics(StatisticsType::Year, $this->getBeginningOfYearTimestamp($year), $this->getEndOfYearTimestamp($year), NULL, $year);
+            $this->updateStatistics(StatisticsType::Year, $this->getBeginningOfYearTimestamp($year), min(time(), $this->getEndOfYearTimestamp($year)), NULL, $year);
             $this->eventPublisher->publishYearStatisticsUpdatedEvent($year);
         }
 

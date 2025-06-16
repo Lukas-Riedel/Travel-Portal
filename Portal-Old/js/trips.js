@@ -60,7 +60,7 @@ function getFutureTrips(trips, displayFutureTrips) {
     const contentRowColumnsSelector = trip => [
         { hideifSimplified: false, content: "<a href=\"https://" + location.hostname + "/new/trip/" + trip.id + "\"><strong style=\"color: black\">" + trip.name + "</strong></a>" },
         { hideifSimplified: false, content: getFromDateToDateString(trip.start, trip.end, true, false) },
-        { hideifSimplified: false, content: "<a style=\"color: black\" href=\"https://" + location.hostname + "/year/" + trip.year + "\">" + trip.year + "</a>" },
+        { hideifSimplified: false, content: "<a style=\"color: black\" href=\"https://" + location.hostname + "/new/year/" + trip.year + "\">" + trip.year + "</a>" },
         { hideifSimplified: true,  content: Math.ceil(trip.days.total) },
         { hideifSimplified: true,  content: Math.ceil(trip.days.working) },
         { hideifSimplified: false,  content: trip.start < now ? "N/A" : formatVacation(trip.vacation) },
@@ -71,6 +71,6 @@ function getFutureTrips(trips, displayFutureTrips) {
 }
 
 function getPastTripsAndDayTrips(trips) {
-    return [...new Set(trips.map(trip => trip.year))].map(year => "<div class=\"year\"><h3><a href=\"https://" + location.hostname + "/year/" + year + "\">" + year + "</a></h3>" 
+    return [...new Set(trips.map(trip => trip.year))].map(year => "<div class=\"year\"><h3><a href=\"https://" + location.hostname + "/new/year/" + year + "\">" + year + "</a></h3>" 
         + getAlbumsComponentForTrips(trips.filter(trip => trip.year === year)) + "</div>").join("<br>");
 }
