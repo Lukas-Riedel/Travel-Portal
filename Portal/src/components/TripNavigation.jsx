@@ -14,7 +14,7 @@ export default function TripNavigation({ trip }) {
     const nextTrip = useMemo(() => !trip?.isCandidate() && trips?.filter(t => !t.isDayTrips() &&t?.start > trip?.start)[0], [trip, trips])
 
     return (
-        <div className="flex justify-between p-6 my-4">
+        <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">
             {trip && trips ? (
                 <>
                     {previousTrip && (previousTrip.start < Date.now() / 1000 || isAdmin) && (

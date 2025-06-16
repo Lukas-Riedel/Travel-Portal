@@ -4,9 +4,19 @@ import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
 import showConfirmToast from "./ConfirmToast"
 import showFormToast from "./FormToast"
+import { useEffect, useState } from "react"
 
 export default function PageHeader({ name, categories, loadCandidates, onNameChanged, onAddressChanged, onMoved, onLoaded, onRemoved }) {
     const { isAdmin } = useAuth()
+
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const update = () => setIsMobile(window.innerWidth < 768)
+        update()
+        window.addEventListener("resize", update)
+        return () => window.removeEventListener("resize", update)
+    }, [])
 
     const handleNameChanged = () => {
         showInputToast("Zadej nové jméno:",
@@ -58,48 +68,57 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
         )
     }
 
-    return categories?.length <= 1 ? (
-        <div className="flex justify-between items-start mb-5">
-            <div className="flex items-center space-x-3">
-                <h1 className="text-5xl font-bold">
-                    {categories && getPrettyName(name)}
+    const renderButtons = () => (
+        <>
+            {onNameChanged && (
+                <button
+                    onClick={handleNameChanged}
+                    className="btn-chip-gray">
+                    <SquarePen size={16} />
+                </button>)}
+            {onAddressChanged && (
+                <button
+                    onClick={handleAddressChanged}
+                    className="btn-chip-gray">
+                    <LocationEdit size={16} />
+                </button>)}
+            {onMoved && (
+                <button
+                    onClick={handleMoved}
+                    className="btn-chip-gray">
+                    <ArrowRightLeft size={16} />
+                </button>
+            )}
+            {onLoaded && (
+                <button
+                    onClick={handleLoaded}
+                    className="btn-chip-gray">
+                    <Upload size={16} />
+                </button>
+            )}
+            {onRemoved && (
+                <button
+                    onClick={handleRemoved}
+                    className="btn-chip-gray">
+                    <Trash2 size={16} />
+                </button>)}
+        </>
+    )
+
+    return !isMobile && categories?.length <= 5 ? (
+        <div className="flex justify-between items-center mb-5">
+            <div>
+                <h1 className="text-5xl font-bold leading-tight">
+                    {categories && (
+                        <>
+                            {getPrettyName(name)}
+                            {isAdmin && (
+                                <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
+                                    {renderButtons()}
+                                </span>)}
+                        </>
+                    )}
                 </h1>
-                {isAdmin && (
-                    <>
-                        {onNameChanged && (
-                            <button
-                                onClick={handleNameChanged}
-                                className="mt-1 btn-chip-gray">
-                                <SquarePen size={16} />
-                            </button>)}
-                        {onAddressChanged && (
-                            <button
-                                onClick={handleAddressChanged}
-                                className="mt-1 btn-chip-gray">
-                                <LocationEdit size={16} />
-                            </button>)}
-                        {onMoved && (
-                            <button
-                                onClick={handleMoved}
-                                className="mt-1 btn-chip-gray">
-                                <ArrowRightLeft size={16} />
-                            </button>
-                        )}
-                        {onLoaded && (
-                            <button
-                                onClick={handleLoaded}
-                                className="mt-1 btn-chip-gray">
-                                <Upload size={16} />
-                            </button>
-                        )}
-                        {onRemoved && (
-                            <button
-                                onClick={handleRemoved}
-                                className="mt-1 btn-chip-gray">
-                                <Trash2 size={16} />
-                            </button>)}
-                    </>
-                )}
             </div>
             <div className="flex">
                 {categories?.map((category, index) => (
@@ -107,18 +126,25 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                         key={index}
                         src={`/img/flags/${category?.metadata?.unicode}.svg`}
                         alt={category?.name}
-                        className="w-14 object-cover mx-2" />
+                        className="w-14 object-cover mx-2 flex-shrink-0"
+                    />
                 ))}
             </div>
         </div>
     ) : (
-        <div className="mb-6">
-            <div className="flex justify-center items-start mb-4">
-                <div className="flex items-center space-x-3">
-                    <h1 className="text-5xl mb-3 font-bold text-center">
-                        {categories && getPrettyName(name)}
-                    </h1>
-                </div>
+        <div className="mb-5">
+            <div className="flex justify-center items-start">
+                <h1 className="text-5xl text-center font-bold leading-tight mb-3">
+                    {categories && (
+                        <>
+                            {getPrettyName(name)}
+                            {isAdmin && (
+                                <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
+                                    {renderButtons()}
+                                </span>)}
+                        </>
+                    )}
+                </h1>
             </div>
             <div className="flex flex-wrap justify-center gap-3">
                 {categories?.map((category, index) => (
@@ -126,47 +152,9 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                         key={index}
                         src={`/img/flags/${category?.metadata?.unicode}.svg`}
                         alt={category?.name}
-                        className="w-10 h-auto" />
+                        className="w-10 h-auto flex-shrink-0" />
                 ))}
             </div>
-            {isAdmin && (
-                <div className="flex flex-wrap justify-center gap-3 my-5">
-                    {onNameChanged && (
-                        <button
-                            onClick={handleNameChanged}
-                            className="mt-1 btn-chip-gray">
-                            <SquarePen size={16} />
-                        </button>
-                    )}
-                    {onAddressChanged && (
-                        <button
-                            onClick={handleAddressChanged}
-                            className="mt-1 btn-chip-gray">
-                            <LocationEdit size={16} />
-                        </button>
-                    )}
-                    {onMoved && (
-                        <button
-                            onClick={handleMoved}
-                            className="mt-1 btn-chip-gray">
-                            <ArrowRightLeft size={16} />
-                        </button>
-                    )}
-                    {onLoaded && (
-                        <button
-                            onClick={handleLoaded}
-                            className="mt-1 btn-chip-gray">
-                            <Upload size={16} />
-                        </button>
-                    )}
-                    {onRemoved && (
-                        <button
-                            onClick={handleRemoved}
-                            className="mt-1 btn-chip-gray">
-                            <Trash2 size={16} />
-                        </button>)}
-                </div>
-            )}
         </div>
     )
 }

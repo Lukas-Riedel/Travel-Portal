@@ -137,25 +137,25 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
     }, [loadingRows, detailedRows, expenseCandidateRows, detailedView, expenses])
 
     return (
-        <div className="w-full overflow-x-auto rounded-xl my-4">
+        <div className="w-full rounded-xl my-4">
             <table className="w-full table-fixed divide-y divide-gray-200">
                 <colgroup>
                     {isAdmin ? (
                         <>
-                            <col style={{ width: "8%" }} />
-                            <col style={{ width: "30%" }} />
-                            <col style={{ width: "20%" }} />
-                            <col style={{ width: "17%" }} />
-                            <col style={{ width: "17%" }} />
-                            <col style={{ width: "8%" }} />
+                            <col className="w-[14%]" />
+                            <col className="w-[28%]" />
+                            <col className="w-[18%]" />
+                            <col className="w-[16%]" />
+                            <col className="w-[16%] hidden sm:table-column" />
+                            {detailedView && <col className="w-[8%]" />}
                         </>
                     ) : (
                         <>
-                            <col style={{ width: "8%" }} />
-                            <col style={{ width: "32%" }} />
-                            <col style={{ width: "23%" }} />
-                            <col style={{ width: "19%" }} />
-                            <col style={{ width: "19%" }} />
+                            <col className="w-[11%]" />
+                            <col className="w-[30%]" />
+                            <col className="w-[21%]" />
+                            <col className="w-[18%]" />
+                            <col className="w-[18%] hidden sm:table-column" />
                         </>
                     )}
                 </colgroup>
@@ -185,10 +185,10 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                         </th>
                         <th
                             key="currency"
-                            className="w-36 p-3 text-center">
+                            className="w-36 p-3 text-center hidden sm:table-cell">
                             {detailedView ? "Přepočet" : "Podíl"}
                         </th>
-                        {isAdmin && (
+                        {isAdmin && detailedView && (
                             <th
                                 key="management"
                                 className="w-12 text-center" />
@@ -198,11 +198,23 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 <tbody className="bg-white divide-y divide-gray-200">
                     {actualRows}
                     <tr>
-                        <td colSpan={detailedView ? 4 : 3} />
-                        <td className="p-3 text-center font-semibold">
-                            {`${totalCost.toFixed(0)} ${configuration?.mainCurrency}`}
-                        </td>
-                        {isAdmin && <td />}
+                        {detailedView ? (
+                            <>
+                                <td colSpan={4} />
+                                <td className="p-3 text-center font-semibold hidden sm:table-cell">
+                                    {`${totalCost.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
+                                </td>
+                                {isAdmin && <td />}
+                            </>
+                        ) : (
+                            <>
+                                <td colSpan={3} />
+                                <td className="p-3 text-center font-semibold">
+                                    {`${totalCost.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
+                                </td>
+                                <td className="hidden sm:table-cell" />
+                            </>
+                        )}
                     </tr>
                 </tbody>
             </table>
@@ -221,7 +233,7 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
             className="hover:bg-gray-100">
             <td className="p-3 text-center">
                 <div className={`flex justify-center items-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}>
-                    <Icon size={20} />
+                    <Icon className="w-5 h-5 flex-shrink-0" />
                 </div>
             </td>
             <td
@@ -232,18 +244,13 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
             <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span>
-                        {`${cost.toFixed(0)} ${configuration?.mainCurrency}`}
+                        {`${cost.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
                     </span>
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}>
+            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color} hidden sm:table-cell`}>
                 {totalCost > 0 ? ((100 * cost / totalCost).toFixed(1)) : "0.0"} %
             </td>
-            {isAdmin && (
-                <td className="p-3 text-center">
-                    &nbsp;
-                </td>
-            )}
         </tr>
     )
 }
@@ -293,7 +300,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
             className="hover:bg-gray-100">
             <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
                 <div className="flex justify-center items-center">
-                    <Icon size={20} />
+                    <Icon className="w-5 h-5 flex-shrink-0" />
                 </div>
             </td>
             <td
@@ -326,8 +333,8 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     )}
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
-                {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.mainCurrency ?? "???"}`}
+            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color} hidden sm:table-cell`}>
+                {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
             </td>
             {isAdmin && onExpenseRemoved && (
                 <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
@@ -347,17 +354,17 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
 
     const subscriptions = useSubscriptions()
 
-    const [newType, setNewType] = useState(Object.keys(expenseTypes)[0].icon)
+    const [newType, setNewType] = useState(Object.keys(expenseTypes)[0])
     const [newDescription, setNewDescription] = useState("")
     const [newValue, setNewValue] = useState(0)
     const [newCurrency, setNewCurrency] = useState(undefined)
     const [newSubscriptionId, setNewSubscriptionId] = useState(undefined)
 
     useEffect(() => {
-        setNewType(expenseCandidate?.type || Object.keys(expenseTypes)[0].icon)
+        setNewType(expenseCandidate?.type || Object.keys(expenseTypes)[0])
         setNewDescription(expenseCandidate?.description || "")
         setNewValue(expenseCandidate?.value || 0)
-        setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.mainCurrency)
+        setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.mainCurrency || "")
         setNewSubscriptionId(expenseCandidate?.subscriptionId)
     }, [expenseCandidate, lastAddedExpense, configuration])
 
@@ -395,7 +402,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     placeholder="Popis"
                     disabled={expenseCandidate?.description} />
             </td>
-            <td className="p-3 text-center">
+            <td className="p-3 text-center hidden sm:table-cell">
                 <select
                     className="border rounded p-1 w-full"
                     value={newSubscriptionId}
