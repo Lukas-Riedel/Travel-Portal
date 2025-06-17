@@ -1,7 +1,7 @@
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
-import { formatDuration, formatSteps, formatKilometers, formatPhotos } from "../utils/formatters"
+import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
 import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, Images, Plus, ImagePlus, Plane } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"

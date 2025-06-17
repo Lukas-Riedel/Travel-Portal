@@ -6,5 +6,6 @@
         case Selfcare = "SELFCARE";
         case Tenure = "TENURE";
         case Overtime = "OVERTIME";
+        case PlannedWork = 'PLANNED_WORK';
     }
 ?>

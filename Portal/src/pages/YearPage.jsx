@@ -18,7 +18,7 @@ export default function YearPage() {
     const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "CATEGORIES" })
     const yearTrips = useRegularTrips({ year: yearParameter })
 
-    const dayTripsTrip = useMemo(() => yearTrips?.find(trip => trip.isDayTrips()), [yearTrips])
+    const dayTripsTrip = useMemo(() => yearTrips?.find(trip => (isAdmin && trip.isDayTrips()) || trip.isPastDayTrips()), [yearTrips])
     const countryCategoriesMap = useMemo(() => new Map(yearPlaces?.map(place => place.getCategory("COUNTRY"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [yearPlaces])
 
@@ -36,7 +36,7 @@ export default function YearPage() {
                 onHighlightRemoved={removeYearHighlight}
                 onMainHighlightUpdated={updateYearMainHighlight} />
             <StatisticsPanel statistics={year?.statistics} />
-            <TripTileGrid trips={yearTrips && [...(yearTrips.filter(trip => trip.id !== dayTripsTrip?.id).reverse()), dayTripsTrip]} />
+            <TripTileGrid trips={yearTrips && [...(yearTrips.filter(trip => !trip.isDayTrips()).reverse()), dayTripsTrip]} />
             {isAdmin && (
                 <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
             )}

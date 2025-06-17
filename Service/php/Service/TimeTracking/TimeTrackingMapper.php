@@ -35,7 +35,7 @@
 
         public function selectBalance(?string $type, int $timestamp) : float {
             $sql = <<<'SQL'
-                SELECT SUM(hours) AS balance 
+                SELECT COALESCE(SUM(hours), 0) AS balance 
                 FROM tracking 
                 WHERE :CONDITIONS
             SQL;
@@ -53,7 +53,7 @@
 
         public function selectCarryOverBalanceFromPreviousYears(string $type) : float {
             $sql = <<<'SQL'
-                SELECT SUM(hours) AS balance
+                SELECT COALESCE(SUM(hours), 0) AS balance
                 FROM tracking
                 WHERE type = ?
                     AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))

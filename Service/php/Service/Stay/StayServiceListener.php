@@ -20,6 +20,7 @@
         public function onCalendarInvalidated(mixed $message) : void {
             if ($message["calendar"] === \Calendar::Stays->value) {
                 $this->stayService->refreshCalendar($this->tripService);
+                $this->tripService->updateAllDayTripsTripsDates();
             }
         }
 

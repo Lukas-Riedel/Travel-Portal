@@ -59,6 +59,8 @@ RewriteRule ^tracking/(.+)$ $1 [L,QSA]
 RewriteRule ^login/?$ login.php [L,QSA]
 RewriteRule ^login/(.+)$ $1 [L,QSA]
 
+RewriteRule ^tracker/?$ /new/tracker [R=302,L]
+
 # React fallback for /new/*
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

@@ -6,7 +6,8 @@ async function init(isLoggedIn) {
         getContentComponent((await api.listTimeTrackingEvents("OVERTIME")), isLoggedIn, true),
         getContentComponent((await api.listTimeTrackingEvents("VACATION")), isLoggedIn),
         getContentComponent((await api.listTimeTrackingEvents("SELFCARE")), isLoggedIn),
-        getContentComponent((await api.listTimeTrackingEvents("TENURE")), isLoggedIn)
+        getContentComponent((await api.listTimeTrackingEvents("TENURE")), isLoggedIn),
+        getContentComponent((await api.listTimeTrackingEvents("PLANNED_WORK")), isLoggedIn)
     ].join("<br>"));
 
     // Footer.
@@ -16,7 +17,8 @@ async function init(isLoggedIn) {
         "<a onclick=\"addTimeTrackingEvent('SELFCARE', -1)\">Využít sick day</a>",
         "<a onclick=\"addTimeTrackingEvent('VACATION', -1)\">Využít dovolenou</a>",
         "<a onclick=\"addTimeTrackingEvent('OVERTIME', -1)\">Využít přesčas</a>",
-        "<a onclick=\"addTimeTrackingEvent('OVERTIME', 1)\">Přidat přesčas</a>"
+        "<a onclick=\"addTimeTrackingEvent('OVERTIME', 1)\">Přidat přesčas</a>",
+        "<a onclick=\"addTimeTrackingEvent('PLANNED_WORK', 1, 'Planned work')\">Přidat plánovanou práci</a>"
     ]));
 }
 
@@ -72,7 +74,7 @@ function getContentComponent(events, showButtons, logCsv = false) {
     return getGeneralTable(headerRowColumns, contentRowColumnsSelector, events);
 }
 
-function addTimeTrackingEvent(type, factor) {
+function addTimeTrackingEvent(type, factor, description = undefined) {
     const date = prompt("Zadej datum (ve formátu DD.MM.YYYY):", getDateString(now, true));
     if (date == null || date == "") {
         return;
@@ -83,9 +85,11 @@ function addTimeTrackingEvent(type, factor) {
         return;
     }
     
-    const description = factor > 0 ? prompt("Zadej popis:") : "Balance usage";
-    if (description == null) {
-        return;
+    if (!description) {
+        description = factor > 0 ? prompt("Zadej popis:") : "Balance usage";
+        if (description == null) {
+            return;
+        }
     }
 
     api.createTimeTrackingEvent(type, factor * hours, description, date).then(reload);
@@ -179,6 +183,9 @@ function formatEventType(type) {
     }
     if (type === "OVERTIME") {
         return "<img src=\"img/overtime.png\">";
+    }
+    if (type === "PLANNED_WORK") {
+        return "<img src=\"img/calendar.png\">";
     }
     return type;
 }

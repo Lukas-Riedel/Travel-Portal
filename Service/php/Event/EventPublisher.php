@@ -217,7 +217,8 @@
         // TODO: Invalidations first, then updates. Order this enum.
         // TODO: Unify Removed/Deleted.
         // TODO: Remove unused.
-        case ApplicationStarted = 0;
+        case ApplicationStarted = -1;
+        case HighlightCreated = 0;
         case SchedulerTriggered = 1;
         case CalendarWatchRenewing = 2;
         case VacationReset = 3;
@@ -246,7 +247,6 @@
         case StayEventCreated = 26;
         case StayEventUpdated = 27;
         case StayEventDeleted = 28;
-        case HighlightCreated = 29;
         case HighlightRemoved = 30;
         case YearStatisticsUpdated = 32;
         case TripStatisticsUpdated = 33;

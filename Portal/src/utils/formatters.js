@@ -7,7 +7,7 @@ export function formatDuration(value, includeSeconds = false) {
         h > 0 && format(h, ["hodina", "hodiny", "hodin"]),
         m > 0 && format(m, ["minuta", "minuty", "minut"]),
         (s > 0 || (h === 0 && m === 0)) && includeSeconds && format(s, ["sekunda", "sekundy", "sekund"])
-    ].filter(Boolean).join(" ")
+    ].filter(Boolean).join(" ") || "0 hodin"
 }
 
 export function formatKilometers(value) {

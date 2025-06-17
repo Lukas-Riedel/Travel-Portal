@@ -1,9 +1,8 @@
 import MainLayout from "./layouts/MainLayout"
-import { BrowserRouter, Route, Routes, useSearchParams } from "react-router-dom"
+import { BrowserRouter, Route, Routes, useLocation, useSearchParams } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
-import ScrollToTop from "./components/ScrollToTop"
 import CountriesPage from "./pages/CountriesPage"
 import PlacePage from "./pages/PlacePage"
 import TripsPage from "./pages/TripsPage"
@@ -11,6 +10,7 @@ import TripPage from "./pages/TripPage"
 import CategoryPage from "./pages/CategoryPage"
 import LabelPage from "./pages/LabelPage"
 import YearPage from "./pages/YearPage"
+import TrackerPage from "./pages/TrackerPage"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -42,8 +42,19 @@ function AppContent() {
             <Route path="/category/:categoryId" element={<MainLayout><CategoryPage /></MainLayout>} />
             <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
+            <Route path="/tracker" element={<MainLayout><TrackerPage /></MainLayout>} />
         </Routes>
     )
+}
+
+function ScrollToTop() {
+    const { pathname } = useLocation()
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [pathname])
+
+    return null
 }
 
 export default function App() {

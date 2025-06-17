@@ -29,7 +29,8 @@
         public function onCalendarInvalidated(mixed $message) : void {
             foreach (FlightType::cases() as &$flightType) {
                 if ($flightType->getCalendar()->value === $message["calendar"]) {
-                    $this->flightService->refreshCalendar(array($flightType), $this->tripService);
+                    $this->flightService->refreshCalendar(array($flightType), $this->tripService);                    
+                    $this->tripService->updateAllDayTripsTripsDates();
                 }
             }
         }

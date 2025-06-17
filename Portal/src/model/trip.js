@@ -10,6 +10,10 @@ export default class Trip {
         return this.name === "Výlety"
     }
 
+    isPastDayTrips() {
+        return this.isDayTrips() && this.year < new Date().getFullYear()
+    }
+
     isCandidate() {
         return !this.year
     }
