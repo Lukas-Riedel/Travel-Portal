@@ -4,7 +4,7 @@ export function getDateString(timestamp) {
     return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
 }
 
-export function getDateRangeString(start, end) {
+export function getDateRangeString(start, end, includeYear = true) {
     if (!start || !end) {
         return null
     }
@@ -16,8 +16,8 @@ export function getDateRangeString(start, end) {
         return format(startDate, "d.M.yyyy")
     }
 
-    const startFormat = startDate.getFullYear() !== endDate.getFullYear() ? "d.M.yyyy" : startDate.getMonth() !== endDate.getMonth() ? "d.M" : "d"
-    return `${format(startDate, startFormat)} - ${format(endDate, "d.M.yyyy")}`
+    const startFormat = startDate.getFullYear() !== endDate.getFullYear() ? (includeYear ? "d.M.yyyy" : "d.M.") : startDate.getMonth() !== endDate.getMonth() ? "d.M." : "d."
+    return `${format(startDate, startFormat)} - ${format(endDate, (includeYear ? "d.M.yyyy" : "d.M."))}`
 }
 
 export function getMaxEndTimestamp(isAdmin) {

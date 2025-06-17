@@ -55,7 +55,9 @@ export default function Trip() {
                 placeMainCategorySelector={getPlaceCategory}
                 onHighlightRemoved={removeTripHighlight}
                 onMainHighlightUpdated={updateTripMainHighlight} />
-            <StatisticsPanel statistics={trip?.statistics} />
+            {trip?.start > Date.now() / 1000 && (
+                <StatisticsPanel statistics={trip?.statistics} />
+            )}
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}

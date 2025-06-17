@@ -10,7 +10,7 @@ import CountryList from "./pages/CountryList"
 import ScrollToTop from "./components/ScrollToTop"
 import Trip from "./pages/Trip"
 import Year from "./pages/Year"
-import YearList from "./pages/YearList"
+import YearList from "./pages/TripList"
 
 function AppContent() {
     const { accessToken, login } = useAuth()

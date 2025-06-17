@@ -20,7 +20,7 @@ export const useTrip = (tripId) => {
 
     return {
         trip: query.data && new Trip(query.data),
-        removeTrip: _ => api.removeTrip(tripId).then(refetchTrip),
+        removeTrip: _ => api.removeTrip(tripId),
         loadTrip: candidateTripId => api.replaceTrip(tripId, candidateTripId).then(setTrip),
         moveTrip: days => api.updateTripStart(tripId, query.data.start + days * 86400).then(setTrip),
         updateTripName: name => api.updateTripName(tripId, name).then(setTrip),

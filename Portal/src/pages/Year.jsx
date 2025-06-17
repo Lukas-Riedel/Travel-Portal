@@ -7,8 +7,11 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useYear } from "../hooks/useYear"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import TripTileGrid from "../components/TripTileGrid"
+import TripTable from "../components/TripTable"
+import { useAuth } from "../contexts/AuthContext"
 
 export default function Year() {
+    const { isAdmin } = useAuth()
     const { year: yearParameter } = useParams()
 
     const { year, removeYearHighlight, updateYearMainHighlight } = useYear(yearParameter)
@@ -34,6 +37,9 @@ export default function Year() {
                 onMainHighlightUpdated={updateYearMainHighlight} />
             <StatisticsPanel statistics={year?.statistics} />
             <TripTileGrid trips={yearTrips && [...(yearTrips.filter(trip => trip.id !== dayTripsTrip?.id).reverse()), dayTripsTrip]} />
+            {isAdmin && (
+                <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
+            )}
         </>
     )
 }

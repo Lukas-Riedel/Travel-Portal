@@ -15,6 +15,10 @@ export default class Trip {
         return this.end < Date.now() / 1000
     }
 
+    isFuture() {
+        return !this.isPast()
+    }
+
     getFullName() {
         return this.year ? `${this.name} ${this.year}` : this.name
     }

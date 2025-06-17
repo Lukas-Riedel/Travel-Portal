@@ -223,7 +223,6 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
 }
 
 function AggregatedExpenseRow({ type, cost, totalCost }) {
-    const { isAdmin } = useAuth()
     const configuration = useConfiguration()
 
     const Icon = expenseTypes[type]?.icon || expenseTypes.OTHER.icon
