@@ -14,7 +14,7 @@ export default function Category() {
     const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "CATEGORIES", sort: "score" })
 
     const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("COUNTRY"))
-        ?.filter(category => category)?.map(category => [category.name, category])), [categoryPlaces])
+        ?.filter(Boolean)?.map(category => [category.name, category])), [categoryPlaces])
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {

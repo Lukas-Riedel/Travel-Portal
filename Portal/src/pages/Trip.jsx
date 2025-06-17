@@ -28,9 +28,9 @@ export default function Trip() {
     const regularPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES", sort: "score" })
     const candidatePlaces = useCandidatePlaces({ tripId, include: "CATEGORIES,DATES", sort: "score" })
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : regularPlaces, [trip, regularPlaces, candidatePlaces])
-    const tripPlacesWithoutLayover = useMemo(() => tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
+    const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
     const countryCategoriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("COUNTRY"))
-        ?.filter(category => category)?.map(category => [category.name, category])), [tripPlaces])
+        ?.filter(Boolean)?.map(category => [category.name, category])), [tripPlacesWithoutLayover])
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {

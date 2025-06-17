@@ -20,7 +20,7 @@ export default function Year() {
 
     const dayTripsTrip = useMemo(() => yearTrips?.find(trip => trip.isDayTrips()), [yearTrips])
     const countryCategoriesMap = useMemo(() => new Map(yearPlaces?.map(place => place.getCategory("COUNTRY"))
-        ?.filter(category => category)?.map(category => [category.name, category])), [yearPlaces])
+        ?.filter(Boolean)?.map(category => [category.name, category])), [yearPlaces])
 
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)
 

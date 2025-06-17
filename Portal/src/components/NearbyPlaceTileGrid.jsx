@@ -9,11 +9,11 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
         ?.filter(p => p.id !== place?.id)
         ?.filter(p => p?.mainHighlight)
         ?.map(p => place && new Place({ ...p, distance: p.getEuclideanDistanceTo(place) }))
-        ?.filter(p => p)
+        ?.filter(Boolean)
         ?.sort((a, b) => a.distance - b.distance)
         ?.slice(0, 2 * count)
         ?.map(p => place && new Place({ ...p, distance: p.getHaversineDistanceTo(place) }))
-        ?.filter(p => p)
+        ?.filter(Boolean)
         ?.sort((a, b) => a.distance - b.distance)
         ?.slice(0, count), [place, places, count])
 

@@ -108,7 +108,7 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
     return !isMobile && categories?.length <= 5 ? (
         <div className="flex justify-between items-center mb-5">
             <div>
-                <h1 className="text-5xl font-bold leading-tight">
+                <h1 className="text-5xl font-bold leading-tight text-left [text-wrap:balance]">
                     {categories && (
                         <>
                             {getPrettyName(name)}
@@ -124,9 +124,9 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                 {categories?.map((category, index) => (
                     <img
                         key={index}
+                        className="w-14 object-cover mx-2 flex-shrink-0"
                         src={`/img/flags/${category?.metadata?.unicode}.svg`}
                         alt={category?.name}
-                        className="w-14 object-cover mx-2 flex-shrink-0"
                     />
                 ))}
             </div>

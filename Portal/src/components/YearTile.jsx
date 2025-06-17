@@ -4,7 +4,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 
 export default function YearTile({ year }) {
     const yearPlaces = useTimeFilteredRegularPlaces({ year: year?.id, include: "CATEGORIES" })
-    const categories = useMemo(() => [...new Map(yearPlaces?.map(place => place.getCategory("COUNTRY"))?.filter(category => category)
+    const categories = useMemo(() => [...new Map(yearPlaces?.map(place => place.getCategory("COUNTRY"))?.filter(Boolean)
         ?.map(category => [category.name, category])).values()]?.sort((a, b) => a.name.localeCompare(b.name)), [yearPlaces])
 
     return (
