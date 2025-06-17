@@ -7,7 +7,7 @@ import StatisticsPanel from "../components/StatisticsPanel"
 import { useMemo } from "react"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 
-export default function Category() {
+export default function CategoryPage() {
     const { categoryId } = useParams()
 
     const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight } = useCategory(categoryId)

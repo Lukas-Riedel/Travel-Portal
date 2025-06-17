@@ -5,7 +5,7 @@ import PlaceTileGrid from "../components/PlaceTileGrid"
 import PlaceMap from "../components/PlaceMap"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 
-export default function Label() {
+export default function LabelPage() {
     const { labelName } = useParams()
 
     const labelPlaces = useTimeFilteredRegularPlaces({ labelName, include: "CATEGORIES", sort: "score" })

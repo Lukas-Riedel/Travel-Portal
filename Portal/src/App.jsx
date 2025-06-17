@@ -1,16 +1,16 @@
-import Place from "./pages/Place"
 import MainLayout from "./layouts/MainLayout"
 import { BrowserRouter, Route, Routes, useSearchParams } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
-import Category from "./pages/Category"
-import Label from "./pages/Label"
-import CountryList from "./pages/CountryList"
 import ScrollToTop from "./components/ScrollToTop"
-import Trip from "./pages/Trip"
-import Year from "./pages/Year"
-import YearList from "./pages/TripList"
+import CountriesPage from "./pages/CountriesPage"
+import PlacePage from "./pages/PlacePage"
+import TripsPage from "./pages/TripsPage"
+import TripPage from "./pages/TripPage"
+import CategoryPage from "./pages/CategoryPage"
+import LabelPage from "./pages/LabelPage"
+import YearPage from "./pages/YearPage"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -34,14 +34,14 @@ function AppContent() {
 
     return (
         <Routes>
-            <Route path="/" element={<MainLayout><CountryList /></MainLayout>} />
-            <Route path="/place" element={<MainLayout><CountryList /></MainLayout>} />
-            <Route path="/place/:placeId" element={<MainLayout><Place /></MainLayout>} />
-            <Route path="/trip" element={<MainLayout><YearList /></MainLayout>} />
-            <Route path="/trip/:tripId" element={<MainLayout><Trip /></MainLayout>} />
-            <Route path="/category/:categoryId" element={<MainLayout><Category /></MainLayout>} />
-            <Route path="/label/:labelName" element={<MainLayout><Label /></MainLayout>} />
-            <Route path="/year/:year" element={<MainLayout><Year /></MainLayout>} />
+            <Route path="/" element={<MainLayout><CountriesPage /></MainLayout>} />
+            <Route path="/place" element={<MainLayout><CountriesPage /></MainLayout>} />
+            <Route path="/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
+            <Route path="/trip" element={<MainLayout><TripsPage /></MainLayout>} />
+            <Route path="/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
+            <Route path="/category/:categoryId" element={<MainLayout><CategoryPage /></MainLayout>} />
+            <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
+            <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
         </Routes>
     )
 }

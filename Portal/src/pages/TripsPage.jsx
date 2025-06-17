@@ -11,7 +11,7 @@ import TripTable from "../components/TripTable.jsx"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import TripSummary from "../components/TripSummary.jsx"
 
-export default function TripList() {
+export default function TripsPage() {
     const { isAdmin } = useAuth()
 
     const years = useYears()

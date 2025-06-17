@@ -15,7 +15,7 @@ import NoteBar from "../components/NoteBar"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 
-export default function Trip() {
+export default function TripPage() {
     const { isAdmin } = useAuth()
     const api = useApi()
 

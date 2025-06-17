@@ -1,12 +1,12 @@
-import { useCategories } from "../hooks/useCategories"
+import { useCategories } from "../hooks/useCategories.js"
 import CategoryTileGrid from "../components/CategoryTileGrid.jsx"
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import StatisticsPanel from "../components/StatisticsPanel.jsx"
-import { useStatistics } from "../hooks/useStatistics"
+import { useStatistics } from "../hooks/useStatistics.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
-export default function CountryList() {
+export default function CountriesPage() {
     const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
     const countryCategories = useCategories({ categories: "COUNTRY" })
     const statistics = useStatistics()

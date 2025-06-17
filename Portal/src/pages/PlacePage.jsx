@@ -12,7 +12,7 @@ import { usePlace } from "../hooks/usePlace.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 
-export default function Place() {
+export default function PlacePage() {
     const { isAdmin } = useAuth()
     const { placeId } = useParams()
 

@@ -10,7 +10,7 @@ import TripTileGrid from "../components/TripTileGrid"
 import TripTable from "../components/TripTable"
 import { useAuth } from "../contexts/AuthContext"
 
-export default function Year() {
+export default function YearPage() {
     const { isAdmin } = useAuth()
     const { year: yearParameter } = useParams()
 
