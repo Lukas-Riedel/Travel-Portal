@@ -197,12 +197,12 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
         const Icon = flight.icon
         return (
             <li key="flight" className="relative group">
-                <div className="flex items-center space-x-1 text-white text-xs leading-tight truncate">
-                    <Icon size={16} />
-                    <span className="font-medium">
+                <div className="flex items-center space-x-1 text-white text-xs leading-tight">
+                    <Icon className="w-4 h-4 mr-1 shrink-0" />
+                    <span className="font-medium truncate hidden md:block">
                         {formatTimestamp(flight.time)}
                     </span>
-                    <span className="whitespace-nowrap  text-ellipsis">
+                    <span className="whitespace-nowrap text-ellipsis truncate">
                         <a
                             href={`https://www.flightradar24.com/data/flights/${flight.flight}`}
                             className="hover:underline hover:text-gray-300 transition-colors duration-200">
@@ -222,8 +222,8 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
         const Icon = icon
         return (
             <li key={key} className="relative group">
-                <div className="flex items-center space-x-1 text-white text-xs leading-tight truncate">
-                    <Icon size={16} />
+                <div className="flex items-center space-x-1 text-white text-xs leading-tight">
+                    <Icon className="w-4 h-4 mr-1 shrink-0" />
                     <span className="font-medium truncate">
                         {formatDuration(events.map(e => (-1) * e.hours).reduce((acc, val) => acc + val, 0) * 3600)}
                     </span>
@@ -238,8 +238,8 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
 
     const renderButtons = day => (
         <li key="buttons" className="relative group">
-            <div className="flex items-center space-x-1 text-white text-xs leading-tight truncate">
-                <Plus size={16} />
+            <div className="flex items-center space-x-1 text-white text-xs leading-tight">
+                <Plus className="w-4 h-4 mr-1 shrink-0" />
                 <a className="font-medium truncate">
                     Zalogovat čas
                 </a>
@@ -344,9 +344,9 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
                                                 <div className="space-y-0.5 text-xs text-white leading-tight">
                                                     {foundDay && (
                                                         <>
-                                                            <div className="flex items-center space-x-1 font-medium truncate">
-                                                                <Clock size={16} />
-                                                                <span>
+                                                            <div className="flex items-center space-x-1 font-medium">
+                                                                <Clock className="w-4 h-4 mr-1 shrink-0" />
+                                                                <span className="truncate">
                                                                     {foundDay.day >= startOfDay(now)
                                                                         ? formatDuration(foundDay.expectedWorkingHours * 3600)
                                                                         : formatDuration(foundDay.actualWorkingHours * 3600)}

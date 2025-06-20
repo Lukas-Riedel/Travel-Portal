@@ -195,7 +195,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     {renderDescriptionRow("text-amber-600", [
                                         event.weather.temperature && (
                                             <div className="flex items-center space-x-1">
-                                                <WeatherIcon className="w-4 h-4 mr-1" />
+                                                <WeatherIcon className="w-4 h-4 mr-1 shrink-0" />
                                                 <span>
                                                     {event.weather.temperature.toFixed(1) + " °C"}
                                                 </span>
