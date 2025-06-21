@@ -47,11 +47,8 @@ export default class Trip {
     }
 
     getStay(day) {
-        return [...(this.stays ?? [])].reverse().find(s => {
-            const checkin = startOfDay(fromUnixTime(s.start))
-            const checkout = startOfDay(fromUnixTime(s.end) - 86400)
-            return day >= checkin && day < checkout
-        })
+        const dayTimestamp = day.getTime() / 1000
+        return [...(this.stays ?? [])].reverse().find(s => dayTimestamp >= s.start && (dayTimestamp + 86400) < s.end)
     }
 
     getPublicHoliday(day) {
