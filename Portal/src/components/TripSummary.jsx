@@ -17,6 +17,7 @@ export default function TripSummary({ tripId }) {
 
     const [timezone, setTimezone] = useState(undefined)
 
+    const startOfTripStartDay = useMemo(() => startOfDay(fromUnixTime(trip?.start)), [trip])
     const days = useMemo(() => trip && eachDayOfInterval({
         start: startOfDay(fromUnixTime(Math.max(trip?.start, Date.now() / 1000))),
         end: startOfDay(fromUnixTime(trip?.end - 1))
@@ -62,7 +63,7 @@ export default function TripSummary({ tripId }) {
                     day={day}
                     events={trip?.getEvents(day, tripPlaces, timezone)}
                     stay={trip?.getStay(day)}
-                    fitness={trip?.fitness[idx]}
+                    fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
                     publicHoliday={trip?.getPublicHoliday(day)}
                     timezone={timezone}
                     onPhotosAdded={(placeId, albumId, timestamp, path, mainPhotoPosition) =>

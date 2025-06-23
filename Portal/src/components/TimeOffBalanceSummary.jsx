@@ -16,7 +16,7 @@ export default function TimeOffBalanceSummary({ overtimeEvents, vacationEvents, 
 
     const renderBalance = (Icon, balance) => (
         <div className="flex flex-col bg-white text-black px-6 py-3 rounded-xl text-center flex-1 shadow-md select-none border border-gray-200 min-h-[150px]">
-            <div className="mb-1.5 tracking-wide flex justify-center">
+            <div className="mt-4 tracking-wide flex justify-center">
                 <Icon size={24} />
             </div>
             <div className="flex-grow flex items-center justify-center">

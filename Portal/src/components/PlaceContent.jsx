@@ -38,7 +38,7 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
 
     return place ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <p className="text-gray-700 text-justify leading-relaxed relative">
+            <p className="text-gray-700 text-justify leading-relaxed relative mx-2 sm:mx-0">
                 {place.excerpt}
                 {onExcerptRefreshed && isAdmin && (
                     <button
