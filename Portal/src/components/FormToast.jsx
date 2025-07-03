@@ -36,12 +36,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                     key={idx}
                                     ref={element => (inputRefs.current[idx] = element)}
                                     className="border rounded px-2 py-1 w-full text-sm"
-                                    defaultValue="">
-                                    <option
-                                        value=""
-                                        disabled>
-                                        {`${field.placeholder ?? ""} ${field.required ? "" : "(nepovinné)"}`}
-                                    </option>
+                                    defaultValue={field.value ?? ""}>
                                     {field.options?.map((option, idx) => (
                                         <option
                                             key={idx}

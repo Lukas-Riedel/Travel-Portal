@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, Home, PlaneTakeoff, PlaneLanding, Clock, Shield, ClockPlus, Plane, Palmtree, Pill, Plus } from "lucide-react"
-import { format, getDaysInMonth, startOfMonth, getDay, eachDayOfInterval, startOfDay, endOfDay, addDays, startOfWeek } from "date-fns"
+import { ChevronLeft, ChevronRight, Home, PlaneTakeoff, PlaneLanding, Clock, Shield, ClockPlus, Plane, Palmtree, Pill, Plus, Trash2, CalendarPlus } from "lucide-react"
+import { format, getDaysInMonth, startOfMonth, getDay, startOfDay, endOfDay, addDays, startOfWeek } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import cs from "date-fns/locale/cs"
 import { useConfiguration } from "../contexts/ConfigContext"
@@ -8,8 +8,19 @@ import { fromUnixTime } from "date-fns"
 import Tooltip from "./Tooltip"
 import { formatDuration } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
+import showConfirmToast from "./ConfirmToast"
+import showFormToast from "./FormToast"
+import { toast } from "sonner"
 
-export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents }) {
+const eventTypes = [
+    { id: "OVERTIME", name: "Přesčas" },
+    { id: "VACATION", name: "Dovolená" },
+    { id: "SELFCARE", name: "Sick day" },
+    { id: "TENURE", name: "Bonusové volno" },
+    { id: "PLANNED_WORK", name: "Plánovaná práce" }
+]
+
+export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { isAdmin } = useAuth()
     const configuration = useConfiguration()
 
@@ -75,13 +86,7 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
 
     const getEvents = (day, events, hoursFilter) => {
         const targetDay = startOfDay(day).getTime()
-        return (events ?? [])
-            .filter(event => hoursFilter(event.hours) && startOfDay(toZonedTime(fromUnixTime(event.timestamp), timezone)).getTime() === targetDay)
-            .map(event => ({
-                description: event.description,
-                hours: event.hours,
-                balance: event.balance
-            }))
+        return (events ?? []).filter(event => hoursFilter(event.hours) && startOfDay(toZonedTime(fromUnixTime(event.timestamp), timezone)).getTime() === targetDay)
     }
 
     const getPositiveOvertime = day => getEvents(day, overtimeEvents, hours => hours > 0)
@@ -94,109 +99,63 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
     const sumEventHours = events => events.map(e => e.hours).reduce((a, b) => a + b, 0)
 
     const formatTimestamp = timestamp => format(toZonedTime(fromUnixTime(timestamp), timezone), "HH:mm")
+    const getWeekday = date => (getDay(date) + 6) % 7
 
     const changeMonth = offset => setDate(previous => startOfMonth(new Date(previous.getFullYear(), previous.getMonth() + offset, 1)))
     const goToToday = () => setDate(startOfMonth(now))
 
     const isInTrip = day => filteredTrips.some(({ start, end }) => start * 1000 <= endOfDay(day).getTime() && end * 1000 > startOfDay(day).getTime())
 
+    const getDaySummary = day => {
+        if (day < earliestAllowedDate || day > latestAllowedDate) {
+            return null
+        }
+
+        const isFreeDay = day.getDay() === 0 || day.getDay() === 6 || isPublicHoliday(day)
+        const standardWorkingHours = isFreeDay ? 0 : standardWorkingHoursPerWorkingDay
+        const positiveOvertime = getPositiveOvertime(day)
+        const negativeOvertime = getNegativeOvertime(day)
+        const vacation = getVacation(day)
+        const selfcare = getSelfcare(day)
+        const tenure = getTenure(day)
+        const plannedWork = getPlannedWork(day)
+
+        return {
+            day,
+            flight: getFlight(day),
+            positiveOvertime,
+            negativeOvertime,
+            vacation,
+            selfcare,
+            tenure,
+            plannedWork,
+            isInTrip: isInTrip(day),
+            standardWorkingHours,
+            actualWorkingHours: (day > now ? 0 : standardWorkingHours)
+                + sumEventHours(positiveOvertime)
+                + sumEventHours(negativeOvertime)
+                + sumEventHours(vacation)
+                + sumEventHours(selfcare)
+                + sumEventHours(tenure),
+            expectedWorkingHours: (isFreeDay || isInTrip(day) ? 0 : 8)
+                + sumEventHours(plannedWork)
+        }
+    }
+
     const daysOfWeek = Array.from({ length: 7 }, (_, i) => format(addDays(startOfWeek(new Date(1970, 0, 1), { weekStartsOn: 1 }), i), "EE", { locale: cs }))
 
-    const days = useMemo(() => {
-        return eachDayOfInterval({
-            start: startOfDay(earliestAllowedDate),
-            end: startOfDay(latestAllowedDate)
-        }).map(day => {
-            const isFreeDay = day.getDay() === 0 || day.getDay() === 6 || isPublicHoliday(day);
-            const standardWorkingHours = isFreeDay ? 0 : standardWorkingHoursPerWorkingDay;
-            const positiveOvertime = getPositiveOvertime(day);
-            const negativeOvertime = getNegativeOvertime(day);
-            const vacation = getVacation(day);
-            const selfcare = getSelfcare(day)
-            const tenure = getTenure(day)
-            const plannedWork = getPlannedWork(day)
-
-            return {
-                day,
-                flight: getFlight(day),
-                positiveOvertime,
-                negativeOvertime,
-                vacation,
-                selfcare,
-                tenure,
-                plannedWork,
-                isInTrip: isInTrip(day),
-                standardWorkingHours,
-                actualWorkingHours: (day > now ? 0 : standardWorkingHours)
-                    + sumEventHours(positiveOvertime)
-                    + sumEventHours(negativeOvertime)
-                    + sumEventHours(vacation)
-                    + sumEventHours(selfcare)
-                    + sumEventHours(tenure),
-                expectedWorkingHours: (isFreeDay || isInTrip(day) ? 0 : 8)
-                    + sumEventHours(plannedWork)
-            };
-        });
-    }, [earliestAllowedDate, latestAllowedDate, configuration, trips]);
-
-
-
-
-
-
-
-    function getWeekday(date) {
-        // Monday as 0
-        const d = getDay(date)
-        return d === 0 ? 6 : d - 1
-    }
-
-    const year = date.getFullYear()
-    const month = date.getMonth()
-    const daysInMonth = getDaysInMonth(date)
-
-    // Build calendar with null padding for Monday start
-    const calendarDays = []
-    const firstDayWeekday = getWeekday(date)
-    for (let i = 0; i < firstDayWeekday; i++) calendarDays.push(null)
-    for (let d = 1; d <= daysInMonth; d++) {
-        const dayDate = new Date(year, month, d)
-        calendarDays.push(dayDate)
-    }
-
-    // Map flights by day key (start of day in timezone, number timestamp)
-    const flightsByDay = {}
-
-    filteredTrips.forEach(({ flights }) => {
-        if (!flights || flights.length === 0) return
-        const firstFlight = flights[0]
-        const lastFlight = flights[flights.length - 1]
-
-        if (firstFlight?.start) {
-            const flightDate = toZonedTime(fromUnixTime(firstFlight.start), timezone)
-            flightDate.setHours(0, 0, 0, 0)
-            const dayKey = flightDate.getTime()
-            if (!flightsByDay[dayKey]) flightsByDay[dayKey] = []
-            if (!flightsByDay[dayKey].some((f) => f === firstFlight)) {
-                flightsByDay[dayKey].push(firstFlight)
-            }
-        }
-
-        if (lastFlight?.end && flights.length > 1) {
-            const flightDate = toZonedTime(fromUnixTime(lastFlight.end), timezone)
-            flightDate.setHours(0, 0, 0, 0)
-            const dayKey = flightDate.getTime()
-            if (!flightsByDay[dayKey]) flightsByDay[dayKey] = []
-            if (!flightsByDay[dayKey].some((f) => f === lastFlight)) {
-                flightsByDay[dayKey].push(lastFlight)
-            }
-        }
-    })
+    const calendarDays = [
+        ...Array(getWeekday(date)).fill(null),
+        ...Array.from({ length: getDaysInMonth(date) }, (_, i) => new Date(date.getFullYear(), date.getMonth(), i + 1)),
+        ...Array((7 - ((getWeekday(date) + getDaysInMonth(date)) % 7)) % 7).fill(null)
+    ]
 
     const renderFlight = flight => {
         const Icon = flight.icon
         return (
-            <li key="flight" className="relative group">
+            <li
+                key="flight"
+                className="relative group">
                 <div className="flex items-center space-x-1 text-white text-xs leading-tight">
                     <Icon className="w-4 h-4 mr-1 shrink-0" />
                     <span className="font-medium truncate hidden md:block">
@@ -220,81 +179,241 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
 
     const renderAbsence = (key, events, icon) => {
         const Icon = icon
-        return (
-            <li key={key} className="relative group">
+        return events.map((event, idx) => (
+            <li
+                key={key + idx}
+                className="relative group">
                 <div className="flex items-center space-x-1 text-white text-xs leading-tight">
                     <Icon className="w-4 h-4 mr-1 shrink-0" />
                     <span className="font-medium truncate">
-                        {formatDuration(events.map(e => (-1) * e.hours).reduce((acc, val) => acc + val, 0) * 3600)}
+                        {formatDuration((-1) * event.hours * 3600)}
                     </span>
+                    {isAdmin && (
+                        <button
+                            className="p-0.5 btn-icon-hover"
+                            onClick={() => handleRemoveEvent(event)}>
+                            <Trash2 size={16} />
+                        </button>
+                    )}
                     <Tooltip>
                         <Icon size={16} />
                         {`Zbývá ${formatDuration(Math.min(...events.map(e => e.balance)) * 3600)}`}
                     </Tooltip>
                 </div>
             </li>
+        ))
+    }
+
+    const handleCreatePositiveOvertimeEvent = day => {
+        showFormToast(
+            "Zadej údaje pro vytvoření přesčasu:",
+            [
+                { placeholder: "Popis přesčasu", required: true },
+                { placeholder: "Počet hodin", value: (8 - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
+            ],
+            "Přesčas byl úspěšně vytvořen",
+            "Nepodařilo se vytvořit přesčas",
+            async (description, hours) => onEventCreated("OVERTIME", description, hours, format(day, "d.M.yyyy"))
+        )
+    }
+
+    const handleBalanceUsageEvent = (day, type, title, success, error) => {
+        showFormToast(
+            title,
+            [
+                { placeholder: "Počet hodin", value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }
+            ],
+            success,
+            error,
+            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, format(day, "d.M.yyyy"))
+        )
+    }
+
+    const handleCreateNegativeOvertimeEvent = day => {
+        handleBalanceUsageEvent(
+            day,
+            "OVERTIME",
+            "Zadej počet hodin k využití přesčasu:",
+            "Přesčas byl úspěšně využit",
+            "Nepodařilo se využít přesčas"
+        )
+    }
+
+    const handleCreateVacationEvent = day => {
+        handleBalanceUsageEvent(
+            day,
+            "VACATION",
+            "Zadej počet hodin k využití dovolené:",
+            "Dovolená byl úspěšně využita",
+            "Nepodařilo se využít dovolenou"
+        )
+    }
+
+    const handleCreateSelfcareEvent = day => {
+        handleBalanceUsageEvent(
+            day,
+            "SELFCARE",
+            "Zadej počet hodin k využití sick daye:",
+            "Sick day byl úspěšně využit",
+            "Nepodařilo se využít sick day"
+        )
+    }
+
+    const handleCreateTenureEvent = day => {
+        handleBalanceUsageEvent(
+            day,
+            "TENURE",
+            "Zadej počet hodin k využití bonusového volna:",
+            "Bonusové volno bylo úspěšně využito",
+            "Nepodařilo se využít bonusové volno"
+        )
+    }
+
+    const handleCreatePlannedWorkEvent = day => {
+        showFormToast(
+            "Zadej počet hodin k modifikaci plánované práce:",
+            [
+                { placeholder: "Počet hodin", value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }
+            ],
+            "Plánovaná práce byla úspěšně modifikována",
+            "Nepodařilo se modifikovat plánovanou práci",
+            async (hours) => onEventCreated("PLANNED_WORK", "Planned work", hours, format(day, "d.M.yyyy"))
+        )
+    }
+
+    const handleRemoveEvent = event => {
+        showConfirmToast(
+            "Opravdu chceš odstranit tuto událost?",
+            "Událost byla úspěšně odstraněna",
+            "Nepodařilo se odstranit událost",
+            async () => onEventRemoved(event.id)
+        )
+    }
+
+    const handleCopyToClipboard = event => {
+        showConfirmToast(
+            "Text události bude vložen do schránky. Přeješ si pokračovat?",
+            "Text události byl úspěšně vložen do schránky",
+            "Nepodařilo se vložit text události do schránky",
+            async () => navigator.clipboard.writeText(event.description)
         )
     }
 
     const renderButtons = day => (
-        <li key="buttons" className="relative group">
-            <div className="flex items-center space-x-1 text-white text-xs leading-tight">
-                <Plus className="w-4 h-4 mr-1 shrink-0" />
-                <a className="font-medium truncate">
-                    Zalogovat čas
-                </a>
-            </div>
-        </li>
+        <ul className="flex gap-1 list-none p-0 m-0">
+            <li key="positiveOvertime">
+                <button
+                    className="flex items-center space-x-1 text-white text-xs leading-tight"
+                    onClick={() => handleCreatePositiveOvertimeEvent(day)}>
+                    <Plus className="w-4 h-4 shrink-0 btn-icon-hover" />
+                </button>
+            </li>
+            <li key="negativeOvertime">
+                <button
+                    className="flex items-center space-x-1 text-white text-xs leading-tight"
+                    onClick={() => handleCreateNegativeOvertimeEvent(day)}>
+                    <ClockPlus className="w-4 h-4 shrink-0 btn-icon-hover" />
+                </button>
+            </li>
+            <li key="vacation">
+                <button
+                    className="flex items-center space-x-1 text-white text-xs leading-tight"
+                    onClick={() => handleCreateVacationEvent(day)}>
+                    <Palmtree className="w-4 h-4 shrink-0 btn-icon-hover" />
+                </button>
+            </li>
+            <li key="selfcare">
+                <button
+                    className="flex items-center space-x-1 text-white text-xs leading-tight"
+                    onClick={() => handleCreateSelfcareEvent(day)}>
+                    <Pill className="w-4 h-4 shrink-0 btn-icon-hover" />
+                </button>
+            </li>
+            <li key="tenure">
+                <button
+                    className="flex items-center space-x-1 text-white text-xs leading-tight"
+                    onClick={() => handleCreateTenureEvent(day)}>
+                    <Shield className="w-4 h-4 shrink-0 btn-icon-hover" />
+                </button>
+            </li>
+            <li key="plannedWork">
+                <button
+                    className="flex items-center space-x-1 text-white text-xs leading-tight"
+                    onClick={() => handleCreatePlannedWorkEvent(day)}>
+                    <CalendarPlus className="w-4 h-4 shrink-0 btn-icon-hover" />
+                </button>
+            </li>
+        </ul>
     )
-    
+
+    const getDaySummaryStyle = daySummary => {
+        if (daySummary) {
+            if (daySummary.isInTrip && (daySummary.actualWorkingHours > 0 || daySummary.expectedWorkingHours > 0)) {
+                return {
+                    bgColorClass: "bg-cyan-600 text-white",
+                    hoverClass: "hover:bg-cyan-700",
+                }
+            }
+
+            if (daySummary.standardWorkingHours === 0) {
+                return {
+                    bgColorClass: "bg-amber-600 text-white",
+                    hoverClass: "hover:bg-amber-700",
+                }
+            }
+
+            if (daySummary.isInTrip) {
+                return {
+                    bgColorClass: "bg-red-600 text-white",
+                    hoverClass: "hover:bg-red-700",
+                }
+            }
+
+            if (!daySummary.isInTrip && daySummary.standardWorkingHours > 0) {
+                return {
+                    bgColorClass: "bg-green-700 text-white",
+                    hoverClass: "hover:bg-green-800",
+                }
+            }
+        }
+
+        return {
+            bgColorClass: "bg-white",
+            hoverClass: "hover:bg-white",
+        }
+    }
+
     return (
         <div className="w-full p-4 border rounded-md shadow-md bg-white text-black my-4">
             <div className="flex items-center justify-between mb-4">
                 <button
-                    onClick={() => {
-                        if (!isPreviousMonthDisabled) {
-                            changeMonth(-1)
-                        }
-                    }}
-                    className={`p-2 rounded ${!isPreviousMonthDisabled ? "hover:bg-gray-200" : "opacity-50 cursor-not-allowed"}`}
-                    aria-label="Previous Month"
-                    type="button">
+                    onClick={() => !isPreviousMonthDisabled && changeMonth(-1)}
+                    className={`p-2 rounded ${!isPreviousMonthDisabled ? "hover:bg-gray-200" : "opacity-50 cursor-not-allowed"}`}>
                     <ChevronLeft className="w-5 h-5" />
                 </button>
-
                 <h2 className="text-lg font-semibold">
                     {format(date, "LLLL yyyy", { locale: cs })}
                 </h2>
-
                 <div className="flex items-center space-x-2">
                     <button
                         onClick={goToToday}
-                        className="p-2 rounded hover:bg-gray-200"
-                        aria-label="Go to Today"
-                        type="button"
-                    >
+                        className="p-2 rounded hover:bg-gray-200">
                         <Home className="w-5 h-5" />
                     </button>
-
                     <button
                         onClick={() => changeMonth(1)}
-                        className="p-2 rounded hover:bg-gray-200"
-                        aria-label="Next Month"
-                        type="button"
-                    >
+                        className="p-2 rounded hover:bg-gray-200">
                         <ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
             </div>
-
             <table className="w-full table-fixed border-collapse text-center">
                 <thead>
                     <tr>
                         {daysOfWeek.map((day) => (
                             <th
                                 key={day}
-                                className="border p-1 text-sm font-medium text-gray-600 select-none"
-                            >
+                                className="border p-1 text-sm font-medium text-gray-600 select-none">
                                 {day}
                             </th>
                         ))}
@@ -307,80 +426,80 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
                                 .slice(weekIndex * 7, weekIndex * 7 + 7)
                                 .map((dayDate, i) => {
                                     if (!dayDate) {
-                                        return <td key={i} className="border p-2 h-24"></td>
+                                        return (
+                                            <td
+                                                key={i}
+                                                className="border p-2 h-24" />
+                                        )
                                     }
 
-                                    const foundDay = days?.find(d => d.day.getTime() === dayDate.getTime())
-
-                                    let bgColorClass = "bg-white"
-                                    let hoverClass = "hover:bg-white"
-                                    if (foundDay) {
-                                        if (foundDay.isInTrip) {
-                                            bgColorClass = "bg-red-600 text-white"
-                                            hoverClass = "hover:bg-red-700"
-                                        }
-                                        if (foundDay.standardWorkingHours === 0) {
-                                            bgColorClass = "bg-amber-600 text-white"
-                                            hoverClass = "hover:bg-amber-700"
-                                        }
-                                        if (!foundDay.isInTrip && foundDay.standardWorkingHours > 0) {
-                                            bgColorClass = "bg-green-700 text-white"
-                                            hoverClass = "hover:bg-green-800"
-                                        }
-                                        if (foundDay.isInTrip && (foundDay.actualWorkingHours > 0 || foundDay.expectedWorkingHours > 0)) {
-                                            bgColorClass = "bg-cyan-600 text-white"
-                                            hoverClass = "hover:bg-cyan-700"
-                                        }
-                                    }
+                                    const daySummary = getDaySummary(dayDate)
+                                    const { bgColorClass, hoverClass } = getDaySummaryStyle(daySummary)
 
                                     return (
                                         <td
                                             key={i}
-                                            className={`border p-2 align-top relative h-32 cursor-pointer select-none ${bgColorClass} ${hoverClass}`}>
-                                            <span className="absolute top-1 right-2 text-xs font-semibold">
-                                                {dayDate.getDate()}
-                                            </span>
-                                            <div className="mt-5 space-y-0.5 text-xs leading-tight">
-                                                <div className="space-y-0.5 text-xs text-white leading-tight">
-                                                    {foundDay && (
+                                            className={`border py-1 px-2 align-top relative cursor-pointer select-none h-32 ${bgColorClass} ${hoverClass}`}>
+                                            <div className="relative group w-full">
+                                                <span className={`absolute top-0 right-0 text-xs font-semibold
+                                                    ${startOfDay(dayDate).getTime() === startOfDay(now).getTime() ? "text-yellow-300 font-extrabold drop-shadow-[0_0_1px_yellow]" : ""}`}>
+                                                    {dayDate.getDate()}
+                                                </span>
+                                                {isAdmin && (
+                                                    <div className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto w-full transition-opacity duration-200">
+                                                        {renderButtons(dayDate)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col h-full pt-6 text-white text-xs leading-tight">
+                                                <div className="space-y-1 mb-2">
+                                                    {daySummary && (
                                                         <>
                                                             <div className="flex items-center space-x-1 font-medium">
                                                                 <Clock className="w-4 h-4 mr-1 shrink-0" />
                                                                 <span className="truncate">
-                                                                    {foundDay.day >= startOfDay(now)
-                                                                        ? formatDuration(foundDay.expectedWorkingHours * 3600)
-                                                                        : formatDuration(foundDay.actualWorkingHours * 3600)}
+                                                                    {daySummary.day >= startOfDay(now)
+                                                                        ? formatDuration(daySummary.expectedWorkingHours * 3600)
+                                                                        : formatDuration(daySummary.actualWorkingHours * 3600)}
                                                                 </span>
                                                             </div>
-                                                            {foundDay.positiveOvertime.map((event, idx) => (
+                                                            {daySummary.positiveOvertime.map((event, idx) => (
                                                                 <div key={idx} className="relative group">
-                                                                    <div className="flex items-start space-x-1">
-                                                                        <span className="text-2xs text-ellipsis truncate">{event.description}</span>
+                                                                    <div className="flex items-center space-x-1">
+                                                                        <span
+                                                                            className="text-2xs text-ellipsis truncate"
+                                                                            onClick={isAdmin ? () => handleCopyToClipboard(event) : undefined}>
+                                                                            {event.description}
+                                                                        </span>
+                                                                        {isAdmin && (
+                                                                            <button
+                                                                                className="p-0.5 btn-icon-hover"
+                                                                                onClick={() => handleRemoveEvent(event)}>
+                                                                                <Trash2 size={13} />
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                     <Tooltip>
                                                                         <ClockPlus size={16} />
                                                                         {`${event.description} (${formatDuration(event.hours * 3600)})`}
                                                                     </Tooltip>
                                                                 </div>
-
                                                             ))}
                                                         </>
                                                     )}
                                                 </div>
-
-                                                {(isAdmin || foundDay) && (
-                                                    <ul className="space-y-0.5 m-0 p-0 list-none absolute bottom-2 left-2 right-2 max-h-[6rem]">
-                                                        {foundDay?.flight && renderFlight(foundDay.flight)}
-                                                        {foundDay?.negativeOvertime?.length > 0 && renderAbsence("negativeOvertime", foundDay.negativeOvertime, ClockPlus)}
-                                                        {foundDay?.vacation?.length > 0 && renderAbsence("vacation", foundDay.vacation, Palmtree)}
-                                                        {foundDay?.selfcare?.length > 0 && renderAbsence("selfcare", foundDay.selfcare, Pill)}
-                                                        {foundDay?.tenure?.length > 0 && renderAbsence("tenure", foundDay.tenure, Shield)}
-                                                        {isAdmin && renderButtons(dayDate)}
+                                                {daySummary && (
+                                                    <ul className="space-y-1 mt-auto mb-1 m-0 p-0 list-none text-xs leading-tight">
+                                                        {daySummary.flight && renderFlight(daySummary.flight)}
+                                                        {daySummary.negativeOvertime?.length > 0 && renderAbsence("negativeOvertime", daySummary.negativeOvertime, ClockPlus)}
+                                                        {daySummary.vacation?.length > 0 && renderAbsence("vacation", daySummary.vacation, Palmtree)}
+                                                        {daySummary.selfcare?.length > 0 && renderAbsence("selfcare", daySummary.selfcare, Pill)}
+                                                        {daySummary.tenure?.length > 0 && renderAbsence("tenure", daySummary.tenure, Shield)}
                                                     </ul>
                                                 )}
-
                                             </div>
                                         </td>
+
                                     )
                                 })}
                         </tr>

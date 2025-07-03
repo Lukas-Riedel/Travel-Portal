@@ -6,11 +6,7 @@ import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents";
 
 export default function TrackerPage() {
     const trips = useRegularTrips({ include: "FLIGHTS" })
-    const overtimeEvents = useTimeTrackingEvents({ type: "OVERTIME" })
-    const vacationEvents = useTimeTrackingEvents({ type: "VACATION" })
-    const selfcareEvents = useTimeTrackingEvents({ type: "SELFCARE" })
-    const tenureEvents = useTimeTrackingEvents({ type: "TENURE" })
-    const plannedWorkEvents = useTimeTrackingEvents({ type: "PLANNED_WORK" })
+    const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["OVERTIME", "VACATION", "SELFCARE", "TENURE", "PLANNED_WORK"])
     const { isPublicHoliday } = usePublicHolidays()
 
     return (
@@ -18,16 +14,18 @@ export default function TrackerPage() {
             <TrackerCalendar
                 trips={trips?.filter(trip => !trip.isDayTrips())}
                 isPublicHoliday={isPublicHoliday}
-                overtimeEvents={overtimeEvents}
-                plannedWorkEvents={plannedWorkEvents}
-                vacationEvents={vacationEvents}
-                selfcareEvents={selfcareEvents}
-                tenureEvents={tenureEvents} />
+                overtimeEvents={timeTrackingEvents["OVERTIME"]}
+                plannedWorkEvents={timeTrackingEvents["PLANNED_WORK"]}
+                vacationEvents={timeTrackingEvents["VACATION"]}
+                selfcareEvents={timeTrackingEvents["SELFCARE"]}
+                tenureEvents={timeTrackingEvents["TENURE"]}
+                onEventCreated={createTimeTrackingEvent}
+                onEventRemoved={removeTimeTrackingEvent} />
             <TimeOffBalanceSummary
-                overtimeEvents={overtimeEvents}
-                vacationEvents={vacationEvents}
-                selfcareEvents={selfcareEvents}
-                tenureEvents={tenureEvents} />
+                overtimeEvents={timeTrackingEvents["OVERTIME"]}
+                vacationEvents={timeTrackingEvents["VACATION"]}
+                selfcareEvents={timeTrackingEvents["SELFCARE"]}
+                tenureEvents={timeTrackingEvents["TENURE"]} />
         </>
     )
 }

@@ -271,7 +271,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
         showFormToast(
             "Zadej nový popis výdaje:",
             [
-                { placeholder: expense.description, value: expense.description, required: true }
+                { placeholder: "Popis", value: expense.description, required: true }
             ],
             "Popis výdaje byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat popis výdaje",
@@ -283,8 +283,8 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
         showFormToast(
             "Zadej novou hodnotu a měnu výdaje:",
             [
-                { placeholder: expense.value, value: expense.value, required: true, type: "number", min: 0 },
-                { placeholder: expense.currency, value: expense.currency, required: true, type: "select", options: configuration?.currencies?.map(currency => ({ id: currency, name: currency })) }
+                { placeholder: "Hodnota", value: expense.value, required: true, type: "number", min: 0 },
+                { placeholder: "Měna", value: expense.currency, required: true, type: "select", options: configuration?.currencies?.map(currency => ({ id: currency, name: currency })) }
             ],
             "Hodnota výdaje byla úspěšně aktualizována",
             "Nepodařilo se aktualizovat hodnotu výdaje",
