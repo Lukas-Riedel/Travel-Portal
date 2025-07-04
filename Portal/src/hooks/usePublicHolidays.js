@@ -31,6 +31,7 @@ export const usePublicHolidays = () => {
     }
 
     return {
-        isPublicHoliday
+        isPublicHoliday,
+        isFreeDay: date => date.getDay() === 0 || date.getDay() === 6 || isPublicHoliday(date)
     }
 }

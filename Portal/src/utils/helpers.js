@@ -1,4 +1,5 @@
-import { format } from "date-fns";
+import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 export function getDateString(timestamp) {
     return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
@@ -30,4 +31,17 @@ export function decapitalize(str) {
 
 export function getPrettyName(name) {
     return name?.split("(")[0].trim()
+}
+
+export function isInTrip(trips, date) {
+    return trips.some(({ start, end }) => start * 1000 <= endOfDay(date).getTime() && end * 1000 > startOfDay(date).getTime())
+}
+
+export function getEvents(day, events, hoursFilter, timezone) {
+    const targetDay = startOfDay(day).getTime()
+    return (events ?? []).filter(event => hoursFilter(event.hours) && startOfDay(toZonedTime(fromUnixTime(event.timestamp), timezone)).getTime() === targetDay)
+}
+
+export function sumEventHours(events) {
+    return events.map(e => e.hours).reduce((a, b) => a + b, 0)
 }

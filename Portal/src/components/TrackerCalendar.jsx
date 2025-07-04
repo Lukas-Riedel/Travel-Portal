@@ -10,17 +10,9 @@ import { formatDuration } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
 import showFormToast from "./FormToast"
-import { toast } from "sonner"
+import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
 
-const eventTypes = [
-    { id: "OVERTIME", name: "Přesčas" },
-    { id: "VACATION", name: "Dovolená" },
-    { id: "SELFCARE", name: "Sick day" },
-    { id: "TENURE", name: "Bonusové volno" },
-    { id: "PLANNED_WORK", name: "Plánovaná práce" }
-]
-
-export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
+export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { isAdmin } = useAuth()
     const configuration = useConfiguration()
 
@@ -84,19 +76,12 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
         return null
     }
 
-    const getEvents = (day, events, hoursFilter) => {
-        const targetDay = startOfDay(day).getTime()
-        return (events ?? []).filter(event => hoursFilter(event.hours) && startOfDay(toZonedTime(fromUnixTime(event.timestamp), timezone)).getTime() === targetDay)
-    }
-
-    const getPositiveOvertime = day => getEvents(day, overtimeEvents, hours => hours > 0)
-    const getNegativeOvertime = day => getEvents(day, overtimeEvents, hours => hours < 0)
-    const getVacation = day => getEvents(day, vacationEvents, hours => hours < 0)
-    const getSelfcare = day => getEvents(day, selfcareEvents, hours => hours < 0)
-    const getTenure = day => getEvents(day, tenureEvents, hours => hours < 0)
-    const getPlannedWork = day => getEvents(day, plannedWorkEvents, _ => true)
-
-    const sumEventHours = events => events.map(e => e.hours).reduce((a, b) => a + b, 0)
+    const getPositiveOvertime = day => getEvents(day, overtimeEvents, hours => hours > 0, timezone)
+    const getNegativeOvertime = day => getEvents(day, overtimeEvents, hours => hours < 0, timezone)
+    const getVacation = day => getEvents(day, vacationEvents, hours => hours < 0, timezone)
+    const getSelfcare = day => getEvents(day, selfcareEvents, hours => hours < 0, timezone)
+    const getTenure = day => getEvents(day, tenureEvents, hours => hours < 0, timezone)
+    const getPlannedWork = day => getEvents(day, plannedWorkEvents, _ => true, timezone)
 
     const formatTimestamp = timestamp => format(toZonedTime(fromUnixTime(timestamp), timezone), "HH:mm")
     const getWeekday = date => (getDay(date) + 6) % 7
@@ -104,15 +89,12 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
     const changeMonth = offset => setDate(previous => startOfMonth(new Date(previous.getFullYear(), previous.getMonth() + offset, 1)))
     const goToToday = () => setDate(startOfMonth(now))
 
-    const isInTrip = day => filteredTrips.some(({ start, end }) => start * 1000 <= endOfDay(day).getTime() && end * 1000 > startOfDay(day).getTime())
-
     const getDaySummary = day => {
         if (day < earliestAllowedDate || day > latestAllowedDate) {
             return null
         }
 
-        const isFreeDay = day.getDay() === 0 || day.getDay() === 6 || isPublicHoliday(day)
-        const standardWorkingHours = isFreeDay ? 0 : standardWorkingHoursPerWorkingDay
+        const standardWorkingHours = isFreeDay(day) ? 0 : standardWorkingHoursPerWorkingDay
         const positiveOvertime = getPositiveOvertime(day)
         const negativeOvertime = getNegativeOvertime(day)
         const vacation = getVacation(day)
@@ -129,7 +111,7 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
             selfcare,
             tenure,
             plannedWork,
-            isInTrip: isInTrip(day),
+            isInTrip: isInTrip(filteredTrips, day),
             standardWorkingHours,
             actualWorkingHours: (day > now ? 0 : standardWorkingHours)
                 + sumEventHours(positiveOvertime)
@@ -137,7 +119,7 @@ export default function TrackerCalendar({ trips, isPublicHoliday, overtimeEvents
                 + sumEventHours(vacation)
                 + sumEventHours(selfcare)
                 + sumEventHours(tenure),
-            expectedWorkingHours: (isFreeDay || isInTrip(day) ? 0 : 8)
+            expectedWorkingHours: (isFreeDay(day) || isInTrip(filteredTrips, day) ? 0 : 8)
                 + sumEventHours(plannedWork)
         }
     }
