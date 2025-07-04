@@ -9,6 +9,7 @@ import { useRegularTrips } from "../hooks/useRegularTrips"
 import TripTileGrid from "../components/TripTileGrid"
 import TripTable from "../components/TripTable"
 import { useAuth } from "../contexts/AuthContext"
+import ExpenseSummary from "../components/ExpenseSummary"
 
 export default function YearPage() {
     const { isAdmin } = useAuth()
@@ -16,7 +17,7 @@ export default function YearPage() {
 
     const { year, removeYearHighlight, updateYearMainHighlight } = useYear(yearParameter)
     const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "CATEGORIES" })
-    const yearTrips = useRegularTrips({ year: yearParameter })
+    const yearTrips = useRegularTrips({ year: yearParameter, include: "EXPENSES" })
 
     const dayTripsTrip = useMemo(() => yearTrips?.find(trip => (isAdmin && trip.isDayTrips()) || trip.isPastDayTrips()), [yearTrips])
     const countryCategoriesMap = useMemo(() => new Map(yearPlaces?.map(place => place.getCategory("COUNTRY"))
@@ -37,6 +38,7 @@ export default function YearPage() {
                 onMainHighlightUpdated={updateYearMainHighlight} />
             <StatisticsPanel statistics={year?.statistics} />
             <TripTileGrid trips={yearTrips && [...(yearTrips.filter(trip => !trip.isDayTrips()).reverse()), dayTripsTrip]} />
+            <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses)} />
             {isAdmin && (
                 <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
             )}

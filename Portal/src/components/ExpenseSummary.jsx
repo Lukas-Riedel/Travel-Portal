@@ -131,7 +131,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
             return loadingRows
         }
         if (detailedView) {
-            return [...detailedRows, ...(isAdmin ? expenseCandidateRows : [])]
+            return [...detailedRows, ...(isAdmin && onExpenseCreated ? expenseCandidateRows : [])]
         }
         return aggregatedRows
     }, [loadingRows, detailedRows, expenseCandidateRows, detailedView, expenses])
