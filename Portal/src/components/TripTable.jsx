@@ -17,6 +17,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
 
     useEffect(() => {
         const onResize = () => setIsMobile(window.innerWidth < 640)
+        onResize()
         window.addEventListener("resize", onResize)
         return () => window.removeEventListener("resize", onResize)
     }, [])

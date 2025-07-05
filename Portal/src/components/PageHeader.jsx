@@ -12,10 +12,10 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
     const [isMobile, setIsMobile] = useState(false)
 
     useEffect(() => {
-        const update = () => setIsMobile(window.innerWidth < 768)
-        update()
-        window.addEventListener("resize", update)
-        return () => window.removeEventListener("resize", update)
+        const onResize = () => setIsMobile(window.innerWidth < 768)
+        onResize()
+        window.addEventListener("resize", onResize)
+        return () => window.removeEventListener("resize", onResize)
     }, [])
 
     const handleNameChanged = () => {

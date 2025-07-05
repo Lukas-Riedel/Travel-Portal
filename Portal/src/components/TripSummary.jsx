@@ -20,6 +20,24 @@ export default function TripSummary({ tripId }) {
         setTimezone(configuration?.homeLocation?.timezone)
     }, [configuration])
 
+    const [count, setCount] = useState(3)
+    useEffect(() => {
+        const onResize = () => {
+            if (window.innerWidth < 696) {
+                setCount(1)
+            }
+            else if (window.innerWidth >= 696 && window.innerWidth < 968) {
+                setCount(2)
+            } 
+            else {
+                setCount(3)
+            }
+        }
+        onResize()
+        window.addEventListener("resize", onResize)
+        return () => window.removeEventListener("resize", onResize)
+    }, [])
+
     const startOfTripStartDay = useMemo(() => startOfDay(fromUnixTime(trip?.start)), [trip])
     const days = useMemo(() => trip && eachDayOfInterval({
         start: startOfDay(fromUnixTime(Math.max(trip?.start, Date.now() / 1000))),
@@ -71,7 +89,7 @@ export default function TripSummary({ tripId }) {
                     timezone={timezone}
                     onPhotosAdded={(placeId, albumId, timestamp, path, mainPhotoPosition) =>
                         api.createEvent("PhotosUploading", { placeId, albumId, timestamp, path, mainPhotoPosition })} />
-            ))?.filter(Boolean)?.slice(0, 3)}
+            ))?.filter(Boolean)?.slice(0, count)}
             <button
                 onClick={() => setTimezone(prev => prev ? undefined : configuration?.homeLocation?.timezone)}
                 className="absolute bottom-5 right-5 btn-chip-gray">
