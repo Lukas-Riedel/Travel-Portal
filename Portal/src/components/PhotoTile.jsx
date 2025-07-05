@@ -29,7 +29,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
 
                             ))}
                         </li>
-                        <li>
+                        <li className="break-words max-w-[300px] text-center">
                             {getPrettyName(firstLineText)}
                         </li>
                         <li>
