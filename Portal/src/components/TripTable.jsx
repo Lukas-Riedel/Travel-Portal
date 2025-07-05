@@ -88,8 +88,6 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
         return tripBalances
     }, [overtimeEvents, plannedWorkEvents, days, standardWorkingHoursPerWorkingDay, trips])
 
-    console.log(trips)
-
     return (!trips || trips.length > 0) && (
         <div className="w-full rounded-xl my-4">
             <table className="w-full table-fixed divide-y divide-gray-200">

@@ -35,14 +35,12 @@ RewriteRule ^acp/([^/]+)/?$ acp.php?apiKey=$1 [L,QSA]
 RewriteRule ^acp/(.+)$ $1 [L,QSA]
 
 # Pages without arguments
-RewriteRule ^place/?$ places.php [L,QSA]
-RewriteRule ^place/(.+)$ $1 [L,QSA]
+RewriteRule ^place/?$ /new/place [R=302,L]
 
 RewriteRule ^plan/?$ plans.php [L,QSA]
 RewriteRule ^plan/(.+)$ $1 [L,QSA]
 
-RewriteRule ^trip/?$ trips.php [L,QSA]
-RewriteRule ^trip/(.+)$ $1 [L,QSA]
+RewriteRule ^trip/?$ /new/trip [R=302,L]
 
 RewriteRule ^statistics/?$ statistics.php [L,QSA]
 RewriteRule ^statistics/(.+)$ $1 [L,QSA]
