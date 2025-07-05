@@ -7,7 +7,7 @@ import showConfirmToast from "../components/ConfirmToast"
 const navigationItems = [
     { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
-    { label: "Tracker", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] }
+    { label: "Sledování času", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] }
 ]
 
 export default function MainLayout({ children }) {
@@ -38,12 +38,15 @@ export default function MainLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-900">
-            <header className="bg-white shadow-md md:sticky top-0 z-50">
+            <header className="bg-white shadow-md xl:sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
+                    <img
+                        src="/icon.svg"
+                        className="h-8 w-8" />
                     <div className="flex items-center space-x-8">
                         <nav className="flex space-x-6">
                             {navigationItems
-                                .filter(({ isProtected }) => !isProtected || isAdmin)
+                                .filter(({ to, isProtected }) => !isProtected || isAdmin || location.pathname === to)
                                 .map(({ label, to, allowedPrefixes }) => {
                                     const isActive = allowedPrefixes.some(prefix => location.pathname.startsWith(prefix))
                                     return (
@@ -61,22 +64,17 @@ export default function MainLayout({ children }) {
                                 })}
                         </nav>
                     </div>
-                    <img
-                        src="/icon.svg"
-                        className="hidden sm:block absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2"
-                    />
-                    <button
-                        className="btn-large-gray flex items-center gap-2"
-                        onClick={isAdmin ? handleLogout : handleLogin}>
-                        {isAdmin ? <LogOut size={16} /> : <LogIn size={16} />}
-                        <span className="hidden sm:inline">
-                            {isAdmin ? "Odhlásit" : "Přihlásit"}
-                        </span>
-                    </button>
                 </div>
             </header>
             <main className="max-w-6xl mx-auto mt-8 mb-8 rounded-2xl px-2 py-8 md:px-8 md:py-8 bg-white">
                 {children}
+                <div className="flex justify-center mt-5">
+                    <button
+                        className="btn-large-gray"
+                        onClick={isAdmin ? handleLogout : handleLogin}>
+                        {isAdmin ? <LogOut size={16} /> : <LogIn size={16} />}
+                    </button>
+                </div>
             </main>
         </div>
     )
