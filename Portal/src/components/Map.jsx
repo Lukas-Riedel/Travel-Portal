@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api"
+import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api"
 import { TailSpin } from "react-loader-spinner"
 
 const defaultMapZoom = 8
@@ -94,7 +94,7 @@ const mapStyles = [
     }
 ]
 
-export default function Map({ points, onRightClick }) {
+export default function Map({ points, lines, onRightClick }) {
     const markersRef = useRef([])
     const mapRef = useRef(null)
 
@@ -153,7 +153,7 @@ export default function Map({ points, onRightClick }) {
                         onZoomChanged={onMapZoomChanged}
                         onRightClick={e => onRightClick(e.latLng.lat(), e.latLng.lng())}
                         options={{ styles: mapStyles, disableDefaultUI: true, fullscreenControl: true }}>
-                        {points.map((point, index) => (
+                        {points?.map((point, index) => (
                             <Marker
                                 key={index}
                                 onLoad={onMarkerLoad}
@@ -174,6 +174,20 @@ export default function Map({ points, onRightClick }) {
                             />
                         )
                         )}
+                        {lines?.map((line, index) => (
+                            <Polyline
+                                key={index}
+                                path={[
+                                    { lat: line.from.latitude, lng: line.from.longitude },
+                                    { lat: line.to.latitude, lng: line.to.longitude }
+                                ]}
+                                options={{
+                                    geodesic: true,
+                                    strokeColor: line.color,
+                                    strokeOpacity: line.opacity ?? 1,
+                                    strokeWeight: 2
+                                }} />
+                        ))}
                     </GoogleMap>
                 </div>
             )}

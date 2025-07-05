@@ -11,6 +11,7 @@ import CategoryPage from "./pages/CategoryPage"
 import LabelPage from "./pages/LabelPage"
 import YearPage from "./pages/YearPage"
 import TrackerPage from "./pages/TrackerPage"
+import FlightsPage from "./pages/FlightsPage"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -43,6 +44,7 @@ function AppContent() {
             <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
             <Route path="/tracker" element={<MainLayout><TrackerPage /></MainLayout>} />
+            <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
         </Routes>
     )
 }

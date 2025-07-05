@@ -45,8 +45,7 @@ RewriteRule ^trip/?$ /new/trip [R=302,L]
 RewriteRule ^statistics/?$ statistics.php [L,QSA]
 RewriteRule ^statistics/(.+)$ $1 [L,QSA]
 
-RewriteRule ^flight/?$ flights.php [L,QSA]
-RewriteRule ^flight/(.+)$ $1 [L,QSA]
+RewriteRule ^flight/?$ /new/flight [R=302,L]
 
 RewriteRule ^acp/?$ acp.php [L,QSA]
 RewriteRule ^acp/(.+)$ $1 [L,QSA]

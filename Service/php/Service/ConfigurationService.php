@@ -17,6 +17,7 @@
         public function onFlightLogged(mixed $message) : void {
             $airlineCode = substr($message["flight"], 0, 2);
             $this->addConfigurationEntryIfNotExists("AIRLINES", array("public", "modifiable"), $airlineCode, $airlineCode);
+            $this->addConfigurationEntryIfNotExists("AIRLINE_LOGOS", array("public", "modifiable"), $airlineCode, "");
         }
 
         // TODO

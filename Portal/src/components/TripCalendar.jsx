@@ -45,5 +45,4 @@ export default function TripCalendar({ trip, places, onPhotosAdded }) {
             </button>
         </div>
     )
-
 }

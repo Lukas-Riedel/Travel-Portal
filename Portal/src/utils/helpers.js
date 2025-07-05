@@ -1,5 +1,6 @@
-import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
+import { optimize } from "svgo"
 
 export function getDateString(timestamp) {
     return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
@@ -44,4 +45,30 @@ export function getEvents(day, events, hoursFilter, timezone) {
 
 export function sumEventHours(events) {
     return events.map(e => e.hours).reduce((a, b) => a + b, 0)
+}
+
+export function prefixSvgIds(svgString, prefix) {
+    if (!svgString) {
+        return svgString
+    }
+
+    const result = optimize(svgString, {
+        plugins: [
+            {
+                name: "prefixIds",
+                params: {
+                    prefix,
+                    delim: "-",
+                    prefixIds: true,
+                    prefixClassNames: true
+                }
+            }
+        ]
+    })
+
+    if ("data" in result) {
+        return result.data
+    }
+
+    return svgString
 }
