@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
 import { getDateRangeString } from "../utils/helpers"
 import DayCard from "./DayCard"
@@ -16,6 +16,9 @@ export default function TripSummary({ tripId }) {
     const tripPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES" })
 
     const [timezone, setTimezone] = useState(undefined)
+    useEffect(() => {
+        setTimezone(configuration?.homeLocation?.timezone)
+    }, [configuration])
 
     const startOfTripStartDay = useMemo(() => startOfDay(fromUnixTime(trip?.start)), [trip])
     const days = useMemo(() => trip && eachDayOfInterval({

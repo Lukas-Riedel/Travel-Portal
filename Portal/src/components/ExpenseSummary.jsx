@@ -141,20 +141,30 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
             <table className="w-full table-fixed divide-y divide-gray-200">
                 <colgroup>
                     {isAdmin ? (
-                        <>
-                            <col className="w-[14%]" />
-                            <col className="w-[28%]" />
-                            <col className="w-[18%]" />
-                            <col className="w-[16%]" />
-                            <col className="w-[16%] hidden sm:table-column" />
-                            {detailedView && <col className="w-[8%]" />}
-                        </>
+                        onExpenseRemoved ? (
+                            <>
+                                <col className="w-[14%]" />
+                                <col className="w-[28%]" />
+                                <col className="w-[18%]" />
+                                <col className="w-[16%]" />
+                                <col className="min-w-[16%] hidden sm:table-column" />
+                                {detailedView && <col className="w-[8%]" />}
+                            </>
+                        ) : (
+                            <>
+                                <col className="w-[16%]" />
+                                <col className="w-[30%]" />
+                                <col className="w-[20%]" />
+                                <col className="min-w-[18%]" />
+                                <col className="w-[16%] hidden sm:table-column" />
+                            </>
+                        )
                     ) : (
                         <>
                             <col className="w-[11%]" />
                             <col className="w-[30%]" />
                             <col className="w-[21%]" />
-                            <col className="w-[18%]" />
+                            <col className="min-w-[18%]" />
                             <col className="w-[18%] hidden sm:table-column" />
                         </>
                     )}
@@ -188,7 +198,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                             className="w-36 p-3 text-center hidden sm:table-cell">
                             {detailedView ? "Přepočet" : "Podíl"}
                         </th>
-                        {isAdmin && detailedView && (
+                        {isAdmin && detailedView && onExpenseRemoved && (
                             <th
                                 key="management"
                                 className="w-12 text-center" />

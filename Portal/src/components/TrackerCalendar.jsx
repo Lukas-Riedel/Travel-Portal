@@ -186,12 +186,12 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
         ))
     }
 
-    const handleCreatePositiveOvertimeEvent = day => {
+    const handleCreatePositiveOvertimeEvent = (day, expectedWorkingHours) => {
         showFormToast(
             "Zadej údaje pro vytvoření přesčasu:",
             [
                 { placeholder: "Popis přesčasu", required: true },
-                { placeholder: "Počet hodin", value: (8 - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
+                { placeholder: "Počet hodin", value: Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
             ],
             "Přesčas byl úspěšně vytvořen",
             "Nepodařilo se vytvořit přesčas",
@@ -281,12 +281,12 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
         )
     }
 
-    const renderButtons = day => (
+    const renderButtons = (day, daySummary) => (
         <ul className="flex gap-1 list-none p-0 m-0">
             <li key="positiveOvertime">
                 <button
                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                    onClick={() => handleCreatePositiveOvertimeEvent(day)}>
+                    onClick={() => handleCreatePositiveOvertimeEvent(day, daySummary.expectedWorkingHours)}>
                     <Plus className="w-4 h-4 shrink-0 btn-icon-hover" />
                 </button>
             </li>
@@ -366,7 +366,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     }
 
     return (
-        <div className="w-full p-4 border rounded-md shadow-md bg-white text-black my-4">
+        <div className="w-full p-4 border rounded-md shadow-md bg-white text-black my-4 overflow-x-hidden">
             <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={() => !isPreviousMonthDisabled && changeMonth(-1)}
@@ -429,7 +429,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                                                 </span>
                                                 {isAdmin && (
                                                     <div className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto w-full transition-opacity duration-200">
-                                                        {renderButtons(dayDate)}
+                                                        {renderButtons(dayDate, daySummary)}
                                                     </div>
                                                 )}
                                             </div>

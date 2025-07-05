@@ -38,10 +38,10 @@ export default function YearPage() {
                 onMainHighlightUpdated={updateYearMainHighlight} />
             <StatisticsPanel statistics={year?.statistics} />
             <TripTileGrid trips={yearTrips && [...(yearTrips.filter(trip => !trip.isDayTrips()).reverse()), dayTripsTrip]} />
-            <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses)} />
             {isAdmin && (
                 <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
             )}
+            <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses)} />
         </>
     )
 }
