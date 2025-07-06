@@ -1,14 +1,14 @@
 <?php
-    class GetAirlineHandler extends Handler {
+    class GetHighlightHandler extends Handler {
         public function handle($input) {
-            global $flightService;
+            global $highlightService;
 
-            $response = $flightService->getAirlineIdentifier($input["airlineCode"]);
+            $response = $highlightService->getHighlight($input["highlightId"]);
             if ($response !== NULL) {
                 return $this->createResponse(200, $response);
             }
 
-            return $this->create404Response("airlines", $input["airlineCode"]);
+            return $this->create404Response("highlights", $input["highlightId"]);
         }
 
         public function getRequiredRole() {
@@ -20,16 +20,16 @@
         }
 
         public function getTag() {
-            return "Airlines";
+            return "Highlights";
         }
 
         public function getPath() {
-            return "/airlines/{airlineCode}";
+            return "/highlights/{highlightId}";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("airlineCode", "string", "LH"));
+                $this->createPathParameter("highlightId", "integer", 1));
         }
 
         public function getMethod() {
@@ -37,11 +37,11 @@
         }
         
         public function getShortDescription() {
-            return "Retrieve an airline with the specified code";
+            return "Retrieve a highlight with the specified identifier";
         }
         
         public function getLongDescription() {
-            return "Retrieves an airline with the specified code.";
+            return "Retrieves a highlight with the specified identifier.";
         }
         
         public function getRequestExamples() {
@@ -50,7 +50,7 @@
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Airline", 200, '{}'),
+                $this->createResponseExample("Highlight", 200, '{}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample(),

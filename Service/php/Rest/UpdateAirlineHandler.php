@@ -7,24 +7,24 @@
 
             $response = (new GetAirlineHandler())
                 ->handle(array(
-                    "code" => $input["code"]));                    
-            if ($response["code"] != 200) {
+                    "airlineCode" => $input["airlineCode"]));                    
+            if ($response["airlineCode"] != 200) {
                 return $response;
             }
 
             if (isset($input["name"])) {
-                $flightService->updateAirlineName($input["code"], $input["name"]);
+                $flightService->updateAirlineName($input["airlineCode"], $input["name"]);
             }
 
             if (isset($input["logo"])) {
-                $flightService->updateAirlineLogo($input["code"], $input["logo"]);
+                $flightService->updateAirlineLogo($input["airlineCode"], $input["logo"]);
             }
 
             $databaseProvider->materializeViews();
     
             return (new GetAirlineHandler())
                 ->handle(array(
-                    "code" => $input["code"]));
+                    "airlineCode" => $input["airlineCode"]));
         }
 
         public function getRequiredRole() {
@@ -40,12 +40,12 @@
         }
 
         public function getPath() {
-            return "/airlines/{code}";
+            return "/airlines/{airlineCode}";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("code", "string", "LH"));
+                $this->createPathParameter("airlineCode", "string", "LH"));
         }
 
         public function getMethod() {

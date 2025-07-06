@@ -93,6 +93,22 @@
                 $this->doUpdateHighlights($highlightSize, NULL, $photoId, TRUE);
             }
         }
+
+        public function updateHighlightComposition(string $highlightId, int $composition) : bool {
+            return $this->highlightMapper->updateHighlightComposition($highlightId, $composition);
+        }
+
+        public function updateHighlightSky(string $highlightId, int $sky) : bool {
+            return $this->highlightMapper->updateHighlightSky($highlightId, $sky);
+        }
+
+        public function updateHighlightShadows(string $highlightId, int $shadows) : bool {
+            return $this->highlightMapper->updateHighlightShadows($highlightId, $shadows);
+        }
+
+        public function updateHighlightCircumstances(string $highlightId, int $circumstances) : bool {
+            return $this->highlightMapper->updateHighlightCircumstances($highlightId, $circumstances);
+        }
         
         private function getHighlights(HighlightType $highlightType, string $entityId) : array {
             return $this->highlightMapper->selectHighlights($highlightType, $entityId);

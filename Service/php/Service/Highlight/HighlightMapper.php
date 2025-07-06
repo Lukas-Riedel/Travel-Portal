@@ -146,6 +146,58 @@
                 ->execute() === 1;
         }
 
+        public function updateHighlightComposition(string $highlightId, int $composition) : bool {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET composition = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($composition, $highlightId)
+                ->execute() === 1;
+        }
+
+        public function updateHighlightSky(string $highlightId, int $sky) : bool {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET sky = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($sky, $highlightId)
+                ->execute() === 1;
+        }
+
+        public function updateHighlightShadows(string $highlightId, int $shadows) : bool {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET shadows = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($shadows, $highlightId)
+                ->execute() === 1;
+        }
+
+        public function updateHighlightCircumstances(string $highlightId, int $circumstances) : bool {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET circumstances = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($circumstances, $highlightId)
+                ->execute() === 1;
+        }
+
         public function deleteHighlight(HighlightType $highlightType, string $entityId, string $highlightId) : int {
             $sql = <<<SQL
                 DELETE
@@ -164,11 +216,14 @@
             $photo = $this->photoService->getPhoto($highlightRow["photo_id"]);
             if ($photo === NULL) {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"],
-                    NULL, NULL, NULL, NULL, NULL);;
+                    NULL, NULL, NULL, NULL, $highlightRow["composition"], $highlightRow["sky"],
+                    $highlightRow["shadows"], $highlightRow["circumstances"], NULL);
             }
             else {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
-                    $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp());
+                    $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
+                    $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
+                    $photo->getTimestamp());
             }
         }
     }
