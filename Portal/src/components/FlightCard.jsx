@@ -6,6 +6,7 @@ import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { prefixSvgIds } from "../utils/helpers.js"
 import { useAirlines } from "../hooks/useAirlines.js"
+import { Link } from "react-router-dom"
 
 export default function FlightCard({ flight }) {
     const airlines = useAirlines()
@@ -21,11 +22,11 @@ export default function FlightCard({ flight }) {
                 <Icon
                     size={16}
                     className="text-sky-600" />
-                <a
-                    href={`https://www.google.com/maps/search/Letiště ${airport.name} (${airport.code})`}
+                <Link
+                    to={`/airport/${airport.id}`}
                     className="hover:underline text-sky-600 font-medium">
                     {airport.name} ({airport.code})
-                </a>
+                </Link>
             </div>
             <div className="flex items-center space-x-2 text-gray-700 font-mono">
                 <Clock size={16} />

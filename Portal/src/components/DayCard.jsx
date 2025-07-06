@@ -58,7 +58,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const { isAdmin } = useAuth()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
-    
+
     const renderDescriptionRow = (color, items) => items?.length > 0 && (
         <div className={`flex items-center text-xs ${color} space-x-1`}>
             {items.filter(Boolean).map((value, index) => (
@@ -124,17 +124,33 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                         {formatTimestamp(event.start, event.from.timezone)}
                                     </span>
                                     <span className="whitespace-nowrap text-sky-600">
-                                        <a
-                                            href={`https://www.google.com/maps/search/Letiště ${event.from.code ? event.from.code : event.from.name}`}
-                                            className="hover:underline hover:text-sky-300 transition-colors duration-200">
-                                            {event.from.name}
-                                        </a>
+                                        {event.from.id ? (
+                                            <Link
+                                                to={`/airport/${event.from.id}`}
+                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                {event.from.name}
+                                            </Link>
+                                        ) : (
+                                            <a
+                                                href={`https://www.google.com/maps/search/Letiště ${event.from.name}`}
+                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                {event.from.name}
+                                            </a>
+                                        )}
                                         {` → `}
-                                        <a
-                                            href={`https://www.google.com/maps/search/Letiště ${event.to.code ? event.to.code : event.to.name}`}
-                                            className="hover:underline hover:text-sky-300 transition-colors duration-200">
-                                            {event.to.name}
-                                        </a>
+                                        {event.to.id ? (
+                                            <Link
+                                                to={`/airport/${event.to.id}`}
+                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                {event.to.name}
+                                            </Link>
+                                        ) : (
+                                            <a
+                                                href={`https://www.google.com/maps/search/Letiště ${event.to.name}`}
+                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                {event.to.name}
+                                            </a>
+                                        )}
                                     </span>
                                 </>
                             )}

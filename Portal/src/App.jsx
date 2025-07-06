@@ -12,6 +12,7 @@ import LabelPage from "./pages/LabelPage"
 import YearPage from "./pages/YearPage"
 import TrackerPage from "./pages/TrackerPage"
 import FlightsPage from "./pages/FlightsPage"
+import AirportPage from "./pages/AirportPage"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -45,6 +46,7 @@ function AppContent() {
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
             <Route path="/tracker" element={<MainLayout><TrackerPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
+            <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />
         </Routes>
     )
 }

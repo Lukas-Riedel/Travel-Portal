@@ -7,7 +7,7 @@ import showConfirmToast from "../components/ConfirmToast"
 const navigationItems = [
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
     { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
-    { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight"] },
+    { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport"] },
     { label: "Sledování času", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] }
 ]
 
