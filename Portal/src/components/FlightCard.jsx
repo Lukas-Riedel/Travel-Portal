@@ -4,7 +4,7 @@ import { toZonedTime } from "date-fns-tz"
 import { formatKilometers, formatDuration } from "../utils/formatters.js"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
-import { prefixSvgIds } from "../utils/helpers.js"
+import { getAirlineCodeForFlight, prefixSvgIds } from "../utils/helpers.js"
 import { useAirlines } from "../hooks/useAirlines.js"
 import { Link } from "react-router-dom"
 
@@ -13,7 +13,7 @@ export default function FlightCard({ flight }) {
 
     const formatTime = (timestamp, timezone) => format(toZonedTime(fromUnixTime(timestamp), timezone), "HH:mm")
 
-    const airlineCode = useMemo(() => flight?.flight?.substring(0, 2), [flight])
+    const airlineCode = useMemo(() => getAirlineCodeForFlight(flight?.flight), [flight])
     const airline = useMemo(() => airlines?.find(airline => airline.code === airlineCode), [airlines, airlineCode])
 
     const renderFlightEndpoint = (airport, timestamp, Icon) => (
@@ -50,9 +50,11 @@ export default function FlightCard({ flight }) {
                         {flight.flight}
                     </a>
                     {airline?.name && (
-                        <span className="text-base">
+                        <Link
+                            to={`/airline/${airline.name}`}
+                            className="text-base hover:underline">
                             {airline.name}
-                        </span>
+                        </Link>
                     )}
                 </div>
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">

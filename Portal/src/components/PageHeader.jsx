@@ -105,11 +105,11 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
         </>
     )
 
-    return !isMobile && categories?.length <= 5 ? (
+    return !isMobile && (!categories || categories.length <= 5) ? (
         <div className="flex justify-between items-center mb-5">
             <div>
                 <h1 className="text-5xl font-bold leading-tight text-left [text-wrap:balance]">
-                    {categories && (
+                    {name && (
                         <>
                             {getPrettyName(name)}
                             {isAdmin && (
@@ -135,7 +135,7 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
         <div className="mb-5">
             <div className="flex justify-center items-start">
                 <h1 className="text-5xl text-center font-bold leading-tight mb-3">
-                    {categories && (
+                    {name && (
                         <>
                             {getPrettyName(name)}
                             {isAdmin && (
