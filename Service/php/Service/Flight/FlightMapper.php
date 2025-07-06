@@ -139,6 +139,36 @@
                 });
         }
 
+        public function selectAirlineIdentifiers() : array {
+            $sql = <<<SQL
+                SELECT code,
+                    name,
+                    logo
+                FROM airline_identifier
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($airlineIdentifierRow) {
+                    return new AirlineIdentifier($airlineIdentifierRow["code"], $airlineIdentifierRow["name"], $airlineIdentifierRow["logo"]);
+                });
+        }
+
+        public function selectAirlineIdentifier(string $code) : ?AirlineIdentifier {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM airline_identifier
+                WHERE code = ?
+            SQL;
+
+            $airlineIdentifierRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($code)
+                ->getSingleRow();
+
+            return $airlineIdentifierRow === NULL ? NULL : new AirlineIdentifier($airlineIdentifierRow["code"], $airlineIdentifierRow["name"], $airlineIdentifierRow["logo"]);
+        }
+
         public function selectLoggedFlightsForInterval(int $start, int $end, FlightSortingStrategy $flightSortingStrategy) : array {
             $sql = <<<SQL
                 SELECT fe.flight,
@@ -348,6 +378,52 @@
                 ->statementBuilder($sql)
                 ->withParameters($eventId, $tripId, $flight->getFlight(), $flight->getFrom()->getName(),
                     $flight->getTo()->getName(), $flight->getStart(), $flight->getEnd())
+                ->execute() === 1;
+        }
+
+        public function insertAirlineIdentifier(AirlineIdentifier $airlineIdentifier) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO airline_identifier (
+                    code,
+                    name,
+                    logo
+                )
+                VALUES (
+                    ?, 
+                    ?, 
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($airlineIdentifier->getCode(), $airlineIdentifier->getName(), $airlineIdentifier->getLogo())
+                ->execute() === 1;
+        }
+
+        public function updateAirlineName(string $airlineCode, string $name) : bool {
+            $sql = <<<'SQL'
+                UPDATE airline_identifier
+                SET name = ?
+                WHERE code = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($name, $airlineCode)
+                ->execute() === 1;
+        }
+
+        public function updateAirlineLogo(string $airlineCode, string $logo) : bool {
+            $sql = <<<'SQL'
+                UPDATE airline_identifier
+                SET logo = ?
+                WHERE code = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($logo, $airlineCode)
                 ->execute() === 1;
         }
 

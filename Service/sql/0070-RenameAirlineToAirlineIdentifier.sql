@@ -1,0 +1,1 @@
+ALTER TABLE airline RENAME TO airline_identifier

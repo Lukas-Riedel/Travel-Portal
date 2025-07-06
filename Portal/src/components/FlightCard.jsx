@@ -1,19 +1,19 @@
 import { Plane, Clock, MapPin, PlaneTakeoff, PlaneLanding } from "lucide-react"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import { useConfiguration } from "../contexts/ConfigContext"
 import { formatKilometers, formatDuration } from "../utils/formatters.js"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { prefixSvgIds } from "../utils/helpers.js"
+import { useAirlines } from "../hooks/useAirlines.js"
 
 export default function FlightCard({ flight }) {
-    const configuration = useConfiguration()
+    const airlines = useAirlines()
 
     const formatTime = (timestamp, timezone) => format(toZonedTime(fromUnixTime(timestamp), timezone), "HH:mm")
 
-    const airlineName = useMemo(() => configuration?.airlines?.[flight?.flight?.substring(0, 2)], [configuration, flight])
-    const airlineLogoSvg = useMemo(() => prefixSvgIds(configuration?.airlineLogos?.[flight?.flight?.substring(0, 2)], flight?.flight?.substring(0, 2)) || null, [configuration, flight])
+    const airlineCode = useMemo(() => flight?.flight?.substring(0, 2), [flight])
+    const airline = useMemo(() => airlines?.find(airline => airline.code === airlineCode), [airlines, airlineCode])
 
     const renderFlightEndpoint = (airport, timestamp, Icon) => (
         <div className="my-2">
@@ -48,12 +48,14 @@ export default function FlightCard({ flight }) {
                         className="text-blue-600 hover:underline text-lg">
                         {flight.flight}
                     </a>
-                    <span className="text-base">
-                        {airlineName}
-                    </span>
+                    {airline?.name && (
+                        <span className="text-base">
+                            {airline.name}
+                        </span>
+                    )}
                 </div>
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
-                    {airlineLogoSvg ? (
+                    {airline?.logo ? (
                         <div
                             className="max-w-full max-h-full"
                             style={{
@@ -63,7 +65,7 @@ export default function FlightCard({ flight }) {
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}
-                            dangerouslySetInnerHTML={{ __html: airlineLogoSvg }} />
+                            dangerouslySetInnerHTML={{ __html: prefixSvgIds(airline.logo, airlineCode) }} />
                     ) : (
                         <div className="text-gray-400 text-sm text-center">
                             Logo není k dispozici

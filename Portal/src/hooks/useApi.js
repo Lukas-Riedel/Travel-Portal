@@ -468,6 +468,28 @@ export function useApi() {
         return sendRequest("DELETE", "/places/" + placeId + "/labels/" + labelId)
     }
 
+    async function listAirlines() {
+        return sendRequest("GET", "/airlines", {}, {})
+    }
+
+    async function getAirline(airlineCode) {
+        return sendRequest("GET", "/airlines/" + airlineCode, {}, {})
+    }
+
+    async function updateAirlineName(airlineCode, name) {
+        return sendRequest("PATCH", "/airlines/" + airlineCode,
+            {
+                name: name
+            })
+    }
+
+    async function updateAirlineLogo(airlineCode, logo) {
+        return sendRequest("PATCH", "/airlines/" + airlineCode,
+            {
+                name: logo
+            })
+    }
+
     async function listYears(include) {
         return sendRequest("GET", "/years", {},
             {
@@ -480,7 +502,7 @@ export function useApi() {
     }
 
     async function updateYearMainHighlight(year, mainHighlightId) {
-        return sendRequest("PATCH", "/year/" + year,
+        return sendRequest("PATCH", "/years/" + year,
             {
                 mainHighlightId: mainHighlightId
             })
@@ -558,6 +580,10 @@ export function useApi() {
         createPlaceLabel,
         removeTripNote,
         removePlaceLabel,
+        listAirlines,
+        getAirline,
+        updateAirlineLogo,
+        updateAirlineName,
         listYears,
         getYear,
         updateYearMainHighlight,

@@ -1,5 +1,4 @@
 <?php
-
     use Service\Service\Trip\TripSortingStrategy;
 
     class ListTripsHandler extends Handler {

@@ -53,6 +53,5 @@ function getContentComponent(flights) {
 }
 
 function resolveAirline(flightNumber) {
-    const airlineCode = flightNumber.substring(0, 2);
-    return airlineCode in configuration.airlines ? configuration.airlines[airlineCode] : airlineCode;
+    return flightNumber.substring(0, 2);
 }

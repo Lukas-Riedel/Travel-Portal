@@ -59,6 +59,19 @@
             return $this->flightMapper->selectTripIdForFlight($flight);
         }
 
+        public function getAirlineIdentifiers() : array {
+            return $this->flightMapper->selectAirlineIdentifiers();
+        }
+
+        public function getAirlineIdentifier(string $airlineCode) : AirlineIdentifier {
+            $airlineIdentifier = $this->flightMapper->selectAirlineIdentifier($airlineCode);
+            return $airlineIdentifier !== NULL ? $airlineIdentifier : new AirlineIdentifier($airlineCode, $airlineCode, NULL);
+        }
+
+        public function getAirlineIdentifierForFlight(string $flight) : AirlineIdentifier {
+            return $this->getAirlineIdentifier($this->getAirlineCodeForFlight($flight));
+        }
+
         public function fetchAndLogFlight(string $flight, string $tripId, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
             date_default_timezone_set(self::UTC_TIMEZONE);
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
@@ -101,6 +114,12 @@
             $result = new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
             $this->flightMapper->insertFlight($result, $scheduledDeparture, $scheduledArrival);
 
+            $airlineIdentifier = $this->getAirlineIdentifierForFlight($flight);
+            if ($airlineIdentifier === NULL) {
+                $airlineCode = $this->getAirlineCodeForFlight($flight);
+                $this->flightMapper->insertAirlineIdentifier(new AirlineIdentifier($airlineCode, $airlineCode, NULL));
+            }
+
             $this->eventPublisher->publishFlightLoggedEvent($flight, $tripId);
 
             return $result;
@@ -123,16 +142,18 @@
             return $this->flightMapper->selectFlightsForTrip(FlightType::Watched, $tripId);
         }
 
+        public function updateAirlineName(string $airlineCode, string $name) : bool {
+            return $this->flightMapper->updateAirlineName($airlineCode, $name);
+        }
+
+        public function updateAirlineLogo(string $airlineCode, string $logo) : bool {
+            return $this->flightMapper->updateAirlineLogo($airlineCode, $logo);
+        }
+
         public function refreshCalendar(array $flightTypes, TripService $tripService) : void {
             foreach ($flightTypes as &$flightType) {
                 $this->doRefreshCalendar($flightType, $tripService);
             }
-        }
-
-        public function getAirlineNameForFlight(string $flight) : string {
-            $airlineCode = substr($flight, 0, 2);
-            $airlineName = $this->configurationService->getConfigurationForTypeAndKey("airlines", $airlineCode);
-            return $airlineName === NULL ? $airlineCode : $airlineName;
         }
         
         private function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {
@@ -185,8 +206,13 @@
             }              
         }
 
+        private function getAirlineCodeForFlight(string $flight) : string {
+            return substr($flight, 0, 2);
+        }
+
         private function getFlightEventName(string $flight, string $originAirportName, string $destinationAirportName) : string {
-            return sprintf(self::FLIGHT_EVENT_NAME_FORMAT, $originAirportName, $destinationAirportName, substr($flight, 0, 2), substr($flight, 2));
+            return sprintf(self::FLIGHT_EVENT_NAME_FORMAT, $originAirportName, $destinationAirportName,
+                $this->getAirlineCodeForFlight($flight), $this->getAirlineCodeForFlight($flight));
         }
 
         private function parseFlightEventName(string $flightEventName) : mixed {

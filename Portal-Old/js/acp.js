@@ -152,8 +152,7 @@ async function getFlightsComponent() {
 
 function getCheckFlightPriceLink(flight) {
     const airlineCode = flight.flight.substring(0, 2);
-    const airlinePart = (airlineCode in configuration.airlines) ? (" airline " + configuration.airlines[airlineCode]) : airlineCode;
-    return "<a href=\"https://www.google.com/travel/flights?q=One way flight from " + flight.from.name + " to " + flight.to.name + " on " + getDateString(flight.start, true) + airlinePart + "\">Zkontrolovat</a>";
+    return "<a href=\"https://www.google.com/travel/flights?q=One way flight from " + flight.from.name + " to " + flight.to.name + " on " + getDateString(flight.start, true) + " airline " + airlineCode + "\">Zkontrolovat</a>";
 }
 
 function getUtilitiesComponent(trip) {
