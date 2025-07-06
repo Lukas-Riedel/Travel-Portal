@@ -40,12 +40,12 @@ export default function MainLayout({ children }) {
     return (
         <div className="min-h-screen bg-gray-100 text-gray-900">
             <header className="bg-white shadow-md xl:sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
+                <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-center md:justify-between">
                     <img
                         src="/icon.svg"
-                        className="h-8 w-8" />
+                        className="h-8 w-8 hidden md:block" />
                     <div className="flex items-center space-x-8">
-                        <nav className="flex space-x-6">
+                        <nav className="flex space-x-6 items-center text-center">
                             {navigationItems
                                 .filter(({ to, isProtected }) => !isProtected || isAdmin || location.pathname === to)
                                 .map(({ label, to, allowedPrefixes }) => {
