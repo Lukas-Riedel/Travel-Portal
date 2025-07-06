@@ -13,6 +13,7 @@ export default function TripSummary({ tripId }) {
     const configuration = useConfiguration()
 
     const { trip } = useTrip(tripId)
+    console.log(trip)
     const tripPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES" })
 
     const [timezone, setTimezone] = useState(undefined)
@@ -28,7 +29,7 @@ export default function TripSummary({ tripId }) {
             }
             else if (window.innerWidth >= 696 && window.innerWidth < 968) {
                 setCount(2)
-            } 
+            }
             else {
                 setCount(3)
             }
@@ -47,36 +48,26 @@ export default function TripSummary({ tripId }) {
     const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("COUNTRY"))
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
-    return (
+    return trip ? (
         <div className="relative w-full grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] items-center gap-4 bg-white p-3 my-3 text-sm">
-            <div className="flex flex-col items-center justify-center text-center">
-                {trip ? (
-                    <>
-                        {countryCategories && (
-                            <div className="flex">
-                                {countryCategories.map((category, index) => (
-                                    <img
-                                        key={index}
-                                        className="w-7 object-cover mx-1.5 flex-shrink-0"
-                                        src={`/img/flags/${category?.metadata?.unicode}.svg`}
-                                        alt={category?.name} />
-                                ))}
-                            </div>)}
-                        <Link
-                            className="my-2 text-2xl font-semibold"
-                            to={`/trip/${trip.id}`}>
-                            {trip.name}
-                        </Link>
-                        <div className="text-xl text-gray-700">
-                            {getDateRangeString(trip.start, trip.end)}
-                        </div>
-                    </>
-                ) : (
-                    <TailSpin
-                        color="black"
-                        height={30}
-                        width={30} />
-                )}
+            <div className="flex flex-col items-center justify-center text-center">{countryCategories && (
+                <div className="flex">
+                    {countryCategories.map((category, index) => (
+                        <img
+                            key={index}
+                            className="w-7 object-cover mx-1.5 flex-shrink-0"
+                            src={`/img/flags/${category?.metadata?.unicode}.svg`}
+                            alt={category?.name} />
+                    ))}
+                </div>)}
+                <Link
+                    className="my-2 text-2xl font-semibold"
+                    to={`/trip/${trip.id}`}>
+                    {trip.name}
+                </Link>
+                <div className="text-xl text-gray-700">
+                    {getDateRangeString(trip.start, trip.end)}
+                </div>
             </div>
             {days?.map((day, idx) => (
                 <DayCard
@@ -95,6 +86,13 @@ export default function TripSummary({ tripId }) {
                 className="absolute bottom-5 right-5 btn-chip-gray">
                 {timezone ? <Earth size={16} /> : <House size={16} />}
             </button>
+        </div>
+    ) : (
+        <div className="flex justify-center items-center min-h-[200px]">
+            <TailSpin
+                color="black"
+                height={64}
+                width={64} />
         </div>
     )
 }

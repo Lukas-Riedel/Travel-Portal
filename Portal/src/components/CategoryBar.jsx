@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { TailSpin } from "react-loader-spinner"
 
-const loadingCategoriesCount = 5
+const loadingCategoriesCount = 3
 
 export default function CategoryBar({ categories }) {
     return (!categories || categories.length > 0) && (
