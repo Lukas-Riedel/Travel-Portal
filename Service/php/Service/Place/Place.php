@@ -13,6 +13,7 @@
         private readonly string $timezone;
         private readonly ?Highlight $mainHighlight;
         private readonly float $score;
+        private readonly ?float $quality;
         private readonly ?string $excerpt;
         private readonly array $categories;
         private readonly array $highlights;
@@ -20,7 +21,7 @@
         private array $dates;
 
         public function __construct(string $id, string $name, string $country, float $latitude, float $longitude,
-            string $timezone, ?Highlight $mainHighlight, float $score, ?string $excerpt, array $categories,
+            string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt, array $categories,
             array $highlights, array $labels, array $dates) {
             $this->id = $id;
             $this->name = $name;
@@ -29,6 +30,7 @@
             $this->longitude = $longitude;
             $this->timezone = $timezone;
             $this->score = $score;
+            $this->quality = $quality;
             $this->mainHighlight = $mainHighlight;
             $this->excerpt = $excerpt;
             $this->categories = $categories;
@@ -69,6 +71,10 @@
             return $this->score;
         }
 
+        public function getQuality() : ?float {
+            return $this->quality;
+        }
+
         public function getExcerpt() : ?string {
             return $this->excerpt;
         }
@@ -95,7 +101,7 @@
 
         public function getPlaceIdentifier() : PlaceIdentifier {
             return new PlaceIdentifier($this->id, $this->name, $this->country, $this->latitude,
-                $this->longitude, $this->timezone, $this->mainHighlight, $this->score, $this->excerpt);
+                $this->longitude, $this->timezone, $this->mainHighlight, $this->score, $this->quality, $this->excerpt);
         }
 
         public function withUpdatedDates(array $dates) : Place {

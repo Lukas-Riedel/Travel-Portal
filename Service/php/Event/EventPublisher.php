@@ -46,6 +46,10 @@
 
         public function publishHighlightCreatedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
             $this->publishEvent(Event::HighlightCreated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
+        }        
+
+        public function publishHighlightUpdatedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
+            $this->publishEvent(Event::HighlightUpdated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
         public function publishHighlightRemovedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
@@ -217,8 +221,9 @@
         // TODO: Invalidations first, then updates. Order this enum.
         // TODO: Unify Removed/Deleted.
         // TODO: Remove unused.
-        case ApplicationStarted = -1;
-        case HighlightCreated = 0;
+        case ApplicationStarted = -2;
+        case HighlightCreated = -1;
+        case HighlightUpdated = 0;
         case SchedulerTriggered = 1;
         case CalendarWatchRenewing = 2;
         case VacationReset = 3;

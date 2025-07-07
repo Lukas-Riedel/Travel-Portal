@@ -37,7 +37,7 @@ use Service\Service\Place\PlaceIncludedEntity;
             int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statistics = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, $start, $end,
+            $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, $start, $end,
                 array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
 
             if ($statisticsKind === StatisticsKind::Fact) {
@@ -66,7 +66,7 @@ use Service\Service\Place\PlaceIncludedEntity;
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     $mostPhotosPerDay = $this->getStandingsStatistics(fn($place, $date) => array(sprintf(self::PHOTOS_DATE_STATISTICS_FORMAT, implode(", ",
-                        array_map(fn($place) => $place->getName(), $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL,
+                        array_map(fn($place) => $place->getName(), $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL,
                         $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS), $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS) + self::ONE_DAY_SECONDS,
                         array(), PlaceSortingStrategy::Default))), date(self::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {

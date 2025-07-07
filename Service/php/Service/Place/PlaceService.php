@@ -69,12 +69,12 @@
         }
 
         public function getRegularPlace(string $placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
+            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
-        public function getRegularPlaces(?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->doGetRegularPlaces(NULL, $categoryId, $label, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+        public function getRegularPlaces(?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->doGetRegularPlaces(NULL, $categoryId, $label, $tripId, $year, $albumId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
 
         public function getCandidatePlace(string $placeId) : ?Place {
@@ -98,6 +98,10 @@
 
         public function updatePlaceScore(string $placeId, float $score) : bool {
             return $this->placeMapper->updatePlaceScore($placeId, $score);
+        }
+
+        public function updatePlaceQuality(string $placeId, ?float $quality) : bool {
+            return $this->placeMapper->updatePlaceQuality($placeId, $quality);
         }
 
         public function updatePlaceExcerpt(string $placeId, ?string $excerpt) : bool {
@@ -145,7 +149,7 @@
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -176,7 +180,7 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -223,8 +227,8 @@
                 $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
                 $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                    $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getExcerpt(),
-                    array(), array(), array(), array(new Date($start, $end, $isLayover, NULL, NULL, NULL, $resolvedTripIdentifier)));
+                    $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
+                    $placeIdentifier->getExcerpt(), array(), array(), array(), array(new Date($start, $end, $isLayover, NULL, NULL, NULL, $resolvedTripIdentifier)));
 
                 $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 
@@ -263,7 +267,7 @@
             
             $location = $this->geocodingService->getLocation($address);
             $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
-                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, 0, $this->getSuggestedExcerpt($name, $country));
+                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, 0, NULL, $this->getSuggestedExcerpt($name, $country));
             $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
             
             $this->eventPublisher->publishPlaceCreatedEvent($placeIdentifier->getId());
@@ -305,11 +309,11 @@
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
-                $placeIdentifier->getExcerpt(), array(), array(), array(), array());
+                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array());
         }
 
-        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $label, $tripId, $year, $albumId, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $label, $tripId, $year, $albumId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
         
         private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, array $includedEntities) : array {

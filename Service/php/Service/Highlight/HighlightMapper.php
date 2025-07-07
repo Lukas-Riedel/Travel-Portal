@@ -50,6 +50,21 @@
                 });
         }
 
+        public function selectEntityIdsForHighlightId(HighlightType $highlightType, string $entityId) : array {
+            $sql = <<<SQL
+                SELECT ht.id
+                FROM {$highlightType->getTableName()} ht
+                INNER JOIN highlight_identifier hi
+                    ON ht.highlight_id = hi.id
+                WHERE ht.highlight_id = ?
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($entityId)
+                ->getResultSetForColumn("id");
+        }
+
         public function selectAllHighlights(?string $highlightId, ?string $photoId) : array {
             $sql = <<<'SQL'
                 SELECT * 

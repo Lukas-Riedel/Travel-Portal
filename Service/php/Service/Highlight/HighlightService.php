@@ -95,23 +95,51 @@
         }
 
         public function updateHighlightComposition(string $highlightId, int $composition) : bool {
-            return $this->highlightMapper->updateHighlightComposition($highlightId, $composition);
+            $wasUpdated = $this->highlightMapper->updateHighlightComposition($highlightId, $composition);
+            if ($wasUpdated) {
+                $this->publishHighlightUpdatedEvents($highlightId);
+            }
+            return $wasUpdated;
         }
 
         public function updateHighlightSky(string $highlightId, int $sky) : bool {
-            return $this->highlightMapper->updateHighlightSky($highlightId, $sky);
+            $wasUpdated = $this->highlightMapper->updateHighlightSky($highlightId, $sky);
+            if ($wasUpdated) {
+                $this->publishHighlightUpdatedEvents($highlightId);
+            }
+            return $wasUpdated;
         }
 
         public function updateHighlightShadows(string $highlightId, int $shadows) : bool {
-            return $this->highlightMapper->updateHighlightShadows($highlightId, $shadows);
+            $wasUpdated = $this->highlightMapper->updateHighlightShadows($highlightId, $shadows);
+            if ($wasUpdated) {
+                $this->publishHighlightUpdatedEvents($highlightId);
+            }
+            return $wasUpdated;
         }
 
         public function updateHighlightCircumstances(string $highlightId, int $circumstances) : bool {
-            return $this->highlightMapper->updateHighlightCircumstances($highlightId, $circumstances);
+            $wasUpdated = $this->highlightMapper->updateHighlightCircumstances($highlightId, $circumstances);
+            if ($wasUpdated) {
+                $this->publishHighlightUpdatedEvents($highlightId);
+            }
+            return $wasUpdated;
+        }
+
+        private function publishHighlightUpdatedEvents(string $highlightId) : void {
+            foreach (HighlightType::cases() as &$highlightType) {
+                foreach ($this->getEntityIdsForHighlightId($highlightType, $highlightId) as &$entityId) {
+                    $this->eventPublisher->publishHighlightUpdatedEvent($highlightType, $entityId, $highlightId);
+                }
+            }
         }
         
         private function getHighlights(HighlightType $highlightType, string $entityId) : array {
             return $this->highlightMapper->selectHighlights($highlightType, $entityId);
+        }
+
+        private function getEntityIdsForHighlightId(HighlightType $highlightType, string $highlightId) : array {
+            return $this->highlightMapper->selectEntityIdsForHighlightId($highlightType, $highlightId);
         }
         
         private function getOrCreateHighlightId(string $photoId) : string {

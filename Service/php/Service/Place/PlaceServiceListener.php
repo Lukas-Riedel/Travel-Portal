@@ -25,7 +25,7 @@
         }
         
         public function onAlbumUpdated(mixed $message) : void {            
-            $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL,
+            $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL,
                 NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -78,7 +78,7 @@
         }
 
         public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
+            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
@@ -94,6 +94,37 @@
                 $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["entityId"]);
                 if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
+                }
+            }
+        }
+
+        public function onHighlightUpdated(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Place->name) {
+                $place = $this->placeService->getRegularPlace($message["entityId"]);
+                if ($place !== NULL) {
+                    $highlightQualities = [];
+
+                    foreach ($place->getHighlights() as $highlight) {
+                        $highlightQuality = $highlight->getQuality();
+
+                        if ($highlightQuality === NULL) {
+                            $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
+                            return;
+                        }
+
+                        $highlightQualities[] = $highlightQuality;
+                    }
+
+                    if (count($highlightQualities) === 0) {
+                        $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
+                        return ;
+                    }
+
+                    $sumReciprocals = 0;
+                    foreach ($highlightQualities as $q) {
+                        $sumReciprocals += 1 / $q;
+                    }
+                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), count($highlightQualities) / $sumReciprocals);
                 }
             }
         }

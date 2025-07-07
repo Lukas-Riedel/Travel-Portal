@@ -185,7 +185,7 @@
             
             foreach ($trips as &$trip) {
                 if ($trip->getName() === $dayTripsTripName) {
-                    $places = $this->placeService->getRegularPlaces(NULL, NULL, $trip->getId(), NULL, NULL, NULL, NULL,
+                    $places = $this->placeService->getRegularPlaces(NULL, NULL, $trip->getId(), NULL, NULL, NULL, NULL, NULL,
                         array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
                     $minStart = PHP_INT_MAX;
                     $maxEnd = PHP_INT_MIN;

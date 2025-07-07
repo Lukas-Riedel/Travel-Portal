@@ -70,6 +70,12 @@
             return $this->circumstances;
         }
 
+        public function getQuality() : ?float {
+            return $this->composition !== NULL && $this->sky !== NULL && $this->shadows !== NULL && $this->circumstances !== NULL
+                ? ($this->composition + $this->sky + $this->shadows + $this->circumstances) / 4.0
+                : NULL;
+        }
+
         public function getTimestamp() : ?int {
             return $this->timestamp;
         }

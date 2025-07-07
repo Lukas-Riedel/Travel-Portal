@@ -9,8 +9,15 @@
             $type = isset($input["type"]) ? $input["type"] : "regular";
             unset($input["type"]);
             
-            $sortingStrategy = isset($input["sort"]) && $input["sort"] === "score"
-                ? PlaceSortingStrategy::ScoreDescending : PlaceSortingStrategy::Default;
+            $sortingStrategy = PlaceSortingStrategy::Default;            
+            if (isset($input["sort"])) {
+                if ($input["sort"] === "score") {
+                    $sortingStrategy = PlaceSortingStrategy::ScoreDescending;
+                }
+                if ($input["sort"] === "quality") {
+                    $sortingStrategy = PlaceSortingStrategy::QualityAscending;
+                }
+            }
             unset($input["sort"]);
 
             $response = array();    
@@ -20,6 +27,7 @@
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
                     isset($input["year"]) ? $input["year"] : NULL,
                     NULL,
+                    isset($input["maxQuality"]) ? $input["maxQuality"] : NULL,
                     isset($input["minStart"]) ? $input["minStart"] : NULL,
                     isset($input["maxEnd"]) ? $input["maxEnd"] : NULL,
                     isset($input["include"]) ? explode(",", $input["include"]) : array(),
