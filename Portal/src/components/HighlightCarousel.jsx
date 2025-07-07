@@ -60,10 +60,41 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
         showFormToast(
             "Zadej nové atributy:",
             [
-                { label: "Kompozice", value: highlight.composition, required: true, type: "number", min: 0, max: 100 },
-                { label: "Nebe", value: highlight.sky, required: true, type: "number", min: 0, max: 100 },
-                { label: "Stíny", value: highlight.shadows, required: true, type: "number", min: 0, max: 100 },
-                { label: "Okolnosti", value: highlight.circumstances, required: true, type: "number", min: 0, max: 100 },
+                {
+                    label: "Kompozice", value: highlight.composition, required: true, type: "select", options: [
+                        { id: null, name: "" },
+                        { id: 5, name: "Nedostatečná" },
+                        { id: 60, name: "Průměrná" },
+                        { id: 100, name: "Kvalitní" }
+                    ]
+                },
+                {
+                    label: "Nebe", value: highlight.sky, required: true, type: "select", options: [
+                        { id: null, name: "" },
+                        { id: 10, name: "Jednolitá šedá" },
+                        { id: 30, name: "Zataženo s výraznou strukturou mraků" },
+                        { id: 50, name: "Oblačná s prosvítajícím sluncem" },
+                        { id: 95, name: "Jasná" },
+                        { id: 100, name: "Fotogenní mraky" }
+                    ]
+                },
+                {
+                    label: "Stíny", value: highlight.shadows, required: true, type: "select", options: [
+                        { id: null, name: "" },
+                        { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
+                        { id: 60, name: "Mírné (lehké modelování scény)" },
+                        { id: 100, name: "Výrazné (boční světlo, plastika)" }
+                    ]
+                },
+                {
+                    label: "Okolnosti", value: highlight.circumstances, required: true, type: "select", options: [
+                        { id: null, name: "" },
+                        { id: 20, name: "Výrazně rušivé (lešení, davy, nepořádek)" },
+                        { id: 70, name: "Rušivé (něco narušuje celkový dojem)" },
+                        { id: 90, name: "Minimálně rušivé (drobná rušení)" },
+                        { id: 100, name: "Bez rušivých prvků (čistá scéna)" }
+                    ]
+                },
                 place && { label: "Čas pořízení:", value: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
                 place && { label: "Výška slunce:", value: ((SunCalc.getPosition(new Date(timestamp * 1000), place.latitude, place.longitude).altitude * 180) / Math.PI).toFixed(1) + "°", required: true, disabled: true }
             ],
