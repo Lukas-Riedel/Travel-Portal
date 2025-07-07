@@ -26,6 +26,8 @@ export const useTrip = (tripId) => {
         updateTripName: name => api.updateTripName(tripId, name).then(setTrip),
         removeTripHighlight: highlightId => api.removeTripHighlight(tripId, highlightId).then(refetchTrip),
         updateTripMainHighlight: highlightId => api.updateTripMainHighlight(tripId, highlightId).then(setTrip),
+        updateTripHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) => 
+            api.updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchTrip),
         createTripExpense: (type, description, value, currency, subscriptionId) => api.createTripExpense(tripId, type, description, value, currency, subscriptionId).then(refetchTrip),
         removeTripExpense: expenseId => api.removeTripExpense(tripId, expenseId).then(refetchTrip),
         updateTripExpenseDescription: (expenseId, description) => api.updateTripExpenseDescription(tripId, expenseId, description).then(refetchTrip),

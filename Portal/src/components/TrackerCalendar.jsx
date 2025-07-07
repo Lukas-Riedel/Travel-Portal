@@ -191,8 +191,8 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
         showFormToast(
             "Zadej údaje pro vytvoření přesčasu:",
             [
-                { placeholder: "Popis přesčasu", required: true },
-                { placeholder: "Počet hodin", value: Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
+                { label: "Popis přesčasu", required: true },
+                { label: "Počet hodin", value: Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
             ],
             "Přesčas byl úspěšně vytvořen",
             "Nepodařilo se vytvořit přesčas",
@@ -203,9 +203,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleBalanceUsageEvent = (day, type, title, success, error) => {
         showFormToast(
             title,
-            [
-                { placeholder: "Počet hodin", value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }
-            ],
+            [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }],
             success,
             error,
             async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, format(day, "d.M.yyyy"))
@@ -255,9 +253,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleCreatePlannedWorkEvent = day => {
         showFormToast(
             "Zadej počet hodin k modifikaci plánované práce:",
-            [
-                { placeholder: "Počet hodin", value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }
-            ],
+            [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }],
             "Plánovaná práce byla úspěšně modifikována",
             "Nepodařilo se modifikovat plánovanou práci",
             async (hours) => onEventCreated("PLANNED_WORK", "Planned work", hours, format(day, "d.M.yyyy"))

@@ -10,6 +10,7 @@ import showFormToast from "./FormToast"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
+import showInputToast from "./InputToast"
 
 const expenseTypes = {
     ATTRACTION: {
@@ -278,11 +279,9 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
     }
 
     const handleEditDescription = expense => {
-        showFormToast(
+        showInputToast(
             "Zadej nový popis výdaje:",
-            [
-                { placeholder: "Popis", value: expense.description, required: true }
-            ],
+            expense.description,
             "Popis výdaje byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat popis výdaje",
             async description => onExpenseDescriptionUpdated(expense.id, description)
@@ -293,8 +292,8 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
         showFormToast(
             "Zadej novou hodnotu a měnu výdaje:",
             [
-                { placeholder: "Hodnota", value: expense.value, required: true, type: "number", min: 0 },
-                { placeholder: "Měna", value: expense.currency, required: true, type: "select", options: configuration?.currencies?.map(currency => ({ id: currency, name: currency })) }
+                { label: "Hodnota", value: expense.value, required: true, type: "number", min: 0 },
+                { label: "Měna", value: expense.currency, required: true, type: "select", options: configuration?.currencies?.map(currency => ({ id: currency, name: currency })) }
             ],
             "Hodnota výdaje byla úspěšně aktualizována",
             "Nepodařilo se aktualizovat hodnotu výdaje",

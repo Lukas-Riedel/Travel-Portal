@@ -1,11 +1,9 @@
 import showFormToast from "./FormToast"
 
-export default function showInputToast(title, placeholder, success, error, onSubmitted) {
+export default function showInputToast(title, value, success, error, onSubmitted) {
     return showFormToast(
         title,
-        [
-            { placeholder: placeholder, value: placeholder, required: true }
-        ],
+        [{ value: value, required: true }],
         success,
         error,
         onSubmitted

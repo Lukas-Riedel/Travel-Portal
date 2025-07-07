@@ -1,5 +1,5 @@
 import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
+import { getTimezoneOffset, toZonedTime } from "date-fns-tz"
 import { optimize } from "svgo"
 
 export function getDateString(timestamp) {
@@ -55,7 +55,7 @@ export function getSortedTrips(trips, showCurrentDayTripsTrip) {
     if (!trips) {
         return trips
     }
-    
+
     const dayTripsTrip = trips?.find(trip => (showCurrentDayTripsTrip && trip.isDayTrips()) || trip.isPastDayTrips())
     return [...(trips.filter(trip => !trip.isDayTrips()).reverse()), dayTripsTrip]
 }
@@ -84,4 +84,9 @@ export function getSafeSvgString(svgString, prefix) {
     }
 
     return svgString
+}
+
+export function isDaylightSavingTime(timestamp, timezone) {
+    const date = toZonedTime(fromUnixTime(timestamp), timezone)
+    return date.getTimezoneOffset() < Math.max(toZonedTime(new Date(date.getFullYear(), 0, 1), timezone).getTimezoneOffset(), toZonedTime(new Date(date.getFullYear(), 6, 1), timezone).getTimezoneOffset())
 }

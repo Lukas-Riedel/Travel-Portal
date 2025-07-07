@@ -24,6 +24,8 @@ export const usePlace = (placeId) => {
         updatePlaceAddress: address => api.getCoordinates(address).then(coordinates => api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace),
         removePlaceHighlight: highlightId => api.removePlaceHighlight(placeId, highlightId).then(refetchPlace),
         updatePlaceMainHighlight: highlightId => api.updatePlaceMainHighlight(placeId, highlightId).then(setPlace),
+        updatePlaceHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) => 
+            api.updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchPlace),
         createPlaceLabel: name => api.createPlaceLabel(placeId, name).then(refetchPlace),
         removePlaceLabel: labelId => api.removePlaceLabel(placeId, labelId).then(refetchPlace),
         updatePlaceExcerpt: excerpt => api.updatePlaceExcerpt(placeId, excerpt).then(setPlace),

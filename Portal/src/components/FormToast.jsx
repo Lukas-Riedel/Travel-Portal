@@ -30,33 +30,45 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                 return (
                     <div className="w-full flex justify-center">
                         <div className="bg-white rounded-lg shadow-md border p-4 w-80 space-y-3 text-sm">
-                            {title && <div className="font-medium">{title}</div>}
-                            {fields.map((field, idx) => (
-                                field.type === "select" ? (
-                                    <select
-                                        key={idx}
-                                        ref={element => (inputRefs.current[idx] = element)}
-                                        className="border rounded px-2 py-1 w-full text-sm"
-                                        defaultValue={field.value ?? ""}>
-                                        {field.options?.map((option, idx) => (
-                                            <option
-                                                key={idx}
-                                                value={option.id}>
-                                                {option.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <input
-                                        key={idx}
-                                        ref={element => (inputRefs.current[idx] = element)}
-                                        type={field.type || "text"}
-                                        min={field.min}
-                                        placeholder={`${field.placeholder ?? ""} ${field.required ? "" : "(nepovinné)"}`}
-                                        defaultValue={field.value}
-                                        className="border rounded px-2 py-1 w-full text-sm"
-                                        autoFocus={idx === 0} />
-                                )
+                            {title && (
+                                <div className="font-medium">
+                                    {title}
+                                </div>
+                            )}
+                            {fields.filter(Boolean).map((field, idx) => (
+                                <div key={idx}>
+                                    {field.label && (
+                                        <label
+                                            className="block mb-1 text-gray-600 text-sm">
+                                            {field.label}{field.required ? "" : " (nepovinné)"}
+                                        </label>
+                                    )}
+                                    {field.type === "select" ? (
+                                        <select
+                                            ref={element => (inputRefs.current[idx] = element)}
+                                            className="border rounded px-2 py-1 w-full text-sm"
+                                            defaultValue={field.value ?? ""}
+                                            disabled={field.disabled}>
+                                            {field.options?.map((option, idx) => (
+                                                <option
+                                                    key={idx}
+                                                    value={option.id}>
+                                                    {option.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            ref={element => (inputRefs.current[idx] = element)}
+                                            type={field.type || "text"}
+                                            min={field.min}
+                                            max={field.max}
+                                            defaultValue={field.value}
+                                            disabled={field.disabled}
+                                            className="border rounded px-2 py-1 w-full text-sm"
+                                            autoFocus={idx === 0} />
+                                    )}
+                                </div>
                             ))}
                             <div className="flex justify-end gap-2">
                                 <button

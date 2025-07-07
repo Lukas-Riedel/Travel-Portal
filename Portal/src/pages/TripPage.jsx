@@ -23,7 +23,7 @@ export default function TripPage() {
 
     const { trip, removeTrip, moveTrip, loadTrip, updateTripName, removeTripHighlight, updateTripMainHighlight,
         createTripExpense, updateTripExpenseDescription, updateTripExpenseValue,
-        removeTripExpense, createTripNote, removeTripNote } = useTrip(tripId)
+        removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes } = useTrip(tripId)
     const candidateTrips = useCandidateTrips()
     const regularPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES", sort: "score" })
     const candidatePlaces = useCandidatePlaces({ tripId, include: "CATEGORIES,DATES", sort: "score" })
@@ -54,7 +54,8 @@ export default function TripPage() {
                 places={tripPlacesWithoutLayover}
                 placeMainCategorySelector={getPlaceCategory}
                 onHighlightRemoved={removeTripHighlight}
-                onMainHighlightUpdated={updateTripMainHighlight} />
+                onMainHighlightUpdated={updateTripMainHighlight}
+                onHighlightQualityAttributesUpdated={updateTripHighlightQualityAttributes} />
             {trip?.start > Date.now() / 1000 && (
                 <StatisticsPanel statistics={trip?.statistics} />
             )}

@@ -19,8 +19,8 @@ export default function MainLayout({ children }) {
         showFormToast(
             "Zadej přihlašovací údaje:",
             [
-                { placeholder: "Uživatelské jméno", required: true },
-                { placeholder: "Heslo", required: true, type: "password" }
+                { label: "Uživatelské jméno", required: true },
+                { label: "Heslo", required: true, type: "password" }
             ],
             "Přihlášení proběhlo úspěšně",
             "Při přihlašování došlo k chybě",

@@ -22,5 +22,7 @@ export const useYear = (year) => {
         year: query.data,
         removeYearHighlight: highlightId => api.removeYearHighlight(year, highlightId).then(refetchYear),
         updateYearMainHighlight: highlightId => api.updateYearMainHighlight(year, highlightId).then(setYear),
+        updateYearHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) => 
+            api.updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchYear)
     }
 }

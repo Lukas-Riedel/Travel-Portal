@@ -28,6 +28,20 @@ export function useApi() {
         }
     }
 
+    async function getHighlight(highlightId) {
+        return sendRequest("GET", "/highlights/" + highlightId)
+    }
+
+    async function updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances) {
+        return sendRequest("PATCH", "/highlights/" + highlightId,
+            {
+                composition: composition,
+                sky: sky,
+                shadows: shadows,
+                circumstances: circumstances
+            })
+    }
+
     async function createGeographicalCategory(name, country, category, radius, geoJson) {
         return sendRequest("POST", "/categories",
             {
@@ -520,6 +534,8 @@ export function useApi() {
     }
 
     return {
+        getHighlight,
+        updateHighlightQualityAttributes,
         createGeographicalCategory,
         createGeographicalExtensionCategory,
         createCompositeCategory,

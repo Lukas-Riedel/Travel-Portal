@@ -18,7 +18,7 @@ export default function PlacePage() {
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
-        refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum } = usePlace(placeId)
+        refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes } = usePlace(placeId)
     const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
 
     return (
@@ -29,9 +29,11 @@ export default function PlacePage() {
                 onNameChanged={updatePlaceName}
                 onAddressChanged={updatePlaceAddress} />
             <HighlightCarousel
+                place={place}
                 highlights={place?.highlights}
                 onHighlightRemoved={removePlaceHighlight}
-                onMainHighlightUpdated={updatePlaceMainHighlight} />
+                onMainHighlightUpdated={updatePlaceMainHighlight}
+                onHighlightQualityAttributesUpdated={updatePlaceHighlightQualityAttributes} />
             <CategoryBar categories={place?.categories} />
             <LabelBar
                 labels={place?.labels}

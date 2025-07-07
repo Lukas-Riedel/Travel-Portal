@@ -16,7 +16,7 @@ export default function YearPage() {
     const { isAdmin } = useAuth()
     const { year: yearParameter } = useParams()
 
-    const { year, removeYearHighlight, updateYearMainHighlight } = useYear(yearParameter)
+    const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
     const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "CATEGORIES" })
     const yearTrips = useRegularTrips({ year: yearParameter, include: "EXPENSES" })
 
@@ -35,7 +35,8 @@ export default function YearPage() {
                 places={yearPlaces}
                 placeMainCategorySelector={getPlaceCategory}
                 onHighlightRemoved={removeYearHighlight}
-                onMainHighlightUpdated={updateYearMainHighlight} />
+                onMainHighlightUpdated={updateYearMainHighlight}
+                onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />
             <StatisticsPanel statistics={year?.statistics} />
             <TripTileGrid trips={yearTrips && getSortedTrips(yearTrips, isAdmin)} />
             {isAdmin && (

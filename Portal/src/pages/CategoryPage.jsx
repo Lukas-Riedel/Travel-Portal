@@ -10,7 +10,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 export default function CategoryPage() {
     const { categoryId } = useParams()
 
-    const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight } = useCategory(categoryId)
+    const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "CATEGORIES", sort: "score" })
 
     const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("COUNTRY"))
@@ -37,7 +37,8 @@ export default function CategoryPage() {
                 places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory}
                 onHighlightRemoved={removeCategoryHighlight}
-                onMainHighlightUpdated={updateCategoryMainHighlight} />
+                onMainHighlightUpdated={updateCategoryMainHighlight}
+                onHighlightQualityAttributesUpdated={updateCategoryHighlightQualityAttributes} />
             <StatisticsPanel statistics={category?.statistics} />
             <PlaceTileGrid
                 places={categoryPlaces}

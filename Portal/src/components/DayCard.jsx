@@ -76,8 +76,8 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         showFormToast(
             "Zadej cestu k fotkám k nahrání:",
             [
-                { placeholder: "Cesta", required: true },
-                { placeholder: "Pozice hlavní fotky", required: false, type: "number", min: 1 }
+                { label: "Cesta", required: true },
+                { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 }
             ],
             "Nahrávání fotek začalo",
             "Při nahrávání fotek došlo k chybě",
