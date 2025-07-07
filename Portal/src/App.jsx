@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation, useSearchParams } from "reac
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
-import CountriesPage from "./pages/CountriesPage"
+import YearsPage from "./pages/YearsPage"
 import PlacePage from "./pages/PlacePage"
 import TripsPage from "./pages/TripsPage"
 import TripPage from "./pages/TripPage"
@@ -37,8 +37,8 @@ function AppContent() {
 
     return (
         <Routes>
-            <Route path="/" element={<MainLayout><CountriesPage /></MainLayout>} />
-            <Route path="/place" element={<MainLayout><CountriesPage /></MainLayout>} />
+            <Route path="/" element={<MainLayout><TripsPage /></MainLayout>} />
+            <Route path="/place" element={<MainLayout><YearsPage /></MainLayout>} />
             <Route path="/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
             <Route path="/trip" element={<MainLayout><TripsPage /></MainLayout>} />
             <Route path="/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />

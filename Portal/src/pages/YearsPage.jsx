@@ -6,7 +6,7 @@ import StatisticsPanel from "../components/StatisticsPanel.jsx"
 import { useStatistics } from "../hooks/useStatistics.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
-export default function CountriesPage() {
+export default function YearsPage() {
     const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
     const countryCategories = useCategories({ categories: "COUNTRY" })
     const statistics = useStatistics()

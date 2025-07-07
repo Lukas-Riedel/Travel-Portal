@@ -11,11 +11,13 @@ export default function YearTripTileGrid({ year, trips }) {
 
     return (
         <div className="my-4">
-            <Link
-                className="hover:underline text-2xl font-bold mb-2"
-                to={`/year/${year}`}>
-                {year}
-            </Link>
+            <div className="flex justify-center mb-2">
+                <Link
+                    className="hover:underline text-2xl font-bold"
+                    to={`/year/${year}`}>
+                    {year}
+                </Link>
+            </div>
             <TripTileGrid trips={getSortedTrips(yearTrips, isAdmin)} />
         </div>
     )
