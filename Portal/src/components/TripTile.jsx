@@ -2,12 +2,12 @@ import { useMemo } from "react"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { getDateRangeString } from "../utils/helpers"
 import PhotoTile from "./PhotoTile"
+import { useCategories } from "../hooks/useCategories"
 
 export default function TripTile({ trip }) {
-    const tripPlaces = useRegularPlaces({ tripId: trip?.id, include: "CATEGORIES,DATES" })
-    const categories = useMemo(() => [...new Map(tripPlaces?.filter(place => !place.dates?.some(date => date?.layover))
-        ?.map(place => place.getCategory("COUNTRY"))?.filter(Boolean)?.map(category => [category.name, category])).values()]
-        ?.sort((a, b) => a.name.localeCompare(b.name)), [tripPlaces])
+    const countryCategories = useCategories({ categories: "COUNTRY" })
+
+    const categories = useMemo(() => countryCategories?.filter(category => trip?.countries?.some(country => country === category.name))?.sort((a, b) => a.name.localeCompare(b.name)), [trip, countryCategories])
 
     return (
         <PhotoTile

@@ -4,7 +4,7 @@ import { toZonedTime } from "date-fns-tz"
 import { formatKilometers, formatDuration } from "../utils/formatters.js"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
-import { getAirlineCodeForFlight, prefixSvgIds } from "../utils/helpers.js"
+import { getAirlineCodeForFlight, getSafeSvgString } from "../utils/helpers.js"
 import { useAirlines } from "../hooks/useAirlines.js"
 import { Link } from "react-router-dom"
 
@@ -68,7 +68,7 @@ export default function FlightCard({ flight }) {
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}
-                            dangerouslySetInnerHTML={{ __html: prefixSvgIds(airline.logo, airlineCode) }} />
+                            dangerouslySetInnerHTML={{ __html: getSafeSvgString(airline.logo, airlineCode) }} />
                     ) : (
                         <div className="text-gray-400 text-sm text-center">
                             Logo není k dispozici

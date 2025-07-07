@@ -5,8 +5,8 @@ import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "../components/ConfirmToast"
 
 const navigationItems = [
+    { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/", "/trip", "/year"] },
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
-    { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
     { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
     { label: "Sledování času", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] }
 ]
@@ -49,7 +49,7 @@ export default function MainLayout({ children }) {
                             {navigationItems
                                 .filter(({ to, isProtected }) => !isProtected || isAdmin || location.pathname === to)
                                 .map(({ label, to, allowedPrefixes }) => {
-                                    const isActive = allowedPrefixes.some(prefix => location.pathname.startsWith(prefix))
+                                    const isActive = allowedPrefixes.some(prefix => prefix === "/" ? location.pathname === prefix : location.pathname.startsWith(prefix))
                                     return (
                                         <Link
                                             key={to}

@@ -13,7 +13,6 @@ export default function TripSummary({ tripId }) {
     const configuration = useConfiguration()
 
     const { trip } = useTrip(tripId)
-    console.log(trip)
     const tripPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES" })
 
     const [timezone, setTimezone] = useState(undefined)

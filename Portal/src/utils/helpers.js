@@ -51,7 +51,16 @@ export function getAirlineCodeForFlight(flight) {
     return flight?.substring(0, 2)
 }
 
-export function prefixSvgIds(svgString, prefix) {
+export function getSortedTrips(trips, showCurrentDayTripsTrip) {
+    if (!trips) {
+        return trips
+    }
+    
+    const dayTripsTrip = trips?.find(trip => (showCurrentDayTripsTrip && trip.isDayTrips()) || trip.isPastDayTrips())
+    return [...(trips.filter(trip => !trip.isDayTrips()).reverse()), dayTripsTrip]
+}
+
+export function getSafeSvgString(svgString, prefix) {
     if (!svgString) {
         return svgString
     }

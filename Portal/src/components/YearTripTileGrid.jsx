@@ -1,0 +1,22 @@
+import { Link } from "react-router-dom"
+import TripTileGrid from "./TripTileGrid.jsx"
+import { useMemo } from "react"
+import { useAuth } from "../contexts/AuthContext.jsx"
+import { getSortedTrips } from "../utils/helpers"
+
+export default function YearTripTileGrid({ year, trips }) {
+    const { isAdmin } = useAuth()
+
+    const yearTrips = useMemo(() => trips?.filter(trip => trip?.year == year), [trips, year])
+
+    return (
+        <div className="my-4">
+            <Link
+                className="hover:underline text-2xl font-bold mb-2"
+                to={`/year/${year}`}>
+                {year}
+            </Link>
+            <TripTileGrid trips={getSortedTrips(yearTrips, isAdmin)} />
+        </div>
+    )
+}

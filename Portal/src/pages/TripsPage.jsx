@@ -1,15 +1,15 @@
-import { useYears } from "../hooks/useYears.js"
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import StatisticsPanel from "../components/StatisticsPanel.jsx"
 import { useStatistics } from "../hooks/useStatistics.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
-import YearTileGrid from "../components/YearTileGrid.jsx"
 import { useCategories } from "../hooks/useCategories.js"
 import { useRegularTrips } from "../hooks/useRegularTrips.js"
 import TripTable from "../components/TripTable.jsx"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import TripSummary from "../components/TripSummary.jsx"
+import { useYears } from "../hooks/useYears.js"
+import YearTripTileGrid from "../components/YearTripTileGrid.jsx"
 
 export default function TripsPage() {
     const { isAdmin } = useAuth()
@@ -37,7 +37,12 @@ export default function TripsPage() {
             {(isAdmin || upcomingOrCurrentTrip?.isCurrent()) && (
                 <TripSummary tripId={upcomingOrCurrentTrip?.id} />
             )}
-            <YearTileGrid years={years?.filter(year => year.mainHighlight)} />
+            {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [new Date().getFullYear()]).map((year, index) => (
+                <YearTripTileGrid
+                    key={index}
+                    year={year}
+                    trips={trips} />
+            ))}
             {isAdmin && (
                 <TripTable trips={trips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
             )}
