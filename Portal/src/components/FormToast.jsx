@@ -8,7 +8,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                 const inputRefs = useRef([])
 
                 const handleSubmit = async () => {
-                    if (fields.some((field, idx) => field.required && !inputRefs.current[idx]?.value)) {
+                    if (fields.filter(Boolean).some((field, idx) => field.required && !inputRefs.current[idx]?.value)) {
                         return
                     }
 
