@@ -26,6 +26,10 @@ export function formatPlaces(value) {
     return format(value, ["místo", "místa", "míst"])
 }
 
+export function formatNextPlaces(value) {
+    return ((value >= 1 && value <= 4) ? "další" : "dalších") + " " + formatPlaces(value)
+}
+
 export function formatDays(value) {
     return format(value, ["den", "dny", "dnů"])
 }

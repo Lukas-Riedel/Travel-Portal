@@ -180,7 +180,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                                         {tripBalances[trip.id] ? (tripBalances[trip.id].timeOffHoursNeeded / standardWorkingHoursPerWorkingDay).toFixed(0) : "---"}
                                     </td>
                                     <td className={`p-3 text-center ${tripBalances[trip.id] && tripBalances[trip.id].availableTimeOffHours > tripBalances[trip.id].timeOffHoursNeeded ? "text-green-600" : "text-red-600"}`}>
-                                        {tripBalances[trip.id] ? (tripBalances[trip.id].availableTimeOffHours / standardWorkingHoursPerWorkingDay).toFixed(0) : "---"}
+                                        {tripBalances[trip.id] ? (+(tripBalances[trip.id].availableTimeOffHours / standardWorkingHoursPerWorkingDay).toFixed(0)) : "---"}
                                     </td>
                                 </>
                             )}

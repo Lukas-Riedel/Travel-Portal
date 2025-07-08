@@ -182,12 +182,13 @@ export function useApi() {
             .then(places => places.map(place => new Place(place)))
     }
 
-    async function listCandidatePlaces({ tripId, categoryId, include, sort } = {}) {
+    async function listCandidatePlaces({ tripId, categoryId, labelName, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "candidate",
                 tripId: tripId,
                 categoryId: categoryId,
+                label: labelName,
                 include: include,
                 sort: sort
             })

@@ -8,6 +8,7 @@ const navigationItems = [
     { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/", "/trip", "/year"] },
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
     { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
+    { label: "Plán", to: "/plan", isProtected: false, allowedPrefixes: ["/plan"] },
     { label: "Sledování času", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] }
 ]
 
@@ -47,7 +48,7 @@ export default function MainLayout({ children }) {
                     <div className="flex items-center space-x-8">
                         <nav className="flex space-x-6 items-center text-center">
                             {navigationItems
-                                .filter(({ to, isProtected }) => !isProtected || isAdmin || location.pathname === to)
+                                .filter(({ to, isProtected }) => !isProtected || isAdmin || location.pathname.startsWith(to))
                                 .map(({ label, to, allowedPrefixes }) => {
                                     const isActive = allowedPrefixes.some(prefix => prefix === "/" ? location.pathname === prefix : location.pathname.startsWith(prefix))
                                     return (

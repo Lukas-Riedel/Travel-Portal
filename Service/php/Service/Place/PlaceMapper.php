@@ -329,7 +329,7 @@
             return array_values($places);
         }
         
-        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, array $includedEntities) : array {
+        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $label, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT pi.*
                 FROM place_candidate pc
@@ -338,6 +338,11 @@
                 WHERE :CONDITIONS
                 ORDER BY name
             SQL;
+            
+            // TODO: Add support for filtering based on the label value. For now, it's assumed that candidate places never have any labels.
+            if ($label !== NULL) {
+                return array();
+            }
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder(); 
             if ($placeId !== NULL) {
@@ -635,7 +640,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeIdentifier->getName(), $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
                     $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getExcerpt(),
-                    $placeIdentifier->getScore())
+                    $placeIdentifier->getScore(), $placeIdentifier->getQuality())
                 ->execute() === 1;
                 
             if ($wasInserted) {

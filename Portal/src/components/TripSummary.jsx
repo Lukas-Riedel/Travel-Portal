@@ -48,17 +48,18 @@ export default function TripSummary({ tripId }) {
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
     return trip ? (
-        <div className="relative w-full grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] items-center gap-4 bg-white p-3 my-3 text-sm">
-            <div className="flex flex-col items-center justify-center text-center">{countryCategories && (
-                <div className="flex">
-                    {countryCategories.map((category, index) => (
-                        <img
-                            key={index}
-                            className="w-7 object-cover mx-1.5 flex-shrink-0"
-                            src={`/img/flags/${category?.metadata?.unicode}.svg`}
-                            alt={category?.name} />
-                    ))}
-                </div>)}
+        <div className="relative w-full grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] items-center gap-4 bg-white p-3 my-4 text-sm">
+            <div className="flex flex-col items-center justify-center text-center">
+                {countryCategories && (
+                    <div className="flex">
+                        {countryCategories.map((category, index) => (
+                            <img
+                                key={index}
+                                className="w-7 object-cover mx-1.5 flex-shrink-0"
+                                src={`/img/flags/${category?.metadata?.unicode}.svg`}
+                                alt={category?.name} />
+                        ))}
+                    </div>)}
                 <Link
                     className="my-2 text-2xl font-semibold"
                     to={`/trip/${trip.id}`}>

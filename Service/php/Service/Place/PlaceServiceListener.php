@@ -83,7 +83,7 @@
                 $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
             
-            $places = $this->placeService->getCandidatePlaces($message["categoryId"], NULL, array());
+            $places = $this->placeService->getCandidatePlaces($message["categoryId"], NULL, NULL, array());
             foreach ($places as &$place) {
                 $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }

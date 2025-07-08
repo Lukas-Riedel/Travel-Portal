@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api"
 import { TailSpin } from "react-loader-spinner"
 
@@ -102,25 +102,8 @@ export default function Map({ points, lines, onRightClick }) {
         markersRef.current.push(marker)
     }
 
-    const onMapLoad = map => {
-        mapRef.current = map
-
-        if (points.length == 1) {
-            mapRef.current.setCenter({
-                lat: points[0]?.latitude ?? 0,
-                lng: points[0]?.longitude ?? 0
-            })
-            mapRef.current.setZoom(defaultMapZoom)
-            return
-        }
-
-        const bounds = new window.google.maps.LatLngBounds()
-        points.forEach(point => {
-            bounds.extend(new window.google.maps.LatLng(point.latitude, point.longitude))
-        })
-
-        mapRef.current.fitBounds(bounds)
-    }
+    const computeMarkerScale = zoom => Math.min(Math.max(0.1 + zoom * 0.1, 0.5), 0.9)
+    const computeStrokeWeight = zoom => Math.min(Math.max(zoom * 0.1 - 0.1, 0.3), 1.3)
 
     const onMapZoomChanged = () => {
         if (!mapRef.current) {
@@ -134,8 +117,37 @@ export default function Map({ points, lines, onRightClick }) {
         })
     }
 
-    const computeMarkerScale = zoom => Math.min(Math.max(0.1 + zoom * 0.1, 0.5), 0.9)
-    const computeStrokeWeight = zoom => Math.min(Math.max(zoom * 0.1 - 0.1, 0.3), 1.3)
+    const fitBounds = () => {
+        if (!mapRef.current) {
+            return
+        }
+
+        const bounds = new window.google.maps.LatLngBounds()
+        points.forEach(point => {
+            bounds.extend(new window.google.maps.LatLng(point.latitude, point.longitude))
+        })
+
+        mapRef.current.fitBounds(bounds)
+    }
+
+    const onMapLoad = map => {
+        mapRef.current = map
+
+        if (points.length == 1) {
+            mapRef.current.setCenter({
+                lat: points[0]?.latitude ?? 0,
+                lng: points[0]?.longitude ?? 0
+            })
+            mapRef.current.setZoom(defaultMapZoom)
+            return
+        }
+
+        fitBounds()
+    }
+
+    useEffect(() => {
+        fitBounds()
+    }, [points, lines])
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,

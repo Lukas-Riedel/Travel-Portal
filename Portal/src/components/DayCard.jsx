@@ -86,7 +86,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }
 
     return day && events ? ((events.length > 0 || stay) && (
-        <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
+        <div className={`rounded-xl p-4 h-full flex flex-col hover:shadow-lg transition-shadow duration-200 ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
             <div className="mb-4">
                 <div className="flex justify-between items-start">
                     <span className="font-bold whitespace-nowrap leading-none">

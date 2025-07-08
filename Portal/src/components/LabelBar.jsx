@@ -45,7 +45,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                             key={index}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
                             <Link
-                                to={`/label/${label?.name}`}
+                                to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/label/${label?.name}`}
                                 className={clsx(
                                     "text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full",
                                     isAdmin ? "lg:pr-5" : "lg:pr-0"
@@ -66,7 +66,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                             key={index}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
                             <Link
-                                to={`/label/${labelName}`}
+                                to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/label/${labelName}`}
                                 className="text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full lg:pr-5">
                                 {labelName}
                             </Link>

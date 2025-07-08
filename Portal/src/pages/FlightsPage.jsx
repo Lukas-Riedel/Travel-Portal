@@ -4,7 +4,7 @@ import FlightMap from "../components/FlightMap"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import { useStatistics } from "../hooks/useStatistics"
 import StatisticsPanel from "../components/StatisticsPanel"
-import FlightGrid from "../components/FlightGrid"
+import FlightCardGrid from "../components/FlightCardGrid"
 
 export default function FlightsPage() {
     const trips = useRegularTrips({ include: "FLIGHTS" })
@@ -19,13 +19,13 @@ export default function FlightsPage() {
 
     return (
         <>
-            <div className="h-[400px] md:h-[700px]">
+            <div className="h-[400px] md:h-[700px] my-4">
                 <FlightMap
                     flights={flights}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
             </div>
             <StatisticsPanel statistics={statistics} />
-            <FlightGrid flights={flights} />
+            <FlightCardGrid flights={flights} />
         </>
     )
 }

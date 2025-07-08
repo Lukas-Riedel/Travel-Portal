@@ -80,14 +80,14 @@
         }
 
         public function getCandidatePlace(string $placeId) : ?Place {
-            $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, PlaceIncludedEntity::values());
+            $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, NULL, PlaceIncludedEntity::values());
             return count($candidatePlaces) === 1 ? $candidatePlaces[0] : NULL;
         }
 
-        public function getCandidatePlaces(?string $categoryId, ?string $tripId, array $includedEntities) : array {
+        public function getCandidatePlaces(?string $categoryId, ?string $tripId, ?string $label, array $includedEntities) : array {
             return $tripId !== NULL
                 ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includedEntities)
-                : $this->doGetCandidatePlaces(NULL, $categoryId, $includedEntities);
+                : $this->doGetCandidatePlaces(NULL, $categoryId, $label, $includedEntities);
         }
 
         public function getPlaceIdentifierById(string $placeId) : ?PlaceIdentifier {
@@ -318,8 +318,8 @@
             return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $label, $tripId, $year, $albumId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
         
-        private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, array $includedEntities) : array {
-            return $this->placeMapper->selectCandidatePlaces($placeId, $categoryId, $includedEntities);
+        private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?string $label, array $includedEntities) : array {
+            return $this->placeMapper->selectCandidatePlaces($placeId, $categoryId, $label, $includedEntities);
         }
 
         private function doGetCandidatePlacesForTrip(?string $categoryId, string $tripId, array $includedEntities) : array {            

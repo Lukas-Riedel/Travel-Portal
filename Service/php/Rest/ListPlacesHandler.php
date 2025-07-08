@@ -36,6 +36,7 @@
             else if ($type == "candidate") { 
                 $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
+                    isset($input["label"]) ? $input["label"] : NULL,
                     isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
 

@@ -7,11 +7,10 @@ export const useCandidateTrips = ({ include } = {}) => {
     const api = useApi()
     const { isAdmin } = useAuth()
 
-    const validity = 60 * 60 * 2
     const query = useQuery({
         queryKey: ["listCandidateTrips", include],
         queryFn: () => api.listCandidateTrips({ include }),
-        staleTime: isAdmin ? 0 : 1000 * validity,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
 
     return query.data && query.data.map(trip => new Trip(trip))

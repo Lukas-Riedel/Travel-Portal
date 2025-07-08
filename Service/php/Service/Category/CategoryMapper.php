@@ -78,6 +78,7 @@
                 SELECT *
                 FROM category_identifier
                 WHERE :CONDITIONS
+                ORDER BY name
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()

@@ -3,7 +3,7 @@ import PageHeader from "../components/PageHeader"
 import { useMemo } from "react"
 import { useCategories } from "../hooks/useCategories"
 import { useRegularTrips } from "../hooks/useRegularTrips"
-import FlightGrid from "../components/FlightGrid"
+import FlightCardGrid from "../components/FlightCardGrid"
 import FlightMap from "../components/FlightMap"
 import { useAirlines } from "../hooks/useAirlines"
 import { getAirlineCodeForFlight } from "../utils/helpers"
@@ -26,12 +26,12 @@ export default function AirlinePage() {
     return (
         <>
             <PageHeader name={airlineName} />
-            <div className="h-[400px] md:h-[700px]">
+            <div className="h-[400px] md:h-[700px] my-4">
                 <FlightMap
                     flights={flights}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
             </div>
-            <FlightGrid flights={flights} />
+            <FlightCardGrid flights={flights} />
         </>
     )
 }

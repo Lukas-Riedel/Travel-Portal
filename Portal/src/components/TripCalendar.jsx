@@ -20,7 +20,7 @@ export default function TripCalendar({ trip, places, onPhotosAdded }) {
     }), [trip, places])
 
     return (
-        <div className="relative w-full my-3">
+        <div className="relative w-full my-4">
             <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-4 text-sm w-full">
                 {days?.map((day, idx) => (
                     <DayCard
