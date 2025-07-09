@@ -117,9 +117,9 @@ export default function StatisticsPanel({ statistics }) {
             onPointerDown={onPointerDown}
             style={{ touchAction: "none" }}>
             <div className="flex gap-4 px-2 items-stretch">
-                {(doubledStats ?? Array.from({ length: loadingStatisticsCount })).map((stat, idx) => (
+                {(doubledStats ?? Array.from({ length: loadingStatisticsCount })).map((stat, index) => (
                     <div
-                        key={idx}
+                        key={index}
                         className="flex flex-col bg-white text-black px-6 py-3 rounded-xl min-w-[130px] text-center flex-shrink-0 shadow-md select-none border border-gray-200">
                         {doubledStats ? (
                             <>
@@ -129,8 +129,8 @@ export default function StatisticsPanel({ statistics }) {
                                 <div className="flex-grow flex items-center justify-center">
                                     {Array.isArray(stat?.value) ? (
                                         <ol className="list-decimal list-inside space-y-1 text-xs text-gray-700">
-                                            {stat.value.map((item, idx) => (
-                                                <li key={idx}>
+                                            {stat.value.map((item, index) => (
+                                                <li key={index}>
                                                     <span>{item.key}</span>{" "}
                                                     <span className="text-gray-400">
                                                         ({decapitalize(formatStatisticsUnit(stat?.unit, item?.value, configuration?.mainCurrency ?? ""))})

@@ -160,11 +160,11 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
         )
     }
 
-    const renderAbsence = (key, events, icon) => {
+    const renderAbsence = (events, icon) => {
         const Icon = icon
-        return events.map((event, idx) => (
+        return events.map(event => (
             <li
-                key={key + idx}
+                key={event.id}
                 className="relative group">
                 <div className="flex items-center space-x-1 text-white text-xs leading-tight">
                     <Icon className="w-4 h-4 mr-1 shrink-0" />
@@ -403,11 +403,11 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                         <tr key={weekIndex}>
                             {calendarDays
                                 .slice(weekIndex * 7, weekIndex * 7 + 7)
-                                .map((dayDate, i) => {
+                                .map((dayDate, index) => {
                                     if (!dayDate) {
                                         return (
                                             <td
-                                                key={i}
+                                                key={index}
                                                 className="border p-2 h-24" />
                                         )
                                     }
@@ -417,7 +417,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
 
                                     return (
                                         <td
-                                            key={i}
+                                            key={index}
                                             className={`border py-1 px-2 align-top relative cursor-pointer select-none h-32 ${bgColorClass} ${hoverClass}`}>
                                             <div className="relative group w-full">
                                                 <span className={`absolute top-0 right-0 text-xs font-semibold
@@ -442,8 +442,10 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                                                                         : formatDuration(daySummary.actualWorkingHours * 3600)}
                                                                 </span>
                                                             </div>
-                                                            {daySummary.positiveOvertime.map((event, idx) => (
-                                                                <div key={idx} className="relative group">
+                                                            {daySummary.positiveOvertime.map(event => (
+                                                                <div
+                                                                    key={event.id}
+                                                                    className="relative group">
                                                                     <div className="flex items-center space-x-1">
                                                                         <span
                                                                             className="text-2xs text-ellipsis truncate"
@@ -470,10 +472,10 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                                                 {daySummary && (
                                                     <ul className="space-y-1 mt-auto mb-1 m-0 p-0 list-none text-xs leading-tight">
                                                         {daySummary.flight && renderFlight(daySummary.flight)}
-                                                        {daySummary.negativeOvertime?.length > 0 && renderAbsence("negativeOvertime", daySummary.negativeOvertime, ClockPlus)}
-                                                        {daySummary.vacation?.length > 0 && renderAbsence("vacation", daySummary.vacation, Palmtree)}
-                                                        {daySummary.selfcare?.length > 0 && renderAbsence("selfcare", daySummary.selfcare, Pill)}
-                                                        {daySummary.tenure?.length > 0 && renderAbsence("tenure", daySummary.tenure, Shield)}
+                                                        {daySummary.negativeOvertime?.length > 0 && renderAbsence(daySummary.negativeOvertime, ClockPlus)}
+                                                        {daySummary.vacation?.length > 0 && renderAbsence(daySummary.vacation, Palmtree)}
+                                                        {daySummary.selfcare?.length > 0 && renderAbsence(daySummary.selfcare, Pill)}
+                                                        {daySummary.tenure?.length > 0 && renderAbsence(daySummary.tenure, Shield)}
                                                     </ul>
                                                 )}
                                             </div>

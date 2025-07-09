@@ -19,9 +19,9 @@ export default function NearbyPlaceTileGrid({ place, places, count }) {
 
     return (
         <TileGrid>
-            {nearbyPlaces?.map((nearbyPlace, index) => (
+            {nearbyPlaces?.map(nearbyPlace => (
                 <PlaceTile
-                    key={index}
+                    key={nearbyPlace.id}
                     place={nearbyPlace}
                     mainCategory={nearbyPlace?.getCategory("MOST_SPECIFIC_WITH_METADATA")}
                     secondLineText={formatKilometers(Math.round(nearbyPlace?.getHaversineDistanceTo(place)))} />

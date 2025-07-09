@@ -40,9 +40,9 @@ export default function TripCard({ trip, onTripRemoved }) {
             <div className="flex justify-start items-center">
                 {countryCategories && (
                     <div className="flex">
-                        {countryCategories.map((category, index) => (
+                        {countryCategories.map(category => (
                             <img
-                                key={index}
+                                key={category.id}
                                 className="w-7 object-cover mx-1 flex-shrink-0"
                                 src={`/img/flags/${category.metadata?.unicode}.svg`}
                                 alt={category.name} />

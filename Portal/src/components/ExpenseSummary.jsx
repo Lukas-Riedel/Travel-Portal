@@ -113,15 +113,15 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
         )), [expenses, configuration, totalCost, isAdmin])
 
     const loadingRows = Array.from({ length: loadingRowsCount })
-        .map((_, idx) => (
-            <LoadingExpenseRow key={idx} />
+        .map((_, index) => (
+            <LoadingExpenseRow key={index} />
         ))
 
     const expenseCandidateRows = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
         expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), {}]
-        .map((expenseCandidate, idx) => (
+        .map((expenseCandidate, index) => (
             <ExpenseCandidateRow
-                key={idx}
+                key={index}
                 lastAddedExpense={expenses?.at(-1)}
                 expenseCandidate={expenseCandidate}
                 onExpenseCreated={onExpenseCreated} />

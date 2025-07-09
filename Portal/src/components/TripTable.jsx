@@ -186,8 +186,8 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                             )}
                         </tr>
                     )) : Array.from({ length: loadingRowsCount })
-                        .map((_, idx) => (
-                            <tr key={idx}>
+                        .map((_, index) => (
+                            <tr key={index}>
                                 <td
                                     className="p-3"
                                     colSpan={4}>

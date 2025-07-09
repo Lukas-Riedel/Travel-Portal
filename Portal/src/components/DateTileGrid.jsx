@@ -4,9 +4,9 @@ import TileGrid from "./TileGrid"
 export default function DateTileGrid({ place, onAlbumRefreshed }) {
     return (!place?.dates || place.dates.length > 0) && (
         <TileGrid>
-            {(place?.dates && [...place.dates])?.reverse()?.filter(date => date?.album)?.map((date, index) => (
+            {(place?.dates && [...place.dates])?.reverse()?.filter(date => date?.album)?.map(date => (
                 <DateTile
-                    key={index}
+                    key={date.start}
                     place={place}
                     date={date}
                     onAlbumRefreshed={onAlbumRefreshed} />

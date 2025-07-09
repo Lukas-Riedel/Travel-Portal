@@ -6,17 +6,17 @@ export default function CategoryCardGrid({ categories, categoriesPlaces, onCurre
     return (
         <div className="relative w-full my-4">
             <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-4 text-sm w-full">
-                {categories?.map((category, idx) => (
+                {categories?.map(category => (
                     <CategoryCard
-                        key={idx}
+                        key={category.id}
                         category={category}
                         places={categoriesPlaces && (categoriesPlaces[category.name] || [])}
                         onCurrentLocationChanged={onCurrentLocationChanged}
                         onMaximumDistanceChanged={onMaximumDistanceChanged}
                         onPlaceRemoved={onPlaceRemoved} />
                 )) ?? (
-                        Array.from({ length: loadingCategoriesCount }).map((_, idx) => (
-                            <CategoryCard key={idx} />
+                        Array.from({ length: loadingCategoriesCount }).map((_, index) => (
+                            <CategoryCard key={index} />
                         ))
                     )}
             </div>

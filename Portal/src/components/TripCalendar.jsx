@@ -22,19 +22,19 @@ export default function TripCalendar({ trip, places, onPhotosAdded }) {
     return (
         <div className="relative w-full my-4">
             <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-4 text-sm w-full">
-                {days?.map((day, idx) => (
+                {days?.map((day, index) => (
                     <DayCard
-                        key={idx}
+                        key={index}
                         day={day}
                         events={trip.getEvents(day, places, timezone)}
                         stay={trip.getStay(day)}
-                        fitness={trip.fitness[idx]}
+                        fitness={trip.fitness[index]}
                         publicHoliday={trip.getPublicHoliday(day)}
                         timezone={timezone}
                         onPhotosAdded={onPhotosAdded} />
                 )) ?? (
-                        Array.from({ length: loadingDaysCount }).map((_, idx) => (
-                            <DayCard key={idx} />
+                        Array.from({ length: loadingDaysCount }).map((_, index) => (
+                            <DayCard key={index} />
                         ))
                     )}
             </div>

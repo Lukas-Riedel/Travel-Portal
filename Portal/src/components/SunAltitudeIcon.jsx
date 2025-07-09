@@ -15,8 +15,8 @@ export default function SunAltitudeIcon({ altitude, place }) {
         const today = new Date()
         const sunTimes = SunCalc.getTimes(today, place?.latitude, place?.longitude)
 
-        const sampled = Array.from({ length: 24 * 60 }, (_, idx) => {
-            const time = new Date(+(isNaN(sunTimes.sunrise) ? new Date().setHours(0, 0, 0, 0) : sunTimes.sunrise) + idx * 2 * 60 * 1000)
+        const sampled = Array.from({ length: 24 * 60 }, (_, index) => {
+            const time = new Date(+(isNaN(sunTimes.sunrise) ? new Date().setHours(0, 0, 0, 0) : sunTimes.sunrise) + index * 2 * 60 * 1000)
             const altitude = (SunCalc.getPosition(time, place?.latitude, place?.longitude).altitude * 180) / Math.PI
             return { time, altitude }
         })

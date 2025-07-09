@@ -37,9 +37,9 @@ export default function YearsPage() {
             {(isAdmin || upcomingOrCurrentTrip?.isCurrent()) && (
                 <TripSummary tripId={upcomingOrCurrentTrip?.id} />
             )}
-            {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [new Date().getFullYear()]).map((year, index) => (
+            {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [new Date().getFullYear()]).map(year => (
                 <YearTripTileGrid
-                    key={index}
+                    key={year}
                     year={year}
                     trips={trips} />
             ))}

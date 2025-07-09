@@ -66,9 +66,9 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     </div>
                 </div>
             )) : (Array.from({ length: loadingNotesCount })
-                .map((_, idx) => (
+                .map((_, index) => (
                     <div
-                        key={idx}
+                        key={index}
                         className="flex flex-col items-center justify-center relative bg-white rounded-xl shadow-md p-4 transition-shadow min-h-[100px]">
                         <TailSpin
                             color="black"

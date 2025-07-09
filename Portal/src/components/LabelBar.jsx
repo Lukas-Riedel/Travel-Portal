@@ -40,9 +40,9 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {labels ? (
                 <>
-                    {labels.filter(label => isAdmin || !configuration?.labels?.private?.includes(label.name)).map((label, index) => (
+                    {labels.filter(label => isAdmin || !configuration?.labels?.private?.includes(label.name)).map(label => (
                         <div
-                            key={index}
+                            key={label.name}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center">
                             <Link
                                 to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/label/${label?.name}`}
@@ -50,7 +50,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                                     "text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full",
                                     isAdmin ? "lg:pr-5" : "lg:pr-0"
                                 )}>
-                                {label?.name}
+                                {label.name}
                             </Link>
                             {onLabelRemoved && isAdmin && (
                                 <button
@@ -78,9 +78,9 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                         </div>
                     ))}
                 </>
-            ) : Array.from({ length: loadingLabelsCount }).map((_, idx) => (
+            ) : Array.from({ length: loadingLabelsCount }).map((_, index) => (
                 <div
-                    key={idx}
+                    key={index}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
                     <div className="mx-4 min-w-[36px] min-h-[24px] flex items-center justify-center">
                         <TailSpin

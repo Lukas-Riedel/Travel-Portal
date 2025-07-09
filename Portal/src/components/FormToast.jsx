@@ -8,7 +8,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                 const inputRefs = useRef([])
 
                 const handleSubmit = async () => {
-                    if (fields.filter(Boolean).some((field, idx) => field.required && !inputRefs.current[idx]?.value)) {
+                    if (fields.filter(Boolean).some((field, index) => field.required && !inputRefs.current[index]?.value)) {
                         return
                     }
 
@@ -16,7 +16,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                     const loadingId = toast.loading("Probíhá zpracování...")
 
                     try {
-                        await onSubmitted(...fields.map((_, idx) => inputRefs.current[idx]?.value?.trim() || undefined))
+                        await onSubmitted(...fields.map((_, index) => inputRefs.current[index]?.value?.trim() || undefined))
                         toast.dismiss(loadingId)
                         toast.success(success)
                     }
@@ -35,8 +35,8 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                     {title}
                                 </div>
                             )}
-                            {fields.filter(Boolean).map((field, idx) => (
-                                <div key={idx}>
+                            {fields.filter(Boolean).map((field, index) => (
+                                <div key={index}>
                                     {field.label && (
                                         <label
                                             className="block mb-1 text-gray-600 text-sm">
@@ -45,13 +45,13 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                     )}
                                     {field.type === "select" ? (
                                         <select
-                                            ref={element => (inputRefs.current[idx] = element)}
+                                            ref={element => (inputRefs.current[index] = element)}
                                             className="border rounded px-2 py-1 w-full text-sm"
                                             defaultValue={field.value ?? ""}
                                             disabled={field.disabled}>
-                                            {field.options?.map((option, idx) => (
+                                            {field.options?.map((option, index) => (
                                                 <option
-                                                    key={idx}
+                                                    key={index}
                                                     value={option.id}>
                                                     {option.name}
                                                 </option>
@@ -59,14 +59,14 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                         </select>
                                     ) : (
                                         <input
-                                            ref={element => (inputRefs.current[idx] = element)}
+                                            ref={element => (inputRefs.current[index] = element)}
                                             type={field.type || "text"}
                                             min={field.min}
                                             max={field.max}
                                             defaultValue={field.value}
                                             disabled={field.disabled}
                                             className="border rounded px-2 py-1 w-full text-sm"
-                                            autoFocus={idx === 0} />
+                                            autoFocus={index === 0} />
                                     )}
                                 </div>
                             ))}

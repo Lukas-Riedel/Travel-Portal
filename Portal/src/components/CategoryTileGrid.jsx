@@ -4,9 +4,9 @@ import CategoryTile from "./CategoryTile.jsx"
 export default function CategoryTileGrid({ categories }) {
     return (!categories || categories.length > 0) && (
         <TileGrid>
-            {categories?.map((category, index) => (
+            {categories?.map(category => (
                 <CategoryTile
-                    key={index}
+                    key={category.id}
                     category={category} />
             ))}
         </TileGrid>

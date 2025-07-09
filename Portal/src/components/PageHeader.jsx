@@ -121,9 +121,9 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                 </h1>
             </div>
             <div className="flex">
-                {categories?.map((category, index) => (
+                {categories?.map(category => (
                     <img
-                        key={index}
+                        key={category.id}
                         className="w-14 object-cover mx-2 flex-shrink-0"
                         src={`/img/flags/${category?.metadata?.unicode}.svg`}
                         alt={category?.name}
@@ -147,9 +147,9 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                 </h1>
             </div>
             <div className="flex flex-wrap justify-center gap-3">
-                {categories?.map((category, index) => (
+                {categories?.map(category => (
                     <img
-                        key={index}
+                        key={category.id}
                         src={`/img/flags/${category?.metadata?.unicode}.svg`}
                         alt={category?.name}
                         className="w-10 h-auto flex-shrink-0" />

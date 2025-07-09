@@ -52,9 +52,9 @@ export default function TripSummary({ tripId }) {
             <div className="flex flex-col items-center justify-center text-center">
                 {countryCategories && (
                     <div className="flex">
-                        {countryCategories.map((category, index) => (
+                        {countryCategories.map(category => (
                             <img
-                                key={index}
+                                key={category.id}
                                 className="w-7 object-cover mx-1.5 flex-shrink-0"
                                 src={`/img/flags/${category.metadata?.unicode}.svg`}
                                 alt={category.name} />
@@ -69,9 +69,9 @@ export default function TripSummary({ tripId }) {
                     {getDateRangeString(trip.start, trip.end)}
                 </div>
             </div>
-            {days?.map((day, idx) => (
+            {days?.map((day, index) => (
                 <DayCard
-                    key={idx}
+                    key={index}
                     day={day}
                     events={trip?.getEvents(day, tripPlaces, timezone)}
                     stay={trip?.getStay(day)}

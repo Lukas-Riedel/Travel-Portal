@@ -4,9 +4,9 @@ import TripTile from "./TripTile.jsx"
 export default function TripTileGrid({ trips }) {
     return (
         <TileGrid>
-            {trips?.filter(trip => trip?.mainHighlight)?.map((trip, index) => (
+            {trips?.filter(trip => trip?.mainHighlight)?.map(trip => (
                 <TripTile
-                    key={index}
+                    key={trip.id}
                     trip={trip} />
             ))}
         </TileGrid>
