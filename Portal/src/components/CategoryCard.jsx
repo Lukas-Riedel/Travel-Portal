@@ -9,7 +9,7 @@ import showConfirmToast from "./ConfirmToast"
 
 const maximumPlacesCount = 5
 
-export default function CandidateCategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onCandidatePlaceRemoved }) {
+export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }) {
     const { isAdmin } = useAuth()
 
     const visiblePlaces = useMemo(() => [...(places ?? [])]?.sort((a, b) => a.distance - b.distance)?.slice(0, maximumPlacesCount), [places])
@@ -20,7 +20,7 @@ export default function CandidateCategoryCard({ category, places, onCurrentLocat
             "Opravdu chceš odstranit místo '" + place.name + "'?",
             "Místo bylo úspěšně odstraněno",
             "Nepodařilo se odstranit místo",
-            async () => onCandidatePlaceRemoved(place.id)
+            async () => onPlaceRemoved(place.id)
         )
     }
 
@@ -57,7 +57,7 @@ export default function CandidateCategoryCard({ category, places, onCurrentLocat
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
                                 {getPrettyName(place.name)}
                             </Link>
-                            {isAdmin && onCandidatePlaceRemoved && (
+                            {isAdmin && onPlaceRemoved && (
                                 <button
                                     onClick={() => handleDelete(place)}
                                     className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">

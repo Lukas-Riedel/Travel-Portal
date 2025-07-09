@@ -4,7 +4,7 @@ import PageHeader from "../components/PageHeader"
 import { useMemo } from "react"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import PlaceMap from "../components/PlaceMap"
-import CandidatePlaceCardGrid from "../components/CandidatePlaceCardGrid"
+import PlaceCardGrid from "../components/PlaceCardGrid"
 
 export default function CandidateCategoryPage() {
     const { categoryId } = useParams()
@@ -26,9 +26,9 @@ export default function CandidateCategoryPage() {
                     places={candidatePlaces}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
-            <CandidatePlaceCardGrid
+            <PlaceCardGrid
                 places={candidatePlaces}
-                onCandidatePlaceRemoved={removeCandidatePlace} />
+                onPlaceRemoved={removeCandidatePlace} />
         </>
     )
 }

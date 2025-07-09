@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 import PageHeader from "../components/PageHeader"
 import PlaceMap from "../components/PlaceMap"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
-import CandidatePlaceCardGrid from "../components/CandidatePlaceCardGrid"
+import PlaceCardGrid from "../components/PlaceCardGrid"
 
 export default function LabelPage() {
     const { labelName } = useParams()
@@ -24,9 +24,9 @@ export default function LabelPage() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
-            <CandidatePlaceCardGrid
+            <PlaceCardGrid
                 places={candidatePlaces}
-                onCandidatePlaceRemoved={removeCandidatePlace} />
+                onPlaceRemoved={removeCandidatePlace} />
         </>
     )
 }

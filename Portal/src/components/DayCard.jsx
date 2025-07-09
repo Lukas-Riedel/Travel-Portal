@@ -169,7 +169,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                         )}
                                     </div>
                                     <Link
-                                        to={`/place/${event.id}`}
+                                        to={`${(window.location.pathname.startsWith("/plan") ? "/plan" : "")}/place/${event.id}`}
                                         className="text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
                                         {getPrettyName(event.name)}
                                     </Link>

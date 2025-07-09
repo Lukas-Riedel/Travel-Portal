@@ -2,13 +2,19 @@ import { useMemo, useState } from "react"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { useCategories } from "../hooks/useCategories"
 import PlaceMap from "../components/PlaceMap"
-import CandidateCategoryCardGrid from "../components/CandidateCategoryCardGrid"
+import CategoryCardGrid from "../components/CategoryCardGrid"
+import TripCardGrid from "../components/TripCardGrid"
 import AddPlaceCandidateFloatingButton from "../components/AddPlaceCandidateFloatingButton"
 import Slider from "../components/Slider"
 import { formatKilometers } from "../utils/formatters"
+import { useCandidateTrips } from "../hooks/useCandidateTrips"
+import { useAuth } from "../contexts/AuthContext"
 
 export default function PlansPage() {
+    const { isAdmin } = useAuth()
+
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: "CATEGORIES" })
+    const { candidateTrips, removeCandidateTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: "COUNTRY" })
 
     const [maxDistance, setMaxDistance] = useState(250)
@@ -44,12 +50,17 @@ export default function PlansPage() {
                     maxValue={furthestPlace.distance}
                     onValueChanged={setMaxDistance} />
             )}
-            <CandidateCategoryCardGrid
+            <CategoryCardGrid
                 categories={countryCategories}
                 categoriesPlaces={countriesPlaces}
                 onCurrentLocationChanged={changeCurrentLocation}
                 onMaximumDistanceChanged={setMaxDistance}
-                onCandidatePlaceRemoved={removeCandidatePlace} />
+                onPlaceRemoved={removeCandidatePlace} />
+            {isAdmin && (
+                <TripCardGrid
+                    trips={candidateTrips}
+                    onTripRemoved={removeCandidateTrip} />
+            )}
             <AddPlaceCandidateFloatingButton onCandidatePlaceCreated={createCandidatePlace} />
         </>
     )

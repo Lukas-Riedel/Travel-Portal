@@ -24,7 +24,7 @@ export default function TripPage() {
     const { trip, removeTrip, moveTrip, loadTrip, updateTripName, removeTripHighlight, updateTripMainHighlight,
         createTripExpense, updateTripExpenseDescription, updateTripExpenseValue,
         removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes } = useTrip(tripId)
-    const candidateTrips = useCandidateTrips()
+    const { candidateTrips } = useCandidateTrips()
     const regularPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES", sort: "score" })
     const { candidatePlaces } = useCandidatePlaces({ tripId, include: "CATEGORIES,DATES", sort: "score" })
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : regularPlaces, [trip, regularPlaces, candidatePlaces])

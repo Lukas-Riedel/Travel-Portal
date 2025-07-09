@@ -56,8 +56,8 @@ export default function TripSummary({ tripId }) {
                             <img
                                 key={index}
                                 className="w-7 object-cover mx-1.5 flex-shrink-0"
-                                src={`/img/flags/${category?.metadata?.unicode}.svg`}
-                                alt={category?.name} />
+                                src={`/img/flags/${category.metadata?.unicode}.svg`}
+                                alt={category.name} />
                         ))}
                     </div>)}
                 <Link

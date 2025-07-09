@@ -12,6 +12,11 @@ export const useCandidateTrips = ({ include } = {}) => {
         queryFn: () => api.listCandidateTrips({ include }),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
+    
+    const refetchCandidateTrips = _ => query.refetch()
 
-    return query.data && query.data.map(trip => new Trip(trip))
+    return {
+        candidateTrips: query.data && query.data.map(trip => new Trip(trip)),
+        removeCandidateTrip: tripId => api.removeTrip(tripId).then(refetchCandidateTrips)
+    }
 }

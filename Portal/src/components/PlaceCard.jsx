@@ -7,7 +7,7 @@ import showConfirmToast from "./ConfirmToast"
 import { useAuth } from "../contexts/AuthContext"
 import { formatKilometers } from "../utils/formatters"
 
-export default function CandidatePlaceCard({ place, onCandidatePlaceRemoved }) {
+export default function PlaceCard({ place, onPlaceRemoved }) {
     const { isAdmin } = useAuth()
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("COUNTRY"), [place])
@@ -17,7 +17,7 @@ export default function CandidatePlaceCard({ place, onCandidatePlaceRemoved }) {
             "Opravdu chceš odstranit místo '" + place.name + "'?",
             "Místo bylo úspěšně odstraněno",
             "Nepodařilo se odstranit místo",
-            async () => onCandidatePlaceRemoved(place.id)
+            async () => onPlaceRemoved(place.id)
         )
     }
 
@@ -34,7 +34,7 @@ export default function CandidatePlaceCard({ place, onCandidatePlaceRemoved }) {
                     className="ml-2 hover:underline text-lg font-semibold truncate">
                     {getPrettyName(place.name)}
                 </Link>
-                {isAdmin && onCandidatePlaceRemoved && (
+                {isAdmin && onPlaceRemoved && (
                     <button
                         onClick={() => handleDelete(place)}
                         className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
