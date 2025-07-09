@@ -53,7 +53,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
             {notes ? notes.map(note => (
                 <div
                     key={note.id}
-                    className="relative bg-white rounded-xl shadow-md p-4 transition-shadow min-h-[100px] flex flex-col justify-between">
+                    className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col justify-between">
                     <div
                         className="prose prose-sm max-w-none text-gray-800 mb-6"
                         dangerouslySetInnerHTML={{ __html: note.content }} />
@@ -69,7 +69,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                 .map((_, index) => (
                     <div
                         key={index}
-                        className="flex flex-col items-center justify-center relative bg-white rounded-xl shadow-md p-4 transition-shadow min-h-[100px]">
+                        className="flex flex-col items-center justify-center relative bg-white rounded-xl shadow-md p-4 min-h-[100px]">
                         <TailSpin
                             color="black"
                             height={48}

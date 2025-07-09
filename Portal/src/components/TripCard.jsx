@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
-import { Calendar, Earth, MapPin, Trash2 } from "lucide-react"
+import { Calendar, Trash2 } from "lucide-react"
 import { TailSpin } from "react-loader-spinner"
 import showConfirmToast from "./ConfirmToast"
 import { useAuth } from "../contexts/AuthContext"
@@ -36,7 +36,7 @@ export default function TripCard({ trip, onTripRemoved }) {
     }
 
     return trip && tripPlaces ? (
-        <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full hover:shadow-lg transition-shadow duration-200 space-y-1">
+        <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full space-y-1">
             <div className="flex justify-start items-center">
                 {countryCategories && (
                     <div className="flex">

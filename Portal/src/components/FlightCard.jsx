@@ -38,7 +38,7 @@ export default function FlightCard({ flight }) {
     )
 
     return flight ? (
-        <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full hover:shadow-lg transition-shadow duration-200">
+        <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex flex-col space-y-1 text-gray-800 font-semibold">
                     <span className="text-sm text-gray-600">
