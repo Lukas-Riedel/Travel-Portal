@@ -16,6 +16,7 @@
     "require": {
         "phayes/geophp": "dev-master",
         "johngrogg/ics-parser": "^3.4",
-        "auroras-live/suncalc-php": "*@dev"
+        "auroras-live/suncalc-php": "*@dev",
+        "google/auth": "^1.47"
     }
 }

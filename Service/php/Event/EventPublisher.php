@@ -195,6 +195,11 @@
         public function publishPlaceEventDeletedEvent($placeId) : void {
             $this->publishEvent(Event::PlaceEventDeleted, array("placeId" => $placeId));
         }
+        
+        public function publishFirstPhotoUploadedEvent($albumId) : void {
+            global $pushNotificationClient;
+            $pushNotificationClient->publishEvent(Event::FirstPhotoUploaded, array("albumId" => $albumId));
+        }
 
         public function publishEvent($event, $args) : void {
             global $databaseProvider;
@@ -274,6 +279,8 @@
 
         case PhotosUploading = 200;
         case PhotoReplacing = 201;
+
+        case FirstPhotoUploaded = 300;
 
         public static function fromName($name) : ?Event {
             foreach (Event::cases() as $case) {

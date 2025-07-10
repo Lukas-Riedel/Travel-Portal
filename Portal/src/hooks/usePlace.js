@@ -13,7 +13,10 @@ export const usePlace = (placeId) => {
         queryKey: ["getPlace", placeId],
         queryFn: () => api.getPlace(placeId),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
+        refetchInterval: query => isAdmin && query.state.data?.dates?.some(date => date.album?.uploadingStart && date.album?.uploadingProgress) && 2000
     })
+
+    query.data?.dates?.some(date => date.album?.uploadingStart && date.album?.uploadingProgress)
 
     const setPlace = place => queryClient.setQueryData(["getPlace", placeId], place)
     const refetchPlace = _ => query.refetch()
@@ -24,7 +27,7 @@ export const usePlace = (placeId) => {
         updatePlaceAddress: address => api.getCoordinates(address).then(coordinates => api.updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace),
         removePlaceHighlight: highlightId => api.removePlaceHighlight(placeId, highlightId).then(refetchPlace),
         updatePlaceMainHighlight: highlightId => api.updatePlaceMainHighlight(placeId, highlightId).then(setPlace),
-        updatePlaceHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) => 
+        updatePlaceHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>
             api.updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchPlace),
         createPlaceLabel: name => api.createPlaceLabel(placeId, name).then(refetchPlace),
         removePlaceLabel: labelId => api.removePlaceLabel(placeId, labelId).then(refetchPlace),

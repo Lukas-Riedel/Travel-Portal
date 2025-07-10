@@ -133,6 +133,11 @@
 
             $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, NULL, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
+
+            if ($batchPosition === 1) {
+                $this->eventPublisher->publishFirstPhotoUploadedEvent($albumId);
+            }
+
             return $pendingPhoto;
         }
 
