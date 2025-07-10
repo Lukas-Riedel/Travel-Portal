@@ -40,8 +40,8 @@ public final class ServiceClient {
                 httpEntityProvider.getHttpEntity(photoPrototype), Void.class));
     }
 
-    public void uploadPhoto(long placeId, long albumId, String fileName, int position, byte[] data) {
-        PhotoPrototype photoPrototype = new PhotoPrototype(fileName, position, Base64.getEncoder().encodeToString(data));
+    public void uploadPhoto(long placeId, long albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition, byte[] data) {
+        PhotoPrototype photoPrototype = new PhotoPrototype(fileName, batchId, expectedBatchSize, batchPosition, Base64.getEncoder().encodeToString(data));
         retryTemplate.execute(context -> restTemplate.postForObject(
                 "/places/" + placeId + "/albums/" + albumId + "/photos",
                 httpEntityProvider.getHttpEntity(photoPrototype), Void.class));

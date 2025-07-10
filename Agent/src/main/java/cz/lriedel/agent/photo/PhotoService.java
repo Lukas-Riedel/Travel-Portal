@@ -72,6 +72,9 @@ public final class PhotoService {
             Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime))
                     .collect(Collectors.toCollection(LinkedList::new));
 
+            int expectedBatchSize = queue.size();
+            String batchId = UUID.randomUUID().toString();
+
             int currentParallelRequestsCount = 1;
             int position = 1;
 
@@ -81,7 +84,7 @@ public final class PhotoService {
                     final Path submittedPath = queue.remove();
                     final int submittedPosition = position++;
 
-                    futures.add(executorService.submit(() -> uploadPhoto(placeId, albumId, submittedPosition, submittedPath)));
+                    futures.add(executorService.submit(() -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath)));
                 }
 
                 double sum = 0;
@@ -100,9 +103,9 @@ public final class PhotoService {
     }
 
     @SneakyThrows
-    private double uploadPhoto(long placeId, long albumId, int position, Path path) {
+    private double uploadPhoto(long placeId, long albumId, String batchId, int expectedBatchSize, int batchPosition, Path path) {
         long start = System.currentTimeMillis();
-        serviceClient.uploadPhoto(placeId, albumId, getPhotoName(path), position, photoFetcher.fetch(path));
+        serviceClient.uploadPhoto(placeId, albumId, getPhotoName(path), batchId, expectedBatchSize, batchPosition, photoFetcher.fetch(path));
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;
         double fileSize = FileChannel.open(path).size() / (1024.0 * 1024.0);
         return 8 * fileSize / uploadDuration;

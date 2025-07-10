@@ -62,9 +62,9 @@
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
-                    AND position IS NOT NULL
+                    AND replaced_photo_id IS NULL
                     AND expiration > UNIX_TIMESTAMP()
-                ORDER BY position
+                ORDER BY batch_position
                 LIMIT 50
             SQL;
             
@@ -73,7 +73,8 @@
                 ->withParameters($albumId)
                 ->getMappedResultSet(function($photoRow) {
                     return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
-                        $photoRow["position"], $photoRow["replaced_photo_id"], $photoRow["upload_token"]);
+                        $photoRow["batch_id"], $photoRow["expected_batch_size"], $photoRow["batch_position"],
+                        $photoRow["replaced_photo_id"], $photoRow["upload_token"]);
                 });
         }
 
@@ -91,7 +92,8 @@
                 ->withParameters($albumId)
                 ->getMappedResultSet(function($photoRow) {
                     return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
-                        $photoRow["position"], $photoRow["replaced_photo_id"], $photoRow["upload_token"]);
+                        $photoRow["batch_id"], $photoRow["expected_batch_size"], $photoRow["batch_position"],
+                        $photoRow["replaced_photo_id"], $photoRow["upload_token"]);
                 });
         }
 
@@ -228,9 +230,12 @@
                 INSERT INTO photo_pending (
                     album_id,
                     file_name,
-                    position,
+                    batch_id,
+                    expected_batch_size,
+                    batch_position,
                     replaced_photo_id,
                     upload_token,
+                    created,
                     expiration
                 )
                 VALUES (
@@ -239,14 +244,18 @@
                     ?,
                     ?,
                     ?,
+                    ?,
+                    ?,
+                    UNIX_TIMESTAMP(),
                     UNIX_TIMESTAMP() + ?
                 )
             SQL;
 
             $wasInserted = $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($pendingPhoto->getAlbumId(), $pendingPhoto->getFileName(), $pendingPhoto->getPosition(),
-                    $pendingPhoto->getReplacedPhotoId(), $pendingPhoto->getUploadToken(), $expirationInterval)
+                ->withParameters($pendingPhoto->getAlbumId(), $pendingPhoto->getFileName(), $pendingPhoto->getBatchId(),
+                    $pendingPhoto->getExpectedBatchSize(), $pendingPhoto->getBatchPosition(),  $pendingPhoto->getReplacedPhotoId(),
+                    $pendingPhoto->getUploadToken(), $expirationInterval)
                 ->execute() === 1;
 
             if ($wasInserted) {

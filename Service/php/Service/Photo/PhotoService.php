@@ -128,14 +128,18 @@
             return $wasUpdated;
         }
 
-        public function uploadPhoto(string $fileName, string $albumId, ?int $position, ?string $replacedPhotoId, string $data) : PendingPhoto {
-            if ($position === NULL && $replacedPhotoId === NULL) {
-                throw new \InvalidArgumentException("Either the photo position or the identifier of the photo being replaced must be specified.");
-            }
-        
+        public function uploadPhoto(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : PendingPhoto {
             $uploadToken = $this->googleApiClient->uploadPhoto($data);
 
-            $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $position, $replacedPhotoId, $uploadToken);
+            $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, NULL, $uploadToken);
+            $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
+            return $pendingPhoto;
+        }
+
+        public function replacePhoto(string $fileName, string $albumId, string $replacedPhotoId, string $data) : PendingPhoto {        
+            $uploadToken = $this->googleApiClient->uploadPhoto($data);
+
+            $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             return $pendingPhoto;
         }

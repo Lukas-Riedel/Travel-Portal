@@ -5,16 +5,20 @@
         private ?string $id;
         private readonly string $albumId;
         private readonly string $fileName;
-        private readonly ?int $position;
+        private readonly string $batchId;
+        private readonly int $expectedBatchSize;
+        private readonly int $batchPosition;
         private readonly ?string $replacedPhotoId;
         private readonly string $uploadToken;
 
-        public function __construct(?string $id, string $albumId, string $fileName, ?int $position,
-            ?string $replacedPhotoId, string $uploadToken) {
+        public function __construct(?string $id, string $albumId, string $fileName, string $batchId,
+            int $expectedBatchSize, int $batchPosition, ?string $replacedPhotoId, string $uploadToken) {
             $this->id = $id;
             $this->albumId = $albumId;
             $this->fileName = $fileName;
-            $this->position = $position;
+            $this->batchId = $batchId;
+            $this->expectedBatchSize = $expectedBatchSize;
+            $this->batchPosition = $batchPosition;
             $this->replacedPhotoId = $replacedPhotoId;
             $this->uploadToken = $uploadToken;
         }
@@ -35,8 +39,16 @@
             return $this->fileName;
         }
 
-        public function getPosition() : ?int {
-            return $this->position;
+        public function getBatchId() : string {
+            return $this->batchId;
+        }
+
+        public function getExpectedBatchSize() : int {
+            return $this->expectedBatchSize;
+        }
+
+        public function getBatchPosition() : int {
+            return $this->batchPosition;
         }
 
         public function getReplacedPhotoId() : ?string {

@@ -17,8 +17,13 @@
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
-            $response = $photoService->uploadPhoto($input["name"], $input["albumId"], isset($input["position"]) ? $input["position"] : NULL, 
-                isset($input["replacedPhotoId"]) ? $input["replacedPhotoId"] : NULL, $input["data"]);
+            if (isset($input["replacedPhotoId"])) {
+                $response = $photoService->replacePhoto($input["fileName"], $input["albumId"], $input["replacedPhotoId"], $input["data"]);
+            }
+            else {
+                $response = $photoService->uploadPhoto($input["fileName"], $input["albumId"], $input["batchId"], $input["expectedBatchSize"], $input["batchPosition"], $input["data"]);
+            }
+
             return $this->createResponse(204, $response);
         }
 
@@ -58,8 +63,8 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Create photo", '{"name":"77589a7e-a4d6-4931-9f42-ac809bdd27a7.jpg", "position": 1, "data":"base64"}'),
-                $this->createRequestExample("Replace photo", '{"name":"77589a7e-a4d6-4931-9f42-ac809bdd27a7.jpg", "replacedPhotoId": 56743, "data":"base64"}'));
+                $this->createRequestExample("Create photo", '{"fileName":"77589a7e-a4d6-4931-9f42-ac809bdd27a7.jpg", "batchId":"eed9d273-1caa-4262-a3ea-a6e907355f7c", "expectedBatchSize": 50, "batchPosition": 1, "data":"base64"}'),
+                $this->createRequestExample("Replace photo", '{"fileName":"77589a7e-a4d6-4931-9f42-ac809bdd27a7.jpg", "replacedPhotoId": 56743, "data":"base64"}'));
         }
 
         public function getResponseExamples() {
