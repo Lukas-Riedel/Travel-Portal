@@ -11,7 +11,6 @@ public record PhotosUploadingEventArgs(long placeId, @Nullable Long timestamp, @
     public PhotosUploadingEventArgs {
         Validate.isTrue(placeId > 0, "Invalid place identifier.");
         Validate.isTrue(timestamp != null || albumId != null, "Either timestamp or album identifier must be set.");
-        Validate.isTrue(timestamp == null || albumId == null, "Either timestamp or album identifier must be set, but not both.");
         Validate.isTrue(mainPhotoPosition == null || mainPhotoPosition > 0, "The main photo position must be either a positive number, or not set.");
         Objects.requireNonNull(path, "The path must be set.");
         Validate.isTrue(path.toFile().exists(), "The directory does not exist.");
