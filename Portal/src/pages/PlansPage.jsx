@@ -4,11 +4,13 @@ import { useCategories } from "../hooks/useCategories"
 import PlaceMap from "../components/PlaceMap"
 import CategoryCardGrid from "../components/CategoryCardGrid"
 import TripCardGrid from "../components/TripCardGrid"
-import AddPlaceCandidateFloatingButton from "../components/AddPlaceCandidateFloatingButton"
 import Slider from "../components/Slider"
 import { formatKilometers } from "../utils/formatters"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useAuth } from "../contexts/AuthContext"
+import showFormToast from "../components/FormToast"
+import FloatingButton from "../components/FloatingButton"
+import { Plus } from "lucide-react"
 
 export default function PlansPage() {
     const { isAdmin } = useAuth()
@@ -33,6 +35,20 @@ export default function PlansPage() {
         acc[place.country].push(place)
         return acc
     }, {}), [filteredPlaces])
+
+
+    const handleCandidatePlaceCreated = () => {
+        showFormToast(
+            "Zadej údaje o místě k přidání:",
+            [
+                { label: "Jméno", required: true },
+                { label: "Adresa", required: true }
+            ],
+            "Místo bylo úspěšně přidáno",
+            "Při přidávání místa došlo k chybě",
+            async (name, address) => createCandidatePlace(name, address)
+        )
+    }
 
     return (
         <>
@@ -61,7 +77,11 @@ export default function PlansPage() {
                     trips={candidateTrips}
                     onTripRemoved={removeCandidateTrip} />
             )}
-            <AddPlaceCandidateFloatingButton onCandidatePlaceCreated={createCandidatePlace} />
+            {isAdmin && (
+                <FloatingButton
+                    icon={Plus}
+                    onClick={handleCandidatePlaceCreated} />
+            )}
         </>
     )
 }
