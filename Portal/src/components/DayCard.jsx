@@ -2,10 +2,10 @@ import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
 import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, Images, Plus, ImagePlus, Plane } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 import Tooltip from "./Tooltip"
 import showFormToast from "./FormToast"
@@ -82,6 +82,23 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             "Nahrávání fotek začalo",
             "Při nahrávání fotek došlo k chybě",
             async (path, mainPhotoPosition) => onPhotosAdded(placeId, albumId, timestamp, path, mainPhotoPosition)
+        )
+    }
+
+    function RemainingUploadTime({ album }) {
+        const [remainingUploadTime, setRemainingUploadTime] = useState(() => ((new Date().getTime() / 1000) - album.uploadingStart) * 100 / album.uploadingProgress)
+
+        useEffect(() => {
+            const interval = setInterval(() => {
+                setRemainingUploadTime(t => t - 1)
+            }, 1000)
+            return () => clearInterval(interval)
+        }, [])
+
+        return (
+            <span>
+                Zbývá {formatDuration(remainingUploadTime, true)}
+            </span>
         )
     }
 
@@ -227,6 +244,26 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                             {`Poslední aktualizace v ${format(fromUnixTime(event.weather.lastUpdate), "HH:mm")}`}
                                         </Tooltip>
                                     )}
+                                </div>
+                            )
+                        })()}
+                        {isAdmin && event.album?.uploadingStart && event.album?.uploadingProgress && (() => {
+                            return (
+                                <div className="relative group inline-block">
+                                    {renderDescriptionRow("text-yellow-500", [
+                                        (
+                                            <>
+                                                <div className="flex items-center space-x-1">
+                                                    <Upload className="w-4 h-4 mr-1 shrink-0" />
+                                                    <RemainingUploadTime album={event.album} />
+                                                </div>
+                                                <Tooltip>
+                                                    <Upload size={16} />
+                                                    Nahrávání probíhá... ({event.album.uploadingProgress} %)
+                                                </Tooltip>
+                                            </>
+                                        )
+                                    ])}
                                 </div>
                             )
                         })()}

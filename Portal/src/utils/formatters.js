@@ -1,7 +1,7 @@
 export function formatDuration(value, includeSeconds = false) {
     const h = Math.floor(value / 3600)
     const m = Math.floor((value % 3600) / 60)
-    const s = value % 60
+    const s = Math.round(value % 60)
 
     return [
         h > 0 && format(h, ["hodina", "hodiny", "hodin"]),
