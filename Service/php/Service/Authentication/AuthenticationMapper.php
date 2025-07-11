@@ -12,7 +12,7 @@
         public function selectUserByUsername(string $username) : ?User {
             $sql = <<<'SQL'
                 SELECT *
-                FROM users
+                FROM user
                 WHERE username = ?
             SQL;
             
@@ -31,7 +31,7 @@
         public function selectUserByApiKey(string $apiKey) : ?User {
             $sql = <<<'SQL'
                 SELECT *
-                FROM users
+                FROM user
                 WHERE api_key = ?
             SQL;
             
@@ -49,7 +49,7 @@
 
         public function updateUserPassword(string $username, string $password) : bool {
             $sql = <<<'SQL'
-                UPDATE users
+                UPDATE user
                 SET password = ?
                 WHERE username = ?
             SQL;
