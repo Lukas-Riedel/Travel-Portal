@@ -4,7 +4,7 @@ import { useIam } from "../hooks/useIam"
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-    const iam = useIam()
+    const { getAccessTokenForApiKey, getAccessTokenForUser, getAccessTokenForRefreshToken } = useIam()
     const [accessToken, setAccessToken] = useState(() => {
         const stored = localStorage.getItem("accessToken")
         return stored ? JSON.parse(stored) : null
@@ -14,8 +14,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = async ({ username, password, apiKey }) => {
         const token = apiKey
-            ? await iam.getAccessTokenForApiKey(apiKey)
-            : await iam.getAccessTokenForUser(username, password)
+            ? await getAccessTokenForApiKey(apiKey)
+            : await getAccessTokenForUser(username, password)
 
         token.expiration = Date.now() + token.validity * 1000
         localStorage.setItem("accessToken", JSON.stringify(token))
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const newToken = await iam.getAccessTokenForRefreshToken(accessToken.refreshToken)
+            const newToken = await getAccessTokenForRefreshToken(accessToken.refreshToken)
             newToken.expiration = Date.now() + newToken.validity * 1000
 
             localStorage.setItem("accessToken", JSON.stringify(newToken))
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
         } catch {
             logout()
         }
-    }, [accessToken, iam])
+    }, [accessToken])
 
     useEffect(() => {
         if (!accessToken) {
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         const timeout = setTimeout(refreshAccessToken, delay)
 
         return () => clearTimeout(timeout)
-    }, [accessToken, refreshAccessToken])
+    }, [accessToken])
 
     return (
         <AuthContext.Provider value={{

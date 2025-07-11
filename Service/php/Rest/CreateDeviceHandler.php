@@ -44,12 +44,12 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Device", '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc"}'));
+                $this->createRequestExample("Device", '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc","roles":["USER"]}'));
         }
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Created device", 201, '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc"}'),
+                $this->createResponseExample("Created device", 201, '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc,"roles":["USER"]"}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

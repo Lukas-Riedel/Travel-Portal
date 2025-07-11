@@ -7,7 +7,7 @@ import { useAuth } from "./AuthContext"
 const NotificationContext = createContext()
 
 export const NotificationProvider = ({ children }) => {
-    const { isAdmin } = useAuth()
+    const { accessToken } = useAuth()
     const { createDevice } = useApi()
 
     const [messages, setMessages] = useState([])
@@ -43,10 +43,10 @@ export const NotificationProvider = ({ children }) => {
     }, [])
 
     useEffect(() => {
-        if (fcmToken) {
+        if (fcmToken && accessToken) {
             createDevice(fcmToken)
         }
-    }, [fcmToken, isAdmin])
+    }, [fcmToken, accessToken])
 
     return (
         <NotificationContext.Provider value={{ messages }}>
