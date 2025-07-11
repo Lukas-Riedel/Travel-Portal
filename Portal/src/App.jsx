@@ -17,6 +17,8 @@ import AirlinePage from "./pages/AirlinePage"
 import PlansPage from "./pages/PlansPage"
 import CandidateCategoryPage from "./pages/CandidateCategoryPage"
 import CandidateLabelPage from "./pages/CandidateLabelPage"
+import { getToken, onMessage } from "firebase/messaging"
+import { messaging } from "./lib/firebase"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -34,6 +36,26 @@ function AppContent() {
         }
     }, [accessToken, login, searchParams])
 
+    useEffect(() => {
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register((import.meta.env.VITE_BASE_PATH || "") + "/firebase-messaging-sw.js", { type: "module" })
+                .then(registration => {
+                    getToken(messaging, {
+                        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+                        serviceWorkerRegistration: registration
+                    }).then(token => {
+                        // TODO Register device
+                        console.log("FCM token:", token)
+                    })
+                })
+        }
+
+        onMessage(messaging, payload => {
+            console.log("Message received:", payload)
+        })
+    }, [])
+
+
     if (!accessToken) {
         return
     }
@@ -50,8 +72,8 @@ function AppContent() {
             <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
             <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />
-            <Route path="/airline/:airlineName" element={<MainLayout><AirlinePage /></MainLayout>} />            
-            <Route path="/tracker" element={<MainLayout><TrackerPage /></MainLayout>} />       
+            <Route path="/airline/:airlineName" element={<MainLayout><AirlinePage /></MainLayout>} />
+            <Route path="/tracker" element={<MainLayout><TrackerPage /></MainLayout>} />
             <Route path="/plan" element={<MainLayout><PlansPage /></MainLayout>} />
             <Route path="/plan/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
             <Route path="/plan/category/:categoryId" element={<MainLayout><CandidateCategoryPage /></MainLayout>} />
