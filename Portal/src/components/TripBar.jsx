@@ -8,7 +8,7 @@ export default function TripBar({ trips }) {
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {trips ? [...trips].reverse().map(trip => (
                 <Link
-                    key={trip.d}
+                    key={trip.id}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"
                     to={`/trip/${trip.id}`}>
                     {trip.name + " " + trip.year}

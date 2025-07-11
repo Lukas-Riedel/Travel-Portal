@@ -17,13 +17,9 @@ import AirlinePage from "./pages/AirlinePage"
 import PlansPage from "./pages/PlansPage"
 import CandidateCategoryPage from "./pages/CandidateCategoryPage"
 import CandidateLabelPage from "./pages/CandidateLabelPage"
-import { getToken, onMessage } from "firebase/messaging"
-import { messaging } from "./lib/firebase"
-import { useApi } from "./hooks/useApi"
 
 function AppContent() {
     const { accessToken, login } = useAuth()
-    const { createDevice } = useApi()
 
     const [searchParams] = useSearchParams()
 
@@ -38,24 +34,6 @@ function AppContent() {
 
         }
     }, [accessToken, login, searchParams])
-
-    useEffect(() => {
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register((import.meta.env.VITE_BASE_PATH || "") + "/firebase-messaging-sw.js", { type: "module" })
-                .then(registration => getToken(messaging, {
-                    vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-                    serviceWorkerRegistration: registration
-                }))
-                .then(createDevice)
-                .catch(e => console.log(e))
-        }
-
-        onMessage(messaging, payload => {
-            // TODO: Handle the message.
-            console.log("Message received:", payload)
-        })
-    }, [])
-
 
     if (!accessToken) {
         return
