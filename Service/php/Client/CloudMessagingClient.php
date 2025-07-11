@@ -6,7 +6,7 @@
     use HttpMethod;
     use RuntimeException;
 
-    class PushNotificationClient {
+    class CloudMessagingClient {
 
         private const FCM_SEND_URL_FORMAT = "https://fcm.googleapis.com/v1/projects/%s/messages:send";
 
@@ -18,21 +18,24 @@
             $this->projectId = json_decode(file_get_contents(self::SERVICE_ACCOUNT_PATH), TRUE)["project_id"];
         }
 
-        public function publishEvent(Event $event, array $args) : void {
+        public function publishEvent(Event $event, array $args, array $deviceTokens) : void {
             global $httpClient;
 
             $url = sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId);
-            $payload = array(
-                "message" => array(
-                    "topic" => "allClients",
-                    "data" => array(
-                        "event" => $event->name,
-                        "args" => json_encode($args)
-                    )
-                )
-            );
 
-            $httpClient->executeRequest(HttpMethod::POST, $url, array("Authorization: Bearer " . $this->fetchAccessToken(), "Content-Type: application/json"), json_encode($payload));
+            foreach ($deviceTokens as &$deviceToken) {
+                $payload = array(
+                    "message" => array(
+                        "token" => $deviceToken,
+                        "data" => array(
+                            "event" => $event->name,
+                            "args" => json_encode($args)
+                        )
+                    )
+                );
+
+                $httpClient->executeRequest(HttpMethod::POST, $url, array("Authorization: Bearer " . $this->fetchAccessToken(), "Content-Type: application/json"), json_encode($payload));
+            }
         }
 
         private function fetchAccessToken() : string {

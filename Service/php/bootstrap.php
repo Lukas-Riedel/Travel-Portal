@@ -22,7 +22,7 @@
     require_once(dirname(__FILE__) . "/Event/EventManager.php");
     require_once(dirname(__FILE__) . "/Event/EventPublisher.php");
 
-    use Service\Client\PushNotificationClient;
+    use Service\Client\CloudMessagingClient;
     use Service\Service\Authentication\AuthenticationService;
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\CategoryServiceListener;
@@ -68,7 +68,7 @@
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
     $calendarClient = new CalendarClient();
-    $pushNotificationClient = new PushNotificationClient();
+    $cloudMessagingClient = new CloudMessagingClient();
     
     $loggingProvider = new LoggingProvider($databaseProvider);
     $configurationProvider = new ConfigurationProvider($databaseProvider);

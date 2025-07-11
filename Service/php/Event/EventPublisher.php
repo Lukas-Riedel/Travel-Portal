@@ -1,6 +1,8 @@
 <?php
+
+    use Service\Service\Device\DeviceType;
     use Service\Service\Highlight\HighlightType;
-    
+        
     // TODO: Make sure messages contain as least information as possible (e.g., string placeId instead of PlaceIdentifier).
     // TODO: Go through every event and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
     class EventPublisher {
@@ -197,8 +199,9 @@
         }
         
         public function publishFirstPhotoUploadedEvent($albumId) : void {
-            global $pushNotificationClient;
-            $pushNotificationClient->publishEvent(Event::FirstPhotoUploaded, array("albumId" => $albumId));
+            global $cloudMessagingClient, $deviceService;
+            $deviceTokens = array_map(fn($device) => $device->getToken(), $deviceService->getAllDevices(DeviceType::Portal));
+            $cloudMessagingClient->publishEvent(Event::FirstPhotoUploaded, array("albumId" => $albumId), $deviceTokens);
         }
 
         public function publishEvent($event, $args) : void {
