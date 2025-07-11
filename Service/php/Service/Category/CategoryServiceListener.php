@@ -2,7 +2,6 @@
     namespace Service\Service\Category;
     
     use Service\Service\Highlight\HighlightType;
-    use Service\Service\Place\PlaceIdentifier;
     use Service\Service\Place\PlaceService;
 
     class CategoryServiceListener {

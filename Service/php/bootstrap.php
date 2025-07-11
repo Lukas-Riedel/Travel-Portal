@@ -26,6 +26,8 @@
     use Service\Service\Authentication\AuthenticationService;
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\CategoryServiceListener;
+    use Service\Service\Device\DeviceService;
+    use Service\Service\Device\DeviceServiceListener;
     use Service\Service\Expense\ExpenseService;
     use Service\Service\Expense\ExpenseStatisticsProvider;
     use Service\Service\Fitness\FitnessService;
@@ -96,6 +98,7 @@
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
+    $deviceService = new DeviceService($databaseProvider);
 
     // Statistics providers.
     $statisticsProviders = array(
@@ -123,6 +126,7 @@
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
         new TripServiceListener($tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
         new YearServiceListener($yearService, $eventPublisher, $scheduler),
+        new DeviceServiceListener($deviceService, $scheduler),
         $platformService
     );
     $eventManager = new EventManager($listeners);
