@@ -362,6 +362,8 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
 
     const subscriptions = useSubscriptions()
 
+    const [wasEdited, setWasEdited] = useState(false)
+
     const [newType, setNewType] = useState(Object.keys(expenseTypes)[0])
     const [newDescription, setNewDescription] = useState("")
     const [newValue, setNewValue] = useState(0)
@@ -369,12 +371,14 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const [newSubscriptionId, setNewSubscriptionId] = useState(undefined)
 
     useEffect(() => {
-        setNewType(expenseCandidate?.type || Object.keys(expenseTypes)[0])
-        setNewDescription(expenseCandidate?.description || "")
-        setNewValue(expenseCandidate?.value || 0)
-        setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.mainCurrency || "")
-        setNewSubscriptionId(expenseCandidate?.subscriptionId)
-    }, [expenseCandidate, lastAddedExpense, configuration])
+        if (!wasEdited) {
+            setNewType(expenseCandidate?.type || Object.keys(expenseTypes)[0])
+            setNewDescription(expenseCandidate?.description || "")
+            setNewValue(expenseCandidate?.value || 0)
+            setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.mainCurrency || "")
+            setNewSubscriptionId(expenseCandidate?.subscriptionId)
+        }
+    }, [])
 
     const handleExpenseCreated = () => {
         showConfirmToast("Opravdu chceš přidat nový výdaj?",
@@ -389,7 +393,10 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                 <select
                     className="border rounded p-1 w-full"
                     value={newType}
-                    onChange={e => setNewType(e.target.value)}
+                    onChange={e => {
+                        setWasEdited(true)
+                        setNewType(e.target.value)
+                    }}
                     disabled={expenseCandidate?.description}>
                     {Object.keys(expenseTypes).map(typeName => (
                         <option
@@ -406,7 +413,10 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     className="border rounded p-1 w-full text-center"
                     type="text"
                     value={newDescription}
-                    onChange={e => setNewDescription(e.target.value)}
+                    onChange={e => {
+                        setWasEdited(true)
+                        setNewDescription(e.target.value)
+                    }}
                     placeholder="Popis"
                     disabled={expenseCandidate?.description} />
             </td>
@@ -414,7 +424,10 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                 <select
                     className="border rounded p-1 w-full"
                     value={newSubscriptionId}
-                    onChange={e => setNewSubscriptionId(e.target.value || undefined)}>
+                    onChange={e => {
+                        setWasEdited(true)
+                        setNewSubscriptionId(e.target.value || undefined)
+                    }}>
                     <option value="" />
                     {subscriptions?.map(subscription => (
                         <option
@@ -432,14 +445,20 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     type="number"
                     min={0}
                     value={newValue}
-                    onChange={e => setNewValue(e.target.value)}
+                    onChange={e => {
+                        setWasEdited(true)
+                        setNewValue(e.target.value)
+                    }}
                     placeholder="Cena" />
             </td>
             <td className="p-3 text-center">
                 <select
                     className="border rounded p-1 w-full"
                     value={newCurrency}
-                    onChange={e => setNewCurrency(e.target.value)}>
+                    onChange={e => {
+                        setWasEdited(true)
+                        setNewCurrency(e.target.value)
+                    }}>
                     {configuration?.currencies.map(currency => (
                         <option
                             className="text-center"
