@@ -46,9 +46,12 @@ export default function MainLayout({ children }) {
         <div className="min-h-screen bg-gray-100 text-gray-900">
             <header className="bg-white shadow-md xl:sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-center md:justify-between">
-                    <img
-                        src="/icon.svg"
-                        className="h-8 w-8 hidden md:block" />
+                    <Link
+                        to={"/"}>
+                        <img
+                            src="/icon.svg"
+                            className="h-8 w-8 hidden md:block" />
+                    </Link>
                     <button
                         className="md:hidden p-2 rounded hover:bg-gray-200"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}>
