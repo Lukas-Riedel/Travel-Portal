@@ -12,12 +12,12 @@
             $this->deviceMapper = new DeviceMapper($databaseProvider);
         }
         
-        public function getAllDevices(DeviceType $deviceType) : array {
-            return $this->deviceMapper->selectAllDevices($deviceType);
+        public function getDevices(DeviceType $deviceType, array $requiredRoles) : array {
+            return $this->deviceMapper->selectDevices($deviceType, $requiredRoles);
         }
 
-        public function registerOrUpdateDevice(DeviceType $deviceType, string $token) : Device {
-            $device = new Device($deviceType, $token);
+        public function registerOrUpdateDevice(DeviceType $deviceType, string $token, array $roles) : Device {
+            $device = new Device($deviceType, $token, $roles);
             $this->deviceMapper->deleteDevice($device);
             $this->deviceMapper->insertDevice($device);
             return $device;

@@ -9,18 +9,24 @@
             $this->databaseProvider = $databaseProvider;
         }
 
-        public function selectAllDevices(DeviceType $deviceType) : array {
+        public function selectDevices(DeviceType $deviceType, array $requiredRoles) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM device
-                WHERE type = ?
+                WHERE :CONDITIONS
             SQL;
             
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("type = ?", $deviceType->value);
+            foreach ($requiredRoles as &$requiredRole) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(?, roles)", $requiredRole);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+            
             return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($deviceType->value)
+                ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($deviceRow) {
-                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["token"]);
+                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["token"], explode(",", $deviceRow["roles"]));
                 });
         }
 
@@ -29,9 +35,11 @@
                 INSERT INTO device (
                     type,
                     token,
+                    roles,
                     last_seen
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?,
                     UNIX_TIMESTAMP()
@@ -40,7 +48,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getType()->value, $device->getToken())
+                ->withParameters($device->getType()->value, $device->getToken(), implode(",", $device->getRoles()))
                 ->execute() === 1;
         }
 

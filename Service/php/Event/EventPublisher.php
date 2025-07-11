@@ -199,9 +199,8 @@
         }
         
         public function publishFirstPhotoUploadedEvent($albumId) : void {
-            global $cloudMessagingClient, $deviceService;
-            $deviceTokens = array_map(fn($device) => $device->getToken(), $deviceService->getAllDevices(DeviceType::Portal));
-            $cloudMessagingClient->publishEvent(Event::FirstPhotoUploaded, array("albumId" => $albumId), $deviceTokens);
+            // TODO: Introduce enum for user roles.
+            $this->publishCloudEvent(Event::FirstPhotoUploaded, DeviceType::Portal, array("USER"), array("albumId" => $albumId));
         }
 
         public function publishEvent($event, $args) : void {
@@ -222,6 +221,12 @@
                 ->execute();
 
             $databaseProvider->commit();
+        }
+
+        public function publishCloudEvent($event, $deviceType, $requiredRoles, $args) {            
+            global $cloudMessagingClient, $deviceService;
+            $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getToken(),
+                $deviceService->getDevices($deviceType, $requiredRoles)));
         }
     }
 

@@ -6,7 +6,7 @@
         public function handle($input, $roles) {
             global $deviceService;
 
-            $device = $deviceService->registerOrUpdateDevice(DeviceType::fromName($input["type"]), $input["token"]);
+            $device = $deviceService->registerOrUpdateDevice(DeviceType::fromName($input["type"]), $input["token"], $roles);
             return $this->createResponse(201, $device);
         }
 
