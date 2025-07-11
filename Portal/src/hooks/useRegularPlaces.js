@@ -8,9 +8,12 @@ import { useEffect, useMemo } from "react"
 export const useRegularPlaces = ({ tripId, categoryId, labelName, year, minStart, maxEnd, include, sort } = {}) => {
     const { listRegularPlaces } = useApi()
     const { isAdmin } = useAuth()
-    const events = useEvents("FirstPhotoUploaded")
+    const photosUploadingStartedEvents = useEvents("PhotosUploadingStarted")
+    const photosUploadingEndedEvents = useEvents("PhotosUploadingEnded")
 
-    const albumIdsBeingUploaded = useMemo(() => events?.map(message => message.albumId), [events])
+    const uploadedAlbumIds = useMemo(() => new Set(photosUploadingEndedEvents?.map(message => message.albumId) ?? []), [photosUploadingStartedEvents])
+    const albumIdsBeingUploaded = useMemo(() => new Set(photosUploadingStartedEvents?.filter(message => !uploadedAlbumIds.has(message.albumId))
+        ?.map(message => message.albumId) ?? []), [uploadedAlbumIds, photosUploadingStartedEvents])
 
     const validity = 60 * 60 * 2
     const query = useQuery({
@@ -18,14 +21,14 @@ export const useRegularPlaces = ({ tripId, categoryId, labelName, year, minStart
         queryFn: () => listRegularPlaces({ tripId, categoryId, labelName, year, minStart, maxEnd, include, sort }),
         staleTime: isAdmin ? 0 : 1000 * validity,
         refetchInterval: query => isAdmin && query.state.data?.flatMap(place => place.dates)?.map(date => date.album)?.filter(Boolean)
-            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.some(albumIdBeingUploaded => albumIdBeingUploaded == album.id)) && 2000
+            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 5000
     })
 
     useEffect(() => {
         if (query.data) {
             query.refetch()
         }
-    }, [events])
+    }, [photosUploadingStartedEvents])
 
     return query.data && query.data.map(place => new Place(place))
 }

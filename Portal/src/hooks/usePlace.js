@@ -10,9 +10,12 @@ export const usePlace = (placeId) => {
         updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
         updatePlaceExcerpt, refreshPlaceAlbum } = useApi()
     const { isAdmin } = useAuth()
-    const events = useEvents("FirstPhotoUploaded")
+    const photosUploadingStartedEvents = useEvents("PhotosUploadingStarted")
+    const photosUploadingEndedEvents = useEvents("PhotosUploadingEnded")
 
-    const albumIdsBeingUploaded = useMemo(() => events?.map(message => message.albumId), [events])
+    const uploadedAlbumIds = useMemo(() => new Set(photosUploadingEndedEvents?.map(message => message.albumId) ?? []), [photosUploadingStartedEvents])
+    const albumIdsBeingUploaded = useMemo(() => new Set(photosUploadingStartedEvents?.filter(message => !uploadedAlbumIds.has(message.albumId))
+        ?.map(message => message.albumId) ?? []), [uploadedAlbumIds, photosUploadingStartedEvents])
 
     const queryClient = useQueryClient()
 
@@ -21,7 +24,7 @@ export const usePlace = (placeId) => {
         queryFn: () => getPlace(placeId),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
         refetchInterval: query => isAdmin && query.state.data?.dates?.map(date => date.album)?.filter(Boolean)
-            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.some(albumIdBeingUploaded => albumIdBeingUploaded == album.id)) && 2000
+            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 5000
     })
 
     const setPlace = place => queryClient.setQueryData(["getPlace", placeId], place)
@@ -31,7 +34,7 @@ export const usePlace = (placeId) => {
         if (query.data) {
             query.refetch()
         }
-    }, [events])
+    }, [photosUploadingStartedEvents])
 
     return {
         place: query.data && new Place(query.data),

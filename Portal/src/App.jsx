@@ -2,7 +2,7 @@ import MainLayout from "./layouts/MainLayout"
 import { BrowserRouter, Route, Routes, useLocation, useSearchParams } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
-import { Toaster } from "sonner"
+import { toast, Toaster } from "sonner"
 import CountriesPage from "./pages/CountriesPage"
 import PlacePage from "./pages/PlacePage"
 import YearsPage from "./pages/YearsPage"
@@ -17,6 +17,48 @@ import AirlinePage from "./pages/AirlinePage"
 import PlansPage from "./pages/PlansPage"
 import CandidateCategoryPage from "./pages/CandidateCategoryPage"
 import CandidateLabelPage from "./pages/CandidateLabelPage"
+import { useApi } from "./hooks/useApi"
+import { useEvents } from "./hooks/useEvents"
+
+export default function App() {
+    const { listRegularPlaces } = useApi()
+
+    const photosUploadingStartedEvents = useEvents("PhotosUploadingStarted")
+    useEffect(() => {
+        if (photosUploadingStartedEvents.length > 0) {
+            photosUploadingStartedEvents.forEach(event => {
+                event.markAsRead()
+                listRegularPlaces({ albumId: event.albumId })
+                    .then(places => places.forEach(place => {
+                        toast.success(`Nahrávání fotek pro místo '${place.name}' začalo`)
+                    }))
+            })
+        }
+    }, [photosUploadingStartedEvents])
+
+    const photosUploadingEndedEvents = useEvents("PhotosUploadingEnded")
+    useEffect(() => {
+        if (photosUploadingEndedEvents.length > 0) {
+            photosUploadingEndedEvents.forEach(event => {
+                event.markAsRead()
+                listRegularPlaces({ albumId: event.albumId })
+                    .then(places => places.forEach(place => {
+                        toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
+                    }))
+            })
+        }
+    }, [photosUploadingEndedEvents])
+
+    return (
+        <>
+            <Toaster position="top-center" offset={96} />
+            <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+                <ScrollToTop />
+                <AppContent />
+            </BrowserRouter>
+        </>
+    )
+}
 
 function AppContent() {
     const { accessToken, login } = useAuth()
@@ -70,16 +112,4 @@ function ScrollToTop() {
     }, [pathname])
 
     return null
-}
-
-export default function App() {
-    return (
-        <>
-            <Toaster position="top-center" offset={96} />
-            <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
-                <ScrollToTop />
-                <AppContent />
-            </BrowserRouter>
-        </>
-    )
 }

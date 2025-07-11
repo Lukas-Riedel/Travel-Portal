@@ -15,13 +15,13 @@ export const NotificationProvider = ({ children }) => {
 
     useEffect(() => {
         if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register((import.meta.env.VITE_BASE_PATH || "") + "/firebase-messaging-sw.js", { type: "module" })
+            const swVersion = import.meta.env.VITE_SW_VERSION || Date.now()
+            navigator.serviceWorker.register((import.meta.env.VITE_BASE_PATH || "") + "/firebase-messaging-sw.js?v=" + swVersion, { type: "module" })
                 .then(registration => getToken(messaging, {
                     vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
                     serviceWorkerRegistration: registration
                 }))
                 .then(setFcmToken)
-                .catch(e => console.log(e))
         }
 
         const unsubscribe = onMessage(messaging, payload => {

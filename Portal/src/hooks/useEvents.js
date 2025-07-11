@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import { useNotifications } from "../contexts/NotificationContext"
 
 export const useEvents = eventName => {
@@ -12,5 +12,5 @@ export const useEvents = eventName => {
 
     return messages
         ?.filter(msg => msg.data?.event === eventName && !readMessageIds.has(msg.messageId))
-        ?.map(msg => ({ ...msg.data?.args, markAsRead: () => markAsRead(msg.messageId) }))
+        ?.map(msg => ({ ...msg.data?.args, markAsRead: () => markAsRead(msg.messageId) })) ?? []
 }

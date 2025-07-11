@@ -15,6 +15,12 @@ const app = initializeApp(firebaseConfig)
 const messaging = getMessaging(app)
 
 onBackgroundMessage(messaging, payload => {
-    // TODO: Handle the message.
-    console.log("[firebase-messaging-sw.js] Received background message ", payload)
+    console.log("[firebase-messaging-sw.js] Received background message", payload)
+
+    if (payload.data.event === "PhotosUploadingEnded") {
+        self.registration.showNotification("Nahrávání fotek bylo dokončeno", {
+            body: "",
+            icon: "/icon.png"
+        })
+    }
 })

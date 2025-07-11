@@ -198,9 +198,14 @@
             $this->publishEvent(Event::PlaceEventDeleted, array("placeId" => $placeId));
         }
         
-        public function publishFirstPhotoUploadedEvent($albumId) : void {
+        public function publishPhotosUploadingStartedEvent($albumId) : void {
             // TODO: Introduce enum for user roles.
-            $this->publishCloudEvent(Event::FirstPhotoUploaded, DeviceType::Portal, array("USER"), array("albumId" => $albumId));
+            $this->publishCloudEvent(Event::PhotosUploadingStarted, DeviceType::Portal, array("ADMIN"), array("albumId" => $albumId));
+        }
+        
+        public function publishPhotosUploadingEndedEvent($albumId) : void {
+            // TODO: Introduce enum for user roles.
+            $this->publishCloudEvent(Event::PhotosUploadingEnded, DeviceType::Portal, array("ADMIN"), array("albumId" => $albumId));
         }
 
         public function publishEvent($event, $args) : void {
@@ -288,7 +293,8 @@
         case PhotosUploading = 200;
         case PhotoReplacing = 201;
 
-        case FirstPhotoUploaded = 300;
+        case PhotosUploadingStarted = 300;
+        case PhotosUploadingEnded = 301;
 
         public static function fromName($name) : ?Event {
             foreach (Event::cases() as $case) {
