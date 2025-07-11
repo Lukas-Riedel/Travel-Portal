@@ -28,6 +28,14 @@ export function useApi() {
         }
     }
 
+    async function createDevice(token) {
+        return sendRequest("POST", "/devices",
+            {
+                type: "Portal",
+                token: token
+            })
+    }
+
     async function getHighlight(highlightId) {
         return sendRequest("GET", "/highlights/" + highlightId)
     }
@@ -535,6 +543,7 @@ export function useApi() {
     }
 
     return {
+        createDevice,
         getHighlight,
         updateHighlightQualityAttributes,
         createGeographicalCategory,

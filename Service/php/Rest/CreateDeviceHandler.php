@@ -11,7 +11,7 @@
         }
 
         public function getRequiredRole() {
-            return "ADMIN";
+            return "USER";
         }
         
         public function isProtected() {
