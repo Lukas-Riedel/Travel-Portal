@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetYearHandler.php");
 
     class CreateYearHighlightHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $highlightService;
 
             $response = (new GetYearHandler())
                 ->handle(array(
-                    "year" => $input["year"]));
+                    "year" => $input["year"]), $roles);
             if ($response["code"] != 200) {
                 return $response;
             }

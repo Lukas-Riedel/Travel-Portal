@@ -1,6 +1,6 @@
 <?php
     class RemoveTimeTrackingEventHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $timeTrackingService;
 
             $response = $timeTrackingService->removeTimeTrackingEvent($input["eventId"]);

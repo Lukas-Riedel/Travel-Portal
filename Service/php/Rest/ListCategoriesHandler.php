@@ -1,6 +1,6 @@
 <?php
     class ListCategoriesHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $categoryService;
 
             $response = $categoryService->getCategories(

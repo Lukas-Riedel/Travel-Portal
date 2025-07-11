@@ -1,6 +1,6 @@
 <?php
     class CreateCategoryHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $categoryService;
 
             $response = NULL;

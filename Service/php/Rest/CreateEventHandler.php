@@ -1,6 +1,6 @@
 <?php
     class CreateEventHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $eventPublisher;
 
             $eventPublisher->publishEvent(Event::fromName($input["name"]), $input["args"]);

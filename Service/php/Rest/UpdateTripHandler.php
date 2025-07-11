@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetTripHandler.php");
 
     class UpdateTripHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $tripService, $databaseProvider;
 
             $response = (new GetTripHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]));
+                    "tripId" => $input["tripId"]), $roles);
             if ($response["code"] != 200) {
                 return $response;
             }
@@ -26,7 +26,7 @@
             $databaseProvider->materializeViews();
             return (new GetTripHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]));
+                    "tripId" => $input["tripId"]), $roles);
         }
 
         public function getRequiredRole() {

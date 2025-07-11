@@ -60,7 +60,7 @@
                     }
                 }
     
-                $response = $handler->handle($input);
+                $response = $handler->handle($input, $accessToken->getRoles());
                 $databaseProvider->commit();
     
                 http_response_code($response["code"]);

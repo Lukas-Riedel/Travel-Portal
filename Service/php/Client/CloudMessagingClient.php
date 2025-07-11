@@ -22,6 +22,7 @@
             global $httpClient;
 
             $url = sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId);
+            $accessToken = $this->getAccessToken();
 
             foreach ($deviceTokens as &$deviceToken) {
                 $payload = array(
@@ -34,11 +35,11 @@
                     )
                 );
 
-                $httpClient->executeRequest(HttpMethod::POST, $url, array("Authorization: Bearer " . $this->fetchAccessToken(), "Content-Type: application/json"), json_encode($payload));
+                $httpClient->executeRequest(HttpMethod::POST, $url, array("Authorization: Bearer " . $accessToken, "Content-Type: application/json"), json_encode($payload));
             }
         }
 
-        private function fetchAccessToken() : string {
+        private function getAccessToken() : string {
             $scopes = [
                 "https://www.googleapis.com/auth/firebase.messaging",
                 "https://www.googleapis.com/auth/cloud-platform",

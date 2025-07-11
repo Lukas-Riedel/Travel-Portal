@@ -1,6 +1,6 @@
 <?php
     class CreateTimeTrackingEventHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $timeTrackingService;
     
             $response = $timeTrackingService->createTimeTrackingEvent($input["type"], doubleval($input["hours"]),

@@ -3,7 +3,7 @@
     use Service\Service\Device\DeviceType;
 
     class CreateDeviceHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $deviceService;
 
             $device = $deviceService->registerOrUpdateDevice(DeviceType::fromName($input["type"]), $input["token"]);

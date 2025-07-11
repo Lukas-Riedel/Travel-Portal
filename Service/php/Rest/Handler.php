@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../Model/TargetError.php");
 
     abstract class Handler {
-        abstract public function handle($input);
+        abstract public function handle($input, $roles);
         abstract public function getRequiredRole();
         abstract public function isProtected();
         abstract public function getTag();

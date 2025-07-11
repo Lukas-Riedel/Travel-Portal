@@ -1,6 +1,6 @@
 <?php
     class ListConfigurationHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $configurationService;
 
             $response = $configurationService->getConfigurationEntries(explode(",", $input["levels"]));

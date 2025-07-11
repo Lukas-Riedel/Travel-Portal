@@ -1,6 +1,6 @@
 <?php
     class GetYearHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $yearService;
 
             $response = $yearService->getYear($input["year"]);

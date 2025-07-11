@@ -1,6 +1,6 @@
 <?php
     class ListSubscriptionsHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $expenseService;
 
             $response = $expenseService->getActiveSubscriptions();

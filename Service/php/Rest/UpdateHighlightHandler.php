@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetHighlightHandler.php");
 
     class UpdateHighlightHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $highlightService, $databaseProvider;
 
             $response = (new GetHighlightHandler())
                 ->handle(array(
-                    "highlightId" => $input["highlightId"]));                    
+                    "highlightId" => $input["highlightId"]), $roles);                    
             if ($response["code"] != 200) {
                 return $response;
             }     
@@ -31,7 +31,7 @@
             $databaseProvider->materializeViews();
             return (new GetHighlightHandler())
                 ->handle(array(
-                    "highlightId" => $input["highlightId"]));
+                    "highlightId" => $input["highlightId"]), $roles);
         }
 
         public function getRequiredRole() {

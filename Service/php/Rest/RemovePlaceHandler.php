@@ -1,6 +1,6 @@
 <?php
     class RemovePlaceHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $placeService;
 
             $response = FALSE;

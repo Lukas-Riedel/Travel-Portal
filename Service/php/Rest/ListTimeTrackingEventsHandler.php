@@ -1,6 +1,6 @@
 <?php
     class ListTimeTrackingEventsHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $timeTrackingService;
 
             $response = $timeTrackingService->getTimeTrackingEvents(isset($input["type"]) ? $input["type"] : NULL);

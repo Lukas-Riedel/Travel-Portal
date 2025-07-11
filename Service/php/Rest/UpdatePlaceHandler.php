@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
 
     class UpdatePlaceHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $placeService, $databaseProvider;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
-                    "placeId" => $input["placeId"]));                    
+                    "placeId" => $input["placeId"]), $roles);                    
             if ($response["code"] != 200) {
                 return $response;
             }
@@ -31,7 +31,7 @@
             $databaseProvider->materializeViews();
             return (new GetPlaceHandler())
                 ->handle(array(
-                    "placeId" => $input["placeId"]));
+                    "placeId" => $input["placeId"]), $roles);
         }
 
         public function getRequiredRole() {

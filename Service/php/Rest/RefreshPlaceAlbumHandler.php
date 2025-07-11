@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
     
     class RefreshPlaceAlbumHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $photoService;
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
-                    "placeId" => $input["placeId"]));
+                    "placeId" => $input["placeId"]), $roles);
             if ($response["code"] != 200) {
                 return $response;
             }     
@@ -21,7 +21,7 @@
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
-                    "placeId" => $input["placeId"]));
+                    "placeId" => $input["placeId"]), $roles);
             if ($response["code"] != 200) {
                 return $response;
             }     

@@ -1,6 +1,6 @@
 <?php
     class GetTripHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $tripService;
 
             $response = $tripService->getRegularTrip($input["tripId"]);

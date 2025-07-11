@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../Exception/EntityNotFoundException.php");
 
     class CreatePlaceAlbumHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $photoService, $placeService;
             
             $placeIdentifier = $placeService->getPlaceIdentifierById($input["placeId"]);

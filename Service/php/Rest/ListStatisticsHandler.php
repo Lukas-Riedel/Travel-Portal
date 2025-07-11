@@ -1,6 +1,6 @@
 <?php
     class ListStatisticsHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $statisticsService;
 
             $response = $statisticsService->getOverallStatistics();

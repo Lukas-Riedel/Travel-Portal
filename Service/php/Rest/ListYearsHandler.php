@@ -1,6 +1,6 @@
 <?php
     class ListYearsHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $yearService;
 
             $response = $yearService->getYears(isset($input["include"]) ? explode(",", $input["include"]) : array());

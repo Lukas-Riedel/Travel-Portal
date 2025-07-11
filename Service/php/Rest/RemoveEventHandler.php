@@ -1,6 +1,6 @@
 <?php
     class RemoveEventHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $eventManager;
 
             $response = $eventManager->removeEvent($input["eventId"]);

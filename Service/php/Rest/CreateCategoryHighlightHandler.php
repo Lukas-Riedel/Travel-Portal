@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetCategoryHandler.php");
 
     class CreateCategoryHighlightHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $highlightService;
 
             $response = (new GetCategoryHandler())
                 ->handle(array(
-                    "categoryId" => $input["categoryId"]));
+                    "categoryId" => $input["categoryId"]), $roles);
             if ($response["code"] != 200) {
                 return $response;
             }

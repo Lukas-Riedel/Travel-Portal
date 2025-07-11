@@ -1,6 +1,6 @@
 <?php
     class ReplaceFitnessHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $fitnessService;
     
             $response = $fitnessService->updateFitnessRecord($input["timestamp"], $input["steps"],

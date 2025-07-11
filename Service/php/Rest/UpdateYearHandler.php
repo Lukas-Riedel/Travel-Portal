@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetYearHandler.php");
 
     class UpdateYearHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $yearService, $databaseProvider;
 
             $response = (new GetYearHandler())
                 ->handle(array(
-                    "year" => $input["year"]));                    
+                    "year" => $input["year"]), $roles);                    
             if ($response["code"] != 200) {
                 return $response;
             }     
@@ -17,7 +17,7 @@
     
             return (new GetYearHandler())
                 ->handle(array(
-                    "year" => $input["year"]));
+                    "year" => $input["year"]), $roles);
         }
 
         public function getRequiredRole() {

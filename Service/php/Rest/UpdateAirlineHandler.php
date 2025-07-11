@@ -2,12 +2,12 @@
     require_once(dirname(__FILE__) . "/GetAirlineHandler.php");
 
     class UpdateAirlineHandler extends Handler {
-        public function handle($input) {
+        public function handle($input, $roles) {
             global $flightService, $databaseProvider;
 
             $response = (new GetAirlineHandler())
                 ->handle(array(
-                    "airlineCode" => $input["airlineCode"]));                    
+                    "airlineCode" => $input["airlineCode"]), $roles);                    
             if ($response["airlineCode"] != 200) {
                 return $response;
             }
@@ -24,7 +24,7 @@
     
             return (new GetAirlineHandler())
                 ->handle(array(
-                    "airlineCode" => $input["airlineCode"]));
+                    "airlineCode" => $input["airlineCode"]), $roles);
         }
 
         public function getRequiredRole() {
