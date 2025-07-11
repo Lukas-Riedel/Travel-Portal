@@ -147,7 +147,7 @@ export default function Map({ points, lines, onRightClick }) {
 
     useEffect(() => {
         fitBounds()
-    }, [points, lines])
+    }, [points?.length, lines?.length])
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
