@@ -123,7 +123,7 @@ export default function Map({ points, lines, onRightClick }) {
         }
 
         const bounds = new window.google.maps.LatLngBounds()
-        points.forEach(point => {
+        points?.forEach(point => {
             bounds.extend(new window.google.maps.LatLng(point.latitude, point.longitude))
         })
 

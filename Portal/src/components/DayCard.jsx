@@ -79,7 +79,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                 { label: "Cesta", required: true },
                 { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 }
             ],
-            "Nahrávání fotek začalo",
+            "Nahrávání fotek brzy začne",
             "Při nahrávání fotek došlo k chybě",
             async (path, mainPhotoPosition) => onPhotosAdded(placeId, albumId, timestamp, path, mainPhotoPosition)
         )
