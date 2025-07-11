@@ -17,7 +17,7 @@ import { useCandidateTrips } from "../hooks/useCandidateTrips"
 
 export default function TripPage() {
     const { isAdmin } = useAuth()
-    const api = useApi()
+    const { createEvent } = useApi()
 
     const { tripId } = useParams()
 
@@ -63,7 +63,7 @@ export default function TripPage() {
                 trip={trip}
                 places={tripPlaces}
                 onPhotosAdded={trip?.isCandidate() ? undefined : (placeId, albumId, timestamp, path, mainPhotoPosition) =>
-                    api.createEvent("PhotosUploading", { placeId, albumId, timestamp, path, mainPhotoPosition })} />
+                    createEvent("PhotosUploading", { placeId, albumId, timestamp, path, mainPhotoPosition })} />
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />

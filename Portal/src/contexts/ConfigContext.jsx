@@ -5,11 +5,11 @@ import { useQuery } from "@tanstack/react-query"
 const ConfigContext = createContext()
 
 export function ConfigurationProvider({ children }) {
-    const api = useApi()
+    const { listConfigurationEntries } = useApi()
 
     const configuration = useQuery({
         queryKey: ["listConfigurationEntries", "public"],
-        queryFn: () => api.listConfigurationEntries("public"),
+        queryFn: () => listConfigurationEntries("public"),
         staleTime: 1000 * 60 * 60 * 24,
     }).data
 

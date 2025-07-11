@@ -4,12 +4,12 @@ import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
 
 export const useRegularTrips = ({ year, include } = {}) => {
-    const api = useApi()
+    const { listRegularTrips } = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({
         queryKey: ["listRegularTrips", year, include],
-        queryFn: () => api.listRegularTrips({ year, include }),
+        queryFn: () => listRegularTrips({ year, include }),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 

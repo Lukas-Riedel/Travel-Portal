@@ -3,14 +3,14 @@ import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useCategory = (categoryId) => {
-    const api = useApi()
+    const { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes } = useApi()
     const { isAdmin } = useAuth()
-    
+
     const queryClient = useQueryClient()
 
     const query = useQuery({
         queryKey: ["getCategory", categoryId],
-        queryFn: () => api.getCategory(categoryId),
+        queryFn: () => getCategory(categoryId),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
 
@@ -20,10 +20,10 @@ export const useCategory = (categoryId) => {
     return {
         // TODO: Map to Category object
         category: query.data,
-        updateCategoryName: name => api.updateCategoryName(categoryId, name).then(setCategory),
-        removeCategoryHighlight: highlightId => api.removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),
-        updateCategoryMainHighlight: highlightId => api.updateCategoryMainHighlight(categoryId, highlightId).then(setCategory),
-        updateCategoryHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) => 
-            api.updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchCategory)
+        updateCategoryName: name => updateCategoryName(categoryId, name).then(setCategory),
+        removeCategoryHighlight: highlightId => removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),
+        updateCategoryMainHighlight: highlightId => updateCategoryMainHighlight(categoryId, highlightId).then(setCategory),
+        updateCategoryHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>
+            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchCategory)
     }
 }

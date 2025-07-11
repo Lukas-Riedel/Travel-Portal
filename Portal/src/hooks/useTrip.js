@@ -4,14 +4,16 @@ import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
 
 export const useTrip = (tripId) => {
-    const api = useApi()
+    const { getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, removeTripHighlight,
+        updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
+        updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote } = useApi()
     const { isAdmin } = useAuth()
 
     const queryClient = useQueryClient()
 
     const query = useQuery({
         queryKey: ["getTrip", tripId],
-        queryFn: () => api.getTrip(tripId),
+        queryFn: () => getTrip(tripId),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
 
@@ -20,19 +22,19 @@ export const useTrip = (tripId) => {
 
     return {
         trip: query.data && new Trip(query.data),
-        removeTrip: _ => api.removeTrip(tripId),
-        loadTrip: candidateTripId => api.replaceTrip(tripId, candidateTripId).then(setTrip),
-        moveTrip: days => api.updateTripStart(tripId, query.data.start + days * 86400).then(setTrip),
-        updateTripName: name => api.updateTripName(tripId, name).then(setTrip),
-        removeTripHighlight: highlightId => api.removeTripHighlight(tripId, highlightId).then(refetchTrip),
-        updateTripMainHighlight: highlightId => api.updateTripMainHighlight(tripId, highlightId).then(setTrip),
-        updateTripHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) => 
-            api.updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchTrip),
-        createTripExpense: (type, description, value, currency, subscriptionId) => api.createTripExpense(tripId, type, description, value, currency, subscriptionId).then(refetchTrip),
-        removeTripExpense: expenseId => api.removeTripExpense(tripId, expenseId).then(refetchTrip),
-        updateTripExpenseDescription: (expenseId, description) => api.updateTripExpenseDescription(tripId, expenseId, description).then(refetchTrip),
-        updateTripExpenseValue: (expenseId, value, currency) => api.updateTripExpenseValue(tripId, expenseId, value, currency).then(refetchTrip),
-        createTripNote: name => api.createTripNote(tripId, name).then(refetchTrip),
-        removeTripNote: noteId => api.removeTripNote(tripId, noteId).then(refetchTrip)
+        removeTrip: _ => removeTrip(tripId),
+        loadTrip: candidateTripId => replaceTrip(tripId, candidateTripId).then(setTrip),
+        moveTrip: days => updateTripStart(tripId, query.data.start + days * 86400).then(setTrip),
+        updateTripName: name => updateTripName(tripId, name).then(setTrip),
+        removeTripHighlight: highlightId => removeTripHighlight(tripId, highlightId).then(refetchTrip),
+        updateTripMainHighlight: highlightId => updateTripMainHighlight(tripId, highlightId).then(setTrip),
+        updateTripHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>
+            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchTrip),
+        createTripExpense: (type, description, value, currency, subscriptionId) => createTripExpense(tripId, type, description, value, currency, subscriptionId).then(refetchTrip),
+        removeTripExpense: expenseId => removeTripExpense(tripId, expenseId).then(refetchTrip),
+        updateTripExpenseDescription: (expenseId, description) => updateTripExpenseDescription(tripId, expenseId, description).then(refetchTrip),
+        updateTripExpenseValue: (expenseId, value, currency) => updateTripExpenseValue(tripId, expenseId, value, currency).then(refetchTrip),
+        createTripNote: name => createTripNote(tripId, name).then(refetchTrip),
+        removeTripNote: noteId => removeTripNote(tripId, noteId).then(refetchTrip)
     }
 }

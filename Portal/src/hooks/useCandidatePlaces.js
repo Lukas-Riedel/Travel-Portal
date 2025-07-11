@@ -5,7 +5,7 @@ import Place from "../model/place"
 import { useEffect, useMemo, useState } from "react"
 
 export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sort } = {}) => {
-    const api = useApi()
+    const { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } = useApi()
     const { isAdmin } = useAuth()
 
     const [currentLocation, setCurrentLocation] = useState(null)
@@ -21,7 +21,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sor
 
     const query = useQuery({
         queryKey: ["listCandidatePlaces", tripId, categoryId, labelName, include, sort],
-        queryFn: () => api.listCandidatePlaces({ tripId, categoryId, labelName, include, sort }),
+        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelName, include, sort }),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
     })
 
@@ -33,7 +33,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sor
     return {
         candidatePlaces,
         changeCurrentLocation: setCurrentLocation,
-        createCandidatePlace: (name, address) => api.createCandidatePlace(name, address).then(refetchCandidatePlaces),
-        removeCandidatePlace: placeId => api.removeCandidatePlace(placeId).then(refetchCandidatePlaces)
+        createCandidatePlace: (name, address) => createCandidatePlace(name, address).then(refetchCandidatePlaces),
+        removeCandidatePlace: placeId => removeCandidatePlace(placeId).then(refetchCandidatePlaces)
     }
 }
