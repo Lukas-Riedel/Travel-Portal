@@ -1,7 +1,7 @@
 import { TailSpin } from "react-loader-spinner"
 import { Link } from "react-router-dom"
 import { getPrettyName } from "../utils/helpers"
-import { MapPin, Move, Ruler, Trash2 } from "lucide-react"
+import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { formatKilometers, formatNextPlaces } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
@@ -56,6 +56,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 to={`/plan/place/${place.id}`}
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
                                 {getPrettyName(place.name)}
+                                {place.quality && place.quality >= 0 && ` (${Math.round(place.quality)} %)`}
                             </Link>
                             {isAdmin && onPlaceRemoved && (
                                 <button

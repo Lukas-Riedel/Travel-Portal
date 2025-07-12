@@ -11,31 +11,49 @@ import { useAuth } from "../contexts/AuthContext"
 import showFormToast from "../components/FormToast"
 import FloatingButton from "../components/FloatingButton"
 import { Plus } from "lucide-react"
+import TabMenu from "../components/TabMenu"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { endOfDay } from "date-fns"
+
+const labels = ["Zvažovaná místa", "Navštívená místa", "Návrhy výletů"]
 
 export default function PlansPage() {
     const { isAdmin } = useAuth()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: "CATEGORIES" })
+    const visitedPlaces = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
     const { candidateTrips, removeCandidateTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: "COUNTRY" })
 
     const [maxDistance, setMaxDistance] = useState(250)
+    const [maxQuality, setMaxQuality] = useState(80)
+    const [activeTab, setActiveTab] = useState(0)
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])
 
-    const filteredPlaces = useMemo(() => candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance), [candidatePlaces, maxDistance])
+    const filteredCandidatePlaces = useMemo(() => candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance), [candidatePlaces, maxDistance])
     const furthestPlace = useMemo(() => candidatePlaces?.filter(place => place.distance)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined), [candidatePlaces])
 
-    const countriesPlaces = useMemo(() => filteredPlaces?.reduce((acc, place) => {
+    const countriesCandidatePlaces = useMemo(() => filteredCandidatePlaces?.reduce((acc, place) => {
         if (!acc[place.country]) {
             acc[place.country] = []
         }
         acc[place.country].push(place)
         return acc
-    }, {}), [filteredPlaces])
+    }, {}), [filteredCandidatePlaces])
 
+    const filteredVisitedPlaces = useMemo(() => visitedPlaces?.filter(place => place.quality && place.quality <= maxQuality), [visitedPlaces, maxQuality])
+    const lowestQualityPlace = useMemo(() => visitedPlaces?.filter(place => place.quality)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined), [visitedPlaces])
+
+    const countriesVisitedPlaces = useMemo(() => filteredVisitedPlaces?.reduce((acc, place) => {
+        if (!acc[place.country]) {
+            acc[place.country] = []
+        }
+        acc[place.country].push(place)
+        return acc
+    }, {}), [filteredVisitedPlaces])
 
     const handleCandidatePlaceCreated = () => {
         showFormToast(
@@ -52,27 +70,58 @@ export default function PlansPage() {
 
     return (
         <>
-            <div className="h-[400px] md:h-[700px] my-4">
-                <PlaceMap
-                    places={filteredPlaces}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-            </div>
-            {furthestPlace && (
-                <Slider
-                    name="Maximální vzdálenost"
-                    valueFormatter={formatKilometers}
-                    value={maxDistance}
-                    minValue={1}
-                    maxValue={furthestPlace.distance}
-                    onValueChanged={setMaxDistance} />
-            )}
-            <CategoryCardGrid
-                categories={countryCategories}
-                categoriesPlaces={countriesPlaces}
-                onCurrentLocationChanged={changeCurrentLocation}
-                onMaximumDistanceChanged={setMaxDistance}
-                onPlaceRemoved={removeCandidatePlace} />
             {isAdmin && (
+                <TabMenu
+                    labels={labels}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab} />
+            )}
+            {activeTab === 0 && (
+                <>
+                    <div className="h-[400px] md:h-[700px] my-4">
+                        <PlaceMap
+                            places={filteredCandidatePlaces}
+                            placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                    </div>
+                    {furthestPlace && (
+                        <Slider
+                            name="Maximální vzdálenost"
+                            valueFormatter={formatKilometers}
+                            value={maxDistance}
+                            minValue={1}
+                            maxValue={furthestPlace?.distance}
+                            onValueChanged={setMaxDistance} />
+                    )}
+                    <CategoryCardGrid
+                        categories={countryCategories}
+                        categoriesPlaces={countriesCandidatePlaces}
+                        onCurrentLocationChanged={changeCurrentLocation}
+                        onMaximumDistanceChanged={setMaxDistance}
+                        onPlaceRemoved={removeCandidatePlace} />
+                </>
+            )}
+            {activeTab === 1 && (
+                <>
+                    <div className="h-[400px] md:h-[700px] my-4">
+                        <PlaceMap
+                            places={filteredVisitedPlaces}
+                            placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                    </div>
+                    {furthestPlace && (
+                        <Slider
+                            name="Maximální kvalita"
+                            valueFormatter={value => `${value}%`}
+                            value={maxQuality}
+                            minValue={Math.ceil(lowestQualityPlace?.quality)}
+                            maxValue={100}
+                            onValueChanged={setMaxQuality} />
+                    )}
+                    <CategoryCardGrid
+                        categories={countryCategories}
+                        categoriesPlaces={countriesVisitedPlaces} />
+                </>
+            )}
+            {activeTab === 2 && (
                 <TripCardGrid
                     trips={candidateTrips}
                     onTripRemoved={removeCandidateTrip} />
