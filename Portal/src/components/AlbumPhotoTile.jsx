@@ -33,7 +33,7 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
                 else if (type === "trip") {
                     return onTripHighlightCreated(photo.id)
                 }
-                return Promise.reject(type)
+                return Promise.reject(`Unknown highlight type '${type}'.`)
             }
         )
     }

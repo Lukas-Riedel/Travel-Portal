@@ -1,6 +1,13 @@
+import { isSameDay } from "date-fns";
+
 export default class Place {
     constructor(place) {
         Object.assign(this, place)
+    }
+
+    isPermanent() {
+        // TODO: This is not 100% true, the first part evaluates to true also for candidates
+        return this.dates.length === 0 || this.dates.every(date => !date.trip)
     }
 
     getCategory(type) {
@@ -57,7 +64,10 @@ export default class Place {
     }
 
     getDateByAlbumId(albumId) {
-        return this.dates.
-            find(date => date.album?.id === albumId)
+        return this.dates.find(date => date.album?.id === albumId)
+    }
+
+    getDate(date) {
+        return this.dates.find(d => isSameDay(date, new Date(d.start * 1000)))
     }
 }

@@ -11,10 +11,12 @@ import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
 import { usePlace } from "../hooks/usePlace.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
+import { useEvents } from "../hooks/useEvents.js"
 
 export default function PlacePage() {
     const { isAdmin } = useAuth()
     const { placeId } = useParams()
+    const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
@@ -42,6 +44,7 @@ export default function PlacePage() {
                 onLabelRemoved={removePlaceLabel} />
             <PlaceContent
                 place={place}
+                onPhotosAdded={publishPhotosUploadingTriggeredEvent}
                 onExcerptChanged={updatePlaceExcerpt}
                 onExcerptRefreshed={refreshPlaceExcerpt}
                 onLocationChanged={updatePlaceLocation} />

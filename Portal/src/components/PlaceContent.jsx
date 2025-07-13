@@ -1,11 +1,13 @@
-import { RefreshCcw, SquarePen } from "lucide-react"
+import { ImagePlus, RefreshCcw, SquarePen } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import showConfirmToast from "./ConfirmToast.jsx"
 import PlaceMap from "./PlaceMap.jsx"
 import showInputToast from "./InputToast.jsx"
 import { TailSpin } from "react-loader-spinner"
+import showFormToast from "./FormToast.jsx"
+import { getTime, parseISO } from "date-fns"
 
-export default function PlaceContent({ place, onExcerptChanged, onExcerptRefreshed, onLocationChanged }) {
+export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onExcerptRefreshed, onLocationChanged }) {
     const { isAdmin } = useAuth()
 
     const handleExcerptChanged = () => {
@@ -36,6 +38,27 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
             async () => onLocationChanged(latitude, longitude))
     }
 
+    const handlePhotosAdded = () => {
+        showFormToast(
+            "Zadej datum a cestu k fotkám k nahrání:",
+            [
+                { label: "Datum", required: true, type: "date" },
+                { label: "Cesta", required: true },
+                { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 }
+            ],
+            "Nahrávání fotek brzy začne",
+            "Při nahrávání fotek došlo k chybě",
+            async (date, path, mainPhotoPosition) => {
+                const placeDate = place.getDate(parseISO(date))
+                const timestamp = Math.floor(getTime(parseISO(date)) / 1000)
+                if (!place.isPermanent() && !placeDate) {
+                    return Promise.reject("Unable to upload photos for the regular place for the date that does not exist.")
+                }
+                return onPhotosAdded(place.id, placeDate?.album?.id, timestamp, path, mainPhotoPosition)
+            }
+        )
+    }
+
     return place ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <p className="text-gray-700 text-justify leading-relaxed relative mx-2 sm:mx-0">
@@ -52,6 +75,13 @@ export default function PlaceContent({ place, onExcerptChanged, onExcerptRefresh
                         onClick={handleExcerptChanged}
                         className="float-right ml-2 mb-1 btn-chip-gray-inline">
                         <SquarePen size={16} />
+                    </button>
+                )}
+                {onPhotosAdded && isAdmin && (
+                    <button
+                        onClick={handlePhotosAdded}
+                        className="float-right ml-2 mb-1 btn-chip-gray-inline">
+                        <ImagePlus size={16} />
                     </button>
                 )}
             </p>
