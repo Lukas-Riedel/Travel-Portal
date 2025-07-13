@@ -75,7 +75,7 @@
         $error = new TargetError(getErrorCode($e), $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
-        if ($e->getCode() !== 401 && $e->getCode() !== 403) {
+        if ($e->getCode() == 400) {
             $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
         }
         exit();
@@ -88,6 +88,7 @@
     header("Location: " . BASE_URL); 
 
     function getErrorCode($e) {
+        // TODO: Differentiate between 4xx and 5xx
         if ($e instanceof EntityNotFoundException) {
             return 404;
         }

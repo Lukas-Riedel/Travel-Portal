@@ -16,6 +16,11 @@ export default function CategoryPage() {
     const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("COUNTRY"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [categoryPlaces])
 
+    const totalScore = useMemo(() => categoryPlaces?.map(place => place.score).filter(Boolean)
+        .reduce((acc, score) => acc + score, 0), [categoryPlaces])
+    const totalQuality = useMemo(() => categoryPlaces?.map(place => place.quality).filter(Boolean)
+        .reduce((acc, quality) => acc + quality, 0), [categoryPlaces])
+
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
             return countryCategoriesMap.get(place?.country)
@@ -31,6 +36,7 @@ export default function CategoryPage() {
             <PageHeader
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
+                internalAttributes={{ "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / categoryPlaces.length)}%`, "Celkové skóre": totalScore }}
                 onNameChanged={updateCategoryName} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}

@@ -4,9 +4,9 @@ import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
 import showConfirmToast from "./ConfirmToast"
 import showFormToast from "./FormToast"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 
-export default function PageHeader({ name, categories, loadCandidates, onNameChanged, onAddressChanged, onMoved, onLoaded, onRemoved }) {
+export default function PageHeader({ name, categories, internalAttributes, loadCandidates, onNameChanged, onAddressChanged, onMoved, onLoaded, onRemoved }) {
     const { isAdmin } = useAuth()
 
     const [isMobile, setIsMobile] = useState(false)
@@ -105,6 +105,14 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
         </>
     )
 
+    const renderInternalAttributes = () => Object.keys(internalAttributes)
+        .filter(key => internalAttributes[key]).map((key, index) => (
+            <React.Fragment key={index}>
+                {index > 0 && <span>•</span>}
+                <span>{`${key}: ${internalAttributes[key]}`}</span>
+            </React.Fragment>
+        ))
+
     return !isMobile && (!categories || categories.length <= 5) ? (
         <div className="flex justify-between items-center mb-5">
             <div>
@@ -119,6 +127,11 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                         </>
                     )}
                 </h1>
+                {internalAttributes && isAdmin && Object.values(internalAttributes).filter(Boolean).length > 0 && (
+                    <div className="flex items-center text-md mt-1 text-gray-600 space-x-2">
+                        {renderInternalAttributes()}
+                    </div>
+                )}
             </div>
             <div className="flex">
                 {categories?.map(category => (
@@ -155,6 +168,11 @@ export default function PageHeader({ name, categories, loadCandidates, onNameCha
                         className="w-10 h-auto flex-shrink-0" />
                 ))}
             </div>
+            {internalAttributes && isAdmin && Object.values(internalAttributes).filter(Boolean).length > 0 && (
+                <div className="flex justify-center items-center text-md my-2 text-gray-600 space-x-2">
+                    {renderInternalAttributes()}
+                </div>
+            )}
         </div>
     )
 }
