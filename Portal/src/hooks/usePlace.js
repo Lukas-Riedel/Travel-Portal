@@ -8,10 +8,10 @@ import { useEvents } from "./useEvents"
 export const usePlace = (placeId) => {
     const { getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
         updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
-        updatePlaceExcerpt, refreshPlaceAlbum } = useApi()
+        updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight } = useApi()
     const { isAdmin } = useAuth()
-    const photosUploadingStartedEvents = useEvents("PhotosUploadingStarted")
-    const photosUploadingEndedEvents = useEvents("PhotosUploadingEnded")
+    const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
+    const { events: photosUploadingEndedEvents } = useEvents("PhotosUploadingEnded")
 
     const uploadedAlbumIds = useMemo(() => new Set(photosUploadingEndedEvents?.map(message => message.albumId) ?? []), [photosUploadingStartedEvents])
     const albumIdsBeingUploaded = useMemo(() => new Set(photosUploadingStartedEvents?.filter(message => !uploadedAlbumIds.has(message.albumId))
@@ -40,6 +40,7 @@ export const usePlace = (placeId) => {
         place: query.data && new Place(query.data),
         updatePlaceName: name => updatePlaceName(placeId, name).then(setPlace),
         updatePlaceAddress: address => getCoordinates(address).then(coordinates => updatePlaceLocation(placeId, coordinates.latitude, coordinates.longitude)).then(setPlace),
+        createPlaceHighlight: photoId => createPlaceHighlight(placeId, photoId).then(refetchPlace),
         removePlaceHighlight: highlightId => removePlaceHighlight(placeId, highlightId).then(refetchPlace),
         updatePlaceMainHighlight: highlightId => updatePlaceMainHighlight(placeId, highlightId).then(setPlace),
         updatePlaceHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>
@@ -49,6 +50,6 @@ export const usePlace = (placeId) => {
         updatePlaceExcerpt: excerpt => updatePlaceExcerpt(placeId, excerpt).then(setPlace),
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId, null).then(setPlace),
         updatePlaceLocation: (latitude, longitude) => updatePlaceLocation(placeId, latitude, longitude).then(setPlace),
-        refreshPlaceAlbum: (albumId, mainPhotoPosition) => refreshPlaceAlbum(placeId, albumId, mainPhotoPosition).then(refetchPlace)
+        refreshPlaceAlbum: (albumId, mainPhotoPosition) => refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition }).then(refetchPlace)
     }
 }

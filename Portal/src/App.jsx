@@ -19,11 +19,12 @@ import CandidateCategoryPage from "./pages/CandidateCategoryPage"
 import CandidateLabelPage from "./pages/CandidateLabelPage"
 import { useApi } from "./hooks/useApi"
 import { useEvents } from "./hooks/useEvents"
+import AlbumPage from "./pages/AlbumPage"
 
 export default function App() {
     const { listRegularPlaces } = useApi()
 
-    const photosUploadingStartedEvents = useEvents("PhotosUploadingStarted")
+    const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
     useEffect(() => {
         if (photosUploadingStartedEvents.length > 0) {
             photosUploadingStartedEvents.forEach(event => {
@@ -36,7 +37,7 @@ export default function App() {
         }
     }, [photosUploadingStartedEvents])
 
-    const photosUploadingEndedEvents = useEvents("PhotosUploadingEnded")
+    const { events: photosUploadingEndedEvents } = useEvents("PhotosUploadingEnded")
     useEffect(() => {
         if (photosUploadingEndedEvents.length > 0) {
             photosUploadingEndedEvents.forEach(event => {
@@ -48,6 +49,19 @@ export default function App() {
             })
         }
     }, [photosUploadingEndedEvents])
+
+    const { events: photoReplacingEndedEvents } = useEvents("PhotoReplacingEnded")
+    useEffect(() => {
+        if (photoReplacingEndedEvents.length > 0) {
+            photoReplacingEndedEvents.forEach(event => {
+                event.markAsRead()
+                listRegularPlaces({ albumId: event.albumId })
+                    .then(places => places.forEach(place => {
+                        toast.success(`Nahrazování fotky pro místo '${place.name}' byla dokončeno`)
+                    }))
+            })
+        }
+    }, [photoReplacingEndedEvents])
 
     return (
         <>
@@ -89,6 +103,7 @@ function AppContent() {
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
             <Route path="/place" element={<MainLayout><CountriesPage /></MainLayout>} />
             <Route path="/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
+            <Route path="/place/:placeId/album/:albumId" element={<MainLayout><AlbumPage /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><CategoryPage /></MainLayout>} />
             <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />

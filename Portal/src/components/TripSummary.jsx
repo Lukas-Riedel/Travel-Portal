@@ -8,9 +8,11 @@ import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Earth, House } from "lucide-react"
+import { useEvents } from "../hooks/useEvents"
 
 export default function TripSummary({ tripId }) {
     const configuration = useConfiguration()
+    const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { trip } = useTrip(tripId)
     const tripPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES" })
@@ -78,8 +80,7 @@ export default function TripSummary({ tripId }) {
                     fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
                     publicHoliday={trip?.getPublicHoliday(day)}
                     timezone={timezone}
-                    onPhotosAdded={(placeId, albumId, timestamp, path, mainPhotoPosition) =>
-                        api.createEvent("PhotosUploading", { placeId, albumId, timestamp, path, mainPhotoPosition })} />
+                    onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
             ))?.filter(Boolean)?.slice(0, count)}
             <button
                 onClick={() => setTimezone(prev => prev ? undefined : configuration?.homeLocation?.timezone)}

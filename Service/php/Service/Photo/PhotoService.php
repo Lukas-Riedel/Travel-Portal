@@ -150,6 +150,9 @@
 
             $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
+
+            $this->eventPublisher->publishPhotoReplacingEndedEvent($albumId);
+
             return $pendingPhoto;
         }
         

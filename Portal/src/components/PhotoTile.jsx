@@ -15,7 +15,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                     alt={firstLineText ?? ""}
                     className="w-[350px] h-[233px] object-cover brightness-100 hover:brightness-50 transition duration-700 ease-in-out rounded-xl"
                 />
-                <div className="absolute left-0 bottom-0 w-full flex items-center justify-center bg-gradient-to-t from-black via-black/70 to-transparent text-white text-sm uppercase font-medium leading-[170%] py-4 rounded-b-xl">
+                <div className={`absolute left-0 bottom-0 w-full flex items-center justify-center ${categories || firstLineText || secondLineText ? "bg-gradient-to-t from-black via-black/70 to-transparent" : ""} text-white text-sm uppercase font-medium leading-[170%] py-4 rounded-b-xl`}>
                     <ul className="list-none m-0 p-0 flex flex-col items-center gap-0.5 text-base">
                         <li className="flex flex-wrap justify-center gap-1 mx-2">
                             {categories?.map(category => (
@@ -26,7 +26,6 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                                         alt={category?.name}
                                         className="w-4 h-4 align-middle object-cover rounded-xl" />
                                 )
-
                             ))}
                         </li>
                         <li className="break-words max-w-[300px] text-center">

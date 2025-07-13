@@ -207,6 +207,11 @@
             // TODO: Introduce enum for user roles.
             $this->publishCloudEvent(Event::PhotosUploadingEnded, DeviceType::Portal, array("ADMIN"), array("albumId" => $albumId));
         }
+        
+        public function publishPhotoReplacingEndedEvent($albumId) : void {
+            // TODO: Introduce enum for user roles.
+            $this->publishCloudEvent(Event::PhotoReplacingEnded, DeviceType::Portal, array("ADMIN"), array("albumId" => $albumId));
+        }
 
         public function publishEvent($event, $args) : void {
             global $databaseProvider;
@@ -290,11 +295,12 @@
 
         case FitnessActivityDetected = 100;
 
-        case PhotosUploading = 200;
-        case PhotoReplacing = 201;
+        case PhotosUploadingTriggered = 200;
+        case PhotoReplacingTriggered = 201;
 
         case PhotosUploadingStarted = 300;
         case PhotosUploadingEnded = 301;
+        case PhotoReplacingEnded = 302;
 
         public static function fromName($name) : ?Event {
             foreach (Event::cases() as $case) {

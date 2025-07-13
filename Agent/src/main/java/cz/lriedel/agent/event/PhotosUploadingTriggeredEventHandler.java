@@ -1,4 +1,4 @@
-package cz.lriedel.agent.job;
+package cz.lriedel.agent.event;
 
 import static java.util.Comparator.comparing;
 
@@ -7,20 +7,20 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.lriedel.agent.model.args.PhotosUploadingEventArgs;
+import cz.lriedel.agent.model.args.PhotosUploadingTriggeredEventArgs;
 
 @Component
-final class PhotosUploadingEventHandler extends AbstractEventHandler<PhotosUploadingEventArgs> {
+final class PhotosUploadingTriggeredEventHandler extends AbstractEventHandler<PhotosUploadingTriggeredEventArgs> {
 
     private final PhotoService photoService;
 
-    PhotosUploadingEventHandler(ObjectMapper objectMapper, PhotoService photoService) {
-        super(objectMapper, PhotosUploadingEventArgs.class);
+    PhotosUploadingTriggeredEventHandler(ObjectMapper objectMapper, PhotoService photoService) {
+        super(objectMapper, PhotosUploadingTriggeredEventArgs.class);
         this.photoService = photoService;
     }
 
     @Override
-    public void handle(PhotosUploadingEventArgs args) {
+    public void handle(PhotosUploadingTriggeredEventArgs args) {
         photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(), args.mainPhotoPosition(), args.path());
     }
 }

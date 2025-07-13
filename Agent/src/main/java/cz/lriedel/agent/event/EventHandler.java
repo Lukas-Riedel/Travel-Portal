@@ -1,4 +1,4 @@
-package cz.lriedel.agent.job;
+package cz.lriedel.agent.event;
 
 public interface EventHandler<EVENT_ARGS> {
 

@@ -355,5 +355,5 @@ async function createAlbumAndUploadPhotos(placeId, timestamp) {
 }
 
 async function processPhotosUploadRequest(args) {
-    api.createEvent("PhotosUploading", args).then(alertConfirmation);
+    api.createEvent("PhotosUploadingTriggered", args).then(alertConfirmation);
 }

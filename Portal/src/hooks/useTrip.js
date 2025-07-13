@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
 
 export const useTrip = (tripId) => {
-    const { getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, removeTripHighlight,
+    const { getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, createTripHighlight, removeTripHighlight,
         updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote } = useApi()
     const { isAdmin } = useAuth()
@@ -26,6 +26,7 @@ export const useTrip = (tripId) => {
         loadTrip: candidateTripId => replaceTrip(tripId, candidateTripId).then(setTrip),
         moveTrip: days => updateTripStart(tripId, query.data.start + days * 86400).then(setTrip),
         updateTripName: name => updateTripName(tripId, name).then(setTrip),
+        createTripHighlight: photoId => createTripHighlight(tripId, photoId).then(refetchTrip),
         removeTripHighlight: highlightId => removeTripHighlight(tripId, highlightId).then(refetchTrip),
         updateTripMainHighlight: highlightId => updateTripMainHighlight(tripId, highlightId).then(setTrip),
         updateTripHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>

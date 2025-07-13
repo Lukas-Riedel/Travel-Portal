@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import cz.lriedel.agent.client.ServiceClient;
-import cz.lriedel.agent.job.AbstractEventHandler;
-import cz.lriedel.agent.job.EventHandler;
+import cz.lriedel.agent.event.AbstractEventHandler;
+import cz.lriedel.agent.event.EventHandler;
 import cz.lriedel.agent.model.Event;
 
 @Component

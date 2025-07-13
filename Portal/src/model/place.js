@@ -51,4 +51,13 @@ export default class Place {
             .map(date => date.album)
             .filter(album => album != null)
     }
+
+    getAlbum(albumId) {
+        return this.getAlbums().find(album => album.id === albumId)
+    }
+
+    getDateByAlbumId(albumId) {
+        return this.dates.
+            find(date => date.album?.id === albumId)
+    }
 }

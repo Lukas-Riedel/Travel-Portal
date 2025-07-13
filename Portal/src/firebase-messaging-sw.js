@@ -23,4 +23,11 @@ onBackgroundMessage(messaging, payload => {
             icon: "/icon.png"
         })
     }
+
+    if (payload.data.event === "PhotoReplacingEnded") {
+        self.registration.showNotification("Nahrazování fotky bylo dokončeno", {
+            body: "",
+            icon: "/icon.png"
+        })
+    }
 })

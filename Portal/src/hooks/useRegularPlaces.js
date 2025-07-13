@@ -8,8 +8,8 @@ import { useEffect, useMemo } from "react"
 export const useRegularPlaces = ({ tripId, categoryId, labelName, year, minStart, maxEnd, include, sort } = {}) => {
     const { listRegularPlaces } = useApi()
     const { isAdmin } = useAuth()
-    const photosUploadingStartedEvents = useEvents("PhotosUploadingStarted")
-    const photosUploadingEndedEvents = useEvents("PhotosUploadingEnded")
+    const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
+    const { events: photosUploadingEndedEvents } = useEvents("PhotosUploadingEnded")
 
     const uploadedAlbumIds = useMemo(() => new Set(photosUploadingEndedEvents?.map(message => message.albumId) ?? []), [photosUploadingStartedEvents])
     const albumIdsBeingUploaded = useMemo(() => new Set(photosUploadingStartedEvents?.filter(message => !uploadedAlbumIds.has(message.albumId))

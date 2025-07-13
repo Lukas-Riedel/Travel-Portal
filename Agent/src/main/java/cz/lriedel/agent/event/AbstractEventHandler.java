@@ -1,4 +1,4 @@
-package cz.lriedel.agent.job;
+package cz.lriedel.agent.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;

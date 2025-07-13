@@ -9,15 +9,15 @@ import { useMemo } from "react"
 import TripCalendar from "../components/TripCalendar"
 import TripNavigation from "../components/TripNavigation"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
-import { useApi } from "../hooks/useApi"
 import ExpenseSummary from "../components/ExpenseSummary"
 import NoteBar from "../components/NoteBar"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
+import { useEvents } from "../hooks/useEvents"
 
 export default function TripPage() {
     const { isAdmin } = useAuth()
-    const { createEvent } = useApi()
+    const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { tripId } = useParams()
 
@@ -62,8 +62,7 @@ export default function TripPage() {
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}
-                onPhotosAdded={trip?.isCandidate() ? undefined : (placeId, albumId, timestamp, path, mainPhotoPosition) =>
-                    createEvent("PhotosUploading", { placeId, albumId, timestamp, path, mainPhotoPosition })} />
+                onPhotosAdded={trip?.isCandidate() && publishPhotosUploadingTriggeredEvent} />
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />
