@@ -62,7 +62,7 @@ export default function TripPage() {
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}
-                onPhotosAdded={trip?.isCandidate() && publishPhotosUploadingTriggeredEvent} />
+                onPhotosAdded={!trip?.isCandidate() && publishPhotosUploadingTriggeredEvent} />
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />
