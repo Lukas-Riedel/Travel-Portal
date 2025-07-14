@@ -5,7 +5,7 @@ import { formatDuration, formatSteps, formatKilometers } from "../utils/formatte
 import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 import Tooltip from "./Tooltip"
 import showFormToast from "./FormToast"
@@ -86,14 +86,25 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }
 
     function RemainingUploadTime({ album }) {
-        const [remainingUploadTime, setRemainingUploadTime] = useState(() => ((new Date().getTime() / 1000) - album.uploadingStart) * 100 / album.uploadingProgress)
+        const [remainingUploadTime, setRemainingUploadTime] = useState(0)
+        const lastProgress = useRef(album.uploadingProgress)
+        const lastTimestamp = useRef(new Date().getTime() / 1000)
 
         useEffect(() => {
-            const interval = setInterval(() => {
-                setRemainingUploadTime(t => t - 1)
-            }, 1000)
-            return () => clearInterval(interval)
-        }, [])
+            const now = new Date().getTime() / 1000
+            const progressDiff = album.uploadingProgress - lastProgress.current
+            const timeDiff = now - lastTimestamp.current
+
+            if (progressDiff > 0 && timeDiff > 0) {
+                const speed = progressDiff / timeDiff
+                const remainingProgress = 100 - album.uploadingProgress
+                const remainingSeconds = remainingProgress / speed
+                setRemainingUploadTime(remainingSeconds)
+            }
+
+            lastProgress.current = album.uploadingProgress
+            lastTimestamp.current = now
+        }, [album])
 
         return (
             <span>
