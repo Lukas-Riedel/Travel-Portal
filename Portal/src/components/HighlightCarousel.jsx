@@ -20,8 +20,10 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
     const [isPaused, setIsPaused] = useState(isAdmin)
 
     useEffect(() => {
-        setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
-    }, [])
+        if (shuffledHighlights.length === 0) {
+            setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
+        }
+    }, [highlights])
 
     useEffect(() => {
         if (isPaused) {

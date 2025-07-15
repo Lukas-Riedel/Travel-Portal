@@ -77,9 +77,26 @@
                 ->withParameters($code)
                 ->getSingleRow();
 
-            return $airportIdentifierRow === NULL ? NULL : new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
+            if ($airportIdentifierRow === NULL) {
+                return NULL;
+            }
+
+            return new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
                 $this->categoryService->getCategoryIdentifierById($airportIdentifierRow["country_category_id"])->getName(),
                 $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
+        }
+
+        public function selectAirlineCodeIdentifier(string $code) : ?string {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM airline_code
+                WHERE code = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($code)
+                ->getSingleColumn("id");
         }
 
         public function selectFlightsForTrip(FlightType $flightType, string $tripId) : array {
@@ -90,7 +107,9 @@
                     COALESCE(fl.actual_departure, fe.start) AS start, 
                     COALESCE(fl.actual_arrival, fe.end) AS end, 
                     fl.registration, 
-                    fl.aircraft, 
+                    fl.aircraft,
+                    ai.id AS airline_id,
+                    ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id,
                     IF(fl.actual_arrival IS NULL, NULL, fl.actual_arrival - fe.end) AS delay,
@@ -112,6 +131,10 @@
                     ON fl.from_airport_id = fai.id
                 LEFT JOIN airport_identifier tai 
                     ON fl.to_airport_id = tai.id 
+                LEFT JOIN airline_code ac
+                    ON fl.airline_code_id = ac.id
+                LEFT JOIN airline_identifier ai
+                    ON ac.airline_id = ai.id
                 WHERE fe.trip_id = ?
                 ORDER BY start
             SQL;
@@ -126,6 +149,7 @@
                             $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
                     }             
 
+                    $airlineIdentifier = $flightRow["airline_id"] === NULL || $flightRow["airline_name"] === NULL ? NULL : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
                         $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
                         $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"] === NULL ? $this->geocodingService
@@ -135,38 +159,81 @@
                         $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"] === NULL ? $this->geocodingService
                         ->getLocation($flightRow["to"])->getTimezone() : $flightRow["to_airport_timezone"]);
 
-                    return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
+                    return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
                 });
         }
 
-        public function selectAirlineIdentifiers() : array {
+        public function selectAirlines() : array {
             $sql = <<<SQL
-                SELECT code,
-                    name,
-                    logo
-                FROM airline_identifier
+                SELECT ai.id,
+                    ai.name,
+                    ai.logo,
+                    COALESCE(GROUP_CONCAT(ac.code SEPARATOR ','), '') AS codes
+                FROM airline_identifier ai
+                LEFT JOIN airline_code ac
+                    ON ai.id = ac.airline_id
+                GROUP BY ai.id
             SQL;
             
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->getMappedResultSet(function($airlineIdentifierRow) {
-                    return new AirlineIdentifier($airlineIdentifierRow["code"], $airlineIdentifierRow["name"], $airlineIdentifierRow["logo"]);
+                ->getMappedResultSet(function($airlineRow) {
+                    return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
                 });
         }
 
-        public function selectAirlineIdentifier(string $code) : ?AirlineIdentifier {
+        public function selectAirline(string $airlineId) : ?Airline {
             $sql = <<<'SQL'
-                SELECT *
-                FROM airline_identifier
-                WHERE code = ?
+                SELECT ai.id,
+                    ai.name,
+                    ai.logo,
+                    COALESCE(GROUP_CONCAT(ac.code SEPARATOR ','), '') AS codes
+                FROM airline_identifier ai
+                LEFT JOIN airline_code ac
+                    ON ai.id = ac.airline_id
+                WHERE ai.id = ?
+                GROUP BY ai.id
             SQL;
 
-            $airlineIdentifierRow = $this->databaseProvider
+            $airlineRow = $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($code)
+                ->withParameters($airlineId)
                 ->getSingleRow();
 
-            return $airlineIdentifierRow === NULL ? NULL : new AirlineIdentifier($airlineIdentifierRow["code"], $airlineIdentifierRow["name"], $airlineIdentifierRow["logo"]);
+            if ($airlineRow === NULL) {
+                return NULL;
+            }
+
+            return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
+        }
+
+        public function selectAirlineByCode(string $airlineCode) : ?Airline {
+            $sql = <<<'SQL'
+                SELECT ai.id,
+                    ai.name,
+                    ai.logo,
+                    COALESCE(GROUP_CONCAT(ac.code SEPARATOR ','), '') AS codes
+                FROM airline_identifier ai
+                LEFT JOIN airline_code ac
+                    ON ai.id = ac.airline_id
+                WHERE ai.id IN (
+                    SELECT airline_id 
+                    FROM airline_code 
+                    WHERE code = ?
+                )
+                GROUP BY ai.id
+            SQL;
+
+            $airlineRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($airlineCode)
+                ->getSingleRow();
+
+            if ($airlineRow === NULL) {
+                return NULL;
+            }
+
+            return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
         }
 
         public function selectLoggedFlightsForInterval(int $start, int $end, FlightSortingStrategy $flightSortingStrategy) : array {
@@ -178,6 +245,8 @@
                     fl.actual_arrival AS end, 
                     fl.registration, 
                     fl.aircraft, 
+                    ai.id AS airline_id,
+                    ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id, 
                     fl.actual_arrival - fe.end AS delay,
@@ -199,6 +268,10 @@
                     ON fl.from_airport_id = fai.id
                 INNER JOIN airport_identifier tai 
                     ON fl.to_airport_id = tai.id 
+                LEFT JOIN airline_code ac
+                    ON fl.airline_code_id = ac.id
+                LEFT JOIN airline_identifier ai
+                    ON ac.airline_id = ai.id
                 WHERE fl.scheduled_departure >= ?
                     AND fl.scheduled_arrival <= ?
                 {$flightSortingStrategy->value}
@@ -209,6 +282,8 @@
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($flightRow) {
                     $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
+
+                    $airlineIdentifier = new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
                         $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
                         $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
@@ -216,7 +291,7 @@
                         $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
                         $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
 
-                    return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
+                    return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
                 });                 
         }
 
@@ -273,7 +348,7 @@
 
             $from = new Airport(NULL, $flightRow["from"], NULL, NULL, NULL, NULL, NULL);
             $to = new Airport(NULL, $flightRow["to"], NULL, NULL, NULL, NULL, NULL);
-            return new Flight($flightRow["flight"], NULL, NULL, NULL, $from, $to, $flightRow["start"], $flightRow["end"], NULL);
+            return new Flight($flightRow["flight"], NULL, NULL, NULL, NULL, $from, $to, $flightRow["start"], $flightRow["end"], NULL);
         }
 
         public function selectAverageFlightDelay() : int {
@@ -286,6 +361,22 @@
             return intval($this->databaseProvider
                 ->statementBuilder($sql)
                 ->getSingleColumn("average_delay"));
+        }
+
+        public function insertAirlineCodeId(string $code) : bool {    
+            $sql = <<<'SQL'
+                INSERT INTO airline_code (
+                    code
+                )
+                VALUES (
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($code)
+                ->execute() === 1;
         }
 
         public function insertAirportIdentifier(AirportIdentifier $airportIdentifier) : bool {
@@ -319,11 +410,12 @@
             return $wasInserted;
         }
 
-        public function insertFlight(Flight $flight, int $scheduledDeparture, int $scheduledArrival) : bool {
+        public function insertFlight(Flight $flight, $airlineCodeId, int $scheduledDeparture, int $scheduledArrival) : bool {
             $sql = <<<'SQL'
                 INSERT INTO flight_log (
                     flight, 
-                    registration, 
+                    registration,
+                    airline_code_id,
                     aircraft, 
                     from_airport_id, 
                     to_airport_id, 
@@ -339,7 +431,8 @@
                     ?, 
                     ?, 
                     ?, 
-                    ?, 
+                    ?,
+                    ?,
                     ?, 
                     ?
                 )
@@ -347,7 +440,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($flight->getFlight(), $flight->getRegistration(), $flight->getAircraft(), $flight->getFrom()->getId(), 
+                ->withParameters($flight->getFlight(), $flight->getRegistration(), $airlineCodeId, $flight->getAircraft(), $flight->getFrom()->getId(), 
                     $flight->getTo()->getId(), $scheduledDeparture, $flight->getStart(), $scheduledArrival, $flight->getEnd())
                 ->execute() === 1;
         }
@@ -381,49 +474,66 @@
                 ->execute() === 1;
         }
 
-        public function insertAirlineIdentifier(AirlineIdentifier $airlineIdentifier) : bool {
+        public function insertAirline(Airline $airline) : bool {
             $sql = <<<'SQL'
                 INSERT INTO airline_identifier (
-                    code,
                     name,
                     logo
                 )
                 VALUES (
                     ?, 
-                    ?, 
                     ?
                 )
             SQL;
 
+            $wasInserted = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($airline->getName(), $airline->getLogo())
+                ->execute() === 1;
+                
+            if ($wasInserted) {
+                $airline->setId($this->databaseProvider->getLastInsertedId());
+            }
+
+            return $wasInserted;
+        }
+
+        public function updateAirlineCodeAirline(string $airlineCodeId, ?string $airlineId) : bool {            
+            $sql = <<<'SQL'
+                UPDATE airline_code
+                SET airline_id = ?
+                WHERE id = ?
+            SQL;
+
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($airlineIdentifier->getCode(), $airlineIdentifier->getName(), $airlineIdentifier->getLogo())
+                ->withParameters($airlineId, $airlineCodeId)
                 ->execute() === 1;
         }
 
-        public function updateAirlineName(string $airlineCode, string $name) : bool {
+        public function updateAirlineName(string $airlineId, string $name) : bool {
             $sql = <<<'SQL'
                 UPDATE airline_identifier
                 SET name = ?
-                WHERE code = ?
+                WHERE id = ?
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($name, $airlineCode)
+                ->withParameters($name, $airlineId)
                 ->execute() === 1;
         }
 
-        public function updateAirlineLogo(string $airlineCode, string $logo) : bool {
+        public function updateAirlineLogo(string $airlineId, string $logo) : bool {
             $sql = <<<'SQL'
                 UPDATE airline_identifier
                 SET logo = ?
-                WHERE code = ?
+                WHERE id = ?
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($logo, $airlineCode)
+                ->withParameters($logo, $airlineId)
                 ->execute() === 1;
         }
 
@@ -450,6 +560,19 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteAirline(string $airlineId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM airline_identifier
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($airlineId)
                 ->execute();
         }
 

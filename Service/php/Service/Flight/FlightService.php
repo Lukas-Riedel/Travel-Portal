@@ -21,8 +21,6 @@
 
         private readonly GeocodingService $geocodingService;
 
-        private readonly \ConfigurationService $configurationService;
-
         private readonly \HttpClient $httpClient;
 
         private readonly \CalendarClient $calendarClient;
@@ -32,11 +30,10 @@
         private readonly \EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, GeocodingService $geocodingService, CategoryService $categoryService,
-            \ConfigurationService $configurationService, \HttpClient $httpClient, \CalendarClient $calendarClient,
+            \HttpClient $httpClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
-            $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
@@ -59,17 +56,16 @@
             return $this->flightMapper->selectTripIdForFlight($flight);
         }
 
-        public function getAirlineIdentifiers() : array {
-            return $this->flightMapper->selectAirlineIdentifiers();
+        public function getAirlines() : array {
+            return $this->flightMapper->selectAirlines();
         }
 
-        public function getAirlineIdentifier(string $airlineCode) : AirlineIdentifier {
-            $airlineIdentifier = $this->flightMapper->selectAirlineIdentifier($airlineCode);
-            return $airlineIdentifier !== NULL ? $airlineIdentifier : new AirlineIdentifier($airlineCode, $airlineCode, NULL);
+        public function getAirline(string $airlineId) : ?Airline {
+            return $this->flightMapper->selectAirline($airlineId);
         }
 
-        public function getAirlineIdentifierForFlight(string $flight) : AirlineIdentifier {
-            return $this->getAirlineIdentifier($this->getAirlineCodeForFlight($flight));
+        public function getAirlineForFlight(string $flight) : ?Airline {
+            return $this->flightMapper->selectAirlineByCode($this->getAirlineCodeForFlight($flight));
         }
 
         public function fetchAndLogFlight(string $flight, string $tripId, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
@@ -98,7 +94,8 @@
         }
 
         public function logFlight(string $flight, string $tripId, string $originAirportName, string $originAirportCode, string $destinationAirportName, string $destinationAirportCode,
-            int $scheduledDeparture, int $actualDeparture, int $scheduledArrival, int $actualArrival, string $registration, string $aircraft) : Flight {            
+            int $scheduledDeparture, int $actualDeparture, int $scheduledArrival, int $actualArrival, string $registration, string $aircraft) : Flight {    
+            $airlineCodeId = $this->getOrCreateAirlineCodeId($this->getAirlineCodeForFlight($flight));
             $originAirportIdentifier = $this->getOrCreateAirportIdentifier($originAirportCode);
             $destinationAirportIdentifier = $this->getOrCreateAirportIdentifier($destinationAirportCode);
 
@@ -111,18 +108,18 @@
                 
 
             $this->flightMapper->deleteLoggedFlight($flight, $actualDeparture, $actualArrival);
-            $result = new Flight($flight, $registration, $aircraft, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
-            $this->flightMapper->insertFlight($result, $scheduledDeparture, $scheduledArrival);
-
-            $airlineIdentifier = $this->getAirlineIdentifierForFlight($flight);
-            if ($airlineIdentifier === NULL) {
-                $airlineCode = $this->getAirlineCodeForFlight($flight);
-                $this->flightMapper->insertAirlineIdentifier(new AirlineIdentifier($airlineCode, $airlineCode, NULL));
-            }
+            $result = new Flight($flight, $registration, $aircraft, NULL, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
+            $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 
             $this->eventPublisher->publishFlightLoggedEvent($flight, $tripId);
 
             return $result;
+        }
+
+        public function createAirline(string $name, ?string $logo) : Airline {
+            $airline = new Airline(NULL, $name, array(), $logo);
+            $this->flightMapper->insertAirline($airline);
+            return $airline;
         }
 
         public function createFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
@@ -131,7 +128,7 @@
             
             $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
             $to = new Airport(NULL, $destinationAirportName, NULL, NULL, NULL, NULL, NULL);
-            return new Flight($flight, NULL, NULL, NULL, $from, $to, $scheduledDeparture, $scheduledArrival, NULL);
+            return new Flight($flight, NULL, NULL, NULL, NULL, $from, $to, $scheduledDeparture, $scheduledArrival, NULL);
         }
 
         public function getFlightsForTrip(string $tripId) : array {
@@ -150,10 +147,29 @@
             return $this->flightMapper->updateAirlineLogo($airlineCode, $logo);
         }
 
+        public function updateAirlineCodeAirline(string $airlineCode, ?string $airlineId) : bool {
+            return $this->flightMapper->updateAirlineCodeAirline($this->flightMapper->selectAirlineCodeIdentifier($airlineCode), $airlineId);
+        }
+
+        public function removeAirline(string $airlineId) : bool {
+            return $this->flightMapper->deleteAirline($airlineId) > 0;
+        }
+
         public function refreshCalendar(array $flightTypes, TripService $tripService) : void {
             foreach ($flightTypes as &$flightType) {
                 $this->doRefreshCalendar($flightType, $tripService);
             }
+        }
+
+        private function getOrCreateAirlineCodeId(string $code) : string {
+            $airlineCodeId = $this->flightMapper->selectAirlineCodeIdentifier($code);
+            if ($airlineCodeId !== NULL) {
+                return $airlineCodeId;
+            }
+
+            $this->flightMapper->insertAirlineCodeId($code);
+
+            return $this->flightMapper->selectAirlineCodeIdentifier($code);
         }
         
         private function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {
@@ -183,7 +199,7 @@
 
                 $from = new Airport(NULL, $parsedFlightEventName["from"], NULL, NULL, NULL, NULL, NULL);
                 $to = new Airport(NULL, $parsedFlightEventName["to"], NULL, NULL, NULL, NULL, NULL);
-                $flight = new Flight($parsedFlightEventName["flight"], NULL, NULL, NULL, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), NULL);
+                $flight = new Flight($parsedFlightEventName["flight"], NULL, NULL, NULL, NULL, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), NULL);
 
                 $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());
             }   

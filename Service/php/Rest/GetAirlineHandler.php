@@ -3,12 +3,12 @@
         public function handle($input, $roles) {
             global $flightService;
 
-            $response = $flightService->getAirlineIdentifier($input["airlineCode"]);
+            $response = $flightService->getAirline($input["airlineId"]);
             if ($response !== NULL) {
                 return $this->createResponse(200, $response);
             }
 
-            return $this->create404Response("airlines", $input["airlineCode"]);
+            return $this->create404Response("airlines", $input["airlineId"]);
         }
 
         public function getRequiredRole() {
@@ -24,12 +24,12 @@
         }
 
         public function getPath() {
-            return "/airlines/{airlineCode}";
+            return "/airlines/{airlineId}";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("airlineCode", "string", "LH"));
+                $this->createPathParameter("airlineId", "string", "1"));
         }
 
         public function getMethod() {
@@ -37,11 +37,11 @@
         }
         
         public function getShortDescription() {
-            return "Retrieve an airline with the specified code";
+            return "Retrieve an airline with the specified identifier";
         }
         
         public function getLongDescription() {
-            return "Retrieves an airline with the specified code.";
+            return "Retrieves an airline with the specified identifier.";
         }
         
         public function getRequestExamples() {

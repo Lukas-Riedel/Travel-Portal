@@ -108,7 +108,7 @@ function AppContent() {
             <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
             <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />
-            <Route path="/airline/:airlineName" element={<MainLayout><AirlinePage /></MainLayout>} />
+            <Route path="/airline/:airlineId" element={<MainLayout><AirlinePage /></MainLayout>} />
             <Route path="/tracker" element={<MainLayout><TrackerPage /></MainLayout>} />
             <Route path="/plan" element={<MainLayout><PlansPage /></MainLayout>} />
             <Route path="/plan/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />

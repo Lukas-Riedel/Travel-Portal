@@ -492,23 +492,35 @@ export function useApi() {
         return sendRequest("DELETE", "/places/" + placeId + "/labels/" + labelId)
     }
 
+    async function createAirline(name, { logo } = {}) {
+        return sendRequest("POST", "/airlines",
+            {
+                name: name,
+                logo: logo
+            })
+    }
+
     async function listAirlines() {
         return sendRequest("GET", "/airlines", {}, {})
     }
 
-    async function getAirline(airlineCode) {
-        return sendRequest("GET", "/airlines/" + airlineCode, {}, {})
+    async function getAirline(airlineId) {
+        return sendRequest("GET", "/airlines/" + airlineId, {}, {})
     }
 
-    async function updateAirlineName(airlineCode, name) {
-        return sendRequest("PATCH", "/airlines/" + airlineCode,
+    async function removeAirline(airlineId) {
+        return sendRequest("DELETE", "/airlines/" + airlineId, {}, {})
+    }
+
+    async function updateAirlineName(airlineId, name) {
+        return sendRequest("PATCH", "/airlines/" + airlineId,
             {
                 name: name
             })
     }
 
-    async function updateAirlineLogo(airlineCode, logo) {
-        return sendRequest("PATCH", "/airlines/" + airlineCode,
+    async function updateAirlineLogo(airlineId, logo) {
+        return sendRequest("PATCH", "/airlines/" + airlineId,
             {
                 name: logo
             })
@@ -607,10 +619,12 @@ export function useApi() {
         createPlaceLabel,
         removeTripNote,
         removePlaceLabel,
+        createAirline,
         listAirlines,
         getAirline,
         updateAirlineLogo,
         updateAirlineName,
+        removeAirline,
         listYears,
         getYear,
         updateYearMainHighlight,

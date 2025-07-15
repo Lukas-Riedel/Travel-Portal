@@ -5,19 +5,16 @@ import { useCategories } from "../hooks/useCategories"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import FlightCardGrid from "../components/FlightCardGrid"
 import FlightMap from "../components/FlightMap"
-import { useAirlines } from "../hooks/useAirlines"
-import { getAirlineCodeForFlight } from "../utils/helpers"
+import { useAirline } from "../hooks/useAirline"
 
 export default function AirlinePage() {
-    const { airlineName } = useParams()
+    const { airlineId } = useParams()
 
     const trips = useRegularTrips({ include: "FLIGHTS" })
     const countryCategories = useCategories({ categories: "COUNTRY" })
-    const airlines = useAirlines()
+    const { airline, updateAirlineName, removeAirline } = useAirline(airlineId)
 
-    const relevantAirlines = useMemo(() => airlines?.filter(airline => airline.name === airlineName), [airlines, airlineName])
-    const flights = useMemo(() => [...(trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration)
-        ?.filter(flight => relevantAirlines?.some(airline => getAirlineCodeForFlight(flight.flight) === airline.code)) ?? [])].reverse(), [trips])
+    const flights = useMemo(() => [...(trips?.flatMap(trip => trip.flights)?.filter(flight => flight.airline?.id === airline?.id) ?? [])].reverse(), [trips])
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
@@ -25,7 +22,10 @@ export default function AirlinePage() {
 
     return (
         <>
-            <PageHeader name={airlineName} />
+            <PageHeader
+                name={airline?.name}
+                onNameChanged={updateAirlineName}
+                onRemoved={removeAirline} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <FlightMap
                     flights={flights}

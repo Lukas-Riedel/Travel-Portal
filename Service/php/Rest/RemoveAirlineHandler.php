@@ -1,14 +1,18 @@
 <?php
-    class ListAirlinesHandler extends Handler {
+    class RemoveAirlineHandler extends Handler {
         public function handle($input, $roles) {
             global $flightService;
 
-            $response = $flightService->getAirlines();
-            return $this->createResponse(200, $response);
+            $response = $flightService->removeAirline($input["airlineId"]);
+            if ($response === FALSE) {                
+                return $this->create404Response("airlines", $input["airlineId"]);
+            }
+
+            return $this->createResponse(204, $response);
         }
 
         public function getRequiredRole() {
-            return "USER";
+            return "ADMIN";
         }
         
         public function isProtected() {
@@ -20,23 +24,24 @@
         }
 
         public function getPath() {
-            return "/airlines";
+            return "/airlines/{airlineId}";
         }
 
         public function getParameters() {
-            return array();
+            return array(
+                $this->createPathParameter("airlineId", "integer", 41));
         }
 
         public function getMethod() {
-            return "GET";
+            return "DELETE";
         }
         
         public function getShortDescription() {
-            return "Retrieve a collection of airlines";
+            return "Remove an airline with the specified identifier";
         }
         
         public function getLongDescription() {
-            return "Retrieves a collection of airlines.";
+            return "Removes an airline with the specified identifier.";
         }
         
         public function getRequestExamples() {
@@ -45,10 +50,11 @@
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Airlines", 200, '[]'),
+                $this->create204ResponseExample(),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
-                $this->create403ResponseExample());
+                $this->create403ResponseExample(),
+                $this->create404ResponseExample());
         }
     }
 ?>

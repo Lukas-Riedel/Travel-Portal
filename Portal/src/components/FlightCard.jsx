@@ -2,19 +2,15 @@ import { Plane, Clock, MapPin, PlaneTakeoff, PlaneLanding } from "lucide-react"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { formatKilometers, formatDuration } from "../utils/formatters.js"
-import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
-import { getAirlineCodeForFlight, getSafeSvgString } from "../utils/helpers.js"
-import { useAirlines } from "../hooks/useAirlines.js"
+import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
+import { useAirline } from "../hooks/useAirline.js"
 
 export default function FlightCard({ flight }) {
-    const airlines = useAirlines()
+    const { airline } = useAirline(flight?.airline?.id)
 
     const formatTime = (timestamp, timezone) => format(toZonedTime(fromUnixTime(timestamp), timezone), "HH:mm")
-
-    const airlineCode = useMemo(() => getAirlineCodeForFlight(flight?.flight), [flight])
-    const airline = useMemo(() => airlines?.find(airline => airline.code === airlineCode), [airlines, airlineCode])
 
     const renderFlightEndpoint = (airport, timestamp, Icon) => (
         <div className="my-2">
@@ -49,9 +45,9 @@ export default function FlightCard({ flight }) {
                         className="text-blue-600 hover:underline text-lg">
                         {flight.flight}
                     </a>
-                    {airline?.name && (
+                    {airline && (
                         <Link
-                            to={`/airline/${airline.name}`}
+                            to={`/airline/${airline.id}`}
                             className="text-base hover:underline">
                             {airline.name}
                         </Link>
@@ -68,7 +64,7 @@ export default function FlightCard({ flight }) {
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}
-                            dangerouslySetInnerHTML={{ __html: getSafeSvgString(airline.logo, airlineCode) }} />
+                            dangerouslySetInnerHTML={{ __html: getSafeSvgString(airline.logo, airline.codes.join()) }} />
                     ) : (
                         <div className="text-gray-400 text-sm text-center">
                             Logo není k dispozici

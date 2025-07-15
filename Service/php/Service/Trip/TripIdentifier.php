@@ -3,7 +3,8 @@
     
     use Service\Service\Highlight\Highlight;
 
-    class TripIdentifier implements \JsonSerializable {   
+    class TripIdentifier implements \JsonSerializable {
+        
         private const FULL_TRIP_NAME_FORMAT = "%s %d";
              
         private ?string $id;

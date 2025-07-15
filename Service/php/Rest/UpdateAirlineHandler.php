@@ -7,24 +7,24 @@
 
             $response = (new GetAirlineHandler())
                 ->handle(array(
-                    "airlineCode" => $input["airlineCode"]), $roles);                    
-            if ($response["airlineCode"] != 200) {
+                    "airlineId" => $input["airlineId"]), $roles);                    
+            if ($response["code"] != 200) {
                 return $response;
             }
 
             if (isset($input["name"])) {
-                $flightService->updateAirlineName($input["airlineCode"], $input["name"]);
+                $flightService->updateAirlineName($input["airlineId"], $input["name"]);
             }
 
             if (isset($input["logo"])) {
-                $flightService->updateAirlineLogo($input["airlineCode"], $input["logo"]);
+                $flightService->updateAirlineLogo($input["airlineId"], $input["logo"]);
             }
 
             $databaseProvider->materializeViews();
     
             return (new GetAirlineHandler())
                 ->handle(array(
-                    "airlineCode" => $input["airlineCode"]), $roles);
+                    "airlineId" => $input["airlineId"]), $roles);
         }
 
         public function getRequiredRole() {
@@ -40,12 +40,12 @@
         }
 
         public function getPath() {
-            return "/airlines/{airlineCode}";
+            return "/airlines/{airlineId}";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("airlineCode", "string", "LH"));
+                $this->createPathParameter("airlineId", "string", "1"));
         }
 
         public function getMethod() {
@@ -53,11 +53,11 @@
         }
         
         public function getShortDescription() {
-            return "Update an airline with the specified code";
+            return "Update an airline with the specified identifier";
         }
         
         public function getLongDescription() {
-            return "Updates an airline with the specified code.";
+            return "Updates an airline with the specified identifier.";
         }
         
         public function getRequestExamples() {

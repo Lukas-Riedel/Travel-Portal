@@ -2,26 +2,20 @@
     namespace Service\Service\Flight;
 
     class AirlineIdentifier implements \JsonSerializable {        
-        private readonly string $code;
+        private readonly string $id;
         private readonly string $name;
-        private readonly ?string $logo;
 
-        public function __construct(string $code, string $name, ?string $logo) {
-            $this->code = $code;
+        public function __construct(string $id, string $name) {
+            $this->id = $id;
             $this->name = $name;
-            $this->logo = $logo;
         }
 
-        public function getCode() : string {
-            return $this->code;
+        public function getId() : string {
+            return $this->id;
         }
 
         public function getName() : string {
             return $this->name;
-        }
-
-        public function getLogo() : ?string {
-            return $this->logo;
         }
 
         #[\ReturnTypeWillChange]

@@ -83,7 +83,7 @@
                     }
                     
                     $mostUsedAircraftRegistrations = $this->getStandingsStatistics($flights, fn($flight) => sprintf(self::AIRCRAFT_REGISTRATION_STATISTICS_FORMAT,
-                        $flight->getRegistration(), $this->flightService->getAirlineIdentifierForFlight($flight->getFlight())->getName()));
+                        $flight->getRegistration(), $this->flightService->getAirlineForFlight($flight->getFlight())->getName()));
                     if (count($mostUsedAircraftRegistrations) > 0) {
                         $statistics[] = new Statistics(self::MOST_USED_AIRCRAFT_REGISTRATIONS_STATISTICS_NAME, $mostUsedAircraftRegistrations, StatisticsUnit::Flights);
                     }
@@ -95,7 +95,7 @@
                         $statistics[] = new Statistics(self::MOST_USED_AIRCRAFTS_STATISTICS_NAME, $mostUsedAircrafts, StatisticsUnit::Flights);
                     }
                     
-                    $mostUsedAirlines = $this->getStandingsStatistics($flights, fn($flight) => $this->flightService->getAirlineIdentifierForFlight($flight->getFlight())->getName());
+                    $mostUsedAirlines = $this->getStandingsStatistics($flights, fn($flight) => $this->flightService->getAirlineForFlight($flight->getFlight())->getName());
                     if (count($mostUsedAirlines) > 0) {
                         usort($mostUsedAirlines, fn($a, $b) => $b->getValue() - $a->getValue());
                         $statistics[] = new Statistics(self::MOST_USED_AIRLINES_STATISTICS_NAME, $mostUsedAirlines, StatisticsUnit::Flights);

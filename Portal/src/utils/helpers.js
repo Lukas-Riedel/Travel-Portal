@@ -47,10 +47,6 @@ export function sumEventHours(events) {
     return events.map(e => e.hours).reduce((a, b) => a + b, 0)
 }
 
-export function getAirlineCodeForFlight(flight) {
-    return flight?.substring(0, 2)
-}
-
 export function getSortedTrips(trips, showCurrentDayTripsTrip) {
     if (!trips) {
         return trips
