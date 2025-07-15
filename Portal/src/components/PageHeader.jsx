@@ -1,12 +1,11 @@
-import { ArrowRightLeft, LocationEdit, SquarePen, Trash2, Upload } from "lucide-react"
+import { SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
 import showConfirmToast from "./ConfirmToast"
-import showFormToast from "./FormToast"
 import React, { useEffect, useState } from "react"
 
-export default function PageHeader({ name, categories, internalAttributes, loadCandidates, onNameChanged, onAddressChanged, onMoved, onLoaded, onRemoved }) {
+export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onAddressChanged, onRemoved }) {
     const { isAdmin } = useAuth()
 
     const [isMobile, setIsMobile] = useState(false)
@@ -27,39 +26,6 @@ export default function PageHeader({ name, categories, internalAttributes, loadC
         )
     }
 
-    const handleAddressChanged = () => {
-        showInputToast("Zadej novou adresu:",
-            name,
-            "Adresa byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat adresu",
-            onAddressChanged
-        )
-    }
-
-    const handleMoved = () => {
-        showFormToast(
-            "Zadej, o kolik dnů se má entita přesunout:",
-            [
-                { type: "number", required: true }
-            ],
-            "Entita byla úspěšně přesunuta",
-            "Nepodařilo se přesunout entitu",
-            onMoved
-        )
-    }
-
-    const handleLoaded = () => {
-        showFormToast(
-            "Vyber entitu k načtení:",
-            [
-                { type: "select", required: true, options: loadCandidates }
-            ],
-            "Entita byla úspěšně načtena",
-            "Nepodařilo se načíst entitu",
-            onLoaded
-        )
-    }
-
     const handleRemoved = () => {
         showConfirmToast("Opravdu chceš odstranit tuto entitu?",
             "Entita byla úspěšně odstraněna",
@@ -76,26 +42,6 @@ export default function PageHeader({ name, categories, internalAttributes, loadC
                     className="btn-chip-gray">
                     <SquarePen size={16} />
                 </button>)}
-            {onAddressChanged && (
-                <button
-                    onClick={handleAddressChanged}
-                    className="btn-chip-gray">
-                    <LocationEdit size={16} />
-                </button>)}
-            {onMoved && (
-                <button
-                    onClick={handleMoved}
-                    className="btn-chip-gray">
-                    <ArrowRightLeft size={16} />
-                </button>
-            )}
-            {onLoaded && (
-                <button
-                    onClick={handleLoaded}
-                    className="btn-chip-gray">
-                    <Upload size={16} />
-                </button>
-            )}
             {onRemoved && (
                 <button
                     onClick={handleRemoved}

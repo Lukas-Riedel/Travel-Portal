@@ -44,10 +44,7 @@ export default function TripPage() {
             <PageHeader
                 name={trip && trip.getFullName()}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                loadCandidates={candidateTrips?.map(candidateTrip => ({ id: candidateTrip.id, name: candidateTrip.name }))}
                 onNameChanged={updateTripName}
-                onMoved={moveTrip}
-                onLoaded={loadTrip}
                 onRemoved={removeTrip} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={trip}
@@ -62,7 +59,10 @@ export default function TripPage() {
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}
-                onPhotosAdded={!trip?.isCandidate() && publishPhotosUploadingTriggeredEvent} />
+                tripCandidates={candidateTrips?.map(candidateTrip => ({ id: candidateTrip.id, name: candidateTrip.name }))}
+                onPhotosAdded={!trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
+                onTripMoved={moveTrip}
+                onTripLoaded={loadTrip} />
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />

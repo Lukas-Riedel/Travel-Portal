@@ -29,8 +29,7 @@ export default function PlacePage() {
                 name={place?.name}
                 categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
                 internalAttributes={{ "Kvalita": place?.quality && `${place.quality}%`, "Skóre": place?.score }}
-                onNameChanged={updatePlaceName}
-                onAddressChanged={updatePlaceAddress} />
+                onNameChanged={updatePlaceName} />
             <HighlightCarousel
                 place={place}
                 highlights={place?.highlights}
@@ -47,6 +46,7 @@ export default function PlacePage() {
                 onPhotosAdded={publishPhotosUploadingTriggeredEvent}
                 onExcerptChanged={updatePlaceExcerpt}
                 onExcerptRefreshed={refreshPlaceExcerpt}
+                onAddressChanged={updatePlaceAddress}
                 onLocationChanged={updatePlaceLocation} />
             <DateTileGrid
                 place={place}

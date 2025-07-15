@@ -2,12 +2,16 @@ import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
 import DayCard from "./DayCard"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
-import { Earth, House } from "lucide-react"
+import { ArrowRightLeft, Earth, House, Upload } from "lucide-react"
+import showFormToast from "./FormToast"
+import { useAuth } from "../contexts/AuthContext"
+import CardGrid from "./CardGrid"
 
 const loadingDaysCount = 4
 
-export default function TripCalendar({ trip, places, onPhotosAdded }) {
+export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded }) {
     const configuration = useConfiguration()
+    const { isAdmin } = useAuth()
 
     const [timezone, setTimezone] = useState(undefined)
     useEffect(() => {
@@ -19,9 +23,33 @@ export default function TripCalendar({ trip, places, onPhotosAdded }) {
         end: startOfDay(fromUnixTime(trip?.end || (places && Math.max(...places.flatMap(place => place?.dates).map(date => date.end)))) - 1)
     }), [trip, places])
 
+
+    const handleMoved = () => {
+        showFormToast(
+            "Zadej, o kolik dnů se má výlet přesunout:",
+            [
+                { type: "number", required: true }
+            ],
+            "Výlet byl úspěšně přesunut",
+            "Nepodařilo se přesunout výlet",
+            onTripMoved
+        )
+    }
+
+    const handleLoaded = () => {
+        showFormToast(
+            "Vyber výlet k načtení:",
+            [
+                { type: "select", required: true, options: tripCandidates }
+            ],
+            "Výlet byla úspěšně načten",
+            "Nepodařilo se načíst výlet",
+            onTripLoaded
+        )
+    }
     return (
         <div className="relative w-full my-4">
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-4 text-sm w-full">
+            <CardGrid cardsPerRowCount={4}>
                 {days?.map((day, index) => (
                     <DayCard
                         key={index}
@@ -32,17 +60,29 @@ export default function TripCalendar({ trip, places, onPhotosAdded }) {
                         publicHoliday={trip.getPublicHoliday(day)}
                         timezone={timezone}
                         onPhotosAdded={onPhotosAdded} />
-                )) ?? (
-                        Array.from({ length: loadingDaysCount }).map((_, index) => (
-                            <DayCard key={index} />
-                        ))
-                    )}
+                ))}
+            </CardGrid>
+            <div className="absolute bottom-3 right-3 flex items-center gap-2 z-50">
+                {onTripMoved && isAdmin && !trip?.isDayTrips() && (
+                    <button
+                        onClick={handleMoved}
+                        className="btn-chip-gray">
+                        <ArrowRightLeft size={16} />
+                    </button>
+                )}
+                {onTripLoaded && isAdmin && !trip?.isDayTrips() && (
+                    <button
+                        onClick={handleLoaded}
+                        className="btn-chip-gray">
+                        <Upload size={16} />
+                    </button>
+                )}
+                <button
+                    onClick={() => setTimezone(prev => prev ? undefined : configuration?.homeLocation?.timezone)}
+                    className="btn-chip-gray">
+                    {timezone ? <House size={16} /> : <Earth size={16} />}
+                </button>
             </div>
-            <button
-                onClick={() => setTimezone(prev => prev ? undefined : configuration?.homeLocation?.timezone)}
-                className="absolute bottom-3 right-3 btn-chip-gray">
-                {timezone ? <House size={16} /> : <Earth size={16} />}
-            </button>
         </div>
     )
 }
