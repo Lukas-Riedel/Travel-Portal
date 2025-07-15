@@ -1,8 +1,8 @@
 import { TailSpin } from "react-loader-spinner";
 
-export default function LoadingTile() {
+export default function LoadingCard() {
     return (
-        <div className="relative w-[350px] h-[233px] mx-auto flex items-center justify-center">
+        <div className="fbg-white rounded-xl shadow p-4 flex flex-col items-center justify-center h-[150px]">
             <TailSpin
                 color="black"
                 height={30}

@@ -2,10 +2,10 @@ import { Link } from "react-router-dom"
 import { getPrettyName } from "../utils/helpers"
 import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
-import { TailSpin } from "react-loader-spinner"
 import showConfirmToast from "./ConfirmToast"
 import { useAuth } from "../contexts/AuthContext"
 import { formatKilometers } from "../utils/formatters"
+import LoadingCard from "./LoadingCard"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {
     const { isAdmin } = useAuth()
@@ -65,11 +65,6 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
             </ul>
         </div>
     ) : (
-        <div className="fbg-white rounded-xl shadow p-4 flex flex-col items-center justify-center h-[100px]">
-            <TailSpin
-                color="black"
-                height={30}
-                width={30} />
-        </div>
+        <LoadingCard />
     )
 }

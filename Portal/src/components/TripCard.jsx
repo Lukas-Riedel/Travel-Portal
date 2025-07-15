@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { Calendar, Trash2 } from "lucide-react"
-import { TailSpin } from "react-loader-spinner"
 import showConfirmToast from "./ConfirmToast"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { formatDays } from "../utils/formatters"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { getPrettyName } from "../utils/helpers"
+import LoadingCard from "./LoadingCard"
 
 export default function TripCard({ trip, onTripRemoved }) {
     const { isAdmin } = useAuth()
@@ -95,11 +95,6 @@ export default function TripCard({ trip, onTripRemoved }) {
             </ul>
         </div>
     ) : (
-        <div className="fbg-white rounded-xl shadow p-4 flex flex-col items-center justify-center h-[100px]">
-            <TailSpin
-                color="black"
-                height={30}
-                width={30} />
-        </div>
+        <LoadingCard />
     )
 }

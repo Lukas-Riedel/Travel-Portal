@@ -2,10 +2,10 @@ import { Plane, Clock, MapPin, PlaneTakeoff, PlaneLanding } from "lucide-react"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { formatKilometers, formatDuration } from "../utils/formatters.js"
-import { TailSpin } from "react-loader-spinner"
 import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
 import { useAirline } from "../hooks/useAirline.js"
+import LoadingCard from "./LoadingCard.jsx"
 
 export default function FlightCard({ flight }) {
     const { airline } = useAirline(flight?.airline?.id)
@@ -93,11 +93,6 @@ export default function FlightCard({ flight }) {
             </div>
         </div>
     ) : (
-        <div className="fbg-white rounded-xl shadow p-4 flex flex-col items-center justify-center h-[150px]">
-            <TailSpin
-                color="black"
-                height={30}
-                width={30} />
-        </div>
+        <LoadingCard/>
     )
 }

@@ -1,4 +1,3 @@
-import { TailSpin } from "react-loader-spinner"
 import { Link } from "react-router-dom"
 import { getPrettyName } from "../utils/helpers"
 import { MapPin, Move, Trash2 } from "lucide-react"
@@ -6,6 +5,7 @@ import { useMemo } from "react"
 import { formatKilometers, formatNextPlaces } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
+import LoadingCard from "./LoadingCard"
 
 const maximumPlacesCount = 5
 
@@ -92,11 +92,6 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
             </ul>
         </div>
     ) : (
-        <div className="fbg-white rounded-xl shadow p-4 flex flex-col items-center justify-center h-[150px]">
-            <TailSpin
-                color="black"
-                height={30}
-                width={30} />
-        </div>
+        <LoadingCard />
     )
 }
