@@ -21,7 +21,7 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
 
     useEffect(() => {
         setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
-    }, [highlights])
+    }, [])
 
     useEffect(() => {
         if (isPaused) {
