@@ -15,7 +15,7 @@ export default defineConfig({
                     if (chunk.name === "sw") {
                         return "firebase-messaging-sw.js"
                     }
-                    return "[name].js"
+                    return "[name].[hash].js"
                 },
                 format: "es"
             }
