@@ -86,29 +86,26 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }
 
     function RemainingUploadTime({ album }) {
-        const [remainingUploadTime, setRemainingUploadTime] = useState(0)
-        const lastProgress = useRef(album.uploadingProgress)
-        const lastTimestamp = useRef(new Date().getTime() / 1000)
+        const { uploadingProgress, uploadingStart } = album
+        const [remaining, setRemaining] = useState(null)
 
         useEffect(() => {
-            const now = new Date().getTime() / 1000
-            const progressDiff = album.uploadingProgress - lastProgress.current
-            const timeDiff = now - lastTimestamp.current
+            const interval = setInterval(() => {
+                if (uploadingProgress > 0 && uploadingProgress < 100) {
+                    const now = Date.now() / 1000
+                    const elapsed = now - uploadingStart
+                    const speed = uploadingProgress / elapsed
+                    const secsToGo = (100 - uploadingProgress) / speed
+                    setRemaining(secsToGo)
+                }
+            }, 1000)
 
-            if (progressDiff > 0 && timeDiff > 0) {
-                const speed = progressDiff / timeDiff
-                const remainingProgress = 100 - album.uploadingProgress
-                const remainingSeconds = remainingProgress / speed
-                setRemainingUploadTime(remainingSeconds)
-            }
+            return () => clearInterval(interval)
+        }, [uploadingProgress, uploadingStart])
 
-            lastProgress.current = album.uploadingProgress
-            lastTimestamp.current = now
-        }, [album])
-
-        return (
+        return remaining !== null && (
             <span>
-                Zbývá {formatDuration(remainingUploadTime, true)}
+                Zbývá {formatDuration(remaining, true)}
             </span>
         )
     }
