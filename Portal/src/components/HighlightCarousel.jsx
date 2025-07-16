@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Pause, Play, Trash2, Star, SlidersVertical } from "lucide-react"
+import { Pause, Play, Trash2, Star, SlidersVertical, Grid3x3 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
-import { TailSpin } from "react-loader-spinner"
+import { Grid, TailSpin } from "react-loader-spinner"
 import showFormToast from "./FormToast"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
@@ -18,10 +18,18 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(isAdmin)
+    const [showGrid, setShowGrid] = useState(false)
+    const didShuffleRef = useRef(false)
 
     useEffect(() => {
-        if (shuffledHighlights.length === 0) {
+        if (!highlights?.length) {
+            didShuffleRef.current = false
+            setShuffledHighlights([])
+        }
+        else if (!didShuffleRef.current) {
             setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
+            setCurrentHighlightIndex(0)
+            didShuffleRef.current = true
         }
     }, [highlights])
 
@@ -122,6 +130,16 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
                     transition={{ duration: 1 }}
                     className="absolute inset-0 h-full w-full object-cover object-center" />
             </AnimatePresence>
+            {showGrid && (
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute inset-y-0 left-1/3 w-px bg-white/50" />
+                    <div className="absolute inset-y-0 left-2/3 w-px bg-white/50" />
+                    <div className="absolute inset-x-0 top-1/3 h-px bg-white/50" />
+                    <div className="absolute inset-x-0 top-2/3 h-px bg-white/50" />
+                    <div className="absolute inset-y-0 left-1/2 w-1 bg-white/75 -translate-x-1/2" />
+                    <div className="absolute inset-x-0 top-1/2 h-1 bg-white/75 -translate-y-1/2" />
+                </div>
+            )}
             {shuffledHighlights.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
                     {shuffledHighlights.map((_, index) => (
@@ -134,6 +152,13 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
                 </div>
             )}
             <div className="absolute top-3 right-3 flex space-x-2">
+                {isAdmin && (
+                    <button
+                        onClick={() => setShowGrid(prev => !prev)}
+                        className="btn-chip-gray">
+                        {<Grid3x3 size={16} />}
+                    </button>
+                )}
                 {onHighlightQualityAttributesUpdated && isAdmin && (
                     <button
                         onClick={handleHighlightQualityAttributesUpdated}

@@ -28,7 +28,7 @@ export default function PlacePage() {
             <PageHeader
                 name={place?.name}
                 categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
-                internalAttributes={{ "Kvalita": place?.quality && `${place.quality}%`, "Skóre": place?.score }}
+                internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score }}
                 onNameChanged={updatePlaceName} />
             <HighlightCarousel
                 place={place}

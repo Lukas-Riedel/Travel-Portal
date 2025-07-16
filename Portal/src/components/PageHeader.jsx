@@ -5,7 +5,7 @@ import { getPrettyName } from "../utils/helpers"
 import showConfirmToast from "./ConfirmToast"
 import React, { useEffect, useState } from "react"
 
-export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onAddressChanged, onRemoved }) {
+export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved }) {
     const { isAdmin } = useAuth()
 
     const [isMobile, setIsMobile] = useState(false)
