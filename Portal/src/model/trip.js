@@ -1,4 +1,4 @@
-import { format, fromUnixTime, startOfDay } from "date-fns"
+import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 
 export default class Trip {
@@ -27,7 +27,7 @@ export default class Trip {
     }
 
     isCurrent() {
-        const now = Date.now() / 1000
+        const now = endOfDay(new Date()).getTime() / 1000
         return this.start < now && this.end > now
     }
     
