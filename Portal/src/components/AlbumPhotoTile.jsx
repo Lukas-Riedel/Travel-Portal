@@ -41,7 +41,7 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
     const handlePhotoReplaced = () => {
         showInputToast("Zadej cestu k nové fotce:",
             "",
-            "Nahrazení fotky brzy začne",
+            "Nahrazování fotky brzy začne",
             "Při nahrazování fotky došlo k chybě",
             async (path) => onPhotoReplaced(place.id, album.id, photo.id, path)
                 .then(() => window.open(photo.permalink, "_blank"))

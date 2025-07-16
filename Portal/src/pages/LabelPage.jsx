@@ -4,11 +4,13 @@ import PageHeader from "../components/PageHeader"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import PlaceMap from "../components/PlaceMap"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
+import { useLabel } from "../hooks/useLabel"
 
 export default function LabelPage() {
-    const { labelName } = useParams()
+    const { labelId } = useParams()
 
-    const labelPlaces = useTimeFilteredRegularPlaces({ labelName, include: "CATEGORIES", sort: "score" })
+    const label = useLabel(labelId)
+    const labelPlaces = useTimeFilteredRegularPlaces({ labelId, include: "CATEGORIES", sort: "score" })
 
     const countryCategoriesMap = useMemo(() => new Map(labelPlaces?.map(place => place.getCategory("COUNTRY"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [labelPlaces])
@@ -16,7 +18,7 @@ export default function LabelPage() {
     return (
         <>
             <PageHeader
-                name={labelName}
+                name={label?.name}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <PlaceMap

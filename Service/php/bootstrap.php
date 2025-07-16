@@ -94,7 +94,7 @@
     $fitnessService = new FitnessService($databaseProvider, $eventPublisher);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
-    $labelService = new LabelService($databaseProvider, $configurationService);
+    $labelService = new LabelService($databaseProvider);
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);

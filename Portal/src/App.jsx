@@ -105,7 +105,7 @@ function AppContent() {
             <Route path="/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
             <Route path="/place/:placeId/album/:albumId" element={<MainLayout><AlbumPage /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><CategoryPage /></MainLayout>} />
-            <Route path="/label/:labelName" element={<MainLayout><LabelPage /></MainLayout>} />
+            <Route path="/label/:labelId" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
             <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />
             <Route path="/airline/:airlineId" element={<MainLayout><AirlinePage /></MainLayout>} />
@@ -113,7 +113,7 @@ function AppContent() {
             <Route path="/plan" element={<MainLayout><PlansPage /></MainLayout>} />
             <Route path="/plan/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
             <Route path="/plan/category/:categoryId" element={<MainLayout><CandidateCategoryPage /></MainLayout>} />
-            <Route path="/plan/label/:labelName" element={<MainLayout><CandidateLabelPage /></MainLayout>} />
+            <Route path="/plan/label/:labelId" element={<MainLayout><CandidateLabelPage /></MainLayout>} />
             <Route path="/plan/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
         </Routes>
     )

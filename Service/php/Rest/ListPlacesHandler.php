@@ -23,7 +23,7 @@
             $response = array();    
             if ($type == "regular") {
                 $response = $placeService->getRegularPlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
-                    isset($input["label"]) ? $input["label"] : NULL,
+                    isset($input["labelId"]) ? $input["labelId"] : NULL,
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
                     isset($input["year"]) ? $input["year"] : NULL,
                     isset($input["albumId"]) ? $input["albumId"] : NULL,
@@ -36,7 +36,7 @@
             else if ($type == "candidate") { 
                 $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
                     isset($input["tripId"]) ? $input["tripId"] : NULL,
-                    isset($input["label"]) ? $input["label"] : NULL,
+                    isset($input["labelId"]) ? $input["labelId"] : NULL,
                     isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
 
@@ -63,6 +63,7 @@
             return array(
                 $this->createQueryParameter("year", "integer", 2024),
                 $this->createQueryParameter("tripId", "integer", 128),
+                $this->createQueryParameter("labelId", "integer", 2),
                 $this->createQueryParameter("categoryId", "integer", 2),
                 $this->createQueryParameter("albumId", "integer", 2),
                 $this->createQueryParameter("minStart", "integer", 1716154060),

@@ -148,7 +148,7 @@
         }
 
         public function updateAirlineCodeAirline(string $airlineCode, ?string $airlineId) : bool {
-            return $this->flightMapper->updateAirlineCodeAirline($this->flightMapper->selectAirlineCodeIdentifier($airlineCode), $airlineId);
+            return $this->flightMapper->updateAirlineCodeAirline($this->flightMapper->selectAirlineCodeId($airlineCode), $airlineId);
         }
 
         public function removeAirline(string $airlineId) : bool {
@@ -162,14 +162,14 @@
         }
 
         private function getOrCreateAirlineCodeId(string $code) : string {
-            $airlineCodeId = $this->flightMapper->selectAirlineCodeIdentifier($code);
+            $airlineCodeId = $this->flightMapper->selectAirlineCodeId($code);
             if ($airlineCodeId !== NULL) {
                 return $airlineCodeId;
             }
 
             $this->flightMapper->insertAirlineCodeId($code);
 
-            return $this->flightMapper->selectAirlineCodeIdentifier($code);
+            return $this->flightMapper->selectAirlineCodeId($code);
         }
         
         private function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {

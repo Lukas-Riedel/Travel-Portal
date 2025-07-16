@@ -86,7 +86,7 @@
                 $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
         }
 
-        public function selectAirlineCodeIdentifier(string $code) : ?string {
+        public function selectAirlineCodeId(string $code) : ?string {
             $sql = <<<'SQL'
                 SELECT id
                 FROM airline_code

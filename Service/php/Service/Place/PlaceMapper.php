@@ -167,7 +167,7 @@
                 ->getSingleColumn("days");
         }
         
-        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $label, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -194,8 +194,8 @@
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("(FIND_IN_SET(?, category_ids) OR ((UNIX_TIMESTAMP() - GET_VARIABLE_TIME_CATEGORY_OFFSET(?) <= start) AND (UNIX_TIMESTAMP() >= end)) OR ((GET_VARIABLE_TIME_CATEGORY_OFFSET(?) IS NOT NULL) AND (place_id IN (SELECT place_id FROM place_permanent))))", $categoryId, $categoryId, $categoryId);
             }
-            if ($label !== NULL) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(?, label_names)", $label);
+            if ($labelId !== NULL) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(?, label_ids)", $labelId);
             }
             if ($maxQuality !== NULL) {
                 $whereClauseBuilder->withClause("quality <= ?", $maxQuality);

@@ -11,9 +11,11 @@
 
         public function selectLabelsForPlace(string $placeId) : array {
             $sql = <<<'SQL'
-                SELECT *
-                FROM label
-                WHERE place_id = ?
+                SELECT li.id, li.name
+                FROM label l
+                INNER JOIN label_identifier li
+                    ON l.label_id = li.id
+                WHERE l.place_id = ?
             SQL;
 
             return $this->databaseProvider
@@ -24,11 +26,56 @@
                 });
         }
 
-        public function insertLabel(Label $label, string $placeId) : bool {
+        public function selectLabels() : array {
             $sql = <<<'SQL'
-                INSERT INTO label(
+                SELECT *
+                FROM label_identifier
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($labelRow) {
+                    return new Label($labelRow["id"], $labelRow["name"]);
+                });
+        }
+
+        public function selectLabel(string $labelId) : ?Label {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM label_identifier
+                WHERE id = ?
+            SQL;
+
+            $labelRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($labelId)
+                ->getSingleRow();
+
+            if ($labelRow === NULL) {
+                return NULL;
+            }
+            
+            return new Label($labelRow["id"], $labelRow["name"]);
+        }
+
+        public function selectLabelId(string $labelName) : ?string {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM label_identifier
+                WHERE name = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($labelName)
+                ->getSingleColumn("id");
+        }
+
+        public function insertLabel(string $placeId, string $labelId) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO label (
                     place_id,
-                    name
+                    label_id
                 )
                 VALUES (
                     ?,
@@ -36,29 +83,39 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($placeId, $label->getname())
-                ->execute();
-                 
-
-            if ($wasInserted) {
-                $label->setId($this->databaseProvider->getLastInsertedId());
-            }
-
-            return $wasInserted;
+                ->withParameters($placeId, $labelId)
+                ->execute() === 1;
         }
 
-        public function deleteLabel(string $labelId) : int {
+        public function insertLabelId(string $labelName) : bool {    
             $sql = <<<'SQL'
-                DELETE
-                FROM label
-                WHERE id = ?
+                INSERT INTO label_identifier (
+                    name
+                )
+                VALUES (
+                    ?
+                )
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($labelId)
+                ->withParameters($labelName)
+                ->execute() === 1;
+        }
+
+        public function deleteLabel(string $placeId, string $labelId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM label
+                WHERE place_id = ?
+                    AND label_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($placeId, $labelId)
                 ->execute();
         }
     }

@@ -36,6 +36,14 @@ export function useApi() {
             })
     }
 
+    async function getLabel(labelId) {
+        return sendRequest("GET", "/labels/" + labelId)
+    }
+
+    async function listLabels() {
+        return sendRequest("GET", "/labels")
+    }
+
     async function getHighlight(highlightId) {
         return sendRequest("GET", "/highlights/" + highlightId)
     }
@@ -174,13 +182,13 @@ export function useApi() {
             .then(place => new Place(place))
     }
 
-    async function listRegularPlaces({ tripId, categoryId, labelName, year, albumId, minStart, maxEnd, include, sort } = {}) {
+    async function listRegularPlaces({ tripId, categoryId, labelId, year, albumId, minStart, maxEnd, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "regular",
                 tripId: tripId,
                 categoryId: categoryId,
-                label: labelName,
+                labelId: labelId,
                 year: year,
                 albumId: albumId,
                 minStart: minStart,
@@ -501,15 +509,15 @@ export function useApi() {
     }
 
     async function listAirlines() {
-        return sendRequest("GET", "/airlines", {}, {})
+        return sendRequest("GET", "/airlines")
     }
 
     async function getAirline(airlineId) {
-        return sendRequest("GET", "/airlines/" + airlineId, {}, {})
+        return sendRequest("GET", "/airlines/" + airlineId)
     }
 
     async function removeAirline(airlineId) {
-        return sendRequest("DELETE", "/airlines/" + airlineId, {}, {})
+        return sendRequest("DELETE", "/airlines/" + airlineId)
     }
 
     async function updateAirlineName(airlineId, name) {
@@ -557,6 +565,8 @@ export function useApi() {
 
     return {
         createDevice,
+        getLabel,
+        listLabels,
         getHighlight,
         updateHighlightQualityAttributes,
         createGeographicalCategory,

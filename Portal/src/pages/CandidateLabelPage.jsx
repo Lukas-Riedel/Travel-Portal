@@ -4,11 +4,13 @@ import PageHeader from "../components/PageHeader"
 import PlaceMap from "../components/PlaceMap"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import PlaceCardGrid from "../components/PlaceCardGrid"
+import { useLabel } from "../hooks/useLabel"
 
 export default function LabelPage() {
-    const { labelName } = useParams()
+    const { labelId } = useParams()
 
-    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelName, include: "CATEGORIES" })
+    const label = useLabel(labelId)
+    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelId, include: "CATEGORIES" })
 
     const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("COUNTRY"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])
@@ -16,7 +18,7 @@ export default function LabelPage() {
     return (
         <>
             <PageHeader
-                name={labelName}
+                name={label?.name}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <PlaceMap
