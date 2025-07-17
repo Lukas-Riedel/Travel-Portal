@@ -86,29 +86,54 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }
 
     function RemainingUploadTime({ album }) {
-        const { uploadingProgress, uploadingStart } = album
+        const { uploadingProgress } = album
         const [remaining, setRemaining] = useState(null)
 
+        const lastProgress = useRef(null)
+        const lastTimestamp = useRef(null)
+        const deadline = useRef(null)
+
         useEffect(() => {
-            const interval = setInterval(() => {
-                if (uploadingProgress > 0 && uploadingProgress < 100) {
+            const now = Date.now() / 1000
+
+            if (lastProgress.current === null) {
+                lastProgress.current = uploadingProgress
+                lastTimestamp.current = now
+                return
+            }
+
+            const progressDiff = uploadingProgress - lastProgress.current
+            const timeDiff = now - lastTimestamp.current
+
+            if (progressDiff > 0 && timeDiff > 0) {
+                const speed = progressDiff / timeDiff
+                const secsToGo = (100 - uploadingProgress) / speed
+                deadline.current = now + secsToGo
+                setRemaining(secsToGo)
+            }
+
+            lastProgress.current = uploadingProgress
+            lastTimestamp.current = now
+        }, [uploadingProgress])
+
+        useEffect(() => {
+            const iv = setInterval(() => {
+                if (deadline.current != null) {
                     const now = Date.now() / 1000
-                    const elapsed = now - uploadingStart
-                    const speed = uploadingProgress / elapsed
-                    const secsToGo = (100 - uploadingProgress) / speed
-                    setRemaining(secsToGo)
+                    const rem = Math.max(0, deadline.current - now)
+                    setRemaining(rem)
                 }
             }, 1000)
+            return () => clearInterval(iv)
+        }, [])
 
-            return () => clearInterval(interval)
-        }, [uploadingProgress, uploadingStart])
-
-        return remaining !== null && (
+        return remaining && (
             <span>
                 Zbývá {formatDuration(remaining, true)}
             </span>
         )
     }
+
 
     return day && events ? ((events.length > 0 || stay) && (
         <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
