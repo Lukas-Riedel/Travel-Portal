@@ -7,7 +7,7 @@
 
             $response = (new GetAirlineHandler())
                 ->handle(array(
-                    "airlineId" => $input["airlineId"]), $roles);
+                    "airlineId" => $input["airlineId"]));
             if ($response["code"] != 200) {
                 return $response;
             }

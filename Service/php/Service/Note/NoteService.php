@@ -10,7 +10,7 @@
         }
 
         public function createNote(string $tripId, string $content) : Note {
-            $note = new Note(NULL, $content);
+            $note = new Note(NULL, $content, time());
             $this->noteMapper->insertNote($note, $tripId);
             return $note;
         }

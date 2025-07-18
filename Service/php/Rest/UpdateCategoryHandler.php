@@ -7,7 +7,7 @@
 
             $response = (new GetCategoryHandler())
                 ->handle(array(
-                    "categoryId" => $input["categoryId"]), $roles);                    
+                    "categoryId" => $input["categoryId"]));                    
             if ($response["code"] != 200) {
                 return $response;
             }     
@@ -35,7 +35,7 @@
             $databaseProvider->materializeViews();
             return (new GetCategoryHandler())
                 ->handle(array(
-                    "categoryId" => $input["categoryId"]), $roles);
+                    "categoryId" => $input["categoryId"]));
         }
 
         public function getRequiredRole() {

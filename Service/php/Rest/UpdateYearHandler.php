@@ -7,7 +7,7 @@
 
             $response = (new GetYearHandler())
                 ->handle(array(
-                    "year" => $input["year"]), $roles);                    
+                    "year" => $input["year"]));                    
             if ($response["code"] != 200) {
                 return $response;
             }     
@@ -17,7 +17,7 @@
     
             return (new GetYearHandler())
                 ->handle(array(
-                    "year" => $input["year"]), $roles);
+                    "year" => $input["year"]));
         }
 
         public function getRequiredRole() {

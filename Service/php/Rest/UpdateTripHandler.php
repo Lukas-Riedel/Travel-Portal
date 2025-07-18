@@ -7,7 +7,7 @@
 
             $response = (new GetTripHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]), $roles);
+                    "tripId" => $input["tripId"]));
             if ($response["code"] != 200) {
                 return $response;
             }
@@ -26,7 +26,7 @@
             $databaseProvider->materializeViews();
             return (new GetTripHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]), $roles);
+                    "tripId" => $input["tripId"]));
         }
 
         public function getRequiredRole() {

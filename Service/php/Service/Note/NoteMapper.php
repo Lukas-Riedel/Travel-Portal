@@ -20,17 +20,19 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($noteRow) {
-                    return new Note($noteRow["id"], $noteRow["content"]);
+                    return new Note($noteRow["id"], $noteRow["content"], intval($noteRow["timestamp"]));
                 });
         }
 
         public function insertNote(Note $note, string $tripId) : bool {
             $sql = <<<'SQL'
-                INSERT INTO note(
+                INSERT INTO note (
                     trip_id,
-                    content
+                    content,
+                    timestamp
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?
                 )
@@ -38,7 +40,7 @@
 
             $wasInserted = $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $note->getContent())
+                ->withParameters($tripId, $note->getContent(), $note->getTimestamp())
                 ->execute();
                  
 

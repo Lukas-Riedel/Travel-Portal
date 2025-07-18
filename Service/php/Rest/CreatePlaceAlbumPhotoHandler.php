@@ -7,7 +7,7 @@
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
-                    "placeId" => $input["placeId"]), $roles);
+                    "placeId" => $input["placeId"]));
             if ($response["code"] != 200) {
                 return $response;
             }            

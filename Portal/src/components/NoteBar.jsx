@@ -2,10 +2,14 @@ import { Trash2, Plus, Bold, Italic, Link, Underline } from "lucide-react"
 import showConfirmToast from "./ConfirmToast"
 import { useState, useRef } from "react"
 import { TailSpin } from "react-loader-spinner"
+import { useAuth } from "../contexts/AuthContext"
+import { getDateTimeString } from "../utils/helpers"
 
 const loadingNotesCount = 2
 
 export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
+    const { isAdmin } = useAuth()
+
     const [newNoteContent, setNewNoteContent] = useState("")
     const textareaRef = useRef(null)
 
@@ -57,13 +61,18 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     <div
                         className="prose prose-sm max-w-none text-gray-800 mb-6"
                         dangerouslySetInnerHTML={{ __html: note.content }} />
-                    <div className="absolute bottom-2 right-2">
-                        <button
-                            onClick={() => handleDelete(note.id)}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors">
-                            <Trash2 size={16} />
-                        </button>
-                    </div>
+                    <span className="absolute bottom-4 left-4 text-sm text-gray-400">
+                        {getDateTimeString(note.timestamp)}
+                    </span>
+                    {isAdmin && (
+                        <div className="absolute bottom-2 right-2">
+                            <button
+                                onClick={() => handleDelete(note.id)}
+                                className="p-1 rounded hover:bg-gray-100 transition-colors">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    )}
                 </div>
             )) : (Array.from({ length: loadingNotesCount })
                 .map((_, index) => (
@@ -77,47 +86,49 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     </div>
                 ))
             )}
-            <div className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col">
-                <textarea
-                    ref={textareaRef}
-                    className="w-full resize-none border border-gray-300 rounded-md p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 flex-grow"
-                    placeholder="Nová poznámka"
-                    value={newNoteContent}
-                    onChange={e => setNewNoteContent(e.target.value)} />
-                <div className="mt-2 flex items-center">
-                    <div className="flex space-x-1">
+            {isAdmin && (
+                <div className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col">
+                    <textarea
+                        ref={textareaRef}
+                        className="w-full resize-none border border-gray-300 rounded-md p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 flex-grow"
+                        placeholder="Nová poznámka"
+                        value={newNoteContent}
+                        onChange={e => setNewNoteContent(e.target.value)} />
+                    <div className="mt-2 flex items-center">
+                        <div className="flex space-x-1">
+                            <button
+                                className="p-1 rounded hover:bg-gray-100"
+                                onClick={() => insertAtCursor("<strong>", "</strong>")}
+                                title="Tučně">
+                                <Bold size={16} />
+                            </button>
+                            <button
+                                className="p-1 rounded hover:bg-gray-100"
+                                onClick={() => insertAtCursor("<em>", "</em>")}
+                                title="Kurzíva">
+                                <Italic size={16} />
+                            </button>
+                            <button
+                                className="p-1 rounded hover:bg-gray-100"
+                                onClick={() => insertAtCursor("<u>", "</u>")}
+                                title="Podtržení">
+                                <Underline size={16} />
+                            </button>
+                            <button
+                                className="p-1 rounded hover:bg-gray-100"
+                                onClick={() => insertAtCursor('<a href="">', "</a>")}
+                                title="Odkaz">
+                                <Link size={16} />
+                            </button>
+                        </div>
                         <button
-                            className="p-1 rounded hover:bg-gray-100"
-                            onClick={() => insertAtCursor("<strong>", "</strong>")}
-                            title="Tučně">
-                            <Bold size={16} />
-                        </button>
-                        <button
-                            className="p-1 rounded hover:bg-gray-100"
-                            onClick={() => insertAtCursor("<em>", "</em>")}
-                            title="Kurzíva">
-                            <Italic size={16} />
-                        </button>
-                        <button
-                            className="p-1 rounded hover:bg-gray-100"
-                            onClick={() => insertAtCursor("<u>", "</u>")}
-                            title="Podtržení">
-                            <Underline size={16} />
-                        </button>
-                        <button
-                            className="p-1 rounded hover:bg-gray-100"
-                            onClick={() => insertAtCursor('<a href="">', "</a>")}
-                            title="Odkaz">
-                            <Link size={16} />
+                            className="p-1 rounded hover:bg-gray-100 ml-auto"
+                            onClick={handleCreate}>
+                            <Plus size={16} />
                         </button>
                     </div>
-                    <button
-                        className="p-1 rounded hover:bg-gray-100 ml-auto"
-                        onClick={handleCreate}>
-                        <Plus size={16} />
-                    </button>
                 </div>
-            </div>
+            )}
         </div>
     )
 }

@@ -7,7 +7,7 @@
 
             $response = (new GetTripHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]), $roles);
+                    "tripId" => $input["tripId"]));
             if ($response["code"] != 200) {
                 return $response;
             }

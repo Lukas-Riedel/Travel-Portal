@@ -1,9 +1,13 @@
 import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
-import { getTimezoneOffset, toZonedTime } from "date-fns-tz"
+import { toZonedTime } from "date-fns-tz"
 import { optimize } from "svgo"
 
 export function getDateString(timestamp) {
     return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
+}
+
+export function getDateTimeString(timestamp) {
+    return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy H:m")
 }
 
 export function getDateRangeString(start, end, includeYear = true) {
