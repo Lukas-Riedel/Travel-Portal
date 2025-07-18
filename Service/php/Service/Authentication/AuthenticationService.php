@@ -20,6 +20,14 @@
             $this->configurationService = $configurationService;
         }
 
+        public function getUser(string $userId) : ?User {
+            return $this->authenticationMapper->selectUserById($userId);
+        }
+
+        public function getUsersWithRoles(array $roles) : array {
+            return $this->authenticationMapper->selectUsersWithRoles($roles);
+        }
+
         public function getAccessToken(string $accessToken) : AccessToken {
             if ($accessToken === NULL) {
                 throw new AuthenticationException("The access token was not provided.");
@@ -91,7 +99,7 @@
                 throw new AuthenticationException("The refresh token version " . $decodedRefreshToken["version"] . " is outdated.");
             }
 
-            return $this->generateAuthenticationResult($decodedRefreshToken["userId"], decodedRefreshToken["roles"], $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
+            return $this->generateAuthenticationResult($decodedRefreshToken["userId"], $decodedRefreshToken["roles"], $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
         }
 
         public function authenticateWithCredentials(string $username, string $password) : AuthenticationResult {

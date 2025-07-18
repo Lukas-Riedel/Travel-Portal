@@ -9,6 +9,45 @@
             $this->databaseProvider = $databaseProvider;
         }
 
+        public function selectUsersWithRoles(array $roles) : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM user
+                WHERE :CONDITIONS
+            SQL;
+            
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            foreach ($roles as &$role) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(?, roles)", $role);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
+                ->getMappedResultSet(function($userRow) {
+                    return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
+                });
+        }
+
+        public function selectUserById(string $id) : ?User {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM user
+                WHERE id = ?
+            SQL;
+            
+            $userRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($id)
+                ->getSingleRow();
+
+            if ($userRow === NULL) {
+                return NULL;
+            }
+
+            return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
+        }
+
         public function selectUserByUsername(string $username) : ?User {
             $sql = <<<'SQL'
                 SELECT *

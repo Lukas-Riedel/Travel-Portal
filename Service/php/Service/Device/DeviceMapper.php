@@ -1,30 +1,30 @@
 <?php
     namespace Service\Service\Device;
 
+    use Service\Service\Authentication\AuthenticationService;
+
     class DeviceMapper {
         
         private readonly \DatabaseProvider $databaseProvider;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
+        private readonly AuthenticationService $authenticationService;
+
+        public function __construct(\DatabaseProvider $databaseProvider, AuthenticationService $authenticationService) {
             $this->databaseProvider = $databaseProvider;
+            $this->authenticationService = $authenticationService;
         }
 
         public function selectDevices(DeviceType $deviceType, array $requiredRoles) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM device
-                WHERE :CONDITIONS
+                WHERE type = ?
+                    AND FIND_IN_SET(user_id, ?)
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
-                ->withClause("type = ?", $deviceType->value);
-            foreach ($requiredRoles as &$requiredRole) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(?, roles)", $requiredRole);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
-            
             return $this->databaseProvider
-                ->statementBuilder($sql, $whereClause)
+                ->statementBuilder($sql)
+                ->withParameters($deviceType->value, implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRoles($requiredRoles))))
                 ->getMappedResultSet(function($deviceRow) {
                     return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["token"], $deviceRow["user_id"]);
                 });
