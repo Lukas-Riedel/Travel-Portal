@@ -2,7 +2,7 @@
     use Service\Service\Trip\TripSortingStrategy;
 
     class ListTripsHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $tripService;
 
             $response = array();    

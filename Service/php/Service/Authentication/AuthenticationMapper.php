@@ -25,7 +25,7 @@
                 return NULL;
             }
 
-            return new User($userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
+            return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
         }
 
         public function selectUserByApiKey(string $apiKey) : ?User {
@@ -44,7 +44,7 @@
                 return NULL;
             }
 
-            return new User($userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
+            return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
         }
 
         public function updateUserPassword(string $username, string $password) : bool {

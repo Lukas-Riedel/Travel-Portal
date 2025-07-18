@@ -1,6 +1,6 @@
 <?php
     class ListLabelsHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $labelService;
 
             $response = $labelService->getLabels();

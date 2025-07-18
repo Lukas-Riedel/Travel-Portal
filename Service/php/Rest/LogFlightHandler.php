@@ -1,6 +1,6 @@
 <?php
     class LogFlightHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $flightService;
 
             $response = NULL;

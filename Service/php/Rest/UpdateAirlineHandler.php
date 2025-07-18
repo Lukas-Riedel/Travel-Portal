@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetAirlineHandler.php");
 
     class UpdateAirlineHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $flightService, $databaseProvider;
 
             $response = (new GetAirlineHandler())

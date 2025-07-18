@@ -2,14 +2,20 @@
     namespace Service\Service\Authentication;
 
     class AccessToken implements \JsonSerializable {        
+        private readonly string $userId;
         private readonly array $roles;
         private readonly string $version;
         private readonly int $expiration;
 
-        public function __construct(array $roles, string $version, int $expiration) {
+        public function __construct(string $userId, array $roles, string $version, int $expiration) {
+            $this->userId = $userId;
             $this->roles = $roles;
             $this->version = $version;
             $this->expiration = $expiration;
+        }
+
+        public function getUserId() : string {
+            return $this->userId;
         }
 
         public function getRoles() : array {

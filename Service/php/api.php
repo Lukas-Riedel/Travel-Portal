@@ -59,8 +59,13 @@
                         throw new AuthorizationException("The user is not authorized to perform this action.");
                     }
                 }
+
+                $userId = NULL;
+                if (isset($accessToken)) {
+                    $userId = $accessToken->getUserId();
+                }
     
-                $response = $handler->handle($input, isset($accessToken) ? $accessToken->getRoles() : array());
+                $response = $handler->handle($input);
                 $databaseProvider->commit();
     
                 http_response_code($response["code"]);

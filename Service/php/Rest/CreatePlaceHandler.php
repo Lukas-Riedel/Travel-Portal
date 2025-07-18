@@ -1,6 +1,6 @@
 <?php
     class CreatePlaceHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $placeService;
     
             $response = NULL;

@@ -3,11 +3,11 @@
     use Service\Service\Device\DeviceType;
 
     class CreateDeviceHandler extends Handler {
-        public function handle($input, $roles) {
-            global $deviceService;
+        public function handle($input) {
+            global $userId, $deviceService;
 
-            $device = $deviceService->registerOrUpdateDevice(DeviceType::fromName($input["type"]), $input["token"], $roles);
-            return $this->createResponse(201, $device);
+            $deviceService->registerOrUpdateDevice(DeviceType::fromName($input["type"]), $input["token"], $userId);
+            return $this->createResponse(204, NULL);
         }
 
         public function getRequiredRole() {
@@ -44,12 +44,12 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Device", '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc","roles":["USER"]}'));
+                $this->createRequestExample("Device", '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc"}'));
         }
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Created device", 201, '{"type":"Portal","token":"devjFpQfdQ1WP6cG0X6DrY:APA91bG-rysyc75dRrt1acBH11y41g3HDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRFBmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc,"roles":["USER"]"}'),
+                $this->create204ResponseExample(),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

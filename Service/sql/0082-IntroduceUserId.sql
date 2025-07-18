@@ -1,0 +1,13 @@
+ALTER TABLE user
+ADD id bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY;
+
+TRUNCATE TABLE device;
+
+ALTER TABLE device
+ADD user_id bigint(20) unsigned NOT NULL;
+
+ALTER TABLE device
+DROP COLUMN roles;
+
+ALTER TABLE device
+ADD CONSTRAINT device_ibfk_1 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE;

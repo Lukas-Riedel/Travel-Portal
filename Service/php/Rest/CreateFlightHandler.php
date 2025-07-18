@@ -1,6 +1,6 @@
 <?php
     class CreateFlightHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $flightService;
 
             $response = $flightService->createFlight($input["flight"], $input["from"], $input["to"], $input["scheduledDeparture"], $input["scheduledArrival"]);            

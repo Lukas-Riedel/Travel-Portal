@@ -1,7 +1,7 @@
 <?php
 
     class CreateAirlineHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $flightService;
 
             $airline = $flightService->createAirline($input["name"], isset($input["logo"]) ? $input["logo"] : NULL);

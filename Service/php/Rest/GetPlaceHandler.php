@@ -1,6 +1,6 @@
 <?php
     class GetPlaceHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $placeService;
 
             $response = $placeService->getRegularPlace($input["placeId"]);

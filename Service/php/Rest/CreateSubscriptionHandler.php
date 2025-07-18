@@ -1,6 +1,6 @@
 <?php
     class CreateSubscriptionHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $expenseService;
     
             $response = $expenseService->createSubscription($input["value"], $input["currency"], $input["description"], $input["expiration"]);

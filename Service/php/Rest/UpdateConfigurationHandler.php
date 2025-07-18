@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
 
     class UpdateConfigurationHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $configurationService;
 
             $response = $configurationService->updateConfigurationEntryValue($input["type"], isset($input["key"]) ? $input["key"] : NULL, $input["value"]);

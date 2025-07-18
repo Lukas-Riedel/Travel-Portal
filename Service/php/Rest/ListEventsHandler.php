@@ -1,6 +1,6 @@
 <?php
     class ListEventsHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $eventManager;
 
             $response = $eventManager->getEvents($input["name"]);

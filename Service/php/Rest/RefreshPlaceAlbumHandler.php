@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
     
     class RefreshPlaceAlbumHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $photoService;
 
             $response = (new GetPlaceHandler())

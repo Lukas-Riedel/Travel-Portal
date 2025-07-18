@@ -26,7 +26,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($deviceRow) {
-                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["token"], explode(",", $deviceRow["roles"]));
+                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["token"], $deviceRow["user_id"]);
                 });
         }
 
@@ -35,7 +35,7 @@
                 INSERT INTO device (
                     type,
                     token,
-                    roles,
+                    user_id,
                     last_seen
                 )
                 VALUES (
@@ -48,7 +48,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getType()->value, $device->getToken(), implode(",", $device->getRoles()))
+                ->withParameters($device->getType()->value, $device->getToken(), $device->getUserId())
                 ->execute() === 1;
         }
 

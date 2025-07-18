@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetTripHandler.php");
 
     class UpdateTripHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $tripService, $databaseProvider;
 
             $response = (new GetTripHandler())

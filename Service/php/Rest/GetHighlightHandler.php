@@ -1,6 +1,6 @@
 <?php
     class GetHighlightHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $highlightService;
 
             $response = $highlightService->getHighlight($input["highlightId"]);

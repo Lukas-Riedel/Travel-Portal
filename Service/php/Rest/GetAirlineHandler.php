@@ -1,6 +1,6 @@
 <?php
     class GetAirlineHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $flightService;
 
             $response = $flightService->getAirline($input["airlineId"]);

@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetHighlightHandler.php");
 
     class UpdateHighlightHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $highlightService, $databaseProvider;
 
             $response = (new GetHighlightHandler())

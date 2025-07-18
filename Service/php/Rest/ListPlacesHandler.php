@@ -3,7 +3,7 @@
     use Service\Service\Place\PlaceSortingStrategy;
 
     class ListPlacesHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $placeService;
 
             $type = isset($input["type"]) ? $input["type"] : "regular";

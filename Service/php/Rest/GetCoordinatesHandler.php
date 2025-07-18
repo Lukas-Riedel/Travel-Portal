@@ -1,6 +1,6 @@
 <?php
     class GetCoordinatesHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $geocodingService;
 
             $response = $geocodingService->getLocation($input["address"]);

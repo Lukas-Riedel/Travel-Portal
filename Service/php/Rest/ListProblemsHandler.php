@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../Processor/GetProblemsReportProcessor.php");
 
     class ListProblemsHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             $response = (new GetProblemsReportProcessor())->getReport();
             return $this->createResponse(200, $response);
         }

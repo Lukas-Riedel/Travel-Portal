@@ -5,12 +5,12 @@
 
         private readonly DeviceType $type;
         private readonly string $token;
-        private readonly array $roles;
+        private readonly string $userId;
 
-        public function __construct(DeviceType $type, string $token, array $roles) {
+        public function __construct(DeviceType $type, string $token, string $userId) {
             $this->type = $type;
             $this->token = $token;
-            $this->roles = $roles;
+            $this->userId = $userId;
         }
 
         public function getType() : DeviceType {
@@ -21,8 +21,8 @@
             return $this->token;
         }
 
-        public function getRoles() : array {
-            return $this->roles;
+        public function getUserId() : string {
+            return $this->userId;
         }
     }
 ?>

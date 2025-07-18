@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/../Exception/EntityNotFoundException.php");
 
     class CreatePlaceLabelHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $labelService, $placeService;
             
             $placeIdentifier = $placeService->getPlaceIdentifierById($input["placeId"]);

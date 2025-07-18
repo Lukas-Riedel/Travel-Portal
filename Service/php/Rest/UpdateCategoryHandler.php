@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetCategoryHandler.php");
 
     class UpdateCategoryHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $categoryService, $databaseProvider;
 
             $response = (new GetCategoryHandler())

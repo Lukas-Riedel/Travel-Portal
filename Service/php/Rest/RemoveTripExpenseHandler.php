@@ -2,7 +2,7 @@
     require_once(dirname(__FILE__) . "/GetTripHandler.php");
 
     class RemoveTripExpenseHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $expenseService;
 
             $response = (new GetTripHandler())

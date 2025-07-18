@@ -3,6 +3,9 @@
 
     class AuthenticationService {
 
+        private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 24;
+        private const ADMIN_USER_ID = "999";
+
         private const DELIMITER = "::";
         private const HASH_ALGORITHM = "sha256";
         private const ACCESS_TOKEN = "ACCESS_TOKEN";
@@ -51,7 +54,7 @@
                 throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
             }
 
-            return new AccessToken($decodedAccessToken["roles"], $decodedAccessToken["version"], $decodedAccessToken["expiration"]);
+            return new AccessToken($decodedAccessToken["userId"], $decodedAccessToken["roles"], $decodedAccessToken["version"], $decodedAccessToken["expiration"]);
         }
 
         public function authenticateWithRefreshToken(string $refreshToken) : AuthenticationResult {
@@ -88,7 +91,7 @@
                 throw new AuthenticationException("The refresh token version " . $decodedRefreshToken["version"] . " is outdated.");
             }
 
-            return $this->generateAuthenticationResult($decodedRefreshToken["roles"], $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
+            return $this->generateAuthenticationResult($decodedRefreshToken["userId"], decodedRefreshToken["roles"], $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
         }
 
         public function authenticateWithCredentials(string $username, string $password) : AuthenticationResult {
@@ -106,7 +109,7 @@
                 throw new AuthenticationException("Password for the user '" . $username . "' is invalid.");
             }
 
-            return $this->generateAuthenticationResult($user->getRoles(), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
+            return $this->generateAuthenticationResult($user->getId(), $user->getRoles(), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
         }
 
         public function authenticateWithApiKey(string $apiKey) : AuthenticationResult {
@@ -116,20 +119,20 @@
                 throw new AuthenticationException("No user for the provided API key was found.");
             }
 
-            return $this->generateAuthenticationResult($user->getRoles(), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
+            return $this->generateAuthenticationResult($user->getId(), $user->getRoles(), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
         }
 
         public function authenticateAsAdmin(int $validity) : AuthenticationResult {
-            return $this->generateAuthenticationResult(array("ADMIN", "USER"), $validity);
+            return $this->generateAuthenticationResult(self::ADMIN_USER_ID, array("ADMIN", "USER"), $validity);
         }
 
-        private function generateAuthenticationResult(array $roles, int $validity) : AuthenticationResult {
-            $rawAccessToken = new AccessToken($roles, $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version"), time() + $validity);
+        private function generateAuthenticationResult(string $userId, array $roles, int $validity) : AuthenticationResult {
+            $rawAccessToken = new AccessToken($userId, $roles, $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version"), time() + $validity);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher")));
             $encrypted = openssl_encrypt(json_encode($rawAccessToken), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher"), $this->getAccessTokenPrivatekey(), 0, $iv);
             $accessToken = base64_encode($encrypted . self::DELIMITER . $iv);
             
-            $rawRefreshToken = new AccessToken($roles, $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version"), time() + 12 * $validity);
+            $rawRefreshToken = new AccessToken($userId, $roles, $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version"), time() + self::REFRESH_TOKEN_VALIDITY_MULTIPLIER * $validity);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher")));
             $encrypted = openssl_encrypt(json_encode($rawRefreshToken), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher"), $this->getRefreshTokenPrivatekey(), 0, $iv);
             $refreshToken = base64_encode($encrypted . self::DELIMITER . $iv);

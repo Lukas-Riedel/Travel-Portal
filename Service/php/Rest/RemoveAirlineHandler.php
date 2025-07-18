@@ -1,6 +1,6 @@
 <?php
     class RemoveAirlineHandler extends Handler {
-        public function handle($input, $roles) {
+        public function handle($input) {
             global $flightService;
 
             $response = $flightService->removeAirline($input["airlineId"]);
