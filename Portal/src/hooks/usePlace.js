@@ -24,7 +24,7 @@ export const usePlace = (placeId) => {
         queryFn: () => getPlace(placeId),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
         refetchInterval: query => isAdmin && query.state.data?.dates?.map(date => date.album)?.filter(Boolean)
-            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 5000
+            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 10000
     })
 
     const setPlace = place => queryClient.setQueryData(["getPlace", placeId], place)

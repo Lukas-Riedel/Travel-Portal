@@ -21,7 +21,7 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, minStart, 
         queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, minStart, maxEnd, include, sort }),
         staleTime: isAdmin ? 0 : 1000 * validity,
         refetchInterval: query => isAdmin && query.state.data?.flatMap(place => place.dates)?.map(date => date.album)?.filter(Boolean)
-            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 5000
+            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 10000
     })
 
     useEffect(() => {
