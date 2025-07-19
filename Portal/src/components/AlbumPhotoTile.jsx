@@ -78,7 +78,7 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
                             <Edit2 size={16} />
                         </button>
                     )}
-                    {onMainPhotoUpdated && photoPosition && album.mainPhotoId !== photo.id && (
+                    {onMainPhotoUpdated && photoPosition && album.mainPhoto.id !== photo.id && (
                         <button
                             onClick={handleMainPhotoUpdated}
                             className="btn-large-gray">

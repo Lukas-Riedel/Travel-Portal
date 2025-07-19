@@ -49,8 +49,8 @@
                 return NULL;
             }
 
-            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"], $albumRow["thumbnail_url"],
-                $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL ? NULL : $this->selectPhoto($albumRow["main_photo_id"]),
+                $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
                 $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
                 $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
         }
@@ -212,7 +212,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($album->getName(), $album->getId(), $album->getMainPhotoId(), $album->getMainImageUrl(),
+                ->withParameters($album->getName(), $album->getId(), $album->getMainPhoto()?->getId(), $album->getMainImageUrl(),
                     $album->getImagesCount(), $album->getId(), $album->getPermalink())
                 ->execute() === 1;
         }

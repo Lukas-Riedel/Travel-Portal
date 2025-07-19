@@ -4,7 +4,7 @@
     class Album implements \JsonSerializable {        
         private readonly string $id;
         private readonly string $name;
-        private readonly ?string $mainPhotoId;
+        private readonly ?Photo $mainPhoto;
         private readonly ?string $mainImageUrl;
         private readonly string $permalink;
         private readonly int $imagesCount;
@@ -12,11 +12,11 @@
         private readonly ?int $uploadingStart;
         private readonly ?float $uploadingProgress;
 
-        public function __construct(string $id, string $name, ?string $mainPhotoId, ?string $mainImageUrl,
+        public function __construct(string $id, string $name, ?Photo $mainPhoto, ?string $mainImageUrl,
             string $permalink, int $imagesCount, int $indoorImagesCount, ?int $uploadingStart, ?float $uploadingProgress) {
             $this->id = $id;
             $this->name = $name;
-            $this->mainPhotoId = $mainPhotoId;
+            $this->mainPhoto = $mainPhoto;
             $this->mainImageUrl = $mainImageUrl;
             $this->permalink = $permalink;
             $this->imagesCount = $imagesCount;
@@ -33,8 +33,8 @@
             return $this->name;
         }
 
-        public function getMainPhotoId() : ?string {
-            return $this->mainPhotoId;
+        public function getMainPhoto() : ?Photo {
+            return $this->mainPhoto;
         }
 
         public function getMainImageUrl() : ?string {

@@ -4,15 +4,15 @@
     class Photo implements \JsonSerializable {        
         private readonly string $id;
         private readonly mixed $urlProvider;
-        private readonly string $permalink;
+        private readonly ?string $permalink;
         private readonly ?float $focalLength;
         private readonly ?float $aperture;
         private readonly ?float $shutterSpeed;
         private readonly ?int $iso;
-        private readonly int $timestamp;
+        private readonly ?int $timestamp;
 
-        public function __construct(string $id, callable $urlProvider, string $permalink, ?float $focalLength,
-            ?float $aperture, ?float $shutterSpeed, ?int $iso, int $timestamp) {
+        public function __construct(string $id, callable $urlProvider, ?string $permalink, ?float $focalLength,
+            ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $timestamp) {
             $this->id = $id;
             $this->urlProvider = $urlProvider;
             $this->permalink = $permalink;
@@ -32,7 +32,7 @@
             return ($this->urlProvider)();
         }
 
-        public function getPermalink() : string {
+        public function getPermalink() : ?string {
             return $this->permalink;
         }
 
@@ -52,7 +52,7 @@
             return $this->iso;
         }
 
-        public function getTimestamp() : int {
+        public function getTimestamp() : ?int {
             return $this->timestamp;
         }
 
