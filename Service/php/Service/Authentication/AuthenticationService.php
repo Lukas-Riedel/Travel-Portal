@@ -58,11 +58,7 @@
                 throw new AuthenticationException("The access token expired at " . $decodedAccessToken["expiration"] . ".");
             }
 
-            if ($decodedAccessToken["version"] !== $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version")) {
-                throw new AuthenticationException("The access token version " . $decodedAccessToken["version"] . " is outdated.");
-            }
-
-            return new AccessToken($decodedAccessToken["userId"], $decodedAccessToken["roles"], $decodedAccessToken["version"], $decodedAccessToken["expiration"]);
+            return new AccessToken($decodedAccessToken["userId"], $decodedAccessToken["roles"], $decodedAccessToken["expiration"]);
         }
 
         public function authenticateWithRefreshToken(string $refreshToken) : AuthenticationResult {
@@ -93,10 +89,6 @@
     
             if ($decodedRefreshToken["expiration"] < time()) {
                 throw new AuthenticationException("The refresh token expired at " . $decodedRefreshToken["expiration"] . ".");
-            }
-
-            if ($decodedRefreshToken["version"] !== $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version")) {
-                throw new AuthenticationException("The refresh token version " . $decodedRefreshToken["version"] . " is outdated.");
             }
 
             return $this->generateAuthenticationResult($decodedRefreshToken["userId"], $decodedRefreshToken["roles"], $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "validity"));
@@ -135,12 +127,12 @@
         }
 
         private function generateAuthenticationResult(string $userId, array $roles, int $validity) : AuthenticationResult {
-            $rawAccessToken = new AccessToken($userId, $roles, $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version"), time() + $validity);
+            $rawAccessToken = new AccessToken($userId, $roles, time() + $validity);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher")));
             $encrypted = openssl_encrypt(json_encode($rawAccessToken), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher"), $this->getAccessTokenPrivatekey(), 0, $iv);
             $accessToken = base64_encode($encrypted . self::DELIMITER . $iv);
             
-            $rawRefreshToken = new AccessToken($userId, $roles, $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "version"), time() + self::REFRESH_TOKEN_VALIDITY_MULTIPLIER * $validity);
+            $rawRefreshToken = new AccessToken($userId, $roles, time() + self::REFRESH_TOKEN_VALIDITY_MULTIPLIER * $validity);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher")));
             $encrypted = openssl_encrypt(json_encode($rawRefreshToken), $this->configurationService->getConfigurationForTypeAndKey("bearerToken", "cipher"), $this->getRefreshTokenPrivatekey(), 0, $iv);
             $refreshToken = base64_encode($encrypted . self::DELIMITER . $iv);

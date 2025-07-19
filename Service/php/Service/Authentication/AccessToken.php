@@ -4,13 +4,11 @@
     class AccessToken implements \JsonSerializable {        
         private readonly string $userId;
         private readonly array $roles;
-        private readonly string $version;
         private readonly int $expiration;
 
-        public function __construct(string $userId, array $roles, string $version, int $expiration) {
+        public function __construct(string $userId, array $roles, int $expiration) {
             $this->userId = $userId;
             $this->roles = $roles;
-            $this->version = $version;
             $this->expiration = $expiration;
         }
 
@@ -20,10 +18,6 @@
 
         public function getRoles() : array {
             return $this->roles;
-        }
-
-        public function getVersion() : string {
-            return $this->version;
         }
 
         public function getExpiration() : int {
