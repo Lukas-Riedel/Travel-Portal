@@ -280,6 +280,7 @@
                 $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
                 $createdMediaItemId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
                 $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdMediaItemId);
+                $this->googleApiClient->updateAlbumMainPhoto($this->photoMapper->selectAlbumExternalId($albumId), $createdMediaItemId);
                 $this->eventPublisher->publishPhotoInvalidatedEvent($pendingPhoto->getReplacedPhotoId());
             }
         }
