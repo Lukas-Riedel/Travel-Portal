@@ -49,35 +49,19 @@
                 return NULL;
             }
 
-            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL ? NULL : $this->selectPhoto($albumRow["main_photo_id"]),
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
+                ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                 $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
                 $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
                 $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
         }
 
         public function selectPhoto(string $photoId) : ?Photo {
-            $sql = <<<'SQL'
-                SELECT *
-                FROM photo
-                WHERE id = ?
-            SQL;            
-                
-            $photoRow = $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($photoId)
-                ->getSingleRow();
-
-            if ($photoRow === NULL) {
-                return NULL;
-            }
-
             $urlProvider = function() use(&$photoId) { 
                 return $this->googleApiClient->getMediaItem($this->selectPhotoExternalId($photoId))["baseUrl"];
             };
             $urlProvider->bindTo($this);
-
-            return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
-                $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
+            return $this->doSelectPhoto($photoId, $urlProvider);
         }
 
         public function selectPendingPhotosWithFixedPosition(string $albumId) : array {
@@ -375,6 +359,26 @@
                 ->statementBuilder($sql)
                 ->withParameters($id)
                 ->execute();
+        }
+
+        private function doSelectPhoto(string $photoId, callable $urlProvider) : ?Photo {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM photo
+                WHERE id = ?
+            SQL;            
+                
+            $photoRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($photoId)
+                ->getSingleRow();
+
+            if ($photoRow === NULL) {
+                return NULL;
+            }
+
+            return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+                $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
         }
     }
 ?>

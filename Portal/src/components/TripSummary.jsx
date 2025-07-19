@@ -75,7 +75,7 @@ export default function TripSummary({ tripId }) {
                 <DayCard
                     key={index}
                     day={day}
-                    events={trip?.getEvents(day, tripPlaces, timezone)}
+                    events={tripPlaces && trip?.getEvents(day, tripPlaces, timezone)}
                     stay={trip?.getStay(day)}
                     fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
                     publicHoliday={trip?.getPublicHoliday(day)}

@@ -7,8 +7,6 @@ import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
 
-const loadingDaysCount = 4
-
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded }) {
     const configuration = useConfiguration()
     const { isAdmin } = useAuth()
@@ -54,7 +52,7 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                     <DayCard
                         key={index}
                         day={day}
-                        events={trip.getEvents(day, places, timezone)}
+                        events={places && trip.getEvents(day, places, timezone)}
                         stay={trip.getStay(day)}
                         fitness={trip.fitness[index]}
                         publicHoliday={trip.getPublicHoliday(day)}
