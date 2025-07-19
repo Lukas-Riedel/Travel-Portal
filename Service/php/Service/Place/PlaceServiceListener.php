@@ -6,6 +6,10 @@
 
     class PlaceServiceListener {
 
+        // TODO: Set the value.
+        private const HIGHLIGHT_SCORE_MULTIPLIER = 0;
+        private const PHOTO_SCORE_MULTIPLIER = 0;
+
         private const ONE_YEAR_SECONDS = 365 * 86400;
 
         private readonly PlaceService $placeService;
@@ -26,7 +30,8 @@
         
         public function onAlbumUpdated(mixed $message) : void {            
             $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL,
-                NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
+                NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value,
+                    PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
@@ -59,8 +64,10 @@
                             : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
                     }                    
                 }
-        
-                $this->placeService->updatePlaceScore($place->getPlaceIdentifier()->getId(), empty($buckets) ? 0 : max(array_values($buckets)));
+
+                $this->placeService->updatePlaceScore($place->getPlaceIdentifier()->getId(), 
+                    self::PHOTO_SCORE_MULTIPLIER * (empty($buckets) ? 0 : max(array_values($buckets)))
+                    + self::HIGHLIGHT_SCORE_MULTIPLIER * count($place->getHighlights()));
             }
         }
 
