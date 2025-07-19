@@ -9,9 +9,10 @@ import { useMemo } from "react"
 export default function AlbumPhotoTile({ place, trip, album, photo, photoPosition, onPlaceHighlightCreated, onTripHighlightCreated, onPhotoReplaced, onMainPhotoUpdated }) {
     const { isAdmin } = useAuth()
 
-    // TODO: This doesn't work well if there are multiple photos taken at the same time.
-    const canPlaceHighlightBeAdded = useMemo(() => onPlaceHighlightCreated && place?.highlights && !place.highlights.some(highlight => highlight.timestamp === photo.timestamp), [place, photo])
-    const canTripHighlightBeAdded = useMemo(() => onTripHighlightCreated && trip?.highlights && !trip.highlights.some(highlight => highlight.timestamp === photo.timestamp), [trip, photo])
+    const canPlaceHighlightBeAdded = useMemo(() => onPlaceHighlightCreated && place?.highlights &&
+        !place.highlights.some(highlight => highlight.photo.id === photo.id), [place, photo])
+    const canTripHighlightBeAdded = useMemo(() => onTripHighlightCreated && trip?.highlights &&
+        !trip.highlights.some(highlight => highlight.photo.id === photo.id), [trip, photo])
 
     const handleHighlightCreated = () => {
         showFormToast(
@@ -64,12 +65,12 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
             {isAdmin && (
                 <div className="flex justify-center gap-2 mt-2">
                     {(canPlaceHighlightBeAdded || canTripHighlightBeAdded) && (
-                            <button
-                                onClick={handleHighlightCreated}
-                                className="btn-large-gray">
-                                <Plus size={16} />
-                            </button>
-                        )}
+                        <button
+                            onClick={handleHighlightCreated}
+                            className="btn-large-gray">
+                            <Plus size={16} />
+                        </button>
+                    )}
                     {onPhotoReplaced && (
                         <button
                             onClick={handlePhotoReplaced}

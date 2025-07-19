@@ -1,33 +1,22 @@
 <?php
     namespace Service\Service\Highlight;
 
+    use Service\Service\Photo\Photo;
+
     class Highlight implements \JsonSerializable {        
         private readonly string $id;
         private readonly HighlightUrl $url;
-        private readonly ?float $focalLength;
-        private readonly ?float $aperture;
-        private readonly ?float $shutterSpeed;
-        private readonly ?int $iso;
-        private readonly ?int $composition;
-        private readonly ?int $sky;
-        private readonly ?int $shadows;
-        private readonly ?int $circumstances;
-        private readonly ?int $timestamp;
+        private readonly Photo $photo;
+        private readonly HighlightAttributes $attributes;
 
-        public function __construct(string $id, ?string $thumbnailUrl, ?string $fullUrl, ?float $focalLength,
-            ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $composition, ?int $sky,
+        public function __construct(string $id, ?string $thumbnailUrl, ?string $fullUrl, string $photoId, ?string $photoPermalink,
+            ?float $focalLength, ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $composition, ?int $sky,
             ?int $shadows, ?int $circumstances, ?int $timestamp) {
             $this->id = $id;
             $this->url = new HighlightUrl($thumbnailUrl, $fullUrl);
-            $this->focalLength = $focalLength;
-            $this->aperture = $aperture;
-            $this->shutterSpeed = $shutterSpeed;
-            $this->iso = $iso;
-            $this->composition = $composition;
-            $this->sky = $sky;
-            $this->shadows = $shadows;
-            $this->circumstances = $circumstances;
-            $this->timestamp = $timestamp; 
+            $this->photo = new Photo($photoId, fn() => $fullUrl, $photoPermalink === NULL ? $fullUrl : $photoPermalink,
+                $focalLength, $aperture, $shutterSpeed, $iso, $timestamp);
+            $this->attributes = new HighlightAttributes($composition, $sky, $shadows, $circumstances);
         }
 
         public function getId() : string {
@@ -38,46 +27,16 @@
             return $this->url;
         }
 
-        public function getFocalLength() : ?float {
-            return $this->focalLength;
+        public function getPhoto() : Photo {
+            return $this->photo;
         }
 
-        public function getAperture() : ?float {
-            return $this->aperture;
-        }
-
-        public function getShutterSpeed() : ?float {
-            return $this->shutterSpeed;
-        }
-
-        public function getIso() : ?int {
-            return $this->iso;
-        }
-
-        public function getComposition() : ?int {
-            return $this->composition;
-        }
-
-        public function getSky() : ?int {
-            return $this->sky;
-        }
-
-        public function getShadows() : ?int {
-            return $this->shadows;
-        }
-
-        public function getCircumstances() : ?int {
-            return $this->circumstances;
+        public function getAttributes() : HighlightAttributes {
+            return $this->attributes;
         }
 
         public function getQuality() : ?float {
-            return $this->composition !== NULL && $this->sky !== NULL && $this->shadows !== NULL && $this->circumstances !== NULL
-                ? ($this->composition + $this->sky + $this->shadows + $this->circumstances) / 4.0
-                : NULL;
-        }
-
-        public function getTimestamp() : ?int {
-            return $this->timestamp;
+            return $this->attributes->getQuality();
         }
 
         #[\ReturnTypeWillChange]

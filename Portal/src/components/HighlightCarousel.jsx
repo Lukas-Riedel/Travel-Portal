@@ -67,12 +67,12 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
 
     const handleHighlightQualityAttributesUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
-        const timestamp = highlight.timestamp - (isDaylightSavingTime(highlight.timestamp, configuration?.homeLocation?.timezone) ? 0 : 3600)
+        const timestamp = highlight.photo.timestamp - (isDaylightSavingTime(highlight.photo.timestamp, configuration?.homeLocation?.timezone) ? 0 : 3600)
         showFormToast(
             "Zadej nové atributy:",
             [
                 {
-                    label: "Kompozice", value: highlight.composition, required: true, type: "select", options: [
+                    label: "Kompozice", value: highlight.attributes.composition, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 5, name: "Nedostatečná" },
                         { id: 60, name: "Průměrná" },
@@ -80,7 +80,7 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
                     ]
                 },
                 {
-                    label: "Nebe", value: highlight.sky, required: true, type: "select", options: [
+                    label: "Nebe", value: highlight.attributes.sky, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 10, name: "Jednolitá šedá" },
                         { id: 30, name: "Zataženo s výraznou strukturou mraků" },
@@ -90,15 +90,16 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
                     ]
                 },
                 {
-                    label: "Stíny", value: highlight.shadows, required: true, type: "select", options: [
+                    label: "Stíny", value: highlight.attributes.shadows, required: true, type: "select", options: [
                         { id: null, name: "" },
+                        { id: 20, name: "Protisvětlo" },
                         { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
                         { id: 60, name: "Mírné (lehké modelování scény)" },
                         { id: 100, name: "Výrazné (boční světlo, plastika)" }
                     ]
                 },
                 {
-                    label: "Okolnosti", value: highlight.circumstances, required: true, type: "select", options: [
+                    label: "Okolnosti", value: highlight.attributes.circumstances, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 20, name: "Výrazně rušivé (lešení, davy, nepořádek)" },
                         { id: 70, name: "Rušivé (něco narušuje celkový dojem)" },

@@ -230,13 +230,13 @@
         private function getHighlight(mixed $highlightRow) : Highlight {
             $photo = $this->photoService->getPhoto($highlightRow["photo_id"]);
             if ($photo === NULL) {
-                return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"],
-                    NULL, NULL, NULL, NULL, $highlightRow["composition"], $highlightRow["sky"],
+                return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
+                    NULL, NULL, NULL, NULL, NULL, $highlightRow["composition"], $highlightRow["sky"],
                     $highlightRow["shadows"], $highlightRow["circumstances"], NULL);
             }
             else {
-                return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], 
-                    $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
+                return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
+                    $photo->getPermalink(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
                     $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
                     $photo->getTimestamp());
             }
