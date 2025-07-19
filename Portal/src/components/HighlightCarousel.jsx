@@ -48,11 +48,12 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
             "Highlight byl úspěšně odstraněn",
             "Nepodařilo se odstranit highlight",
             async () => {
-                const newHighlights = [...shuffledHighlights]
-                newHighlights.splice(currentHighlightIndex, 1)
-                setShuffledHighlights(newHighlights)
-                setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
-                return onHighlightRemoved(highlight.id)
+                return onHighlightRemoved(highlight.id).then(_ => {
+                    const newHighlights = [...shuffledHighlights]
+                    newHighlights.splice(currentHighlightIndex, 1)
+                    setShuffledHighlights(newHighlights)
+                    setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
+                })
             })
     }
 
