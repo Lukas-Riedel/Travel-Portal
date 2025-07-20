@@ -54,8 +54,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
             "",
             "Nahrazování fotky brzy začne",
             "Při nahrazování fotky došlo k chybě",
-            async (path) => onPhotoReplaced(place.id, currentHighlightAlbumId, highlights[currentHighlightIndex].photo.id, path)
-                .then(() => window.open(photo.permalink, "_blank"))
+            async (path) => onPhotoReplaced(place.id, currentHighlightAlbumId, shuffledHighlights[currentHighlightIndex].photo.id, path)
+                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
         )
     }
 
@@ -109,7 +109,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 {
                     label: "Stíny", value: highlight.attributes.shadows, required: true, type: "select", options: [
                         { id: null, name: "" },
-                        { id: 20, name: "Protisvětlo" },
+                        { id: 20, name: "Silné protisvětlo (špatná denní doba)" },
                         { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
                         { id: 60, name: "Mírné (lehké modelování scény)" },
                         { id: 100, name: "Výrazné (boční světlo, plastika)" }
@@ -185,7 +185,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                         {<SlidersVertical size={16} />}
                     </button>
                 )}
-                {onPhotoReplaced && (
+                {onPhotoReplaced && place && currentHighlightAlbumId && isAdmin && (
                     <button
                         onClick={handlePhotoReplaced}
                         className="btn-large-gray">

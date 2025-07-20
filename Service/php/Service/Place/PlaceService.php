@@ -75,7 +75,7 @@
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
-        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $photoId, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             return $this->doGetRegularPlaces(NULL, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
 

@@ -197,8 +197,9 @@
                     }
 
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
-                    $albums[] = new Album($currentAlbumId, $album["title"], new Photo($mainPhotoId, fn() => $album["coverPhotoBaseUrl"],
-                        NULL, NULL, NULL, NULL, NULL, NULL), $mainImageUrl, $album["productUrl"], $imagesCount, 0, NULL, NULL);
+                    $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === NULL ? NULL : new Photo($mainPhotoId,
+                        fn() => $album["coverPhotoBaseUrl"], NULL, NULL, NULL, NULL, NULL, NULL), $mainImageUrl, $album["productUrl"],
+                        $imagesCount, 0, NULL, NULL);
 
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.

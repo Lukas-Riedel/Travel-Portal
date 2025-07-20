@@ -1,13 +1,16 @@
-import { Edit2, Plus, Star, Trash2 } from "lucide-react"
+import { Edit2, Plus, SendToBack, Star, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import PhotoTile from "./PhotoTile"
 import showConfirmToast from "./ConfirmToast"
 import showInputToast from "./InputToast"
 import showFormToast from "./FormToast"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { getDateString } from "../utils/helpers"
 
 export default function AlbumPhotoTile({ place, trip, album, photo, photoPosition, onPlaceHighlightCreated, onTripHighlightCreated, onPhotoReplaced, onMainPhotoUpdated }) {
     const { isAdmin } = useAuth()
+
+    const [overlayType, setOverlayType] = useState(0)
 
     const canPlaceHighlightBeAdded = useMemo(() => onPlaceHighlightCreated && place?.highlights &&
         !place.highlights.some(highlight => highlight.photo.id === photo.id), [place, photo])
@@ -59,9 +62,26 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
 
     return (
         <div>
-            <PhotoTile
-                src={photo.url + "=w350-h233"}
-                to={photo.permalink} />
+            {overlayType === 0 && (
+                <PhotoTile
+                    src={photo.url + "=w350-h233"}
+                    to={photo.permalink} />
+            )}
+            {overlayType === 1 && (
+                <PhotoTile
+                    src={photo.url + "=w350-h233"}
+                    to={photo.permalink}
+                    categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                    firstLineText={place.name} />
+            )}
+            {overlayType === 2 && (
+                <PhotoTile
+                    src={photo.url + "=w350-h233"}
+                    to={photo.permalink}
+                    categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                    firstLineText={place.name}
+                    secondLineText={getDateString(Date.now() / 1000)} />
+            )}
             {isAdmin && (
                 <div className="flex justify-center gap-2 mt-2">
                     {(canPlaceHighlightBeAdded || canTripHighlightBeAdded) && (
@@ -71,11 +91,16 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
                             <Plus size={16} />
                         </button>
                     )}
+                    <button
+                        onClick={handlePhotoReplaced}
+                        className="btn-large-gray">
+                        <Edit2 size={16} />
+                    </button>
                     {onPhotoReplaced && (
                         <button
-                            onClick={handlePhotoReplaced}
+                            onClick={() => setOverlayType(prev => (prev + 1) % 3)}
                             className="btn-large-gray">
-                            <Edit2 size={16} />
+                            <SendToBack size={16} />
                         </button>
                     )}
                     {onMainPhotoUpdated && photoPosition && album.mainPhoto.id !== photo.id && (
