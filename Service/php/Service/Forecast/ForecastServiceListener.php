@@ -75,7 +75,7 @@
         public function onSchedulerTriggered(mixed $message) : void {
             if ($message["action"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
                 && time() - $message["lastTriggered"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, time(),
+                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(),
                     time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 foreach ($places as &$place) {
@@ -91,7 +91,7 @@
 
             if ($message["action"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
                 && time() - $message["lastTriggered"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
     
                     foreach ($places as &$place) {
                         foreach ($place->getDates() as &$date) {    
@@ -106,7 +106,7 @@
 
             if ($message["action"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
                 && time() - $message["lastTriggered"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    

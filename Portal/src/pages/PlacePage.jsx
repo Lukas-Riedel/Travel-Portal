@@ -16,7 +16,7 @@ import { useEvents } from "../hooks/useEvents.js"
 export default function PlacePage() {
     const { isAdmin } = useAuth()
     const { placeId } = useParams()
-    const { publishPhotosUploadingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
@@ -33,6 +33,7 @@ export default function PlacePage() {
             <HighlightCarousel
                 place={place}
                 highlights={place?.highlights}
+                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removePlaceHighlight}
                 onMainHighlightUpdated={updatePlaceMainHighlight}
                 onHighlightQualityAttributesUpdated={updatePlaceHighlightQualityAttributes} />

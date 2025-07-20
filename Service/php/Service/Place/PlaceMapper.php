@@ -130,7 +130,7 @@
                 ->getMappedResultSet(function($categoryRow) use(&$start, &$end) {
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
                         array_filter(array_map(function($placeId) use(&$start, &$end) {
-                            $places = $this->selectRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end,
+                            $places = $this->selectRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end,
                                 array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
                             return count($places) === 0 ? NULL : $places[0];
                         }, explode(",", $categoryRow["place_ids"])), fn($place) => $place !== NULL));
@@ -167,7 +167,7 @@
                 ->getSingleColumn("days");
         }
         
-        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -190,6 +190,9 @@
             }
             if ($albumId !== NULL) {
                 $whereClauseBuilder->withClause("album_id = ?", $albumId);
+            }
+            if ($photoId !== NULL) {
+                $whereClauseBuilder->withClause("album_id = ?", $this->photoService->getAlbumForPhoto($photoId)?->getId());
             }
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("(FIND_IN_SET(?, category_ids) OR ((UNIX_TIMESTAMP() - GET_VARIABLE_TIME_CATEGORY_OFFSET(?) <= start) AND (UNIX_TIMESTAMP() >= end)) OR ((GET_VARIABLE_TIME_CATEGORY_OFFSET(?) IS NOT NULL) AND (place_id IN (SELECT place_id FROM place_permanent))))", $categoryId, $categoryId, $categoryId);

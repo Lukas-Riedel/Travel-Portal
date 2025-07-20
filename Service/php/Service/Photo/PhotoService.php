@@ -35,6 +35,10 @@
         public function getAlbum(string $albumId) : ?Album {
             return $this->photoMapper->selectAlbum($albumId);
         }
+        
+        public function getAlbumForPhoto(string $photoId) : ?Album {
+            return $this->photoMapper->selectAlbumForPhoto($photoId);
+        }
 
         public function createAlbum(PlaceIdentifier $placeIdentifier, int $timestamp) : Album {
             $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);

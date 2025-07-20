@@ -90,3 +90,7 @@ export function isDaylightSavingTime(timestamp, timezone) {
     const date = toZonedTime(fromUnixTime(timestamp), timezone)
     return date.getTimezoneOffset() < Math.max(toZonedTime(new Date(date.getFullYear(), 0, 1), timezone).getTimezoneOffset(), toZonedTime(new Date(date.getFullYear(), 6, 1), timezone).getTimezoneOffset())
 }
+
+export function getOnlyElement(arr) {
+    return arr?.length === 1 ? arr[0] : undefined
+}

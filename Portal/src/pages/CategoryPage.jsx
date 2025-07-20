@@ -6,9 +6,11 @@ import PlaceTileGrid from "../components/PlaceTileGrid"
 import StatisticsPanel from "../components/StatisticsPanel"
 import { useMemo } from "react"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
+import { useEvents } from "../hooks/useEvents"
 
 export default function CategoryPage() {
-    const { categoryId } = useParams()
+    const { categoryId } = useParams()    
+    const { publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { category, updateCategoryName, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "CATEGORIES", sort: "score" })
@@ -42,6 +44,7 @@ export default function CategoryPage() {
                 entity={category}
                 places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory}
+                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removeCategoryHighlight}
                 onMainHighlightUpdated={updateCategoryMainHighlight}
                 onHighlightQualityAttributesUpdated={updateCategoryHighlightQualityAttributes} />

@@ -121,7 +121,7 @@
 
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
             return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
-                $places = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, $record->getTimestamp(),
+                $places = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL, $record->getTimestamp(),
                     $record->getTimestamp() + self::ONE_DAY_SECONDS, array(), PlaceSortingStrategy::Default);
                 return empty($places) ? NULL : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
                     implode(", ", array_map(fn($place) => $place->getName(), $places)),

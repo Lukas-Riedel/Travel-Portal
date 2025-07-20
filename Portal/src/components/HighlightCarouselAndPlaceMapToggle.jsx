@@ -3,7 +3,8 @@ import { Map as MapIcon, Images } from "lucide-react"
 import HighlightCarousel from "./HighlightCarousel"
 import PlaceMap from "./PlaceMap"
 
-export default function HighlightCarouselAndPlaceMapToggle({ entity, places, placeMainCategorySelector, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
+export default function HighlightCarouselAndPlaceMapToggle({ entity, places, placeMainCategorySelector, onPhotoReplaced,
+    onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
     const [showMap, setShowMap] = useState(false)
     const [height, setHeight] = useState(0)
     const carouselRef = useRef(null)
@@ -38,6 +39,7 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
                 style={showMap ? { position: "absolute", left: "-9999px", top: 0, width: "100%" } : { width: "100%" }}>
                 <HighlightCarousel
                     highlights={entity?.highlights}
+                    onPhotoReplaced={onPhotoReplaced}
                     onHighlightRemoved={onHighlightRemoved}
                     onMainHighlightUpdated={onMainHighlightUpdated}
                     onHighlightQualityAttributesUpdated={onHighlightQualityAttributesUpdated} />

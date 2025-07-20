@@ -1,22 +1,29 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Pause, Play, Trash2, Star, SlidersVertical, Grid3x3 } from "lucide-react"
+import { Pause, Play, Trash2, Star, SlidersVertical, Grid3x3, Edit2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
-import { Grid, TailSpin } from "react-loader-spinner"
+import { TailSpin } from "react-loader-spinner"
 import showFormToast from "./FormToast"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import SunCalc from "suncalc"
-import { isDaylightSavingTime } from "../utils/helpers"
+import { getOnlyElement, isDaylightSavingTime } from "../utils/helpers"
 import { useConfiguration } from "../contexts/ConfigContext"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import showInputToast from "./InputToast"
 
-export default function HighlightCarousel({ place, highlights, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
+const INVALID_PHOTO_ID = "INVALID_PHOTO_ID"
+
+export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
     const { isAdmin } = useAuth()
     const configuration = useConfiguration()
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
+    const currentHighlightPlaces = useRegularPlaces({ photoId: highlights?.[currentHighlightIndex]?.photo?.id ?? INVALID_PHOTO_ID, include: "DATES" })
+    const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
+        ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const [isPaused, setIsPaused] = useState(isAdmin)
     const [showGrid, setShowGrid] = useState(false)
     const didShuffleRef = useRef(false)
@@ -41,6 +48,16 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
         const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % shuffledHighlights.length), 7000)
         return () => clearInterval(interval)
     }, [shuffledHighlights, isPaused])
+
+    const handlePhotoReplaced = () => {
+        showInputToast("Zadej cestu k nové fotce:",
+            "",
+            "Nahrazování fotky brzy začne",
+            "Při nahrazování fotky došlo k chybě",
+            async (path) => onPhotoReplaced(place.id, currentHighlightAlbumId, highlights[currentHighlightIndex].photo.id, path)
+                .then(() => window.open(photo.permalink, "_blank"))
+        )
+    }
 
     const handleHighlightRemoved = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
@@ -166,6 +183,13 @@ export default function HighlightCarousel({ place, highlights, onHighlightRemove
                         onClick={handleHighlightQualityAttributesUpdated}
                         className="btn-chip-gray">
                         {<SlidersVertical size={16} />}
+                    </button>
+                )}
+                {onPhotoReplaced && (
+                    <button
+                        onClick={handlePhotoReplaced}
+                        className="btn-large-gray">
+                        <Edit2 size={16} />
                     </button>
                 )}
                 {shuffledHighlights.length > 1 && (

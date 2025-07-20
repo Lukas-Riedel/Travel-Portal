@@ -5,7 +5,7 @@ import Place from "../model/place"
 import { useEvents } from "./useEvents"
 import { useEffect, useMemo } from "react"
 
-export const useRegularPlaces = ({ tripId, categoryId, labelId, year, minStart, maxEnd, include, sort } = {}) => {
+export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort } = {}) => {
     const { listRegularPlaces } = useApi()
     const { isAdmin } = useAuth()
     const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
@@ -17,8 +17,8 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, minStart, 
 
     const validity = 60 * 60 * 2
     const query = useQuery({
-        queryKey: ["listRegularPlaces", tripId, categoryId, labelId, year, minStart - (minStart % validity), maxEnd - (maxEnd % validity), include, sort],
-        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, minStart, maxEnd, include, sort }),
+        queryKey: ["listRegularPlaces", tripId, categoryId, labelId, year, albumId, photoId, minStart - (minStart % validity), maxEnd - (maxEnd % validity), include, sort],
+        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort }),
         staleTime: isAdmin ? 0 : 1000 * validity,
         refetchInterval: query => isAdmin && query.state.data?.flatMap(place => place.dates)?.map(date => date.album)?.filter(Boolean)
             ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 10000

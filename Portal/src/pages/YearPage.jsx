@@ -11,10 +11,12 @@ import TripTable from "../components/TripTable"
 import { useAuth } from "../contexts/AuthContext"
 import ExpenseSummary from "../components/ExpenseSummary"
 import { getSortedTrips } from "../utils/helpers"
+import { useEvents } from "../hooks/useEvents"
 
 export default function YearPage() {
     const { isAdmin } = useAuth()
     const { year: yearParameter } = useParams()
+    const { publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
     const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "CATEGORIES" })
@@ -34,6 +36,7 @@ export default function YearPage() {
                 entity={year}
                 places={yearPlaces}
                 placeMainCategorySelector={getPlaceCategory}
+                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removeYearHighlight}
                 onMainHighlightUpdated={updateYearMainHighlight}
                 onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />

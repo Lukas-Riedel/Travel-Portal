@@ -49,7 +49,8 @@
             $statistics = array();
 
             if ($statisticsKind === StatisticsKind::Fact) {        
-                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, 
+                    NULL, NULL, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 $visitedPlacesCount = count($relevantPlaces);
                 if ($visitedPlacesCount > 0) {
@@ -86,7 +87,8 @@
             if ($statisticsKind === StatisticsKind::Standings) {                      
                 $homeLatitude = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "latitude");
                 $homeLongitude = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "longitude");                    
-                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::DistanceFromHomeDescending);
+                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, 
+                    NULL, NULL, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::DistanceFromHomeDescending);
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $travelDaysCountByCountry = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
@@ -136,28 +138,28 @@
                                         
                     $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(),
                         intval($this->geocodingService->getDistance($homeLatitude, $homeLongitude, $place->getLatitude(), $place->getLongitude()))),
-                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LatitudeDescending));
+                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LatitudeDescending));
                     if (count($northernmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::NORTHERNMOST_PLACES_STATISTICS_NAME, $northernmostPlaces, StatisticsUnit::Kilometers);
                     }
 
                     $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(),
                         intval($this->geocodingService->getDistance($homeLatitude, $homeLongitude, $place->getLatitude(), $place->getLongitude()))),
-                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LatitudeAscending));
+                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LatitudeAscending));
                     if (count($southernmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::SOUTHERNMOST_PLACES_STATISTICS_NAME, $southernmostPlaces, StatisticsUnit::Kilometers);
                     }
 
                     $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(),
                         intval($this->geocodingService->getDistance($homeLatitude, $homeLongitude, $place->getLatitude(), $place->getLongitude()))),
-                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LongitudeDescending));
+                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LongitudeDescending));
                     if (count($easternmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::EASTERNMOST_PLACES_STATISTICS_NAME, $easternmostPlaces, StatisticsUnit::Kilometers);
                     }
 
                     $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(),
                         intval($this->geocodingService->getDistance($homeLatitude, $homeLongitude, $place->getLatitude(), $place->getLongitude()))),
-                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LongitudeAscending));
+                        $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end, array(), PlaceSortingStrategy::LongitudeAscending));
                     if (count($westernmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::WESTERNMOST_PLACES_STATISTICS_NAME, $westernmostPlaces, StatisticsUnit::Kilometers);
                     }

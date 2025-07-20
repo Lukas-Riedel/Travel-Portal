@@ -17,7 +17,7 @@ import { useEvents } from "../hooks/useEvents"
 
 export default function TripPage() {
     const { isAdmin } = useAuth()
-    const { publishPhotosUploadingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { tripId } = useParams()
 
@@ -50,6 +50,7 @@ export default function TripPage() {
                 entity={trip}
                 places={tripPlacesWithoutLayover}
                 placeMainCategorySelector={getPlaceCategory}
+                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removeTripHighlight}
                 onMainHighlightUpdated={updateTripMainHighlight}
                 onHighlightQualityAttributesUpdated={updateTripHighlightQualityAttributes} />

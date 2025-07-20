@@ -56,6 +56,25 @@
                 $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
         }
 
+        public function selectAlbumForPhoto(string $photoId) : ?Album {
+            $sql = <<<'SQL'
+                SELECT album_id
+                FROM photo
+                WHERE id = ?
+            SQL;
+
+            $albumId = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($photoId)
+                ->getSingleColumn(("album_id"));
+
+            if ($albumId === NULL) {
+                return NULL;
+            }
+
+            return $this->selectAlbum($albumId);
+        }
+
         public function selectPhoto(string $photoId) : ?Photo {
             $urlProvider = function() use(&$photoId) { 
                 return $this->googleApiClient->getMediaItem($this->selectPhotoExternalId($photoId))["baseUrl"];

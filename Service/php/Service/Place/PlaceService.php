@@ -71,12 +71,12 @@
         }
 
         public function getRegularPlace(string $placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
+            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
         }
 
-        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->doGetRegularPlaces(NULL, $categoryId, $labelId, $tripId, $year, $albumId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $photoId, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->doGetRegularPlaces(NULL, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
 
         public function getCandidatePlace(string $placeId) : ?Place {
@@ -151,7 +151,7 @@
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -182,7 +182,7 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -314,8 +314,8 @@
                 $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array());
         }
 
-        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
         
         private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?string $label, array $includedEntities) : array {

@@ -182,7 +182,7 @@ export function useApi() {
             .then(place => new Place(place))
     }
 
-    async function listRegularPlaces({ tripId, categoryId, labelId, year, albumId, minStart, maxEnd, include, sort } = {}) {
+    async function listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "regular",
@@ -191,6 +191,7 @@ export function useApi() {
                 labelId: labelId,
                 year: year,
                 albumId: albumId,
+                photoId: photoId,
                 minStart: minStart,
                 maxEnd: maxEnd,
                 include: include,

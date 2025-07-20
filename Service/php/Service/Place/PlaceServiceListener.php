@@ -29,7 +29,7 @@
         }
         
         public function onAlbumUpdated(mixed $message) : void {            
-            $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL,
+            $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL, NULL,
                 NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value,
                     PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
@@ -85,7 +85,7 @@
         }
 
         public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
+            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
