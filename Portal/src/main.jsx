@@ -8,6 +8,7 @@ import { hydrate, QueryClient, QueryClientProvider } from "@tanstack/react-query
 import { persistQueryClient } from "@tanstack/react-query-persist-client"
 import localforage from "localforage"
 import { NotificationProvider } from "./contexts/NotificationContext.jsx"
+import { LocationProvider } from "./contexts/LocationContext.jsx"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -48,7 +49,9 @@ const persister = {
                     <AuthProvider>
                         <ConfigurationProvider>
                             <NotificationProvider>
-                                <App />
+                                <LocationProvider>
+                                    <App />
+                                </LocationProvider>
                             </NotificationProvider>
                         </ConfigurationProvider>
                     </AuthProvider>

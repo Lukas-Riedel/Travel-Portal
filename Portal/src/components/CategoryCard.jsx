@@ -66,7 +66,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 </button>
                             )}
                         </div>
-                        {place.distance >= 0 && (
+                        {place.distance > 0 && (
                             <div className="flex justify-start items-center">
                                 <button
                                     className="text-gray-600 hover:text-gray-300 transition-colors duration-200"

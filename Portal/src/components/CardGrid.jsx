@@ -2,28 +2,25 @@ import { useState, useEffect } from "react"
 import LoadingCard from "./LoadingCard"
 
 export default function CardGrid({ cardsPerRowCount, children }) {
-    const [cols, setCols] = useState(cardsPerRowCount)
+    const getRealCardsPerRowCount = width => {
+        if (width < 640) {
+            return Math.min(1, cardsPerRowCount)
+        }
+        if (width < 768) {
+            return Math.min(2, cardsPerRowCount)
+        }
+        if (width < 1024) {
+            return Math.min(3, cardsPerRowCount)
+        }
+        return cardsPerRowCount
+    }
+
+    const [cols, setCols] = useState(() => getRealCardsPerRowCount(window.innerWidth))
 
     useEffect(() => {
-        const updateCols = () => {
-            const width = window.innerWidth
-            if (width < 640) {
-                setCols(Math.min(1, cardsPerRowCount))
-            }
-            else if (width < 768) {
-                setCols(Math.min(2, cardsPerRowCount))
-            }
-            else if (width < 1024) {
-                setCols(Math.min(3, cardsPerRowCount))
-            }
-            else {
-                setCols(cardsPerRowCount)
-            }
-        }
-
-        updateCols()
-        window.addEventListener("resize", updateCols)
-        return () => window.removeEventListener("resize", updateCols)
+        const handleResize = () => setCols(getRealCardsPerRowCount(window.innerWidth))
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
     }, [cardsPerRowCount])
 
     return (

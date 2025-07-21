@@ -48,34 +48,6 @@
             }
         }
 
-        private function updatePlaceScore(string $placeId) : void {
-            $place = $this->placeService->getRegularPlace($placeId);
-
-            $buckets = array();
-            $encounteredAlbums = array();
-            foreach ($place->getDates() as &$date) {
-                $album = $date->getAlbum();
-                if ($album !== NULL && !in_array($album->getId(), $encounteredAlbums)) {
-                    $encounteredAlbums[] = $album->getId();
-        
-                    $tripId = $date->getTrip() === NULL
-                        ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
-                        : $date->getTrip()->getId();
-        
-                    if (!isset($buckets[$tripId])) {
-                        $buckets[$tripId] = 0;
-                    }            
-                    
-                    $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
-                        ? $album->getImagesCount() // This is an indoor-only location.
-                        : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
-                }                    
-            }
-
-            $this->placeService->updatePlaceScore($placeId, self::PHOTO_SCORE_MULTIPLIER * (empty($buckets) ? 0 : max(array_values($buckets)))
-                + self::HIGHLIGHT_SCORE_MULTIPLIER * count($place->getHighlights()));
-        }
-
         public function onCalendarInvalidated(mixed $message) : void {
             if ($message["calendar"] === \Calendar::Places->value) {
                 $this->placeService->refreshCalendar($this->tripService);
@@ -140,6 +112,34 @@
                     $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), count($highlightQualities) / $sumReciprocals);
                 }
             }
+        }
+
+        private function updatePlaceScore(string $placeId) : void {
+            $place = $this->placeService->getRegularPlace($placeId);
+
+            $buckets = array();
+            $encounteredAlbums = array();
+            foreach ($place->getDates() as &$date) {
+                $album = $date->getAlbum();
+                if ($album !== NULL && !in_array($album->getId(), $encounteredAlbums)) {
+                    $encounteredAlbums[] = $album->getId();
+        
+                    $tripId = $date->getTrip() === NULL
+                        ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
+                        : $date->getTrip()->getId();
+        
+                    if (!isset($buckets[$tripId])) {
+                        $buckets[$tripId] = 0;
+                    }            
+                    
+                    $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
+                        ? $album->getImagesCount() // This is an indoor-only location.
+                        : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
+                }                    
+            }
+
+            $this->placeService->updatePlaceScore($placeId, self::PHOTO_SCORE_MULTIPLIER * (empty($buckets) ? 0 : max(array_values($buckets)))
+                + self::HIGHLIGHT_SCORE_MULTIPLIER * count($place->getHighlights()));
         }
     }
 ?>

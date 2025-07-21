@@ -3,21 +3,20 @@ import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 import Place from "../model/place"
 import { useEffect, useMemo, useState } from "react"
+import { useLocation } from "../contexts/LocationContext"
 
 export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sort } = {}) => {
     const { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } = useApi()
+    const resolvedLocation = useLocation()
     const { isAdmin } = useAuth()
 
-    const [currentLocation, setCurrentLocation] = useState(null)
+    const [currentLocation, setCurrentLocation] = useState(resolvedLocation)
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(location => {
-            setCurrentLocation({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude
-            })
-        })
-    }, [])
+        if (!currentLocation) {
+            setCurrentLocation(resolvedLocation)
+        }
+    }, [resolvedLocation])
 
     const query = useQuery({
         queryKey: ["listCandidatePlaces", tripId, categoryId, labelName, include, sort],
