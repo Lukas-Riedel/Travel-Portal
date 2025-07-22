@@ -91,25 +91,18 @@
 
                     foreach ($place->getHighlights() as $highlight) {
                         $highlightQuality = $highlight->getQuality();
-
-                        if ($highlightQuality === NULL) {
-                            $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
-                            return;
+                        if ($highlightQuality !== NULL) {
+                            $highlightQualities[] = $highlightQuality;
                         }
-
-                        $highlightQualities[] = $highlightQuality;
                     }
 
                     if (count($highlightQualities) === 0) {
                         $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
-                        return ;
+                        return;
                     }
 
-                    $sumReciprocals = 0;
-                    foreach ($highlightQualities as $q) {
-                        $sumReciprocals += 1 / $q;
-                    }
-                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), count($highlightQualities) / $sumReciprocals);
+                    $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
+                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), pow($product, 1 / count($highlightQualities)));
                 }
             }
         }

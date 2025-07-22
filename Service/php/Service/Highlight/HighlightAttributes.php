@@ -27,10 +27,13 @@
         }
 
         public function getQuality() : ?float {
-            return $this->composition !== NULL && $this->sky !== NULL && $this->shadows !== NULL && $this->circumstances !== NULL
-                ? ($this->composition + $this->sky + $this->shadows + $this->circumstances) / 4.0
-                : NULL;
+            if ($this->composition === NULL || $this->sky === NULL || $this->shadows === NULL || $this->circumstances === NULL) {
+                return NULL;
+            }
+
+            return 4.0 / (1 / $this->composition + 1 / $this->sky + 1 / $this->shadows + 1 / $this->circumstances);
         }
+
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
