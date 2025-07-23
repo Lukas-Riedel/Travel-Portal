@@ -97,7 +97,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Nebe", value: highlight.attributes.sky, required: true, type: "select", options: [
+                    label: "Obloha", value: highlight.attributes.sky, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 10, name: "Jednolitá šedá" },
                         { id: 30, name: "Zataženo s výraznou strukturou mraků" },
@@ -109,7 +109,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 {
                     label: "Stíny", value: highlight.attributes.shadows, required: true, type: "select", options: [
                         { id: null, name: "" },
-                        { id: 20, name: "Silné protisvětlo (špatná denní doba)" },
+                        { id: 35, name: "Silné protisvětlo (špatná denní doba)" },
                         { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
                         { id: 60, name: "Mírné (lehké modelování scény)" },
                         { id: 100, name: "Výrazné (boční světlo, plastika)" }
@@ -124,12 +124,22 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                         { id: 100, name: "Bez rušivých prvků (čistá scéna)" }
                     ]
                 },
+                {
+                    label: "Atmosféra", value: highlight.attributes.atmosphere, required: true, type: "select", options: [
+                        { id: null, name: "" },
+                        { id: 30, name: "Znečištěný nebo zakalený vzduch (opar, smog, inverze)" },
+                        { id: 80, name: "Mírný opar (snížená čirost, ale přijatelná)" },
+                        { id: 95, name: "Čistý vzduch (dobrá viditelnost, přirozené barvy)" },
+                        { id: 100, name: "Křišťálově čistý vzduch (výjimečně fotogenické podmínky)" }
+                    ]
+                },
                 place && { label: "Čas pořízení:", value: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
                 place && { label: "Výška slunce:", value: ((SunCalc.getPosition(new Date(timestamp * 1000), place.latitude, place.longitude).altitude * 180) / Math.PI).toFixed(1) + "°", required: true, disabled: true }
             ],
             "Atributy highlightu byly úspěšně aktualizovány",
             "Nepodařilo se aktualizovat atributy highlightu",
-            async (composition, sky, shadows, circumstances) => onHighlightQualityAttributesUpdated(highlight.id, composition, sky, shadows, circumstances)
+            async (composition, sky, shadows, circumstances, atmosphere) =>
+                onHighlightQualityAttributesUpdated(highlight.id, composition, sky, shadows, circumstances, atmosphere)
         )
     }
 

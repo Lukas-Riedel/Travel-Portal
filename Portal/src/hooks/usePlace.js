@@ -43,8 +43,8 @@ export const usePlace = (placeId) => {
         createPlaceHighlight: photoId => createPlaceHighlight(placeId, photoId).then(refetchPlace),
         removePlaceHighlight: highlightId => removePlaceHighlight(placeId, highlightId).then(refetchPlace),
         updatePlaceMainHighlight: highlightId => updatePlaceMainHighlight(placeId, highlightId).then(setPlace),
-        updatePlaceHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>
-            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchPlace),
+        updatePlaceHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances, atmosphere) =>
+            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchPlace),
         createPlaceLabel: name => createPlaceLabel(placeId, name).then(refetchPlace),
         removePlaceLabel: labelId => removePlaceLabel(placeId, labelId).then(refetchPlace),
         updatePlaceExcerpt: excerpt => updatePlaceExcerpt(placeId, excerpt).then(setPlace),

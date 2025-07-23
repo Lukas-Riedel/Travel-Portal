@@ -6,12 +6,14 @@
         private readonly ?int $sky;
         private readonly ?int $shadows;
         private readonly ?int $circumstances;
+        private readonly ?int $atmosphere;
 
-        public function __construct(?int $composition, ?int $sky, ?int $shadows, ?int $circumstances) {
+        public function __construct(?int $composition, ?int $sky, ?int $shadows, ?int $circumstances, ?int $atmosphere) {
             $this->composition = $composition;
             $this->sky = $sky;
             $this->shadows = $shadows;
             $this->circumstances = $circumstances;
+            $this->atmosphere = $atmosphere;
         }
 
         public function getComposition() : ?int {
@@ -26,12 +28,20 @@
             return $this->shadows;
         }
 
+        public function getCircumstances() : ?int {
+            return $this->circumstances;
+        }
+
+        public function getAtmosphere() : ?int {
+            return $this->atmosphere;
+        }
+
         public function getQuality() : ?float {
-            if ($this->composition === NULL || $this->sky === NULL || $this->shadows === NULL || $this->circumstances === NULL) {
+            if ($this->composition === NULL || $this->sky === NULL || $this->shadows === NULL || $this->circumstances === NULL || $this->atmosphere === NULL) {
                 return NULL;
             }
 
-            return 4.0 / (1 / $this->composition + 1 / $this->sky + 1 / $this->shadows + 1 / $this->circumstances);
+            return 5.0 / (1 / $this->composition + 1 / $this->sky + 1 / $this->shadows + 1 / $this->circumstances + 1 / $this->atmosphere);
         }
 
 

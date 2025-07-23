@@ -11,12 +11,12 @@
 
         public function __construct(string $id, ?string $thumbnailUrl, ?string $fullUrl, string $photoId, ?string $photoPermalink,
             ?float $focalLength, ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $composition, ?int $sky,
-            ?int $shadows, ?int $circumstances, ?int $timestamp) {
+            ?int $shadows, ?int $circumstances, ?int $atmosphere, ?int $timestamp) {
             $this->id = $id;
             $this->url = new HighlightUrl($thumbnailUrl, $fullUrl);
             $this->photo = new Photo($photoId, fn() => $fullUrl, $photoPermalink === NULL ? $fullUrl : $photoPermalink,
                 $focalLength, $aperture, $shutterSpeed, $iso, $timestamp);
-            $this->attributes = new HighlightAttributes($composition, $sky, $shadows, $circumstances);
+            $this->attributes = new HighlightAttributes($composition, $sky, $shadows, $circumstances, $atmosphere);
         }
 
         public function getId() : string {

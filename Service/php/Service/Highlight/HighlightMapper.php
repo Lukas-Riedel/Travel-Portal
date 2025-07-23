@@ -213,6 +213,19 @@
                 ->execute() === 1;
         }
 
+        public function updateHighlightAtmosphere(string $highlightId, int $atmosphere) : bool {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET atmosphere = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($atmosphere, $highlightId)
+                ->execute() === 1;
+        }
+
         public function deleteHighlight(HighlightType $highlightType, string $entityId, string $highlightId) : int {
             $sql = <<<SQL
                 DELETE
@@ -232,13 +245,13 @@
             if ($photo === NULL) {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
                     NULL, NULL, NULL, NULL, NULL, $highlightRow["composition"], $highlightRow["sky"],
-                    $highlightRow["shadows"], $highlightRow["circumstances"], NULL);
+                    $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], NULL);
             }
             else {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
                     $photo->getPermalink(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
                     $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
-                    $photo->getTimestamp());
+                    $highlightRow["atmosphere"], $photo->getTimestamp());
             }
         }
     }

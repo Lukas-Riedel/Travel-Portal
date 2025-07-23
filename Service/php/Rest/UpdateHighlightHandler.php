@@ -28,6 +28,10 @@
                 $highlightService->updateHighlightCircumstances($input["highlightId"], $input["circumstances"]);
             }
 
+            if (isset($input["atmosphere"])) {
+                $highlightService->updateHighlightAtmosphere($input["highlightId"], $input["atmosphere"]);
+            }
+
             $databaseProvider->materializeViews();
             return (new GetHighlightHandler())
                 ->handle(array(
@@ -72,7 +76,8 @@
                 $this->createRequestExample("Update highlight composition quality", '{"composition":90}'),
                 $this->createRequestExample("Update highlight sky quality", '{"sky":90}'),
                 $this->createRequestExample("Update highlight shadows quality", '{"shadows":90}'),
-                $this->createRequestExample("Update highlight circumstances quality", '{"circumstances":90}'));
+                $this->createRequestExample("Update highlight circumstances quality", '{"circumstances":90}'),
+                $this->createRequestExample("Update highlight atmosphere quality", '{"atmosphere":90}'));
         }
 
         public function getResponseExamples() {

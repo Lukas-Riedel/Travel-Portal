@@ -126,6 +126,14 @@
             return $wasUpdated;
         }
 
+        public function updateHighlightAtmosphere(string $highlightId, int $atmosphere) : bool {
+            $wasUpdated = $this->highlightMapper->updateHighlightAtmosphere($highlightId, $atmosphere);
+            if ($wasUpdated) {
+                $this->publishHighlightUpdatedEvents($highlightId);
+            }
+            return $wasUpdated;
+        }
+
         private function publishHighlightUpdatedEvents(string $highlightId) : void {
             foreach (HighlightType::cases() as &$highlightType) {
                 foreach ($this->getEntityIdsForHighlightId($highlightType, $highlightId) as &$entityId) {

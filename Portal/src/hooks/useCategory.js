@@ -23,7 +23,7 @@ export const useCategory = (categoryId) => {
         updateCategoryName: name => updateCategoryName(categoryId, name).then(setCategory),
         removeCategoryHighlight: highlightId => removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),
         updateCategoryMainHighlight: highlightId => updateCategoryMainHighlight(categoryId, highlightId).then(setCategory),
-        updateCategoryHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances) =>
-            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances).then(refetchCategory)
+        updateCategoryHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances, atmosphere) =>
+            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchCategory)
     }
 }
