@@ -60,11 +60,11 @@ export default function PlansPage() {
             "Zadej údaje o místě k přidání:",
             [
                 { label: "Jméno", required: true },
-                { label: "Adresa", required: true }
+                { label: "Adresa", required: false }
             ],
             "Místo bylo úspěšně přidáno",
             "Při přidávání místa došlo k chybě",
-            async (name, address) => createCandidatePlace(name, address)
+            async (name, address) => createCandidatePlace(name, address || name)
         )
     }
 
