@@ -10,12 +10,12 @@ export const usePlace = (placeId) => {
         updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
         updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight } = useApi()
     const { isAdmin } = useAuth()
-    const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
-    const { events: photosUploadingEndedEvents } = useEvents("PhotosUploadingEnded")
+    const { events: processingStartedEvents } = useEvents("ProcessingStarted")
+    const { events: processingEndedEvents } = useEvents("ProcessingEnded")
 
-    const uploadedAlbumIds = useMemo(() => new Set(photosUploadingEndedEvents?.map(message => message.albumId) ?? []), [photosUploadingStartedEvents])
-    const albumIdsBeingUploaded = useMemo(() => new Set(photosUploadingStartedEvents?.filter(message => !uploadedAlbumIds.has(message.albumId))
-        ?.map(message => message.albumId) ?? []), [uploadedAlbumIds, photosUploadingStartedEvents])
+    const uploadedAlbumIds = useMemo(() => new Set(processingEndedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.map(event => event.args.albumId) ?? []), [processingStartedEvents])
+    const albumIdsBeingUploaded = useMemo(() => new Set(processingStartedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.filter(event => !uploadedAlbumIds.has(event.args.albumId))
+        ?.map(event => event.args.albumId) ?? []), [uploadedAlbumIds, processingStartedEvents])
 
     const queryClient = useQueryClient()
 
@@ -34,7 +34,7 @@ export const usePlace = (placeId) => {
         if (query.data) {
             query.refetch()
         }
-    }, [photosUploadingStartedEvents])
+    }, [processingStartedEvents])
 
     return {
         place: query.data && new Place(query.data),

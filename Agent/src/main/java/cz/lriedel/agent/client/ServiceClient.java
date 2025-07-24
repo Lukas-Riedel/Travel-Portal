@@ -1,6 +1,7 @@
 package cz.lriedel.agent.client;
 
 import java.util.Base64;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,7 @@ import cz.lriedel.agent.model.Album;
 import cz.lriedel.agent.model.Event;
 import cz.lriedel.agent.model.request.AlbumPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
+import cz.lriedel.agent.model.request.EventPrototype;
 
 @Component
 public final class ServiceClient {
@@ -57,6 +59,13 @@ public final class ServiceClient {
         return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.postForObject(
                 "/places/" + placeId + "/albums/" + albumId + "/refresh?mainPhotoPosition=" + mainPhotoPosition,
                 httpEntityProvider.getEmptyHttpEntity(), Album.class)));
+    }
+
+    public void createEvent(String name, Map<String, Object> args) {
+        EventPrototype eventPrototype = new EventPrototype(name, args);
+        restTemplate.postForObject(
+                "/events",
+                httpEntityProvider.getHttpEntity(eventPrototype), Void.class);
     }
 
     public Event[] listEvents(String name) {

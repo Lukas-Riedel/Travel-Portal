@@ -137,15 +137,6 @@
 
             $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, NULL, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
- 
-            if ($batchPosition === 1) {
-                $this->eventPublisher->publishPhotosUploadingStartedEvent($albumId);
-            }
-            
-            if ($batchPosition === $expectedBatchSize) {
-                $this->eventPublisher->publishPhotosUploadingEndedEvent($albumId);
-            }
-
             return $pendingPhoto;
         }
 
@@ -154,9 +145,6 @@
 
             $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
-
-            $this->eventPublisher->publishPhotoReplacingEndedEvent($albumId);
-
             return $pendingPhoto;
         }
         

@@ -24,44 +24,43 @@ import AlbumPage from "./pages/AlbumPage"
 export default function App() {
     const { listRegularPlaces } = useApi()
 
-    const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
+    const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {
-        if (photosUploadingStartedEvents.length > 0) {
-            photosUploadingStartedEvents.forEach(event => {
+        if (processingStartedEvents.length > 0) {
+            processingStartedEvents.forEach(event => {
                 event.markAsRead()
-                listRegularPlaces({ albumId: event.albumId })
-                    .then(places => places.forEach(place => {
-                        toast.success(`Nahrávání fotek pro místo '${place.name}' začalo`)
-                    }))
-            })
-        }
-    }, [photosUploadingStartedEvents])
 
-    const { events: photosUploadingEndedEvents } = useEvents("PhotosUploadingEnded")
-    useEffect(() => {
-        if (photosUploadingEndedEvents.length > 0) {
-            photosUploadingEndedEvents.forEach(event => {
-                event.markAsRead()
-                listRegularPlaces({ albumId: event.albumId })
-                    .then(places => places.forEach(place => {
-                        toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
-                    }))
+                if (event.name === "PhotosUploadingTriggered") {
+                    listRegularPlaces({ albumId: event.args.albumId })
+                        .then(places => places.forEach(place => {
+                            toast.success(`Nahrávání fotek pro místo '${place.name}' začalo`)
+                        }))
+                }
             })
         }
-    }, [photosUploadingEndedEvents])
+    }, [processingStartedEvents])
 
-    const { events: photoReplacingEndedEvents } = useEvents("PhotoReplacingEnded")
+    const { events: processingEndedEvents } = useEvents("ProcessingEnded")
     useEffect(() => {
-        if (photoReplacingEndedEvents.length > 0) {
-            photoReplacingEndedEvents.forEach(event => {
+        if (processingEndedEvents.length > 0) {
+            processingEndedEvents.forEach(event => {
                 event.markAsRead()
-                listRegularPlaces({ albumId: event.albumId })
-                    .then(places => places.forEach(place => {
-                        toast.success(`Nahrazování fotky pro místo '${place.name}' byla dokončeno`)
-                    }))
+
+                if (event.name === "PhotosUploadingTriggered") {
+                    listRegularPlaces({ albumId: event.args.albumId })
+                        .then(places => places.forEach(place => {
+                            toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
+                        }))
+                }
+                else if (event.name === "PhotoReplacingTriggered") {
+                    listRegularPlaces({ albumId: event.args.albumId })
+                        .then(places => places.forEach(place => {
+                            toast.success(`Nahrazování fotky pro místo '${place.name}' bylo dokončeno`)
+                        }))
+                }
             })
         }
-    }, [photoReplacingEndedEvents])
+    }, [processingEndedEvents])
 
     return (
         <>

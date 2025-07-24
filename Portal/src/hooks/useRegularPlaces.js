@@ -8,12 +8,12 @@ import { useEffect, useMemo } from "react"
 export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort } = {}) => {
     const { listRegularPlaces } = useApi()
     const { isAdmin } = useAuth()
-    const { events: photosUploadingStartedEvents } = useEvents("PhotosUploadingStarted")
-    const { events: photosUploadingEndedEvents } = useEvents("PhotosUploadingEnded")
+    const { events: processingStartedEvents } = useEvents("ProcessingStarted")
+    const { events: processingEndedEvents } = useEvents("ProcessingEnded")
 
-    const uploadedAlbumIds = useMemo(() => new Set(photosUploadingEndedEvents?.map(message => message.albumId) ?? []), [photosUploadingStartedEvents])
-    const albumIdsBeingUploaded = useMemo(() => new Set(photosUploadingStartedEvents?.filter(message => !uploadedAlbumIds.has(message.albumId))
-        ?.map(message => message.albumId) ?? []), [uploadedAlbumIds, photosUploadingStartedEvents])
+    const uploadedAlbumIds = useMemo(() => new Set(processingEndedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.map(event => event.args.albumId) ?? []), [processingStartedEvents])
+    const albumIdsBeingUploaded = useMemo(() => new Set(processingStartedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.filter(event => !uploadedAlbumIds.has(event.args.albumId))
+        ?.map(event => event.args.albumId) ?? []), [uploadedAlbumIds, processingStartedEvents])
 
     const validity = 60 * 60 * 2
     const query = useQuery({
@@ -28,7 +28,7 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
         if (query.data) {
             query.refetch()
         }
-    }, [photosUploadingStartedEvents])
+    }, [processingStartedEvents])
 
     return query.data && query.data.map(place => new Place(place))
 }

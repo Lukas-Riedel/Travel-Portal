@@ -2,7 +2,6 @@ package cz.lriedel.agent;
 
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import cz.lriedel.agent.client.ServiceClient;
 import cz.lriedel.agent.event.AbstractEventHandler;
-import cz.lriedel.agent.event.EventHandler;
 import cz.lriedel.agent.model.Event;
 
 @Component
@@ -31,7 +29,7 @@ final class EventListener {
     @Scheduled(fixedDelayString = "${request.interval.retry}")
     public void run() throws JsonProcessingException {
         for (AbstractEventHandler<?> eventHandler : eventHandlers) {
-            for (Event event : serviceClient.listEvents(getEventName(eventHandler))) {
+            for (Event event : serviceClient.listEvents(eventHandler.getSupportedEventName())) {
                 try {
                     eventHandler.run(event.args());
                 }
@@ -43,9 +41,5 @@ final class EventListener {
                 }
             }
         }
-    }
-
-    private static String getEventName(EventHandler<?> eventHandler) {
-        return eventHandler.getClass().getSimpleName().replace(EventHandler.class.getSimpleName(), StringUtils.EMPTY);
     }
 }
