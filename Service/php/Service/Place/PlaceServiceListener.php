@@ -10,6 +10,8 @@
         private const HIGHLIGHT_SCORE_MULTIPLIER = 0;
         private const PHOTO_SCORE_MULTIPLIER = 1;
 
+        private const MAIN_HIGHLIGHT_QUALITY_MULTIPLIER = 3;
+
         private const ONE_YEAR_SECONDS = 365 * 86400;
 
         private readonly PlaceService $placeService;
@@ -85,26 +87,34 @@
 
         public function onHighlightUpdated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Place->name) {
-                $place = $this->placeService->getRegularPlace($message["entityId"]);
-                if ($place !== NULL) {
-                    $highlightQualities = [];
+                $this->updatePlaceQuality($message["entityId"]);
+            }
+        }
 
-                    foreach ($place->getHighlights() as $highlight) {
-                        $highlightQuality = $highlight->getQuality();
-                        if ($highlightQuality !== NULL) {
-                            $highlightQualities[] = $highlightQuality;
-                        }
+        public function onPlaceUpdated(mixed $message) : void {
+            $this->updatePlaceQuality($message["placeId"]);
+        }
+
+        private function updatePlaceQuality(string $placeId) : void {
+            $place = $this->placeService->getRegularPlace($placeId);
+
+            $highlightQualities = [];
+            foreach ($place->getHighlights() as &$highlight) {
+                $highlightQuality = $highlight->getQuality();
+                if ($highlightQuality !== NULL) {
+                    for ($i = 0; $i < ($highlight->getId() == $place->getMainHighlight()?->getId() ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1); ++$i) {
+                        $highlightQualities[] = $highlightQuality;
                     }
-
-                    if (count($highlightQualities) === 0) {
-                        $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
-                        return;
-                    }
-
-                    $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
-                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), pow($product, 1 / count($highlightQualities)));
                 }
             }
+
+            if (count($highlightQualities) === 0) {
+                $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
+                return;
+            }
+
+            $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
+            $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), pow($product, 1 / count($highlightQualities)));
         }
 
         private function updatePlaceScore(string $placeId) : void {

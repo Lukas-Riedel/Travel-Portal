@@ -7,6 +7,7 @@
     use Service\Service\Geocoding\GeocodingService;
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
+    use Service\Service\Highlight\HighlightType;
     use Service\Service\Photo\PhotoService;
     use Service\Service\Trip\TripIdentifier;
     use Service\Service\Trip\TripService;
@@ -95,7 +96,13 @@
         }
 
         public function updatePlaceMainHighlight(string $placeId, string $highlightIdentifier) : bool {
-            return $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
+            $wasUpdated = $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
+
+            if ($wasUpdated) {
+                $this->eventPublisher->publishPlaceUpdatedEvent($placeId);
+            }
+
+            return $wasUpdated;
         }
 
         public function updatePlaceScore(string $placeId, float $score) : bool {
