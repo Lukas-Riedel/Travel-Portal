@@ -80,9 +80,7 @@
         $error = new TargetError(getErrorCode($e), $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
-        if ($e->getCode() == 400) {
-            $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
-        }
+        $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
         exit();
     }
     finally {        
