@@ -198,7 +198,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 {onPhotoReplaced && place && currentHighlightAlbumId && isAdmin && (
                     <button
                         onClick={handlePhotoReplaced}
-                        className="btn-large-gray">
+                        className="btn-chip-gray">
                         <Edit2 size={16} />
                     </button>
                 )}
