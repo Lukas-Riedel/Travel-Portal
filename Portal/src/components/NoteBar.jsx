@@ -1,11 +1,11 @@
 import { Trash2, Plus, Bold, Italic, Link, Underline } from "lucide-react"
 import showConfirmToast from "./ConfirmToast"
-import { useState, useRef } from "react"
+import { useState, useRef, useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
 
-const loadingNotesCount = 2
+const loadingNotesCount = 3
 
 export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
     const { isAdmin } = useAuth()
@@ -64,7 +64,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     <span className="absolute bottom-4 left-4 text-sm text-gray-400">
                         {getDateTimeString(note.timestamp)}
                     </span>
-                    {isAdmin && (
+                    {onNoteRemoved &&isAdmin && (
                         <div className="absolute bottom-2 right-2">
                             <button
                                 onClick={() => handleDelete(note.id)}
@@ -74,7 +74,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                         </div>
                     )}
                 </div>
-            )) : (Array.from({ length: loadingNotesCount })
+            )) : (Array.from({ length: loadingNotesCount - (onNoteCreated && isAdmin ? 1 : 0) })
                 .map((_, index) => (
                     <div
                         key={index}
@@ -86,7 +86,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     </div>
                 ))
             )}
-            {isAdmin && (
+            {onNoteCreated && isAdmin && (
                 <div className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col">
                     <textarea
                         ref={textareaRef}

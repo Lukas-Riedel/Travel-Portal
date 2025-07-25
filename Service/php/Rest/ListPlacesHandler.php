@@ -7,7 +7,7 @@
             global $placeService;
 
             $type = isset($input["type"]) ? $input["type"] : "regular";
-            unset($input["type"]);
+            unset($input["type"]); // TODO: Why is this?
             
             $sortingStrategy = PlaceSortingStrategy::Default;            
             if (isset($input["sort"])) {
@@ -18,7 +18,7 @@
                     $sortingStrategy = PlaceSortingStrategy::QualityAscending;
                 }
             }
-            unset($input["sort"]);
+            unset($input["sort"]); // TODO: Why is this?
 
             $response = array();    
             if ($type == "regular") {

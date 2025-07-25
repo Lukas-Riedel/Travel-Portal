@@ -465,9 +465,22 @@ export function useApi() {
             })
     }
 
-    async function createFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
+    async function createScheduledFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
         return sendRequest("POST", "/flights",
             {
+                type: "scheduled",
+                flight: flight,
+                from: from,
+                to: to,
+                scheduledDeparture: scheduledDeparture,
+                scheduledArrival: scheduledArrival
+            })
+    }
+
+    async function createWatchedFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
+        return sendRequest("POST", "/flights",
+            {
+                type: "watched",
                 flight: flight,
                 from: from,
                 to: to,
@@ -647,7 +660,8 @@ export function useApi() {
         removeTripExpense,
         logFlight,
         logFlightManually,
-        createFlight,
+        createScheduledFlight,
+        createWatchedFlight,
         createTripHighlight,
         removeTripHighlight,
         createTripNote,

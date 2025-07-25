@@ -63,6 +63,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                             type={field.type || "text"}
                                             min={field.min}
                                             max={field.max}
+                                            placeholder={field.placeholder}
                                             defaultValue={field.value}
                                             disabled={field.disabled}
                                             className="border rounded px-2 py-1 w-full text-sm"

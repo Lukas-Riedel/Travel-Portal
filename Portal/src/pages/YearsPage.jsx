@@ -10,6 +10,7 @@ import { useAuth } from "../contexts/AuthContext.jsx"
 import TripSummary from "../components/TripSummary.jsx"
 import { useYears } from "../hooks/useYears.js"
 import YearTripTileGrid from "../components/YearTripTileGrid.jsx"
+import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
 
 export default function YearsPage() {
     const { isAdmin } = useAuth()
@@ -24,7 +25,7 @@ export default function YearsPage() {
         return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])
 
-    const upcomingOrCurrentTrip = useMemo(() => trips?.filter(trip => !trip?.isDayTrips())?.find(trip => trip?.isCurrent() || trip?.isFuture()), [trips])
+    const { trip: upcomingOrCurrentTrip } = useUpcomingOrCurrentTrip()
 
     return (
         <>

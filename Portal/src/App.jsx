@@ -1,5 +1,5 @@
 import MainLayout from "./layouts/MainLayout"
-import { BrowserRouter, Route, Routes, useLocation, useSearchParams } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useSearchParams } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { toast, Toaster } from "sonner"
@@ -20,6 +20,7 @@ import CandidateLabelPage from "./pages/CandidateLabelPage"
 import { useApi } from "./hooks/useApi"
 import { useEvents } from "./hooks/useEvents"
 import AlbumPage from "./pages/AlbumPage"
+import AdminPage from "./pages/AdminPage"
 
 export default function App() {
     const { listRegularPlaces } = useApi()
@@ -74,7 +75,7 @@ export default function App() {
 }
 
 function AppContent() {
-    const { accessToken, login } = useAuth()
+    const { accessToken, login, isAdmin } = useAuth()
 
     const [searchParams] = useSearchParams()
 
@@ -96,7 +97,7 @@ function AppContent() {
 
     return (
         <Routes>
-            <Route path="/" element={<MainLayout><YearsPage /></MainLayout>} />
+            <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/trip"} replace />} />
             <Route path="/trip" element={<MainLayout><YearsPage /></MainLayout>} />
             <Route path="/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
@@ -114,6 +115,7 @@ function AppContent() {
             <Route path="/plan/category/:categoryId" element={<MainLayout><CandidateCategoryPage /></MainLayout>} />
             <Route path="/plan/label/:labelId" element={<MainLayout><CandidateLabelPage /></MainLayout>} />
             <Route path="/plan/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
+            <Route path="/admin" element={<MainLayout><AdminPage /></MainLayout>} />
         </Routes>
     )
 }

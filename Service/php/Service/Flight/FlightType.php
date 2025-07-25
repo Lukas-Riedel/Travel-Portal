@@ -1,9 +1,9 @@
 <?php
     namespace Service\Service\Flight;
 
-    enum FlightType {
-        case Scheduled;
-        case Watched;
+    enum FlightType : string {
+        case Scheduled = "scheduled";
+        case Watched = "watched";
 
         public function getTableName() : string {
             return match ($this) {

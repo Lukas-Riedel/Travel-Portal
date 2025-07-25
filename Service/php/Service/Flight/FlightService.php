@@ -122,8 +122,8 @@
             return $airline;
         }
 
-        public function createFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
-            $this->googleApiClient->createCalendarEvent(FlightType::Scheduled->getCalendar()->value,
+        public function createFlight(FlightType $flightType, string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
+            $this->googleApiClient->createCalendarEvent($flightType->getCalendar()->value,
                 $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), NULL, $scheduledDeparture, $scheduledArrival);
             
             $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
@@ -226,9 +226,13 @@
             return substr($flight, 0, 2);
         }
 
+        private function getNumberForFlight(string $flight) : string {
+            return substr($flight, 2);
+        }
+
         private function getFlightEventName(string $flight, string $originAirportName, string $destinationAirportName) : string {
             return sprintf(self::FLIGHT_EVENT_NAME_FORMAT, $originAirportName, $destinationAirportName,
-                $this->getAirlineCodeForFlight($flight), $this->getAirlineCodeForFlight($flight));
+                $this->getAirlineCodeForFlight($flight), $this->getNumberForFlight($flight));
         }
 
         private function parseFlightEventName(string $flightEventName) : mixed {

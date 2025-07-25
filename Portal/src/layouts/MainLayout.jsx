@@ -6,11 +6,12 @@ import showConfirmToast from "../components/ConfirmToast"
 import { useState } from "react"
 
 const navigationItems = [
-    { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/", "/trip", "/year"] },
+    { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
     { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
     { label: "Plán", to: "/plan", isProtected: true, allowedPrefixes: ["/plan"] },
-    { label: "Sledování času", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] }
+    { label: "Tracker", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] },
+    { label: "Admin", to: "/admin", isProtected: true, allowedPrefixes: ["/admin"] }
 ]
 
 export default function MainLayout({ children }) {

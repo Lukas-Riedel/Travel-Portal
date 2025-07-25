@@ -1,9 +1,14 @@
 <?php
+    use Service\Service\Flight\FlightType;
+
     class CreateFlightHandler extends Handler {
         public function handle($input) {
             global $flightService;
+            
+            $type = isset($input["type"]) ? FlightType::from($input["type"]) : FlightType::Scheduled;
+            unset($input["type"]); // TODO: Why is this?
 
-            $response = $flightService->createFlight($input["flight"], $input["from"], $input["to"], $input["scheduledDeparture"], $input["scheduledArrival"]);            
+            $response = $flightService->createFlight($type, $input["flight"], $input["from"], $input["to"], $input["scheduledDeparture"], $input["scheduledArrival"]);            
             return $this->createResponse(201, $response);
         }
 
@@ -24,7 +29,8 @@
         }
 
         public function getParameters() {
-            return array();
+            return array(
+                $this->createQueryParameter("type", "string", array("scheduled", "watched")));
         }
 
         public function getMethod() {
