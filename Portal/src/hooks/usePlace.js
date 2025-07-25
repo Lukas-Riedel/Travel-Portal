@@ -8,7 +8,7 @@ import { useEvents } from "./useEvents"
 export const usePlace = (placeId) => {
     const { getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
         updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
-        updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight } = useApi()
+        updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote } = useApi()
     const { isAdmin } = useAuth()
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     const { events: processingEndedEvents } = useEvents("ProcessingEnded")
@@ -50,6 +50,8 @@ export const usePlace = (placeId) => {
         updatePlaceExcerpt: excerpt => updatePlaceExcerpt(placeId, excerpt).then(setPlace),
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId, null).then(setPlace),
         updatePlaceLocation: (latitude, longitude) => updatePlaceLocation(placeId, latitude, longitude).then(setPlace),
-        refreshPlaceAlbum: (albumId, mainPhotoPosition) => refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition }).then(refetchPlace)
+        refreshPlaceAlbum: (albumId, mainPhotoPosition) => refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition }).then(refetchPlace),
+        createPlaceNote: name => createPlaceNote(placeId, name).then(refetchPlace),
+        removePlaceNote: noteId => removePlaceNote(placeId, noteId).then(refetchPlace)
     }
 }

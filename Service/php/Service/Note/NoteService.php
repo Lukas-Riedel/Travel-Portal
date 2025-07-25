@@ -9,22 +9,46 @@
             $this->noteMapper = new NoteMapper($databaseProvider);
         }
 
-        public function createNote(string $tripId, string $content) : Note {
-            $note = new Note(NULL, $content, time());
-            $this->noteMapper->insertNote($note, $tripId);
+        public function createTripNote(string $tripId, string $content) : Note {
+            return $this->createNote(NoteType::Trip, $tripId, $content);
+        }
+
+        public function createPlaceNote(string $placeId, string $content) : Note {
+            return $this->createNote(NoteType::Place, $placeId, $content);
+        }
+
+        public function getTripNotes(string $tripId) : array {
+            return $this->noteMapper->selectNotes(NoteType::Trip, $tripId);
+        }
+
+        public function getPlaceNotes(string $placeId) : array {
+            return $this->noteMapper->selectNotes(NoteType::Place, $placeId);
+        }
+
+        public function removeTripNote(string $tripId, string $noteId) : bool {
+            // TODO: Verify that the specified note is included in the specified trip.
+            return $this->noteMapper->deleteNoteIdentifier($noteId) > 0;
+        }
+
+        public function removePlaceNote(string $placeId, string $noteId) : bool {
+            // TODO: Verify that the specified note is included in the specified trip.
+            return $this->noteMapper->deleteNoteIdentifier($noteId) > 0;
+        }
+
+        public function updateTripNoteOwner(string $oldTripId, string $newTripId) : bool {   
+            return $this->noteMapper->updateNoteOwner(NoteType::Trip, $oldTripId, $newTripId);    
+        }
+
+        private function createNote(NoteType $noteType, string $entityId, string $content) : Note {
+            $note = $this->createNodeIdentifier($content);
+            $this->noteMapper->insertNote($noteType, $entityId, $note->getId());
             return $note;
         }
 
-        public function getNotesForTrip(string $tripId) : array {
-            return $this->noteMapper->selectNotesForTrip($tripId);
-        }
-
-        public function removeNote(string $noteId) : bool {
-            return $this->noteMapper->deleteNote($noteId) > 0;
-        }
-
-        public function updateNoteTripId(string $oldTripId, string $newTripId) : bool {   
-            return $this->noteMapper->updateNoteTripId($oldTripId, $newTripId);    
+        private function createNodeIdentifier(string $content) : Note {
+            $note = new Note(NULL, $content, time());
+            $this->noteMapper->insertNoteIdentifier($note);
+            return $note;
         }
     }
 ?>

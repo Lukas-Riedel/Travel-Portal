@@ -47,11 +47,17 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                         key={place.id}
                         className="my-2 space-y-1">
                         <div className="flex justify-start items-center">
-                            <button
-                                className="text-indigo-600 hover:text-indigo-300 transition-colors duration-200"
-                                onClick={() => onCurrentLocationChanged && onCurrentLocationChanged(place)}>
-                                <MapPin size={16} />
-                            </button>
+                            {onCurrentLocationChanged ? (
+                                <button
+                                    className="text-indigo-600 hover:text-indigo-300 transition-colors duration-200"
+                                    onClick={() => onCurrentLocationChanged(place)}>
+                                    <MapPin size={16} />
+                                </button>
+                            ) : (
+                                <span className="text-indigo-600">
+                                    <MapPin size={16} />
+                                </span>
+                            )}
                             <Link
                                 to={`/plan/place/${place.id}`}
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
@@ -68,11 +74,17 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                         </div>
                         {place.distance > 0 && (
                             <div className="flex justify-start items-center">
-                                <button
-                                    className="text-gray-600 hover:text-gray-300 transition-colors duration-200"
-                                    onClick={() => onMaximumDistanceChanged && onMaximumDistanceChanged(place.distance)}>
-                                    <Move size={16} />
-                                </button>
+                                {onMaximumDistanceChanged ? (
+                                    <button
+                                        className="text-gray-600 hover:text-gray-300 transition-colors duration-200"
+                                        onClick={() => onMaximumDistanceChanged && onMaximumDistanceChanged(place.distance)}>
+                                        <Move size={16} />
+                                    </button>
+                                ) : (
+                                    <span className="text-gray-600">
+                                        <Move size={16} />
+                                    </span>
+                                )}
                                 <span className="ml-2 text-gray-600 text-xs">
                                     {formatKilometers(Math.round(place.distance))}
                                 </span>

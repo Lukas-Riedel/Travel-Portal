@@ -127,7 +127,7 @@
 
             $this->placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
 
-            $this->noteService->updateNoteTripId($candidateTripId, $targetTripId);
+            $this->noteService->updateTripNoteOwner($candidateTripId, $targetTripId);
             
             return $targetTrip;
         }
@@ -142,7 +142,7 @@
             $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
             $this->deleteTripEvent($tripId);
 
-            $this->noteService->updateNoteTripId($tripId, $archivedTripIdentifier->getId());
+            $this->noteService->updateTripNoteOwner($tripId, $archivedTripIdentifier->getId());
             
             return $this->getCandidateTrip($archivedTripIdentifier->getId());
         }

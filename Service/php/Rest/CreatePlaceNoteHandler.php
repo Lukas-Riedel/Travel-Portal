@@ -1,23 +1,19 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetTripHandler.php");
-
-    class RemoveTripNoteHandler extends Handler {
+    require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
+    
+    class CreatePlaceNoteHandler extends Handler {
         public function handle($input) {
             global $noteService;
 
-            $response = (new GetTripHandler())
+            $response = (new GetPlaceHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]));
+                    "placeId" => $input["placeId"]));
             if ($response["code"] != 200) {
                 return $response;
             }
 
-            $wasRemoved = $noteService->removeTripNote($input["tripId"], $input["noteId"]);
-            if ($wasRemoved === FALSE) {                
-                return $this->create404Response("trip_notes", $input["noteId"]);
-            }
-
-            return $this->createResponse(204, $response);
+            $response = $noteService->createPlaceNote($input["placeId"], $input["content"]);
+            return $this->createResponse(201, $response);
         }
 
         public function getRequiredRole() {
@@ -29,38 +25,38 @@
         }
 
         public function getTag() {
-            return "Trip Notes";
+            return "Place Notes";
         }
 
         public function getPath() {
-            return "/trips/{tripId}/notes/{noteId}";
+            return "/places/{placeId}/notes";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("tripId", "integer", 125),
-                $this->createPathParameter("noteId", "integer", 83));
+                $this->createPathParameter("placeId", "integer", 125));
         }
 
         public function getMethod() {
-            return "DELETE";
+            return "POST";
         }
         
         public function getShortDescription() {
-            return "Remove a note with the specified identifier for the specified trip";
+            return "Create a note for the specified place";
         }
         
         public function getLongDescription() {
-            return "Removes a note with the specified identifier for the specified trip.";
+            return "Creates a note for the specified place.";
         }
         
         public function getRequestExamples() {
-            return array();
+            return array(
+                $this->createRequestExample("Create note", '{"content":"Obsah poznámky"}'));
         }
 
         public function getResponseExamples() {
             return array(
-                $this->create204ResponseExample(),
+                $this->createResponseExample("Created note", 201, '{"id":83,"content":"Obsah poznámky"}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample(),

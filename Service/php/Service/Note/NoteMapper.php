@@ -9,30 +9,30 @@
             $this->databaseProvider = $databaseProvider;
         }
 
-        public function selectNotesForTrip(string $tripId) : array {
-            $sql = <<<'SQL'
-                SELECT *
-                FROM note
-                WHERE trip_id = ?
+        public function selectNotes(NoteType $noteType, string $entityId) : array {
+            $sql = <<<SQL
+                SELECT ni.*
+                FROM note_identifier ni
+                INNER JOIN {$noteType->getTableName()} n
+                    ON ni.id = n.note_id
+                WHERE n.id = ?
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($tripId)
+                ->withParameters($entityId)
                 ->getMappedResultSet(function($noteRow) {
                     return new Note($noteRow["id"], $noteRow["content"], intval($noteRow["timestamp"]));
                 });
         }
 
-        public function insertNote(Note $note, string $tripId) : bool {
+        public function insertNoteIdentifier(Note $note) : bool {
             $sql = <<<'SQL'
-                INSERT INTO note (
-                    trip_id,
+                INSERT INTO note_identifier (
                     content,
                     timestamp
                 )
                 VALUES (
-                    ?,
                     ?,
                     ?
                 )
@@ -40,7 +40,7 @@
 
             $wasInserted = $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $note->getContent(), $note->getTimestamp())
+                ->withParameters($note->getContent(), $note->getTimestamp())
                 ->execute();
                  
 
@@ -51,23 +51,41 @@
             return $wasInserted;
         }
 
-        public function updateNoteTripId(string $noteId, string $tripId) : bool {
-            $sql = <<<'SQL'
-                UPDATE note
-                SET trip_id = ?
-                WHERE id = ?
+        public function insertNote(NoteType $noteType, string $entityId, string $noteId) : bool {
+            $sql = <<<SQL
+                INSERT INTO {$noteType->getTableName()} (
+                    id, 
+                    note_id
+                ) 
+                VALUES (
+                    ?, 
+                    ?
+                )
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $noteId)
+                ->withParameters($entityId, $noteId)
+                ->execute() === 1;            
+        }
+
+        public function updateNoteOwner(NoteType $noteType, string $noteId, string $entityId) : bool {
+            $sql = <<<SQL
+                UPDATE {$noteType->getTableName()}
+                SET id = ?
+                WHERE note_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($entityId, $noteId)
                 ->execute() === 1;
         }
 
-        public function deleteNote(string $noteId) : int {
+        public function deleteNoteIdentifier(string $noteId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM note
+                FROM note_identifier
                 WHERE id = ?
             SQL;
 

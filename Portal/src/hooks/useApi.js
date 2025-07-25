@@ -487,6 +487,13 @@ export function useApi() {
             })
     }
 
+    async function createPlaceNote(placeId, content) {
+        return sendRequest("POST", "/places/" + placeId + "/notes",
+            {
+                content: content
+            })
+    }
+
     async function createPlaceLabel(placeId, name) {
         return sendRequest("POST", "/places/" + placeId + "/labels",
             {
@@ -496,6 +503,10 @@ export function useApi() {
 
     async function removeTripNote(tripId, noteId) {
         return sendRequest("DELETE", "/trips/" + tripId + "/notes/" + noteId)
+    }
+
+    async function removePlaceNote(placeId, noteId) {
+        return sendRequest("DELETE", "/places/" + placeId + "/notes/" + noteId)
     }
 
     async function removePlaceLabel(placeId, labelId) {
@@ -641,6 +652,8 @@ export function useApi() {
         getYear,
         updateYearMainHighlight,
         createYearHighlight,
-        removeYearHighlight
+        removeYearHighlight,
+        createPlaceNote,
+        removePlaceNote
     }
 }

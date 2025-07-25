@@ -6,6 +6,7 @@
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Label\LabelService;
+    use Service\Service\Note\NoteService;
     use Service\Service\Photo\PhotoService;
 
     class PlaceMapper {
@@ -21,11 +22,12 @@
         private readonly ForecastService $forecastService;
         private readonly PhotoService $photoService;
         private readonly HighlightService $highlightService;
+        private readonly NoteService $noteService;
 
         private array $countries = array();
 
         public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
-            ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService) {
+            ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService, NoteService $noteService) {
             $this->databaseProvider = $databaseProvider;
             $this->categoryService = $categoryService;
             $this->labelService = $labelService;
@@ -33,6 +35,7 @@
             $this->photoService = $photoService;
             $this->highlightService = $highlightService;
             $this->configurationService = $configurationService;
+            $this->noteService = $noteService;
         }
 
         public function selectDatesForTripAndCountry(string $tripId, string $country) : array {
@@ -245,13 +248,18 @@
                         $labels = $this->labelService->getLabelsForPlace($placeRow["place_id"]);                      
                     }
                     
+                    $notes = array();
+                    if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
+                        $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                    }
+                    
                     $excerpt = NULL;
                     if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
                         $excerpt = $placeRow["excerpt"];
                     }
                     
                     $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, array());
+                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -316,6 +324,11 @@
                         if (in_array(PlaceIncludedEntity::Labels->value, $includedEntities)) {
                             $labels = $this->labelService->getLabelsForPlace($placeRow["id"]);                      
                         }
+                    
+                        $notes = array();
+                        if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
+                            $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                        }
                         
                         $excerpt = NULL;
                         if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
@@ -324,7 +337,7 @@
                         
                         $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
                             $placeRow["longitude"], $placeRow["timezone"], $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"],
-                            $excerpt, $categories, $highlights, $labels, array());
+                            $excerpt, $categories, $highlights, $labels, $notes, array());
                     }
                 }
             }
@@ -382,9 +395,14 @@
                 if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                     $categories = $this->categoryService->getCategoryIdentifiersForPlace($placeRow["id"]);
                 }
+                    
+                $notes = array();
+                if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
+                    $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                }
 
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                    $placeRow["longitude"], $placeRow["timezone"], NULL, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, array());
+                    $placeRow["longitude"], $placeRow["timezone"], NULL, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array());
             }
             
             return $places;
@@ -436,10 +454,15 @@
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                         $categories = $this->categoryService->getCategoryIdentifiersForPlace($placeRow["id"]);
+                    }                    
+                    
+                    $notes = array();
+                    if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
+                        $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
                     }
 
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                        $placeRow["longitude"], $placeRow["timezone"], NULL, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, array()); 
+                        $placeRow["longitude"], $placeRow["timezone"], NULL, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array()); 
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {

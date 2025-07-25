@@ -96,7 +96,7 @@
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
     $labelService = new LabelService($databaseProvider);
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
-    $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $geocodingService, $eventPublisher);
+    $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $deviceService = new DeviceService($databaseProvider, $authenticationService);
 

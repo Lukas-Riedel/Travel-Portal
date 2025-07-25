@@ -12,6 +12,7 @@ import { usePlace } from "../hooks/usePlace.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useEvents } from "../hooks/useEvents.js"
+import NoteBar from "../components/NoteBar.jsx"
 
 export default function PlacePage() {
     const { isAdmin } = useAuth()
@@ -20,7 +21,8 @@ export default function PlacePage() {
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
-        refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes } = usePlace(placeId)
+        refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
+        createPlaceNote, removePlaceNote } = usePlace(placeId)
     const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
 
     return (
@@ -60,6 +62,12 @@ export default function PlacePage() {
                 places={places}
                 count={3} />
             <SunAltitudeBar place={place} />
+            {isAdmin && (
+                <NoteBar
+                    notes={place?.notes}
+                    onNoteCreated={createPlaceNote}
+                    onNoteRemoved={removePlaceNote} />
+            )}
         </>
     )
 }

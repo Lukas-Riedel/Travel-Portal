@@ -18,11 +18,12 @@
         private readonly array $categories;
         private readonly array $highlights;
         private readonly array $labels;
+        private readonly array $notes;
         private array $dates;
 
         public function __construct(string $id, string $name, string $country, float $latitude, float $longitude,
             string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt, array $categories,
-            array $highlights, array $labels, array $dates) {
+            array $highlights, array $labels, array $notes, array $dates) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
@@ -36,6 +37,7 @@
             $this->categories = $categories;
             $this->highlights = $highlights;
             $this->labels = $labels;
+            $this->notes = $notes;
             $this->dates = $dates;
         }
 
@@ -89,6 +91,10 @@
 
         public function getLabels() : array {
             return $this->labels;
+        }
+
+        public function getNotes() : array {
+            return $this->notes;
         }
 
         public function getDates() : array {

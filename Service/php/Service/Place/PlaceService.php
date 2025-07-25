@@ -7,7 +7,7 @@
     use Service\Service\Geocoding\GeocodingService;
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
-    use Service\Service\Highlight\HighlightType;
+    use Service\Service\Note\NoteService;
     use Service\Service\Photo\PhotoService;
     use Service\Service\Trip\TripIdentifier;
     use Service\Service\Trip\TripService;
@@ -38,9 +38,9 @@
         public function __construct(\DatabaseProvider $databaseProvider, \ChatClient $chatClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, \ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
-            GeocodingService $geocodingService, \EventPublisher $eventPublisher) {
+            NoteService $noteService, GeocodingService $geocodingService, \EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseProvider, $configurationService, $categoryService, $labelService, $forecastService,
-                $photoService, $highlightService);
+                $photoService, $highlightService, $noteService);
             $this->chatClient = $chatClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
@@ -237,7 +237,7 @@
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
                 $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                     $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
-                    $placeIdentifier->getExcerpt(), array(), array(), array(), array(new Date($start, $end, $isLayover, NULL, NULL, NULL, $resolvedTripIdentifier)));
+                    $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, NULL, NULL, NULL, $resolvedTripIdentifier)));
 
                 $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 
@@ -318,7 +318,7 @@
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
-                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array());
+                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array());
         }
 
         private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {

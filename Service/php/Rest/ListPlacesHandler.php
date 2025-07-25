@@ -71,7 +71,7 @@
                 $this->createQueryParameter("minStart", "integer", 1716154060),
                 $this->createQueryParameter("maxEnd", "integer", 1716154060),
                 $this->createQueryParameter("type", "string", array("regular", "candidate")),
-                $this->createQueryParameter("include", "string", "EXCERPT,CATEGORIES,HIGHLIGHTS,DATES"));
+                $this->createQueryParameter("include", "string", "EXCERPT,CATEGORIES,HIGHLIGHTS,DATES,NOTES,NEARBY_PLACES"));
         }
 
         public function getMethod() {

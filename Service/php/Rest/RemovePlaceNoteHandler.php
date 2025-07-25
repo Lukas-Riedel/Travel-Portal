@@ -1,20 +1,20 @@
 <?php
-    require_once(dirname(__FILE__) . "/GetTripHandler.php");
+    require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
 
-    class RemoveTripNoteHandler extends Handler {
+    class RemovePlaceNoteHandler extends Handler {
         public function handle($input) {
             global $noteService;
 
-            $response = (new GetTripHandler())
+            $response = (new GetPlaceHandler())
                 ->handle(array(
-                    "tripId" => $input["tripId"]));
+                    "placeId" => $input["placeId"]));
             if ($response["code"] != 200) {
                 return $response;
             }
 
-            $wasRemoved = $noteService->removeTripNote($input["tripId"], $input["noteId"]);
+            $wasRemoved = $noteService->removePlaceNote($input["placeId"], $input["noteId"]);
             if ($wasRemoved === FALSE) {                
-                return $this->create404Response("trip_notes", $input["noteId"]);
+                return $this->create404Response("place_notes", $input["noteId"]);
             }
 
             return $this->createResponse(204, $response);
@@ -29,16 +29,16 @@
         }
 
         public function getTag() {
-            return "Trip Notes";
+            return "Place Notes";
         }
 
         public function getPath() {
-            return "/trips/{tripId}/notes/{noteId}";
+            return "/places/{placeId}/notes/{noteId}";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("tripId", "integer", 125),
+                $this->createPathParameter("placeId", "integer", 125),
                 $this->createPathParameter("noteId", "integer", 83));
         }
 
@@ -47,11 +47,11 @@
         }
         
         public function getShortDescription() {
-            return "Remove a note with the specified identifier for the specified trip";
+            return "Remove a note with the specified identifier for the specified place";
         }
         
         public function getLongDescription() {
-            return "Removes a note with the specified identifier for the specified trip.";
+            return "Removes a note with the specified identifier for the specified place.";
         }
         
         public function getRequestExamples() {

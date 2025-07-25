@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $noteService->createNote($input["tripId"], $input["content"]);
+            $response = $noteService->createTripNote($input["tripId"], $input["content"]);
             return $this->createResponse(201, $response);
         }
 

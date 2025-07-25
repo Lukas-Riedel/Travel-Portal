@@ -157,7 +157,7 @@
     
                     $notes = array();
                     if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
-                        $notes = $this->noteService->getNotesForTrip($tripIdentifierRow["id"]);                   
+                        $notes = $this->noteService->getTripNotes($tripIdentifierRow["id"]);                   
                     }
     
                     $publicHolidays = array();
@@ -273,7 +273,7 @@
     
                     $notes = array();
                     if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
-                        $notes = $this->noteService->getNotesForTrip($tripRow["trip_id"]);                   
+                        $notes = $this->noteService->getTripNotes($tripRow["trip_id"]);                   
                     }
     
                     $highlights = array();
