@@ -26,13 +26,11 @@
         }
 
         public function removeTripNote(string $tripId, string $noteId) : bool {
-            // TODO: Verify that the specified note is included in the specified trip.
-            return $this->noteMapper->deleteNoteIdentifier($noteId) > 0;
+            return $this->noteMapper->deleteNoteIdentifier(NoteType::Trip, $noteId, $tripId) > 0;
         }
 
         public function removePlaceNote(string $placeId, string $noteId) : bool {
-            // TODO: Verify that the specified note is included in the specified trip.
-            return $this->noteMapper->deleteNoteIdentifier($noteId) > 0;
+            return $this->noteMapper->deleteNoteIdentifier(NoteType::Place, $noteId, $placeId) > 0;
         }
 
         public function updateTripNoteOwner(string $oldTripId, string $newTripId) : bool {   

@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
-export const useYear = (year) => {
+export const useYear = year => {
     const { getYear, removeYearHighlight, updateYearMainHighlight, updateHighlightQualityAttributes } = useApi()
     const { isAdmin } = useAuth()
 

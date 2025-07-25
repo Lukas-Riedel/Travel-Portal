@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
-export const useAirline = (airlineId) => {
+export const useAirline = airlineId => {
     const { getAirline, removeAirline, updateAirlineName, updateAirlineLogo } = useApi()
     const { isAdmin } = useAuth()
 

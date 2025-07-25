@@ -82,16 +82,22 @@
                 ->execute() === 1;
         }
 
-        public function deleteNoteIdentifier(string $noteId) : int {
-            $sql = <<<'SQL'
-                DELETE
-                FROM note_identifier
-                WHERE id = ?
+        public function deleteNoteIdentifier(NoteType $noteType, string $noteId, string $entityId) : int {
+            $sql = <<<SQL
+                DELETE ni
+                FROM note_identifier ni
+                WHERE ni.id = ?
+                    AND EXISTS (
+                        SELECT 1
+                        FROM {$noteType->getTableName()} n
+                        WHERE n.note_id = ni.id
+                            AND n.id = ?
+                    )
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($noteId)
+                ->withParameters($noteId, $entityId)
                 ->execute();
         }
     }

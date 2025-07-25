@@ -44,6 +44,13 @@ export function useApi() {
         return sendRequest("GET", "/labels")
     }
 
+    async function updateLabelName(labelId, name) {
+        return sendRequest("PATCH", "/labels/" + labelId,
+            {
+                name: name
+            })
+    }
+
     async function getHighlight(highlightId) {
         return sendRequest("GET", "/highlights/" + highlightId)
     }
@@ -201,13 +208,13 @@ export function useApi() {
             .then(places => places.map(place => new Place(place)))
     }
 
-    async function listCandidatePlaces({ tripId, categoryId, labelName, include, sort } = {}) {
+    async function listCandidatePlaces({ tripId, categoryId, labelId, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "candidate",
                 tripId: tripId,
                 categoryId: categoryId,
-                label: labelName,
+                labelId: labelId,
                 include: include,
                 sort: sort
             })
@@ -580,6 +587,7 @@ export function useApi() {
         createDevice,
         getLabel,
         listLabels,
+        updateLabelName,
         getHighlight,
         updateHighlightQualityAttributes,
         createGeographicalCategory,
@@ -614,6 +622,10 @@ export function useApi() {
         listPlaceAlbumPhotos,
         createPlaceHighlight,
         removePlaceHighlight,
+        createPlaceNote,
+        removePlaceNote,
+        createPlaceLabel,
+        removePlaceLabel,
         listProblems,
         listStatistics,
         createSubscription,
@@ -639,9 +651,7 @@ export function useApi() {
         createTripHighlight,
         removeTripHighlight,
         createTripNote,
-        createPlaceLabel,
         removeTripNote,
-        removePlaceLabel,
         createAirline,
         listAirlines,
         getAirline,
@@ -653,7 +663,5 @@ export function useApi() {
         updateYearMainHighlight,
         createYearHighlight,
         removeYearHighlight,
-        createPlaceNote,
-        removePlaceNote
     }
 }

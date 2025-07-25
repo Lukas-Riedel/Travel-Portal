@@ -5,7 +5,7 @@ import Place from "../model/place"
 import { useEffect, useMemo } from "react"
 import { useEvents } from "./useEvents"
 
-export const usePlace = (placeId) => {
+export const usePlace = placeId => {
     const { getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
         updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
         updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote } = useApi()

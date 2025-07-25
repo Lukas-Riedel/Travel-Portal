@@ -3,7 +3,7 @@ import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
 
-export const useTrip = (tripId) => {
+export const useTrip = tripId => {
     const { getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, createTripHighlight, removeTripHighlight,
         updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote } = useApi()

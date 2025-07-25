@@ -9,7 +9,7 @@ import { useLabel } from "../hooks/useLabel"
 export default function LabelPage() {
     const { labelId } = useParams()
 
-    const label = useLabel(labelId)
+    const { label, updateLabelName } = useLabel(labelId)
     const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelId, include: "CATEGORIES" })
 
     const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("COUNTRY"))
@@ -19,6 +19,7 @@ export default function LabelPage() {
         <>
             <PageHeader
                 name={label?.name}
+                onNameChanged={updateLabelName}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <PlaceMap

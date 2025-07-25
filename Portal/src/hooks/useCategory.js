@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
-export const useCategory = (categoryId) => {
+export const useCategory = categoryId => {
     const { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes } = useApi()
     const { isAdmin } = useAuth()
 

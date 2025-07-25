@@ -104,6 +104,20 @@
                 ->withParameters($labelName)
                 ->execute() === 1;
         }
+        
+
+        public function updateLabelName(string $labelId, string $name) : bool {
+            $sql = <<<'SQL'
+                UPDATE label_identifier
+                SET name = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($name, $labelId)
+                ->execute() === 1;
+        }
 
         public function deleteLabel(string $placeId, string $labelId) : int {
             $sql = <<<'SQL'

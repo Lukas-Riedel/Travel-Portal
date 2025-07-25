@@ -27,6 +27,10 @@
             return $this->labelMapper->selectLabel($labelId);
         }
 
+        public function updateLabelName(string $labelId, string $name) : bool {
+            return $this->labelMapper->updateLabelName($labelId, $name);
+        }
+
         public function removeLabel(string $placeId, string $labelId) : bool {
             return $this->labelMapper->deleteLabel($placeId, $labelId) > 0;
         }
