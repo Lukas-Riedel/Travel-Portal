@@ -3,7 +3,7 @@
         public function handle($input) {
             global $flightService;
 
-            $response = $flightService->getAirlines();
+            $response = $flightService->getAllAirlines();
             return $this->createResponse(200, $response);
         }
 

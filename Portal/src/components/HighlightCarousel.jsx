@@ -134,7 +134,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 place && { label: "Čas pořízení:", value: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
-                place && { label: "Výška slunce:", value: ((SunCalc.getPosition(new Date(timestamp * 1000), place.latitude, place.longitude).altitude * 180) / Math.PI).toFixed(1) + "°", required: true, disabled: true }
+                place && { label: "Výška slunce:", value: ((SunCalc.getPosition(fromUnixTime(timestamp), place.latitude, place.longitude).altitude * 180) / Math.PI).toFixed(1) + "°", required: true, disabled: true }
             ],
             "Atributy highlightu byly úspěšně aktualizovány",
             "Nepodařilo se aktualizovat atributy highlightu",

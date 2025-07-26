@@ -24,6 +24,10 @@
             return $this->publicHolidaysCalendar;
         }
 
+        public function isComplete() : bool {
+            return $this->color !== NULL && $this->unicode !== NULL && $this->publicHolidaysCalendar !== NULL;
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

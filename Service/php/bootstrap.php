@@ -22,8 +22,10 @@
     require_once(dirname(__FILE__) . "/Event/EventManager.php");
     require_once(dirname(__FILE__) . "/Event/EventPublisher.php");
 
+    use Service\Client\CacheClient;
     use Service\Client\CloudMessagingClient;
     use Service\Service\Authentication\AuthenticationService;
+    use Service\Service\Category\CategoryDataConsistencyMonitor;
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\CategoryServiceListener;
     use Service\Service\Device\DeviceService;
@@ -33,22 +35,28 @@
     use Service\Service\Fitness\FitnessService;
     use Service\Service\Fitness\FitnessServiceListener;
     use Service\Service\Fitness\FitnessStatisticsProvider;
+    use Service\Service\Flight\FlightDataConsistencyMonitor;
     use Service\Service\Flight\FlightService;
     use Service\Service\Flight\FlightServiceListener;
     use Service\Service\Flight\FlightStatisticsProvider;
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Forecast\ForecastServiceListener;
     use Service\Service\Geocoding\GeocodingService;
-    use Service\Service\Highlight\HighlightService;
+use Service\Service\Highlight\HighlightDataConsistencyMonitor;
+use Service\Service\Highlight\HighlightService;
     use Service\Service\Highlight\HighlightServiceListener;
     use Service\Service\Label\LabelService;
+    use Service\Service\Monitoring\MonitoringService;
+    use Service\Service\Monitoring\MonitoringServiceListener;
     use Service\Service\Note\NoteService;
     use Service\Service\Photo\PhotoService;
     use Service\Service\Photo\PhotoServiceListener;
     use Service\Service\Photo\PhotoStatisticsProvider;
+    use Service\Service\Place\PlaceDataConsistencyMonitor;
     use Service\Service\Place\PlaceService;
     use Service\Service\Place\PlaceServiceListener;
     use Service\Service\Place\PlaceStatisticsProvider;
+    use Service\Service\Photo\PhotoDataConsistencyMonitor;
     use Service\Service\Statistics\StatisticsService;
     use Service\Service\Statistics\StatisticsServiceListener;
     use Service\Service\Stay\StayService;
@@ -56,6 +64,7 @@
     use Service\Service\Stay\StayStatisticsProvider;
     use Service\Service\TimeTracking\TimeTrackingService;
     use Service\Service\TimeTracking\TimeTrackingServiceListener;
+    use Service\Service\Trip\TripDataConsistencyMonitor;
     use Service\Service\Trip\TripService;
     use Service\Service\Trip\TripServiceListener;
     use Service\Service\Trip\TripStatisticsProvider;
@@ -69,12 +78,13 @@
     $httpClient = new HttpClient();
     $calendarClient = new CalendarClient();
     $cloudMessagingClient = new CloudMessagingClient();
+    $cacheClient = new CacheClient($databaseProvider);
     
     $loggingProvider = new LoggingProvider($databaseProvider);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
     $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
 
-    // Events publishing.
+    // Events producers.
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
@@ -99,6 +109,7 @@
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $deviceService = new DeviceService($databaseProvider, $authenticationService);
+    $monitoringService = new MonitoringService($cacheClient);
 
     // Statistics providers.
     $statisticsProviders = array(
@@ -111,8 +122,19 @@
         new ExpenseStatisticsProvider($tripService)
     );
     $statisticsService->setStatisticsProviders($statisticsProviders);
+
+    // Data consistency monitors.
+    $dataConsistencyMonitors = array(
+        new PhotoDataConsistencyMonitor($photoService, $placeService),
+        new FlightDataConsistencyMonitor($flightService),
+        new CategoryDataConsistencyMonitor($categoryService, $placeService),
+        new PlaceDataConsistencyMonitor($placeService),
+        new TripDataConsistencyMonitor($tripService, $configurationService),
+        new HighlightDataConsistencyMonitor($placeService, $tripService)
+    );
+    $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
     
-    // Events consuming.
+    // Event listeners.
     $listeners = array(
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
         new FitnessServiceListener($fitnessService, $eventPublisher, $scheduler),
@@ -121,12 +143,13 @@
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $eventPublisher, $scheduler),
         new PlaceServiceListener($placeService, $tripService, $calendarClient, $eventPublisher),
-        new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $eventPublisher, $scheduler),
+        new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
         new TripServiceListener($tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
         new YearServiceListener($yearService, $eventPublisher, $scheduler),
-        new DeviceServiceListener($deviceService, $scheduler),
+        new DeviceServiceListener($deviceService, $eventPublisher, $scheduler),
+        new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         $platformService
     );
     $eventManager = new EventManager($listeners);

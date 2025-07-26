@@ -76,6 +76,7 @@
         }
 
         public function getCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
+            // TODO: Introduce this caching in DatabaseClient for every select, invalidate with every insert, update or delete.
             if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
                 $this->categoryIdToCategoryIdentifierCache[$categoryId] = $this->categoryMapper->selectCategoryIdentifierById($categoryId);
             }
@@ -112,12 +113,17 @@
         }
 
         public function getCategory(string $categoryId) : ?Category {
-            $categories = $this->categoryMapper->selectCategories($categoryId, CategoryCategory::values(), CategoryIncludedEntity::values());
+            $categories = $this->categoryMapper->selectCategories($categoryId, NULL, CategoryCategory::values(), CategoryIncludedEntity::values());
             return count($categories) === 1 ? $categories[0] : NULL;
         }
 
-        public function getCategories(array $categoryCategories, array $includedEntities) : array {
-            return $this->categoryMapper->selectCategories(NULL, $categoryCategories, $includedEntities);
+        public function getCategories(?string $country, array $categoryCategories, array $includedEntities) : array {
+            $countryCategoryId = $country === NULL ? NULL : $this->getOrCreateCountryCategoryIdentifier($country)->getId();
+            return $this->categoryMapper->selectCategories(NULL, $countryCategoryId, $categoryCategories, $includedEntities);
+        }
+
+        public function getAllGeographicalRegions() : array {
+            return $this->categoryMapper->selectAllGeographicalRegions();
         }
 
         public function updateCategoryMainHighlight(string $categoryId, string $highlightIdentifier) : bool {
@@ -195,7 +201,7 @@
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson));
 
             if ($countryCategoryId === NULL) {
-                foreach ($this->getCategories(array(CategoryCategory::Country->value), array()) as &$category) {
+                foreach ($this->getCategories(NULL, array(CategoryCategory::Country->value), array()) as &$category) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
                 }
             }
@@ -224,7 +230,7 @@
 
             // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
             if ($country === NULL) {
-                foreach ($this->getCategories(array(CategoryCategory::Country->value), array()) as &$category) {
+                foreach ($this->getCategories(NULL, array(CategoryCategory::Country->value), array()) as &$category) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
                 }
             }
@@ -279,6 +285,10 @@
             foreach ($regionAreas as $categoryId => $area) {
                 $this->categoryMapper->insertRegionArea($categoryId, $area);
             }
+        }
+
+        public function getAllNonTrivialGeographicalRegions() : array {
+            return $this->categoryMapper->selectAllNonTrivialGeographicalRegions();
         }
 
         public function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {

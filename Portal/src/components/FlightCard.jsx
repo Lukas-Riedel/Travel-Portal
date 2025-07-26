@@ -18,11 +18,17 @@ export default function FlightCard({ flight }) {
                 <Icon
                     size={16}
                     className="text-sky-600" />
-                <Link
-                    to={`/airport/${airport.id}`}
-                    className="hover:underline text-sky-600 font-medium">
-                    {airport.name} ({airport.code})
-                </Link>
+                {airport.id ? (
+                    <Link
+                        to={`/airport/${airport.id}`}
+                        className="hover:underline text-sky-600 font-medium">
+                        {airport.name} (${airport.code})
+                    </Link>
+                ) : (
+                    <span className="text-sky-600 font-medium">
+                        {airport.name}
+                    </span>
+                )}
             </div>
             <div className="flex items-center space-x-2 text-gray-700 font-mono">
                 <Clock size={16} />
@@ -54,7 +60,7 @@ export default function FlightCard({ flight }) {
                     )}
                 </div>
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
-                    {airline?.logo ? (
+                    {airline && (airline.logo ? (
                         <div
                             className="max-w-full max-h-full"
                             style={{
@@ -69,30 +75,41 @@ export default function FlightCard({ flight }) {
                         <div className="text-gray-400 text-sm text-center">
                             Logo není k dispozici
                         </div>
-                    )}
+                    ))}
                 </div>
             </div>
             {renderFlightEndpoint(flight.from, flight.start, PlaneTakeoff)}
             {renderFlightEndpoint(flight.to, flight.end, PlaneLanding)}
-            <div className="text-gray-800 text-sm whitespace-nowrap my-1">
-                {flight.aircraft} (
-                <a
-                    href={`https://www.flightradar24.com/data/aircraft/${flight.registration}`}
-                    className="hover:underline">
-                    {flight.registration}
-                </a>
-                )
-            </div>
+            {flight.aircraft && flight.registration && (
+                <div className="text-gray-800 text-sm whitespace-nowrap my-1">
+                    {flight.aircraft} (
+                    <a
+                        href={`https://www.flightradar24.com/data/aircraft/${flight.registration}`}
+                        className="hover:underline">
+                        {flight.registration}
+                    </a>
+                    )
+                </div>
+            )}
             <div className="flex justify-between text-[12px] text-gray-400 whitespace-nowrap my-0.5">
                 <span>
                     {formatDuration(flight.end - flight.start)}
                 </span>
-                <span>
-                    {formatKilometers(Math.round(flight.distance))}
-                </span>
+                {flight.distance && (
+                    <span>
+                        {formatKilometers(Math.round(flight.distance))}
+                    </span>
+                )}
+                {flight.start > Date.now() / 1000 && (
+                    <a
+                        href={`https://www.google.com/travel/flights?q=One way flight from ${flight.from.name} to ${flight.to.name} on ${format(toZonedTime(fromUnixTime(flight.start), flight.from.timezone), "d.M.yyyy")}`}
+                        className="hover:underline">
+                        Zkontrolovat cenu
+                    </a>
+                )}
             </div>
         </div>
     ) : (
-        <LoadingCard/>
+        <LoadingCard />
     )
 }

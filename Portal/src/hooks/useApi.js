@@ -98,9 +98,10 @@ export function useApi() {
             })
     }
 
-    async function listCategories({ categories, include } = {}) {
+    async function listCategories({ country, categories, include } = {}) {
         return sendRequest("GET", "/categories", {},
             {
+                country: country,
                 categories: categories,
                 include: include
             })
@@ -311,8 +312,8 @@ export function useApi() {
         return sendRequest("DELETE", "/places/" + placeId + "/highlights/" + highlightId)
     }
 
-    async function listProblems() {
-        return sendRequest("GET", "/problems")
+    async function listDataConsistencyIssues() {
+        return sendRequest("GET", "/inconsistencies")
     }
 
     async function listStatistics() {
@@ -437,8 +438,8 @@ export function useApi() {
         return sendRequest("DELETE", "/trips/" + tripId + "/expenses/" + expenseId)
     }
 
-    async function logFlight(tripId, flight, from, to, scheduledDeparture) {
-        return sendRequest("POST", "/flights/log?tripId=" + tripId,
+    async function logFlight(flight, from, to, scheduledDeparture) {
+        return sendRequest("POST", "/flights/log",
             {
                 flight: flight,
                 from: from,
@@ -447,9 +448,9 @@ export function useApi() {
             })
     }
 
-    async function logFlightManually(tripId, flight, aircraft, registration, from, fromCode, to, toCode,
+    async function logFlightManually(flight, aircraft, registration, from, fromCode, to, toCode,
         scheduledDeparture, actualDeparture, scheduledArrival, actualArrival) {
-        return sendRequest("POST", "/flights/log?tripId=" + tripId,
+        return sendRequest("POST", "/flights/log",
             {
                 flight: flight,
                 aircraft: aircraft,
@@ -533,6 +534,17 @@ export function useApi() {
         return sendRequest("DELETE", "/places/" + placeId + "/labels/" + labelId)
     }
 
+    async function createAirlineCode(airlineId, code) {
+        return sendRequest("POST", "/airlines/" + airlineId + "/codes",
+            {
+                code: code
+            })
+    }
+
+    async function removeAirlineCode(airlineId, code) {
+        return sendRequest("DELETE", "/airlines/" + airlineId + "/codes/" + code)
+    }
+
     async function createAirline(name, { logo } = {}) {
         return sendRequest("POST", "/airlines",
             {
@@ -597,6 +609,8 @@ export function useApi() {
     }
 
     return {
+        createAirlineCode,
+        removeAirlineCode,
         createDevice,
         getLabel,
         listLabels,
@@ -639,7 +653,7 @@ export function useApi() {
         removePlaceNote,
         createPlaceLabel,
         removePlaceLabel,
-        listProblems,
+        listDataConsistencyIssues,
         listStatistics,
         createSubscription,
         listSubscriptions,

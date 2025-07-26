@@ -2,7 +2,10 @@
     namespace Service\Service\Statistics;
 
     use Service\Service\Category\CategoryService;
-    use Service\Service\Place\PlaceService;
+use Service\Service\Flight\Airport;
+use Service\Service\Flight\Flight;
+use Service\Service\Flight\FlightService;
+use Service\Service\Place\PlaceService;
     use Service\Service\Trip\TripService;
 
     class StatisticsServiceListener {
@@ -15,17 +18,19 @@
         private readonly PlaceService $placeService;
         private readonly TripService $tripService;
         private readonly CategoryService $categoryService;
+        private readonly FlightService $flightService;
         
         private readonly \EventPublisher $eventPublisher;
         private readonly \Scheduler $scheduler;
 
         public function __construct(StatisticsService $statisticsService, PlaceService $placeService,
-            TripService $tripService, CategoryService $categoryService,
+            TripService $tripService, CategoryService $categoryService, FlightService $flightService,
             \EventPublisher $eventPublisher, \Scheduler $scheduler) {
             $this->statisticsService = $statisticsService;
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->categoryService = $categoryService;
+            $this->flightService = $flightService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -73,9 +78,16 @@
         }
 
         public function onFlightLogged(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
-                $this->statisticsService->updateTripStatistics($trip);
+            $flight = new Flight($message["flight"], NULL, NULL, NULL, NULL,
+                new Airport(NULL, $message["from"]["name"], NULL, NULL, NULL, NULL, NULL),
+                new Airport(NULL, $message["to"]["name"], NULL, NULL, NULL, NULL, NULL),
+                $message["start"], $message["end"], NULL);
+            $tripId = $this->flightService->getTripIdForFlight($flight);
+            if ($tripId !== NULL) {
+                $trip = $this->tripService->getRegularTrip($tripId);
+                if ($trip !== NULL) {
+                    $this->statisticsService->updateTripStatistics($trip);
+                }
             }
         }
 

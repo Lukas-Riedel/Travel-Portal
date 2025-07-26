@@ -44,7 +44,7 @@
         }
 
         public function onFlightArrived(mixed $message) : void {            
-            $this->flightService->fetchAndLogFlight($message["flight"], $message["tripId"], $message["from"], $message["to"], $message["scheduledDeparture"]);
+            $this->flightService->fetchAndLogFlight($message["flight"], $message["from"], $message["to"], $message["scheduledDeparture"]);
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
@@ -59,8 +59,8 @@
                     : time() - $message["lastTriggered"] + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
 
                 if (time() - $message["lastTriggered"] > $loggingInterval) {
-                    $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $this->flightService->getTripIdForFlight($firstNonLoggedFlight),
-                        $firstNonLoggedFlight->getFrom()->getName(), $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
+                    $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getName(),
+                        $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
                     $this->scheduler->recordEventsTriggered(self::LOG_FLIGHTS_ACTION_NAME);
                 }
             }

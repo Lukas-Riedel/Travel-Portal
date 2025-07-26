@@ -4,6 +4,7 @@
             global $categoryService;
 
             $response = $categoryService->getCategories(
+                isset($input["country"]) ? $input["country"] : NULL,
                 isset($input["categories"]) ? explode(",", $input["categories"]) : array(),
                 isset($input["include"]) ? explode(",", $input["include"]) : array());
             return $this->createResponse(200, $response);
@@ -27,6 +28,7 @@
 
         public function getParameters() {
             return array(
+                $this->createQueryParameter("country", "string", "Česko"),
                 $this->createQueryParameter("categories", "string", "CONTINENT,COUNTRY,ADMINISTRATIVE,OCEAN,SEA,BAY,VARIABLE,ISLAND,REGION"),
                 $this->createQueryParameter("include", "string", "HIGHLIGHTS,STATISTICS"));
         }

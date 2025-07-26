@@ -98,51 +98,55 @@
         private function updatePlaceQuality(string $placeId) : void {
             $place = $this->placeService->getRegularPlace($placeId);
 
-            $highlightQualities = [];
-            foreach ($place->getHighlights() as &$highlight) {
-                $highlightQuality = $highlight->getQuality();
-                if ($highlightQuality !== NULL) {
-                    for ($i = 0; $i < ($highlight->getId() == $place->getMainHighlight()?->getId() ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1); ++$i) {
-                        $highlightQualities[] = $highlightQuality;
+            if ($place !== NULL) {
+                $highlightQualities = [];
+                foreach ($place->getHighlights() as &$highlight) {
+                    $highlightQuality = $highlight->getQuality();
+                    if ($highlightQuality !== NULL) {
+                        for ($i = 0; $i < ($highlight->getId() == $place->getMainHighlight()?->getId() ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1); ++$i) {
+                            $highlightQualities[] = $highlightQuality;
+                        }
                     }
                 }
-            }
 
-            if (count($highlightQualities) === 0) {
-                $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
-                return;
-            }
+                if (count($highlightQualities) === 0) {
+                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
+                    return;
+                }
 
-            $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
-            $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), pow($product, 1 / count($highlightQualities)));
+                $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
+                $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), pow($product, 1 / count($highlightQualities)));
+            }
         }
 
         private function updatePlaceScore(string $placeId) : void {
             $place = $this->placeService->getRegularPlace($placeId);
 
-            $buckets = array();
-            $encounteredAlbums = array();
-            foreach ($place->getDates() as &$date) {
-                $album = $date->getAlbum();
-                if ($album !== NULL && !in_array($album->getId(), $encounteredAlbums)) {
-                    $encounteredAlbums[] = $album->getId();
-        
-                    $tripId = $date->getTrip() === NULL
-                        ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
-                        : $date->getTrip()->getId();
-        
-                    if (!isset($buckets[$tripId])) {
-                        $buckets[$tripId] = 0;
-                    }            
-                    
-                    $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
-                        ? $album->getImagesCount() // This is an indoor-only location.
-                        : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
-                }                    
-            }
+            if ($place !== NULL) {
+                $buckets = array();
+                $encounteredAlbums = array();
+                foreach ($place->getDates() as &$date) {
+                    $album = $date->getAlbum();
+                    if ($album !== NULL && !in_array($album->getId(), $encounteredAlbums)) {
+                        $encounteredAlbums[] = $album->getId();
+            
+                        $tripId = $date->getTrip() === NULL
+                            ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
+                            : $date->getTrip()->getId();
+            
+                        if (!isset($buckets[$tripId])) {
+                            $buckets[$tripId] = 0;
+                        }            
+                        
+                        $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
+                            ? $album->getImagesCount() // This is an indoor-only location.
+                            : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
+                    }                    
+                }
 
-            $this->placeService->updatePlaceScore($placeId, self::PHOTO_SCORE_MULTIPLIER * (empty($buckets) ? 0 : max(array_values($buckets)))
-                + self::HIGHLIGHT_SCORE_MULTIPLIER * count($place->getHighlights()));
+                $this->placeService->updatePlaceScore($placeId, self::PHOTO_SCORE_MULTIPLIER * (empty($buckets) ? 0 : max(array_values($buckets)))
+                    + self::HIGHLIGHT_SCORE_MULTIPLIER * count($place->getHighlights()));
+            }
         }
     }
 ?>

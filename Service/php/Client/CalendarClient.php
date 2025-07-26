@@ -69,10 +69,10 @@
             return $holidays;
         }
 
-        private function getPublicHolidayEvents($country) : array {            
+        private function getPublicHolidayEvents($categoryName) : array {            
             global $categoryService;
 
-            $categoryIdentifier = $categoryService->getCategoryIdentifier($country);
+            $categoryIdentifier = $categoryService->getCategoryIdentifier($categoryName);
             if ($categoryIdentifier === NULL || $categoryIdentifier->getMetadata() === NULL
                 || $categoryIdentifier->getMetadata()->getPublicHolidaysCalendar() === NULL) {
                 return array();

@@ -70,6 +70,10 @@
                 $databaseProvider->materializeViews();
                 $this->removeEvent($event["id"]);
             }
+
+            if ($event["name"] == Event::ApplicationStarted->name) {
+                die("Restaring the application...");
+            }
         }
 
         private function getNextPendingEvent() : mixed {

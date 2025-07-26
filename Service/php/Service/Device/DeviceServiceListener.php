@@ -1,11 +1,6 @@
 <?php
     namespace Service\Service\Device;
 
-    use Scheduler;
-    use Service\Service\Highlight\HighlightType;
-    use Service\Service\Place\PlaceIdentifier;
-    use Service\Service\Place\PlaceService;
-
     class DeviceServiceListener {
         
         private const UNREGISTER_INACTIVE_DEVICES_ACTION_NAME = "UNREGISTER_INACTIVE_DEVICES";
@@ -13,17 +8,23 @@
 
         private readonly DeviceService $deviceService;
 
-        private readonly Scheduler $scheduler;
+        private readonly \EventPublisher $eventPublisher;
+        private readonly \Scheduler $scheduler;
 
-        public function __construct(DeviceService $deviceService, Scheduler $scheduler) {
+        public function __construct(DeviceService $deviceService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
             $this->deviceService = $deviceService;
+            $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+        }
+
+        public function onInactiveDevicesInvalidated(mixed $message) : void {
+            $this->deviceService->unregisterInactiveDevices();
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($message["action"] === self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME 
                 && time() - $message["lastTriggered"] > self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL) {
-                $this->deviceService->unregisterInactiveDevices();
+                $this->eventPublisher->publishInactiveDevicesInvalidatedEvent();
                 $this->scheduler->recordEventsTriggered(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME);
             }
         }

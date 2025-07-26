@@ -38,7 +38,7 @@ export default function TripPage() {
         }
         return place?.getCategory("MOST_SPECIFIC_WITH_METADATA")
     }
-
+    
     return (
         <>
             <PageHeader
@@ -54,13 +54,13 @@ export default function TripPage() {
                 onHighlightRemoved={removeTripHighlight}
                 onMainHighlightUpdated={updateTripMainHighlight}
                 onHighlightQualityAttributesUpdated={updateTripHighlightQualityAttributes} />
-            {trip?.start > Date.now() / 1000 && (
+            {trip?.start < Date.now() / 1000 && (
                 <StatisticsPanel statistics={trip?.statistics} />
             )}
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}
-                tripCandidates={candidateTrips?.map(candidateTrip => ({ id: candidateTrip.id, name: candidateTrip.name }))}
+                tripCandidates={candidateTrips}
                 onPhotosAdded={!trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
                 onTripMoved={moveTrip}
                 onTripLoaded={loadTrip} />

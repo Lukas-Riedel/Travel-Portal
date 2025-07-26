@@ -99,6 +99,18 @@
                 ->getSingleColumn("id");
         }
 
+        public function selectUnassignedAirlineCodes() : array {
+            $sql = <<<'SQL'
+                SELECT code
+                FROM airline_code
+                WHERE airline_id IS NULL
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getResultSetForColumn("code");
+        }
+
         public function selectFlightsForTrip(FlightType $flightType, string $tripId) : array {
             $sql = <<<SQL
                 SELECT fe.flight,
@@ -112,7 +124,7 @@
                     ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id,
-                    IF(fl.actual_arrival IS NULL, NULL, fl.actual_arrival - fe.end) AS delay,
+                    IF(fl.actual_arrival IS NULL, NULL, fl.actual_arrival - fl.scheduled_arrival) AS delay,
                     fai.code AS from_airport_code, 
                     fai.latitude AS from_airport_latitude, 
                     fai.longitude AS from_airport_longitude, 
@@ -236,9 +248,65 @@
             return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
         }
 
+        public function selectLoggedFlightsWithoutEvent() : array {
+            $sql = <<<SQL
+                SELECT fl.flight,
+                    fai.code AS `from`, 
+                    tai.code AS `to`, 
+                    fl.actual_departure AS start, 
+                    fl.actual_arrival AS end, 
+                    fl.registration, 
+                    fl.aircraft, 
+                    ai.id AS airline_id,
+                    ai.name AS airline_name,
+                    fl.from_airport_id, 
+                    fl.to_airport_id, 
+                    fl.actual_arrival - fl.scheduled_arrival AS delay,
+                    fai.code AS from_airport_code, 
+                    fai.latitude AS from_airport_latitude, 
+                    fai.longitude AS from_airport_longitude, 
+                    fai.country_category_id AS from_airport_country_category_id, 
+                    fai.timezone AS from_airport_timezone, 
+                    tai.code AS to_airport_code, 
+                    tai.latitude AS to_airport_latitude, 
+                    tai.longitude AS to_airport_longitude, 
+                    tai.country_category_id AS to_airport_country_category_id, 
+                    tai.timezone AS to_airport_timezone 
+                FROM flight_log fl
+                LEFT JOIN flight_event fe 
+                    ON fe.flight = fl.flight 
+                        AND fe.start = fl.scheduled_departure 
+                INNER JOIN airport_identifier fai 
+                    ON fl.from_airport_id = fai.id
+                INNER JOIN airport_identifier tai 
+                    ON fl.to_airport_id = tai.id 
+                LEFT JOIN airline_code ac
+                    ON fl.airline_code_id = ac.id
+                LEFT JOIN airline_identifier ai
+                    ON ac.airline_id = ai.id
+                WHERE fe.id IS NULL
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($flightRow) {
+                    $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
+
+                    $airlineIdentifier = $flightRow["airline_id"] === NULL || $flightRow["airline_name"] === NULL ? NULL : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
+                    $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
+                        $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
+                        $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
+                    $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"],
+                        $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
+                        $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
+
+                    return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
+                }); 
+        }
+
         public function selectLoggedFlightsForInterval(int $start, int $end, FlightSortingStrategy $flightSortingStrategy) : array {
             $sql = <<<SQL
-                SELECT fe.flight,
+                SELECT fl.flight,
                     fe.from, 
                     fe.to, 
                     fl.actual_departure AS start, 
@@ -249,7 +317,7 @@
                     ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id, 
-                    fl.actual_arrival - fe.end AS delay,
+                    fl.actual_arrival - fl.scheduled_arrival AS delay,
                     fai.code AS from_airport_code, 
                     fai.latitude AS from_airport_latitude, 
                     fai.longitude AS from_airport_longitude, 
@@ -283,7 +351,7 @@
                 ->getMappedResultSet(function($flightRow) {
                     $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
 
-                    $airlineIdentifier = new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
+                    $airlineIdentifier = $flightRow["airline_id"] === NULL || $flightRow["airline_name"] === NULL ? NULL : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
                         $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
                         $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
@@ -326,7 +394,7 @@
                 ->getSingleColumn("trip_id");
         }
 
-        public function selectFirstNonLoggedFlight() : ?Flight {
+        public function selectAllNonLoggedFlights() : array {
             $sql = <<<'SQL'
                 SELECT fe.*
                 FROM flight_event fe
@@ -335,20 +403,15 @@
                     AND fe.start = fl.scheduled_departure
                 WHERE fl.actual_arrival IS NULL
                 ORDER BY fe.end ASC
-                LIMIT 1
             SQL;       
             
-            $flightRow = $this->databaseProvider
+            return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->getSingleRow();
-
-            if ($flightRow === NULL) {
-                return NULL;
-            }
-
-            $from = new Airport(NULL, $flightRow["from"], NULL, NULL, NULL, NULL, NULL);
-            $to = new Airport(NULL, $flightRow["to"], NULL, NULL, NULL, NULL, NULL);
-            return new Flight($flightRow["flight"], NULL, NULL, NULL, NULL, $from, $to, $flightRow["start"], $flightRow["end"], NULL);
+                ->getMappedResultSet(function($flightRow) {
+                    $from = new Airport(NULL, $flightRow["from"], NULL, NULL, NULL, NULL, NULL);
+                    $to = new Airport(NULL, $flightRow["to"], NULL, NULL, NULL, NULL, NULL);
+                    return new Flight($flightRow["flight"], NULL, NULL, NULL, NULL, $from, $to, $flightRow["start"], $flightRow["end"], NULL);
+                });
         }
 
         public function selectAverageFlightDelay() : int {

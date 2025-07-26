@@ -21,6 +21,7 @@ export const useEvents = eventName => {
         publishPhotosUploadingTriggeredEvent: (placeId, albumId, timestamp, path, mainPhotoPosition) =>
             createEvent("PhotosUploadingTriggered", { placeId, albumId, timestamp, path, mainPhotoPosition }),
         publishPhotoReplacingTriggeredEvent: (placeId, albumId, replacedPhotoId, path) =>
-            createEvent("PhotoReplacingTriggered", { placeId, albumId, replacedPhotoId, path })
+            createEvent("PhotoReplacingTriggered", { placeId, albumId, replacedPhotoId, path }),
+        publishAllAlbumsInvalidatedEvent: () => createEvent("AllAlbumsInvalidated", null)
     }
 }

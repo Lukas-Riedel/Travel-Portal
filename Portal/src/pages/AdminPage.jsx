@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import TabMenu from "../components/TabMenu"
 import TripSummary from "../components/TripSummary"
@@ -9,21 +9,41 @@ import { Plus } from "lucide-react"
 import showFormToast from "../components/FormToast"
 import FloatingButton from "../components/FloatingButton"
 import { useApi } from "../hooks/useApi"
-import { toZonedTime } from "date-fns-tz"
+import { useDataConsistencyIssues } from "../hooks/useDataConsistencyIssues"
+import { fromZonedTime } from "date-fns-tz"
+import { useRegularTrips } from "../hooks/useRegularTrips"
+import FlightCardGrid from "../components/FlightCardGrid"
+import DataConsistencyIssueCardGrid from "../components/DataConsistencyIssueCardGrid"
+import { useAirlines } from "../hooks/useAirlines"
+import { useEvents } from "../hooks/useEvents"
 
-const labels = ["Aktuální výlet", "Správa letů"]
+const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
-    const { createScheduledFlight, createWatchedFlight, getCoordinates } = useApi()
+    const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode,
+        createGeographicalExtensionCategory, removeCandidatePlace, logFlight } = useApi()
+    const { publishAllAlbumsInvalidatedEvent } = useEvents()
 
+    const dataConsistencyIssues = useDataConsistencyIssues()
+    const airlines = useAirlines();
+    const trips = useRegularTrips({ include: "WATCHED_FLIGHTS" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
 
-    const [activeTab, setActiveTab] = useState(0)
-
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
-    const getAirportLocalTime = async (airportName, time) => Math.round(toZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
+    const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
+
+    const [activeTab, setActiveTab] = useState(() => {
+        const saved = sessionStorage.getItem("adminPageActiveTab")
+        return saved !== null ? Number(saved) : 0
+    })
+
+    useEffect(() => {
+        sessionStorage.setItem("adminPageActiveTab", activeTab)
+    }, [activeTab])
+
+    const watchedFlights = useMemo(() => [...(trips?.flatMap(trip => trip.watchedFlights) ?? [])]?.sort((a, b) => a.start - b.start), [trips])
 
     const handleFlightCreated = () => {
         showFormToast(
@@ -36,8 +56,8 @@ export default function AdminPage() {
                 { label: "Čas příletu (v časové zóně místa příletu)", required: true, type: "datetime-local" },
                 {
                     label: "Typ", required: true, type: "select", options: [
-                        { id: "scheduled", name: "Potvrzený" },
-                        { id: "watched", name: "Sledovaný" }
+                        { id: "watched", name: "Sledovaný" },
+                        { id: "scheduled", name: "Potvrzený" }
                     ]
                 }
             ],
@@ -80,10 +100,22 @@ export default function AdminPage() {
             )}
             {activeTab === 1 && (
                 <>
+                    <FlightCardGrid flights={watchedFlights} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleFlightCreated} />
                 </>
+            )}
+            {activeTab === 2 && (
+                <DataConsistencyIssueCardGrid
+                    dataConsistencyIssues={dataConsistencyIssues}
+                    airlines={airlines}
+                    onAirlineCodeAssigned={createAirlineCode}
+                    onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
+                    onGeographicalExtensionCategoryAdded={createGeographicalExtensionCategory}
+                    onPlaceRemoved={removeCandidatePlace}
+                    onFlightLogged={logFlight}
+                    onRegionManagementOpened={() => { /** TODO: Set active tab to the region management. */ }} />
             )}
         </>
     )

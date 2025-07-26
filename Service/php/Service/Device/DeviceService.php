@@ -24,7 +24,7 @@
             $this->deviceMapper->insertDevice($device);
         }
 
-        public function unregisterInactiveDevices() {
+        public function unregisterInactiveDevices() : int {
             // TODO: Ping unregistered device so it can eventually register again.
             return $this->deviceMapper->deleteInactiveDevices(self::DEVICE_INACTIVITY_THRESHOLD);
         }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { useCategories } from "../hooks/useCategories"
 import PlaceMap from "../components/PlaceMap"
@@ -27,7 +27,14 @@ export default function PlansPage() {
 
     const [maxDistance, setMaxDistance] = useState(250)
     const [maxQuality, setMaxQuality] = useState(80)
-    const [activeTab, setActiveTab] = useState(0)
+    const [activeTab, setActiveTab] = useState(() => {
+        const saved = sessionStorage.getItem("plansPageActiveTab")
+        return saved !== null ? Number(saved) : 0
+    })
+
+    useEffect(() => {
+        sessionStorage.setItem("plansPageActiveTab", activeTab)
+    }, [activeTab])
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))

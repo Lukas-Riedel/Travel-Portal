@@ -1,4 +1,4 @@
-import { isSameDay } from "date-fns";
+import { fromUnixTime, isSameDay } from "date-fns";
 
 export default class Place {
     constructor(place) {
@@ -68,6 +68,6 @@ export default class Place {
     }
 
     getDate(date) {
-        return this.dates.find(d => isSameDay(date, new Date(d.start * 1000)))
+        return this.dates.find(d => isSameDay(date, fromUnixTime(d.start)))
     }
 }

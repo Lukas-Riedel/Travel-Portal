@@ -2,7 +2,7 @@ import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
 import DayCard from "./DayCard"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
-import { ArrowRightLeft, Earth, House, Upload } from "lucide-react"
+import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
 import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
@@ -38,9 +38,9 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
         showFormToast(
             "Vyber výlet k načtení:",
             [
-                { type: "select", required: true, options: tripCandidates }
+                { type: "select", required: true, options: tripCandidates?.map(candidateTrip => ({ id: candidateTrip.id, name: candidateTrip.name })) }
             ],
-            "Výlet byla úspěšně načten",
+            "Výlet byl úspěšně načten",
             "Nepodařilo se načíst výlet",
             onTripLoaded
         )
@@ -73,6 +73,13 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                         onClick={handleLoaded}
                         className="btn-chip-gray">
                         <Upload size={16} />
+                    </button>
+                )}
+                {isAdmin && (
+                    <button
+                        onClick={() => window.open((d => `https://calendar.google.com/calendar/u/0/r/week/${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`)(fromUnixTime(trip.start)), "_blank")}
+                        className="btn-chip-gray">
+                        <Calendar size={16} />
                     </button>
                 )}
                 <button

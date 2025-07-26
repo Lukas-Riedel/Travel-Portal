@@ -1,8 +1,8 @@
 <?php
     namespace Service\Service\Photo;
 
-use Service\Service\Category\CategoryCategory;
-use Service\Service\Place\PlaceIncludedEntity;
+    use Service\Service\Category\CategoryCategory;
+    use Service\Service\Place\PlaceIncludedEntity;
     use Service\Service\Place\PlaceService;
     use Service\Service\Place\PlaceSortingStrategy;
     use Service\Service\Statistics\KeyValuePair;

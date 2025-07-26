@@ -154,12 +154,12 @@
             $this->publishLocalEvent(Event::SchedulerTriggered, array("action" => $action, "lastTriggered" => $lastTriggered));
         }
 
-        public function publishFlightLoggedEvent($flight, $tripId) : void {
-            $this->publishLocalEvent(Event::FlightLogged, array("flight" => $flight, "tripId" => $tripId));
+        public function publishFlightLoggedEvent($flight) : void {
+            $this->publishLocalEvent(Event::FlightLogged, array("flight" => $flight));
         }
 
-        public function publishFlightArrivedEvent($flight, $tripId, $from, $to, $scheduledDeparture) : void {
-            $this->publishLocalEvent(Event::FlightArrived, array("flight" => $flight, "tripId" => $tripId, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
+        public function publishFlightArrivedEvent($flight, $from, $to, $scheduledDeparture) : void {
+            $this->publishLocalEvent(Event::FlightArrived, array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
         }
 
         public function publishYearStatisticsUpdatedEvent($year) : void {
@@ -196,6 +196,14 @@
         
         public function publishPlaceEventDeletedEvent($placeId) : void {
             $this->publishLocalEvent(Event::PlaceEventDeleted, array("placeId" => $placeId));
+        }
+
+        public function publishDataConsistencyScanTriggeredEvent() : void {
+            $this->publishLocalEvent(Event::DataConsistencyScanTriggered, NULL);
+        }
+
+        public function publishInactiveDevicesInvalidatedEvent() : void {
+            $this->publishLocalEvent(Event::InactiveDevicesInvalidated, NULL);
         }
 
         public function publishEvent($event, $args) : void {
@@ -246,8 +254,9 @@
         // TODO: Invalidations first, then updates. Order this enum.
         // TODO: Unify Removed/Deleted.
         // TODO: Remove unused.
-        case ApplicationStarted = -2;
-        case HighlightCreated = -1;
+        case ApplicationStarted = -3;
+        case HighlightCreated = -2;
+        case DataConsistencyScanTriggered = -1;
         case HighlightUpdated = 0;
         case SchedulerTriggered = 1;
         case CalendarWatchRenewing = 2;
@@ -294,6 +303,7 @@
         case PlaceEventUpdated = 45;
         case PlaceEventDeleted = 46;
         case PlaceCreated = 47;
+        case InactiveDevicesInvalidated = 48;
 
         case FitnessActivityDetected = 1000;
 

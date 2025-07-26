@@ -91,6 +91,10 @@
                 : $this->doGetCandidatePlaces(NULL, $categoryId, $label, $includedEntities);
         }
 
+        public function getAllPlaceIdentifiers() : array {
+            return $this->placeMapper->selectAllPlaceIdentifiers();
+        }
+
         public function getPlaceIdentifierById(string $placeId) : ?PlaceIdentifier {
             return $this->placeMapper->selectPlaceIdentifierById($placeId);
         }

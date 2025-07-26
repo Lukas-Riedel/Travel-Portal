@@ -254,7 +254,7 @@
     
                     $flights = array();
                     if (in_array(TripIncludedEntity::Flights->value, $includedEntities)) {
-                        $flights = $this->flightService->getFlightsForTrip($tripRow["trip_id"]);             
+                        $flights = $this->flightService->getScheduledFlightsForTrip($tripRow["trip_id"]);             
                     }
     
                     $watchedFlights = array();

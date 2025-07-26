@@ -12,12 +12,50 @@
             $this->googleApiClient = $googleApiClient;
         }
 
+        public function selectAllAlbums() : array {
+            $sql = <<<'SQL'
+                SELECT
+                    a.*, 
+                    pp.uploading_start, 
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                FROM album a
+                LEFT JOIN (
+                    SELECT 
+                        album_id, 
+                        MIN(created) AS uploading_start, 
+                        SUM(uploaded_photos) AS uploaded_photos, 
+                        SUM(batch_size) AS batch_size
+                    FROM (
+                        SELECT 
+                        album_id, 
+                        MIN(created) AS created, 
+                        COUNT(*) AS uploaded_photos, 
+                        MAX(expected_batch_size) AS batch_size
+                        FROM photo_pending
+                        GROUP BY album_id, batch_id
+                    ) x
+                    GROUP BY album_id
+                ) pp 
+                    ON a.id = pp.album_id
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($albumRow) {
+                    return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
+                        ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+                        $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
+                        $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
+                        $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+                });
+        }
+
         public function selectAlbum(string $albumId) : ?Album {
             $sql = <<<'SQL'
-            SELECT
-                a.*, 
-                pp.uploading_start, 
-                ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                SELECT
+                    a.*, 
+                    pp.uploading_start, 
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
                 FROM album a
                 LEFT JOIN (
                     SELECT 

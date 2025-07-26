@@ -73,7 +73,7 @@
                 $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
-        public function selectCategories(?string $categoryId, array $categoryCategories, array $includedEntities) : array {
+        public function selectCategories(?string $categoryId, ?string $countryCategoryId, array $categoryCategories, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM category_identifier
@@ -85,6 +85,9 @@
                 ->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("id = ?", $categoryId);
+            }
+            if ($countryCategoryId !== NULL) {
+                $whereClauseBuilder->withClause("id IN (SELECT category_id FROM region_geographical WHERE country_category_id = ?)", $countryCategoryId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 

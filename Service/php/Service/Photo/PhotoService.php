@@ -31,6 +31,10 @@
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
         }
+
+        public function getAllAlbums() : array {
+            return $this->photoMapper->selectAllAlbums();            
+        }
         
         public function getAlbum(string $albumId) : ?Album {
             return $this->photoMapper->selectAlbum($albumId);

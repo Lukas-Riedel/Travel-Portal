@@ -33,10 +33,10 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
     const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.currentFte || 8, [configuration])
     const expectedOvertimeHoursPerDay = useMemo(() => configuration?.expectedOvertimeHoursPerDay || 0, [configuration])
 
-    const latestAllowedDateStartOfDay = useMemo(() => startOfDay(new Date(trips?.at(-1)?.end * 1000)), [trips])
+    const latestAllowedDateStartOfDay = useMemo(() => startOfDay(fromUnixTime(trips?.at(-1)?.end)), [trips])
 
     const days = eachDayOfInterval({
-        start: startOfDay(startOfDay(overtimeEvents?.[0]?.timestamp ? addDays(new Date(overtimeEvents[0].timestamp * 1000), 1) : new Date())),
+        start: startOfDay(startOfDay(overtimeEvents?.[0]?.timestamp ? addDays(fromUnixTime(overtimeEvents[0].timestamp), 1) : new Date())),
         end: latestAllowedDateStartOfDay
     })
 

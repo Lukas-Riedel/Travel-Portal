@@ -2,12 +2,19 @@ import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { optimize } from "svgo"
 
+// TODO: Make sure all code that needs to format date uses this function.
 export function getDateString(timestamp) {
-    return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy")
+    return timestamp && format(fromUnixTime(timestamp), "d.M.yyyy")
 }
 
+// TODO: Make sure all code that needs to format datetime uses this function.
 export function getDateTimeString(timestamp) {
-    return timestamp && format(new Date(timestamp * 1000), "d.M.yyyy H:m")
+    return timestamp && format(fromUnixTime(timestamp), "d.M.yyyy H:mm")
+}
+
+// TODO: Make sure all code that needs to format time uses this function.
+export function getTimeString(timestamp) {
+    return timestamp && format(fromUnixTime(timestamp), "H:mm")
 }
 
 export function getDateRangeString(start, end, includeYear = true) {
@@ -15,8 +22,8 @@ export function getDateRangeString(start, end, includeYear = true) {
         return null
     }
 
-    const startDate = new Date(start * 1000)
-    const endDate = new Date(end * 1000)
+    const startDate = fromUnixTime(start)
+    const endDate = fromUnixTime(end)
 
     if (startDate.getTime() === endDate.getTime()) {
         return format(startDate, "d.M.yyyy")

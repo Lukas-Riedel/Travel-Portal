@@ -472,6 +472,20 @@
 
             return array_values($places);
         }
+        
+        public function selectAllPlaceIdentifiers() : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM place_identifier
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($placeIdentifierRow) {
+                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+                        $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
+                });
+        }
 
         public function selectPlaceIdentifier(string $name, string $country) : ?PlaceIdentifier {
             $sql = <<<'SQL'
