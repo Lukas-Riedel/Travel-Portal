@@ -9,7 +9,7 @@ export const useDataConsistencyIssues = () => {
     const query = useQuery({
         queryKey: ["listDataConsistencyIssues"],
         queryFn: listDataConsistencyIssues,
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60
     })
 
     // TODO: Map to DataConsistencyIssue objects

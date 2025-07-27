@@ -10,7 +10,7 @@ export const useCandidateTrips = ({ include } = {}) => {
     const query = useQuery({
         queryKey: ["listCandidateTrips", include],
         queryFn: () => listCandidateTrips({ include }),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 
     const refetchCandidateTrips = _ => query.refetch()

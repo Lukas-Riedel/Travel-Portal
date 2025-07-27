@@ -9,7 +9,7 @@ export const useLabels = () => {
     const query = useQuery({
         queryKey: ["listLabels"],
         queryFn: listLabels,
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 
     // TODO: Map to Label object

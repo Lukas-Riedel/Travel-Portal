@@ -9,7 +9,7 @@ export const useSubscriptions = () => {
     const query = useQuery({
         queryKey: ["listSubscriptions"],
         queryFn: () => listSubscriptions(),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 
     // TODO: Map to Statistics objects

@@ -11,7 +11,7 @@ export const useTimeTrackingEvents = allowedTypes => {
         useQuery({
             queryKey: ["listTimeTrackingEvents", type],
             queryFn: () => listTimeTrackingEvents({ type }),
-            staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 4,
+            staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 4
         })
     )
 

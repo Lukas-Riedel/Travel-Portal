@@ -22,6 +22,7 @@ export const usePlace = placeId => {
     const query = useQuery({
         queryKey: ["getPlace", placeId],
         queryFn: () => getPlace(placeId),
+        enabled: !!placeId,
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
         refetchInterval: query => isAdmin && query.state.data?.dates?.map(date => date.album)?.filter(Boolean)
             ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 10000

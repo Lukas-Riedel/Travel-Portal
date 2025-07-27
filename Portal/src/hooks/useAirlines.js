@@ -9,7 +9,7 @@ export const useAirlines = () => {
     const query = useQuery({
         queryKey: ["listAirlines"],
         queryFn: listAirlines,
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24
     })
 
     // TODO: Map to Airline objects

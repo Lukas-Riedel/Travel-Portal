@@ -14,7 +14,8 @@ export const useTrip = tripId => {
     const query = useQuery({
         queryKey: ["getTrip", tripId],
         queryFn: () => getTrip(tripId),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
+        enabled: !!tripId,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 
     const setTrip = trip => queryClient.setQueryData(["getTrip", tripId], trip)

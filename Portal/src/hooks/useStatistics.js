@@ -9,7 +9,7 @@ export const useStatistics = () => {
     const query = useQuery({
         queryKey: ["listStatistics"],
         queryFn: () => listStatistics(),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 
     // TODO: Map to Statistics objects

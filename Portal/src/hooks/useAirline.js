@@ -11,7 +11,8 @@ export const useAirline = airlineId => {
     const query = useQuery({
         queryKey: ["getAirline", airlineId],
         queryFn: () => getAirline(airlineId),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24,
+        enabled: !!airlineId,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24
     })
 
     const setAirline = airline => queryClient.setQueryData(["getAirline", airlineId], airline)

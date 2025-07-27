@@ -21,7 +21,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sor
     const query = useQuery({
         queryKey: ["listCandidatePlaces", tripId, categoryId, labelName, include, sort],
         queryFn: () => listCandidatePlaces({ tripId, categoryId, labelName, include, sort }),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 
     const refetchCandidatePlaces = _ => query.refetch()

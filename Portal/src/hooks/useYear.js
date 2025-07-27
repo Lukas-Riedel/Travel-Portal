@@ -11,7 +11,8 @@ export const useYear = year => {
     const query = useQuery({
         queryKey: ["getYear", year],
         queryFn: () => getYear(year),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
+        enabled: !!year,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 
     const setYear = year => queryClient.setQueryData(["useQuery", year], year)

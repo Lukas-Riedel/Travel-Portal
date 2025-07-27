@@ -11,7 +11,8 @@ export const useLabel = labelId => {
     const query = useQuery({
         queryKey: ["getLabel", labelId],
         queryFn: () => getLabel(labelId),
-        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12,
+        enabled: !!labelId,
+        staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 
     const setLabel = label => queryClient.setQueryData(["getLabel", labelId], label)
