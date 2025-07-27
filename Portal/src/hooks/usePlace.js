@@ -13,9 +13,10 @@ export const usePlace = placeId => {
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     const { events: processingEndedEvents } = useEvents("ProcessingEnded")
 
-    const uploadedAlbumIds = useMemo(() => new Set(processingEndedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.map(event => event.args.albumId) ?? []), [processingStartedEvents])
-    const albumIdsBeingUploaded = useMemo(() => new Set(processingStartedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.filter(event => !uploadedAlbumIds.has(event.args.albumId))
-        ?.map(event => event.args.albumId) ?? []), [uploadedAlbumIds, processingStartedEvents])
+    const uploadedDates = useMemo(() => new Set(processingEndedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.map(event => event.args.timestamp) ?? []), [processingStartedEvents])
+    // TODO: This won't work for repeated uploads for the same date.
+    const datesBeingUploaded = useMemo(() => new Set(processingStartedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.filter(event => !uploadedDates.has(event.args.timestamp))
+        ?.map(event => event.args.timestamp) ?? []), [uploadedDates, processingStartedEvents])
 
     const queryClient = useQueryClient()
 
@@ -24,8 +25,7 @@ export const usePlace = placeId => {
         queryFn: () => getPlace(placeId),
         enabled: !!placeId,
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2,
-        refetchInterval: query => isAdmin && query.state.data?.dates?.map(date => date.album)?.filter(Boolean)
-            ?.some(album => (album.uploadingStart && album.uploadingProgress) || albumIdsBeingUploaded.has(albumId => albumId == album.id)) && 10000
+        refetchInterval: query => isAdmin && query.state.data?.dates?.some(date => (date.album?.uploadingStart && date.album?.uploadingProgress) || datesBeingUploaded.has(timestamp => timestamp == date.start)) && 10000
     })
 
     const setPlace = place => queryClient.setQueryData(["getPlace", placeId], place)

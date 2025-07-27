@@ -46,7 +46,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                 { label: "Cesta", required: true },
                 { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 }
             ],
-            "Nahrávání fotek brzy začne",
+            "Nahrávání fotek bude brzy zahájeno",
             "Při nahrávání fotek došlo k chybě",
             async (date, path, mainPhotoPosition) => {
                 const placeDate = place.getDate(parseISO(date))

@@ -18,13 +18,14 @@ onBackgroundMessage(messaging, payload => {
     console.log("[firebase-messaging-sw.js] Received background message", payload)
 
     if (payload.data.event === "ProcessingEnded") {
-        if (payload.data.event.name === "PhotosUploadingTriggered") {
+        const wrappedEvent = JSON.parse(payload.data.args)
+        if (wrappedEvent.name === "PhotosUploadingTriggered") {
             self.registration.showNotification("Nahrávání fotek bylo dokončeno.", {
                 body: "",
                 icon: "/icon.png"
             })
         }
-        else if (payload.data.event.name === "PhotoReplacingTriggered") {
+        else if (wrappedEvent.name === "PhotoReplacingTriggered") {
             self.registration.showNotification("Nahrazování fotky bylo dokončeno.", {
                 body: "",
                 icon: "/icon.png"

@@ -153,7 +153,7 @@
         }
         
         private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
-            global $highlightService, $databaseProvider, $categoryService;
+            global $highlightService, $databaseProvider;
         
             $filePaths = array();
             $albums = array();
@@ -206,14 +206,6 @@
     
                             if ($placeRow["trip_id"] !== NULL) {
                                 $highlightService->createTripHighlight($placeRow["trip_id"], $mainPhotoId);
-                                $highlightService->createYearHighlight($placeRow["year"], $mainPhotoId);
-                            }    
-    
-                            foreach (explode(",", $placeRow["category_ids"]) as &$categoryId) {
-                                $categoryIdentifier = $categoryService->getCategoryIdentifierById($categoryId);
-                                if ($categoryIdentifier !== NULL && $categoryIdentifier->getCategory() !== CategoryCategory::Variable) {
-                                    $highlightService->createCategoryHighlight($categoryId, $mainPhotoId);
-                                }
                             }
                         }
                     }  

@@ -23,7 +23,7 @@ import AlbumPage from "./pages/AlbumPage"
 import AdminPage from "./pages/AdminPage"
 
 export default function App() {
-    const { listRegularPlaces } = useApi()
+    const { getPlace } = useApi()
 
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {
@@ -32,10 +32,9 @@ export default function App() {
                 event.markAsRead()
 
                 if (event.name === "PhotosUploadingTriggered") {
-                    listRegularPlaces({ albumId: event.args.albumId })
-                        .then(places => places.forEach(place => {
-                            toast.success(`Nahrávání fotek pro místo '${place.name}' začalo`)
-                        }))
+                    getPlace(event.args.placeId).then(place => {
+                        toast.success(`Nahrávání fotek pro místo '${place.name}' začalo`)
+                    })
                 }
             })
         }
@@ -48,16 +47,14 @@ export default function App() {
                 event.markAsRead()
 
                 if (event.name === "PhotosUploadingTriggered") {
-                    listRegularPlaces({ albumId: event.args.albumId })
-                        .then(places => places.forEach(place => {
-                            toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
-                        }))
+                    getPlace(event.args.placeId).then(place => {
+                        toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
+                    })
                 }
                 else if (event.name === "PhotoReplacingTriggered") {
-                    listRegularPlaces({ albumId: event.args.albumId })
-                        .then(places => places.forEach(place => {
-                            toast.success(`Nahrazování fotky pro místo '${place.name}' bylo dokončeno`)
-                        }))
+                    getPlace(event.args.placeId).then(place => {
+                        toast.success(`Nahrazování fotky pro místo '${place.name}' bylo dokončeno`)
+                    })
                 }
             })
         }

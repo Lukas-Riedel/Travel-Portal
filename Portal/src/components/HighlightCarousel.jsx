@@ -52,7 +52,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const handlePhotoReplaced = () => {
         showInputToast("Zadej cestu k nové fotce:",
             "",
-            "Nahrazování fotky brzy začne",
+            "Nahrazování fotky bude brzy zahájeno",
             "Při nahrazování fotky došlo k chybě",
             async (path) => onPhotoReplaced(place.id, currentHighlightAlbumId, shuffledHighlights[currentHighlightIndex].photo.id, path)
                 .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))

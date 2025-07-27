@@ -1,7 +1,12 @@
 <?php
     namespace Service\Service\Highlight;
-    
-    use Service\Service\Photo\PhotoService;
+
+use RuntimeException;
+use Service\Service\Photo\PhotoService;
+use Service\Service\Place\PlaceIncludedEntity;
+use Service\Service\Place\PlaceSortingStrategy;
+use Service\Service\Trip\TripIncludedEntity;
+use Service\Service\Trip\TripSortingStrategy;
 
     class HighlightService {
         
@@ -16,7 +21,7 @@
         private readonly \EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService,
-        \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
+            \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
             $this->highlightMapper = new HighlightMapper($databaseProvider, $photoService);
             $this->photoService = $photoService;
             $this->configurationService = $configurationService;
@@ -28,51 +33,165 @@
         }
 
         public function getPlaceHighlights(string $placeId) : array {
-            return $this->getHighlights(HighlightType::Place, $placeId);
-        }
-
-        public function getCategoryHighlights(string $categoryId) : array {
-            return $this->getHighlights(HighlightType::Category, $categoryId);
-        }
-
-        public function getYearHighlights(int $year) : array {
-            return $this->getHighlights(HighlightType::Year, $year);
+            return $this->highlightMapper->selectHighlights(HighlightType::Place, $placeId);
         }
 
         public function getTripHighlights(string $tripId) : array {
-            return $this->getHighlights(HighlightType::Trip, $tripId);
+            return $this->highlightMapper->selectHighlights(HighlightType::Trip, $tripId);
+        }
+
+        public function getCategoryHighlights(string $categoryId) : array {
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $highlights = array();
+            $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
+                $this->highlightMapper->selectHighlights(HighlightType::Category, $categoryId));
+
+            foreach ($placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default) as &$categoryPlace) {
+                    foreach ($categoryPlace->getHighlights() as &$categoryHighlightCandidate) {
+                        if (!in_array($categoryHighlightCandidate->getId(), $deletedHighlightIds)) {
+                            $highlights[] = $categoryHighlightCandidate;
+                        }
+                    }
+                }
+
+            return $highlights;
+        }
+
+        public function getYearHighlights(int $year) : array {
+            // TODO: Introduce a property for TripService $tripService.
+            global $tripService;
+
+            $highlights = array();
+            $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
+                $this->highlightMapper->selectHighlights(HighlightType::Year, $year));
+
+            foreach ($tripService->getRegularTrips($year, NULL, NULL, array(TripIncludedEntity::Highlights->value),
+                TripSortingStrategy::Default) as &$yearTrip) {
+                    foreach ($yearTrip->getHighlights() as &$yearHighlightCandidate) {
+                        if (!in_array($yearHighlightCandidate->getId(), $deletedHighlightIds)) {
+                            $highlights[] = $yearHighlightCandidate;
+                        }
+                    }
+                }
+
+            return $highlights;
         }
 
         public function createPlaceHighlight(string $placeId, string $photoId) : Highlight {
-            return $this->createHighlight(HighlightType::Place, $placeId, $photoId);
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $highlightId = $this->getOrCreateHighlightId($photoId);
+
+            // TODO: Remove the create-if-not-exists semantics.
+            $highlightNotExists = TRUE;
+            foreach ($this->getPlaceHighlights($placeId) as &$entityHighlight) {
+                if ($entityHighlight->getId() == $highlightId) {
+                    $highlightNotExists = FALSE;
+                    break;
+                }
+            }
+
+            if ($highlightNotExists) {
+                $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
+
+                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Place, $placeId, $highlightId);
+                foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
+                    $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Category, $category->getId(), $highlightId);                    
+                }
+
+                $this->updateHighlight($highlightId);
+            }
+            
+           return $this->getHighlight($highlightId);
         }
 
         public function createTripHighlight(string $tripId, string $photoId) : Highlight {
-            return $this->createHighlight(HighlightType::Trip, $tripId, $photoId);
+            // TODO: Introduce a property for TripService $tripService.
+            global $tripService;
+
+            $highlightId = $this->getOrCreateHighlightId($photoId);
+
+            // TODO: Remove the create-if-not-exists semantics.
+            $highlightNotExists = TRUE;
+            foreach ($this->getTripHighlights($tripId) as &$entityHighlight) {
+                if ($entityHighlight->getId() == $highlightId) {
+                    $highlightNotExists = FALSE;
+                    break;
+                }
+            }
+
+            if ($highlightNotExists) {
+                $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
+
+                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Trip, $tripId, $highlightId);                
+                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Year, $tripService->getRegularTrip($tripId)->getYear(), $highlightId);            
+
+                $this->updateHighlight($highlightId);
+            }
+            
+           return $this->getHighlight($highlightId);
         }
 
         public function createCategoryHighlight(string $categoryId, string $photoId) : Highlight {
-            return $this->createHighlight(HighlightType::Category, $categoryId, $photoId);
+            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
+            if ($highlightId === NULL) {
+                throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");
+            }
+
+            $wasCreated = $this->highlightMapper->deleteHighlight(highlightType::Category, $categoryId, $highlightId) > 0;
+            if ($wasCreated) {
+                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Category, $categoryId, $highlightId);
+            }   
+            return $this->getHighlight($highlightId);
         }
 
         public function createYearHighlight(int $year, string $photoId) : Highlight {
-            return $this->createHighlight(HighlightType::Year, $year, $photoId);
+            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
+            if ($highlightId === NULL) {
+                throw new RuntimeException("Cannot create a highlight for the year. Does a related trip highlight exist?");
+            }
+
+            $wasCreated = $this->highlightMapper->deleteHighlight(highlightType::Year, $year, $highlightId) > 0;
+            if ($wasCreated) {
+                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Year, $year, $highlightId);
+            }   
+            return $this->getHighlight($highlightId);
         }
 
         public function removePlaceHighlight(string $placeId, string $highlightId) : bool {
-            return $this->removeHighlight(HighlightType::Place, $placeId, $highlightId);
+            $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Place, $placeId, $highlightId) > 0;
+            if ($wasRemoved) {
+                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Place, $placeId, $highlightId);
+            }        
+            return $wasRemoved;
         }
 
         public function removeTripHighlight(string $tripId, string $highlightId) : bool {
-            return $this->removeHighlight(HighlightType::Trip, $tripId, $highlightId);
+            $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Trip, $tripId, $highlightId) > 0;
+            if ($wasRemoved) {
+                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Trip, $tripId, $highlightId);
+            }
+            return $wasRemoved;
         }
 
         public function removeCategoryHighlight(string $categoryId, string $highlightId) : bool {
-            return $this->removeHighlight(HighlightType::Category, $categoryId, $highlightId);
+            $wasRemoved = $this->highlightMapper->insertHighlight(HighlightType::Category, $categoryId, $highlightId);
+            if ($wasRemoved) {
+                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Category, $categoryId, $highlightId);
+            }
+            return $wasRemoved;
         }
 
         public function removeYearHighlight(int $year, string $highlightId) : bool {
-            return $this->removeHighlight(HighlightType::Year, $year, $highlightId);
+            $wasRemoved = $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
+            if ($wasRemoved) {
+                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Year, $year, $highlightId);
+            }
+            return $wasRemoved;
         }
 
         public function updateHighlights() : void {      
@@ -141,12 +260,26 @@
                 }
             }
         }
-        
-        private function getHighlights(HighlightType $highlightType, string $entityId) : array {
-            return $this->highlightMapper->selectHighlights($highlightType, $entityId);
-        }
 
         private function getEntityIdsForHighlightId(HighlightType $highlightType, string $highlightId) : array {
+            // TODO: Introduce a property for TripService $tripService and PlaceService $placeService.
+            global $tripService, $placeService;
+
+            if ($highlightType === HighlightType::Category) {
+                $excludedCategoryIds = $this->highlightMapper->selectEntityIdsForHighlightId($highlightType, $highlightId);
+                $placesForHighlightId = array_map(fn($placeId) => $placeService->getRegularPlace($placeId),
+                    $this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Place, $highlightId));
+                return array_filter(array_unique(array_map(fn($category) => $category->getId(), 
+                    array_merge(...array_map(fn($place) => $place->getCategories(), $placesForHighlightId)))),
+                    fn($categoryId) => !in_array($categoryId, $excludedCategoryIds));
+            }
+            if ($highlightType === HighlightType::Year) {
+                $excludedYears = $this->highlightMapper->selectEntityIdsForHighlightId($highlightType, $highlightId);
+                $tripsForHighlightId = array_map(fn($tripId) => $tripService->getRegularTrip($tripId),
+                    $this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlightId));
+                return array_filter(array_unique(array_map(fn($trip) => $trip->getYear(), $tripsForHighlightId)),
+                    fn($year) => !in_array($year, $excludedYears));
+            }
             return $this->highlightMapper->selectEntityIdsForHighlightId($highlightType, $highlightId);
         }
         
@@ -159,36 +292,6 @@
             $this->highlightMapper->insertHighlightId($photoId);
 
             return $this->highlightMapper->selectHighlightId($photoId);
-        }
-
-        private function createHighlight(HighlightType $highlightType, string $entityId, string $photoId) : Highlight {
-            $highlightId = $this->getOrCreateHighlightId($photoId);
-
-            // TODO: Remove the create-if-not-exists semantics.
-            $highlightNotExists = TRUE;
-            foreach ($this->getHighlights($highlightType, $entityId) as &$entityHighlight) {
-                if ($entityHighlight->getId() == $highlightId) {
-                    $highlightNotExists = FALSE;
-                    break;
-                }
-            }
-
-            if ($highlightNotExists) {
-                $this->highlightMapper->insertHighlight($highlightType, $entityId, $highlightId);
-
-                $this->eventPublisher->publishHighlightCreatedEvent($highlightType, $entityId, $highlightId);
-                $this->updateHighlight($highlightId);
-            }
-            
-           return $this->getHighlight($highlightId);
-        }
-
-        private function removeHighlight(HighlightType $highlightType, string $entityId, string $highlightId) : bool {
-            $wasRemoved = $this->highlightMapper->deleteHighlight($highlightType, $entityId, $highlightId) > 0;
-            if ($wasRemoved) {
-                $this->eventPublisher->publishHighlightRemovedEvent($highlightType, $entityId, $highlightId);
-            }        
-            return $wasRemoved;
         }
 
         private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $forceOverwrite) : array {
