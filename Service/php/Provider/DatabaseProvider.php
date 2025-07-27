@@ -6,6 +6,8 @@
         private $delayMaterializationIfNeeded;
         private $isDatabaseInitialized;
 
+        private $cache = array();
+
         public function __construct($delayMaterializationIfNeeded) {
             $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
             $this->connection->set_charset("utf8mb4");
@@ -33,16 +35,16 @@
             $this->connection->query("DELETE FROM " . substr($viewToMaterialize, 1));
             $start = microtime(TRUE);
             $this->connection->query("INSERT INTO " . substr($viewToMaterialize, 1) . " SELECT * FROM materialized_view");
-            $_SESSION["materializationDuration"][$viewToMaterialize] = ceil(1000 * (microtime(TRUE) - $start));
+            $this->cache["materializationDuration"][$viewToMaterialize] = ceil(1000 * (microtime(TRUE) - $start));
             $this->connection->query("INSERT INTO view_materialization (view_name, last_materialization_duration, is_materialization_delayed) VALUES ('" 
-                . $viewToMaterialize . "', " . $_SESSION["materializationDuration"][$viewToMaterialize] . ", 0)");
+                . $viewToMaterialize . "', " . $this->cache["materializationDuration"][$viewToMaterialize] . ", 0)");
             $this->connection->commit();
         }
 
         public function materializeViews() {            
             foreach ($this->viewsToMaterialize as &$viewToMaterialize) {
-                if ($this->delayMaterializationIfNeeded && isset($_SESSION["materializationDuration"][$viewToMaterialize])
-                    && $_SESSION["materializationDuration"][$viewToMaterialize] > 3000) {
+                if ($this->delayMaterializationIfNeeded && isset($this->cache["materializationDuration"][$viewToMaterialize])
+                    && $this->cache["materializationDuration"][$viewToMaterialize] > 3000) {
                     $this->connection->query("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '" . $viewToMaterialize . "'");
                 }
                 else {                    
@@ -99,17 +101,17 @@
         }
 
         private function updateViewsToMaterialize($sql) {            
-            if (!isset($_SESSION["materializationDuration"])) {
+            if (!isset($this->cache["materializationDuration"])) {
                 $views = $this->connection->query("SELECT * FROM view_materialization");
                 if ($views) {
                     while ($view = $views->fetch_assoc()) {
-                        $_SESSION["materializationDuration"][$view["view_name"]] = intval($view["last_materialization_duration"]);
+                        $this->cache["materializationDuration"][$view["view_name"]] = intval($view["last_materialization_duration"]);
                     }
                 }
             }
 
-            if (!isset($_SESSION["viewDependencies"])) {  
-                $_SESSION["viewDependencies"] = array();
+            if (!isset($this->cache["viewDependencies"])) {  
+                $this->cache["viewDependencies"] = array();
 
                 $directDependencies = array();
                 $materializableViews = array();
@@ -140,19 +142,19 @@
                     
                     foreach ($dependencies as &$dependency) {
                         if (in_array($dependency, $materializableViews)) {
-                            if (!array_key_exists($table, $_SESSION["viewDependencies"])) {
-                                $_SESSION["viewDependencies"][$table] = array();
+                            if (!array_key_exists($table, $this->cache["viewDependencies"])) {
+                                $this->cache["viewDependencies"][$table] = array();
                             }
 
-                            if (!in_array($dependency, $_SESSION["viewDependencies"][$table])) {                                    
-                                $_SESSION["viewDependencies"][$table][] = $dependency;
+                            if (!in_array($dependency, $this->cache["viewDependencies"][$table])) {                                    
+                                $this->cache["viewDependencies"][$table][] = $dependency;
                             }
                         }
                     }
                 }
             }
             
-            foreach ($_SESSION["viewDependencies"] as $table => $dependentViews) {
+            foreach ($this->cache["viewDependencies"] as $table => $dependentViews) {
                 $normalizedSql = preg_replace("/\s+/", " ", $sql);
                 if (str_contains($normalizedSql, "DELETE FROM " . $table) || str_contains($normalizedSql, "INSERT INTO " . $table) || str_contains($normalizedSql, "UPDATE " . $table)) {
                     foreach ($dependentViews as &$dependentView) {   

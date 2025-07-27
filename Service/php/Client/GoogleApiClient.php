@@ -1,5 +1,7 @@
 <?php
     class GoogleApiClient {
+        private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "google_api_access_token";
+
         public function createAlbum($albumName) : string {
             $payload = array(
                 "album" => array(
@@ -263,12 +265,11 @@
         }
 
         private function getGoogleApiAccessToken() : string {
-            global $configuration, $httpClient;
+            global $configuration, $httpClient, $cacheClient;
 
-            if (isset($_SESSION["googleApiAccessToken"]) 
-                && isset($_SESSION["googleApiAccessTokenExpiration"]) 
-                && $_SESSION["googleApiAccessTokenExpiration"] > time()) {
-                return $_SESSION["googleApiAccessToken"];
+            $cachedGoogleApiAccessToken = $cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
+            if ($cachedGoogleApiAccessToken !== NULL) {
+                return $cachedGoogleApiAccessToken;
             }
             
             $payload = array(
@@ -285,10 +286,9 @@
                 throw new RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            $_SESSION["googleApiAccessToken"] = $response["access_token"];
-            $_SESSION["googleApiAccessTokenExpiration"] = time() + $response["expires_in"];
+            $cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
 
-            return $_SESSION["googleApiAccessToken"];
+            return $response["access_token"];
         }
 
         // TODO: Move to Calendar enum.
