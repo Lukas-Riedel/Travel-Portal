@@ -74,8 +74,7 @@
 
             // Geocoding request.
             if ($country === NULL || $latitude === NULL || $longitude === NULL) {
-                $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT,
-                    $this->configurationService->getConfigurationForTypeAndKey("googleMapsApiKeys", "ipAddress"), urlencode($address)));
+                $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
     
                 if ($apiResponse["status"] === "OK") {
                     if (count($apiResponse["results"]) > 0) {
@@ -96,8 +95,7 @@
 
             // Timezone request.
             if ($latitude !== NULL && $longitude !== NULL && $timezone === NULL) {    
-                $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, 
-                    $this->configurationService->getConfigurationForTypeAndKey("googleMapsApiKeys", "ipAddress"), $latitude, $longitude));
+                $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
                 
                 if (array_key_exists("timeZoneId", $apiResponse)) {
                     $timezone = $apiResponse["timeZoneId"];

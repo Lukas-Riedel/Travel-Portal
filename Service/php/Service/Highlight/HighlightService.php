@@ -317,7 +317,7 @@ use Service\Service\Trip\TripSortingStrategy;
                 }
     
                 $filePaths[] = $filePath;
-                $imageUrl = $this->configurationService->getBaseUrl()
+                $imageUrl = BASE_URL
                     . "/" . $highlightSize->getCachePath()
                     . "/" . $fileName;
 

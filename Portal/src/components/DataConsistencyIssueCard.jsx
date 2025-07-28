@@ -7,10 +7,12 @@ import { getDateString, getDateTimeString, getTimeString } from "../utils/helper
 import { useApi } from "../hooks/useApi"
 import { formatDuration, formatEvents } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
+import { useNavigate } from "react-router"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned,
     onAllAlbumsInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
     const { isAdmin } = useAuth()
+    const navigate = useNavigate()
 
     const { listCategories } = useApi()
 
@@ -31,7 +33,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Stát": place.country
                 }
             ),
-            resolve: place => window.open(`/place/${place.id}`, "_blank")
+            resolve: place => navigate(`/place/${place.id}`)
         },
         "TRIP_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {
             name: "Výlet s highlighty bez atributů kvality",
@@ -42,7 +44,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Do": getDateString(trip.end)
                 }
             ),
-            resolve: trip => window.open(`/trip/${trip.id}`, "_blank")
+            resolve: trip => navigate(`/trip/${trip.id}`)
         },
         "COUNTRY_WITH_INCOMPLETE_METADATA": {
             name: "Stát s neúplnými metadaty",
@@ -54,7 +56,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kalendář": category.metadata?.publicHolidaysCalendar || "N/A"
                 }
             ),
-            resolve: category => window.open(`/category/${category.id}`, "_blank")
+            resolve: category => navigate(`/category/${category.id}`)
         },
         "ALBUM_WITHOUT_PLACE": {
             name: "Album bez přiřazeného místa",

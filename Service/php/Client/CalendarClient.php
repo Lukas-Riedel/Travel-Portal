@@ -9,7 +9,7 @@
         public function watchCalendar(string $calendar) : void {
             global $configuration, $googleApiClient, $authenticationService;
 
-            $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarApi"]["ttl"]);
+            $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarWatchTtl"]);
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
                 BASE_URL . "/events?name=" . Event::CalendarInvalidated->name . "&args[calendar]=" . $calendar,

@@ -1,9 +1,9 @@
 <?php
     class ListConfigurationHandler extends Handler {
         public function handle($input) {
-            global $configurationService;
+            global $configurationService, $roles;
 
-            $response = $configurationService->getConfigurationEntries(explode(",", $input["levels"]));
+            $response = $configurationService->getConfigurationEntries(in_array("ADMIN", $roles));
             return $this->createResponse(200, $response);
         }
 
@@ -24,8 +24,7 @@
         }
 
         public function getParameters() {
-            return array(
-                $this->createQueryParameter("levels", "string", "public,modifiable", TRUE));
+            return array();
         }
 
         public function getMethod() {

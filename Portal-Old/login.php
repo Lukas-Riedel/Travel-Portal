@@ -6,7 +6,7 @@
 
     $databaseProvider = new DatabaseProvider(TRUE);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
-    $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+    $configuration = $configurationProvider->get(TRUE);
     $configurationService = new ConfigurationService();
     $authenticationService = new Service\Service\Authentication\AuthenticationService($databaseProvider, $configurationService);
 

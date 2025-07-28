@@ -79,7 +79,7 @@ use Service\Service\Highlight\HighlightService;
     
     $loggingProvider = new LoggingProvider($databaseProvider);
     $configurationProvider = new ConfigurationProvider($databaseProvider);
-    $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+    $configuration = $configurationProvider->get(TRUE);
 
     // Events producers.
     $eventPublisher = new EventPublisher();
@@ -88,7 +88,7 @@ use Service\Service\Highlight\HighlightService;
     // Services.
     $configurationService = new ConfigurationService();
     $platformService = new PlatformService();
-    $authenticationService = new AuthenticationService($databaseProvider, $configurationService);
+    $authenticationService = new AuthenticationService($databaseProvider);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher);
     $noteService = new NoteService($databaseProvider);

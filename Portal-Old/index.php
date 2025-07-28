@@ -7,12 +7,12 @@
 
         $databaseProvider = new DatabaseProvider(TRUE);
         $configurationProvider = new ConfigurationProvider($databaseProvider);
-        $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+        $configuration = $configurationProvider->get(TRUE);
 
         $payload = array(
             "code" => $_GET["code"],
-            "client_id" => $configuration["googleApiCredentials"]["clientId"],
-            "client_secret" => $configuration["googleApiCredentials"]["clientSecret"],
+            "client_id" => GOOGLE_API_CLIENT_ID,
+            "client_secret" => GOOGLE_API_CLIENT_SECRET,
             "redirect_uri" => "https://" . $_SERVER["HTTP_HOST"],
             "grant_type" => "authorization_code",
             "access_type" => "offline"
@@ -30,7 +30,7 @@
         $response = json_decode(curl_exec($curl), true);
 
         $databaseProvider
-            ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_API_CREDENTIALS' AND `key` = 'accessKey'")
+            ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_API_ACCESS_KEY'")
             ->withParameters($response["refresh_token"])
             ->execute();
     }

@@ -176,7 +176,7 @@
                         }
             
                         $filePaths[] = $filePath;
-                        $mainImageUrl = $this->configurationService->getBaseUrl() 
+                        $mainImageUrl = BASE_URL
                             . "/" . self::ALBUM_THUMBNAIL_CACHE_PATH
                             . "/" . $fileName;
                         

@@ -128,7 +128,7 @@
                 "id" => $channelId,
                 "type" => "web_hook",
                 "address" => $url,
-                "params" => array("ttl" => $configuration["googleCalendarApi"]["ttl"]));
+                "params" => array("ttl" => $configuration["googleCalendarWatchTtl"]));
 
             if ($token !== NULL) {
                 $payload["token"] = $token;
@@ -273,10 +273,10 @@
             }
             
             $payload = array(
-                "client_id" => $configuration["googleApiCredentials"]["clientId"],
-                "client_secret" => $configuration["googleApiCredentials"]["clientSecret"],
+                "client_id" => GOOGLE_API_CLIENT_ID,
+                "client_secret" => GOOGLE_API_CLIENT_SECRET,
                 "redirect_uri" => BASE_URL,
-                "refresh_token" => $configuration["googleApiCredentials"]["accessKey"],
+                "refresh_token" => $configuration["googleApiAccessKey"],
                 "grant_type" => "refresh_token",
                 "access_type" => "offline");     
 

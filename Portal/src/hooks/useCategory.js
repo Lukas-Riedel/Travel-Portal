@@ -3,7 +3,7 @@ import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useCategory = categoryId => {
-    const { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes } = useApi()
+    const { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata } = useApi()
     const { isAdmin } = useAuth()
 
     const queryClient = useQueryClient()
@@ -22,6 +22,7 @@ export const useCategory = categoryId => {
         // TODO: Map to Category object
         category: query.data,
         updateCategoryName: name => updateCategoryName(categoryId, name).then(setCategory),
+        updateCategoryMetadata: metadata => updateCategoryMetadata(categoryId, metadata).then(setCategory),
         removeCategoryHighlight: highlightId => removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),
         updateCategoryMainHighlight: highlightId => updateCategoryMainHighlight(categoryId, highlightId).then(setCategory),
         updateCategoryHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances, atmosphere) =>

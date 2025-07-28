@@ -164,6 +164,7 @@ function getUtilitiesComponent(trip) {
         { name: "Zobrazit plán výletů", link: "/plan/trip" },
         { name: "Zobrazit sledování času", link: "/tracking" },
         { name: "Zobrazit statistiky", link: "/statistics" },
+        // TODO: Client ID is not in the configuration anymore, needs to be injected from deployment configuration.
         { name: "Autorizovat vůči Google", link: "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + configuration.googleApiCredentials.clientId + "&prompt=consent&redirect_uri=https://" + location.hostname + "&response_type=code&access_type=offline&scope=" + googleApiAuthorizationScopes.join(" ") }
     ];
     Object.keys(configuration.cookies).forEach(cookieName => links.push({ name: "Nastavit " + cookieName + " cookie", link: "https://" + location.hostname + "/login.php?cookies=" + configuration.cookies[cookieName] }));

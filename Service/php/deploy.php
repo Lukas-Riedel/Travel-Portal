@@ -5,7 +5,7 @@
     $configuration = array();
     if ($databaseProvider->isDatabaseInitialized()) {        
         $configurationProvider = new ConfigurationProvider($databaseProvider);
-        $configuration = $configurationProvider->get(PUBLIC_CONFIGURATION, PRIVATE_CONFIGURATION);
+        $configuration = $configurationProvider->get(TRUE);
     }
     
     $onError = function($level, $message, $file, $line) {

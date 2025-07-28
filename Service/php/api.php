@@ -1,6 +1,9 @@
 <?php
     header("Access-Control-Allow-Origin: *");
     header("Content-Type: application/json");
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
 
     use Service\Service\Authentication\AuthenticationException;
     
@@ -61,8 +64,10 @@
                 }
 
                 $userId = NULL;
+                $roles = array();
                 if (isset($accessToken)) {
                     $userId = $accessToken->getUserId();
+                    $roles = $accessToken->getRoles();
                 }
     
                 $response = $handler->handle($input);

@@ -118,6 +118,17 @@ export function useApi() {
             })
     }
 
+    async function updateCategoryMetadata(categoryId, { unicode, color, publicHolidaysCalendar } = {}) {
+        return sendRequest("PATCH", "/categories/" + categoryId,
+            {
+                metadata: {
+                    unicode: unicode,
+                    color: color,
+                    publicHolidaysCalendar: publicHolidaysCalendar
+                }
+            })
+    }
+
     async function updateCategoryMainHighlight(categoryId, mainHighlightId) {
         return sendRequest("PATCH", "/categories/" + categoryId,
             {
@@ -136,11 +147,8 @@ export function useApi() {
         return sendRequest("DELETE", "/categories/" + categoryId + "/highlights/" + highlightId)
     }
 
-    async function listConfigurationEntries(levels) {
-        return sendRequest("GET", "/configuration", {},
-            {
-                levels: levels
-            })
+    async function listConfigurationEntries() {
+        return sendRequest("GET", "/configuration")
     }
 
     async function updateConfigurationEntry(type, key, value) {
@@ -623,6 +631,7 @@ export function useApi() {
         listCategories,
         getCategory,
         updateCategoryName,
+        updateCategoryMetadata,
         updateCategoryMainHighlight,
         createCategoryHighlight,
         removeCategoryHighlight,

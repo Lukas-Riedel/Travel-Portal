@@ -10,46 +10,29 @@
             $this->databaseProvider = $databaseProvider;
         }
 
-        public function get(...$levels) {
-            return $this->doGet($this->databaseProvider->whereClauseBuilder(), ...$levels);
-        }
-
-        public function getFiltered($type, $key, ...$levels) {
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("type = ?", $type);
-            if ($key == NULL) {
-                $whereClauseBuilder->withClause("`key` IS NULL");
-            }
-            else {
-                $whereClauseBuilder->withClause("`key` = ?", $key);
-            }
-            return $this->doGet($whereClauseBuilder, ...$levels);
-        }
-
-        private function doGet($whereClauseBuilder, ...$levels) {            
+        public function get($includePrivate) {          
             $entries = array();
             
-            foreach ($levels as &$level) {
-                $whereClause = $whereClauseBuilder->copy()->withClause("FIND_IN_SET(?, levels)", $level)->buildForAnd();
-                $levelEntries = $this->databaseProvider
-                    ->statementBuilder("SELECT * FROM configuration {{WHERE CLAUSE}} ORDER BY `key` IS NOT NULL, type", $whereClause)
-                    ->getResultSet();
+            $levelEntries = $this->databaseProvider
+                ->statementBuilder("SELECT * FROM configuration WHERE private <= ? ORDER BY `key` IS NOT NULL, type")
+                ->withParameters($includePrivate ? 1 : 0)
+                ->getResultSet();
 
-                foreach ($levelEntries as &$entry) {
-                    $typeName = $this->convertTypeName($entry["type"]);
-        
-                    if (!isset($entries[$typeName])) {
-                        $entries[$typeName] = array();
+            foreach ($levelEntries as &$entry) {
+                $typeName = $this->convertTypeName($entry["type"]);
+    
+                if (!isset($entries[$typeName])) {
+                    $entries[$typeName] = array();
+                }
+    
+                if ($entry["key"] == NULL) {
+                    $value = $this->cast($entry["value"]);
+                    if (!in_array($value, $entries[$typeName])) {
+                        $entries[$typeName][] = $value;
                     }
-        
-                    if ($entry["key"] == NULL) {
-                        $value = $this->cast($entry["value"]);
-                        if (!in_array($value, $entries[$typeName])) {
-                            $entries[$typeName][] = $value;
-                        }
-                    }
-                    else {
-                        $entries[$typeName][$entry["key"]] = $this->cast($entry["value"]);
-                    }
+                }
+                else {
+                    $entries[$typeName][$entry["key"]] = $this->cast($entry["value"]);
                 }
             }
     

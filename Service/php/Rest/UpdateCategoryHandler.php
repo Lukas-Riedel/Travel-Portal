@@ -20,15 +20,15 @@
                 $categoryService->updateCategoryName($input["categoryId"], $input["name"]);
             }
 
-            if (isset($input["metadata"]) && isset($input["color"])) {
+            if (isset($input["metadata"]) && isset($input["metadata"]["color"])) {
                 $categoryService->updateCategoryColor($input["categoryId"], $input["metadata"]["color"]);
             }
 
-            if (isset($input["metadata"]) && isset($input["unicode"])) {
+            if (isset($input["metadata"]) && isset($input["metadata"]["unicode"])) {
                 $categoryService->updateCategoryUnicode($input["categoryId"], $input["metadata"]["unicode"]);
             }
 
-            if (isset($input["metadata"]) && isset($input["publicHolidaysCalendar"])) {
+            if (isset($input["metadata"]) && isset($input["metadata"]["publicHolidaysCalendar"])) {
                 $categoryService->updateCategoryPublicHolidaysCalendar($input["categoryId"], $input["metadata"]["publicHolidaysCalendar"]);
             }
 
