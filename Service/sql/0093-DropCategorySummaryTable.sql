@@ -1,0 +1,2 @@
+DROP FUNCTION IS_IN_CATEGORY;
+DROP TABLE category_summary;
