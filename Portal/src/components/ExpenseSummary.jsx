@@ -11,6 +11,7 @@ import { useSubscriptions } from "../hooks/useSubscriptions"
 import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
 import showInputToast from "./InputToast"
+import { getDateString } from "../utils/helpers"
 
 const expenseTypes = {
     ATTRACTION: {
@@ -318,7 +319,8 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                 colSpan={2}>
                 <div className="flex justify-center items-center space-x-1">
                     <span className="truncate">
-                        {expense?.description}
+                        {expense.description}
+                        {expense.subscription && ` (${expense.subscription.description} do ${getDateString(expense.subscription.expiration)})`}
                     </span>
                     {isAdmin && onExpenseDescriptionUpdated && (
                         <button

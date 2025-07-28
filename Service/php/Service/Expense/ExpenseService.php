@@ -33,7 +33,9 @@
         public function createExpense(string $tripId, float $value, string $currency, string $type, string $description, ?string $subscriptionId) : Expense {                      
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $expense = new Expense(NULL, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value);
+            // TODO: This is inacurrate, the subscription share is not included in the main currency value.
+            $expense = new Expense(NULL, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value,
+                $subscriptionId === NULL ? NULL : $this->expenseMapper->selectSubscription($subscriptionId));
             $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
 
             $this->eventPublisher->publishExpenseCreatedEvent($expense->getId(), $tripId);
@@ -51,7 +53,7 @@
         }
 
         public function getActiveSubscriptions() : array {
-            return $this->expenseMapper->selectAllActiveSubscriptions();
+            return $this->expenseMapper->selectActiveSubscriptions();
         }
  
         public function updateExpenseDescription(string $expenseId, string $description, string $tripId) : bool {   

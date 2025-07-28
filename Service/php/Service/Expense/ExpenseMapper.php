@@ -12,7 +12,7 @@
         public function selectExpensesForTrip(string $tripId) : array { 
             $sql = <<<'SQL'
                 SELECT *
-                FROM expense_summary
+                FROM expense
                 WHERE trip_id = ?
             SQL;
 
@@ -20,15 +20,21 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($expenseRow) {
-                    return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
-                        $expenseRow["currency"], $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]), $expenseRow["main_currency_value"]);
+                    $mainCurrencyValue = $expenseRow["exchange_rate"] * $expenseRow["value"];
+                    if ($expenseRow["subscription_id"] !== NULL) {
+                        $mainCurrencyValue += $this->selectSubscriptionMainCurrencyValue($expenseRow["subscription_id"]) / $this->selectSubscriptionOccurrencesCount($expenseRow["subscription_id"]);
+                    }
+                    
+                    return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"],
+                        $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]), $mainCurrencyValue,
+                        $expenseRow["subscription_id"] === NULL ? NULL : $this->selectSubscription($expenseRow["subscription_id"]));
                 });
         }
 
         public function selectExpense(string $expenseId) : ?Expense {
             $sql = <<<'SQL'
                 SELECT *
-                FROM expense_summary
+                FROM expense
                 WHERE id = ?
             SQL;
 
@@ -37,11 +43,41 @@
                 ->withParameters($expenseId)
                 ->getSingleRow();
 
-            return $expenseRow === NULL ? NULL : new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
-                $expenseRow["currency"], $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]), $expenseRow["main_currency_value"]);
+            if ($expenseRow === NULL) {
+                return NULL;
+            }
+
+            $mainCurrencyValue = $expenseRow["exchange_rate"] * $expenseRow["value"];
+            if ($expenseRow["subscription_id"] !== NULL) {
+                $mainCurrencyValue += $this->selectSubscriptionMainCurrencyValue($expenseRow["subscription_id"]) / $this->selectSubscriptionOccurrencesCount($expenseRow["subscription_id"]);
+            }
+
+            return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
+                $expenseRow["currency"], $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]),
+                $mainCurrencyValue, $expenseRow["subscription_id"] === NULL ? NULL : $this->selectSubscription($expenseRow["subscription_id"]));
         }
 
-        public function selectAllActiveSubscriptions() : array {
+        public function selectSubscription(string $subscriptionId) : ?Subscription {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM expense_subscription
+                WHERE id = ?
+            SQL;
+
+            $subscriptionRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($subscriptionId)
+                ->getSingleRow();
+
+            if ($subscriptionRow === NULL) {
+                return NULL;
+            }
+
+            return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
+                    $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"]);
+        }
+
+        public function selectActiveSubscriptions() : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM expense_subscription
@@ -209,6 +245,32 @@
                 ->statementBuilder($sql)
                 ->withParameters($expenseId)
                 ->execute();
+        }
+
+        private function selectSubscriptionMainCurrencyValue(string $subscriptionId) : ?float {
+            $sql = <<<'SQL'
+                SELECT (value * exchange_rate) AS main_currency_value
+                FROM expense_subscription
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($subscriptionId)
+                ->getSingleColumn("main_currency_value");
+        }
+
+        private function selectSubscriptionOccurrencesCount(string $subscriptionId) : ?int {
+            $sql = <<<'SQL'
+                SELECT COUNT(*) AS occurrences
+                FROM expense
+                WHERE subscription_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($subscriptionId)
+                ->getSingleColumn("occurrences");
         }
     }
 ?>

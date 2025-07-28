@@ -9,9 +9,10 @@
         private readonly float $exchangeRate;
         private readonly ExpenseType $type;
         private readonly float $mainCurrencyValue;
+        private readonly ?Subscription $subscription;
 
         public function __construct(?string $id, string $description, float $value, string $currency,
-            float $exchangeRate, ExpenseType $type, float $mainCurrencyValue) {
+            float $exchangeRate, ExpenseType $type, float $mainCurrencyValue, ?Subscription $subscription) {
             $this->id = $id;
             $this->description = $description;
             $this->value = $value;
@@ -19,6 +20,7 @@
             $this->exchangeRate = $exchangeRate;
             $this->type = $type;
             $this->mainCurrencyValue = $mainCurrencyValue;
+            $this->subscription = $subscription;
         }
 
         public function getId() : string {
@@ -51,6 +53,10 @@
 
         public function getType() : ExpenseType {
             return $this->type;
+        }
+
+        public function getSubscription() : ?Subscription {
+            return $this->subscription;
         }
 
         #[\ReturnTypeWillChange]
