@@ -45,7 +45,7 @@
 
             if ($message["action"] === "WATCH_CALENDAR" && time() - $message["lastTriggered"] > 82800) {
                 foreach ($configuration["calendars"] as $calendar => $url) {
-                    $eventPublisher->publishCalendarWatchRenewingEvent($calendar);
+                    $eventPublisher->publishCalendarWatchRenewingEvent($calendar); 
                 }
 
                 $scheduler->recordEventsTriggered($message["action"]);
