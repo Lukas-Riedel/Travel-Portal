@@ -154,7 +154,7 @@
             foreach ($this->calendarClient->getEvents(\Calendar::Trips->value) as &$tripEvent) {
                 $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
                 $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
-                    $tripEvent->getStart(), $tripEvent->getEnd(), array(), NULL, 0, NULL, NULL, NULL, array(), array(), array(), array(), array(), array(), array(), array(), array());
+                    $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
                 $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
             }
@@ -239,8 +239,8 @@
             
             if (!$this->tripMapper->selectExistsDayTripsTrip($tripIdentifier->getId())) {
                 $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
-                    $this->getBeginningOfYearTimestamp($tripIdentifier->getYear()), $this->getEndOfYearTimestamp($tripIdentifier->getYear()), array(), NULL, 0, NULL,
-                    NULL, NULL, array(), array(), array(), array(), array(), array(), array(), array(), array());
+                    $this->getBeginningOfYearTimestamp($tripIdentifier->getYear()), $this->getEndOfYearTimestamp($tripIdentifier->getYear()), array(),
+                    array(), array(), array(), array(), array(), array(), array(), array(), array());
                 $this->tripMapper->insertDayTripsTrip($trip);
             }
             

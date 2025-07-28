@@ -63,10 +63,6 @@
             return $this->placeMapper->selectCountriesForCandidateTrip($tripId);
         }
 
-        public function getDaysForCandidateTrip(string $tripId) : int {
-            return $this->placeMapper->selectDaysForCandidateTrip($tripId);
-        }
-
         public function getVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {
             return $this->placeMapper->selectVisitedCategoriesForInterval($start, $end, $category, $visitedCategoriesSortingStrategy);
         }

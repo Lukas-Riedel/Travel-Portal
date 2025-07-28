@@ -5,6 +5,7 @@
 
     class Trip implements \JsonSerializable {  
         private const FULL_TRIP_NAME_FORMAT = "%s %d";
+        private const ONE_DAY_SECONDS = 86400;
 
         private readonly string $id;
         private readonly string $name;
@@ -13,9 +14,6 @@
         private readonly ?int $start;
         private readonly ?int $end;
         private readonly array $countries;
-        private readonly ?float $cost;
-        private readonly TripDays $days;
-        private readonly ?TripVacation $vacation;
         private readonly array $expenses;
         private readonly array $stays;
         private readonly array $flights;
@@ -27,9 +25,8 @@
         private readonly array $publicHolidays;
 
         public function __construct(string $id, string $name, ?int $year, ?Highlight $mainHighlight, ?int $start, ?int $end,
-            array $countries, ?float $cost, int $totalDays, ?int $workingDays, ?float $expectedVacation, ?float $maximumVacation,
-            array $expenses, array $stays, array $flights, array $watchedFlights, array $fitness, array $notes, array $highlights,
-            array $statistics, array $publicHolidays) {
+            array $countries, array $expenses, array $stays, array $flights, array $watchedFlights, array $fitness, array $notes,
+            array $highlights, array $statistics, array $publicHolidays) {
             $this->id = $id;
             $this->name = $name;
             $this->year = $year;
@@ -37,9 +34,6 @@
             $this->start = $start;
             $this->end = $end;
             $this->countries = $countries;
-            $this->cost = $cost;
-            $this->days = new TripDays($totalDays, $workingDays);
-            $this->vacation = ($expectedVacation === NULL && $maximumVacation === NULL) ? NULL : new TripVacation($expectedVacation, $maximumVacation); 
             $this->expenses = $expenses;
             $this->stays = $stays;
             $this->flights = $flights;
@@ -83,16 +77,10 @@
             return $this->countries;
         }
 
-        public function getCost() : float {
-            return $this->cost;
-        }
-
-        public function getDays() : TripDays {
-            return $this->days;
-        }
-
-        public function getVacation() : ?TripVacation {
-            return $this->vacation;
+        public function getDaysCount() : int {
+            $startDate = (new \DateTime())->setTimestamp($this->start)->setTime(0, 0);
+            $endDate = (new \DateTime())->setTimestamp($this->end)->setTime(0, 0);
+            return $startDate->diff($endDate)->days + 1;
         }
 
         public function getExpenses() : array {
@@ -132,10 +120,9 @@
         }
 
         public function withOffset(int $offset) : Trip {
-            return new Trip($this->id, $this->name, $this->year, $this->mainHighlight, $this->start + $offset, $this->end + $offset, $this->countries, $this->cost,
-                $this->days->getTotal(), $this->days->getWorking(), $this->vacation?->getExpected(), 
-                $this->vacation?->getMaximum(), $this->expenses, $this->stays, $this->flights, 
-                $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->publicHolidays);
+            return new Trip($this->id, $this->name, $this->year, $this->mainHighlight, $this->start + $offset, $this->end + $offset, $this->countries,
+                $this->expenses, $this->stays, $this->flights, $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics,
+                $this->publicHolidays);
         }
 
         #[\ReturnTypeWillChange]

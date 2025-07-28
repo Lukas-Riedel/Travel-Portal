@@ -58,7 +58,13 @@
         public function selectTripIdsContainingInterval(int $start, int $end) : array {
             $sql = <<<'SQL'
                 SELECT trip_id
-                FROM trip_summary
+                FROM (
+                    SELECT trip_id, start, end
+                    FROM trip_event
+                    UNION
+                    SELECT trip_id, start, end
+                    FROM trip_day_trip
+                ) t
                 WHERE start <= ?
                     AND end >= ?
             SQL;
@@ -166,8 +172,7 @@
                     }
         
                     return new Trip($tripIdentifierRow["id"], $tripIdentifierRow["name"], NULL, NULL, 
-                        NULL, NULL, $countries, NULL, $this->placeService->getDaysForCandidateTrip($tripIdentifierRow["id"]), NULL, NULL, NULL, array(), array(),
-                        array(), array(), array(), $notes, array(), array(), $publicHolidays);
+                        NULL, NULL, $countries, array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
                 });
         }
 
@@ -216,50 +221,60 @@
         
         public function selectRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
             $sql = <<<SQL
-                SELECT *
-                FROM trip_summary
+                SELECT ti.*,
+                    t.start,
+                    t.end
+                FROM (
+                    SELECT trip_id, start, end
+                    FROM trip_event
+                    UNION
+                    SELECT trip_id, start, end
+                    FROM trip_day_trip
+                ) t
+                INNER JOIN trip_identifier ti
+                    ON t.trip_id = ti.id
                 WHERE :CONDITIONS
                 {$tripSortingStrategy->value}
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
             if ($year !== NULL) {
-                $whereClauseBuilder->withClause("year = ?", $year);
+                $whereClauseBuilder->withClause("ti.year = ?", $year);
             }
             if ($tripId !== NULL) {
-                $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+                $whereClauseBuilder->withClause("ti.id = ?", $tripId);
             }
             if ($start !== NULL) {
-                $whereClauseBuilder->withClause("start >= ?", $start);
+                $whereClauseBuilder->withClause("t.start >= ?", $start);
             }
             if ($end !== NULL) {
-                $whereClauseBuilder->withClause("end <= ?", $end);
+                $whereClauseBuilder->withClause("t.end <= ?", $end);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($tripRow) use(&$includedEntities) {
-                    $countries = $this->placeService->getCountriesForTrip($tripRow["trip_id"]);
+                    $countries = $this->placeService->getCountriesForTrip($tripRow["id"]);
                     
                     $expenses = array();
                     if (in_array(TripIncludedEntity::Expenses->value, $includedEntities)) {
-                        $expenses = $this->expenseService->getExpensesForTrip($tripRow["trip_id"]);            
+                        $expenses = $this->expenseService->getExpensesForTrip($tripRow["id"]);            
                     }
     
                     $stays = array();
                     if (in_array(TripIncludedEntity::Stays->value, $includedEntities)) {
-                        $stays = $this->stayService->getStaysForTrip($tripRow["trip_id"]);                        
+                        $stays = $this->stayService->getStaysForTrip($tripRow["id"]);                        
                     }
     
                     $flights = array();
                     if (in_array(TripIncludedEntity::Flights->value, $includedEntities)) {
-                        $flights = $this->flightService->getScheduledFlightsForTrip($tripRow["trip_id"]);             
+                        $flights = $this->flightService->getScheduledFlightsForTrip($tripRow["id"]);             
                     }
     
                     $watchedFlights = array();
                     if (in_array(TripIncludedEntity::WatchedFlights->value, $includedEntities)) {
-                        $watchedFlights = $this->flightService->getWatchedFlightsForTrip($tripRow["trip_id"]);
+                        $watchedFlights = $this->flightService->getWatchedFlightsForTrip($tripRow["id"]);
                     }
     
                     $fitness = array();
@@ -273,29 +288,28 @@
     
                     $notes = array();
                     if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
-                        $notes = $this->noteService->getTripNotes($tripRow["trip_id"]);                   
+                        $notes = $this->noteService->getTripNotes($tripRow["id"]);                   
                     }
     
                     $highlights = array();
                     if (in_array(TripIncludedEntity::Highlights->value, $includedEntities)) {
-                        $highlights = $this->highlightService->getTripHighlights($tripRow["trip_id"]);        
+                        $highlights = $this->highlightService->getTripHighlights($tripRow["id"]);        
                     }
     
                     $statistics = array();
                     if (in_array(TripIncludedEntity::Statistics->value, $includedEntities)) {
-                        $statistics = $this->statisticsService->getTripStatistics($tripRow["trip_id"]);                 
+                        $statistics = $this->statisticsService->getTripStatistics($tripRow["id"]);                 
                     }
     
                     $publicHolidays = array();
                     if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
                         $publicHolidays = $this->calendarClient->getPublicHolidaysForDatesInCountries(function($country) use(&$tripRow) {
-                            return $this->placeService->getDatesForTripAndCountry($tripRow["trip_id"], $country);
+                            return $this->placeService->getDatesForTripAndCountry($tripRow["id"], $country);
                         }, $countries);                               
                     }
     
-                    return new Trip($tripRow["trip_id"], $tripRow["name"], $tripRow["year"], $this->highlightService->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"], $tripRow["end"], $countries,
-                        $tripRow["cost"], $tripRow["days"], isset($tripRow["working_days"]) ? $tripRow["working_days"] : NULL, isset($tripRow["expected_vacation"]) ? $tripRow["expected_vacation"] : NULL,
-                        isset($tripRow["max_vacation"]) ? $tripRow["max_vacation"] : NULL, $expenses, $stays, $flights, $watchedFlights, $fitness, $notes, $highlights, $statistics, $publicHolidays);
+                    return new Trip($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->highlightService->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"],
+                        $tripRow["end"], $countries, $expenses, $stays, $flights, $watchedFlights, $fitness, $notes, $highlights, $statistics, $publicHolidays);
                 });
         }
 

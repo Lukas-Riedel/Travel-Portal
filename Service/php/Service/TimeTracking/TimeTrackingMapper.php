@@ -91,12 +91,6 @@
             if ($wasInserted) {
                 $timeTrackingEvent->setId($this->databaseProvider->getLastInsertedId());
             }
-            
-            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
-            // TODO: Remove ASAP after removing the view.
-            $this->databaseProvider
-                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
-                ->execute();
 
             return $wasInserted;
         }
@@ -108,18 +102,10 @@
                 WHERE id = ?
             SQL;
 
-            $result = $this->databaseProvider
+            return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($eventId)
                 ->execute();
-            
-            // A little hack to force the trip_summary view materialization before there's a support for propagating dependencies over functions.
-            // TODO: Remove ASAP after removing the view.
-            $this->databaseProvider
-                ->statementBuilder("UPDATE view_materialization SET is_materialization_delayed = 1 WHERE view_name = '_trip_summary'")
-                ->execute();
-
-            return $result;
         }
 
         public function deleteTimeTrackingEventsFromPreviousYears(string $type) : int {

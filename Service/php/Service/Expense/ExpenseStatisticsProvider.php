@@ -22,9 +22,12 @@
         private const MOST_EXPENSIVE_HOTEL_STAYS_PER_NIGHT_STATISTICS_NAME = "MOST_EXPENSIVE_HOTEL_STAYS_PER_NIGHT";
         private const LEAST_EXPENSIVE_HOTEL_STAYS_PER_NIGHT_STATISTICS_NAME = "LEAST_EXPENSIVE_HOTEL_STAYS_PER_NIGHT";
 
+        private readonly ExpenseService $expenseService;
+
         private readonly TripService $tripService;
 
-        public function __construct(TripService $tripService) {
+        public function __construct(ExpenseService $expenseService, TripService $tripService) {
+            $this->expenseService = $expenseService;
             $this->tripService = $tripService;
         }
 
@@ -34,14 +37,14 @@
 
             if ($statisticsKind === StatisticsKind::Fact) {
                 $relevantTrips = $this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default);
-                $totalCost = intval(array_sum(array_map(fn($trip) => $trip->getCost(), $relevantTrips)));                
+                $totalCost = intval(array_sum(array_map(fn($trip) => $this->getTripCost($trip->getId()), $relevantTrips)));                
                 if ($totalCost > 0) {                    
                     if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                         $statistics[] = new Statistics(self::TOTAL_EXPENSES_STATISTICS_NAME, $totalCost, StatisticsUnit::MainCurrency);
                     }
 
                     if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {                        
-                        $travelDaysCount = array_sum(array_map(fn($trip) => $trip->getDays()->getTotal(), $relevantTrips));
+                        $travelDaysCount = array_sum(array_map(fn($trip) => $trip->getDaysCount(), $relevantTrips));
                         $statistics[] = new Statistics(self::AVERAGE_EXPENSES_PER_DAY_STATISTICS_NAME, intval($totalCost / $travelDaysCount), StatisticsUnit::MainCurrency);
                     }
                 }
@@ -49,26 +52,30 @@
 
             if ($statisticsKind === StatisticsKind::Standings) {
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
-                    $mostExpensiveTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($trip->getCost())), 
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::CostDescending), fn($trip) => $trip->getCost() > 0));
+                    $mostExpensiveTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()))), 
+                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
+                    usort($mostExpensiveTrips, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTrips) > 0) {
                         $statistics[] = new Statistics(self::MOST_EXPENSIVE_TRIPS_STATISTICS_NAME, $mostExpensiveTrips, StatisticsUnit::MainCurrency);
                     }
 
-                    $leastExpensiveTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($trip->getCost())), 
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::CostAscending), fn($trip) => $trip->getCost() > 0));
+                    $leastExpensiveTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()))), 
+                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
+                    usort($leastExpensiveTrips, fn($a, $b) => $a->getValue() <=> $b->getValue());
                     if (count($leastExpensiveTrips) > 0) {
                         $statistics[] = new Statistics(self::LEAST_EXPENSIVE_TRIPS_STATISTICS_NAME, $leastExpensiveTrips, StatisticsUnit::MainCurrency);
                     }
 
-                    $mostExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($trip->getCost() / $trip->getDays()->getTotal())), 
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::CostPerDayDescending), fn($trip) => $trip->getCost() > 0));
+                    $mostExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()) / $trip->getDaysCount())), 
+                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
+                    usort($mostExpensiveTrips, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTripsPerDay) > 0) {
                         $statistics[] = new Statistics(self::MOST_EXPENSIVE_TRIPS_PER_DAY_STATISTICS_NAME, $mostExpensiveTripsPerDay, StatisticsUnit::MainCurrency);
                     }
 
-                    $leastExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($trip->getCost() / $trip->getDays()->getTotal())), 
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::CostPerDayAscending), fn($trip) => $trip->getCost() > 0));
+                    $leastExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()) / $trip->getDaysCount())), 
+                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
+                    usort($leastExpensiveTripsPerDay, fn($a, $b) => $a->getValue() <=> $b->getValue());
                     if (count($leastExpensiveTripsPerDay) > 0) {
                         $statistics[] = new Statistics(self::LEAST_EXPENSIVE_TRIPS_PER_DAY_STATISTICS_NAME, $leastExpensiveTripsPerDay, StatisticsUnit::MainCurrency);
                     }
@@ -98,6 +105,10 @@
             }
 
             return $statistics;
+        }
+
+        private function getTripCost(string $tripId) : float {
+            return array_sum(array_map(fn($expense) => $expense->getMainCurrencyValue(), $this->expenseService->getExpensesForTrip($tripId)));
         }
     }
 ?>

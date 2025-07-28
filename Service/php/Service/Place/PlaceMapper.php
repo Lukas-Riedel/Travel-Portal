@@ -156,19 +156,6 @@
                     return $this->categoryService->getCategoryIdentifierById($categoryId)->getName();
                 });
         }
-
-        public function selectDaysForCandidateTrip(string $tripId) : int {
-            $sql = <<<'SQL'
-                SELECT COALESCE(CEIL(MAX(end) / 86400), 0) AS days
-                FROM place_candidate_event
-                WHERE trip_id = ?
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($tripId)
-                ->getSingleColumn("days");
-        }
         
         public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
@@ -192,15 +179,19 @@
                 $whereClauseBuilder->withClause("trip_id = ?", $tripId);
             }
             if ($albumId !== NULL) {
+                // TODO: Find Album Name, then match against Place Name.
                 $whereClauseBuilder->withClause("album_id = ?", $albumId);
             }
             if ($photoId !== NULL) {
+                // TODO: Find Album Name, then match against Place Name.
                 $whereClauseBuilder->withClause("album_id = ?", $this->photoService->getAlbumForPhoto($photoId)?->getId());
             }
             if ($categoryId !== NULL) {
+                // TODO: Find all Place IDs for the Category ID.
                 $whereClauseBuilder->withClause("(FIND_IN_SET(?, category_ids) OR ((UNIX_TIMESTAMP() - GET_VARIABLE_TIME_CATEGORY_OFFSET(?) <= start) AND (UNIX_TIMESTAMP() >= end)) OR ((GET_VARIABLE_TIME_CATEGORY_OFFSET(?) IS NOT NULL) AND (place_id IN (SELECT place_id FROM place_permanent))))", $categoryId, $categoryId, $categoryId);
             }
             if ($labelId !== NULL) {
+                // TODO: Find all Place IDs for the Label ID, then find in set.
                 $whereClauseBuilder->withClause("FIND_IN_SET(?, label_ids)", $labelId);
             }
             if ($maxQuality !== NULL) {

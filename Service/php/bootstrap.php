@@ -116,7 +116,7 @@ use Service\Service\Highlight\HighlightService;
         new StayStatisticsProvider($stayService),
         new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
         new PhotoStatisticsProvider($placeService),
-        new ExpenseStatisticsProvider($tripService)
+        new ExpenseStatisticsProvider($expenseService, $tripService)
     );
     $statisticsService->setStatisticsProviders($statisticsProviders);
 
