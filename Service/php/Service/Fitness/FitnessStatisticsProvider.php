@@ -1,7 +1,8 @@
 <?php
     namespace Service\Service\Fitness;
 
-    use Service\Service\Place\PlaceService;
+use Service\Service\Place\PlaceIncludedEntity;
+use Service\Service\Place\PlaceService;
     use Service\Service\Place\PlaceSortingStrategy;
     use Service\Service\Statistics\KeyValuePair;
     use Service\Service\Statistics\Statistics;
@@ -122,9 +123,9 @@
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
             return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
                 $places = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL, $record->getTimestamp(),
-                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(), PlaceSortingStrategy::Default);
+                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
                 return empty($places) ? NULL : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
-                    implode(", ", array_map(fn($place) => $place->getName(), $places)),
+                    implode(", ", array_map(fn($place) => $place->getName(), array_filter($places, fn($place) => !empty($place->getDates())))),
                     date(self::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
             }, $records), fn($statistics) => $statistics !== NULL);
         }

@@ -139,14 +139,20 @@
             return doubleval($fitnessRow["average_distance_per_step"]);
         }
 
-        // TODO: Drop fitness_sequence, implement in the application code.
+        // TODO: Drop this crazy SQL, implement in the application code.
         // TODO: This references tables of other services which it shouldn't.
         public function selectFitnessRecordTimestampsToUpdate() : array {
             $sql = <<<'SQL'
                 SELECT x.start
                 FROM (
                     SELECT s.seq AS start
-                    FROM fitness_sequence s
+                    FROM (
+                        SELECT (
+                            SELECT MIN(start)
+                            FROM trip_event
+                            ) + ? * seq AS seq
+                        FROM seq_0_to_200000
+                    ) s
                     JOIN (
                         SELECT *
                         FROM trip_event
@@ -161,7 +167,13 @@
                         AND s.seq <= UNIX_TIMESTAMP()
                     UNION
                     SELECT s.seq AS start
-                    FROM fitness_sequence s
+                    FROM (
+                        SELECT (
+                            SELECT MIN(start)
+                            FROM trip_event
+                            ) + ? * seq AS seq
+                        FROM seq_0_to_200000
+                    ) s
                     JOIN (
                         SELECT pe.* 
                         FROM place_event pe 
@@ -183,7 +195,7 @@
             $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($dayTripsTripName, $dayTripsTripName)
+                ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName)
                 ->getResultSetForColumn("start");
         }
 

@@ -16,6 +16,7 @@
         private readonly \EventPublisher $eventPublisher;
 
         private array $categoryIdToCategoryIdentifierCache = array();
+        private array $placeIdToCategoryIdsCache = array();
 
         public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService,
             HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher) {
@@ -76,7 +77,6 @@
         }
 
         public function getCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
-            // TODO: Introduce this caching in DatabaseClient for every select, invalidate with every insert, update or delete.
             if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
                 $this->categoryIdToCategoryIdentifierCache[$categoryId] = $this->categoryMapper->selectCategoryIdentifierById($categoryId);
             }
@@ -95,8 +95,12 @@
             return $this->categoryMapper->selectCategoryIdsForCategory($category);
         }
 
-        public function getCategoryIdentifiersForPlace(string $placeId) : array { 
-            return $this->categoryMapper->selectCategoryIdentifiersForPlace($placeId);
+        public function getCategoryIdentifiersForPlace(string $placeId) : array {
+            if (empty($this->placeIdToCategoryIdsCache)) {
+                $this->placeIdToCategoryIdsCache = $this->categoryMapper->selectCategoryIdsForAllPlaceIds();
+            }
+
+            return $this->getCategoryIdentifiersByIds($this->placeIdToCategoryIdsCache[$placeId] ?? array());
         }
 
         public function getCategoryIdentifiersByIds(array $categoryIds) : array { 

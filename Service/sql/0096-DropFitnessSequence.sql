@@ -1,0 +1,1 @@
+DROP VIEW fitness_sequence;

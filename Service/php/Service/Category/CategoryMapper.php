@@ -227,27 +227,28 @@
                 ->getResultSetForColumn("place_id");
         }
 
-        public function selectCategoryIdentifiersForPlace(string $placeId) : array {            
+        public function selectCategoryIdsForAllPlaceIds() : array {
             $sql = <<<'SQL'
-                SELECT ci.*
+                SELECT c.*
                 FROM category c
-                INNER JOIN category_identifier ci
-                    ON c.category_id = ci.id
                 LEFT JOIN region_area ra
-                    ON ci.id = ra.category_id
-                WHERE c.place_id = ?
+                    ON c.category_id = ra.category_id
                 ORDER BY ra.area DESC
             SQL;
 
-            return $this->databaseProvider
+            $categoryRows = $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($placeId)
-                ->getMappedResultSet(function($categoryRow) {
-                    $metadata = $categoryRow["color"] === NULL && $categoryRow["unicode"] === NULL && $categoryRow["public_holidays_calendar"] === NULL
-                        ? NULL : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
-                    return new CategoryIdentifier($categoryRow["id"], $categoryRow["name"], CategoryCategory::from($categoryRow["category"]),
-                        $metadata, $this->highlightService->getHighlight($categoryRow["main_highlight_id"]));
-                });
+                ->getResultSet();
+
+            $placeIdsToCategoryIds = array();
+            foreach ($categoryRows as &$categoryRow) {
+                if (!isset($placeIdsToCategoryIds[$categoryRow["place_id"]])) {
+                    $placeIdsToCategoryIds[$categoryRow["place_id"]] = array();
+                }
+                $placeIdsToCategoryIds[$categoryRow["place_id"]][] = $categoryRow["category_id"];
+            }
+
+            return $placeIdsToCategoryIds;
         }
 
         public function insertCategory(string $placeId, string $categoryId) : bool {    

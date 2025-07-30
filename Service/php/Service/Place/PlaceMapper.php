@@ -328,7 +328,7 @@
             return array_values($places);
         }
         
-        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $label, array $includedEntities) : array {
+        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT pi.*
                 FROM place_candidate pc
@@ -337,15 +337,28 @@
                 WHERE :CONDITIONS
                 ORDER BY name
             SQL;
-            
-            // TODO: Add support for filtering based on the label value. For now, it's assumed that candidate places never have any labels.
-            if ($label !== NULL) {
-                return array();
-            }
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder(); 
             if ($placeId !== NULL) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
+            }
+            if ($categoryId !== NULL) {
+                $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
+                if (count($placeIds) > 0) {
+                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
+            }
+            if ($labelId !== NULL) {
+                $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
+                if (count($placeIds) > 0) {
+                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
@@ -354,11 +367,7 @@
                 ->getResultSet();
 
             $places = array();
-            foreach ($placeRows as &$placeRow) {   
-                if ($categoryId !== NULL && !in_array($categoryId, $this->categoryService->getCategoryIdsForPlace($placeRow["id"]))) {
-                    continue;
-                }
-                             
+            foreach ($placeRows as &$placeRow) {                             
                 $highlights = array();
                 if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
                     $highlights = $this->highlightService->getPlaceHighlights($placeRow["id"]);                      
@@ -381,7 +390,7 @@
                     
                 $notes = array();
                 if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
-                    $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                    $notes = $this->noteService->getPlaceNotes($placeRow["id"]);                   
                 }
 
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
@@ -402,22 +411,29 @@
                 FROM place_candidate_event pce
                 INNER JOIN place_identifier pi
                     ON pce.place_id = pi.id
-                WHERE trip_id = ?
+                WHERE :CONDITIONS
             SQL;
 
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("trip_id = ?");
+            if ($categoryId !== NULL) {
+                $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
+                if (count($placeIds) > 0) {
+                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
             $placeRows = $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($tripId)
+                ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
                 
             $trip = $tripService->getTripIdentifierById($tripId);
 
             $places = array();            
             foreach ($placeRows as &$placeRow) {
-                if ($categoryId !== NULL && !in_array($categoryId, $this->categoryService->getCategoryIdsForPlace($placeRow["id"]))) {
-                    continue;
-                }
-
                 if (!isset($places[$placeRow["id"]])) {
                     $highlights = array();
                     if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
