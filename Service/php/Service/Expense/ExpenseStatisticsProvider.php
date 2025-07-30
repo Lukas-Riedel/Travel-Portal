@@ -57,13 +57,7 @@
                     usort($mostExpensiveTrips, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTrips) > 0) {
                         $statistics[] = new Statistics(self::MOST_EXPENSIVE_TRIPS_STATISTICS_NAME, $mostExpensiveTrips, StatisticsUnit::MainCurrency);
-                    }
-
-                    $leastExpensiveTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()))), 
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
-                    usort($leastExpensiveTrips, fn($a, $b) => $a->getValue() <=> $b->getValue());
-                    if (count($leastExpensiveTrips) > 0) {
-                        $statistics[] = new Statistics(self::LEAST_EXPENSIVE_TRIPS_STATISTICS_NAME, $leastExpensiveTrips, StatisticsUnit::MainCurrency);
+                        $statistics[] = new Statistics(self::LEAST_EXPENSIVE_TRIPS_STATISTICS_NAME, array_reverse($mostExpensiveTrips), StatisticsUnit::MainCurrency);
                     }
 
                     $mostExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()) / $trip->getDaysCount())), 
@@ -71,13 +65,7 @@
                     usort($mostExpensiveTrips, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTripsPerDay) > 0) {
                         $statistics[] = new Statistics(self::MOST_EXPENSIVE_TRIPS_PER_DAY_STATISTICS_NAME, $mostExpensiveTripsPerDay, StatisticsUnit::MainCurrency);
-                    }
-
-                    $leastExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()) / $trip->getDaysCount())), 
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
-                    usort($leastExpensiveTripsPerDay, fn($a, $b) => $a->getValue() <=> $b->getValue());
-                    if (count($leastExpensiveTripsPerDay) > 0) {
-                        $statistics[] = new Statistics(self::LEAST_EXPENSIVE_TRIPS_PER_DAY_STATISTICS_NAME, $leastExpensiveTripsPerDay, StatisticsUnit::MainCurrency);
+                        $statistics[] = new Statistics(self::LEAST_EXPENSIVE_TRIPS_PER_DAY_STATISTICS_NAME, array_reverse($mostExpensiveTripsPerDay), StatisticsUnit::MainCurrency);
                     }
                 }
 

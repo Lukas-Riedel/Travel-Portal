@@ -11,6 +11,9 @@
 
     class PlaceMapper {
 
+        private const DMY_DATE_FORMAT = "j.n.Y";
+        private const ONE_DAY_SECONDS = 86400;
+
         private const VISITED_CATEGORIES_TEMPORARY_TABLE_NAME = "visited_categories";
 
         private readonly \DatabaseProvider $databaseProvider;
@@ -40,32 +43,38 @@
 
         public function selectDatesForTripAndCountry(string $tripId, string $country) : array {
             $sql = <<<'SQL'
-                SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(start), '%e.%c.%Y') AS date
-                FROM place_summary
-                WHERE trip_id = ?
-                    AND country = ?
+                SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(pe.start), '%e.%c.%Y') AS date
+                FROM place_event pe
+                INNER JOIN place_identifier pi
+                    ON pe.place_id = pi.id
+                WHERE pe.trip_id = ?
+                    AND pi.country_category_id = ?
             SQL;
             
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $country)
+                ->withParameters($tripId, $this->categoryService->getCategoryIdentifier($country)->getId())
                 ->getResultSetForColumn("date");
         }
 
         public function selectCountriesForTrip(string $tripId) : array {
             $sql = <<<'SQL'
-                SELECT DISTINCT country
-                FROM place_summary
+                SELECT DISTINCT pi.country_category_id
+                FROM place_event pe
+                INNER JOIN place_identifier pi
+                    ON pe.place_id = pi.id
                 WHERE trip_id = ?
                     AND NOT layover
-                GROUP BY country
-                ORDER BY MIN(start)
+                GROUP BY pi.country_category_id
+                ORDER BY MIN(pe.start)
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
-                ->getResultSetForColumn("country");
+                ->getMappedResultSetForColumn("country_category_id", function($categoryId) {
+                    return $this->categoryService->getCategoryIdentifierById($categoryId)->getName();
+                });
         }
 
         public function selectVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {
@@ -91,7 +100,7 @@
                 ->execute();
 
             foreach ($this->categoryService->getCategoryIdsForCategory($category) as &$categoryId) {
-                foreach ($this->categoryService->getPlaceIdsForCategory($categoryId) as &$placeId) {                    
+                foreach ($this->categoryService->getPlaceIdsForCategoryId($categoryId) as &$placeId) {                    
                     $sql = <<<SQL
                         INSERT INTO {$temporaryTableName} (
                             category_id,
@@ -161,87 +170,106 @@
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
+            $homeTimeZone = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone");
+
+            // Process regular places.
             $sql = <<<SQL
-                SELECT *
-                FROM place_summary
+                SELECT pi.*,
+                    pe.trip_id,
+                    pe.start,
+                    pe.end,
+                    pe.layover
+                FROM place_event pe
+                INNER JOIN place_identifier pi
+                    ON pe.place_id = pi.id
                 WHERE :CONDITIONS
                 {$placeSortingStrategy->value}
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
             if ($placeId !== NULL) {
-                $whereClauseBuilder->withClause("place_id = ?", $placeId);
+                $whereClauseBuilder->withClause("pi.id = ?", $placeId);
             }
             if ($year !== NULL) {
-                $whereClauseBuilder->withClause("DATE_FORMAT(FROM_UNIXTIME(start), '%Y') = ?", $year);
+                $whereClauseBuilder->withClause("DATE_FORMAT(FROM_UNIXTIME(pe.start), '%Y') = ?", $year);
             }
             if ($tripId !== NULL) {
-                $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+                $whereClauseBuilder->withClause("pe.trip_id = ?", $tripId);
             }
             if ($albumId !== NULL) {
-                // TODO: Find Album Name, then match against Place Name.
-                $whereClauseBuilder->withClause("album_id = ?", $albumId);
+                $album = $this->photoService->getAlbum($albumId);
+                if ($album !== NULL) {                    
+                    $albumTimestamp = (\DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone)))->getTimestamp();
+                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
             }
             if ($photoId !== NULL) {
-                // TODO: Find Album Name, then match against Place Name.
-                $whereClauseBuilder->withClause("album_id = ?", $this->photoService->getAlbumForPhoto($photoId)?->getId());
+                $album = $this->photoService->getAlbumForPhotoId($photoId);
+                if ($album !== NULL) {
+                    $albumTimestamp = (\DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone)))->getTimestamp();
+                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
             }
             if ($categoryId !== NULL) {
-                // TODO: Find all Place IDs for the Category ID.
-                $whereClauseBuilder->withClause("(FIND_IN_SET(?, category_ids) OR ((UNIX_TIMESTAMP() - GET_VARIABLE_TIME_CATEGORY_OFFSET(?) <= start) AND (UNIX_TIMESTAMP() >= end)) OR ((GET_VARIABLE_TIME_CATEGORY_OFFSET(?) IS NOT NULL) AND (place_id IN (SELECT place_id FROM place_permanent))))", $categoryId, $categoryId, $categoryId);
+                $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
+                if (count($placeIds) > 0) {
+                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
             }
             if ($labelId !== NULL) {
-                // TODO: Find all Place IDs for the Label ID, then find in set.
-                $whereClauseBuilder->withClause("FIND_IN_SET(?, label_ids)", $labelId);
+                $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
+                if (count($placeIds) > 0) {
+                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                }
+                else {
+                    $whereClauseBuilder->withClause("FALSE");
+                }
             }
             if ($maxQuality !== NULL) {
-                $whereClauseBuilder->withClause("quality <= ?", $maxQuality);
+                $whereClauseBuilder->withClause("pi.quality <= ?", $maxQuality);
             }
             if ($minStart !== NULL) {
-                $whereClauseBuilder->withClause("? <= start", $minStart);
+                $whereClauseBuilder->withClause("? <= pe.start", $minStart);
             }
             if ($maxEnd !== NULL) {
-                $whereClauseBuilder->withClause("end <= ?", $maxEnd);
+                $whereClauseBuilder->withClause("pe.end <= ?", $maxEnd);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
-
-            $orderByParameters = array();
-            if ($placeSortingStrategy === PlaceSortingStrategy::DistanceFromHomeDescending) {
-                $orderByParameters[] = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "latitude");
-                $orderByParameters[] = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "longitude");
-            }
             
             $placeRows = $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
-                ->withDeferredParameters(...$orderByParameters)
                 ->getResultSet();
-
-            $categoryIdsToCategoryIdentifiersCache = array();
 
             $places = array();
             foreach ($placeRows as &$placeRow) {
-                if (!isset($places[$placeRow["place_id"]])) {
+                if (!isset($places[$placeRow["id"]])) {
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
-                        if (!isset($categoryIdsToCategoryIdentifiersCache[$placeRow["category_ids"]])) {
-                            $categoryIdsToCategoryIdentifiersCache[$placeRow["category_ids"]] = $this->categoryService->getCategoryIdentifiersByIds(explode(",", $placeRow["category_ids"]));
-                        }
-                        $categories = $categoryIdsToCategoryIdentifiersCache[$placeRow["category_ids"]];
+                        $categories = $this->categoryService->getCategoryIdentifiersForPlace($placeRow["id"]);
                     }                   
 
                     $highlights = array();         
                     if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
-                        $highlights = $this->highlightService->getPlaceHighlights($placeRow["place_id"]);                      
+                        $highlights = $this->highlightService->getPlaceHighlights($placeRow["id"]);                      
                     }                 
 
                     $labels = array();         
                     if (in_array(PlaceIncludedEntity::Labels->value, $includedEntities)) {
-                        $labels = $this->labelService->getLabelsForPlace($placeRow["place_id"]);                      
+                        $labels = $this->labelService->getLabelsForPlace($placeRow["id"]);                      
                     }
                     
                     $notes = array();
                     if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
-                        $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                        $notes = $this->noteService->getPlaceNotes($placeRow["id"]);                   
                     }
                     
                     $excerpt = NULL;
@@ -249,7 +277,7 @@
                         $excerpt = $placeRow["excerpt"];
                     }
                     
-                    $places[$placeRow["place_id"]] = new Place($placeRow["place_id"], $placeRow["name"], $placeRow["country"], $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
                         $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array());
                 }
                 
@@ -257,25 +285,16 @@
                     $weather = NULL;
                     $sun = NULL;
                     if ($placeRow["end"] > time()) {
-                        $weather = $this->forecastService->getWeatherForecast($placeRow["place_id"], $placeRow["start"]);
-                        $sun = $this->forecastService->getDaylightForecast($placeRow["place_id"], $placeRow["start"]);
+                        $weather = $this->forecastService->getWeatherForecast($placeRow["id"], $placeRow["start"]);
+                        $sun = $this->forecastService->getDaylightForecast($placeRow["id"], $placeRow["start"]);
                     }
-    
-                    $album = NULL;
-                    if ($placeRow["album_id"] !== NULL) {
-                        $album = $this->photoService->getAlbum($placeRow["album_id"]);    
-                    }
-    
-                    $trip = NULL;
-                    if ($placeRow["trip_id"] !== NULL) {
-                        $trip = $tripService->getTripIdentifierById($placeRow["trip_id"]);
-                    }
-    
-                    $places[$placeRow["place_id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] == 1, $weather, $sun, $album, $trip));  
+
+                    $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] == 1, $weather, $sun,
+                        $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"]), $tripService->getTripIdentifierById($placeRow["trip_id"])));  
                 }
             }
 
-            // Process permananent places without albums.
+            // Process permananent places.
             $sql = <<<'SQL'
                 SELECT pi.*
                 FROM place_permanent pp
@@ -289,14 +308,38 @@
                 if ($placeId !== NULL) {
                     $whereClauseBuilder->withClause("pi.id = ?", $placeId);
                 }
-                $whereClause = $whereClauseBuilder->withClause("pi.id NOT IN (SELECT place_id FROM place_summary)")->buildForAnd();
+                if ($categoryId !== NULL) {
+                    $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
+                    if (count($placeIds) > 0) {
+                        $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    }
+                    else {
+                        $whereClauseBuilder->withClause("FALSE");
+                    }
+                }
+                if ($labelId !== NULL) {
+                    $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
+                    if (count($placeIds) > 0) {
+                        $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    }
+                    else {
+                        $whereClauseBuilder->withClause("FALSE");
+                    }
+                }
+                if ($maxQuality !== NULL) {
+                    $whereClauseBuilder->withClause("pi.quality <= ?", $maxQuality);
+                }
+                $whereClause = $whereClauseBuilder->buildForAnd();
 
                 $placeRows = $this->databaseProvider
                     ->statementBuilder($sql, $whereClause)
                     ->getResultSet();
 
                 foreach ($placeRows as &$placeRow) {
-                    if ($categoryId !== NULL && !in_array($categoryId, $this->categoryService->getCategoryIdsForPlace($placeRow["id"]))) {
+                    $albums = array_filter($this->photoService->getAlbumsForPlace($placeRow["name"]),
+                        fn($album) => ($albumId === NULL || $album->getId() == $albumId) && ($photoId === NULL || $this->photoService->getAlbumForPhotoId($photoId)?->getId() == $album->getId()));
+
+                    if (($albumId !== NULL || $photoId !== NULL) && count($albums) === 0) {
                         continue;
                     }
 
@@ -318,7 +361,7 @@
                     
                         $notes = array();
                         if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
-                            $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                            $notes = $this->noteService->getPlaceNotes($placeRow["id"]);                   
                         }
                         
                         $excerpt = NULL;
@@ -329,6 +372,11 @@
                         $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
                             $placeRow["longitude"], $placeRow["timezone"], $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"],
                             $excerpt, $categories, $highlights, $labels, $notes, array());
+                    }
+
+                    foreach ($albums as &$album) {
+                        $albumTimestamp = (\DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone)))->getTimestamp();
+                        $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS, FALSE, NULL, NULL, $album, NULL));
                     }
                 }
             }
@@ -822,12 +870,8 @@
 
             $sql = <<<SQL
                 CREATE TEMPORARY TABLE {$tableName} AS
-                    SELECT p.*,
-                        ps.album_id,
-                        ps.category_ids
-                    FROM place_event p
-                    INNER JOIN _place_summary ps
-                        ON p.id = ps.id
+                    SELECT *
+                    FROM place_event
             SQL;
             
             $this->databaseProvider

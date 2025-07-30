@@ -5,7 +5,7 @@ import { formatDuration, formatSteps, formatKilometers } from "../utils/formatte
 import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 import Tooltip from "./Tooltip"
 import showFormToast from "./FormToast"

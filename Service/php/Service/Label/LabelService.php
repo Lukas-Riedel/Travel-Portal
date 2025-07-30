@@ -22,6 +22,10 @@
         public function getLabelsForPlace(string $placeId) : array {
             return $this->labelMapper->selectLabelsForPlace($placeId);
         }
+
+        public function getPlaceIdsForLabelId(string $labelId) : array {
+            return $this->labelMapper->selectPlaceIdsForLabelId($labelId);
+        }
         
         public function getLabel(string $labelId) : ?Label {
             return $this->labelMapper->selectLabel($labelId);

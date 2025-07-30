@@ -87,7 +87,7 @@
             return $this->categoryMapper->selectCategoryIdsForPlace($placeId);
         }
 
-        public function getPlaceIdsForCategory(string $categoryId) : array {
+        public function getPlaceIdsForCategoryId(string $categoryId) : array {
             return $this->categoryMapper->selectPlaceIdsForCategory($categoryId);
         }
 

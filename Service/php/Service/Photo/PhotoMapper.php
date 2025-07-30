@@ -3,6 +3,8 @@
 
     class PhotoMapper {
 
+        private const INDOOR_PHOTO_ISO_THRESHOLD = 640;
+
         private readonly \DatabaseProvider $databaseProvider;
 
         private readonly \GoogleApiClient $googleApiClient;
@@ -41,6 +43,49 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
+                ->getMappedResultSet(function($albumRow) {
+                    return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
+                        ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+                        $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
+                        $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
+                        $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+                });
+        }
+
+        public function selectAlbumsForPlaceName(string $placeName) : array {
+            $sql = <<<'SQL'
+                SELECT
+                    a.*, 
+                    pp.uploading_start, 
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                FROM album a
+                LEFT JOIN (
+                    SELECT 
+                        album_id, 
+                        MIN(created) AS uploading_start, 
+                        SUM(uploaded_photos) AS uploaded_photos, 
+                        SUM(batch_size) AS batch_size
+                    FROM (
+                        SELECT 
+                        album_id, 
+                        MIN(created) AS created, 
+                        COUNT(*) AS uploaded_photos, 
+                        MAX(expected_batch_size) AS batch_size
+                        FROM photo_pending
+                        GROUP BY album_id, batch_id
+                    ) x
+                    GROUP BY album_id
+                ) pp 
+                    ON a.id = pp.album_id
+                WHERE a.name LIKE CONCAT(?, ' _._.____')
+                    OR a.name LIKE CONCAT(?, ' __._.____')
+                    OR a.name LIKE CONCAT(?, ' _.__.____')
+                    OR a.name LIKE CONCAT(?, ' __.__.____')
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($placeName, $placeName, $placeName, $placeName)
                 ->getMappedResultSet(function($albumRow) {
                     return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
                         ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
@@ -94,7 +139,51 @@
                 $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
         }
 
-        public function selectAlbumForPhoto(string $photoId) : ?Album {
+        public function selectAlbumByName(string $albumName) : ?Album {
+            $sql = <<<'SQL'
+                SELECT
+                    a.*, 
+                    pp.uploading_start, 
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                FROM album a
+                LEFT JOIN (
+                    SELECT 
+                        album_id, 
+                        MIN(created) AS uploading_start, 
+                        SUM(uploaded_photos) AS uploaded_photos, 
+                        SUM(batch_size) AS batch_size
+                    FROM (
+                        SELECT 
+                        album_id, 
+                        MIN(created) AS created, 
+                        COUNT(*) AS uploaded_photos, 
+                        MAX(expected_batch_size) AS batch_size
+                        FROM photo_pending
+                        GROUP BY album_id, batch_id
+                    ) x
+                    GROUP BY album_id
+                ) pp 
+                    ON a.id = pp.album_id
+                WHERE name = ?
+            SQL;
+
+            $albumRow = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumName)
+                ->getSingleRow();
+            
+            if ($albumRow === NULL) {                
+                return NULL;
+            }
+
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
+                ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+                $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
+                $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
+                $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+        }
+
+        public function selectAlbumForPhotoId(string $photoId) : ?Album {
             $sql = <<<'SQL'
                 SELECT album_id
                 FROM photo
@@ -246,7 +335,7 @@
                     ?,
                     ?,
                     ?,
-                    GET_INDOOR_IMAGES_COUNT(?),
+                    ?,
                     ?
                 )
             SQL;
@@ -254,7 +343,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($album->getName(), $album->getId(), $album->getMainPhoto()?->getId(), $album->getMainImageUrl(),
-                    $album->getImagesCount(), $album->getId(), $album->getPermalink())
+                    $album->getImagesCount(), $this->selectIndoorPhotosCount($album->getId()), $album->getPermalink())
                 ->execute() === 1;
         }
 
@@ -416,6 +505,20 @@
                 ->statementBuilder($sql)
                 ->withParameters($id)
                 ->execute();
+        }
+
+        private function selectIndoorPhotosCount(string $albumId) : int {
+            $sql = <<<'SQL'
+                SELECT COUNT(*)
+                FROM photo
+                WHERE album_id = ?
+                    AND iso >= 640
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId, self::INDOOR_PHOTO_ISO_THRESHOLD)
+                ->execute() === 1;
         }
 
         private function doSelectPhoto(string $photoId, callable $urlProvider) : ?Photo {

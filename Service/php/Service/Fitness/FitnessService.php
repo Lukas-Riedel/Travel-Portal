@@ -10,8 +10,8 @@
 
         private readonly \EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
-            $this->fitnessMapper = new FitnessMapper($databaseProvider);
+        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher, \ConfigurationService $configurationService) {
+            $this->fitnessMapper = new FitnessMapper($databaseProvider, $configurationService);
             $this->eventPublisher = $eventPublisher;
         }
         

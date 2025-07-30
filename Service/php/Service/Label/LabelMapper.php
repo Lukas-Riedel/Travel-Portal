@@ -58,6 +58,19 @@
             return new Label($labelRow["id"], $labelRow["name"]);
         }
 
+        public function selectPlaceIdsForLabelId(string $labelId) : array {            
+            $sql = <<<'SQL'
+                SELECT place_id
+                FROM label
+                WHERE label_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($labelId)
+                ->getResultSetForColumn("place_id");
+        }
+
         public function selectLabelId(string $labelName) : ?string {
             $sql = <<<'SQL'
                 SELECT id

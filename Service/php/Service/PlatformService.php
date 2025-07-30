@@ -28,16 +28,6 @@
             }
 
             $googleApiClient->createFile("Backup " . date("d.m.Y H:i:s") . ".sql", NULL, "application/sql", implode("\n", $dump));
-
-            $pruneStatements = $databaseProvider
-                ->statementBuilder("SELECT * FROM pruner")
-                ->getResultSetForColumn("query");
-
-            foreach ($pruneStatements as &$pruneStatement) {
-                $databaseProvider 
-                    ->statementBuilder($pruneStatement)
-                    ->execute();
-            }
         }
 
         public function onSchedulerTriggered(mixed $message) : void {

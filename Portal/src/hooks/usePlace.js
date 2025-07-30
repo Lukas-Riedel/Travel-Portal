@@ -13,7 +13,7 @@ export const usePlace = placeId => {
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     const { events: processingEndedEvents } = useEvents("ProcessingEnded")
 
-    const uploadedDates = useMemo(() => new Set(processingEndedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.map(event => event.args.timestamp) ?? []), [processingStartedEvents])
+    const uploadedDates = useMemo(() => new Set(processingEndedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.map(event => event.args.timestamp) ?? []), [processingEndedEvents])
     // TODO: This won't work for repeated uploads for the same date.
     const datesBeingUploaded = useMemo(() => new Set(processingStartedEvents?.filter(event => event.name === "PhotosUploadingTriggered")?.filter(event => !uploadedDates.has(event.args.timestamp))
         ?.map(event => event.args.timestamp) ?? []), [uploadedDates, processingStartedEvents])

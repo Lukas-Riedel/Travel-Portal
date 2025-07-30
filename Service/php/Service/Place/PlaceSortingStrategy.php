@@ -2,13 +2,12 @@
     namespace Service\Service\Place;
 
     enum PlaceSortingStrategy : string {
-        case Default = "ORDER BY start ASC";
-        case ScoreDescending = "ORDER BY score DESC";
-        case QualityAscending = "ORDER BY quality ASC";
-        case DistanceFromHomeDescending = "ORDER BY GET_DISTANCE(latitude, longitude, ?, ?) DESC, start ASC";
-        case LatitudeAscending = "ORDER BY latitude ASC, start ASC";
-        case LatitudeDescending = "ORDER BY latitude DESC, start ASC";
-        case LongitudeAscending = "ORDER BY longitude ASC, start ASC";
-        case LongitudeDescending = "ORDER BY longitude DESC, start ASC";
+        case Default = "ORDER BY pe.start ASC";
+        case ScoreDescending = "ORDER BY pi.score DESC";
+        case QualityAscending = "ORDER BY pi.quality ASC";
+        case LatitudeAscending = "ORDER BY pi.latitude ASC, pe.start ASC";
+        case LatitudeDescending = "ORDER BY pi.latitude DESC, pe.start ASC";
+        case LongitudeAscending = "ORDER BY pi.longitude ASC, pe.start ASC";
+        case LongitudeDescending = "ORDER BY pi.longitude DESC, pe.start ASC";
     }
 ?>

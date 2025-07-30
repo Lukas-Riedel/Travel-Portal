@@ -1,14 +1,14 @@
 <?php
     namespace Service\Service\Fitness;
 
-    use Service\Service\Statistics\KeyValuePair;
-
     class FitnessMapper {
 
         private readonly \DatabaseProvider $databaseProvider;
+        private readonly \ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
+        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService) {
             $this->databaseProvider = $databaseProvider;
+            $this->configurationService = $configurationService;
         }
 
         public function selectAverageFitnessRecordForInterval(int $start, int $end) : Fitness { 
@@ -140,6 +140,7 @@
         }
 
         // TODO: Drop fitness_sequence, implement in the application code.
+        // TODO: This references tables of other services which it shouldn't.
         public function selectFitnessRecordTimestampsToUpdate() : array {
             $sql = <<<'SQL'
                 SELECT x.start
@@ -152,7 +153,7 @@
                         WHERE trip_id NOT IN (
                             SELECT id
                             FROM trip_identifier
-                            WHERE name = GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')
+                            WHERE name = ?
                             )
                         ) t
                     WHERE s.seq >= t.start
@@ -162,12 +163,12 @@
                     SELECT s.seq AS start
                     FROM fitness_sequence s
                     JOIN (
-                        SELECT ps.* 
-                        FROM place_summary ps 
+                        SELECT pe.* 
+                        FROM place_event pe 
                         INNER JOIN trip_identifier ti
-                            ON ps.trip_id = ti.id
-                        WHERE ti.name = GET_CONFIGURATION_FOR_KEY('SPECIAL_TRIP_NAMES', 'dayTrips')
-                            AND YEAR(FROM_UNIXTIME(ps.start)) = ti.year
+                            ON pe.trip_id = ti.id
+                        WHERE ti.name = ?
+                            AND YEAR(FROM_UNIXTIME(pe.start)) = ti.year
                         ) p
                     WHERE s.seq >= p.start - (p.start % 86400)
                         AND s.seq <= 86400 + p.end - (p.end % 86400)
@@ -179,8 +180,10 @@
                     OR f.timestamp + (7 * 86400) > f.last_update
             SQL;
 
+            $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
             return $this->databaseProvider
                 ->statementBuilder($sql)
+                ->withParameters($dayTripsTripName, $dayTripsTripName)
                 ->getResultSetForColumn("start");
         }
 

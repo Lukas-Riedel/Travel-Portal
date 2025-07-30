@@ -170,11 +170,11 @@ use Service\Service\Place\PlaceService;
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
             }
 
             foreach ($place->getCategories() as &$category) {
-                $this->statisticsService->updateCategoryStatistics($category);
+                $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
             }        
         }
 
@@ -192,11 +192,11 @@ use Service\Service\Place\PlaceService;
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
             }
 
             foreach ($place->getCategories() as &$category) {
-                $this->statisticsService->updateCategoryStatistics($category);
+                $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
             }
         }
 
@@ -218,7 +218,7 @@ use Service\Service\Place\PlaceService;
             }
 
             foreach ($place->getCategories() as &$category) {
-                $this->statisticsService->updateCategoryStatistics($category);
+                $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
             }
         }
 

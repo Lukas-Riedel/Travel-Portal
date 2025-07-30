@@ -1,8 +1,8 @@
 <?php
     namespace Service\Service\Photo;
 
-    use Service\Service\Category\CategoryCategory;
     use Service\Service\Place\PlaceIdentifier;
+    use Service\Service\Place\PlaceSortingStrategy;
 
     class PhotoService {
 
@@ -19,16 +19,12 @@
         private readonly PhotoMapper $photoMapper;
 
         private readonly \GoogleApiClient $googleApiClient;
-
-        private readonly \ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient, 
-            \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
             $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
-            $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
         }
 
@@ -40,8 +36,16 @@
             return $this->photoMapper->selectAlbum($albumId);
         }
         
-        public function getAlbumForPhoto(string $photoId) : ?Album {
-            return $this->photoMapper->selectAlbumForPhoto($photoId);
+        public function getAlbumForPlaceAndDate(string $placeName, int $timestamp) : ?Album {
+            return $this->photoMapper->selectAlbumByName($this->getAlbumName($placeName, $timestamp));
+        }
+        
+        public function getAlbumsForPlace(string $placeName) : array {
+            return $this->photoMapper->selectAlbumsForPlaceName($placeName);
+        }
+        
+        public function getAlbumForPhotoId(string $photoId) : ?Album {
+            return $this->photoMapper->selectAlbumForPhotoId($photoId);
         }
 
         public function createAlbum(PlaceIdentifier $placeIdentifier, int $timestamp) : Album {
@@ -153,7 +157,7 @@
         }
         
         private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
-            global $highlightService, $databaseProvider;
+            global $highlightService, $placeService;
         
             $filePaths = array();
             $albums = array();
@@ -196,16 +200,13 @@
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.
                     if ($albumId !== NULL && isset($album["coverPhotoMediaItemId"])) {
-                        $placeRow = $databaseProvider
-                            ->statementBuilder("SELECT *, YEAR(FROM_UNIXTIME(start)) AS year FROM place_summary WHERE album_id = ?")
-                            ->withParameters($currentAlbumId)
-                            ->getFirstRow();
-    
-                        if ($placeRow !== NULL) {
-                            $highlightService->createPlaceHighlight($placeRow["place_id"], $mainPhotoId);
-    
-                            if ($placeRow["trip_id"] !== NULL) {
-                                $highlightService->createTripHighlight($placeRow["trip_id"], $mainPhotoId);
+                        $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $currentAlbumId, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
+                        foreach ($places as &$place) {
+                            $highlightService->createPlaceHighlight($place->getId(), $mainPhotoId);
+                            foreach ($place->getDates() as &$date) {
+                                if ($date->getTrip() !== NULL) {
+                                    $highlightService->createPlaceHighlight($date->getTrip()->getId(), $mainPhotoId);
+                                }
                             }
                         }
                     }  

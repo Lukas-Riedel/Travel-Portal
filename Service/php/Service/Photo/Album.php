@@ -1,7 +1,9 @@
 <?php
     namespace Service\Service\Photo;
 
-    class Album implements \JsonSerializable {        
+    class Album implements \JsonSerializable {      
+        private const ALBUM_NAME_PATTERN = "/^(.*) (\d{1,2}\.\d{1,2}\.\d{4})$/";
+
         private readonly string $id;
         private readonly string $name;
         private readonly ?Photo $mainPhoto;
@@ -59,6 +61,23 @@
 
         public function getUploadingProgress() : ?float {
             return $this->uploadingProgress;
+        }
+
+        public function getPlaceName() : string {
+            return $this->parseAlbumName()[1];
+        }
+
+        public function getPlaceDateString() : string {
+            return $this->parseAlbumName()[2];
+        }
+
+        private function parseAlbumName() : array {
+            $matches = array();
+            if (preg_match(self::ALBUM_NAME_PATTERN, $this->name, $matches)) {
+                return $matches;
+            }
+
+            throw new \InvalidArgumentException("The album name '" . $this->name . "' is invalid.");
         }
 
         #[\ReturnTypeWillChange]
