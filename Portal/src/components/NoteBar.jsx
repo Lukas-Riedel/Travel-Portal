@@ -1,6 +1,6 @@
 import { Trash2, Plus, Bold, Italic, Link, Underline } from "lucide-react"
 import showConfirmToast from "./ConfirmToast"
-import { useState, useRef, useMemo } from "react"
+import { useState, useRef } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"

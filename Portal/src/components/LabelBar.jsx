@@ -7,15 +7,18 @@ import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useLabels } from "../hooks/useLabels"
 import showInputToast from "./InputToast"
+import { useConfiguration } from "../contexts/ConfigContext"
 
 const loadingLabelsCount = 3
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
 
+    const configuration = useConfiguration();
+
     const allLabels = useLabels()
 
-    const unassignedLabels = useMemo(() => allLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id), [allLabels, labels]))
+    const unassignedLabels = useMemo(() => allLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id) && !configuration?.dynamicLabels?.[label.name], [allLabels, configuration, labels]))
 
     const handleKnownLabelAdded = labelName => {
         showConfirmToast(`Opravdu chceš přidat štítek '${labelName}'?`,
@@ -54,7 +57,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                                 )}>
                                 {label.name}
                             </Link>
-                            {onLabelRemoved && isAdmin && (
+                            {onLabelRemoved && isAdmin && !configuration?.dynamicLabels?.[label.name] && (
                                 <button
                                     onClick={() => handleLabelRemoved(label)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">

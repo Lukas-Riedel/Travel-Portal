@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $wasRemoved = $labelService->removeLabel($input["placeId"], $input["labelId"]);
+            $wasRemoved = $labelService->removeLabelForPlace($input["placeId"], $input["labelId"]);
             if ($wasRemoved === FALSE) {                
                 return $this->create404Response("place_labels", $input["labelId"]);
             }

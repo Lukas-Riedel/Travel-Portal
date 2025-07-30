@@ -42,6 +42,10 @@
             $this->publishLocalEvent(Event::AllAlbumsInvalidated, NULL);
         }
 
+        public function publishAllDynamicLabelsInvalidatedEvent() : void {
+            $this->publishLocalEvent(Event::AllDynamicLabelsInvalidated, NULL);
+        }
+
         public function publishAllHighlightsInvalidatedEvent() : void {
             $this->publishLocalEvent(Event::AllHighlightsInvalidated, NULL);
         }
@@ -254,11 +258,12 @@
         // TODO: Invalidations first, then updates. Order this enum.
         // TODO: Unify Removed/Deleted.
         // TODO: Remove unused.
-        case ApplicationStarted = -3;
-        case HighlightCreated = -2;
-        case DataConsistencyScanTriggered = -1;
-        case HighlightUpdated = 0;
-        case SchedulerTriggered = 1;
+        case ApplicationStarted = -4;
+        case HighlightCreated = -3;
+        case DataConsistencyScanTriggered = -2;
+        case HighlightUpdated = -1;
+        case SchedulerTriggered = 0;
+        case AllDynamicLabelsInvalidated = 1;
         case CalendarWatchRenewing = 2;
         case VacationReset = 3;
         case CalendarInvalidated = 4;

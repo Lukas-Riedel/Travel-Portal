@@ -16,6 +16,7 @@
                 INNER JOIN label_identifier li
                     ON l.label_id = li.id
                 WHERE l.place_id = ?
+                ORDER BY li.name ASC
             SQL;
 
             return $this->databaseProvider
@@ -132,7 +133,7 @@
                 ->execute() === 1;
         }
 
-        public function deleteLabel(string $placeId, string $labelId) : int {
+        public function deleteLabelForPlace(string $placeId, string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
                 FROM label
@@ -143,6 +144,19 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $labelId)
+                ->execute();
+        }
+
+        public function deleteLabelForAllPlaces(string $labelId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM label
+                WHERE label_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($labelId)
                 ->execute();
         }
     }

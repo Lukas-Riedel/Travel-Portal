@@ -41,15 +41,8 @@
             return $this->getStatistics(StatisticsType::Overall, NULL);          
         }
         
-        public function updateCategoryStatistics(CategoryIdentifier $categoryIdentifier) : void {    
-            if ($this->isVariableTimeCategory($categoryIdentifier)) {
-                $variableTimeCategoryInterval = $this->configurationService->getConfigurationEntry("variableTimeCategories", $categoryIdentifier->getName());
-                $this->updateStatistics(StatisticsType::Category, time() - $variableTimeCategoryInterval, time(), 
-                    $categoryIdentifier->getId(), $categoryIdentifier->getId());
-            }
-            else {
-                $this->updateStatistics(StatisticsType::Category, 0, time(), $categoryIdentifier->getId(), $categoryIdentifier->getId());
-            }
+        public function updateCategoryStatistics(CategoryIdentifier $categoryIdentifier) : void {
+            $this->updateStatistics(StatisticsType::Category, 0, time(), $categoryIdentifier->getId(), $categoryIdentifier->getId());
             $this->eventPublisher->publishCategoryStatisticsUpdatedEvent($categoryIdentifier->getId());
         }
         
@@ -89,11 +82,7 @@
                     }
                 }
             }
-        }
-
-        private function isVariableTimeCategory(CategoryIdentifier $categoryIdentifier) : bool {
-            return in_array($categoryIdentifier->getName(), $this->configurationService->getConfigurationKeysForType("variableTimeCategories"));
-        }
+        } 
 
         private function isSpecialTrip(Trip $trip) : bool {
             return in_array($trip->getName(), $this->configurationService->getConfigurationValuesForType("specialTripNames"));

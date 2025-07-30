@@ -39,10 +39,11 @@
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Forecast\ForecastServiceListener;
     use Service\Service\Geocoding\GeocodingService;
-use Service\Service\Highlight\HighlightDataConsistencyMonitor;
-use Service\Service\Highlight\HighlightService;
+    use Service\Service\Highlight\HighlightDataConsistencyMonitor;
+    use Service\Service\Highlight\HighlightService;
     use Service\Service\Highlight\HighlightServiceListener;
     use Service\Service\Label\LabelService;
+    use Service\Service\Label\LabelServiceListener;
     use Service\Service\Monitoring\MonitoringService;
     use Service\Service\Monitoring\MonitoringServiceListener;
     use Service\Service\Note\NoteService;
@@ -147,6 +148,7 @@ use Service\Service\Highlight\HighlightService;
         new YearServiceListener($yearService, $eventPublisher, $scheduler),
         new DeviceServiceListener($deviceService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
+        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
         $platformService
     );
     $eventManager = new EventManager($listeners);

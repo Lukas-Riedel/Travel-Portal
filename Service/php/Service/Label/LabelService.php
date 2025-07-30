@@ -26,6 +26,17 @@
         public function getPlaceIdsForLabelId(string $labelId) : array {
             return $this->labelMapper->selectPlaceIdsForLabelId($labelId);
         }
+
+        public function getOrCreateLabelId(string $labelName) : string {
+            $labelId = $this->labelMapper->selectLabelId($labelName);
+            if ($labelId !== NULL) {
+                return $labelId;
+            }
+
+            $this->labelMapper->insertLabelId($labelName);
+
+            return $this->labelMapper->selectLabelId($labelName);
+        }
         
         public function getLabel(string $labelId) : ?Label {
             return $this->labelMapper->selectLabel($labelId);
@@ -35,19 +46,12 @@
             return $this->labelMapper->updateLabelName($labelId, $name);
         }
 
-        public function removeLabel(string $placeId, string $labelId) : bool {
-            return $this->labelMapper->deleteLabel($placeId, $labelId) > 0;
+        public function removeLabelForPlace(string $placeId, string $labelId) : bool {
+            return $this->labelMapper->deleteLabelForPlace($placeId, $labelId) > 0;
         }
 
-        private function getOrCreateLabelId(string $labelName) : string {
-            $labelId = $this->labelMapper->selectLabelId($labelName);
-            if ($labelId !== NULL) {
-                return $labelId;
-            }
-
-            $this->labelMapper->insertLabelId($labelName);
-
-            return $this->labelMapper->selectLabelId($labelName);
+        public function removeLabelForAllPlaces(string $labelId) : bool {
+            return $this->labelMapper->deleteLabelForAllPlaces($labelId) > 0;
         }
     }
 ?>
