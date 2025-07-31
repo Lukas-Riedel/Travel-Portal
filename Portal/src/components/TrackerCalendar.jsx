@@ -196,7 +196,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             ],
             "Přesčas byl úspěšně vytvořen",
             "Nepodařilo se vytvořit přesčas",
-            async (description, hours) => onEventCreated("OVERTIME", description, hours, format(day, "d.M.yyyy"))
+            async (description, hours) => onEventCreated("overtime", description, hours, format(day, "d.M.yyyy"))
         )
     }
 
@@ -213,7 +213,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleCreateNegativeOvertimeEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "OVERTIME",
+            "overtime",
             "Zadej počet hodin k využití přesčasu:",
             "Přesčas byl úspěšně využit",
             "Nepodařilo se využít přesčas"
@@ -223,7 +223,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleCreateVacationEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "VACATION",
+            "vacation",
             "Zadej počet hodin k využití dovolené:",
             "Dovolená byl úspěšně využita",
             "Nepodařilo se využít dovolenou"
@@ -233,7 +233,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleCreateSelfcareEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "SELFCARE",
+            "selfcare",
             "Zadej počet hodin k využití sick daye:",
             "Sick day byl úspěšně využit",
             "Nepodařilo se využít sick day"
@@ -243,7 +243,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleCreateTenureEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "TENURE",
+            "tenure",
             "Zadej počet hodin k využití bonusového volna:",
             "Bonusové volno bylo úspěšně využito",
             "Nepodařilo se využít bonusové volno"
@@ -256,7 +256,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }],
             "Plánovaná práce byla úspěšně modifikována",
             "Nepodařilo se modifikovat plánovanou práci",
-            async (hours) => onEventCreated("PLANNED_WORK", "Planned work", hours, format(day, "d.M.yyyy"))
+            async (hours) => onEventCreated("plannedWork", "Planned work", hours, format(day, "d.M.yyyy"))
         )
     }
 

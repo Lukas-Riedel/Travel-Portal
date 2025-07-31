@@ -3,7 +3,7 @@
         public function handle($input) {
             global $configurationService, $roles;
 
-            $response = $configurationService->getConfigurationEntries(in_array("ADMIN", $roles));
+            $response = $configurationService->getAllConfigurationEntries(in_array("ADMIN", $roles));
             return $this->createResponse(200, $response);
         }
 

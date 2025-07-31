@@ -1,6 +1,7 @@
 <?php
     namespace Service\Service\Trip;
 
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Monitoring\DataConsistencyIssue;
     use Service\Service\Monitoring\DataConsistencyMonitor;
 
@@ -15,9 +16,9 @@
 
         private readonly TripService $tripService;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
-        public function __construct(TripService $tripService, \ConfigurationService $configurationService) {
+        public function __construct(TripService $tripService, ConfigurationService $configurationService) {
             $this->tripService = $tripService;
             $this->configurationService = $configurationService;
         }
@@ -37,7 +38,7 @@
         }
 
         private function isMidnight(int $timestamp) : bool {
-            $homeTimezone = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone");
+            $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
             return (new \DateTimeImmutable("@" . $timestamp))
                 ->setTimezone(new \DateTimeZone($homeTimezone))
                 ->format(self::HOURS_MINUTES_TIME_FORMAT) === self::MIDNIGHT_IN_HOURS_MINUTES_TIME_FORMAT;

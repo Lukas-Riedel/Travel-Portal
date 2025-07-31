@@ -2,10 +2,10 @@
     namespace Service\Service\TimeTracking;
 
     enum TimeTrackingEventType : string {
-        case Vacation = "VACATION";
-        case Selfcare = "SELFCARE";
-        case Tenure = "TENURE";
-        case Overtime = "OVERTIME";
-        case PlannedWork = 'PLANNED_WORK';
+        case Vacation = "vacation";
+        case Selfcare = "selfcare";
+        case Tenure = "tenure";
+        case Overtime = "overtime";
+        case PlannedWork = 'plannedWork';
     }
 ?>

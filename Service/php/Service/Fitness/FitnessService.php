@@ -1,6 +1,8 @@
 <?php
     namespace Service\Service\Fitness;
 
+    use Service\Service\Configuration\ConfigurationService;
+
     class FitnessService {
 
         const FITNESS_RECORD_DURATION = 1800;
@@ -10,7 +12,7 @@
 
         private readonly \EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher, \ConfigurationService $configurationService) {
+        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher, ConfigurationService $configurationService) {
             $this->fitnessMapper = new FitnessMapper($databaseProvider, $configurationService);
             $this->eventPublisher = $eventPublisher;
         }

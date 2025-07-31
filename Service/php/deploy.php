@@ -2,12 +2,6 @@
     $delayViewMaterializationIfNeeded = FALSE;
     require_once(dirname(__FILE__) . "/bootstrap.php");
     
-    $configuration = array();
-    if ($databaseProvider->isDatabaseInitialized()) {        
-        $configurationProvider = new ConfigurationProvider($databaseProvider);
-        $configuration = $configurationProvider->get(TRUE);
-    }
-    
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
     };

@@ -2,6 +2,7 @@
     namespace Service\Service\Statistics;
 
     use Service\Service\Category\CategoryIdentifier;
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Trip\Trip;
 
     class StatisticsService {
@@ -13,13 +14,13 @@
 
         private readonly StatisticsMapper $statisticsMapper;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
 
         private array $statisticsProviders = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
             $this->statisticsMapper = new StatisticsMapper($databaseProvider);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
@@ -85,7 +86,7 @@
         } 
 
         private function isSpecialTrip(Trip $trip) : bool {
-            return in_array($trip->getName(), $this->configurationService->getConfigurationValuesForType("specialTripNames"));
+            return in_array($trip->getName(), array_values($this->configurationService->getConfigurationEntry("specialTripNames")));
         }
         
         private function getBeginningOfYearTimestamp(int $year) : int {

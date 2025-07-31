@@ -1,6 +1,8 @@
 <?php
     namespace Service\Service\TimeTracking;
 
+    use Service\Service\Configuration\ConfigurationService;
+
     class TimeTrackingService {
 
         private const CARRIED_OVER_DESCRIPTION = "Carried over from last year";
@@ -8,9 +10,9 @@
 
         private readonly TimeTrackingMapper $timeTrackingMapper;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService) {
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
             $this->timeTrackingMapper = new TimeTrackingMapper($databaseProvider);
             $this->configurationService = $configurationService;
         }
@@ -33,9 +35,7 @@
         }
 
         public function resetOpeningBalances(string $beginningOfYearDate) : void {
-            foreach ($this->configurationService->getConfigurationKeysForType("timeOffHours") as &$eventType) {
-                $openingBalance = floatval($this->configurationService->getConfigurationForTypeAndKey("timeOffHours", $eventType));
-
+            foreach ($this->configurationService->getConfigurationEntry("timeOffHours") as $eventType => $openingBalance) {
                 $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);
                 $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 

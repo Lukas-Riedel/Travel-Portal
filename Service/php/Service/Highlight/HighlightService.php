@@ -15,16 +15,12 @@ use Service\Service\Trip\TripSortingStrategy;
         private readonly HighlightMapper $highlightMapper;
 
         private readonly PhotoService $photoService;
-
-        private readonly \ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService,
-            \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService, \EventPublisher $eventPublisher) {
             $this->highlightMapper = new HighlightMapper($databaseProvider, $photoService);
             $this->photoService = $photoService;
-            $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
         }
 

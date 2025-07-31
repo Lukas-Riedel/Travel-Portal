@@ -1,8 +1,6 @@
 <?php
     class GetSwaggerHandler extends Handler {
-        public function handle($input) {
-            global $configuration;
-            
+        public function handle($input) {            
             $methodsOrder = array(
                 "post" => 0,
                 "get" => 1,

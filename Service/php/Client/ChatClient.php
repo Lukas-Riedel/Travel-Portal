@@ -4,15 +4,15 @@
         private const LANGUAGE_CHAT_PROMPT_SUFFIX_FORMAT = "The response should be in the %s language.";
 
         public function getResponse($query) : ?string {
-            global $configuration, $httpClient;
+            global $httpClient, $configurationService;
 
             $payload = array(
                 "contents" => array(array(
                     "parts" => array(array(
-                        "text" => $query . " " . sprintf(self::LANGUAGE_CHAT_PROMPT_SUFFIX_FORMAT, $configuration["defaultLanguage"]))))));
+                        "text" => $query . " " . sprintf(self::LANGUAGE_CHAT_PROMPT_SUFFIX_FORMAT, $configurationService->getConfigurationEntry("chatResponsesLanguage")))))));
 
             try {                
-                $response = $httpClient->executeRequest(HttpMethod::POST, "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=" . $configuration["googleGeminiApiKey"],
+                $response = $httpClient->executeRequest(HttpMethod::POST, "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=" . GOOGLE_GEMINI_API_KEY,
                     array("Content-Type: application/json"), json_encode($payload))["candidates"][0]["content"]["parts"][0]["text"];
 
                 if ($response != NULL) {

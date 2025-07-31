@@ -40,16 +40,17 @@
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function createCalendarEvent($calendar, $name, $address, $start, $end) : bool {    
-            global $configuration;        
+            global $configurationService;        
             
+            $homeTimezone = $configurationService->getConfigurationEntry("homeLocation")["timezone"];
             $payload = array(
                 "summary" => $name, 
                 "start" => array(
                     "dateTime" => date(DATE_RFC3339, $start),
-                    "timeZone" => $configuration["homeLocation"]["timezone"]), 
+                    "timeZone" => $homeTimezone), 
                 "end" => array(
                     "dateTime" => date(DATE_RFC3339, $end),
-                    "timeZone" => $configuration["homeLocation"]["timezone"]));
+                    "timeZone" => $homeTimezone));
 
             if ($address !== NULL) {
                 $payload["location"] = $address;
@@ -91,8 +92,6 @@
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function updateCalendarEventDates($calendar, $eventId, $start, $end) : bool {
-            global $configuration;
-
             $requestUrl = "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId);
             $event = $this->executeRequest(HttpMethod::GET, $requestUrl);
 
@@ -121,14 +120,12 @@
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
-        public function watchCalendar($calendar, $channelId, $url, $token = NULL) : bool {
-            global $configuration;
-                    
+        public function watchCalendar($calendar, $channelId, $url, $ttl, $token = NULL) : bool {                    
             $payload = array(
                 "id" => $channelId,
                 "type" => "web_hook",
                 "address" => $url,
-                "params" => array("ttl" => $configuration["googleCalendarWatchTtl"]));
+                "params" => array("ttl" => $ttl));
 
             if ($token !== NULL) {
                 $payload["token"] = $token;
@@ -265,18 +262,28 @@
         }
 
         private function getGoogleApiAccessToken() : string {
-            global $configuration, $httpClient, $cacheClient;
+            global $httpClient, $cacheClient;
 
             $cachedGoogleApiAccessToken = $cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedGoogleApiAccessToken !== NULL) {
                 return $cachedGoogleApiAccessToken;
+            }
+
+            $refreshToken = NULL;
+
+            $googleRefreshTokenFilePath = dirname(__FILE__) . "/../config/google.txt";
+            if (file_exists($googleRefreshTokenFilePath)) {
+                $refreshToken = trim(file_get_contents($googleRefreshTokenFilePath));
+            }
+            else {
+                throw new RuntimeException("The refresh token has not been set yet.");
             }
             
             $payload = array(
                 "client_id" => GOOGLE_API_CLIENT_ID,
                 "client_secret" => GOOGLE_API_CLIENT_SECRET,
                 "redirect_uri" => BASE_URL,
-                "refresh_token" => $configuration["googleApiAccessKey"],
+                "refresh_token" => $refreshToken,
                 "grant_type" => "refresh_token",
                 "access_type" => "offline");     
 
@@ -293,9 +300,9 @@
 
         // TODO: Move to Calendar enum.
         private function getCalendarIdentifier($name) : string {            
-            global $configuration;
+            global $configurationService;
     
-            preg_match('/https:\/\/calendar\.google\.com\/calendar\/ical\/(.+@group\.calendar\.google\.com)\/.*/', rawurldecode($configuration["calendars"][$name]), $tokens);
+            preg_match('/https:\/\/calendar\.google\.com\/calendar\/ical\/(.+@group\.calendar\.google\.com)\/.*/', rawurldecode($configurationService->getConfigurationEntry("calendars")[$name]), $tokens);
             if (count($tokens) !== 2) {
                 throw new InvalidArgumentException("The calendar " . $name . " does not exist.");
             }

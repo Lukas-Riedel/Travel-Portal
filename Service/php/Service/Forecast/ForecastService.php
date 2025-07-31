@@ -2,6 +2,7 @@
     namespace Service\Service\Forecast;
     
     use AurorasLive\SunCalc;
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Place\PlaceIdentifier;
 
     class ForecastService {
@@ -15,9 +16,9 @@
 
         private readonly \HttpClient $httpClient;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient, \ConfigurationService $configurationService) {
+        public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient, ConfigurationService $configurationService) {
             $this->forecastMapper = new ForecastMapper($databaseProvider);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
@@ -67,7 +68,7 @@
         
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $startDate, $endDate,
-                $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone")));
+                $this->configurationService->getConfigurationEntry("homeLocation")["timezone"]));
 
             if (!isset($apiResponse["daily"])) {
                 throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));
@@ -86,7 +87,7 @@
         public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 round($placeIdentifier->getLatitude(), 4), round($placeIdentifier->getLongitude(), 4)),
-                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationForType("contactEmail")), NULL, TRUE);
+                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactEmail")), NULL, TRUE);
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {
                 throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));

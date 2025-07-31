@@ -47,12 +47,12 @@
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Create time tracking event", '{"type":"OVERTIME","hours":"6.5","description":"Implementing DSD resolver for OpenLineage events","date":"7.9.2024"}'));
+                $this->createRequestExample("Create time tracking event", '{"type":"overtime","hours":"6.5","description":"Implementing DSD resolver for OpenLineage events","date":"7.9.2024"}'));
         }
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Created time tracking event", 201, '{"id":233,"description":"Implementing DSD resolver for OpenLineage events","hours":6.5,"timestamp":1725692400,"type":"OVERTIME","balance":17.3}'),
+                $this->createResponseExample("Created time tracking event", 201, '{"id":233,"description":"Implementing DSD resolver for OpenLineage events","hours":6.5,"timestamp":1725692400,"type":"overtime","balance":17.3}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

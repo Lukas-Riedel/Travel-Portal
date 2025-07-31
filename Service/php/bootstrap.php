@@ -4,12 +4,10 @@
     
     require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/Provider/LoggingProvider.php");
-    require_once(dirname(__FILE__) . "/Provider/ConfigurationProvider.php");
     require_once(dirname(__FILE__) . "/Rest/Handler.php");
     require_once(dirname(__FILE__) . "/Model/TargetError.php");
     require_once(dirname(__FILE__) . "/Exception/AuthorizationException.php");
     require_once(dirname(__FILE__) . "/Exception/EntityNotFoundException.php");
-    require_once(dirname(__FILE__) . "/Service/ConfigurationService.php");
     require_once(dirname(__FILE__) . "/Service/PlatformService.php");
     require_once(dirname(__FILE__) . "/Client/GoogleApiClient.php");
     require_once(dirname(__FILE__) . "/Client/ChatClient.php");
@@ -25,6 +23,7 @@
     use Service\Service\Category\CategoryDataConsistencyMonitor;
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\CategoryServiceListener;
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Device\DeviceService;
     use Service\Service\Device\DeviceServiceListener;
     use Service\Service\Expense\ExpenseService;
@@ -79,15 +78,13 @@
     $cacheClient = new CacheClient($databaseProvider);
     
     $loggingProvider = new LoggingProvider($databaseProvider);
-    $configurationProvider = new ConfigurationProvider($databaseProvider);
-    $configuration = $configurationProvider->get(TRUE);
 
     // Events producers.
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
     // Services.
-    $configurationService = new ConfigurationService();
+    $configurationService = new ConfigurationService($databaseProvider);
     $platformService = new PlatformService();
     $authenticationService = new AuthenticationService($databaseProvider);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
@@ -96,7 +93,7 @@
     $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $eventPublisher);
-    $highlightService = new HighlightService($databaseProvider, $photoService, $configurationService, $eventPublisher);
+    $highlightService = new HighlightService($databaseProvider, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
     $fitnessService = new FitnessService($databaseProvider, $eventPublisher, $configurationService);

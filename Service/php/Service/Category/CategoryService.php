@@ -1,6 +1,7 @@
 <?php
     namespace Service\Service\Category;
-    
+
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Place\PlaceIdentifier;
     use Service\Service\Statistics\StatisticsService;
@@ -11,14 +12,14 @@
 
         private readonly CategoryMapper $categoryMapper;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
 
         private array $categoryIdToCategoryIdentifierCache = array();
         private array $placeIdToCategoryIdsCache = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService,
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
             HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService);
             $this->configurationService = $configurationService;
@@ -158,8 +159,8 @@
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createCompositeRegion(string $name, string $category, array $includedRegions, array $excludedRegions) : CategoryIdentifier {
-            foreach ($this->configurationService->getConfigurationValuesForType("countryNames") as $country) {
-                $this->getOrCreateCountryCategoryIdentifier($country);
+            foreach ($this->configurationService->getConfigurationEntry("countryNames") as $country) {
+                $this->getOrCreateCountryCategoryIdentifier($country["name"]);
             }
 
             // Verify that all referenced regions exist.
@@ -296,7 +297,7 @@
         }
 
         public function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {
-            if (!in_array($country, $this->configurationService->getConfigurationValuesForType("countryNames"))) {
+            if (!in_array($country, array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames")))) {
                 throw new \InvalidArgumentException("The country '" . $country . "' does not exist.");
             }
 

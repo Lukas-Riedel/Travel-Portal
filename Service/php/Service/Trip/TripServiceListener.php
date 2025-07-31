@@ -1,6 +1,7 @@
 <?php
     namespace Service\Service\Trip;
 
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Flight\FlightService;
     use Service\Service\Flight\FlightType;
     use Service\Service\Highlight\HighlightType;
@@ -18,7 +19,7 @@
         private readonly StayService $stayService;
         private readonly FlightService $flightService;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly \CalendarClient $calendarClient;
 
@@ -26,7 +27,7 @@
         private readonly \Scheduler $scheduler;
 
         public function __construct(TripService $tripService, PlaceService $placeService, StayService $stayService,
-            FlightService $flightService, \ConfigurationService $configurationService, \CalendarClient $calendarClient,
+            FlightService $flightService, ConfigurationService $configurationService, \CalendarClient $calendarClient,
             \EventPublisher $eventPublisher, \Scheduler $scheduler) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
@@ -68,7 +69,7 @@
         public function onSchedulerTriggered(mixed $message) : void {            
             if ($message["action"] === self::UPDATE_TRIP_STATISTICS_ACTION_NAME
                 && time() - $message["lastTriggered"] > self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL) {
-                $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
+                $dayTripsTripName = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
                 $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::Default);
                 foreach ($trips as &$trip) {
                     if ($trip->getName() !== $dayTripsTripName) {

@@ -1,20 +1,24 @@
 <?php
     namespace Service\Service\Expense;
 
+    use Service\Service\Configuration\ConfigurationService;
+
     class ExpenseService {
 
         private const GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT = "https://v6.exchangerate-api.com/v6/%s/latest/%s";
+        
+        private const EXCHANGE_RATE_VALIDITY_SECONDS = 86400;
 
         private readonly ExpenseMapper $expenseMapper;
         
         private readonly \HttpClient $httpClient;
         
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly \EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient,
-            \ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
+            ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
             $this->expenseMapper = new ExpenseMapper($databaseProvider);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
@@ -91,7 +95,7 @@
         }
 
         private function getExchangeRate(string $currency) : float {       
-            $mainCurrency = $this->configurationService->getConfigurationForType("mainCurrency");
+            $mainCurrency = $this->configurationService->getConfigurationEntry("mainCurrency");
             if ($currency === $mainCurrency) {
                 return 1;
             }
@@ -101,16 +105,14 @@
                 return $cachedExchangeRate;
             }    
     
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT,
-                $this->configurationService->getConfigurationForType("exchangeRateApiKey"), $mainCurrency));         
+            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT, EXCHANGE_RATE_API_KEY, $mainCurrency));         
             if ($apiResponse === NULL) {
                 return 0;
             }
 
-            $validity = $this->configurationService->getConfigurationForTypeAndKey("autoPurgeRetentionDays", "exchangeRates") * 86400;
             foreach ($apiResponse["conversion_rates"] as $rawCurrency => $rawExchangeRate) {
                 if ($rawCurrency !== $mainCurrency) {
-                    $this->expenseMapper->insertExchangeRate($rawCurrency, 1 / doubleval($rawExchangeRate), $validity);
+                    $this->expenseMapper->insertExchangeRate($rawCurrency, 1 / doubleval($rawExchangeRate), self::EXCHANGE_RATE_VALIDITY_SECONDS);
                 }
             }
 

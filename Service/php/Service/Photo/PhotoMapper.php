@@ -512,7 +512,7 @@
                 SELECT COUNT(*)
                 FROM photo
                 WHERE album_id = ?
-                    AND iso >= 640
+                    AND iso >= ?
             SQL;
 
             return $this->databaseProvider

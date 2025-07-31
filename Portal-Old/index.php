@@ -1,13 +1,7 @@
 <?php
     if (isset($_GET["code"])) {
     
-        require_once(dirname(__FILE__) . "/api/php/Provider/DatabaseProvider.php");
-        require_once(dirname(__FILE__) . "/api/php/Provider/ConfigurationProvider.php");
         require_once(dirname(__FILE__) . "/api/php/login.php");
-
-        $databaseProvider = new DatabaseProvider(TRUE);
-        $configurationProvider = new ConfigurationProvider($databaseProvider);
-        $configuration = $configurationProvider->get(TRUE);
 
         $payload = array(
             "code" => $_GET["code"],
@@ -29,10 +23,7 @@
 
         $response = json_decode(curl_exec($curl), true);
 
-        $databaseProvider
-            ->statementBuilder("UPDATE configuration SET value = ? WHERE type = 'GOOGLE_API_ACCESS_KEY'")
-            ->withParameters($response["refresh_token"])
-            ->execute();
+        file_put_contents(dirname(__FILE__) . "/api/php/config/google.txt", $response["refresh_token"]);
     }
 
     header("Location: /trip/");

@@ -10,7 +10,7 @@ export default function TrackerPage() {
     const { isAdmin } = useAuth()
 
     const trips = useRegularTrips({ include: "FLIGHTS" })
-    const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["OVERTIME", "VACATION", "SELFCARE", "TENURE", "PLANNED_WORK"])
+    const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["overtime", "vacation", "selfcare", "tenure", "plannedWork"])
     const { isFreeDay } = usePublicHolidays()
 
     return (
@@ -18,27 +18,27 @@ export default function TrackerPage() {
             <TrackerCalendar
                 trips={trips?.filter(trip => !trip.isDayTrips())}
                 isFreeDay={isFreeDay}
-                overtimeEvents={timeTrackingEvents["OVERTIME"]}
-                plannedWorkEvents={timeTrackingEvents["PLANNED_WORK"]}
-                vacationEvents={timeTrackingEvents["VACATION"]}
-                selfcareEvents={timeTrackingEvents["SELFCARE"]}
-                tenureEvents={timeTrackingEvents["TENURE"]}
+                overtimeEvents={timeTrackingEvents["overtime"]}
+                plannedWorkEvents={timeTrackingEvents["plannedWork"]}
+                vacationEvents={timeTrackingEvents["vacation"]}
+                selfcareEvents={timeTrackingEvents["selfcare"]}
+                tenureEvents={timeTrackingEvents["tenure"]}
                 onEventCreated={createTimeTrackingEvent}
                 onEventRemoved={removeTimeTrackingEvent} />
             <TimeOffBalanceSummary
-                overtimeEvents={timeTrackingEvents["OVERTIME"]}
-                vacationEvents={timeTrackingEvents["VACATION"]}
-                selfcareEvents={timeTrackingEvents["SELFCARE"]}
-                tenureEvents={timeTrackingEvents["TENURE"]} />
+                overtimeEvents={timeTrackingEvents["overtime"]}
+                vacationEvents={timeTrackingEvents["vacation"]}
+                selfcareEvents={timeTrackingEvents["selfcare"]}
+                tenureEvents={timeTrackingEvents["tenure"]} />
             {isAdmin && (
                 <TripTable
                     trips={trips?.filter(trip => (trip?.isFuture() || trip?.isCurrent()) && !trip?.isDayTrips() && trip?.year === new Date().getFullYear())}
                     isFreeDay={isFreeDay}
-                    overtimeEvents={timeTrackingEvents["OVERTIME"]}
-                    plannedWorkEvents={timeTrackingEvents["PLANNED_WORK"]}
-                    vacationEvents={timeTrackingEvents["VACATION"]}
-                    selfcareEvents={timeTrackingEvents["SELFCARE"]}
-                    tenureEvents={timeTrackingEvents["TENURE"]} />
+                    overtimeEvents={timeTrackingEvents["overtime"]}
+                    plannedWorkEvents={timeTrackingEvents["plannedWork"]}
+                    vacationEvents={timeTrackingEvents["vacation"]}
+                    selfcareEvents={timeTrackingEvents["selfcare"]}
+                    tenureEvents={timeTrackingEvents["tenure"]} />
             )}
         </>
     )

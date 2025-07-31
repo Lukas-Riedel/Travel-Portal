@@ -1,12 +1,14 @@
 <?php
     namespace Service\Service\Fitness;
 
+    use Service\Service\Configuration\ConfigurationService;
+
     class FitnessMapper {
 
         private readonly \DatabaseProvider $databaseProvider;
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService) {
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
             $this->databaseProvider = $databaseProvider;
             $this->configurationService = $configurationService;
         }
@@ -192,7 +194,7 @@
                     OR f.timestamp + (7 * 86400) > f.last_update
             SQL;
 
-            $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
+            $dayTripsTripName = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName)

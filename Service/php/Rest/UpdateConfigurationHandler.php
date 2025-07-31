@@ -5,7 +5,7 @@
         public function handle($input) {
             global $configurationService;
 
-            $response = $configurationService->updateConfigurationEntryValue($input["type"], isset($input["key"]) ? $input["key"] : NULL, $input["value"]);
+            $response = $configurationService->updateConfigurationEntry($input["key"], $input["value"]);
             return $this->createResponse(200, $response);
         }
 
@@ -22,12 +22,12 @@
         }
 
         public function getPath() {
-            return "/configuration/{type}";
+            return "/configuration/{key}";
         }
 
         public function getParameters() {
             return array(
-                $this->createPathParameter("type", "string", "AIRLINES"));
+                $this->createPathParameter("key", "string", "calendars"));
         }
 
         public function getMethod() {
@@ -35,22 +35,21 @@
         }
         
         public function getShortDescription() {
-            return "Update a configuration item with the specified type";
+            return "Update a configuration item with the specified key";
         }
         
         public function getLongDescription() {
-            return "Updates a configuration item with the specified type.";
+            return "Updates a configuration item with the specified key.";
         }
         
         public function getRequestExamples() {
             return array(
-                $this->createRequestExample("Update configuration item with a key", '{"key":"FR","value":"Ryanair"}'),
-                $this->createRequestExample("Update configuration item without a key", '{"value":10}'));
+                $this->createRequestExample("Update configuration item", '{"trips":"...","places":"...","stays":"...","flights":"...","watchedFlights":"..."}'));
         }
 
         public function getResponseExamples() {
             return array(
-                $this->createResponseExample("Updated configuration item", 200, '{"airlines":{"FR":"Ryanair"}}'),
+                $this->createResponseExample("Updated configuration item", 200, '{"trips":"...","places":"...","stays":"...","flights":"...","watchedFlights":"..."}'),
                 $this->create400ResponseExample(),
                 $this->create401ResponseExample(),
                 $this->create403ResponseExample());

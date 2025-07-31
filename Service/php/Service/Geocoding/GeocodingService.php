@@ -1,6 +1,8 @@
 <?php
     namespace Service\Service\Geocoding;
-    
+
+use Service\Service\Configuration\ConfigurationService;
+
     class GeocodingService {
 
         private const EARTH_RADIUS_KM = 6378;
@@ -13,11 +15,11 @@
 
         private readonly GeocodingMapper $geocodingMapper;
         
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly \HttpClient $httpClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService, \HttpClient $httpClient) {
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \HttpClient $httpClient) {
             $this->geocodingMapper = new GeocodingMapper($databaseProvider);
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
@@ -44,12 +46,13 @@
             }
 
             $country = NULL;
+            $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
             if ($location->getCountry() === NULL) {
                 // TODO: Remove the UNKNOWN country, use null instead.
-                $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", "UNKNOWN");
+                $country = $countryNames["UNKNOWN"];
             }
-            else if ($this->configurationService->existsForTypeAndKey("countryNames", $location->getCountry())) {
-                $country = $this->configurationService->getConfigurationForTypeAndKey("countryNames", $location->getCountry());
+            else if (in_array($location->getCountry(), array_map(fn($c) => $c["country"], $countryNames))) {
+                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $location->getCountry()))[0]["name"];
             }
             else {
                 throw new \RuntimeException("Unknown country '" . $location->getCountry() . "' encountered.");
@@ -67,7 +70,7 @@
             // Quick path - read all necessary data (except timezone) from the address string.
             preg_match(self::CACHED_ADDRESS_PATTERN, $address, $tokens);
             if (count($tokens) === 4) {
-                $country = $this->configurationService->getConfigurationKeyForTypeAndValue("countryNames", $tokens[1]);
+                $country = array_values(array_filter($this->configurationService->getConfigurationEntry("countryNames"), fn($country) => $country["name"] == $tokens[1]))[0]["country"];
                 $latitude = $tokens[2];
                 $longitude = $tokens[3];
             }

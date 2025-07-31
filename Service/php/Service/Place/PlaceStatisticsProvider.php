@@ -2,6 +2,7 @@
     namespace Service\Service\Place;
 
     use Service\Service\Category\CategoryCategory;
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Geocoding\GeocodingService;
     use Service\Service\Statistics\KeyValuePair;
     use Service\Service\Statistics\Statistics;
@@ -34,11 +35,11 @@
 
         private readonly PlaceService $placeService;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly GeocodingService $geocodingService;
 
-        public function __construct(PlaceService $placeService, \ConfigurationService $configurationService, GeocodingService $geocodingService) {
+        public function __construct(PlaceService $placeService, ConfigurationService $configurationService, GeocodingService $geocodingService) {
             $this->placeService = $placeService;
             $this->configurationService = $configurationService;
             $this->geocodingService = $geocodingService;
@@ -85,14 +86,13 @@
             }
             
             if ($statisticsKind === StatisticsKind::Standings) {                      
-                $homeLatitude = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "latitude");
-                $homeLongitude = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "longitude");                    
+                $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");              
                 $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, 
                     NULL, NULL, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 $distances = array();
                 foreach ($relevantPlaces as &$relevantPlace) {
-                    $distances[$relevantPlace->getId()] = intval($this->geocodingService->getDistance($relevantPlace->getLatitude(), $relevantPlace->getLongitude(), $homeLatitude, $homeLongitude));
+                    $distances[$relevantPlace->getId()] = intval($this->geocodingService->getDistance($relevantPlace->getLatitude(), $relevantPlace->getLongitude(), $homeLocation["latitude"], $homeLocation["longitude"]));
                 }
                 usort($relevantPlaces, fn($a, $b) => $distances[$b->getId()] <=> $distances[$a->getId()]);
 

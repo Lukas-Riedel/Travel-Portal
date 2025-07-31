@@ -3,6 +3,7 @@
 
     use Service\Service\Category\CategoryCategory;
     use Service\Service\Category\CategoryService;
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Forecast\ForecastService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Label\LabelService;
@@ -18,7 +19,7 @@
 
         private readonly \DatabaseProvider $databaseProvider;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly CategoryService $categoryService;
         private readonly LabelService $labelService;
@@ -29,7 +30,7 @@
 
         private array $countries = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
             ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService, NoteService $noteService) {
             $this->databaseProvider = $databaseProvider;
             $this->categoryService = $categoryService;
@@ -197,7 +198,7 @@
                 {$placeSortingStrategy->value}
             SQL;
 
-            $homeTimeZone = $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone");
+            $homeTimeZone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
             if ($placeId !== NULL) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
@@ -414,7 +415,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("trip_id = ?");
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("trip_id = ?", $tripId);
             if ($categoryId !== NULL) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {

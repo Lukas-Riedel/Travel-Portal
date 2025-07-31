@@ -1,6 +1,7 @@
 <?php
     namespace Service\Service\Trip;
-    
+
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Expense\ExpenseService;
     use Service\Service\Fitness\FitnessService;
     use Service\Service\Flight\FlightService;
@@ -26,7 +27,7 @@
         private readonly \CalendarClient $calendarClient;
         private readonly \GoogleApiClient $googleApiClient;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly PlaceService $placeService;
         private readonly YearService $yearService;
@@ -34,7 +35,7 @@
 
         private readonly \EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, \ConfigurationService $configurationService,
+        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, \EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $placeService,
@@ -49,7 +50,7 @@
         }        
 
         public function isDayTripsTrip(Trip $trip) : bool {
-            return $trip->getName() === $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
+            return $trip->getName() === $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {
@@ -180,7 +181,7 @@
         }
 
         public function updateAllDayTripsTripsDates() : void {
-            $dayTripsTripName = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
+            $dayTripsTripName = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
             $trips = $this->getRegularTrips(NULL, NULL, NULL, array(), TripSortingStrategy::Default);
             
             foreach ($trips as &$trip) {
@@ -234,7 +235,7 @@
         }
 
         private function getOrCreateDayTripsTripIdentifier(int $year) : TripIdentifier {
-            $name = $this->configurationService->getConfigurationForTypeAndKey("specialTripNames", "dayTrips");
+            $name = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
             $tripIdentifier = $this->getOrCreateTripIdentifier($name, $year);
             
             if (!$this->tripMapper->selectExistsDayTripsTrip($tripIdentifier->getId())) {

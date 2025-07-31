@@ -3,6 +3,7 @@
 
     use Service\Service\Category\CategoryCategory;
     use Service\Service\Category\CategoryService;
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Label\LabelService;
     use Service\Service\Geocoding\GeocodingService;
     use Service\Service\Forecast\ForecastService;
@@ -26,7 +27,7 @@
         private readonly \CalendarClient $calendarClient;
         private readonly \GoogleApiClient $googleApiClient;
 
-        private readonly \ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
         private readonly CategoryService $categoryService;
         private readonly PhotoService $photoService;
@@ -36,7 +37,7 @@
         private readonly \EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, \ChatClient $chatClient, \CalendarClient $calendarClient,
-            \GoogleApiClient $googleApiClient, \ConfigurationService $configurationService, CategoryService $categoryService,
+            \GoogleApiClient $googleApiClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             NoteService $noteService, GeocodingService $geocodingService, \EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseProvider, $configurationService, $categoryService, $labelService, $forecastService,
@@ -162,7 +163,7 @@
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
-                    $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone"), $place->getTimezone());
+                    $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
                     $this->googleApiClient->updateCalendarEventDates(\Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()), $date->getStart() - $timezoneOffset + $offset, $date->getEnd() - $timezoneOffset + $offset);
                 }
             }
@@ -193,7 +194,7 @@
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
-                    $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone"), $place->getTimezone());
+                    $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
                     if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, FALSE, NULL, NULL, NULL, $archivedTripIdentifier))))) {
                         $this->googleApiClient->deleteCalendarEvent(\Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
                     }
@@ -230,7 +231,7 @@
             foreach ($this->calendarClient->getEvents(\Calendar::Places->value) as &$placeEvent) {
                 $resolvedLocation = $this->geocodingService->getLocation($placeEvent->getLocation());
                 $placeIdentifier = $this->getOrCreatePlaceIdentifier($placeEvent->getSummary(), $resolvedLocation->getCountry(), $placeEvent->getLocation());                        
-                $timeOffset = $this->getTimezoneOffset($placeEvent->getStart(), $this->configurationService->getConfigurationForTypeAndKey("homeLocation", "timezone"), $placeIdentifier->getTimezone());
+                $timeOffset = $this->getTimezoneOffset($placeEvent->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $placeIdentifier->getTimezone());
                 $start = $placeEvent->getStart() + $timeOffset;
                 $end = $placeEvent->getEnd() + $timeOffset;     
                 $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
@@ -270,7 +271,7 @@
                 return $placeIdentifier;
             }
 
-            if ($country === $this->configurationService->getConfigurationForTypeAndKey("countryNames", "UNKNOWN")) {
+            if ($country === array_filter($this->configurationService->getConfigurationEntry("countryNames"), fn($c) => $c["country"] === "UNKNOWN")[0]["name"]) {
                 throw new \InvalidArgumentException("Cannot create an identifier for an unknown country.");
             }
             

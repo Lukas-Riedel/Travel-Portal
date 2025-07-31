@@ -5,22 +5,24 @@
     use ICal\ICal;
 
     class CalendarClient {
+        private const GOOGLE_CALENDAR_WATCH_TTL_SECONDS = 86400;
+        
         // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function watchCalendar(string $calendar) : void {
-            global $configuration, $googleApiClient, $authenticationService;
+            global $googleApiClient, $authenticationService;
 
-            $authenticationResult = $authenticationService->authenticateAsAdmin($configuration["googleCalendarWatchTtl"]);
+            $authenticationResult = $authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
-                BASE_URL . "/events?name=" . Event::CalendarInvalidated->name . "&args[calendar]=" . $calendar,
-                "Bearer " . $authenticationResult->getAccessToken());
+                BASE_URL . "/events?name=" . Event::CalendarInvalidated->name . "&args[calendar]=" . $calendar, self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS,
+                "Bearer " . $authenticationResult->getAccessToken(),);
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function getEvents($calendar) : array {        
-            global $configuration;
+            global $configurationService;
 
-            return $this->fetchEvents($configuration["calendars"][$calendar]);
+            return $this->fetchEvents($configurationService->getConfigurationEntry("calendars")[$calendar]);
         }
     
         public function getPublicHolidaysForCountries($countries) : array {
@@ -100,9 +102,9 @@
         }
 
         private function getEventTimestamp($date) : int {
-            global $configuration;
+            global $configurationService;
 
-            return (new DateTime($date, new DateTimeZone($configuration["homeLocation"]["timezone"])))->getTimestamp();
+            return (new DateTime($date, new DateTimeZone($configurationService->getConfigurationEntry("homeLocation")["timezone"])))->getTimestamp();
         }
 
         private function getEventAttributes($description) : array {
@@ -120,10 +122,10 @@
     }
 
     enum Calendar : string {
-        case Trips = "TRIPS";
-        case Places = "PLACES";
-        case Stays = "STAYS";
-        case Flights = "FLIGHTS";
-        case WatchedFlights = "WATCHED_FLIGHTS";
+        case Trips = "trips";
+        case Places = "places";
+        case Stays = "stays";
+        case Flights = "flights";
+        case WatchedFlights = "watchedFlights";
     }
 ?>

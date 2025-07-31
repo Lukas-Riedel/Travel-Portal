@@ -18,7 +18,8 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
 
     const allLabels = useLabels()
 
-    const unassignedLabels = useMemo(() => allLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id) && !configuration?.dynamicLabels?.[label.name], [allLabels, configuration, labels]))
+    const unassignedLabels = useMemo(() => allLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id)
+        && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name), [allLabels, configuration, labels]))
 
     const handleKnownLabelAdded = labelName => {
         showConfirmToast(`Opravdu chceš přidat štítek '${labelName}'?`,
@@ -57,7 +58,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                                 )}>
                                 {label.name}
                             </Link>
-                            {onLabelRemoved && isAdmin && !configuration?.dynamicLabels?.[label.name] && (
+                            {onLabelRemoved && isAdmin && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name) && (
                                 <button
                                     onClick={() => handleLabelRemoved(label)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
