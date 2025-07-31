@@ -212,7 +212,9 @@
             if ($albumId !== NULL) {
                 $album = $this->photoService->getAlbum($albumId);
                 if ($album !== NULL) {                    
-                    $albumTimestamp = (\DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone)))->getTimestamp();
+                    $albumDate = \DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                    $albumDate->setTime(0, 0);
+                    $albumTimestamp = $albumDate->getTimestamp();
                     $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS);
                 }
                 else {
@@ -222,7 +224,9 @@
             if ($photoId !== NULL) {
                 $album = $this->photoService->getAlbumForPhotoId($photoId);
                 if ($album !== NULL) {
-                    $albumTimestamp = (\DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone)))->getTimestamp();
+                    $albumDate = \DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                    $albumDate->setTime(0, 0);
+                    $albumTimestamp = $albumDate->getTimestamp();
                     $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS);
                 }
                 else {
@@ -308,8 +312,13 @@
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
                     if ($placeRow["trip_id"] === NULL) {
                         foreach ($permanentPlaceAlbums as &$permanentPlaceAlbum) {
-                            $albumTimestamp = (\DateTime::createFromFormat(self::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone)))->getTimestamp();
-                            $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS, FALSE, NULL, NULL, $permanentPlaceAlbum, NULL));
+                            $albumDate = \DateTime::createFromFormat(self::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                            $albumDate->setTime(0, 0);
+                            $albumTimestamp = $albumDate->getTimestamp();
+
+                            if ($minStart <= $albumTimestamp && $albumTimestamp + self::ONE_DAY_SECONDS <= $maxEnd) {
+                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS, FALSE, NULL, NULL, $permanentPlaceAlbum, NULL));
+                            }
                         }
                     }
                     else {

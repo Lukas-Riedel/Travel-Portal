@@ -66,9 +66,9 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     $mostPhotosPerDay = $this->getStandingsStatistics(fn($place, $date) => array(sprintf(self::PHOTOS_DATE_STATISTICS_FORMAT, implode(", ",
-                        array_map(fn($place) => $place->getName(), $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL,
+                        array_map(fn($place) => $place->getName(), array_filter($this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL,
                         $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS), $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS) + self::ONE_DAY_SECONDS,
-                        array(), PlaceSortingStrategy::Default))), date(self::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
+                        array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default), fn($place) => count($place->getDates()) > 0))), date(self::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {
                         $statistics[] = new Statistics(self::MOST_PHOTOS_PER_DAY_STATISTICS_NAME, $mostPhotosPerDay, StatisticsUnit::Photos);
                     }
