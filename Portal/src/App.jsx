@@ -74,19 +74,12 @@ export default function App() {
 function AppContent() {
     const { accessToken, login, isAdmin } = useAuth()
 
-    const [searchParams] = useSearchParams()
-
     useEffect(() => {
-        const apiKey = searchParams.get("apiKey")
-        if (apiKey) {
-            login({ apiKey })
-        }
-
         if (!accessToken) {
             login({ username: "guest", password: "guest" })
 
         }
-    }, [accessToken, login, searchParams])
+    }, [accessToken, login])
 
     if (!accessToken) {
         return
