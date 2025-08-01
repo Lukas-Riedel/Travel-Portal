@@ -86,7 +86,7 @@
     // Services.
     $configurationService = new ConfigurationService($databaseProvider);
     $platformService = new PlatformService();
-    $authenticationService = new AuthenticationService($databaseProvider);
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher);
     $noteService = new NoteService($databaseProvider);

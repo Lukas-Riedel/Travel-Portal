@@ -14,6 +14,7 @@
                 SELECT *
                 FROM configuration
                 WHERE private <= ?
+                ORDER BY `key` ASC
             SQL;
             
             $configurationRows = $this->databaseProvider

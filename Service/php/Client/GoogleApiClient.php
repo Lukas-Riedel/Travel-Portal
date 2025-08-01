@@ -262,40 +262,18 @@
         }
 
         private function getGoogleApiAccessToken() : string {
-            global $httpClient, $cacheClient;
+            global $authenticationService, $cacheClient;
 
             $cachedGoogleApiAccessToken = $cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedGoogleApiAccessToken !== NULL) {
                 return $cachedGoogleApiAccessToken;
             }
 
-            $refreshToken = NULL;
+            $googleAuthenticationResult = $authenticationService->getGoogleApiAccessToken();
+            $cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $googleAuthenticationResult->getAccessToken(),
+                $googleAuthenticationResult->getExpiresIn());
 
-            $googleRefreshTokenFilePath = dirname(__FILE__) . "/../config/google.txt";
-            if (file_exists($googleRefreshTokenFilePath)) {
-                $refreshToken = trim(file_get_contents($googleRefreshTokenFilePath));
-            }
-            else {
-                throw new RuntimeException("The refresh token has not been set yet.");
-            }
-            
-            $payload = array(
-                "client_id" => GOOGLE_API_CLIENT_ID,
-                "client_secret" => GOOGLE_API_CLIENT_SECRET,
-                "redirect_uri" => BASE_URL,
-                "refresh_token" => $refreshToken,
-                "grant_type" => "refresh_token",
-                "access_type" => "offline");     
-
-            $response = $httpClient->executeRequest(HttpMethod::POST, "https://oauth2.googleapis.com/token", array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
-
-            if (!isset($response["access_token"])) {
-                throw new RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
-            }
-
-            $cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
-
-            return $response["access_token"];
+            return $googleAuthenticationResult->getAccessToken();
         }
 
         // TODO: Move to Calendar enum.

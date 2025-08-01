@@ -14,7 +14,6 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
             "Nepodařilo se modifikovat konfigurační záznam",
             async () => onConfigurationUpdated(selectedKey, value)
         )
-
     }
 
     return configuration ? (
@@ -28,6 +27,12 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                         {formatConfigurationKeyName(key)}
                     </button>
                 ))}
+                <a
+                    href={import.meta.env.VITE_IAM_BASE_URL}
+                    target="_blank"
+                    className={"block w-full text-left px-3 py-2 rounded hover:bg-gray-200"}>
+                    Google APIs
+                </a>
             </div>
             <div className="flex-1 p-3 overflow-auto">
                 {selectedKey && (

@@ -1,4 +1,7 @@
 <?php
+
+    use Service\Service\Authentication\AuthenticationService;
+
     header('Access-Control-Allow-Origin: *');
     header('Content-Type: application/json');
     
@@ -9,7 +12,17 @@
 
     try {
         if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            throw new ErrorException("Invalid HTTP method.");
+            if (isset($_GET["code"])) {
+                $authenticationService->fetchGoogleApiRefreshToken($_GET["code"]);
+                header("Location: " . BASE_URL);
+            }
+            else {       
+                header("Location: https://accounts.google.com/o/oauth2/v2/auth?client_id=" 
+                    . GOOGLE_API_CLIENT_ID . "&prompt=consent&redirect_uri=" 
+                    . IAM_BASE_URL . "&response_type=code&access_type=offline&scope=" 
+                    . implode(" ", AuthenticationService::GOOGLE_API_AUTHORIZATION_SCOPES));
+            }
+            exit;
         }
 
         $authenticationResult = NULL;
@@ -23,7 +36,7 @@
             $authenticationResult = $authenticationService->authenticateWithRefreshToken($requestBody["refreshToken"]);
         }
         else {
-            throw new InvalidArgumentException("Some of the required arguments are missing.");
+            throw new InvalidArgumentException("Some of the required arguments is missing.");
         }
 
         echo json_encode($authenticationResult, JSON_HEX_QUOT | JSON_HEX_TAG);
