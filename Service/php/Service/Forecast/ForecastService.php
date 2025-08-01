@@ -87,7 +87,7 @@
         public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 round($placeIdentifier->getLatitude(), 4), round($placeIdentifier->getLongitude(), 4)),
-                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactEmail")), NULL, TRUE);
+                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), NULL, TRUE);
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {
                 throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));

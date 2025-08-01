@@ -30,8 +30,8 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
     }, [includePlannedTimeOff, isMobile])
 
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.currentFte || 8, [configuration])
-    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.expectedOvertimeHoursPerDay || 0, [configuration])
+    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
+    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimeHoursPerDay || 0, [configuration])
 
     const latestAllowedDateStartOfDay = useMemo(() => startOfDay(fromUnixTime(trips?.at(-1)?.end)), [trips])
 

@@ -50,7 +50,7 @@
         }        
 
         public function isDayTripsTrip(Trip $trip) : bool {
-            return $trip->getName() === $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
+            return $trip->getName() === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {
@@ -181,7 +181,7 @@
         }
 
         public function updateAllDayTripsTripsDates() : void {
-            $dayTripsTripName = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
+            $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             $trips = $this->getRegularTrips(NULL, NULL, NULL, array(), TripSortingStrategy::Default);
             
             foreach ($trips as &$trip) {
@@ -235,7 +235,7 @@
         }
 
         private function getOrCreateDayTripsTripIdentifier(int $year) : TripIdentifier {
-            $name = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
+            $name = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             $tripIdentifier = $this->getOrCreateTripIdentifier($name, $year);
             
             if (!$this->tripMapper->selectExistsDayTripsTrip($tripIdentifier->getId())) {

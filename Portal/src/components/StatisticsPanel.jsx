@@ -199,14 +199,14 @@ export default function StatisticsPanel({ statistics }) {
                                                 <li key={index}>
                                                     <span>{item.key}</span>{" "}
                                                     <span className="text-gray-400">
-                                                        ({decapitalize(formatStatisticsUnit(stat?.unit, item?.value, configuration?.mainCurrency ?? ""))})
+                                                        ({decapitalize(formatStatisticsUnit(stat?.unit, item?.value, configuration?.expensify?.mainCurrency ?? ""))})
                                                     </span>
                                                 </li>
                                             ))}
                                         </ol>
                                     ) : (
                                         <div className="text-lg">
-                                            {formatStatisticsUnit(stat?.unit, stat?.value, configuration?.mainCurrency ?? "")}
+                                            {formatStatisticsUnit(stat?.unit, stat?.value, configuration?.expensify?.mainCurrency ?? "")}
                                         </div>
                                     )}
                                 </div>

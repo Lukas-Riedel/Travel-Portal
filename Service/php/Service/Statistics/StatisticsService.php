@@ -53,7 +53,7 @@
         }
 
         public function updateTripStatistics(Trip $trip) : void {            
-            if ($this->isSpecialTrip($trip)) {
+            if ($this->isDayTrips($trip)) {
                 return;
             }  
 
@@ -85,8 +85,8 @@
             }
         } 
 
-        private function isSpecialTrip(Trip $trip) : bool {
-            return in_array($trip->getName(), array_values($this->configurationService->getConfigurationEntry("specialTripNames")));
+        private function isDayTrips(Trip $trip) : bool {
+            return $trip->getName() === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
         }
         
         private function getBeginningOfYearTimestamp(int $year) : int {

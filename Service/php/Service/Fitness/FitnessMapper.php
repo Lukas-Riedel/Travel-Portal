@@ -194,7 +194,7 @@
                     OR f.timestamp + (7 * 86400) > f.last_update
             SQL;
 
-            $dayTripsTripName = $this->configurationService->getConfigurationEntry("specialTripNames")["dayTrips"];
+            $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName)

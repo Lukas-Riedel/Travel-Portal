@@ -7,6 +7,7 @@ export default class Trip {
     }
 
     isDayTrips() {
+        // TODO: Somehow use value from useConfiguration
         return this.name === "Výlety"
     }
 

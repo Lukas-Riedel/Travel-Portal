@@ -216,7 +216,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                             <>
                                 <td colSpan={4} />
                                 <td className="p-3 text-center font-semibold hidden sm:table-cell">
-                                    {`${totalCost.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
+                                    {`${totalCost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                                 </td>
                                 {isAdmin && <td />}
                             </>
@@ -224,7 +224,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                             <>
                                 <td colSpan={3} />
                                 <td className="p-3 text-center font-semibold">
-                                    {`${totalCost.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
+                                    {`${totalCost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                                 </td>
                                 <td className="hidden sm:table-cell" />
                             </>
@@ -257,7 +257,7 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
             <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span>
-                        {`${cost.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
+                        {`${cost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                     </span>
                 </div>
             </td>
@@ -346,7 +346,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                 </div>
             </td>
             <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color} hidden sm:table-cell`}>
-                {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.mainCurrency ?? ""}`}
+                {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
             </td>
             {isAdmin && onExpenseRemoved && (
                 <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
@@ -379,7 +379,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
             setNewType(expenseCandidate?.type || Object.keys(expenseTypes)[0])
             setNewDescription(expenseCandidate?.description || "")
             setNewValue(expenseCandidate?.value || 0)
-            setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.mainCurrency || "")
+            setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || "")
             setNewSubscriptionId(expenseCandidate?.subscriptionId)
         }
     }, [])

@@ -14,7 +14,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
             "Nepodařilo se modifikovat konfigurační záznam",
             async () => onConfigurationUpdated(selectedKey, value)
         )
-        
+
     }
 
     return configuration ? (
@@ -47,11 +47,12 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                         quotesOnKeys={false}
                         displayArrayKey={false}
                         indentWidth={4}
+                        iconStyle={"square"}
                     />
                 )}
                 {!selectedKey && (
                     <div className="flex items-center justify-center text-gray-500 h-full w-full">
-                        Vyber klíč vlevo pro úpravu
+                        Vyber konfigurační klíč pro úpravu
                     </div>
                 )}
             </div>

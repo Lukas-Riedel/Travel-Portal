@@ -12,7 +12,7 @@ export default function TimeOffBalanceSummary({ overtimeEvents, vacationEvents, 
     const vacationBalance = useMemo(() => getBalance(vacationEvents), [vacationEvents])
     const selfcareBalance = useMemo(() => getBalance(selfcareEvents), [selfcareEvents])
     const tenureBalance = useMemo(() => getBalance(tenureEvents), [tenureEvents])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.currentFte || 8, [configuration])
+    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
 
     const renderBalance = (Icon, balance) => (
         <div className="flex flex-col bg-white text-black px-6 py-3 rounded-xl text-center flex-1 shadow-md select-none border border-gray-200 min-h-[150px]">

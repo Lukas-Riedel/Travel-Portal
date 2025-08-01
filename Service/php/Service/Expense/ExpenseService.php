@@ -95,7 +95,7 @@
         }
 
         private function getExchangeRate(string $currency) : float {       
-            $mainCurrency = $this->configurationService->getConfigurationEntry("mainCurrency");
+            $mainCurrency = $this->configurationService->getConfigurationEntry("expensify")["mainCurrency"];
             if ($currency === $mainCurrency) {
                 return 1;
             }
