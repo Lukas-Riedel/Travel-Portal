@@ -1,7 +1,7 @@
 <?php
     require_once(dirname(__FILE__) . "/GetPlaceHandler.php");
 
-    class UpdateConfigurationHandler extends Handler {
+    class ReplaceConfigurationHandler extends Handler {
         public function handle($input) {
             global $configurationService;
 
@@ -31,15 +31,15 @@
         }
 
         public function getMethod() {
-            return "PATCH";
+            return "PUT";
         }
         
         public function getShortDescription() {
-            return "Update a configuration item with the specified key";
+            return "Replace a configuration item with the specified key";
         }
         
         public function getLongDescription() {
-            return "Updates a configuration item with the specified key.";
+            return "Replaces a configuration item with the specified key.";
         }
         
         public function getRequestExamples() {

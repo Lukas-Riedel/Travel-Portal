@@ -11,7 +11,7 @@ import { Earth, House } from "lucide-react"
 import { useEvents } from "../hooks/useEvents"
 
 export default function TripSummary({ tripId }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { trip } = useTrip(tripId)

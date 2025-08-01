@@ -5,7 +5,7 @@ import { formatDays, formatDuration } from "../utils/formatters"
 import { useConfiguration } from "../contexts/ConfigContext"
 
 export default function TimeOffBalanceSummary({ overtimeEvents, vacationEvents, selfcareEvents, tenureEvents }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const getBalance = events => Array.isArray(events) ? (events[0]?.balance ?? 0) : undefined
     const overtimeBalance = useMemo(() => getBalance(overtimeEvents), [overtimeEvents])

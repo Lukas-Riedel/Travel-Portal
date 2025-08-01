@@ -11,7 +11,7 @@ import { ClockPlus } from "lucide-react"
 const loadingRowsCount = 5
 
 export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640)
 

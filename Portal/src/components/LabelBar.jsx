@@ -14,7 +14,7 @@ const loadingLabelsCount = 3
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
 
-    const configuration = useConfiguration();
+    const { configuration } = useConfiguration();
 
     const allLabels = useLabels()
 

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 const ConfigContext = createContext()
 
 export function ConfigurationProvider({ children }) {
-    const { listConfigurationEntries } = useApi()
+    const { listConfigurationEntries, replaceConfigurationEntry } = useApi()
 
     const configuration = useQuery({
         queryKey: ["listConfigurationEntries", "public"],
@@ -13,8 +13,13 @@ export function ConfigurationProvider({ children }) {
         staleTime: 1000 * 60 * 60 * 24,
     }).data
 
+    const refetchConfiguration = _ => query.refetch()
+
     return (
-        <ConfigContext.Provider value={configuration}>
+        <ConfigContext.Provider value={{
+            configuration, 
+            updateConfigurationEntry: (key, value) => replaceConfigurationEntry(key, value).then(refetchConfiguration)
+        }}>
             {children}
         </ConfigContext.Provider>
     )

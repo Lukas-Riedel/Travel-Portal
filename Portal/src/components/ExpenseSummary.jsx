@@ -87,7 +87,7 @@ const loadingRowsCount = 5
 
 export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseCreated,
     onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
     const { isAdmin } = useAuth()
 
     const [detailedView, setDetailedView] = useState(isAdmin)
@@ -237,7 +237,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
 }
 
 function AggregatedExpenseRow({ type, cost, totalCost }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const Icon = expenseTypes[type]?.icon || expenseTypes.OTHER.icon
     return (
@@ -270,7 +270,7 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
 
 function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }) {
     const { isAdmin } = useAuth()
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const handleRemove = expense => {
         showConfirmToast(
@@ -362,7 +362,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
 }
 
 function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const subscriptions = useSubscriptions()
 

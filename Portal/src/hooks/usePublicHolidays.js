@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { useConfiguration } from "../contexts/ConfigContext"
 import { format } from "date-fns"
 
 export const usePublicHolidays = () => {
-    const configuration = useConfiguration()
-
     const currentYear = new Date().getFullYear()
 
     const fetchHolidays = async year => (await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/CZ`))?.json()

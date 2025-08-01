@@ -16,14 +16,17 @@ import FlightCardGrid from "../components/FlightCardGrid"
 import DataConsistencyIssueCardGrid from "../components/DataConsistencyIssueCardGrid"
 import { useAirlines } from "../hooks/useAirlines"
 import { useEvents } from "../hooks/useEvents"
+import ConfigurationEditor from "../components/ConfigurationEditor"
+import { useConfiguration } from "../contexts/ConfigContext"
 
-const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy"]
+const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy", "Konfigurace"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
     const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode,
         createGeographicalExtensionCategory, removeCandidatePlace, logFlight } = useApi()
     const { publishAllAlbumsInvalidatedEvent } = useEvents()
+    const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const airlines = useAirlines();
@@ -116,6 +119,11 @@ export default function AdminPage() {
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}
                     onRegionManagementOpened={() => { /** TODO: Set active tab to the region management. */ }} />
+            )}
+            {activeTab === 3 && (
+                <ConfigurationEditor
+                    configuration={configuration}
+                    onConfigurationUpdated={updateConfigurationEntry} />
             )}
         </>
     )

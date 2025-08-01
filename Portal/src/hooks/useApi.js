@@ -151,10 +151,9 @@ export function useApi() {
         return sendRequest("GET", "/configuration")
     }
 
-    async function updateConfigurationEntry(type, key, value) {
-        return sendRequest("PATCH", "/configuration/" + type,
+    async function replaceConfigurationEntry(key, value) {
+        return sendRequest("PUT", "/configuration/" + key,
             {
-                key: key,
                 value: value
             })
     }
@@ -636,7 +635,7 @@ export function useApi() {
         createCategoryHighlight,
         removeCategoryHighlight,
         listConfigurationEntries,
-        updateConfigurationEntry,
+        replaceConfigurationEntry,
         getCoordinates,
         createEvent,
         listEvents,

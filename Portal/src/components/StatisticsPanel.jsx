@@ -73,7 +73,7 @@ const statisticsNames = {
 }
 
 export default function StatisticsPanel({ statistics }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const containerRef = useRef(null)
     const isDraggingRef = useRef(false)

@@ -17,7 +17,7 @@ const INVALID_PHOTO_ID = "INVALID_PHOTO_ID"
 
 export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
     const { isAdmin } = useAuth()
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)

@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded }) {
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
     const { isAdmin } = useAuth()
 
     const [timezone, setTimezone] = useState(undefined)

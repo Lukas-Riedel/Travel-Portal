@@ -14,7 +14,7 @@ import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { isAdmin } = useAuth()
-    const configuration = useConfiguration()
+    const { configuration } = useConfiguration()
 
     const now = new Date()
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
