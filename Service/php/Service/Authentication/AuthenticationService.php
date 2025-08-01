@@ -5,7 +5,7 @@
 
     class AuthenticationService {
 
-        private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 24;
+        private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 3 * 24;
         private const BEARER_TOKEN_VALIDITY = 3600;
         private const ADMIN_USER_ID = "999";
 

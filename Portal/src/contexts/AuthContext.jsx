@@ -62,6 +62,23 @@ export const AuthProvider = ({ children }) => {
         return () => clearTimeout(timeout)
     }, [accessToken])
 
+
+    useEffect(() => {
+        if (!accessToken) {
+            return
+        }
+
+        const init = async () => {
+            try {
+                await refreshAccessToken()
+            } catch {
+                logout()
+            }
+        }
+
+        init()
+    }, [])
+
     return (
         <AuthContext.Provider value={{
             accessToken,
