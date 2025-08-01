@@ -7,7 +7,6 @@ jobs:
     outputs:
       service: ${{ steps.filter.outputs.service }}
       portal: ${{ steps.filter.outputs.portal }}
-      portal-old: ${{ steps.filter.outputs.portal-old }}
       agent: ${{ steps.filter.outputs.agent }}
       bridgex: ${{ steps.filter.outputs.bridgex }}
     steps:
@@ -22,8 +21,6 @@ jobs:
               - 'Service/**'
             portal:
               - 'Portal/**'
-            portal-old:
-              - 'Portal-Old/**'
             agent:
               - 'Agent/**'
             bridgex:
@@ -31,7 +28,7 @@ jobs:
   deploy-service-and-portal:
     name: Deploy Service and Portal
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.service == 'true' || needs.detect-changes.outputs.portal == 'true' || needs.detect-changes.outputs.portal-old == 'true' }}
+    if: ${{ needs.detect-changes.outputs.service == 'true' || needs.detect-changes.outputs.portal == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -59,7 +56,6 @@ jobs:
         cd Portal
         npm run build
       env:
-        VITE_BASE_PATH: "/new"
         VITE_SW_VERSION: ${{ github.run_number }}
         VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
@@ -74,11 +70,9 @@ jobs:
       run: |
         mkdir target
         mkdir target/api
-        mkdir target/new
         shopt -s dotglob
-        cp -r ./Portal-Old/* target/
         cp -r ./Service/* target/api/
-        cp -r ./Portal/dist/* target/new/
+        cp -r ./Portal/dist/* target/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
