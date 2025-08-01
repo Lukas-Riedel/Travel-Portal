@@ -1,14 +1,25 @@
+import { precacheAndRoute } from "workbox-precaching"
+precacheAndRoute(self.__WB_MANIFEST || [])
+
 import { initializeApp } from "firebase/app"
 import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw"
 
+self.addEventListener("install", event => {
+    self.skipWaiting()
+})
+
+self.addEventListener("activate", event => {
+    self.clients.claim()
+})
+
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+    apiKey: __VITE_FIREBASE_API_KEY__,
+    authDomain: __VITE_FIREBASE_AUTH_DOMAIN__,
+    projectId: __VITE_FIREBASE_PROJECT_ID__,
+    storageBucket: __VITE_FIREBASE_STORAGE_BUCKET__,
+    messagingSenderId: __VITE_FIREBASE_MESSAGING_SENDER_ID__,
+    appId: __VITE_FIREBASE_APP_ID__,
+    measurementId: __VITE_FIREBASE_MEASUREMENT_ID__,
 }
 
 const app = initializeApp(firebaseConfig)
@@ -22,13 +33,13 @@ onBackgroundMessage(messaging, payload => {
         if (wrappedEvent.name === "PhotosUploadingTriggered") {
             self.registration.showNotification("Nahrávání fotek bylo dokončeno.", {
                 body: "",
-                icon: "/icon.png"
+                icon: "icon-192.png"
             })
         }
         else if (wrappedEvent.name === "PhotoReplacingTriggered") {
             self.registration.showNotification("Nahrazování fotky bylo dokončeno.", {
                 body: "",
-                icon: "/icon.png"
+                icon: "icon-192.png"
             })
         }
     }

@@ -16,7 +16,7 @@ export const NotificationProvider = ({ children }) => {
     useEffect(() => {
         if ("serviceWorker" in navigator) {
             const swVersion = import.meta.env.VITE_SW_VERSION || Date.now()
-            navigator.serviceWorker.register((import.meta.env.VITE_BASE_PATH || "") + "/firebase-messaging-sw.js?v=" + swVersion, { type: "module" })
+            navigator.serviceWorker.register((import.meta.env.VITE_BASE_PATH || "") + "/firebase-messaging-sw.js?v=" + swVersion)
                 .then(registration => getToken(messaging, {
                     vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
                     serviceWorkerRegistration: registration
