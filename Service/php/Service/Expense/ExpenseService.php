@@ -87,11 +87,11 @@
         }
 
         public function removeExpense(string $expenseId, string $tripId) : bool {
-            $wasDeleted = $this->expenseMapper->deleteExpense($expenseId) > 0;
+            $wasRemoved = $this->expenseMapper->deleteExpense($expenseId) > 0;
                 
             $this->eventPublisher->publishExpenseRemovedEvent($expenseId, $tripId);
 
-            return $wasDeleted;
+            return $wasRemoved;
         }
 
         private function getExchangeRate(string $currency) : float {       

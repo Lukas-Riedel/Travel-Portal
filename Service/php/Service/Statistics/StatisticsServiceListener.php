@@ -51,21 +51,21 @@ use Service\Service\Place\PlaceService;
 
         public function onExpenseCreated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onExpenseUpdated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onExpenseRemoved(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
@@ -73,7 +73,9 @@ use Service\Service\Place\PlaceService;
         public function onFitnessDataUpdated(mixed $message) : void {
             $trips = $this->tripService->getTripsContainingInterval($message["start"], $message["end"]);
             foreach ($trips as &$trip) {
-                $this->statisticsService->updateTripStatistics($trip);
+                if (!$this->tripService->isDayTripsTrip($trip)) {
+                    $this->statisticsService->updateTripStatistics($trip);
+                }
             }
         }
 
@@ -85,7 +87,7 @@ use Service\Service\Place\PlaceService;
             $tripId = $this->flightService->getTripIdForFlight($flight);
             if ($tripId !== NULL) {
                 $trip = $this->tripService->getRegularTrip($tripId);
-                if ($trip !== NULL) {
+                if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                     $this->statisticsService->updateTripStatistics($trip);
                 }
             }
@@ -93,21 +95,21 @@ use Service\Service\Place\PlaceService;
 
         public function onFlightEventCreated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onFlightEventUpdated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onFlightEventDeleted(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
@@ -126,7 +128,10 @@ use Service\Service\Place\PlaceService;
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+                $trip = $this->tripService->getRegularTrip($tripId);
+                if (!$this->tripService->isDayTripsTrip($trip)) {
+                    $this->statisticsService->updateTripStatistics($trip);
+                }
             }
 
             foreach ($place->getCategories() as &$category) {
@@ -148,7 +153,10 @@ use Service\Service\Place\PlaceService;
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+                $trip = $this->tripService->getRegularTrip($tripId);
+                if (!$this->tripService->isDayTripsTrip($trip)) {
+                    $this->statisticsService->updateTripStatistics($trip);
+                }
             }
 
             foreach ($place->getCategories() as &$category) {
@@ -214,7 +222,10 @@ use Service\Service\Place\PlaceService;
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->statisticsService->updateTripStatistics($this->tripService->getRegularTrip($tripId));
+                $trip = $this->tripService->getRegularTrip($tripId);
+                if (!$this->tripService->isDayTripsTrip($trip)) {
+                    $this->statisticsService->updateTripStatistics($trip);
+                }
             }
 
             foreach ($place->getCategories() as &$category) {
@@ -224,49 +235,49 @@ use Service\Service\Place\PlaceService;
 
         public function onStayEventCreated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onStayEventUpdated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onStayEventDeleted(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onTripUpdated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onTripEventCreated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onTripEventUpdated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
 
         public function onTripEventDeleted(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }
@@ -293,7 +304,7 @@ use Service\Service\Place\PlaceService;
 
         public function onTripStatisticsInvalidated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== NULL) {
+            if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }

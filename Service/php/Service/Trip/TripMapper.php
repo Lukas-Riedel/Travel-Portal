@@ -378,6 +378,22 @@
                 ->withParameters($eventId, $trip->getId(), $trip->getStart(), $trip->getEnd())
                 ->execute() === 1;
         }
+        
+        public function insertCandidateTrip(string $tripId) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO trip_candidate (
+                    trip_id
+                )
+                VALUES (
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($tripId)
+                ->execute();
+        }
 
         public function updateDayTripsTripDates(string $tripId, int $start, int $end) : bool {
             $sql = <<<'SQL'
@@ -427,6 +443,40 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteStaleTripIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE 
+                FROM trip_identifier 
+                WHERE id NOT IN (
+                        SELECT trip_id 
+                        FROM trip_event
+                    ) AND id NOT IN (
+                        SELECT trip_id 
+                        FROM trip_candidate
+                    ) AND id NOT IN (
+                        SELECT trip_id 
+                        FROM trip_day_trip
+                    )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+        
+        public function deleteCandidateTrip(string $tripId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM trip_candidate
+                WHERE trip_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($tripId)
                 ->execute();
         }
 

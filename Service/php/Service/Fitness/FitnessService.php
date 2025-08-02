@@ -5,7 +5,8 @@
 
     class FitnessService {
 
-        const FITNESS_RECORD_DURATION = 1800;
+        public const FITNESS_RECORD_DURATION = 1800;
+
         private const ONE_DAY_SECONDS = 86400;
 
         private readonly FitnessMapper $fitnessMapper;
@@ -57,6 +58,10 @@
             $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION);
 
             return TRUE;
+        }
+
+        public function removeStaleFitnessRecords() : void {
+            $this->fitnessMapper->deleteStaleFitnessRecords();
         }
 
         private function getCorrectedDistance(float $distance, int $steps) : float {

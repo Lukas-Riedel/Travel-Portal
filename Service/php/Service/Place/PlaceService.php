@@ -205,7 +205,11 @@
         }
         
         public function removeCandidateEventsForCandidateTrip(string $tripId) : bool {
-            return $this->placeMapper->deleteCandidateEventsForCandidateTrip($tripId) > 0;
+            $wasRemoved = $this->placeMapper->deleteCandidateEventsForCandidateTrip($tripId) > 0;
+            if ($wasRemoved) {
+                $this->placeMapper->deleteStalePlaceIdentifiers();
+            }
+            return $wasRemoved;
         }
 
         public function createPermanentPlace(string $name, string $address) : Place {
@@ -251,18 +255,24 @@
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForCreatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                $this->eventPublisher->publishPlaceCreatedEvent($affectedPlaceId);
                 $this->eventPublisher->publishPlaceEventCreatedEvent($affectedPlaceId);
             }
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForUpdatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                $this->eventPublisher->publishPlaceUpdatedEvent($affectedPlaceId);
                 $this->eventPublisher->publishPlaceEventUpdatedEvent($affectedPlaceId);
             }
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                $this->eventPublisher->publishPlaceDeletedEvent($affectedPlaceId);
                 $this->eventPublisher->publishPlaceEventDeletedEvent($affectedPlaceId);
             }
+
+            $this->placeMapper->deleteStalePlaceIdentifiers();
+            $this->placeMapper->deleteVisitedCandidatePlaces();
         }
 
         private function getOrCreatePlaceIdentifier(string $name, string $country, string $address) : PlaceIdentifier {            
@@ -290,6 +300,7 @@
 
             if ($wasRemoved) {
                 $this->eventPublisher->publishPlaceDeletedEvent($placeId);
+                $this->placeMapper->deleteStalePlaceIdentifiers();
             }
 
             return $wasRemoved;

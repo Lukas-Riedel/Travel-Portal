@@ -22,7 +22,7 @@ export default function FlightCard({ flight }) {
                     <Link
                         to={`/airport/${airport.id}`}
                         className="hover:underline text-sky-600 font-medium">
-                        {airport.name} (${airport.code})
+                        {airport.name} ({airport.code})
                     </Link>
                 ) : (
                     <span className="text-sky-600 font-medium">

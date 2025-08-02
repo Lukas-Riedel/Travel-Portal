@@ -239,6 +239,11 @@
                 $this->eventPublisher->publishAlbumUpdatedEvent($albumId);
             }
 
+            // Final clean-up.
+            $this->photoMapper->deleteStaleAlbumIdentifiers();
+            $this->photoMapper->deleteStalePhotoIdentifiers();
+            $this->photoMapper->deleteStalePendingPhotos();
+
             return $filePaths;
         }
         

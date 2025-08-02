@@ -1,12 +1,14 @@
 <?php
     namespace Service\Service\Label;
 
+    use Service\Service\Configuration\ConfigurationService;
+
     class LabelService {
 
         private readonly LabelMapper $labelMapper;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->labelMapper = new LabelMapper($databaseProvider);
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
+            $this->labelMapper = new LabelMapper($databaseProvider, $configurationService);
         }
         
         public function createLabel(string $placeId, string $labelName) : Label {
@@ -47,11 +49,19 @@
         }
 
         public function removeLabelForPlace(string $placeId, string $labelId) : bool {
-            return $this->labelMapper->deleteLabelForPlace($placeId, $labelId) > 0;
+            $wasRemoved = $this->labelMapper->deleteLabelForPlace($placeId, $labelId) > 0;
+            if ($wasRemoved) {
+                $this->labelMapper->deleteStaleLabelIdentifiers();
+            }
+            return $wasRemoved;
         }
 
         public function removeLabelForAllPlaces(string $labelId) : bool {
-            return $this->labelMapper->deleteLabelForAllPlaces($labelId) > 0;
+            $wasRemoved = $this->labelMapper->deleteLabelForAllPlaces($labelId) > 0;
+            if ($wasRemoved) {
+                $this->labelMapper->deleteStaleLabelIdentifiers();
+            }
+            return $wasRemoved;
         }
     }
 ?>

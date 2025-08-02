@@ -1,12 +1,17 @@
 <?php
     namespace Service\Service\Label;
 
+    use Service\Service\Configuration\ConfigurationService;
+
     class LabelMapper {
         
         private readonly \DatabaseProvider $databaseProvider;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
+        private readonly ConfigurationService $configurationService;
+
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
             $this->databaseProvider = $databaseProvider;
+            $this->configurationService = $configurationService;
         }
 
         public function selectLabelsForPlace(string $placeId) : array {
@@ -157,6 +162,29 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($labelId)
+                ->execute();
+        }
+
+        public function deleteStaleLabelIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM label_identifier
+                WHERE :CONDITIONS
+            SQL;
+
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("id NOT IN (SELECT label_id FROM label)");
+
+            $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 
+                $this->configurationService->getConfigurationEntry("dynamicLabels"));
+            if (count($dynamicLabelNames) > 0) {
+                $whereClauseBuilder->withClause("name NOT IN (" . implode(",", array_fill(0, count($dynamicLabelNames), "?")) . ")", ...$dynamicLabelNames);
+            }
+
+            $whereClause = $whereClauseBuilder->buildForAnd();
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
                 ->execute();
         }
     }

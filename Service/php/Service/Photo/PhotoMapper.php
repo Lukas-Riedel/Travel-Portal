@@ -507,6 +507,48 @@
                 ->execute();
         }
 
+        public function deleteStaleAlbumIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM album_identifier
+                WHERE id NOT IN (
+                    SELECT id
+                    FROM album
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteStalePhotoIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM photo_identifier
+                WHERE id NOT IN (
+                    SELECT id
+                    FROM photo
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteStalePendingPhotos() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM photo_pending
+                WHERE expiration <= UNIX_TIMESTAMP()
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
         private function selectIndoorPhotosCount(string $albumId) : int {
             $sql = <<<'SQL'
                 SELECT COUNT(*)

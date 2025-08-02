@@ -42,7 +42,7 @@
         public function onCalendarInvalidated(mixed $message) : void {
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
             if ($message["calendar"] === \Calendar::Trips->value) {
-                $this->tripService->deleteAllDayTripsTrips();
+                $this->tripService->removeAllDayTripsTrips();
                 $this->tripService->refreshCalendar();
                 $this->placeService->refreshCalendar($this->tripService);
                 $this->stayService->refreshCalendar($this->tripService);

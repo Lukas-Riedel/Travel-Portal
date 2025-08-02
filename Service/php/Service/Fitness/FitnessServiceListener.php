@@ -16,6 +16,10 @@
             $this->scheduler = $scheduler;
         }
 
+        public function onPlaceEventDeleted(mixed $message) : void {
+            $this->fitnessService->removeStaleFitnessRecords();
+        }
+
         public function onSchedulerTriggered(mixed $message) : void {
             if ($message["action"] === self::FETCH_FITNESS_ACTION_NAME
                 && time() - $message["lastTriggered"] > FitnessService::FITNESS_RECORD_DURATION) {

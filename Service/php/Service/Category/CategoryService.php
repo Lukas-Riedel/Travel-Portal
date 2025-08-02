@@ -21,7 +21,7 @@
 
         public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
             HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher) {
-            $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService);
+            $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService, $configurationService);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
         }
@@ -302,6 +302,10 @@
             }
 
             return $this->getOrCreateCategoryIdentifier($country, CategoryCategory::Country->value);
+        }
+
+        public function removeStaleCategoryIdentifiers() : void {
+            $this->categoryMapper->deleteStaleCategoryIdentifiers();
         }
 
         private function getWktPointsOnCircle(float $latitude, float $longitude, int $radiusInKms, int $pointsCount) : array {    

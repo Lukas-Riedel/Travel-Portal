@@ -240,6 +240,24 @@
                 ->execute();
         }
 
+        public function deleteStaleHighlightIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM highlight_identifier
+                WHERE id NOT IN (
+                        SELECT highlight_id 
+                        FROM highlight_place
+                    ) AND id NOT IN (
+                        SELECT highlight_id 
+                        FROM highlight_trip
+                    )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
         private function getHighlight(mixed $highlightRow) : Highlight {
             $photo = $this->photoService->getPhoto($highlightRow["photo_id"]);
             if ($photo === NULL) {

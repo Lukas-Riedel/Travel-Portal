@@ -1,6 +1,7 @@
 <?php
     namespace Service\Service\Category;
-    
+
+    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Highlight\HighlightService;
     use Service\Service\Statistics\StatisticsService;
 
@@ -11,11 +12,14 @@
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
+        private readonly ConfigurationService $configurationService;
+
         public function __construct(\DatabaseProvider $databaseProvider, HighlightService $highlightService,
-            StatisticsService $statisticsService) {
+            StatisticsService $statisticsService, ConfigurationService $configurationService) {
             $this->databaseProvider = $databaseProvider;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
+            $this->configurationService = $configurationService;
         }
 
         public function selectAllCategoryNames() : array {            
@@ -487,6 +491,26 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
+                ->execute();
+        }        
+
+        public function deleteStaleCategoryIdentifiers() : int {
+            $sql = <<<SQL
+                DELETE 
+                FROM category_identifier 
+                WHERE :CONDITIONS
+            SQL;
+            
+            $countryNames = array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames"));
+            $whereClause = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("name NOT IN (" . implode(",", array_fill(0, count($countryNames), "?")) . ")", ...$countryNames)
+                ->withClause("id NOT IN (SELECT category_id FROM region_geographical)")
+                ->withClause("id NOT IN (SELECT category_id FROM region_composite)")
+                ->withClause("id NOT IN (SELECT subject_category_id FROM region_composite)")
+                ->buildForAnd();
+
+            return $this->databaseProvider
+                ->statementBuilder($sql, $whereClause)
                 ->execute();
         }
     }

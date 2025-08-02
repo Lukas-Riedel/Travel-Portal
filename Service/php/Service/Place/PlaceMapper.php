@@ -348,7 +348,9 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder(); 
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE end < UNIX_TIMESTAMP())")
+                ->withClause("pi.id NOT IN (SELECT place_id FROM place_permanent)");
             if ($placeId !== NULL) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
             }
@@ -809,6 +811,53 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM place_event
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+        
+        public function deleteStalePlaceIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM place_identifier
+                WHERE id NOT IN (
+                        SELECT place_id 
+                        FROM place_candidate
+                    )
+                    AND id NOT IN (
+                        SELECT place_id 
+                        FROM place_event
+                    ) 
+                    AND id NOT IN (
+                        SELECT place_id 
+                        FROM place_permanent
+                    ) 
+                    AND id NOT IN (
+                        SELECT place_id 
+                        FROM place_candidate_event
+                    )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteVisitedCandidatePlaces() : int {
+            $sql = <<<'SQL'
+                DELETE 
+                FROM place_candidate 
+                WHERE place_id IN (
+                        SELECT place_id 
+                        FROM place_event 
+                        WHERE end < UNIX_TIMESTAMP()
+                    )
+                    OR place_id IN (
+                        SELECT place_id
+                        FROM place_permanent
+                    )
             SQL;
 
             return $this->databaseProvider

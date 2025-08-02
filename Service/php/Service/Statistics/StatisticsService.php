@@ -13,16 +13,13 @@
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
         private readonly StatisticsMapper $statisticsMapper;
-
-        private readonly ConfigurationService $configurationService;
         
         private readonly \EventPublisher $eventPublisher;
 
         private array $statisticsProviders = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
             $this->statisticsMapper = new StatisticsMapper($databaseProvider);
-            $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
         }
 
@@ -52,11 +49,7 @@
             $this->eventPublisher->publishYearStatisticsUpdatedEvent($year);
         }
 
-        public function updateTripStatistics(Trip $trip) : void {            
-            if ($this->isDayTrips($trip)) {
-                return;
-            }  
-
+        public function updateTripStatistics(Trip $trip) : void {    
             $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), min(time(), $trip->getEnd()), NULL, $trip->getId());
             $this->eventPublisher->publishTripStatisticsUpdatedEvent($trip->getId(), $trip->getYear());
         }
@@ -83,10 +76,6 @@
                     }
                 }
             }
-        } 
-
-        private function isDayTrips(Trip $trip) : bool {
-            return $trip->getName() === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
         }
         
         private function getBeginningOfYearTimestamp(int $year) : int {

@@ -210,6 +210,14 @@
             $this->publishLocalEvent(Event::InactiveDevicesInvalidated, NULL);
         }
 
+        public function publishConfigurationEntryUpdated($key) : void {
+            $this->publishLocalEvent(Event::ConfigurationEntryUpdated, array("key" => $key));
+        }
+
+        public function publishTimeTrackingEventsAuditTriggered() : void {
+            $this->publishLocalEvent(Event::TimeTrackingEventsAuditTriggered, NULL);
+        }
+
         public function publishEvent($event, $args) : void {
             switch ($event->getBroker()) {
                 case EventBroker::CloudMessaging:
@@ -309,6 +317,8 @@
         case PlaceEventDeleted = 46;
         case PlaceCreated = 47;
         case InactiveDevicesInvalidated = 48;
+        case ConfigurationEntryUpdated = 49;
+        case TimeTrackingEventsAuditTriggered = 50;
 
         case FitnessActivityDetected = 1000;
 

@@ -162,6 +162,7 @@ use Service\Service\Trip\TripSortingStrategy;
             $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Place, $placeId, $highlightId) > 0;
             if ($wasRemoved) {
                 $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Place, $placeId, $highlightId);
+                $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }        
             return $wasRemoved;
         }
@@ -170,6 +171,7 @@ use Service\Service\Trip\TripSortingStrategy;
             $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Trip, $tripId, $highlightId) > 0;
             if ($wasRemoved) {
                 $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Trip, $tripId, $highlightId);
+                $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }
             return $wasRemoved;
         }

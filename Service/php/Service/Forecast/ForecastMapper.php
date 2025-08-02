@@ -203,5 +203,41 @@
                 ->withParameters($placeId, $timestamp)
                 ->execute();
         }
+
+        public function deleteStaleActualWeatherForecast() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM forecast_actual
+                WHERE timestamp < UNIX_TIMESTAMP();
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteStaleHistoricalWeatherForecast() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM forecast_historical
+                WHERE timestamp < UNIX_TIMESTAMP();
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
+        public function deleteStaleDaylightForecast() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM forecast_daylight
+                WHERE timestamp < UNIX_TIMESTAMP();
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->execute();
+        }
     }
 ?>

@@ -129,6 +129,7 @@
             $this->placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
 
             $this->noteService->updateTripNoteOwner($candidateTripId, $targetTripId);
+            $this->tripMapper->deleteStaleTripIdentifiers();
             
             return $targetTrip;
         }
@@ -140,12 +141,23 @@
             }
             
             $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), NULL);
+            $this->tripMapper->insertCandidateTrip($archivedTripIdentifier->getId());
             $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
-            $this->deleteTripEvent($tripId);
+            $this->removeTripEvent($tripId);
 
             $this->noteService->updateTripNoteOwner($tripId, $archivedTripIdentifier->getId());
+            $this->tripMapper->deleteStaleTripIdentifiers();
             
             return $this->getCandidateTrip($archivedTripIdentifier->getId());
+        }
+
+        public function removeCandidateTrip(string $tripId) : bool {
+            $wasDeleted = $this->placeService->removeCandidateEventsForCandidateTrip($tripId)
+                && $this->tripMapper->deleteCandidateTrip($tripId);
+            if ($wasDeleted) {
+                $this->tripMapper->deleteStaleTripIdentifiers();
+            }
+            return $wasDeleted;
         }
 
         public function refreshCalendar() : void {
@@ -167,6 +179,7 @@
             
             $affectedTripIds = $this->tripMapper->selectTripIdsForUpdatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publishTripUpdatedEvent($affectedTripId);
                 $this->eventPublisher->publishTripEventUpdatedEvent($affectedTripId);
             }
             
@@ -174,9 +187,11 @@
             foreach ($affectedTripIds as &$affectedTripId) {
                 $this->eventPublisher->publishTripEventDeletedEvent($affectedTripId);
             }
+
+            $this->tripMapper->deleteStaleTripIdentifiers();
         }
 
-        public function deleteAllDayTripsTrips() : void {
+        public function removeAllDayTripsTrips() : void {
             $this->tripMapper->deleteAllDayTripsTrips();
         }
 
@@ -269,7 +284,7 @@
             return $this->tripMapper->selectTripEventId($tripId);
         }
         
-        private function deleteTripEvent(string $tripId) : bool {                
+        private function removeTripEvent(string $tripId) : bool {                
             return $this->googleApiClient->deleteCalendarEvent(\Calendar::Trips->value, $this->getTripEventId($tripId));
         }
     }

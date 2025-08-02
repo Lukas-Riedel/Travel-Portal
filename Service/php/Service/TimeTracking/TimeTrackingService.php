@@ -34,8 +34,13 @@
             return $this->timeTrackingMapper->deleteTimeTrackingEvent($eventId) > 0;
         }
 
+        public function executeTimeTrackingEventsAudit() : void {
+            $this->timeTrackingMapper->deleteStalePlannedWorkEvents();
+            $this->timeTrackingMapper->deleteUsedOvertimeEvents();
+        }
+
         public function resetOpeningBalances(string $beginningOfYearDate) : void {
-            foreach ($this->configurationService->getConfigurationEntry("timeOffHours") as $eventType => $openingBalance) {
+            foreach ($this->configurationService->getConfigurationEntry("timeTracking")["timeOffHours"] as $eventType => $openingBalance) {
                 $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);
                 $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 

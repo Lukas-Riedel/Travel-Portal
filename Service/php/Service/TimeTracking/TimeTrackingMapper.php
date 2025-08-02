@@ -2,6 +2,8 @@
     namespace Service\Service\TimeTracking;
 
     class TimeTrackingMapper {
+
+        private const STALE_USED_OVERTIME_THRESHOLD_SECONDS = 90 * 86400;
         
         private readonly \DatabaseProvider $databaseProvider;
 
@@ -119,6 +121,46 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($type)
+                ->execute();
+        }
+
+        public function deleteStalePlannedWorkEvents() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM tracking
+                WHERE type = ?
+                    AND timestamp <= (UNIX_TIMESTAMP() - 86400)
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters(TimeTrackingEventType::PlannedWork->value)
+                ->execute();
+        }
+
+        public function deleteUsedOvertimeEvents() : int {
+            $sql = <<<'SQL'
+                DELETE 
+                FROM tracking 
+                WHERE timestamp <= (
+                    SELECT COALESCE(MAX(t1.timestamp), 0) 
+                    FROM tracking t1 
+                    WHERE timestamp < UNIX_TIMESTAMP() - ? 
+                        AND (
+                            SELECT SUM(t2.hours) 
+                            FROM tracking t2 
+                            WHERE t2.timestamp <= t1.timestamp 
+                                AND type = ?
+                            ) <= 0 
+                        AND t1.type = ?
+                    ) 
+                    AND type = ?
+            SQL;
+            
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters(self::STALE_USED_OVERTIME_THRESHOLD_SECONDS, 
+                    TimeTrackingEventType::Overtime->value, TimeTrackingEventType::Overtime->value, TimeTrackingEventType::Overtime->value)
                 ->execute();
         }
     }

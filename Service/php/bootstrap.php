@@ -79,16 +79,16 @@
     
     $loggingProvider = new LoggingProvider($databaseProvider);
 
-    // Events producers.
+    // Event producers.
     $eventPublisher = new EventPublisher();
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
     // Services.
-    $configurationService = new ConfigurationService($databaseProvider);
+    $configurationService = new ConfigurationService($databaseProvider, $eventPublisher);
     $platformService = new PlatformService();
     $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
-    $statisticsService = new StatisticsService($databaseProvider, $configurationService, $eventPublisher);
+    $statisticsService = new StatisticsService($databaseProvider, $eventPublisher);
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
@@ -99,7 +99,7 @@
     $fitnessService = new FitnessService($databaseProvider, $eventPublisher, $configurationService);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
-    $labelService = new LabelService($databaseProvider);
+    $labelService = new LabelService($databaseProvider, $configurationService);
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);

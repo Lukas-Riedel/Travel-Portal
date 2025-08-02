@@ -55,6 +55,7 @@
             
             $this->forecastMapper->deleteDaylightForecast($placeIdentifier->getId(), $start);
             $this->forecastMapper->insertDaylightForecast($daylightForecast, $placeIdentifier->getId(), $start);
+            $this->forecastMapper->deleteStaleDaylightForecast();
         }
 
         public function updateHistoricalWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {
@@ -82,6 +83,7 @@
     
             $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
             $this->forecastMapper->insertHistoricalWeatherForecast($historicalForecast, $placeIdentifier->getId(), $timestamp);
+            $this->forecastMapper->deleteStaleHistoricalWeatherForecast();
         }
 
         public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
@@ -145,6 +147,7 @@
 
             $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
             $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp, $expiration);
+            $this->forecastMapper->deleteStaleActualWeatherForecast();
         }
     
         private function getAverage(array $values) : ?float {

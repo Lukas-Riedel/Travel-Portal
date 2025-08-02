@@ -5,8 +5,11 @@
 
         private readonly ConfigurationMapper $configurationMapper;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
+        private readonly \EventPublisher $eventPublisher;
+
+        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
             $this->configurationMapper = new ConfigurationMapper($databaseProvider);
+            $this->eventPublisher = $eventPublisher;
         }
         
         public function getAllConfigurationEntries(bool $allowPrivate) : mixed {
@@ -18,7 +21,11 @@
         }
 
         public function updateConfigurationEntry(string $key, mixed $value) : bool {
-            return $this->configurationMapper->updateConfigurationEntry($key, $value);
+            $wasUpdated = $this->configurationMapper->updateConfigurationEntry($key, $value);
+            if ($wasUpdated) {
+                $this->eventPublisher->publishConfigurationEntryUpdated($key);
+            }
+            return $wasUpdated;
         }
     }
 ?>
