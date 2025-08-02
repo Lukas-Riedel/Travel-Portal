@@ -5,7 +5,7 @@ import Place from "../model/place"
 import { useEffect, useMemo, useState } from "react"
 import { useLocation } from "../contexts/LocationContext"
 
-export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sort } = {}) => {
+export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort } = {}) => {
     const { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } = useApi()
     const resolvedLocation = useLocation()
     const { isAdmin } = useAuth()
@@ -19,8 +19,8 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelName, include, sor
     }, [resolvedLocation])
 
     const query = useQuery({
-        queryKey: ["listCandidatePlaces", tripId, categoryId, labelName, include, sort],
-        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelName, include, sort }),
+        queryKey: ["listCandidatePlaces", tripId, categoryId, labelId, include, sort],
+        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, include, sort }),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 
