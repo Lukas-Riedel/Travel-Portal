@@ -23,7 +23,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
     const [images, setImages] = useState([])
 
     useEffect(() => {
-        if (isLoading && photos.length > 0) {
+        if (isLoading && photos?.length > 0) {
             setImages(photos.map(photo => ({ src: photo.url + "=d" })))
             setIsLoading(false)
             setGalleryOpen(true)
@@ -31,7 +31,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
     }, [photos, isLoading])
 
     const openGallery = () => {
-        if (photos.length > 0) {
+        if (photos?.length > 0) {
             setImages(photos.map(photo => ({ src: photo.url + "=d" })))
             setGalleryOpen(true)
         }
