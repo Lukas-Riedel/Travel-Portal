@@ -234,7 +234,7 @@
         }
 
         private function getGoogleRefreshTokenFilePath() {
-            return dirname(__FILE__) . "/../../config/google.txt";
+            return dirname(__FILE__) . "/../../../config/google.txt";
         }
     }
 ?>

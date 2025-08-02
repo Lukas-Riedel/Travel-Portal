@@ -10,7 +10,7 @@
 
         private const FCM_SEND_URL_FORMAT = "https://fcm.googleapis.com/v1/projects/%s/messages:send";
 
-        private const SERVICE_ACCOUNT_PATH = __DIR__ . "/../config/firebase.json";
+        private const SERVICE_ACCOUNT_PATH = __DIR__ . "/../../config/firebase.json";
 
         private readonly string $projectId;
 

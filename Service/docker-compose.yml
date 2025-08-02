@@ -14,7 +14,7 @@ services:
       - db
     command: >
       sh -c "wait-for-it db:3306 -s -t 60 && 
-      mkdir -p /var/www/html/php/config && 
+      mkdir -p /var/www/html/config && 
       echo '<?php
         define(\"DB_NAME\", getenv(\"DB_NAME\"));
         define(\"DB_USER\", getenv(\"DB_USER\"));
@@ -22,7 +22,7 @@ services:
         define(\"DB_HOST\", getenv(\"DB_HOST\"));
         define(\"PRIVATE_KEY\", getenv(\"PRIVATE_KEY\"));
         define(\"BASE_URL\", getenv(\"BASE_URL\"));
-      ?>' > /var/www/html/php/config/secrets.php && 
+      ?>' > /var/www/html/config/secrets.php && 
       composer install && 
       php /var/www/html/php/deploy.php && 
       apache2-foreground"

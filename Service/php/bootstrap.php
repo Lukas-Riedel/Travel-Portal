@@ -1,6 +1,6 @@
 <?php
     require_once(dirname(__FILE__) . "/../vendor/autoload.php");
-    require_once(dirname(__FILE__) . "/config/secrets.php");
+    require_once(dirname(__FILE__) . "/../config/secrets.php");
     
     require_once(dirname(__FILE__) . "/Provider/DatabaseProvider.php");
     require_once(dirname(__FILE__) . "/Provider/LoggingProvider.php");
