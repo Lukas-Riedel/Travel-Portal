@@ -7,9 +7,9 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 RewriteCond %{HTTP:X-Goog-Channel-Token} ^(.+)$
 RewriteRule .* - [E=GOOG_CHANNEL_TOKEN:%1]
 
-RewriteRule ^iam/?$ php/iam.php [L,QSA]
+RewriteRule ^iam/?$ iam.php [L,QSA]
 RewriteRule ^iam/(.+)$ $1 [L,QSA]
 
-RewriteRule ^(.+)/?$ php/api.php?path=/$1 [L,QSA]
+RewriteRule ^(.+)/?$ api.php?path=/$1 [L,QSA]
 
 RewriteCond %{QUERY_STRING} ^(.*)$

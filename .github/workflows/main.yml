@@ -72,6 +72,8 @@ jobs:
         mkdir target/api
         shopt -s dotglob
         cp -r ./Service/* target/api/
+        rm -rf target/api/public
+        cp ./Service/public/* target/api/
         cp -r ./Portal/dist/* target/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -85,7 +87,7 @@ jobs:
       uses: muhfaris/request-action@v0.1.2
       with:
         method: GET
-        url: https://lriedel.cz/api/php/deploy.php
+        url: https://lriedel.cz/api/deploy.php
   verify-agent:
     name: Verify Agent
     needs: detect-changes

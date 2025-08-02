@@ -1,0 +1,66 @@
+<?php
+    require_once(__DIR__ . "/GetYearHandler.php");
+
+    class RemoveYearHighlightHandler extends Handler {
+        public function handle($input) {
+            global $highlightService;
+
+            $response = (new GetYearHandler())
+                ->handle(array(
+                    "year" => $input["year"]));
+            if ($response["code"] != 200) {
+                return $response;
+            }
+
+            $response = $highlightService->removeYearHighlight($input["year"], $input["highlightId"]);
+            return $this->createResponse(201, $response);
+        }
+
+        public function getRequiredRole() {
+            return "ADMIN";
+        }
+        
+        public function isProtected() {
+            return TRUE;
+        }
+
+        public function getTag() {
+            return "Year Highlights";
+        }
+
+        public function getPath() {
+            return "/years/{year}/highlights/{highlightId}";
+        }
+
+        public function getParameters() {
+            return array(
+                $this->createPathParameter("year", "integer", 2024),
+                $this->createPathParameter("highlightId", "integer", 769));
+        }
+
+        public function getMethod() {
+            return "DELETE";
+        }
+        
+        public function getShortDescription() {
+            return "Remove a highlight with the specified identifier for the specified year";
+        }
+        
+        public function getLongDescription() {
+            return "Removes a highlight with the specified identifier for the specified year.";
+        }
+        
+        public function getRequestExamples() {
+            return array();
+        }
+
+        public function getResponseExamples() {
+            return array(
+                $this->create204ResponseExample(),
+                $this->create400ResponseExample(),
+                $this->create401ResponseExample(),
+                $this->create403ResponseExample(),
+                $this->create404ResponseExample());
+        }
+    }
+?>
