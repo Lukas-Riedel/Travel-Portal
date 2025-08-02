@@ -7,8 +7,7 @@
 
     use Service\Service\Authentication\AuthenticationException;
     
-    $delayViewMaterializationIfNeeded = TRUE;
-    require_once(__DIR__ . "/bootstrap.php");
+    require_once(__DIR__ . "/src/php/bootstrap.php");
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
@@ -59,7 +58,7 @@
                     $accessToken = $authenticationService->getAccessToken(getBearerToken());
 
                     if (!in_array($handler->getRequiredRole(), $accessToken->getRoles())) {
-                        throw new AuthorizationException("The user is not authorized to perform this action.");
+                        throw new \Service\Routing\AuthorizationException($accessToken);
                     }
                 }
 
@@ -70,13 +69,13 @@
                     $roles = $accessToken->getRoles();
                 }
     
-                $response = $handler->handle($input);
+                $r = $handler->handle($input);
                 $databaseProvider->commit();
     
-                http_response_code($response["code"]);
-                echo json_encode($response["body"], JSON_HEX_QUOT | JSON_HEX_TAG);
+                http_response_code($r["code"]);
+                echo json_encode($r["body"], JSON_HEX_QUOT | JSON_HEX_TAG);
     
-                exit();
+                break;
             }
         }
     } 
@@ -86,14 +85,11 @@
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
         $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
-        exit();
     }
     finally {        
         restore_error_handler();
     }
     $databaseProvider->materializeViews();  
-
-    header("Location: " . BASE_URL); 
 
     function getErrorCode($e) {
         // TODO: Differentiate between 4xx and 5xx
@@ -103,7 +99,7 @@
         if ($e instanceof AuthenticationException) {
             return 401;
         }
-        if ($e instanceof AuthorizationException) {
+        if ($e instanceof \Service\Routing\AuthorizationException) {
             return 403;
         }
         return 400;

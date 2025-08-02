@@ -1,21 +1,20 @@
 <?php
-    require_once(__DIR__ . "/vendor/autoload.php");
-    require_once(__DIR__ . "/config/secrets.php");
+    require_once(__DIR__ . "/../../vendor/autoload.php");
+    require_once(__DIR__ . "/../../config/secrets.php");
     
-    require_once(__DIR__ . "/src/php/Provider/DatabaseProvider.php");
-    require_once(__DIR__ . "/src/php/Provider/LoggingProvider.php");
-    require_once(__DIR__ . "/src/php/Rest/Handler.php");
-    require_once(__DIR__ . "/src/php/Model/TargetError.php");
-    require_once(__DIR__ . "/src/php/Exception/AuthorizationException.php");
-    require_once(__DIR__ . "/src/php/Exception/EntityNotFoundException.php");
-    require_once(__DIR__ . "/src/php/Service/PlatformService.php");
-    require_once(__DIR__ . "/src/php/Client/GoogleApiClient.php");
-    require_once(__DIR__ . "/src/php/Client/ChatClient.php");
-    require_once(__DIR__ . "/src/php/Client/HttpClient.php");
-    require_once(__DIR__ . "/src/php/Client/CalendarClient.php");
-    require_once(__DIR__ . "/src/php/Event/Scheduler.php");
-    require_once(__DIR__ . "/src/php/Event/EventManager.php");
-    require_once(__DIR__ . "/src/php/Event/EventPublisher.php");
+    require_once(__DIR__ . "/Provider/DatabaseProvider.php");
+    require_once(__DIR__ . "/Provider/LoggingProvider.php");
+    require_once(__DIR__ . "/Rest/Handler.php");
+    require_once(__DIR__ . "/Model/TargetError.php");
+    require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
+    require_once(__DIR__ . "/Service/PlatformService.php");
+    require_once(__DIR__ . "/Client/GoogleApiClient.php");
+    require_once(__DIR__ . "/Client/ChatClient.php");
+    require_once(__DIR__ . "/Client/HttpClient.php");
+    require_once(__DIR__ . "/Client/CalendarClient.php");
+    require_once(__DIR__ . "/Event/Scheduler.php");
+    require_once(__DIR__ . "/Event/EventManager.php");
+    require_once(__DIR__ . "/Event/EventPublisher.php");
 
     use Service\Client\CacheClient;
     use Service\Client\CloudMessagingClient;
@@ -69,7 +68,7 @@
     use Service\Service\Year\YearServiceListener;
 
     // Clients.
-    $databaseProvider = new DatabaseProvider($delayViewMaterializationIfNeeded);
+    $databaseProvider = new DatabaseProvider(TRUE);
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();

@@ -316,7 +316,7 @@
                             $albumDate->setTime(0, 0);
                             $albumTimestamp = $albumDate->getTimestamp();
 
-                            if ($minStart <= $albumTimestamp && $albumTimestamp + self::ONE_DAY_SECONDS <= $maxEnd) {
+                            if (($minStart === NULL || $minStart <= $albumTimestamp) && ($maxEnd === NULL || $albumTimestamp + self::ONE_DAY_SECONDS <= $maxEnd)) {
                                 $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS, FALSE, NULL, NULL, $permanentPlaceAlbum, NULL));
                             }
                         }

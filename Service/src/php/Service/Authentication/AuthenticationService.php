@@ -51,10 +51,6 @@
         }
 
         public function getAccessToken(string $accessToken) : AccessToken {
-            if ($accessToken === NULL) {
-                throw new AuthenticationException("The access token was not provided.");
-            }
-
             $decoded = base64_decode($accessToken);
             if ($decoded === FALSE) {
                 throw new AuthenticationException("The access token could not be read.");

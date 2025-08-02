@@ -1,6 +1,5 @@
 <?php
-    $delayViewMaterializationIfNeeded = FALSE;
-    require_once(__DIR__ . "/bootstrap.php");
+    require_once(__DIR__ . "/src/php/bootstrap.php");
 
     $scheduler->schedule();
 ?>

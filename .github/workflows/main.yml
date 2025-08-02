@@ -73,7 +73,7 @@ jobs:
         shopt -s dotglob
         cp -r ./Service/* target/api/
         rm -rf target/api/public
-        cp ./Service/public/* target/api/
+        cp -r ./Service/public/* target/api/
         cp -r ./Portal/dist/* target/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5

@@ -24,6 +24,10 @@
             return $this->expiration;
         }
 
+        public function isAdmin() : bool {
+            return in_array("ADMIN", $this->roles);
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

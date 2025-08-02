@@ -4,8 +4,7 @@
     header('Access-Control-Allow-Origin: *');
     header('Content-Type: application/json');
     
-    $delayViewMaterializationIfNeeded = TRUE;
-    require_once(__DIR__ . "/bootstrap.php");
+    require_once(__DIR__ . "/src/php/bootstrap.php");
 
     $requestBody = json_decode(file_get_contents('php://input'), TRUE);
 
@@ -41,6 +40,7 @@
         echo json_encode($authenticationResult, JSON_HEX_QUOT | JSON_HEX_TAG);
     }
     catch (Throwable $e) {
+        // TODO: Switch to RequestError
         $error = new TargetError(401, $e, $requestBody);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
