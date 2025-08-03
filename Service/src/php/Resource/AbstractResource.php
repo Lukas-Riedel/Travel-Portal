@@ -6,6 +6,7 @@
     use Service\Service\Authentication\AccessToken;
     use Slim\Psr7\Request;
 
+    // TODO: Find better names for methods in this class.
     abstract class AbstractResource {
 
         public function getAccessToken(Request $request) : AccessToken {
@@ -46,6 +47,12 @@
                 throw new \InvalidArgumentException("The required request body field '$field' is empty.");
             }
             return $body[$field];
+        }
+        
+
+        public function validateJsonBodyNullableField(Request $request, string $field) : mixed {
+            $body = $this->validateJsonBody($request);
+            return isset($body[$field]) ? $body[$field] : NULL;
         }
     }
 ?>

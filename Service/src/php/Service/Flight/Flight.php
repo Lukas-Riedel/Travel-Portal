@@ -1,6 +1,76 @@
 <?php
     namespace Service\Service\Flight;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "Flight",
+        type: "object",
+        description: "A class representing a flight",
+        required: ["flight", "from", "to", "start", "end"],
+        properties: [
+            new OA\Property(
+                property: "flight",
+                description: "The number of the flight",
+                type: "string",
+                example: "EK139"
+            ),
+            new OA\Property(
+                property: "registration",
+                description: "The registration of the aircraft",
+                type: "string",
+                example: "A6-EOQ"
+            ),
+            new OA\Property(
+                property: "aircraft",
+                description: "The type of the aircraft",
+                type: "string",
+                example: "A388"
+            ),
+            new OA\Property(
+                property: "airline",
+                description: "The identifier of the airline",
+                ref: "#/components/schemas/AirlineIdentifier"
+            ),
+            new OA\Property(
+                property: "distance",
+                description: "The distance of the flight in kilometers",
+                type: "number",
+                format: "float",
+                example: 1732.5
+            ),
+            new OA\Property(
+                property: "from",
+                description: "The departure airport of the flight",
+                ref: "#/components/schemas/Airport"
+            ),
+            new OA\Property(
+                property: "to",
+                description: "The arrival airport of the flight",
+                ref: "#/components/schemas/Airport"
+            ),
+            new OA\Property(
+                property: "start",
+                description: "The departure time of the flight in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1688563200
+            ),
+            new OA\Property(
+                property: "end",
+                description: "The arrival time of the flight in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1688570400
+            ),
+            new OA\Property(
+                property: "delay",
+                description: "The delay of the flight in seconds",
+                type: "integer",
+                example: 153
+            )
+        ]
+    )]
     class Flight implements \JsonSerializable {        
         private readonly string $flight;
         private readonly ?string $registration;

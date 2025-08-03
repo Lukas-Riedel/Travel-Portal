@@ -58,7 +58,7 @@
         }
 
         public function getPath() {
-            return "/swagger";
+            return "/swagger_old";
         }
 
         public function getParameters() {

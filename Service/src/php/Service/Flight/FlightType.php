@@ -1,6 +1,13 @@
 <?php
     namespace Service\Service\Flight;
-
+    
+    use OpenApi\Attributes as OA;
+    
+    #[OA\Schema(
+        schema: "FlightType",
+        type: "string",
+        description: "An enum representing a flight type"
+    )]
     enum FlightType : string {
         case Scheduled = "scheduled";
         case Watched = "watched";

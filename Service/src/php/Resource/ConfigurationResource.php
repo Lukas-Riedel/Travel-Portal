@@ -6,9 +6,9 @@
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-
     use OpenApi\Attributes as OA;
     use Service\Routing\NotFoundException;
+use Service\Routing\NotUpdatedException;
 
     #[OA\Tag(name: "Configuration")]
     class ConfigurationResource extends AbstractResource {
@@ -24,7 +24,7 @@
 
             $app->group("/configuration", function($group) use($resource) {
                 $group->get("", [$resource, "listConfiguration"]);
-                $group->put("/{key}", [$resource, "replaceConfiguration"]);
+                $group->put("/{configurationKey}", [$resource, "replaceConfiguration"]);
             });
         }
 
@@ -37,7 +37,7 @@
             responses: [
                 new OA\Response(
                     response: 200,
-                    description: "Success. Returned a collection of configuration entries.",
+                    description: "Success. Retrieved a collection of configuration entries.",
                     content: new OA\JsonContent(
                         type: "object",
                         additionalProperties: new AdditionalProperties(
@@ -50,7 +50,7 @@
                 ),
                 new OA\Response(
                     response: 400,
-                    description: "Bad Request. The request has invalid syntax or cannot be fulfilled.",
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
                     content: new OA\JsonContent(
                         ref: "#/components/schemas/RequestError",
                         examples: [
@@ -95,17 +95,17 @@
         }
 
         #[OA\Put(
-            path: "/configuration/{key}",
+            path: "/configuration/{configurationKey}",
             summary: "Replace a configuration entry with the specified key",
             operationId: "replaceConfiguration",
             tags: ["Configuration"],
             security: [ ["bearerAuth" => []] ],
             parameters: [
                 new OA\Parameter(
-                    name: "key",
+                    name: "configurationKey",
                     in: "path",
                     required: true,
-                    description: "The configuration key to replace",
+                    description: "The key of the configuration entry",
                     schema: new OA\Schema(type: "string"),
                     example: "expensify",
                 )
@@ -141,7 +141,7 @@
                 ),
                 new OA\Response(
                     response: 400,
-                    description: "Bad Request. The request has invalid syntax or cannot be fulfilled.",
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
                     content: new OA\JsonContent(
                         ref: "#/components/schemas/RequestError",
                         examples: [
@@ -180,7 +180,7 @@
                 ),
                 new OA\Response(
                     response: 404,
-                    description: "Not Found. The requested resource does not exist.",
+                    description: "Not Found. The requested resource did not exist.",
                     content: new OA\JsonContent(
                         ref: "#/components/schemas/RequestError",
                         examples: [
@@ -196,15 +196,20 @@
         public function replaceConfiguration(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
-            $key = $this->validateArgumentKey($routeArguments, "key");
+            $configurationKey = $this->validateArgumentKey($routeArguments, "configurationKey");
             $newValue = $this->validateJsonBody($request);
             
-            $wasUpdated = $this->configurationService->updateConfigurationEntry($key, $newValue);
+            $wasUpdated = $this->configurationService->updateConfigurationEntry($configurationKey, $newValue);
             if (!$wasUpdated) {
-                throw new NotFoundException($key);
+                throw new NotUpdatedException($configurationKey);
             }
 
-            return $this->configurationService->getConfigurationEntry($key);
+            $configurationEntry = $this->configurationService->getConfigurationEntry($configurationKey);
+            if ($configurationEntry === NULL) {
+                throw new NotFoundException($configurationKey);
+            }
+
+            return $configurationEntry;
         }
     }
 ?>

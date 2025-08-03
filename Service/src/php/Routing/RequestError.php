@@ -12,32 +12,32 @@
             new OA\Property(
                 property: "code",
                 type: "integer",
-                description: "HTTP status code",
+                description: "The HTTP status code of the request",
                 example: 401
             ),
             new OA\Property(
                 property: "type",
                 type: "string",
-                description: "Error type identifier",
+                description: "The type of the error",
                 example: "AuthenticationException"
             ),
             new OA\Property(
                 property: "message",
                 type: "string",
-                description: "Human readable error message",
+                description: "The human-readable message describing the error",
                 example: "The access token expired at 2025-08-02T18:08:35.269Z."
             ),
             new OA\Property(
                 property: "trace",
                 type: "array",
-                description: "Stack trace or debugging info",
+                description: "The stack trace of the error",
                 items: new OA\Items(type: "string"),
                 example: []
             ),
             new OA\Property(
                 property: "path",
                 type: "string",
-                description: "Path where the error occurred",
+                description: "The úath where the error occurred",
                 example: "/configuration"
             ),
         ]

@@ -1,11 +1,9 @@
 <?php
     namespace Service\Resource;
 
-    use OpenApi\Attributes\AdditionalProperties;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-
     use OpenApi\Attributes as OA;
     use Service\Service\Device\DeviceService;
     use Service\Service\Device\DeviceType;
@@ -59,7 +57,7 @@
                 ),
                 new OA\Response(
                     response: 400,
-                    description: "Bad Request. The request has invalid syntax or cannot be fulfilled.",
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
                     content: new OA\JsonContent(
                         ref: "#/components/schemas/RequestError",
                         examples: [
@@ -99,11 +97,11 @@
             ]
         )]
         public function createDevice(Request $request, Response $response, array $routeArguments) : mixed {
-            $type = DeviceType::from($this->validateJsonBodyField($request, "type"));
-            $token = $this->validateJsonBodyField($request, "token");
+            $deviceType = DeviceType::from($this->validateJsonBodyField($request, "type"));
+            $deviceToken = $this->validateJsonBodyField($request, "token");
             $userId = $this->getAccessToken($request)->getUserId();
             
-            $this->deviceService->registerOrUpdateDevice($type, $token, $userId);
+            $this->deviceService->registerOrUpdateDevice($deviceType, $deviceToken, $userId);
             return NULL;
         }
     }
