@@ -2,7 +2,6 @@
     namespace Service\Resource;
 
     use OpenApi\Attributes\AdditionalProperties;
-    use Service\Routing\AuthMiddleware;
     use Service\Service\Configuration\ConfigurationService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -91,8 +90,8 @@
             ]
         )]
         public function listConfiguration(Request $request, Response $response) : mixed {
-            $isAdmin = $request->getAttribute(AuthMiddleware::ACCESS_TOKEN_ATTRIBUTE_KEY)->isAdmin();
-            return $this->configurationService->getAllConfigurationEntries($isAdmin);
+            $allowPrivate = $this->getAccessToken($request)->isAdmin();
+            return $this->configurationService->getAllConfigurationEntries($allowPrivate);
         }
 
         #[OA\Put(
@@ -115,6 +114,12 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
+                    additionalProperties: new AdditionalProperties(
+                        oneOf: [
+                            new OA\Schema(type: "array", items: new OA\Items()),
+                            new OA\Schema(type: "object")
+                        ]
+                    ),
                     example: [
                         "mainCurrencyValue" => "EUR"
                     ]
@@ -123,7 +128,7 @@
             responses: [
                 new OA\Response(
                     response: 200,
-                    description: "Success. Returned a replace configuration entry with the speceified key.",
+                    description: "Success. Returned a replace configuration entry with the specified key.",
                     content: new OA\JsonContent(
                         type: "object",
                         additionalProperties: new AdditionalProperties(

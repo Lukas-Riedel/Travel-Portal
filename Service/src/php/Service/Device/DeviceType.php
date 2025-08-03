@@ -1,6 +1,13 @@
 <?php
     namespace Service\Service\Device;
+    
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "DeviceType",
+        type: "string",
+        description: "An enum representing a device type"
+    )]
     enum DeviceType : string {
         case Portal = "PORTAL";
         case Agent = "AGENT";

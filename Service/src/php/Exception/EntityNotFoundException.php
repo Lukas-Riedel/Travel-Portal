@@ -1,4 +1,5 @@
 <?php
+    // TODO: Delete
     class EntityNotFoundException extends Exception {
 
         private $entity;

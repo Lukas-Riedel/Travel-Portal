@@ -10,13 +10,18 @@
         public function __invoke(callable $callable, ServerRequestInterface $request,
             ResponseInterface $response, array $routeArguments) : ResponseInterface {
             $result = $callable($request, $response, $routeArguments);
-            $response->getBody()->write(json_encode($result, JSON_UNESCAPED_UNICODE));
+            if ($result === NULL) {
+                $response = $response->withStatus(204);
+            }
+            else {
+                $response->getBody()->write(json_encode($result, JSON_UNESCAPED_UNICODE));
+                $response = $response->withHeader("Content-Type", "application/json");
+            }
             return $response
                 ->withHeader("Access-Control-Allow-Origin", "*")
                 ->withHeader("Cache-Control", "no-cache, no-store, must-revalidate")
                 ->withHeader("Pragma", "no-cache")
-                ->withHeader("Expires", "0")
-                ->withHeader("Content-Type", "application/json");
+                ->withHeader("Expires", "0");
         }
     }
 ?>

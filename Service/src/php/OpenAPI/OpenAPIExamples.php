@@ -7,7 +7,7 @@
         examples: [
             new OA\Examples(
                 example: "Unauthorized",
-                summary: "Unauthorized. The request required user authentication.",
+                summary: "Unauthorized",
                 value: [
                     "code" => 401,
                     "type" => "AuthenticationException",
@@ -18,7 +18,7 @@
             ),
             new OA\Examples(
                 example: "Forbidden",
-                summary: "Forbidden. The user did not have access to the requested resource.",
+                summary: "Forbidden",
                 value: [
                     "code" => 403,
                     "type" => "AuthorizationException",
@@ -29,7 +29,7 @@
             ),
             new OA\Examples(
                 example: "BadRequest",
-                summary: "Bad Request. The request has invalid syntax or cannot be fulfilled.",
+                summary: "Bad Request",
                 value: [
                     "code" => 400,
                     "type" => "RuntimeException",
@@ -40,7 +40,7 @@
             ),
             new OA\Examples(
                 example: "NotFound",
-                summary: "Not Found. The requested resource does not exist.",
+                summary: "Not Found",
                 value: [
                     "code" => 400,
                     "type" => "NotFoundException",

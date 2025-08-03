@@ -31,7 +31,7 @@ export function useApi() {
     async function createDevice(token) {
         return sendRequest("POST", "/devices",
             {
-                type: "Portal",
+                type: "PORTAL",
                 token: token
             })
     }
