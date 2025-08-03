@@ -206,8 +206,8 @@
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson));
 
             if ($countryCategoryId === NULL) {
-                foreach ($this->getCategories(NULL, array(CategoryCategory::Country->value), array()) as &$category) {
-                    $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
+                foreach ($this->getCategories(NULL, array(CategoryCategory::Country->value), array()) as &$invalidatedCategory) {
+                    $this->eventPublisher->publishCategoryInvalidatedEvent($invalidatedCategory->getId());
                 }
             }
             else {

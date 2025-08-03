@@ -655,7 +655,7 @@
 
             $wasRemoved = $this->flightService->updateAirlineCodeAirline($airlineCode, NULL);
             if (!$wasRemoved) {
-                throw new NotFoundException($wasRemoved);                
+                throw new NotFoundException($airlineCode);                
             }
 
             return NULL;

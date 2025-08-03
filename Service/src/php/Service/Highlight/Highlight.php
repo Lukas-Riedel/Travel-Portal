@@ -3,6 +3,37 @@
 
     use Service\Service\Photo\Photo;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "Highlight",
+        type: "object",
+        description: "An object representing a highlight",
+        required: ["id", "url", "photo", "attributes"],
+        properties: [
+            new OA\Property(
+                property: "id",
+                type: "string",
+                description: "The unique identifier of the highlight",
+                example: "c799fd70-cbc1-4624-992f-a3c740706f8a"
+            ),
+            new OA\Property(
+                property: "url",
+                description: "The URLs of the highlight",
+                ref: "#/components/schemas/HighlightUrl"
+            ),
+            new OA\Property(
+                property: "photo",
+                description: "The highlighted photo",
+                ref: "#/components/schemas/Photo"
+            ),
+            new OA\Property(
+                property: "attributes",
+                description: "The quality attributes of the highlight",
+                ref: "#/components/schemas/HighlightAttributes"
+            )
+        ]
+    )]
     class Highlight implements \JsonSerializable {        
         private readonly string $id;
         private readonly HighlightUrl $url;

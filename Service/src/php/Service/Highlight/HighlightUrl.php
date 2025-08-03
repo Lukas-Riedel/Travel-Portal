@@ -1,6 +1,30 @@
 <?php
     namespace Service\Service\Highlight;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "HighlightUrl",
+        type: "object",
+        description: "An object representing highlight image URLs",
+        required: [],
+        properties: [
+            new OA\Property(
+                property: "thumbnail",
+                description: "The URL of the thumbnail version of the highlight image",
+                type: "string",
+                format: "uri",
+                example: BASE_URL . "/cache/highlight/thumbnail/7f6ccad1-0e4e-48ff-8cbd-d6607936eb4d.jpg"
+            ),
+            new OA\Property(
+                property: "full",
+                description: "The URL of the full-size version of the highlight image",
+                type: "string",
+                format: "uri",
+                example: BASE_URL . "/cache/highlight/full/7f6ccad1-0e4e-48ff-8cbd-d6607936eb4d.jpg"
+            )
+        ]
+    )]
     class HighlightUrl implements \JsonSerializable {
         private readonly ?string $thumbnail;
         private readonly ?string $full;

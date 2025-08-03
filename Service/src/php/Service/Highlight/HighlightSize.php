@@ -1,9 +1,16 @@
 <?php
     namespace Service\Service\Highlight;
 
-    enum HighlightSize {
-        case Full;
-        case Thumbnail;
+    use OpenApi\Attributes as OA;
+    
+    #[OA\Schema(
+        schema: "HighlightSize",
+        type: "string",
+        description: "An enum representing a highlight size"
+    )]
+    enum HighlightSize : string {
+        case Full = "full";
+        case Thumbnail = "thumbnail";
 
         public function getUrlColumnName() : string {
             return match($this) {

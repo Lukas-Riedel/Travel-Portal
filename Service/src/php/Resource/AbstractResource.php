@@ -31,6 +31,11 @@
             return $args[$key];
         }
 
+        public function validateQueryNullableParameter(Request $request, string $key) : ?string {
+            $queryParams = $request->getQueryParams();
+            return isset($queryParams[$key]) ? $queryParams[$key] : NULL;
+        }
+
         public function validatePathArgument(array $args, string $key) : mixed {
             if (!isset($args[$key])) {
                 throw new \InvalidArgumentException("The required path argument '$key' is missing.");

@@ -1,6 +1,51 @@
 <?php
     namespace Service\Service\Highlight;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "HighlightAttributes",
+        type: "object",
+        description: "A class representing highlight quality attributes",
+        required: [],
+        properties: [
+            new OA\Property(
+                property: "composition",
+                description: "The composition score of the highlight",
+                type: "integer",
+                format: "int32",
+                example: 100
+            ),
+            new OA\Property(
+                property: "sky",
+                description: "The sky score of the highlight",
+                type: "integer",
+                format: "int32",
+                example: 90
+            ),
+            new OA\Property(
+                property: "shadows",
+                description: "The shadows score of the highlight",
+                type: "integer",
+                format: "int32",
+                example: 70
+            ),
+            new OA\Property(
+                property: "circumstances",
+                description: "The circumstances score of the highlight",
+                type: "integer",
+                format: "int32",
+                example: 100
+            ),
+            new OA\Property(
+                property: "atmosphere",
+                description: "The atmosphere score of the highlight",
+                type: "integer",
+                format: "int32",
+                example: 90
+            )
+        ]
+    )]
     class HighlightAttributes implements \JsonSerializable {
         private readonly ?int $composition;
         private readonly ?int $sky;

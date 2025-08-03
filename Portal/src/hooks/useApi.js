@@ -74,6 +74,9 @@ export function useApi() {
                 category: category,
                 radius: radius,
                 geoJson: geoJson
+            },
+            {
+                type: "geographical"
             })
     }
 
@@ -85,6 +88,9 @@ export function useApi() {
                 category: category,
                 latitude: latitude,
                 longitude: longitude
+            },
+            {
+                type: "geographicalExtension"
             })
     }
 
@@ -95,6 +101,9 @@ export function useApi() {
                 category: category,
                 includedRegions: includedRegions,
                 excludedRegions: excludedRegions
+            },
+            {
+                type: "composite"
             })
     }
 
@@ -132,14 +141,18 @@ export function useApi() {
     async function updateCategoryMainHighlight(categoryId, mainHighlightId) {
         return sendRequest("PATCH", "/categories/" + categoryId,
             {
-                mainHighlightId: mainHighlightId
+                mainHighlight: {
+                    id: mainHighlightId
+                }
             })
     }
 
     async function createCategoryHighlight(categoryId, photoId) {
         return sendRequest("POST", "/categories/" + categoryId + "/highlights",
             {
-                photoId: photoId
+                photo: {
+                    id: photoId
+                }
             })
     }
 
@@ -171,7 +184,11 @@ export function useApi() {
     }
 
     async function listEvents(name) {
-        return sendRequest("GET", "/events?name=" + name)
+        return sendRequest("GET", "/events", {}, 
+            {
+                name: name
+            }
+        )
     }
 
     async function removeEvent(eventId) {
@@ -446,18 +463,21 @@ export function useApi() {
     }
 
     async function logFlight(flight, from, to, scheduledDeparture) {
-        return sendRequest("POST", "/flights?type=logged",
+        return sendRequest("POST", "/flights",
             {
                 flight: flight,
                 from: { name: from },
                 to: { name: to },
                 scheduledDeparture: scheduledDeparture
+            },
+            {
+                type: "logged"
             })
     }
 
     async function logFlightManually(flight, aircraft, registration, from, fromCode, to, toCode,
         scheduledDeparture, actualDeparture, scheduledArrival, actualArrival) {
-        return sendRequest("POST", "/flights?type=logged",
+        return sendRequest("POST", "/flights",
             {
                 flight: flight,
                 aircraft: aircraft,
@@ -468,28 +488,37 @@ export function useApi() {
                 actualDeparture: actualDeparture,
                 scheduledArrival: scheduledArrival,
                 actualArrival: actualArrival
+            },
+            {
+                type: "logged"
             })
     }
 
     async function createScheduledFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
-        return sendRequest("POST", "/flights?type=scheduled",
+        return sendRequest("POST", "/flights",
             {
                 flight: flight,
                 from: { name: from },
                 to: { name: to },
                 scheduledDeparture: scheduledDeparture,
                 scheduledArrival: scheduledArrival
+            },
+            {
+                type: "scheduled"
             })
     }
 
     async function createWatchedFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
-        return sendRequest("POST", "/flights?type=watched",
+        return sendRequest("POST", "/flights",
             {
                 flight: flight,
                 from: { name: from },
                 to: { name: to },
                 scheduledDeparture: scheduledDeparture,
                 scheduledArrival: scheduledArrival
+            },
+            {
+                type: "watched"
             })
     }
 

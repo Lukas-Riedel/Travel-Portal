@@ -31,7 +31,7 @@
                 property: "country",
                 description: "The country of the airport",
                 type: "string",
-                example: "Czech Republic"
+                example: "Czechia"
             ),
             new OA\Property(
                 property: "latitude",

@@ -1,11 +1,18 @@
 <?php
     namespace Service\Service\Highlight;
+    
+    use OpenApi\Attributes as OA;
 
-    enum HighlightType {
-        case Place;
-        case Trip;
-        case Category;
-        case Year;
+    #[OA\Schema(
+        schema: "HighlightType",
+        type: "string",
+        description: "An enum representing a highlight type"
+    )]
+    enum HighlightType : string {
+        case Place = "place";
+        case Trip = "trip";
+        case Category = "category";
+        case Year = "year";
 
         public function getTableName() : string {
             return match ($this) {

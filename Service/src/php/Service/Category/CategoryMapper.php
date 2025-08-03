@@ -85,8 +85,10 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
-                ->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            if (count($categoryCategories) > 0) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
+            }
             if ($categoryId !== NULL) {
                 $whereClauseBuilder->withClause("id = ?", $categoryId);
             }

@@ -2,6 +2,43 @@
     namespace Service\Service\Category;
     
     use Service\Service\Highlight\Highlight;
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "CategoryIdentifier",
+        type: "object",
+        description: "A class representing a category identifier",
+        required: ["id", "name", "category"],
+        properties: [
+            new OA\Property(
+                property: "id",
+                description: "The identifier of the category",
+                type: "string",
+                example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
+            ),
+            new OA\Property(
+                property: "name",
+                description: "The name of the category",
+                type: "string",
+                example: "Europe"
+            ),
+            new OA\Property(
+                property: "category",
+                description: "The category of the category",
+                ref: "#/components/schemas/CategoryCategory"
+            ),
+            new OA\Property(
+                property: "metadata",
+                description: "The metadata of the category",
+                ref: "#/components/schemas/CategoryMetadata"
+            ),
+            new OA\Property(
+                property: "mainHighlight",
+                description: "The main highlight of the category",
+                ref: "#/components/schemas/Highlight"
+            )
+        ]
+    )]
 
     class CategoryIdentifier implements \JsonSerializable {        
         private ?string $id;

@@ -170,13 +170,13 @@
             $flightType = FlightType::from($this->validateQueryParameter($request, "type"));
 
             return match ($flightType) {
-                FlightType::Logged => $this->handleLoggedFlight($request, $flight, $from, $to, $scheduledDeparture),                    
-                FlightType::Scheduled, FlightType::Watched => $this->handleScheduledOrWatchedFlight($request, $flightType,
+                FlightType::Logged => $this->handleCreateLoggedFlight($request, $flight, $from, $to, $scheduledDeparture),                    
+                FlightType::Scheduled, FlightType::Watched => $this->handleCreateScheduledOrWatchedFlight($request, $flightType,
                     $flight, $from, $to, $scheduledDeparture)
             };
         }
 
-        private function handleLoggedFlight(Request $request, string $flight, mixed $from, mixed $to, int $scheduledDeparture) : Flight {
+        private function handleCreateLoggedFlight(Request $request, string $flight, mixed $from, mixed $to, int $scheduledDeparture) : Flight {
             $aircraft = $this->validateJsonBodyNullableField($request, "aircraft");
             $registration = $this->validateJsonBodyNullableField($request, "registration");
             $actualDeparture = $this->validateJsonBodyNullableField($request, "actualDeparture");
@@ -193,7 +193,7 @@
             return $this->flightService->fetchAndLogFlight($flight, $from["name"], $to["name"], $scheduledDeparture);
         }
 
-        private function handleScheduledOrWatchedFlight(Request $request, FlightType $flightType, string $flight,
+        private function handleCreateScheduledOrWatchedFlight(Request $request, FlightType $flightType, string $flight,
             mixed $from, mixed $to, int $scheduledDeparture) : Flight {
             $scheduledArrival = $this->validateJsonBodyField($request, "scheduledArrival");  
             return $this->flightService->createFlight($flightType, $flight, $from["name"], $to["name"],

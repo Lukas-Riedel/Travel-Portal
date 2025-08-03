@@ -1,6 +1,34 @@
 <?php
     namespace Service\Service\Statistics;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "KeyValuePair",
+        type: "object",
+        description: "A class representing a key-value pair",
+        required: ["key", "value"],
+        properties: [
+            new OA\Property(
+                property: "key",
+                description: "The key of the key-value pair",
+                type: "string",
+                example: "TOTAL_PHOTOS_COUNT"
+            ),
+            new OA\Property(
+                property: "value",
+                description: "The value of the key-value pair",
+                oneOf: [
+                    new OA\Schema(type: "string"),
+                    new OA\Schema(type: "number"),
+                    new OA\Schema(type: "boolean"),
+                    new OA\Schema(type: "object"),
+                    new OA\Schema(type: "array", items: new OA\Items())
+                ],
+                example: 13573
+            )
+        ]
+    )]
     class KeyValuePair implements \JsonSerializable {
         private readonly string $key;
         private readonly mixed $value;
