@@ -2,7 +2,26 @@
     namespace Service\Service\Fitness;
 
     use Service\Service\Trip\Trip;
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "TripFitness",
+        type: "object",
+        description: "A class representing fitness data associated with a trip",
+        required: ["trip", "fitness"],
+        properties: [
+            new OA\Property(
+                property: "trip",
+                ref: "#/components/schemas/Trip",
+                description: "The trip associated with the fitness data"
+            ),
+            new OA\Property(
+                property: "fitness",
+                ref: "#/components/schemas/Fitness",
+                description: "The fitness record associated with the trip"
+            )
+        ]
+    )]
     class TripFitness implements \JsonSerializable {
         private readonly Trip $trip;
         private readonly Fitness $fitness;

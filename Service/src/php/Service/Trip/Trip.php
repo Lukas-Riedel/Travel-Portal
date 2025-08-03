@@ -2,7 +2,13 @@
     namespace Service\Service\Trip;
 
     use Service\Service\Highlight\Highlight;
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema( //TODO
+        schema: "Trip",
+        type: "object",
+        description: "A class representing a trip"
+    )]
     class Trip implements \JsonSerializable {  
         private const FULL_TRIP_NAME_FORMAT = "%s %d";
         private const ONE_DAY_SECONDS = 86400;

@@ -8,8 +8,8 @@
     use Service\Routing\NotFoundException;
     use Service\Routing\NotUpdatedException;
     use Service\Service\Category\CategoryCategory;
-use Service\Service\Category\CategoryIdentifier;
-use Service\Service\Category\CategoryIncludedEntity;
+    use Service\Service\Category\CategoryIdentifier;
+    use Service\Service\Category\CategoryIncludedEntity;
     use Service\Service\Category\CategoryService;
     use Service\Service\Category\RegionType;
     use Service\Service\Highlight\HighlightService;
