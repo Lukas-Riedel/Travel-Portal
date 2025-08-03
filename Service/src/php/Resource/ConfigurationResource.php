@@ -196,7 +196,7 @@ use Service\Routing\NotUpdatedException;
         public function replaceConfiguration(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
-            $configurationKey = $this->validateArgumentKey($routeArguments, "configurationKey");
+            $configurationKey = $this->validatePathArgument($routeArguments, "configurationKey");
             $newValue = $this->validateJsonBody($request);
             
             $wasUpdated = $this->configurationService->updateConfigurationEntry($configurationKey, $newValue);

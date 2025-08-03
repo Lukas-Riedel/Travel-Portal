@@ -67,7 +67,7 @@
                 property: "delay",
                 description: "The delay of the flight in seconds",
                 type: "integer",
-                example: 153
+                example: 7200
             )
         ]
     )]

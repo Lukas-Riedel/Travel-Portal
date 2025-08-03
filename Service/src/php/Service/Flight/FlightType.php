@@ -11,6 +11,7 @@
     enum FlightType : string {
         case Scheduled = "scheduled";
         case Watched = "watched";
+        case Logged = "logged";
 
         public function getTableName() : string {
             return match ($this) {

@@ -20,12 +20,23 @@
             }
         }
 
-        public function validateArgumentKey(array $args, string $key) : mixed {
+        public function validateQueryParameter(Request $request, string $key) : mixed {
+            $args = $request->getQueryParams();
             if (!isset($args[$key])) {
-                throw new \InvalidArgumentException("The required argument '$key' is missing.");
+                throw new \InvalidArgumentException("The required query parameter '$key' is missing.");
             }
             if (empty($args[$key])) {
-                throw new \InvalidArgumentException("The required argument '$key' is empty.");
+                throw new \InvalidArgumentException("The required query parameter '$key' is empty.");
+            }
+            return $args[$key];
+        }
+
+        public function validatePathArgument(array $args, string $key) : mixed {
+            if (!isset($args[$key])) {
+                throw new \InvalidArgumentException("The required path argument '$key' is missing.");
+            }
+            if (empty($args[$key])) {
+                throw new \InvalidArgumentException("The required path argument '$key' is empty.");
             }
             return $args[$key];
         }

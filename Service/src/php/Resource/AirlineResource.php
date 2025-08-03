@@ -6,8 +6,8 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Service\Routing\NotFoundException;
-use Service\Routing\NotUpdatedException;
-use Service\Service\Flight\FlightService;
+    use Service\Routing\NotUpdatedException;
+    use Service\Service\Flight\FlightService;
 
     #[OA\Tag(name: "Airlines")]
     class AirlineResource extends AbstractResource {
@@ -252,7 +252,7 @@ use Service\Service\Flight\FlightService;
             ]
         )]
         public function getAirline(Request $request, Response $response, array $routeArguments) : mixed {    
-            $airlineId = $this->validateArgumentKey($routeArguments, "airlineId");
+            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
             
             $airline = $this->flightService->getAirline($airlineId);
             if ($airline === NULL) {
@@ -361,7 +361,7 @@ use Service\Service\Flight\FlightService;
         public function updateAirline(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
-            $airlineId = $this->validateArgumentKey($routeArguments, "airlineId");
+            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
 
             $newName = $this->validateJsonBodyNullableField($request, "name");
             if ($newName !== NULL) {
@@ -465,7 +465,7 @@ use Service\Service\Flight\FlightService;
         public function removeAirline(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
-            $airlineId = $this->validateArgumentKey($routeArguments, "airlineId");
+            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
             
             $wasRemoved = $this->flightService->removeAirline($airlineId);
             if (!$wasRemoved) {
@@ -556,7 +556,7 @@ use Service\Service\Flight\FlightService;
         public function createAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
-            $airlineId = $this->validateArgumentKey($routeArguments, "airlineId");
+            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
             $airlineCode = $this->validateJsonBodyField($request, "code");
             
             $airline = $this->flightService->getAirline($airlineId);
@@ -645,7 +645,7 @@ use Service\Service\Flight\FlightService;
         public function deleteAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
-            $airlineId = $this->validateArgumentKey($routeArguments, "airlineId");
+            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
             $airlineCode = $this->validateJsonBodyField($request, "code");
             
             $airline = $this->flightService->getAirline($airlineId);

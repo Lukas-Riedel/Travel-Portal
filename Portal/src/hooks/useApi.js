@@ -446,26 +446,24 @@ export function useApi() {
     }
 
     async function logFlight(flight, from, to, scheduledDeparture) {
-        return sendRequest("POST", "/flights/log",
+        return sendRequest("POST", "/flights?type=logged",
             {
                 flight: flight,
-                from: from,
-                to: to,
+                from: { name: from },
+                to: { name: to },
                 scheduledDeparture: scheduledDeparture
             })
     }
 
     async function logFlightManually(flight, aircraft, registration, from, fromCode, to, toCode,
         scheduledDeparture, actualDeparture, scheduledArrival, actualArrival) {
-        return sendRequest("POST", "/flights/log",
+        return sendRequest("POST", "/flights?type=logged",
             {
                 flight: flight,
                 aircraft: aircraft,
                 registration: registration,
-                from: from,
-                fromCode: fromCode,
-                to: to,
-                toCode: toCode,
+                from: { name: from, code: fromCode },
+                to: { name: to, code: toCode },
                 scheduledDeparture: scheduledDeparture,
                 actualDeparture: actualDeparture,
                 scheduledArrival: scheduledArrival,
@@ -474,24 +472,22 @@ export function useApi() {
     }
 
     async function createScheduledFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
-        return sendRequest("POST", "/flights",
+        return sendRequest("POST", "/flights?type=scheduled",
             {
-                type: "scheduled",
                 flight: flight,
-                from: from,
-                to: to,
+                from: { name: from },
+                to: { name: to },
                 scheduledDeparture: scheduledDeparture,
                 scheduledArrival: scheduledArrival
             })
     }
 
     async function createWatchedFlight(flight, from, to, scheduledDeparture, scheduledArrival) {
-        return sendRequest("POST", "/flights",
+        return sendRequest("POST", "/flights?type=watched",
             {
-                type: "watched",
                 flight: flight,
-                from: from,
-                to: to,
+                from: { name: from },
+                to: { name: to },
                 scheduledDeparture: scheduledDeparture,
                 scheduledArrival: scheduledArrival
             })
