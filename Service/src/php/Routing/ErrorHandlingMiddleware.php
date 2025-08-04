@@ -1,7 +1,7 @@
 <?php
     namespace Service\Routing;
 
-use Monolog\Logger;
+    use Monolog\Logger;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
@@ -25,12 +25,12 @@ use Monolog\Logger;
             catch (\Throwable $e) {
                 $code = $this->getErrorCode($e);
                 
-                $requestError = new RequestError($code, end(explode("\\", get_class($e))), $e->getMessage(), explode("\n", $e->getTraceAsString()), 
+                $requestError = new RequestError($code, basename(str_replace("\\", "/", get_class($e))), $e->getMessage(), explode("\n", $e->getTraceAsString()), 
                     $request->getUri()->getPath());
 
                 $response = new Response($code);
                 $response->getBody()->write(json_encode($requestError, JSON_UNESCAPED_UNICODE));
-                $this->logger->error(end(explode("\\", get_class($e))) . ": " . $e->getMessage(), array("error" => $requestError));
+                $this->logger->error($requestError->getType() . ": " . $requestError->getMessage(), array("error" => $requestError));
 
                 return $response->withHeader("Content-Type", "application/json");
             }

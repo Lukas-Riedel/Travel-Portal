@@ -26,7 +26,6 @@
     $databaseProvider->beginTransaction();        
     try {            
         set_error_handler($onError);
-        $loggingProvider = new LoggingProvider($databaseProvider);
     
         $handlers = array();
         foreach (array_diff(scandir(__DIR__ . "/src/php/Rest"), array('.', '..', 'Handler.php')) as &$handlerFileName) {
@@ -84,7 +83,6 @@
         $error = new TargetError(getErrorCode($e), $e, $input);
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
-        $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
     }
     finally {        
         restore_error_handler();

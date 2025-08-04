@@ -1,4 +1,5 @@
 <?php
+    // TODO: Remove.
     class TargetError implements JsonSerializable {        
         private $code;
         private $error;

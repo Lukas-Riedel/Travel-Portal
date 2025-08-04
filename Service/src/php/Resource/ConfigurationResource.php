@@ -121,7 +121,7 @@ use Service\Routing\NotUpdatedException;
                         ]
                     ),
                     example: [
-                        "mainCurrencyValue" => "EUR"
+                        "mainCurrency" => "EUR"
                     ]
                 )
             ),

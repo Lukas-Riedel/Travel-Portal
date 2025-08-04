@@ -3,7 +3,6 @@
     require_once(__DIR__ . "/../../config/secrets.php");
     
     require_once(__DIR__ . "/Provider/DatabaseProvider.php");
-    require_once(__DIR__ . "/Provider/LoggingProvider.php");
     require_once(__DIR__ . "/Rest/Handler.php");
     require_once(__DIR__ . "/Model/TargetError.php");
     require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
@@ -82,8 +81,6 @@
     $calendarClient = new CalendarClient();
     $cloudMessagingClient = new CloudMessagingClient();
     $cacheClient = new CacheClient($databaseProvider);
-    
-    $loggingProvider = new LoggingProvider($databaseProvider);
 
     // Event producers.
     $eventPublisher = new EventPublisher();

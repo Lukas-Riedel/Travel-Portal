@@ -51,24 +51,30 @@
         }
 
         private function handleEvent($event) : void {
-            global $databaseProvider, $loggingProvider;
+            global $databaseProvider, $logger;
 
+            $start = microtime(TRUE);
+            $logger->debug("Received the '" . $event["name"] . "' event...", $event);
             $databaseProvider->beginTransaction();
             try {
                 $handlerMethod = "on" . $event["name"];
                 foreach ($this->eventHandlers[$event["name"]] as &$eventHandler) {
+                    $start = microtime(TRUE);
+                    $logger->debug("Invoking the '" . basename(str_replace("\\", "/", get_class($eventHandler))) . "::" . $handlerMethod . "' handler...", $event);
                     $eventHandler->$handlerMethod($event["args"]);
+                    $logger->debug("The '" . basename(str_replace("\\", "/", get_class($eventHandler))) . "::" . $handlerMethod . "' handler finished its execution in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
                 }
                 $databaseProvider->commit();
             }
             catch (Throwable $e) {
                 $databaseProvider->rollback();
                 $error = new TargetError(400, $e, $event["args"]);
-                $loggingProvider->logError(json_encode($error, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG));
+                $logger->error(basename(str_replace("\\", "/", get_class($e))) . ": " . $e->getMessage(), array("error" => $error));
             }
             finally {
                 $databaseProvider->materializeViews();
                 $this->removeEvent($event["id"]);
+                $logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
             }
 
             if ($event["name"] == Event::ApplicationStarted->name) {
