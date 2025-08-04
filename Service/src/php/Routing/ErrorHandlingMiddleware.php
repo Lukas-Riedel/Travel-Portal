@@ -1,6 +1,7 @@
 <?php
     namespace Service\Routing;
 
+use Monolog\Logger;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
@@ -11,9 +12,13 @@
 
     class ErrorHandlingMiddleware implements MiddlewareInterface {
 
-        public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-            global $loggingProvider;
+        private readonly Logger $logger;
 
+        public function __construct(Logger $logger) {
+            $this->logger = $logger;
+        }
+
+        public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
             try {
                 return $handler->handle($request);
             }
@@ -25,7 +30,7 @@
 
                 $response = new Response($code);
                 $response->getBody()->write(json_encode($requestError, JSON_UNESCAPED_UNICODE));
-                $loggingProvider->logError(json_encode($requestError, JSON_UNESCAPED_UNICODE));
+                $this->logger->error(end(explode("\\", get_class($e))) . ": " . $e->getMessage(), array("error" => $requestError));
 
                 return $response->withHeader("Content-Type", "application/json");
             }

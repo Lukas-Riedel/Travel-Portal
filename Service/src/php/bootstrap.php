@@ -16,6 +16,8 @@
     require_once(__DIR__ . "/Event/EventManager.php");
     require_once(__DIR__ . "/Event/EventPublisher.php");
 
+    use Logtail\Monolog\LogtailHandlerBuilder;
+    use Monolog\Logger;
     use Service\Client\CacheClient;
     use Service\Client\CloudMessagingClient;
     use Service\Service\Authentication\AuthenticationService;
@@ -66,6 +68,11 @@
     use Service\Service\Trip\TripStatisticsProvider;
     use Service\Service\Year\YearService;
     use Service\Service\Year\YearServiceListener;
+
+    // Logger.
+    $logger = new Logger("Service");
+    $handler = LogtailHandlerBuilder::withSourceToken(BETTER_STACK_SOURCE_TOKEN)->withEndpoint(BETTER_STACK_INGESTING_HOST)->build();
+    $logger->pushHandler($handler);
 
     // Clients.
     $databaseProvider = new DatabaseProvider(TRUE);

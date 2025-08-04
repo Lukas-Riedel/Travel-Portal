@@ -73,7 +73,7 @@
             }
     
             if ($decodedAccessToken["expiration"] < time()) {
-                throw new AuthenticationException("The access token expired at " . $decodedAccessToken["expiration"] . ".");
+                throw new AuthenticationException("The access token expired at " . date(DATE_ATOM, $decodedAccessToken["expiration"]) . ".");
             }
 
             return new AccessToken($decodedAccessToken["userId"], $decodedAccessToken["roles"], $decodedAccessToken["expiration"]);
@@ -106,7 +106,7 @@
             }
     
             if ($decodedRefreshToken["expiration"] < time()) {
-                throw new AuthenticationException("The refresh token expired at " . $decodedRefreshToken["expiration"] . ".");
+                throw new AuthenticationException("The refresh token expired at " . date(DATE_ATOM, $decodedRefreshToken["expiration"]) . ".");
             }
 
             return $this->generateAuthenticationResult($decodedRefreshToken["userId"], $decodedRefreshToken["roles"], self::BEARER_TOKEN_VALIDITY);
