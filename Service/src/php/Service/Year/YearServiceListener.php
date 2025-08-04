@@ -6,7 +6,7 @@
     class YearServiceListener {
         
         private const UPDATE_YEAR_STATISTICS_ACTION_NAME = "UPDATE_YEAR_STATISTICS";
-        private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 86400 * 14;
+        private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 86400 * 21;
 
         private readonly YearService $yearService;
 

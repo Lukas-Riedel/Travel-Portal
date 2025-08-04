@@ -7,7 +7,7 @@
     class CategoryServiceListener {
         
         private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
-        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 86400 * 14;
+        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 86400 * 21;
 
         private readonly CategoryService $categoryService;
 

@@ -11,6 +11,7 @@
         public function watchCalendar(string $calendar) : void {
             global $googleApiClient, $authenticationService;
 
+            // TODO: Come up with a more sophisticated solution.
             $authenticationResult = $authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),

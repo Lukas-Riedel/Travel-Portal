@@ -13,17 +13,19 @@
         case Watched = "watched";
         case Logged = "logged";
 
-        public function getTableName() : string {
+        public function getTableName() : ?string {
             return match ($this) {
                 self::Scheduled => "flight_event",
-                self::Watched => "flight_watched_event"
+                self::Watched => "flight_watched_event",
+                self::Logged => NULL
             };
         }
 
-        public function getCalendar() : \Calendar {
+        public function getCalendar() : ?\Calendar {
             return match ($this) {
                 self::Scheduled => \Calendar::Flights,
-                self::Watched => \Calendar::WatchedFlights
+                self::Watched => \Calendar::WatchedFlights,
+                self::Logged => NULL
             };
         }
     }

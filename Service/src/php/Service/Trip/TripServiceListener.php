@@ -11,7 +11,7 @@
     class TripServiceListener {
         
         private const UPDATE_TRIP_STATISTICS_ACTION_NAME = "UPDATE_TRIP_STATISTICS";
-        private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 86400 * 14;
+        private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 86400 * 21;
 
         private readonly TripService $tripService;
 

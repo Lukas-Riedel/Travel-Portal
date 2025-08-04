@@ -5,6 +5,7 @@
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Message\ResponseInterface;
+    use Service\Service\Authentication\AccessToken;
     use Service\Service\Authentication\AuthenticationException;
     use Service\Service\Authentication\AuthenticationService;
 
@@ -13,6 +14,7 @@
         public const ACCESS_TOKEN_ATTRIBUTE_KEY = "accessToken";
 
         private const BEARER_TOKEN_PATTERN = "/Bearer\s+(.*)$/i";
+        private const GOOG_CHANNEL_TOKEN_HEADER = "X-Goog-Channel-Token";
         private const AUTHORIZATION_HEADER = "Authorization";
 
         private readonly AuthenticationService $authenticationService;
@@ -28,13 +30,24 @@
                 || str_starts_with($request->getUri()->getPath(), $this->basePath . "/swagger")) {
                 return $handler->handle($request);
             }
-            
-            $authHeader = $request->getHeaderLine(self::AUTHORIZATION_HEADER);            
-            if (!preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
+
+            $accessToken = $this->tryExtractAccessToken($request, self::AUTHORIZATION_HEADER);
+            if ($accessToken === NULL) {                
+                $accessToken = $this->tryExtractAccessToken($request, self::GOOG_CHANNEL_TOKEN_HEADER);
+            }            
+            if ($accessToken === NULL) {
                 throw new AuthenticationException("The access token was not provided.");
             }
-            $accessToken = $this->authenticationService->getAccessToken($matches[1]);            
+
             return $handler->handle($request->withAttribute(self::ACCESS_TOKEN_ATTRIBUTE_KEY, $accessToken));
+        }
+
+        private function tryExtractAccessToken(ServerRequestInterface $request, string $header) : ?AccessToken {
+            $authHeader = $request->getHeaderLine($header);
+            if (preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
+                return $this->authenticationService->getAccessToken($matches[1]);
+            }
+            return NULL;
         }
     }
 ?>
