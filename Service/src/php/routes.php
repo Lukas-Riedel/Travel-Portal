@@ -8,9 +8,11 @@
     use Service\Resource\SwaggerResource;
     use Service\Resource\FlightResource;
     use Service\Resource\GeocodingResource;
+    use Service\Resource\MonitoringResource;
     use Slim\App;
 
-    return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService, $highlightService, $fitnessService, $geocodingService) {
+    return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
+        $highlightService, $fitnessService, $geocodingService, $monitoringService) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -18,6 +20,7 @@
         CategoryResource::register($app, $categoryService, $highlightService);
         FitnessResource::register($app, $fitnessService);
         GeocodingResource::register($app, $geocodingService);
+        MonitoringResource::register($app, $monitoringService);
         SwaggerResource::register($app);
     };
 ?>
