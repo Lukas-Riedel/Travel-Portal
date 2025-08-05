@@ -187,8 +187,6 @@
             foreach ($affectedTripIds as &$affectedTripId) {
                 $this->eventPublisher->publishTripEventDeletedEvent($affectedTripId);
             }
-
-            $this->tripMapper->deleteStaleTripIdentifiers();
         }
 
         public function removeAllDayTripsTrips() : void {
@@ -218,10 +216,13 @@
                     }
 
                     // TODO: Extend the functionality for flights and stays.
-
                     $this->tripMapper->updateDayTripsTripDates($trip->getId(), $minStart, $maxEnd);
                 }
             }
+            
+            // This is effectively a part of the calendar refetch, but it must be called from here because at the time when the calendar
+            // is refetched for trips, there are no trips for day trips created yet, and they would be deleted by this call.
+            $this->tripMapper->deleteStaleTripIdentifiers();
         }
 
         private function doGetRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {

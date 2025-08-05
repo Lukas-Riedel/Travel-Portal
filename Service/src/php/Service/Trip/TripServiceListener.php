@@ -46,7 +46,7 @@
                 $this->tripService->refreshCalendar();
                 $this->placeService->refreshCalendar($this->tripService);
                 $this->stayService->refreshCalendar($this->tripService);
-                $this->flightService->refreshCalendar(FlightType::cases(), $this->tripService);
+                $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== NULL), $this->tripService);
                 $this->tripService->updateAllDayTripsTripsDates();
             }
         }

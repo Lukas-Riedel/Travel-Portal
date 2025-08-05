@@ -62,7 +62,7 @@
             if ($whereClause != NULL) {
                 $sql = str_replace("WHERE :CONDITIONS", $whereClause["clause"], $sql);
             }
-            $builder = new StatementBuilder($this->connection->prepare($sql));
+            $builder = new StatementBuilder($this->connection->prepare($sql), $sql);
             if ($whereClause != NULL) {
                 $builder->withDeferredParameters(...$whereClause["parameters"]);
             }
@@ -191,10 +191,13 @@
         private $params;
         private $deferredParams;
 
-        function __construct($statement) {
+        private $sql;
+
+        function __construct($statement, $sql) {
             $this->statement = $statement;
             $this->params = array();
             $this->deferredParams = array();
+            $this->sql = $sql;
         }
 
         public function withParameters(...$params) {
@@ -212,17 +215,40 @@
         }
 
         public function execute() {
+            return $this->doExecute(TRUE);
+        }
+
+        private function doExecute($logStatement) {
+            global $logger;
+
             if (!$this->statement) {
                 return 0;
             }
 
             $params = array_merge($this->params, $this->deferredParams);
-            if (empty($params)) {
-                $this->statement->execute();
+            
+            $start = microtime(TRUE);
+            try {                
+                if (empty($params)) {
+                    $this->statement->execute();
+                }
+                else {
+                    $this->statement->execute($params);
+                }
             }
-            else {
-                $this->statement->execute($params);
+            catch (\Exception $e) {
+                $logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
+                throw $e;
             }
+            $duration = round((microtime(TRUE) - $start) * 1000);
+            if ($duration > 100) {
+                $logger->debug("Took " . $duration . " milliseconds: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
+            }
+
+            if ($logStatement && !str_contains($this->sql, "queue_event") && !str_contains($this->sql, "cache") && $this->statement->affected_rows > 0) {
+                $logger->debug("Affected " . $this->statement->affected_rows . " rows: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
+            }
+
             return $this->statement->affected_rows;
         }
 
@@ -231,7 +257,7 @@
                 return array();
             }
 
-            $this->execute();
+            $this->doExecute(FALSE);
             $result = $this->statement->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
         }

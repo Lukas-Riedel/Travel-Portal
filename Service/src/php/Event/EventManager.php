@@ -59,10 +59,7 @@
             try {
                 $handlerMethod = "on" . $event["name"];
                 foreach ($this->eventHandlers[$event["name"]] as &$eventHandler) {
-                    $start = microtime(TRUE);
-                    $logger->debug("Invoking the '" . basename(str_replace("\\", "/", get_class($eventHandler))) . "::" . $handlerMethod . "' handler...", $event);
                     $eventHandler->$handlerMethod($event["args"]);
-                    $logger->debug("The '" . basename(str_replace("\\", "/", get_class($eventHandler))) . "::" . $handlerMethod . "' handler finished its execution in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
                 }
                 $databaseProvider->commit();
             }
