@@ -1,6 +1,42 @@
 <?php
     namespace Service\Service\Geocoding;
+    
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "Location",
+        type: "object",
+        description: "A class representing a geographical location",
+        required: ["country", "latitude", "longitude", "timezone"],
+        properties: [
+            new OA\Property(
+                property: "country",
+                type: "string",
+                description: "The country of the location",
+                example: "Czechia"
+            ),
+            new OA\Property(
+                property: "latitude",
+                type: "number",
+                format: "float",
+                description: "The latitude of the location",
+                example: 50.0755
+            ),
+            new OA\Property(
+                property: "longitude",
+                type: "number",
+                format: "float",
+                description: "The longitude of the location",
+                example: 14.4378
+            ),
+            new OA\Property(
+                property: "timezone",
+                type: "string",
+                description: "The timezone of the location",
+                example: "Europe/Prague"
+            )
+        ]
+    )]
     class Location implements \JsonSerializable {        
         private readonly ?string $country;
         private readonly float $latitude;

@@ -172,7 +172,10 @@ export function useApi() {
     }
 
     async function getCoordinates(address) {
-        return sendRequest("GET", "/coordinates/" + address)
+        return sendRequest("GET", "/coordinates",
+            {
+                address: address
+            })
     }
 
     async function createEvent(name, args) {
@@ -184,7 +187,7 @@ export function useApi() {
     }
 
     async function listEvents(name) {
-        return sendRequest("GET", "/events", {}, 
+        return sendRequest("GET", "/events", {},
             {
                 name: name
             }
