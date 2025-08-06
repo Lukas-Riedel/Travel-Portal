@@ -30,10 +30,12 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_HIGHLIGHTS_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::FETCH_HIGHLIGHTS_ACTION_INTERVAL) {
-                $this->eventPublisher->publishAllHighlightsInvalidatedEvent();                
-                $this->scheduler->recordEventsTriggered(self::FETCH_HIGHLIGHTS_ACTION_NAME);
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::FETCH_HIGHLIGHTS_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::FETCH_HIGHLIGHTS_ACTION_INTERVAL) {
+                    $this->eventPublisher->publishAllHighlightsInvalidatedEvent();                
+                    $this->scheduler->recordEventsTriggered(self::FETCH_HIGHLIGHTS_ACTION_NAME);
+                }
             }
         }
     }

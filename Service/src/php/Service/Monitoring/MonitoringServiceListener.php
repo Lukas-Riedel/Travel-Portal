@@ -22,10 +22,12 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME 
-                && time() - $message["lastTriggered"] > self::RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL) {
-                $this->eventPublisher->publishDataConsistencyScanTriggeredEvent();
-                $this->scheduler->recordEventsTriggered(self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME);
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME 
+                    && time() - $action["lastTriggered"] > self::RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL) {
+                    $this->eventPublisher->publishDataConsistencyScanTriggeredEvent();
+                    $this->scheduler->recordEventsTriggered(self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME);
+                }
             }
         }
     }

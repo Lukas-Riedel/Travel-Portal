@@ -22,10 +22,12 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME 
-                && time() - $message["lastTriggered"] > self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL) {
-                $this->eventPublisher->publishInactiveDevicesInvalidatedEvent();
-                $this->scheduler->recordEventsTriggered(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME);
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME 
+                    && time() - $action["lastTriggered"] > self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL) {
+                    $this->eventPublisher->publishInactiveDevicesInvalidatedEvent();
+                    $this->scheduler->recordEventsTriggered(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME);
+                }
             }
         }
     }

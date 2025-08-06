@@ -21,16 +21,18 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_FITNESS_ACTION_NAME
-                && time() - $message["lastTriggered"] > FitnessService::FITNESS_RECORD_DURATION) {
-                $timestampsToUpdate = $this->fitnessService->getFitnessRecordTimestampsToUpdate();
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::FETCH_FITNESS_ACTION_NAME
+                    && time() - $action["lastTriggered"] > FitnessService::FITNESS_RECORD_DURATION) {
+                    $timestampsToUpdate = $this->fitnessService->getFitnessRecordTimestampsToUpdate();
 
-                foreach ($timestampsToUpdate as &$timestampToUpdate) {
-                    $this->eventPublisher->publishFitnessActivityDetectedEvent($timestampToUpdate,
-                        $timestampToUpdate + FitnessService::FITNESS_RECORD_DURATION);
+                    foreach ($timestampsToUpdate as &$timestampToUpdate) {
+                        $this->eventPublisher->publishFitnessActivityDetectedEvent($timestampToUpdate,
+                            $timestampToUpdate + FitnessService::FITNESS_RECORD_DURATION);
+                    }
+                            
+                    $this->scheduler->recordEventsTriggered(self::FETCH_FITNESS_ACTION_NAME);
                 }
-                        
-                $this->scheduler->recordEventsTriggered(self::FETCH_FITNESS_ACTION_NAME);
             }
         }
     }

@@ -48,20 +48,22 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::LOG_FLIGHTS_ACTION_NAME) {
-                $firstNonLoggedFlight = $this->flightService->getFirstNonLoggedFlight();
-                if ($firstNonLoggedFlight === NULL) {
-                    return;
-                }
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::LOG_FLIGHTS_ACTION_NAME) {
+                    $firstNonLoggedFlight = $this->flightService->getFirstNonLoggedFlight();
+                    if ($firstNonLoggedFlight === NULL) {
+                        return;
+                    }
 
-                $loggingInterval = $firstNonLoggedFlight->getEnd() < $message["lastTriggered"]
-                    ? self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
-                    : time() - $message["lastTriggered"] + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
+                    $loggingInterval = $firstNonLoggedFlight->getEnd() < $action["lastTriggered"]
+                        ? self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
+                        : time() - $action["lastTriggered"] + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
 
-                if (time() - $message["lastTriggered"] > $loggingInterval) {
-                    $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getName(),
-                        $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
-                    $this->scheduler->recordEventsTriggered(self::LOG_FLIGHTS_ACTION_NAME);
+                    if (time() - $action["lastTriggered"] > $loggingInterval) {
+                        $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getName(),
+                            $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
+                        $this->scheduler->recordEventsTriggered(self::LOG_FLIGHTS_ACTION_NAME);
+                    }
                 }
             }
         }

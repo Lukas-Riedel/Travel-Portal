@@ -40,10 +40,12 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::UPDATE_DYNAMIC_LABELS_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL) {
-                $this->eventPublisher->publishAllDynamicLabelsInvalidatedEvent();                
-                $this->scheduler->recordEventsTriggered(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME);
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::UPDATE_DYNAMIC_LABELS_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL) {
+                    $this->eventPublisher->publishAllDynamicLabelsInvalidatedEvent();                
+                    $this->scheduler->recordEventsTriggered(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME);
+                }
             }
         }
     }

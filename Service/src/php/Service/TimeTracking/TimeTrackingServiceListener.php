@@ -30,19 +30,21 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
-                $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
+                    $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
 
-                if ($message["lastTriggered"] < $beginningOfCurrentYearTimestamp) {
-                    $this->eventPublisher->publishVacationResetEvent();                        
-                    $this->scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
+                    if ($action["lastTriggered"] < $beginningOfCurrentYearTimestamp) {
+                        $this->eventPublisher->publishVacationResetEvent();                        
+                        $this->scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
+                    }
                 }
-            }
 
-            if ($message["action"] === self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL) {
-                $this->eventPublisher->publishTimeTrackingEventsAuditTriggered();                        
-                $this->scheduler->recordEventsTriggered(self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME);
+                if ($action["name"] === self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL) {
+                    $this->eventPublisher->publishTimeTrackingEventsAuditTriggered();                        
+                    $this->scheduler->recordEventsTriggered(self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME);
+                }
             }
         }
 

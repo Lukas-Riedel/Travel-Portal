@@ -73,50 +73,52 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL) {
+                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(),
+                        time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
-                foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {
-                        if ($this->forecastService->isActualWeatherForecastExpired($place->getId(), $date->getStart())) {
-                            $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
-                        }
-                    }
-                }
-                
-                $this->scheduler->recordEventsTriggered(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME);
-            }
-
-            if ($message["action"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
-                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
-    
                     foreach ($places as &$place) {
-                        foreach ($place->getDates() as &$date) {    
-                            if ($date->getWeather() === NULL) {
-                                $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
+                        foreach ($place->getDates() as &$date) {
+                            if ($this->forecastService->isActualWeatherForecastExpired($place->getId(), $date->getStart())) {
+                                $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
                             }
                         }
                     }
-                
-                $this->scheduler->recordEventsTriggered(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME);
-            }
+                    
+                    $this->scheduler->recordEventsTriggered(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME);
+                }
 
-            if ($message["action"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                if ($action["name"] === self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL) {
+                        $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+        
+                        foreach ($places as &$place) {
+                            foreach ($place->getDates() as &$date) {    
+                                if ($date->getWeather() === NULL) {
+                                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
+                                }
+                            }
+                        }
+                    
+                    $this->scheduler->recordEventsTriggered(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME);
+                }
 
-                foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {    
-                        if ($date->getSun() === NULL) {
-                            $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                if ($action["name"] === self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL) {
+                    $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+
+                    foreach ($places as &$place) {
+                        foreach ($place->getDates() as &$date) {    
+                            if ($date->getSun() === NULL) {
+                                $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                            }
                         }
                     }
+                    
+                    $this->scheduler->recordEventsTriggered(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME);
                 }
-                
-                $this->scheduler->recordEventsTriggered(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME);
             }
         }
     }

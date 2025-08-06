@@ -310,10 +310,12 @@ use Service\Service\Place\PlaceService;
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($message["action"] === self::UPDATE_OVERALL_STATISTICS_ACTION_NAME
-                && time() - $message["lastTriggered"] > self::UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL) {
-                $this->eventPublisher->publishOverallStatisticsInvalidatedEvent();                        
-                $this->scheduler->recordEventsTriggered(self::UPDATE_OVERALL_STATISTICS_ACTION_NAME);
+            foreach ($message["actions"] as &$action) {
+                if ($action["name"] === self::UPDATE_OVERALL_STATISTICS_ACTION_NAME
+                    && time() - $action["lastTriggered"] > self::UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL) {
+                    $this->eventPublisher->publishOverallStatisticsInvalidatedEvent();                        
+                    $this->scheduler->recordEventsTriggered(self::UPDATE_OVERALL_STATISTICS_ACTION_NAME);
+                }
             }
         }
     }

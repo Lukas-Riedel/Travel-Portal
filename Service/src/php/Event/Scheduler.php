@@ -10,13 +10,11 @@
         }
 
         public function schedule() {
-            $events = $this->databaseProvider
-                ->statementBuilder("SELECT * FROM scheduler")
+            $actions = $this->databaseProvider
+                ->statementBuilder("SELECT action AS name, last_triggered AS lastTriggered FROM scheduler")
                 ->getResultSet();
 
-            foreach ($events as &$event) {
-                $this->eventPublisher->publishSchedulerTriggeredEvent($event["action"], $event["last_triggered"]);
-            }
+            $this->eventPublisher->publishSchedulerTriggeredEvent($actions);
         }
 
         public function recordEventsTriggered($action) {            
