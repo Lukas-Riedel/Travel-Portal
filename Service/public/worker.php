@@ -22,13 +22,12 @@
         }
     }
 
-    if ($lock) {
-        try {
-            $eventManager->handleEvents();
-        }
-        finally {
+    register_shutdown_function(function() use ($lock) {
+        if ($lock) {
             flock($lock, LOCK_UN);
             fclose($lock);
         }
-    }
+    });
+
+    $eventManager->handleEvents();
 ?>

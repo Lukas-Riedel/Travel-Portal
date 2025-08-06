@@ -1,7 +1,12 @@
 <?php
+
+    use PhpAmqpLib\Exception\AMQPTimeoutException;
+
     require_once(__DIR__ . "/../Model/TargetError.php");
 
     class EventManager {
+
+        private const WAITING_FOR_MESSAGES_TIMEOUT = 15;
 
         private $eventHandlers;
 
@@ -54,8 +59,13 @@
                 }
             );
 
-            while (true) {
-                $channel->wait();
+            while (TRUE) {
+                try {
+                    $channel->wait(NULL, FALSE, self::WAITING_FOR_MESSAGES_TIMEOUT);
+                }
+                catch (AMQPTimeoutException $e) {
+                    break;
+                }
             }
         }
 
