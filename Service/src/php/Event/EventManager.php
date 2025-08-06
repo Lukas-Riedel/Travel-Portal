@@ -45,8 +45,17 @@
         }
 
         public function handleEvents() : void {
-            while (($event = $this->getNextPendingEvent()) !== NULL) {
-                $this->handleEvent($event);
+            global $messagingClient;
+
+            $channel = $messagingClient->getChannel();
+            $channel->basic_consume(WORKER_QUEUE_NAME, "", FALSE, FALSE, FALSE, FALSE, function ($message) {
+                    $this->handleEvent(json_decode($message->getBody(), TRUE));
+                    $message->ack();
+                }
+            );
+
+            while (true) {
+                $channel->wait();
             }
         }
 
@@ -54,11 +63,11 @@
             global $databaseProvider, $logger;
 
             $start = microtime(TRUE);
-            $logger->debug("Received the '" . $event["name"] . "' event...", $event);
+            $logger->debug("Received the '" . $event["event"] . "' event...", $event);
             $databaseProvider->beginTransaction();
             try {
-                $handlerMethod = "on" . $event["name"];
-                foreach ($this->eventHandlers[$event["name"]] as &$eventHandler) {
+                $handlerMethod = "on" . $event["event"];
+                foreach ($this->eventHandlers[$event["event"]] as &$eventHandler) {
                     $eventHandler->$handlerMethod($event["args"]);
                 }
                 $databaseProvider->commit();
@@ -70,32 +79,14 @@
             }
             finally {
                 $databaseProvider->materializeViews();
-                $this->removeEvent($event["id"]);
-                $logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
+                $logger->info("The '" . $event["event"] . "' event was processed in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
+                
+                foreach ($logger->getHandlers() as $handler) {
+                    if ($handler instanceof \Monolog\Handler\BufferHandler) {
+                        $handler->flush();
+                    }
+                }
             }
-
-            if ($event["name"] == Event::ApplicationStarted->name) {
-                die("Restaring the application...");
-            }
-        }
-
-        private function getNextPendingEvent() : mixed {
-            global $databaseProvider;
-    
-            $nextEvent = $databaseProvider
-                ->statementBuilder("SELECT * FROM queue_event WHERE FIND_IN_SET(event, ?) ORDER BY priority ASC LIMIT 1")
-                ->withParameters(implode(",", array_keys($this->eventHandlers)))
-                ->getSingleRow();
-    
-            if ($nextEvent === NULL) {    
-                return NULL;
-            }
-    
-            return array(
-                "id" => $nextEvent["id"],
-                "name" => $nextEvent["event"],
-                "args" => json_decode($nextEvent["args"], TRUE)
-            );
         }
     }
 ?>

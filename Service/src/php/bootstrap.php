@@ -19,6 +19,7 @@
     use Monolog\Logger;
     use Service\Client\CacheClient;
     use Service\Client\CloudMessagingClient;
+    use Service\Client\MessagingClient;
     use Service\Service\Authentication\AuthenticationService;
     use Service\Service\Category\CategoryDataConsistencyMonitor;
     use Service\Service\Category\CategoryService;
@@ -79,7 +80,8 @@
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();
     $calendarClient = new CalendarClient();
-    $cloudMessagingClient = new CloudMessagingClient();
+    $messagingClient = new MessagingClient($logger);
+    $cloudMessagingClient = new CloudMessagingClient($logger);
     $cacheClient = new CacheClient($databaseProvider);
 
     // Event producers.

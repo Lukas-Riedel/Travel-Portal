@@ -1,9 +1,9 @@
 <?php
     namespace Service\Client;
 
-    use Event;
     use Google\Auth\Credentials\ServiceAccountCredentials;
     use HttpMethod;
+    use Monolog\Logger;
     use RuntimeException;
 
     class CloudMessagingClient {
@@ -14,11 +14,14 @@
 
         private readonly string $projectId;
 
-        public function __construct() {
+        private readonly Logger $logger;
+
+        public function __construct(Logger $logger) {
             $this->projectId = json_decode(file_get_contents(self::FIREBASE_CONFIGURATION_FILE_PATH), TRUE)["project_id"];
+            $this->logger = $logger;
         }
 
-        public function publishEvent(Event $event, array $args, array $deviceTokens) : void {
+        public function publishEvent(\Event $event, array $args, array $deviceTokens) : void {
             global $httpClient;
 
             $url = sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId);
@@ -34,17 +37,19 @@
                         )
                     )
                 );
-
+                
+                $this->logger->debug("Publishing the '" . $event->name . "' event to FCM...", $payload);
                 $httpClient->executeRequest(HttpMethod::POST, $url, array("Authorization: Bearer " . $accessToken, "Content-Type: application/json"), json_encode($payload));
             }
         }
 
         private function getAccessToken() : string {
-            $scopes = [
+            $scopes = array(
                 "https://www.googleapis.com/auth/firebase.messaging",
                 "https://www.googleapis.com/auth/cloud-platform",
-            ];
+            );
 
+            // TODO: Cache the token.
             $response = (new ServiceAccountCredentials($scopes, self::FIREBASE_CONFIGURATION_FILE_PATH))->fetchAuthToken();
 
             if (!isset($response["access_token"])) {
