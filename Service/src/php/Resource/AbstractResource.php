@@ -59,13 +59,12 @@
             if (!isset($body[$field])) {
                 throw new \InvalidArgumentException("The required request body field '$field' is missing.");
             }
-            if (empty($body[$field])) {
-                throw new \InvalidArgumentException("The required request body field '$field' is empty.");
+            if ($body[$field] === NULL || $body[$field] === "" || $body[$field] === array()) {
+                throw new \InvalidArgumentException("The required request body field '$field' is null or empty.");
             }
             return $body[$field];
         }
         
-
         public function validateJsonBodyNullableField(Request $request, string $field) : mixed {
             $body = $this->validateJsonBody($request);
             return isset($body[$field]) ? $body[$field] : NULL;
