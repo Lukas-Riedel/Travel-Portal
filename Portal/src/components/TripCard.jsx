@@ -91,7 +91,6 @@ export default function TripCard({ trip, onTripRemoved }) {
                         </div>
                     </li>
                 ))}
-
             </ul>
         </div>
     ) : (

@@ -46,7 +46,10 @@ export default function AdminPage() {
         sessionStorage.setItem("adminPageActiveTab", activeTab)
     }, [activeTab])
 
-    const watchedFlights = useMemo(() => [...(trips?.flatMap(trip => trip.watchedFlights) ?? [])]?.sort((a, b) => a.start - b.start), [trips])
+    const watchedFlights = useMemo(() => {
+        const filteredFlights = trips?.flatMap(trip => trip.watchedFlights);
+        return filteredFlights && [...filteredFlights].sort((a, b) => a.start - b.start)
+    }, [trips])
 
     const handleFlightCreated = () => {
         showFormToast(

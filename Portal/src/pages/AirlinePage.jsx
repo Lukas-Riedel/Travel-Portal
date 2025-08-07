@@ -14,7 +14,10 @@ export default function AirlinePage() {
     const countryCategories = useCategories({ categories: "COUNTRY" })
     const { airline, updateAirlineName, removeAirline } = useAirline(airlineId)
 
-    const flights = useMemo(() => [...(trips?.flatMap(trip => trip.flights)?.filter(flight => flight.airline?.id === airline?.id) ?? [])].reverse(), [trips])
+    const flights = useMemo(() => {
+        const filteredTrips = trips?.flatMap(trip => trip.flights)?.filter(flight => flight.airline?.id === airline?.id)
+        return filteredTrips && [...filteredTrips].reverse()
+    }, [trips])
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))

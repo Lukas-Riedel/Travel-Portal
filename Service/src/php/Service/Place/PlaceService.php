@@ -281,7 +281,7 @@
                 return $placeIdentifier;
             }
 
-            if ($country === array_filter($this->configurationService->getConfigurationEntry("countryNames"), fn($c) => $c["country"] === "UNKNOWN")[0]["name"]) {
+            if ($country === array_filter($this->configurationService->getConfigurationEntry("countryNames"), fn($c) => $c["country"] == "UNKNOWN")[0]["name"]) {
                 throw new \InvalidArgumentException("Cannot create an identifier for an unknown country.");
             }
             

@@ -11,7 +11,10 @@ export default function FlightsPage() {
     const countryCategories = useCategories({ categories: "COUNTRY" })
     const statistics = useStatistics()
 
-    const flights = useMemo(() => [...(trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration) ?? [])].reverse(), [trips])
+    const flights = useMemo(() => {
+        const filteredFlights = trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration);
+        return filteredFlights && [...filteredFlights].reverse()
+    }, [trips])
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))

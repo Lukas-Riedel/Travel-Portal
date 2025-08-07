@@ -12,12 +12,15 @@ export default function AirportPage() {
     const trips = useRegularTrips({ include: "FLIGHTS" })
     const countryCategories = useCategories({ categories: "COUNTRY" })
 
-    const flights = useMemo(() => [...(trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration)
-        ?.filter(flight => flight.from.id === airportId || flight.to.id === airportId) ?? [])].reverse(), [trips])
+    const flights = useMemo(() => {
+        const filteredFlights = trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration)
+            ?.filter(flight => flight.from.id === airportId || flight.to.id === airportId)
+        return filteredFlights && [...filteredFlights].reverse()
+    }, [trips])
 
     // TODO: Introduce an API endpoint and fetch from it here.
     const airport = useMemo(() => {
-        const flight = flights.find(f => f.from.id === airportId || f.to.id === airportId)
+        const flight = flights?.find(f => f.from.id === airportId || f.to.id === airportId)
         return flight ? (flight.from.id === airportId ? flight.from : flight.to) : undefined
     }, [flights, airportId])
 
