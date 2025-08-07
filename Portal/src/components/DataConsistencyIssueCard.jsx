@@ -225,7 +225,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 showConfirmToast("Opravdu chceš zalogovat vybraný let?",
                     "Let byl úspěšně zalogován",
                     "Nepodařilo se zalogovat let",
-                    async () => onFlightLogged(undefined, flight.flight, flight.from.name, flight.to.name, flight.start)
+                    async () => onFlightLogged(flight.flight, flight.from.name, flight.to.name, flight.start)
                 )
         },
         "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME": {
