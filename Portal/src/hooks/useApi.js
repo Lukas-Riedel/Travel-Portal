@@ -172,7 +172,7 @@ export function useApi() {
     }
 
     async function getCoordinates(address) {
-        return sendRequest("GET", "/coordinates",
+        return sendRequest("GET", "/coordinates", {},
             {
                 address: address
             })
