@@ -229,7 +229,7 @@
                 
                 $affectedTripIds = $this->flightMapper->selectTripIdsForDeletedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
                 foreach ($affectedTripIds as &$affectedTripId) {
-                    $this->eventPublisher->publishFlightEventDeletedEvent($affectedTripId);
+                    $this->eventPublisher->publishFlightEventRemovedEvent($affectedTripId);
                 }
             }              
         }

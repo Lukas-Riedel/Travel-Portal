@@ -107,7 +107,7 @@ use Service\Service\Place\PlaceService;
             }
         }
 
-        public function onFlightEventDeleted(mixed $message) : void {
+        public function onFlightEventRemoved(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
             if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
@@ -139,7 +139,7 @@ use Service\Service\Place\PlaceService;
             }
         }
 
-        public function onPlaceDeleted(mixed $message) : void {
+        public function onPlaceRemoved(mixed $message) : void {
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             if ($place === NULL) {
                 return;
@@ -208,7 +208,7 @@ use Service\Service\Place\PlaceService;
             }
         }
 
-        public function onPlaceEventDeleted(mixed $message) : void {
+        public function onPlaceEventRemoved(mixed $message) : void {
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             if ($place === NULL) {
                 return;
@@ -247,7 +247,7 @@ use Service\Service\Place\PlaceService;
             }
         }
 
-        public function onStayEventDeleted(mixed $message) : void {
+        public function onStayEventRemoved(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
             if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);
@@ -275,7 +275,7 @@ use Service\Service\Place\PlaceService;
             }
         }
 
-        public function onTripEventDeleted(mixed $message) : void {
+        public function onTripEventRemoved(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
             if ($trip !== NULL && !$this->tripService->isDayTripsTrip($trip)) {
                 $this->statisticsService->updateTripStatistics($trip);

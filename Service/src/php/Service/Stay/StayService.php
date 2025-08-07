@@ -50,7 +50,7 @@
             
             $affectedTripIds = $this->stayMapper->selectTripIdsForDeletedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishStayEventDeletedEvent($affectedTripId);
+                $this->eventPublisher->publishStayEventRemovedEvent($affectedTripId);
             }
         }
     }

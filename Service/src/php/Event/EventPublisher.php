@@ -7,332 +7,335 @@
     // TODO: Go through every event and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
     class EventPublisher {
         public function publishActualWeatherForecastUpdated($placeId, $start) {
-            $this->publishWorkerEvent(Event::ActualWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
+            $this->publishEvent(Event::ActualWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
         }
         
         public function publishHistoricalWeatherForecastUpdated($placeId, $start) {
-            $this->publishWorkerEvent(Event::HistoricalWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
+            $this->publishEvent(Event::HistoricalWeatherForecastUpdated, array("placeId" => $placeId, "start" => $start));
         }
         
         public function publishDaylightForecastUpdated($placeId, $start, $end) {
-            $this->publishWorkerEvent(Event::DaylightForecastUpdated, array("placeId" => $placeId, "start" => $start, "end" => $end));
+            $this->publishEvent(Event::DaylightForecastUpdated, array("placeId" => $placeId, "start" => $start, "end" => $end));
         }
 
         public function publishFitnessActivityDetectedEvent($start, $end) {
-            $this->publishWorkerEvent(Event::FitnessActivityDetected, array("start" => $start, "end" => $end));
+            $this->publishEvent(Event::FitnessActivityDetected, array("start" => $start, "end" => $end));
         }
 
         public function publishCategoryCreatedEvent($categoryId) {
-            $this->publishWorkerEvent(Event::CategoryCreated, array("categoryId" => $categoryId));
+            $this->publishEvent(Event::CategoryCreated, array("categoryId" => $categoryId));
         }
 
         public function publishAlbumInvalidatedEvent($albumId) {
-            $this->publishWorkerEvent(Event::AlbumInvalidated, array("albumId" => $albumId));
+            $this->publishEvent(Event::AlbumInvalidated, array("albumId" => $albumId));
         }
 
         public function publishPhotoInvalidatedEvent($photoId) {
-            $this->publishWorkerEvent(Event::PhotoInvalidated, array("photoId" => $photoId));
+            $this->publishEvent(Event::PhotoInvalidated, array("photoId" => $photoId));
         }
 
         public function publishCategoryInvalidatedEvent($categoryId) {
-            $this->publishWorkerEvent(Event::CategoryInvalidated, array("categoryId" => $categoryId));
+            $this->publishEvent(Event::CategoryInvalidated, array("categoryId" => $categoryId));
         }
 
         public function publishAllAlbumsInvalidatedEvent() : void {
-            $this->publishWorkerEvent(Event::AllAlbumsInvalidated, NULL);
+            $this->publishEvent(Event::AllAlbumsInvalidated, NULL);
         }
 
         public function publishAllDynamicLabelsInvalidatedEvent() : void {
-            $this->publishWorkerEvent(Event::AllDynamicLabelsInvalidated, NULL);
+            $this->publishEvent(Event::AllDynamicLabelsInvalidated, NULL);
         }
 
         public function publishAllHighlightsInvalidatedEvent() : void {
-            $this->publishWorkerEvent(Event::AllHighlightsInvalidated, NULL);
+            $this->publishEvent(Event::AllHighlightsInvalidated, NULL);
         }
 
         public function publishHighlightCreatedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
-            $this->publishWorkerEvent(Event::HighlightCreated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
+            $this->publishEvent(Event::HighlightCreated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
         }        
 
         public function publishHighlightUpdatedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
-            $this->publishWorkerEvent(Event::HighlightUpdated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
+            $this->publishEvent(Event::HighlightUpdated, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
         public function publishHighlightRemovedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
-            $this->publishWorkerEvent(Event::HighlightRemoved, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
+            $this->publishEvent(Event::HighlightRemoved, array("highlightType" => $highlightType->name, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
         public function publishAlbumUpdatedEvent($albumId) : void {
-            $this->publishWorkerEvent(Event::AlbumUpdated, array("albumId" => $albumId));
+            $this->publishEvent(Event::AlbumUpdated, array("albumId" => $albumId));
         }
 
         public function publishTripStatisticsInvalidatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::TripStatisticsInvalidated, array("tripId" => $tripId));
+            $this->publishEvent(Event::TripStatisticsInvalidated, array("tripId" => $tripId));
         }
         
         public function publishYearStatisticsInvalidatedEvent($year) : void {
-            $this->publishWorkerEvent(Event::YearStatisticsInvalidated, array("year" => $year));
+            $this->publishEvent(Event::YearStatisticsInvalidated, array("year" => $year));
         }
         
         public function publishCategoryStatisticsInvalidatedEvent($categoryId) : void {
-            $this->publishWorkerEvent(Event::CategoryStatisticsInvalidated, array("categoryId" => $categoryId));
+            $this->publishEvent(Event::CategoryStatisticsInvalidated, array("categoryId" => $categoryId));
         }
         
         public function publishCategoryUpdatedEvent($categoryId) : void {
-            $this->publishWorkerEvent(Event::CategoryUpdated, array("categoryId" => $categoryId));
+            $this->publishEvent(Event::CategoryUpdated, array("categoryId" => $categoryId));
         }
 
         public function publishExpenseCreatedEvent($expenseId, $tripId) : void {
-            $this->publishWorkerEvent(Event::ExpenseCreated, array("expenseId" => $expenseId, "tripId" => $tripId));
+            $this->publishEvent(Event::ExpenseCreated, array("expenseId" => $expenseId, "tripId" => $tripId));
         }
 
         public function publishExpenseUpdatedEvent($expenseId, $tripId) : void {
-            $this->publishWorkerEvent(Event::ExpenseUpdated, array("expenseId" => $expenseId, "tripId" => $tripId));
+            $this->publishEvent(Event::ExpenseUpdated, array("expenseId" => $expenseId, "tripId" => $tripId));
         }
 
         public function publishExpenseRemovedEvent($expenseId, $tripId) : void {
-            $this->publishWorkerEvent(Event::ExpenseRemoved, array("expenseId" => $expenseId, "tripId" => $tripId));
+            $this->publishEvent(Event::ExpenseRemoved, array("expenseId" => $expenseId, "tripId" => $tripId));
         }
         
         public function publishPlaceUpdatedEvent($placeId) : void {
-            $this->publishWorkerEvent(Event::PlaceUpdated, array("placeId" => $placeId));
+            $this->publishEvent(Event::PlaceUpdated, array("placeId" => $placeId));
         }
         
         public function publishPlaceCreatedEvent($placeId) : void {
-            $this->publishWorkerEvent(Event::PlaceCreated, array("placeId" => $placeId));
+            $this->publishEvent(Event::PlaceCreated, array("placeId" => $placeId));
         }
         
         public function publishVacationResetEvent() : void {
-            $this->publishWorkerEvent(Event::VacationReset, NULL);
+            $this->publishEvent(Event::VacationReset, NULL);
         }
         
         public function publishApplicationStartedEvent($tables) : void {
-            $this->publishWorkerEvent(Event::ApplicationStarted, array("tables" => $tables));
+            $this->publishEvent(Event::ApplicationStarted, array("tables" => $tables));
         }
         
         public function publishFlightEventCreatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::FlightEventCreated, array("tripId" => $tripId));
+            $this->publishEvent(Event::FlightEventCreated, array("tripId" => $tripId));
         }
         
         public function publishFlightEventUpdatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::FlightEventUpdated, array("tripId" => $tripId));
+            $this->publishEvent(Event::FlightEventUpdated, array("tripId" => $tripId));
         }
         
-        public function publishFlightEventDeletedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::FlightEventDeleted, array("tripId" => $tripId));
+        public function publishFlightEventRemovedEvent($tripId) : void {
+            $this->publishEvent(Event::FlightEventRemoved, array("tripId" => $tripId));
         }
         
         public function publishStayEventCreatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::StayEventCreated, array("tripId" => $tripId));
+            $this->publishEvent(Event::StayEventCreated, array("tripId" => $tripId));
         }
         
         public function publishStayEventUpdatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::StayEventUpdated, array("tripId" => $tripId));
+            $this->publishEvent(Event::StayEventUpdated, array("tripId" => $tripId));
         }
         
-        public function publishStayEventDeletedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::StayEventDeleted, array("tripId" => $tripId));
+        public function publishStayEventRemovedEvent($tripId) : void {
+            $this->publishEvent(Event::StayEventRemoved, array("tripId" => $tripId));
         }
         
         public function publishTripEventCreatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::TripEventCreated, array("tripId" => $tripId));
+            $this->publishEvent(Event::TripEventCreated, array("tripId" => $tripId));
         }
         
         public function publishTripEventUpdatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::TripEventUpdated, array("tripId" => $tripId));
+            $this->publishEvent(Event::TripEventUpdated, array("tripId" => $tripId));
         }
         
-        public function publishTripEventDeletedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::TripEventDeleted, array("tripId" => $tripId));
+        public function publishTripEventRemovedEvent($tripId) : void {
+            $this->publishEvent(Event::TripEventRemoved, array("tripId" => $tripId));
         }
         
         public function publishCalendarWatchRenewingEvent($calendar) : void {
-            $this->publishWorkerEvent(Event::CalendarWatchRenewing, array("calendar" => $calendar));
+            $this->publishEvent(Event::CalendarWatchRenewing, array("calendar" => $calendar));
         }
 
         public function publishFitnessDataUpdatedEvent($start, $end) : void {
-            $this->publishWorkerEvent(Event::FitnessDataUpdated, array("start" => $start, "end" => $end));
+            $this->publishEvent(Event::FitnessDataUpdated, array("start" => $start, "end" => $end));
         }
 
         public function publishSchedulerTriggeredEvent($actions) : void {
-            $this->publishWorkerEvent(Event::SchedulerTriggered, array("actions" => $actions));
+            $this->publishEvent(Event::SchedulerTriggered, array("actions" => $actions));
         }
 
         public function publishFlightLoggedEvent($flight) : void {
-            $this->publishWorkerEvent(Event::FlightLogged, array("flight" => $flight));
+            $this->publishEvent(Event::FlightLogged, array("flight" => $flight));
         }
 
         public function publishFlightArrivedEvent($flight, $from, $to, $scheduledDeparture) : void {
-            $this->publishWorkerEvent(Event::FlightArrived, array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
+            $this->publishEvent(Event::FlightArrived, array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
         }
 
         public function publishYearStatisticsUpdatedEvent($year) : void {
-            $this->publishWorkerEvent(Event::YearStatisticsUpdated, array("year" => $year));
+            $this->publishEvent(Event::YearStatisticsUpdated, array("year" => $year));
         }
 
         public function publishCategoryStatisticsUpdatedEvent($categoryId) : void {
-            $this->publishWorkerEvent(Event::CategoryStatisticsUpdated, array("categoryId" => $categoryId));
+            $this->publishEvent(Event::CategoryStatisticsUpdated, array("categoryId" => $categoryId));
         }
 
         public function publishTripStatisticsUpdatedEvent($tripId, $year) : void {
-            $this->publishWorkerEvent(Event::TripStatisticsUpdated, array("tripId" => $tripId, "year" => $year));
+            $this->publishEvent(Event::TripStatisticsUpdated, array("tripId" => $tripId, "year" => $year));
         }
 
         public function publishOverallStatisticsInvalidatedEvent() : void {
-            $this->publishWorkerEvent(Event::OverallStatisticsInvalidated, NULL);
+            $this->publishEvent(Event::OverallStatisticsInvalidated, NULL);
         }
 
         public function publishTripUpdatedEvent($tripId) : void {
-            $this->publishWorkerEvent(Event::TripUpdated, array("tripId" => $tripId));
+            $this->publishEvent(Event::TripUpdated, array("tripId" => $tripId));
         }
 
-        public function publishPlaceDeletedEvent($placeId) : void {
-            $this->publishWorkerEvent(Event::PlaceDeleted, array("placeId" => $placeId));
+        public function publishPlaceRemovedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceRemoved, array("placeId" => $placeId));
         }
 
         public function publishPlaceEventCreatedEvent($placeId) : void {
-            $this->publishWorkerEvent(Event::PlaceEventCreated, array("placeId" => $placeId));
+            $this->publishEvent(Event::PlaceEventCreated, array("placeId" => $placeId));
         }
 
         public function publishPlaceEventUpdatedEvent($placeId) : void {
-            $this->publishWorkerEvent(Event::PlaceEventUpdated, array("placeId" => $placeId));
+            $this->publishEvent(Event::PlaceEventUpdated, array("placeId" => $placeId));
         }
         
-        public function publishPlaceEventDeletedEvent($placeId) : void {
-            $this->publishWorkerEvent(Event::PlaceEventDeleted, array("placeId" => $placeId));
+        public function publishPlaceEventRemovedEvent($placeId) : void {
+            $this->publishEvent(Event::PlaceEventRemoved, array("placeId" => $placeId));
         }
 
         public function publishDataConsistencyScanTriggeredEvent() : void {
-            $this->publishWorkerEvent(Event::DataConsistencyScanTriggered, NULL);
+            $this->publishEvent(Event::DataConsistencyScanTriggered, NULL);
         }
 
         public function publishInactiveDevicesInvalidatedEvent() : void {
-            $this->publishWorkerEvent(Event::InactiveDevicesInvalidated, NULL);
+            $this->publishEvent(Event::InactiveDevicesInvalidated, NULL);
         }
 
         public function publishConfigurationEntryUpdated($key) : void {
-            $this->publishWorkerEvent(Event::ConfigurationEntryUpdated, array("key" => $key));
+            $this->publishEvent(Event::ConfigurationEntryUpdated, array("key" => $key));
         }
 
         public function publishTimeTrackingEventsAuditTriggered() : void {
-            $this->publishWorkerEvent(Event::TimeTrackingEventsAuditTriggered, NULL);
+            $this->publishEvent(Event::TimeTrackingEventsAuditTriggered, NULL);
         }
 
         public function publishEvent($event, $args) : void {
-            switch ($event->getBroker()) {
-                case EventBroker::CloudMessaging:
-                    // TODO: Figure out how to resolve the device type and required roles - by the event type?
-                    $this->publishCloudEvent($event, DeviceType::Portal, array("ADMIN"), $args);
+            global $cloudMessagingClient, $deviceService, $messagingClient, $databaseProvider;
+            
+            switch ($event->getTarget()) {
+                case EventTarget::CloudMessaging:
+                    // TODO: Figure out how to resolve the device type and required roles - introduce more "bit masks" to the event type backing value.
+                    $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getToken(),
+                        $deviceService->getDevices(DeviceType::Portal, array("ADMIN"))));
                     break;
-                case EventBroker::Worker:
-                    $this->publishWorkerEvent($event, $args);
+                case EventTarget::WorkerQueue:
+                    $messagingClient->publishEvent($event, $args, WORKER_QUEUE_NAME);
+                    break;
+                default:
+                    $argsJson = json_encode($args, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG);
+
+                    $databaseProvider->beginTransaction();
+
+                    $databaseProvider
+                        ->statementBuilder("DELETE FROM queue_event WHERE event = ? AND args = ?")
+                        ->withParameters($event->name, $argsJson)
+                        ->execute();
+                        
+                    $databaseProvider
+                        ->statementBuilder("INSERT INTO queue_event (event, args, priority) VALUES (?, ?, ?)")
+                        ->withParameters($event->name, $argsJson, $event->value)
+                        ->execute();
+
+                    $databaseProvider->commit();
                     break;
             }
-        }
-
-        private function publishWorkerEvent($event, $args) : void {
-            global $databaseProvider, $messagingClient;
-
-            // TODO: Remove after getting rid of the SQL queue.
-            if ($event->value < 1000) {
-                $messagingClient->publishEvent($event, $args, WORKER_QUEUE_NAME);
-            }
-            else {
-                $argsJson = json_encode($args, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG);
-
-                $databaseProvider->beginTransaction();
-
-                $databaseProvider
-                    ->statementBuilder("DELETE FROM queue_event WHERE event = ? AND args = ?")
-                    ->withParameters($event->name, $argsJson)
-                    ->execute();
-                    
-                $databaseProvider
-                    ->statementBuilder("INSERT INTO queue_event (event, args, priority) VALUES (?, ?, ?)")
-                    ->withParameters($event->name, $argsJson, $event->value)
-                    ->execute();
-
-                $databaseProvider->commit();
-            }
-        }
-
-        private function publishCloudEvent($event, $deviceType, $requiredRoles, $args) {            
-            global $cloudMessagingClient, $deviceService;
-            $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getToken(),
-                $deviceService->getDevices($deviceType, $requiredRoles)));
         }
     }
 
-    enum EventBroker {
-        case Worker;
-        case CloudMessaging;
+    enum EventTarget : int {
+        case WorkerQueue = 1;
+        case AgentQueue = 2;
+        case CloudMessaging = 3;
+        case Legacy = 4;
     }
 
     enum Event : int {
-        // TODO: Invalidations first, then updates. Order this enum.
-        // TODO: Unify Removed/Deleted.
-        // TODO: Remove unused.
-        case ApplicationStarted = -4;
-        case HighlightCreated = -3;
-        case DataConsistencyScanTriggered = -2;
-        case HighlightUpdated = -1;
-        case SchedulerTriggered = 0;
-        case AllDynamicLabelsInvalidated = 1;
-        case CalendarWatchRenewing = 2;
-        case VacationReset = 3;
-        case CalendarInvalidated = 4;
-        case FlightArrived = 5;
-        case ActualWeatherForecastUpdated = 6;
-        case DaylightForecastUpdated = 7;
-        case HistoricalWeatherForecastUpdated = 8;
-        case PhotoInvalidated = 9;
-        case AllHighlightsInvalidated = 10;
-        case AlbumInvalidated = 11;
-        case AllAlbumsInvalidated = 12;
-        case CategoryInvalidated = 13;
-        case AlbumUpdated = 14;
-        case CategoryCreated = 15;
-        case CategoryUpdated = 16;
-        case ExpenseCreated = 17;
-        case ExpenseUpdated = 18;
-        case ExpenseRemoved = 19;
-        case PlaceUpdated = 20;
-        case FitnessDataUpdated = 21;
-        case FlightLogged = 22;
-        case FlightEventCreated = 23;
-        case FlightEventUpdated = 24;
-        case FlightEventDeleted = 25;
-        case StayEventCreated = 26;
-        case StayEventUpdated = 27;
-        case StayEventDeleted = 28;
-        case HighlightRemoved = 30;
-        case YearStatisticsUpdated = 32;
-        case TripStatisticsUpdated = 33;
-        case CategoryStatisticsUpdated = 34;
-        case OverallStatisticsInvalidated = 35;
-        case YearStatisticsInvalidated = 36;
-        case TripStatisticsInvalidated = 37;
-        case CategoryStatisticsInvalidated = 38;
-        case TripUpdated = 39;
-        case TripEventCreated = 40;
-        case TripEventUpdated = 41;
-        case TripEventDeleted = 42;
-        case PlaceDeleted = 43;
-        case PlaceEventCreated = 44;
-        case PlaceEventUpdated = 45;
-        case PlaceEventDeleted = 46;
-        case PlaceCreated = 47;
-        case InactiveDevicesInvalidated = 48;
-        case ConfigurationEntryUpdated = 49;
-        case TimeTrackingEventsAuditTriggered = 50;
+        // RMQ
+        case ApplicationStarted = 1400;
+        case SchedulerTriggered = 1401;
+        case CalendarWatchRenewing = 1402;
+        case CalendarInvalidated = 1403;
+        case HighlightCreated = 1404;
 
-        case FitnessActivityDetected = 1000;
+        case HighlightUpdated = 1305;
+        case DataConsistencyScanTriggered = 1300;
+        case ActualWeatherForecastUpdated = 1301;
+        case DaylightForecastUpdated = 1302;
+        case HistoricalWeatherForecastUpdated = 1303;
+        case FlightArrived = 1304;
+        case VacationReset = 1306;
 
-        case PhotosUploadingTriggered = 2000;
-        case PhotoReplacingTriggered = 2001;
+        case AllDynamicLabelsInvalidated = 1200;
+        case PhotoInvalidated = 1201;
+        case AllHighlightsInvalidated = 1202;
+        case AlbumInvalidated = 1203;
+        case AllAlbumsInvalidated = 1204;
+        case AlbumUpdated = 1205;
+        case TripEventCreated = 1206;
+        case PlaceEventCreated = 1207;
+        case PlaceCreated = 1208;
+        case PlaceUpdated = 1209;
+        case FlightLogged = 1210;
 
-        case ProcessingStarted = 3000;
-        case ProcessingEnded = 3001;
+        case CategoryInvalidated = 1100;
+        case CategoryCreated = 1101;
+        case CategoryUpdated = 1102;
+        case ExpenseCreated = 1103;
+        case ExpenseUpdated = 1104;
+        case StayEventCreated = 1105;
+        case StayEventUpdated = 1106;
+        case TripUpdated = 1107;
+        case TripEventUpdated = 1108;
+        case PlaceEventUpdated = 1109;
+        case ConfigurationEntryUpdated = 1110;
+        case FlightEventCreated = 1111;
+
+        case TimeTrackingEventsAuditTriggered = 1000;
+        case InactiveDevicesInvalidated = 1001;
+        case CategoryStatisticsInvalidated = 1002;
+        case TripStatisticsInvalidated = 1003;
+        case YearStatisticsInvalidated = 1004;
+        case OverallStatisticsInvalidated = 1005;
+        case CategoryStatisticsUpdated = 1006;
+        case TripStatisticsUpdated = 1007;
+        case YearStatisticsUpdated = 1008;
+        case HighlightRemoved = 1009;
+        case StayEventRemoved = 1010;
+        case FlightEventRemoved = 1011;
+        case ExpenseRemoved = 1012;
+        case TripEventRemoved = 1013;
+        case PlaceEventRemoved = 1014;
+        case FitnessDataUpdated = 1015;
+        case PlaceRemoved = 1016;
+        case FlightEventUpdated = 1017;
+
+        // FCM
+        case ProcessingStarted = 3100;
+        case ProcessingEnded = 3101;
+
+        // Agent
+        case PhotosUploadingTriggered = 4000;
+        case PhotoReplacingTriggered = 4001;
+
+        // BridgeX
+        case FitnessActivityDetected = 4003;
+        
+        public function getTarget() : EventTarget {
+            return EventTarget::from(floor($this->value / 1000));
+        }
+
+        public function getPriority() : int {
+            return floor($this->value / 100) % 1000;
+        }
 
         public static function fromName($name) : ?Event {
             foreach (Event::cases() as $case) {
@@ -341,18 +344,6 @@
                 }
             }
             return NULL;
-        }
-
-        public function getPriority() : int {
-            // TODO
-            return $this->value < 15 ? 1 : 0;
-        }
-
-        public function getBroker() : EventBroker {
-            if ($this->value >= 3000) {
-                return EventBroker::CloudMessaging;
-            }
-            return EventBroker::Worker;
         }
     }
 ?>

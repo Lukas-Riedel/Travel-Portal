@@ -267,8 +267,8 @@
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publishPlaceDeletedEvent($affectedPlaceId);
-                $this->eventPublisher->publishPlaceEventDeletedEvent($affectedPlaceId);
+                $this->eventPublisher->publishPlaceRemovedEvent($affectedPlaceId);
+                $this->eventPublisher->publishPlaceEventRemovedEvent($affectedPlaceId);
             }
 
             $this->placeMapper->deleteStalePlaceIdentifiers();
@@ -300,7 +300,7 @@
             $wasRemoved = $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
 
             if ($wasRemoved) {
-                $this->eventPublisher->publishPlaceDeletedEvent($placeId);
+                $this->eventPublisher->publishPlaceRemovedEvent($placeId);
                 $this->placeMapper->deleteStalePlaceIdentifiers();
             }
 

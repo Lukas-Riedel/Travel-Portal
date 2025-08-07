@@ -16,7 +16,7 @@
             $this->scheduler = $scheduler;
         }
 
-        public function onPlaceEventDeleted(mixed $message) : void {
+        public function onPlaceEventRemoved(mixed $message) : void {
             $this->fitnessService->removeStaleFitnessRecords();
         }
 

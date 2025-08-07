@@ -185,7 +185,7 @@
             
             $affectedTripIds = $this->tripMapper->selectTripIdsForDeletedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishTripEventDeletedEvent($affectedTripId);
+                $this->eventPublisher->publishTripEventRemovedEvent($affectedTripId);
             }
         }
 
