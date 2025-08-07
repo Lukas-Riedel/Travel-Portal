@@ -52,7 +52,7 @@
         public function handleEvents() : void {
             global $messagingClient;
 
-            $channel = $messagingClient->getChannel();
+            $channel = $messagingClient->getConsumerChannel();
             $channel->basic_consume(WORKER_QUEUE_NAME, "", FALSE, FALSE, FALSE, FALSE, function ($message) {
                     $this->handleEvent(json_decode($message->getBody(), TRUE));
                     $message->ack();
