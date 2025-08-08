@@ -82,7 +82,7 @@
     $calendarClient = new CalendarClient();
     $messagingClient = new MessagingClient($logger);
     $cloudMessagingClient = new CloudMessagingClient($logger);
-    $cacheClient = new CacheClient($databaseProvider);
+    $cacheClient = new CacheClient();
 
     // Event producers.
     $eventPublisher = new EventPublisher();

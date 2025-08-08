@@ -1,47 +1,37 @@
 <?php
     namespace Service\Client;
     
+    use Predis\Client;
+    
     class CacheClient {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly Client $redisClient;
+        
+        // Decrease Redis calls as much as possible by caching in memory.
+        private readonly array $cache;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct() {
+            $this->redisClient = new Client(REDIS_URL);
+            $this->cache = array();
         }
 
         public function get(string $key) : mixed {
-            $this->prune();
-
-            $value = $this->databaseProvider
-                ->statementBuilder("SELECT value FROM cache WHERE `key` = ? AND expiration > UNIX_TIMESTAMP()")
-                ->withParameters($key)
-                ->getSingleColumn("value");
-
-            if ($value === NULL) {
-                return NULL;
+            $value = isset($this->cache[$key]) ? $this->cache[$key] : NULL;
+            if ($value !== NULL) {
+                return json_decode($value, TRUE);
             }
 
-            return json_decode($value, TRUE);
+            $value = $this->redisClient->get($key);
+            if ($value !== NULL) {
+                return json_decode($value, TRUE);
+            }
+
+            return NULL;
         }
 
         public function set(string $key, mixed $value, int $ttl) : void {
-            $this->prune();
-
-            $this->databaseProvider
-                ->statementBuilder("DELETE FROM cache WHERE `key` = ?")
-                ->withParameters($key)
-                ->execute();
-
-            $this->databaseProvider
-                ->statementBuilder("INSERT INTO cache (`key`, value, expiration) VALUES (?, ?, ?)")
-                ->withParameters($key, json_encode($value), time() + $ttl)
-                ->execute();
-        }
-
-        private function prune() : void {            
-            $this->databaseProvider
-                ->statementBuilder("DELETE FROM cache WHERE expiration < UNIX_TIMESTAMP()")
-                ->execute();
+            $this->redisClient->set($key, json_encode($value), "EX", $ttl);
+            $this->cache[$key] = json_encode($value);
         }
     }
 ?>
