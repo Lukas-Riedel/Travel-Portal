@@ -7,7 +7,7 @@ import { getSortedTrips } from "../utils/helpers"
 export default function YearTripTileGrid({ year, trips }) {
     const { isAdmin } = useAuth()
 
-    const yearTrips = useMemo(() => trips?.filter(trip => trip?.year == year), [trips, year])
+    const yearTrips = useMemo(() => trips?.filter(trip => trip.year == year && trip.isPast()), [trips, year])
 
     return (
         <div className="my-4">

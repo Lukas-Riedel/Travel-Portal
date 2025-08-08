@@ -24,7 +24,7 @@ export default class Trip {
     }
 
     isFuture() {
-        return this.end > Date.now() / 1000
+        return this.start > Date.now() / 1000
     }
 
     isCurrent() {
