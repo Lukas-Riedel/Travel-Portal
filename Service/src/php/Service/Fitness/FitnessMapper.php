@@ -166,7 +166,7 @@
                     ) t
                     WHERE s.seq >= t.start
                         AND s.seq <= t.end
-                        AND s.seq <= UNIX_TIMESTAMP()
+                        AND s.seq <= UNIX_TIMESTAMP() + ?
                     UNION
                     SELECT s.seq AS start
                     FROM (
@@ -186,7 +186,7 @@
                         ) p
                     WHERE s.seq >= p.start - (p.start % 86400)
                         AND s.seq <= 86400 + p.end - (p.end % 86400)
-                        AND s.seq <= UNIX_TIMESTAMP()
+                        AND s.seq <= UNIX_TIMESTAMP() + ?
                     ) x
                 LEFT JOIN fitness f
                     ON x.start = f.timestamp                    
@@ -197,7 +197,8 @@
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName)
+                ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, 
+                    FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION)
                 ->getResultSetForColumn("start");
         }
 
