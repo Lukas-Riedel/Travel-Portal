@@ -64,7 +64,7 @@
                     ),
                 );
 
-                $logger->warning("The provided fitness record would override already existing higher values and will therefore not be updated.", $context);
+                $logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
                 $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
                 return FALSE;
