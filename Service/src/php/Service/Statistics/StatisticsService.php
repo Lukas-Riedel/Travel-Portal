@@ -63,18 +63,22 @@
         }
 
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
-            $this->statisticsMapper->deleteAllStatisticsRecords($statisticsType, $entityId);
+            $updatedStatisticsRecords = array();
 
             foreach (StatisticsKind::cases() as &$statisticsKind) {
                 foreach ($this->statisticsProviders as &$statisticsProvider) {
                     $fetchedStatisticsRecords = $statisticsProvider->fetchStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId, $entityId);
                     foreach ($fetchedStatisticsRecords as &$fetchedStatisticsRecord) {
                         if ($fetchedStatisticsRecord->hasValue()) {
-                            $this->statisticsMapper->insertStatisticsRecord($statisticsType,
-                                $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT), $entityId);
+                            $updatedStatisticsRecords[] = $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT);
                         }
                     }
                 }
+            }
+            
+            $this->statisticsMapper->deleteAllStatisticsRecords($statisticsType, $entityId);
+            foreach ($updatedStatisticsRecords as &$updatedStatisticsRecord) {
+                $this->statisticsMapper->insertStatisticsRecord($statisticsType, $updatedStatisticsRecord, $entityId);
             }
         }
         
