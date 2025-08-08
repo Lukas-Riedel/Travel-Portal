@@ -1,5 +1,5 @@
 import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
+import { toZonedTime, fromZonedTime } from "date-fns-tz"
 
 export default class Trip {
     constructor(trip) {
@@ -48,7 +48,9 @@ export default class Trip {
     }
 
     getStay(day) {
-        const dayTimestamp = day.getTime() / 1000
+        // TODO: Somehow use value from useConfiguration
+        const dayTimestamp = fromZonedTime(day, "Europe/Prague").getTime() / 1000
+        // TODO: Use isWithinInterval.
         return [...(this.stays ?? [])].reverse().find(s => dayTimestamp >= s.start && (dayTimestamp + 86400) < s.end)
     }
 
