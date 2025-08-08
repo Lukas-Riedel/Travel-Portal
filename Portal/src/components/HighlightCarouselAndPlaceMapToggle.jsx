@@ -31,7 +31,7 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
             </div>
         )
     }
-
+    
     return (
         <div className="relative w-full my-4">
             <div

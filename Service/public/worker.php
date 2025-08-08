@@ -16,9 +16,7 @@
     try {
         for ($i = 0; $i < MAX_WORKERS_COUNT; ++$i) {
             $lockKey = $lockKeyPrefix . ":" . $i;
-            $acquired = $cacheClient->trySet($lockKey, $lockValue, $lockTtl);
-
-            if ($acquired) {
+            if ($cacheClient->trySet($lockKey, $lockValue, $lockTtl)) {
                 $lockAcquired = TRUE;
                 break;
             }

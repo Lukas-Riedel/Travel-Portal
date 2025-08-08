@@ -5,6 +5,8 @@
         private $viewsToMaterialize;
         private $delayMaterializationIfNeeded;
         private $isDatabaseInitialized;
+        private $isInTransaction;
+        private $shouldBeginTransaction;
 
         private $cache = array();
 
@@ -15,6 +17,8 @@
             $this->delayMaterializationIfNeeded = $delayMaterializationIfNeeded;
             $this->isDatabaseInitialized = $this
                 ->query("SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'configuration'")->fetch_assoc()["count"] > 0;
+            $this->isInTransaction = FALSE;
+            $this->shouldBeginTransaction = FALSE;
         }
 
         public function __destruct() {
@@ -62,6 +66,11 @@
             if ($whereClause != NULL) {
                 $sql = str_replace("WHERE :CONDITIONS", $whereClause["clause"], $sql);
             }
+            if ($this->shouldBeginTransaction && preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE)\b/i', $sql)) {        
+                $this->connection->begin_transaction();
+                $this->isInTransaction = TRUE;
+                $this->shouldBeginTransaction = FALSE;
+            }
             $builder = new StatementBuilder($this->connection->prepare($sql), $sql);
             if ($whereClause != NULL) {
                 $builder->withDeferredParameters(...$whereClause["parameters"]);
@@ -75,15 +84,19 @@
         }
 
         public function beginTransaction() {
-            $this->connection->begin_transaction();
+            $this->shouldBeginTransaction = TRUE;
         }
 
         public function commit() {
-            $this->connection->commit();
+            if ($this->isInTransaction) {
+                $this->connection->commit();
+            }
         }
 
         public function rollback() {
-            $this->connection->rollback();
+            if ($this->isInTransaction) {
+                $this->connection->rollback();
+            }
         }
 
         public function escape($str) {
