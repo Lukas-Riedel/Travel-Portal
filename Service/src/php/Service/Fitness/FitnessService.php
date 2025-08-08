@@ -40,12 +40,31 @@
         }
 
         public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance) : bool {
+            // TODO: Introduce a field.
+            global $logger;
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
 
             if ($existingFitnessRecord !== NULL && ($steps < $existingFitnessRecord->getSteps()
                 || $seconds < $existingFitnessRecord->getSeconds()|| $distance < $existingFitnessRecord->getDistance())) {
+                $context = array(
+                    "steps" => array(
+                        "actual" => $steps,
+                        "existing" => $existingFitnessRecord->getSteps(),
+                    ),
+                    "seconds" => array(
+                        "actual" => $seconds,
+                        "existing" => $existingFitnessRecord->getSeconds(),
+                    ),
+                    "distance" => array(
+                        "actual" => $distance,
+                        "existing" => $existingFitnessRecord->getDistance(),
+                    ),
+                );
+
+                $logger->warning("The provided fitness record would override already existing higher values and will therefore not be updated.", $context);
+
                 $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
                 return FALSE;
             }
