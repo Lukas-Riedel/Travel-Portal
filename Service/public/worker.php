@@ -6,28 +6,33 @@
     };
     set_error_handler($onError);
 
-    $lock = NULL;
-    $lockFile = NULL;
+    $lockKeyPrefix = "Worker:Lock";
+    $lockTtl = (int)ini_get("max_execution_time");
 
-    for ($i = 0; $i < WORKERS_COUNT; ++$i) {
-        $path = __DIR__ . "/worker.lock." . $i;
-        $handle = fopen($path, "w+");
-        if ($handle && flock($handle, LOCK_EX | LOCK_NB)) {
-            $lock = $handle;
-            $lockFile = $path;
-            break;
-        } 
-        else {
-            fclose($handle);
+    $lockKey = NULL;
+    $lockValue = uniqid("", TRUE);
+    $lockAcquired = FALSE;
+    
+    try {
+        for ($i = 0; $i < MAX_WORKERS_COUNT; ++$i) {
+            $lockKey = $lockKeyPrefix . ":" . $i;
+            $acquired = $cacheClient->trySet($lockKey, $lockValue, $lockTtl);
+
+            if ($acquired) {
+                $lockAcquired = TRUE;
+                break;
+            }
+        }
+
+        if (!$lockAcquired) {
+            exit(0);
+        }
+
+        $eventManager->handleEvents();
+    }
+    finally {
+        if ($lockAcquired && $lockKey) {
+            $cacheClient->delete($lockKey);
         }
     }
-
-    register_shutdown_function(function() use ($lock) {
-        if ($lock) {
-            flock($lock, LOCK_UN);
-            fclose($lock);
-        }
-    });
-
-    $eventManager->handleEvents();
 ?>

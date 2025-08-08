@@ -5,7 +5,7 @@
 
     class MonitoringService {
         
-        private const DATA_CONSISTENCY_ISSUES_CACHE_KEY = "data_consistency_issues";
+        private const DATA_CONSISTENCY_ISSUES_CACHE_KEY = "MonitoringService:DataConsistencyIssues";
         private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = 86400;
 
         private readonly CacheClient $cacheClient;

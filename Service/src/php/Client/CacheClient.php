@@ -8,7 +8,7 @@
         private readonly Client $redisClient;
         
         // Decrease Redis calls as much as possible by caching in memory.
-        private readonly array $cache;
+        private array $cache;
 
         public function __construct() {
             $this->redisClient = new Client(REDIS_URL);
@@ -32,6 +32,19 @@
         public function set(string $key, mixed $value, int $ttl) : void {
             $this->redisClient->set($key, json_encode($value), "EX", $ttl);
             $this->cache[$key] = json_encode($value);
+        }
+
+        public function trySet(string $key, mixed $value, int $ttl) : bool {
+            $wasSet = $this->redisClient->set($key, json_encode($value), "NX", "EX", $ttl) !== NULL;
+            if ($wasSet) {                
+                $this->cache[$key] = json_encode($value);
+            }
+            return $wasSet;
+        }
+
+        public function delete(string $key) : void {
+            $this->redisClient->del($key);
+            unset($this->cache[$key]);
         }
     }
 ?>

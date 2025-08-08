@@ -1,6 +1,6 @@
 <?php
     class GoogleApiClient {
-        private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "google_api_access_token";
+        private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "GoogleApiClient:GoogleApiAccessToken";
 
         public function createAlbum($albumName) : string {
             $payload = array(
