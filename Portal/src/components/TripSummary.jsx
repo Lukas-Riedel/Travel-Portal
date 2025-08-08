@@ -9,6 +9,7 @@ import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Earth, House } from "lucide-react"
 import { useEvents } from "../hooks/useEvents"
+import { toZonedTime } from "date-fns-tz"
 
 export default function TripSummary({ tripId }) {
     const { configuration } = useConfiguration()
@@ -42,9 +43,9 @@ export default function TripSummary({ tripId }) {
 
     const startOfTripStartDay = useMemo(() => startOfDay(fromUnixTime(trip?.start)), [trip])
     const days = useMemo(() => trip && eachDayOfInterval({
-        start: startOfDay(fromUnixTime(Math.max(trip?.start, Date.now() / 1000))),
-        end: startOfDay(fromUnixTime(trip?.end - 1))
-    }), [trip])
+        start: startOfDay(toZonedTime(fromUnixTime(Math.max(trip?.start, Date.now() / 1000)), timezone)),
+        end: startOfDay(toZonedTime(fromUnixTime(trip?.end - 1), timezone))
+    }), [timezone, trip])
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
     const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("COUNTRY"))
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])

@@ -6,6 +6,7 @@ import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
 import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
+import { toZonedTime } from "date-fns-tz"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded }) {
     const { configuration } = useConfiguration()
@@ -17,9 +18,9 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
     }, [configuration])
 
     const days = useMemo(() => trip && eachDayOfInterval({
-        start: startOfDay(fromUnixTime(trip?.start || (places && Math.min(...places.flatMap(place => place?.dates).map(date => date.start))))),
-        end: startOfDay(fromUnixTime(trip?.end || (places && Math.max(...places.flatMap(place => place?.dates).map(date => date.end)))) - 1)
-    }), [trip, places])
+        start: startOfDay(toZonedTime(fromUnixTime(trip?.start || (places && Math.min(...places.flatMap(place => place?.dates).map(date => date.start)))), timezone)),
+        end: startOfDay(toZonedTime(fromUnixTime(trip?.end || (places && Math.max(...places.flatMap(place => place?.dates).map(date => date.end)))) - 1, timezone))
+    }), [timezone, trip, places])
 
 
     const handleMoved = () => {
