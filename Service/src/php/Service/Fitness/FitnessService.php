@@ -42,12 +42,13 @@
         public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance) : bool {
             // TODO: Introduce a field.
             global $logger;
+
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
 
             if ($existingFitnessRecord !== NULL && ($steps < $existingFitnessRecord->getSteps()
-                || $seconds < $existingFitnessRecord->getSeconds()|| $distance < $existingFitnessRecord->getDistance())) {
+                || $seconds < $existingFitnessRecord->getSeconds()|| round($distance, 3) < round($existingFitnessRecord->getDistance(), 3))) {
                 $context = array(
                     "steps" => array(
                         "actual" => $steps,
