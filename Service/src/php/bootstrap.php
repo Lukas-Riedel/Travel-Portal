@@ -93,7 +93,7 @@
     $platformService = new PlatformService();
     $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
-    $statisticsService = new StatisticsService($databaseProvider, $eventPublisher);
+    $statisticsService = new StatisticsService($databaseProvider, $cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
@@ -101,7 +101,7 @@
     $highlightService = new HighlightService($databaseProvider, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
-    $fitnessService = new FitnessService($databaseProvider, $eventPublisher, $configurationService);
+    $fitnessService = new FitnessService($databaseProvider, $eventPublisher, $configurationService, $logger);
     $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
     $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
     $labelService = new LabelService($databaseProvider, $configurationService);

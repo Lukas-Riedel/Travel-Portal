@@ -1,6 +1,7 @@
 <?php
     namespace Service\Service\Fitness;
 
+    use Monolog\Logger;
     use Service\Service\Configuration\ConfigurationService;
 
     class FitnessService {
@@ -13,9 +14,12 @@
 
         private readonly \EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher, ConfigurationService $configurationService) {
+        private readonly Logger $logger;
+
+        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
             $this->fitnessMapper = new FitnessMapper($databaseProvider, $configurationService);
             $this->eventPublisher = $eventPublisher;
+            $this->logger = $logger;
         }
         
         public function getFitnessRecordTimestampsToUpdate() : array {
@@ -40,9 +44,6 @@
         }
 
         public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance) : bool {
-            // TODO: Introduce a field.
-            global $logger;
-
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
@@ -64,7 +65,7 @@
                     ),
                 );
 
-                $logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
+                $this->logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
                 $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
                 return FALSE;

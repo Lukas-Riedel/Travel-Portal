@@ -1,8 +1,9 @@
 <?php
     namespace Service\Service\Statistics;
 
+    use Monolog\Logger;
+    use Service\Client\CacheClient;
     use Service\Service\Category\CategoryIdentifier;
-    use Service\Service\Configuration\ConfigurationService;
     use Service\Service\Trip\Trip;
 
     class StatisticsService {
@@ -12,15 +13,24 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
+        private const STATISTICS_VALIDITY_INTERVAL = 1800;
+        private const STATISTICS_VALIDITY_CACHE_KEY_FORMAT = "StatisticsService:StatisticsValidity:%s:%s";
+
         private readonly StatisticsMapper $statisticsMapper;
+
+        private readonly CacheClient $cacheClient;
         
         private readonly \EventPublisher $eventPublisher;
 
+        private readonly Logger $logger;
+
         private array $statisticsProviders = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, CacheClient $cacheClient, \EventPublisher $eventPublisher, Logger $logger) {
             $this->statisticsMapper = new StatisticsMapper($databaseProvider);
+            $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
+            $this->logger = $logger;
         }
 
         public function getCategoryStatistics(string $categoryId) : array {    
@@ -62,7 +72,18 @@
             $this->statisticsProviders = $statisticsProviders;
         }
 
+        // TODO: Remove the categoryId parameter.
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
+            $statisticsValidityCacheKey = sprintf(self::STATISTICS_VALIDITY_CACHE_KEY_FORMAT, $statisticsType->name, $entityId ?? "NULL");
+            $cachedStatisticsValidity = $this->cacheClient->get($statisticsValidityCacheKey);            
+            if ($cachedStatisticsValidity !== NULL) {
+                // TODO: Extend the Scheduler functionality with an event replay option.
+                $secondsSinceLastUpdate = time() - $cachedStatisticsValidity;
+                $this->logger->debug("{$statisticsType->name} statistics for entity '{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
+                    array("statisticsType" => $statisticsType->name, "entityId" => $entityId));
+                return;
+            }
+
             $updatedStatisticsRecords = array();
 
             foreach (StatisticsKind::cases() as &$statisticsKind) {
@@ -80,6 +101,7 @@
             foreach ($updatedStatisticsRecords as &$updatedStatisticsRecord) {
                 $this->statisticsMapper->insertStatisticsRecord($statisticsType, $updatedStatisticsRecord, $entityId);
             }
+            $this->cacheClient->set($statisticsValidityCacheKey, time(), self::STATISTICS_VALIDITY_INTERVAL);
         }
         
         private function getBeginningOfYearTimestamp(int $year) : int {
