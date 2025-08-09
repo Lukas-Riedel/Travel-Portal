@@ -59,7 +59,7 @@
                 end
             LUA;
 
-            $this->redisClient->eval($lua, array($key), array($value));
+            $this->redisClient->eval($lua, 1, $key, $value);
         }
 
         public function delete(string $key) : void {

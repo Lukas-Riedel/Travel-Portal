@@ -13,6 +13,7 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
+        // TODO: Integrate into the statistics cached value.
         private const STATISTICS_VALIDITY_INTERVAL = 900;
         private const STATISTICS_VALIDITY_CACHE_KEY_FORMAT = "StatisticsService:StatisticsValidity:%s:%s";
 

@@ -55,7 +55,8 @@
         private function init() {
             if ($this->connection === NULL || $this->producerChannel === NULL) {                    
                 $this->connection = new AMQPSSLConnection(RMQ_HOST, RMQ_PORT, RMQ_USER, RMQ_PW, RMQ_VHOST,
-                    array("verify_peer" => TRUE, "verify_peer_name" => TRUE));
+                    array("verify_peer" => TRUE, "verify_peer_name" => TRUE),
+                    array("read_write_timeout" => 30, "heartbeat" => 30));
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
                 $this->consumerChannel->basic_qos(NULL, 1, NULL);
