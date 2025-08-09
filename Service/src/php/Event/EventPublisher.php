@@ -334,7 +334,7 @@
         }
 
         public function getPriority() : int {
-            return floor($this->value / 100) % 1000;
+            return floor($this->value / 100) % 10;
         }
 
         public static function fromName($name) : ?Event {
