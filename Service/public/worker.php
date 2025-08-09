@@ -7,7 +7,7 @@
     set_error_handler($onError);
 
     $lockKeyPrefix = "Worker:Lock";
-    $lockTtl = round(1.5 * (int)ini_get("max_execution_time"));
+    $lockTtl = round(2 * (int)ini_get("max_execution_time"));
 
     $lockKey = NULL;
     $lockValue = uniqid("", TRUE);
