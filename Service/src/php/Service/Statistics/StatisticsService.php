@@ -13,7 +13,7 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
-        private const STATISTICS_VALIDITY_INTERVAL = 1800;
+        private const STATISTICS_VALIDITY_INTERVAL = 900;
         private const STATISTICS_VALIDITY_CACHE_KEY_FORMAT = "StatisticsService:StatisticsValidity:%s:%s";
 
         private readonly StatisticsMapper $statisticsMapper;
@@ -79,7 +79,7 @@
             if ($cachedStatisticsValidity !== NULL) {
                 // TODO: Extend the Scheduler functionality with an event replay option.
                 $secondsSinceLastUpdate = time() - $cachedStatisticsValidity;
-                $this->logger->debug("{$statisticsType->name} statistics for entity '{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
+                $this->logger->debug("The statistics for the entity '{$statisticsType->name}:{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
                     array("statisticsType" => $statisticsType->name, "entityId" => $entityId));
                 return;
             }
