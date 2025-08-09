@@ -43,6 +43,25 @@
             return $wasSet;
         }
 
+        public function tryLock(string $key, int $ttl) : ?DistributedLock {
+            $lockValue = uniqid("", TRUE);
+            return $this->trySet($key, $lockValue, $ttl) ? new DistributedLock($this, $key, $lockValue) : NULL;
+        }
+
+        public function unlock(string $key, string $value) : void {
+            $this->init();
+
+            $lua = <<<'LUA'
+                if redis.call('get', KEYS[1]) == ARGV[1] then
+                    return redis.call('del', KEYS[1])
+                else
+                    return 0
+                end
+            LUA;
+
+            $this->redisClient->eval($lua, array($key), array($value));
+        }
+
         public function delete(string $key) : void {
             $this->init();
             

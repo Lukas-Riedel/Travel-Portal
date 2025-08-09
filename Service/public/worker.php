@@ -7,30 +7,25 @@
     set_error_handler($onError);
 
     $lockKeyPrefix = "Worker:Lock";
-    $lockTtl = round(2 * (int)ini_get("max_execution_time"));
-
-    $lockKey = NULL;
-    $lockValue = uniqid("", TRUE);
-    $lockAcquired = FALSE;
+    $lock = NULL;
     
     try {
         for ($i = 0; $i < MAX_WORKERS_COUNT; ++$i) {
-            $lockKey = $lockKeyPrefix . ":" . $i;
-            if ($cacheClient->trySet($lockKey, $lockValue, $lockTtl)) {
-                $lockAcquired = TRUE;
+            $lock = $cacheClient->tryLock($lockKeyPrefix . ":" . $i, round(1.1 * (int)ini_get("max_execution_time")));
+            if ($lock !== NULL) {
                 break;
             }
         }
 
-        if (!$lockAcquired) {
+        if ($lock === NULL) {
             exit(0);
         }
 
         $eventManager->handleEvents();
     }
     finally {
-        if ($lockAcquired && $lockKey) {
-            $cacheClient->delete($lockKey);
+        if ($lock !== NULL) {
+            $lock->unlock();
         }
     }
 ?>
