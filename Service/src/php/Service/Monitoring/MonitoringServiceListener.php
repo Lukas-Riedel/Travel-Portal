@@ -22,12 +22,8 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            foreach ($message["actions"] as &$action) {
-                if ($action["name"] === self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME 
-                    && time() - $action["lastTriggered"] > self::RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL) {
-                    $this->eventPublisher->publishDataConsistencyScanTriggeredEvent();
-                    $this->scheduler->recordEventsTriggered(self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME);
-                }
+            if ($this->scheduler->requestExecution(self::RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME, self::RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL)) {
+                $this->eventPublisher->publishDataConsistencyScanTriggeredEvent();
             }
         }
     }

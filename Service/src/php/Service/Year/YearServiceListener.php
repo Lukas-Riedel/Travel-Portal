@@ -28,17 +28,14 @@
             }
         }
 
-        public function onSchedulerTriggered(mixed $message) : void {     
-            foreach ($message["actions"] as &$action) {   
-                if ($action["name"] === self::UPDATE_YEAR_STATISTICS_ACTION_NAME
-                    && time() - $action["lastTriggered"] > self::UPDATE_YEAR_STATISTICS_ACTION_INTERVAL) {
-                    $years = $this->yearService->getYears(array());
-                    foreach ($years as &$year) {
-                        $this->eventPublisher->publishYearStatisticsInvalidatedEvent($year->getId());
-                    }                        
-                    $this->scheduler->recordEventsTriggered(self::UPDATE_YEAR_STATISTICS_ACTION_NAME);
-                }
-            }    
+        public function onSchedulerTriggered(mixed $message) : void {  
+            if ($this->scheduler->requestExecution(self::UPDATE_YEAR_STATISTICS_ACTION_NAME, self::UPDATE_YEAR_STATISTICS_ACTION_INTERVAL)) {                
+                $years = $this->yearService->getYears(array());
+                
+                foreach ($years as &$year) {
+                    $this->eventPublisher->publishYearStatisticsInvalidatedEvent($year->getId());
+                }                        
+            }
         }
     }
 ?>

@@ -37,12 +37,8 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            foreach ($message["actions"] as &$action) {
-                if ($action["name"] === self::FETCH_ALBUMS_ACTION_NAME 
-                    && time() - $action["lastTriggered"] > self::FETCH_ALBUMS_ACTION_INTERVAL) {
-                    $this->eventPublisher->publishAllAlbumsInvalidatedEvent();                
-                    $this->scheduler->recordEventsTriggered(self::FETCH_ALBUMS_ACTION_NAME);
-                }
+            if ($this->scheduler->requestExecution(self::FETCH_ALBUMS_ACTION_NAME, self::FETCH_ALBUMS_ACTION_INTERVAL)) {
+                $this->eventPublisher->publishAllAlbumsInvalidatedEvent();
             }
         }
     }

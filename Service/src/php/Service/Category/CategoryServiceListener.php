@@ -51,14 +51,10 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            foreach ($message["actions"] as &$action) {
-                if ($action["name"] === self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME 
-                    && time() - $action["lastTriggered"] > self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL) {
-                    $categories = $this->categoryService->getCategories(NULL, CategoryCategory::values(), array());
-                    foreach ($categories as &$category) {
-                        $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
-                    }                        
-                    $this->scheduler->recordEventsTriggered(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME);
+            if ($this->scheduler->requestExecution(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME, self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL)) {
+                $categories = $this->categoryService->getCategories(NULL, CategoryCategory::values(), array());
+                foreach ($categories as &$category) {
+                    $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
                 }
             }
         }

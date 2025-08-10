@@ -22,12 +22,8 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            foreach ($message["actions"] as &$action) {
-                if ($action["name"] === self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME 
-                    && time() - $action["lastTriggered"] > self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL) {
-                    $this->eventPublisher->publishInactiveDevicesInvalidatedEvent();
-                    $this->scheduler->recordEventsTriggered(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME);
-                }
+            if ($this->scheduler->requestExecution(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME, self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL)) {
+                $this->deviceService->unregisterInactiveDevices();
             }
         }
     }

@@ -67,19 +67,16 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {   
-            foreach ($message["actions"] as &$action) {     
-                if ($action["name"] === self::UPDATE_TRIP_STATISTICS_ACTION_NAME
-                    && time() - $action["lastTriggered"] > self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL) {
-                    $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-                    $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::Default);
-                    foreach ($trips as &$trip) {
-                        if ($trip->getName() !== $dayTripsTripName) {
-                            $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
-                        }
-                    }                        
-                    $this->scheduler->recordEventsTriggered(self::UPDATE_TRIP_STATISTICS_ACTION_NAME);
-                }
-            }    
+            if ($this->scheduler->requestExecution(self::UPDATE_TRIP_STATISTICS_ACTION_NAME, self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL)) {
+                $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
+                $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::Default);
+                
+                foreach ($trips as &$trip) {
+                    if ($trip->getName() !== $dayTripsTripName) {
+                        $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
+                    }
+                }                        
+            }
         }
     }
 ?>

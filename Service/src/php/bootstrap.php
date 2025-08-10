@@ -138,7 +138,7 @@
     $listeners = array(
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
         new FitnessServiceListener($fitnessService, $eventPublisher, $scheduler),
-        new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler),
+        new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler),
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $eventPublisher, $scheduler),

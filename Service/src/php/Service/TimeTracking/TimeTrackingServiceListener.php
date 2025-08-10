@@ -30,21 +30,14 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            foreach ($message["actions"] as &$action) {
-                if ($action["name"] === self::RESET_OPENING_BALANCES_ACTION_NAME) {
-                    $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
+            $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
+            $intervalSelector = fn($lastTriggered) => $lastTriggered < $beginningOfCurrentYearTimestamp ? 0 : PHP_INT_MAX;
+            if ($this->scheduler->requestDynamicExecution(self::RESET_OPENING_BALANCES_ACTION_NAME, $intervalSelector)) {
+                $this->eventPublisher->publishVacationResetEvent();                  
+            }
 
-                    if ($action["lastTriggered"] < $beginningOfCurrentYearTimestamp) {
-                        $this->eventPublisher->publishVacationResetEvent();                        
-                        $this->scheduler->recordEventsTriggered(self::RESET_OPENING_BALANCES_ACTION_NAME);
-                    }
-                }
-
-                if ($action["name"] === self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME
-                    && time() - $action["lastTriggered"] > self::CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL) {
-                    $this->eventPublisher->publishTimeTrackingEventsAuditTriggered();                        
-                    $this->scheduler->recordEventsTriggered(self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME);
-                }
+            if ($this->scheduler->requestExecution(self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME, self::CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL)) {
+                $this->eventPublisher->publishTimeTrackingEventsAuditTriggered();                
             }
         }
 
