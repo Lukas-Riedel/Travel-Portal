@@ -56,7 +56,8 @@
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Trip || $statisticsType === StatisticsType::Category) {
                     $mostPhotosPerPlace = array_map(fn($place) => new KeyValuePair($place->getName(), array_sum(array_map(
-                        fn($date) => $date->getAlbum() !== NULL ? $date->getAlbum()->getImagesCount() : 0, $place->getDates()))), $relevantPlaces);
+                        fn($date) => $date->getAlbum() !== NULL ? $date->getAlbum()->getImagesCount() : 0, $place->getDates()))),
+                        array_filter($relevantPlaces, fn($place) => count($place->getDates()) > 0));
                     usort($mostPhotosPerPlace, fn($a, $b) => $b->getValue() <=> $a->getValue());
 
                     if (count($mostPhotosPerPlace) > 0) {
