@@ -1,6 +1,10 @@
 <?php
     class HttpClient {
-        public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = NULL, $includeResponseHeaders = FALSE) {            
+        public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = NULL, $includeResponseHeaders = FALSE) {
+            global $logger;
+
+            $logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $payload));
+
             $curl = curl_init($url);
 
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);

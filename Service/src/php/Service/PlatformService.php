@@ -31,10 +31,12 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            global $scheduler, $eventPublisher;
+            global $configurationService, $scheduler, $eventPublisher;
 
             if ($scheduler->requestExecution("WATCH_CALENDAR", 82800)) {
-                $eventPublisher->publishCalendarWatchRenewingEvent();
+                foreach (array_keys($configurationService->getConfigurationEntry("calendars")) as $calendar) {
+                    $eventPublisher->publishCalendarWatchRenewingEvent($calendar); 
+                }
             }
         }
     }
