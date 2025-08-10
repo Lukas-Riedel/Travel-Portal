@@ -191,7 +191,11 @@
                 LEFT JOIN fitness f
                     ON x.start = f.timestamp                    
                 WHERE f.timestamp IS NULL
-                    OR f.timestamp + (7 * 86400) > f.last_update
+                    OR (
+                        -- TODO: Find a better way of how to update fitness records multiple times when getting rid of this query.
+                        f.timestamp + (7 * 86400) > f.last_update
+                        AND f.last_update + 86400 < UNIX_TIMESTAMP()
+                    )
             SQL;
 
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
