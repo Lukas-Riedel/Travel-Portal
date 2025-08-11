@@ -32,7 +32,7 @@ export default function TrackerPage() {
                 tenureEvents={timeTrackingEvents["tenure"]} />
             {isAdmin && (
                 <TripTable
-                    trips={trips?.filter(trip => (trip?.isFuture() || trip?.isCurrent()) && !trip?.isDayTrips() && trip?.year === new Date().getFullYear())}
+                    trips={trips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips() && trip?.year === new Date().getFullYear())}
                     isFreeDay={isFreeDay}
                     overtimeEvents={timeTrackingEvents["overtime"]}
                     plannedWorkEvents={timeTrackingEvents["plannedWork"]}
