@@ -26,7 +26,7 @@ export default function TimeOffBalanceSummary({ overtimeEvents, vacationEvents, 
                             {formatDuration(balance * 3600)}
                         </div>
                         <div className="text-xs">
-                            {formatDays(Math.floor(balance / standardWorkingHoursPerWorkingDay))}
+                            {formatDays(Math.floor(balance / standardWorkingHoursPerWorkingDay + 1e-10))}
                         </div>
                     </div>
                 ) : (
