@@ -54,6 +54,10 @@
                     NULL, NULL, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 $visitedPlacesCount = count($relevantPlaces);
+                if ($statisticsType === StatisticsType::Trip) {
+                    $visitedPlacesCount = count(array_filter($relevantPlaces, fn($place) => count($place->getDates()) > 0));
+                }
+
                 if ($visitedPlacesCount > 0) {
                     $statistics[] = new Statistics(self::TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME, $visitedPlacesCount, StatisticsUnit::Places);
                 }
