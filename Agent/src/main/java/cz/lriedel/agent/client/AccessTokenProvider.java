@@ -1,17 +1,16 @@
 package cz.lriedel.agent.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.lriedel.agent.model.AccessToken;
-import cz.lriedel.agent.model.request.AccessTokenPrototype;
-import lombok.SneakyThrows;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Objects;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.lriedel.agent.model.AccessToken;
+import cz.lriedel.agent.model.request.AccessTokenPrototype;
+import lombok.SneakyThrows;
 
 @Component
 final class AccessTokenProvider {

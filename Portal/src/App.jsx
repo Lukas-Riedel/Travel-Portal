@@ -33,7 +33,7 @@ export default function App() {
 
                 if (event.name === "PhotosUploadingTriggered") {
                     getPlace(event.args.placeId).then(place => {
-                        toast.success(`Nahrávání fotek pro místo '${place.name}' začalo`)
+                        toast.success(`Nahrávání fotek pro místo '${place.name}' bylo zahájeno`)
                     })
                 }
             })

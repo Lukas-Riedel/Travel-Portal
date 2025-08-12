@@ -1,16 +1,22 @@
 package cz.lriedel.agent.photo.fetcher;
 
-import lombok.SneakyThrows;
+import java.io.ByteArrayOutputStream;
+import java.nio.file.Path;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.*;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.file.Path;
+import lombok.SneakyThrows;
 
 @Component
 @ConditionalOnMissingBean(StandardPhotoFetcher.class)

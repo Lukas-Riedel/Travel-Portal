@@ -4,16 +4,14 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import cz.lriedel.agent.model.Album;
-import cz.lriedel.agent.model.Event;
 import cz.lriedel.agent.model.request.AlbumPrototype;
-import cz.lriedel.agent.model.request.PhotoPrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
+import cz.lriedel.agent.model.request.PhotoPrototype;
 
 @Component
 public final class ServiceClient {
@@ -66,17 +64,5 @@ public final class ServiceClient {
         restTemplate.postForObject(
                 "/events",
                 httpEntityProvider.getHttpEntity(eventPrototype), Void.class);
-    }
-
-    public Event[] listEvents(String name) {
-        return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.exchange(
-                "/events?name=" + name,
-                HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Event[].class).getBody()));
-    }
-
-    public void removeEvent(long eventId) {
-        retryTemplate.execute(context -> restTemplate.exchange(
-                "/events/" + eventId,
-                HttpMethod.DELETE, httpEntityProvider.getEmptyHttpEntity(), Void.class));
     }
 }

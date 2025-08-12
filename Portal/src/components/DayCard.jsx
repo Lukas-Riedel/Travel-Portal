@@ -106,9 +106,13 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             return () => clearInterval(interval)
         }, [])
 
-        return remaining !== null && (
+        return remaining !== null ? (
             <span>
                 Zbývá {formatDuration(Math.max(0, remaining), true)}
+            </span>
+        ) : (
+            <span>
+                Nahrávání bude brzy dokončeno
             </span>
         )
     }

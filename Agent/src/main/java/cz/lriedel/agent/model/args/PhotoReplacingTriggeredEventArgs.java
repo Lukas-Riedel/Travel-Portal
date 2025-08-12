@@ -1,10 +1,10 @@
 package cz.lriedel.agent.model.args;
 
-import org.apache.commons.lang3.Validate;
-
 import java.nio.file.Path;
 
-public record PhotoReplacingTriggeredEventArgs(long placeId, long albumId, long replacedPhotoId, Path path) {
+import org.apache.commons.lang3.Validate;
+
+public record PhotoReplacingTriggeredEventArgs(long placeId, long albumId, long replacedPhotoId, Path path) implements EventArgs {
 
     public PhotoReplacingTriggeredEventArgs {
         Validate.isTrue(placeId > 0, "Invalid place identifier.");

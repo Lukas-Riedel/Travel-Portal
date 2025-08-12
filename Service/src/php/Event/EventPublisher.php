@@ -230,6 +230,9 @@
                 case EventTarget::WorkerQueue:
                     $messagingClient->publishEvent($event, $args, WORKER_QUEUE_NAME);
                     break;
+                case EventTarget::AgentQueue:
+                    $messagingClient->publishEvent($event, $args, AGENT_QUEUE_NAME);
+                    break;
                 default:
                     $argsJson = json_encode($args, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG);
 
@@ -318,13 +321,13 @@
         case PlaceRemoved = 1016;
         case FlightEventUpdated = 1017;
 
+        // Agent
+        case PhotosUploadingTriggered = 2000;
+        case PhotoReplacingTriggered = 2001;
+
         // FCM
         case ProcessingStarted = 3100;
         case ProcessingEnded = 3101;
-
-        // Agent
-        case PhotosUploadingTriggered = 4000;
-        case PhotoReplacingTriggered = 4001;
 
         // BridgeX
         case FitnessActivityDetected = 4003;

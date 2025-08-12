@@ -1,12 +1,13 @@
 package cz.lriedel.agent.model.args;
 
-import org.apache.commons.lang3.Validate;
-import org.springframework.lang.Nullable;
-
 import java.nio.file.Path;
 import java.util.Objects;
 
-public record PhotosUploadingTriggeredEventArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId, @Nullable Integer mainPhotoPosition, Path path) {
+import org.apache.commons.lang3.Validate;
+import org.springframework.lang.Nullable;
+
+public record PhotosUploadingTriggeredEventArgs(long placeId, @Nullable Long timestamp, @Nullable Long albumId,
+                                                @Nullable Integer mainPhotoPosition, Path path) implements EventArgs {
     
     public PhotosUploadingTriggeredEventArgs {
         Validate.isTrue(placeId > 0, "Invalid place identifier.");

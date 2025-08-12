@@ -1,21 +1,17 @@
 package cz.lriedel.agent.photo;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
-import cz.lriedel.agent.client.ServiceClient;
-import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
+import static java.util.Comparator.comparing;
 
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -23,7 +19,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Comparator.comparing;
+import org.apache.commons.lang3.Validate;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+
+import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service

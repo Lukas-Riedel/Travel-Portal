@@ -73,11 +73,11 @@
             global $databaseProvider, $logger;
 
             $start = microtime(TRUE);
-            $logger->debug("Received the '" . $event["event"] . "' event...", $event);
+            $logger->debug("Received the '" . $event["name"] . "' event...", $event);
             $databaseProvider->beginTransaction();
             try {
-                $handlerMethod = "on" . $event["event"];
-                foreach ($this->eventHandlers[$event["event"]] as &$eventHandler) {
+                $handlerMethod = "on" . $event["name"];
+                foreach ($this->eventHandlers[$event["name"]] as &$eventHandler) {
                     $eventHandler->$handlerMethod($event["args"]);
                 }
                 $databaseProvider->commit();
@@ -89,7 +89,7 @@
             }
             finally {
                 $databaseProvider->materializeViews();
-                $logger->info("The '" . $event["event"] . "' event was processed in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
+                $logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
                 
                 foreach ($logger->getHandlers() as $handler) {
                     if ($handler instanceof \Monolog\Handler\BufferHandler) {

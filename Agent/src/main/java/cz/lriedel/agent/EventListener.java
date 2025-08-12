@@ -1,45 +1,35 @@
 package cz.lriedel.agent;
 
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import cz.lriedel.agent.model.args.PhotoReplacingTriggeredEventArgs;
+import cz.lriedel.agent.model.args.PhotosUploadingTriggeredEventArgs;
+import cz.lriedel.agent.photo.PhotoService;
+import lombok.extern.slf4j.Slf4j;
 
-import cz.lriedel.agent.client.ServiceClient;
-import cz.lriedel.agent.event.AbstractEventHandler;
-import cz.lriedel.agent.model.Event;
-
+@Slf4j
 @Component
-final class EventListener {
+@RabbitListener(queues = "${queue.agent.name}")
+class EventListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventListener.class);
+    private final PhotoService photoService;
 
-    private final ServiceClient serviceClient;
-    private final Set<? extends AbstractEventHandler<?>> eventHandlers;
-
-    EventListener(ServiceClient serviceClient, Set<? extends AbstractEventHandler<?>> eventHandlers) {
-        this.serviceClient = serviceClient;
-        this.eventHandlers = eventHandlers;
+    EventListener(PhotoService photoService) {
+        this.photoService = photoService;
     }
 
-    @Scheduled(fixedDelayString = "${request.interval.retry}")
-    public void run() throws JsonProcessingException {
-        for (AbstractEventHandler<?> eventHandler : eventHandlers) {
-            for (Event event : serviceClient.listEvents(eventHandler.getSupportedEventName())) {
-                try {
-                    eventHandler.run(event.args());
-                }
-                catch (Exception e) {
-                    LOGGER.error("Unknown error occurred when processing '{}'.", event, e);
-                }
-                finally {
-                    serviceClient.removeEvent(event.id());
-                }
-            }
-        }
+    @RabbitHandler
+    public void onPhotoReplacingTriggered(PhotoReplacingTriggeredEventArgs args) {
+        log.info("Received an event to replace a photo...");
+        photoService.replacePhoto(args.placeId(), args.albumId(), args.replacedPhotoId(), args.path());
+    }
+
+    @RabbitHandler
+    public void onPhotoUploadingTriggered(PhotosUploadingTriggeredEventArgs args) {
+        log.info("Received an event to upload photos...");
+        photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(),
+            args.mainPhotoPosition(), args.path());
     }
 }

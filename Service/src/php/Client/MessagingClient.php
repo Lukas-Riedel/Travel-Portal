@@ -38,7 +38,7 @@
             $this->producerChannel->queue_declare($queueName, FALSE, TRUE, FALSE, FALSE, FALSE, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
 
             $payload = array(
-                "event" => $event->name,
+                "name" => $event->name,
                 "args" => $args
             );
             $message = new AMQPMessage(json_encode($payload), array("content_type" => "application/json", "priority" => $event->getPriority()));
