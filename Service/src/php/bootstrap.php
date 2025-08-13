@@ -15,7 +15,8 @@
     require_once(__DIR__ . "/Event/EventManager.php");
     require_once(__DIR__ . "/Event/EventPublisher.php");
 
-    use Logtail\Monolog\LogtailHandlerBuilder;
+    use Itspire\MonologLoki\Handler\LokiHandler;
+    use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
     use Service\Client\CacheClient;
     use Service\Client\CloudMessagingClient;
@@ -69,9 +70,28 @@
     use Service\Service\Year\YearService;
     use Service\Service\Year\YearServiceListener;
 
+    $transactionId = uniqid();
+
     // Logger.
-    $logger = new Logger("Service");
-    $handler = LogtailHandlerBuilder::withSourceToken(BETTER_STACK_SOURCE_TOKEN)->withEndpoint(BETTER_STACK_INGESTING_HOST)->build();
+    $logger = new Logger("service");
+    $handler = new WhatFailureGroupHandler(array(
+        new LokiHandler(array(
+            "entrypoint" => GRAFANA_LOKI_ENTRYPOINT,
+            "context" => array(
+                "transactionId" => $transactionId
+            ),
+            "labels" => array(
+                "transactionId" => $transactionId
+            ),
+            "client_name" => GRAFANA_LOKI_CLIENT_NAME,
+            "auth" => array(
+                "basic" => array(
+                    GRAFANA_LOKI_USER,
+                    GRAFANA_LOKI_PASSWORD
+                )
+            )
+        ))
+    ));
     $logger->pushHandler($handler);
 
     // Clients.
