@@ -123,7 +123,7 @@
             $result = new Flight($flight, $registration, $aircraft, NULL, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
             $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 
-            $this->eventPublisher->publishFlightLoggedEvent($flight);
+            $this->eventPublisher->publishFlightLoggedEvent($result);
 
             return $result;
         }
