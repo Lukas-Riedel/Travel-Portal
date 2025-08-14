@@ -29,7 +29,7 @@ export default class Trip {
 
     isCurrent() {
         const now = endOfDay(new Date()).getTime() / 1000
-        return this.start < now && this.end > now
+        return this.start < now && this.end > (new Date()).getTime() / 1000
     }
     
     getFullName() {
