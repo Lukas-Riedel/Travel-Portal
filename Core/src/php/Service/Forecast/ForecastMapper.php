@@ -22,7 +22,7 @@
                 ->withParameters($placeId, $timestamp)
                 ->getSingleRow();
 
-            return $forecastRow === NULL ? NULL : new Weather($forecastRow["temperature"], $forecastRow["clouds"], $forecastRow["wind"],
+            return $forecastRow === null ? null : new Weather($forecastRow["temperature"], $forecastRow["clouds"], $forecastRow["wind"],
                 $forecastRow["precipitation"], $forecastRow["symbol"], $forecastRow["last_update"]);
         }
 
@@ -39,8 +39,8 @@
                 ->withParameters($placeId, $timestamp)
                 ->getSingleRow();
 
-            return $forecastRow === NULL ? NULL : new Weather($forecastRow["temperature"], NULL, $forecastRow["wind"],
-                $forecastRow["precipitation"], NULL, time());
+            return $forecastRow === null ? null : new Weather($forecastRow["temperature"], null, $forecastRow["wind"],
+                $forecastRow["precipitation"], null, time());
         }
 
         public function selectDaylightForecast(string $placeId, int $timestamp) : ?Sun {
@@ -56,7 +56,7 @@
                 ->withParameters($placeId, $timestamp)
                 ->getSingleRow();
 
-            return $forecastRow === NULL ? NULL : new Sun($forecastRow["sunrise"], $forecastRow["sunset"], $forecastRow["start_sun_altitude"], 
+            return $forecastRow === null ? null : new Sun($forecastRow["sunrise"], $forecastRow["sunset"], $forecastRow["start_sun_altitude"], 
                 $forecastRow["end_sun_altitude"], $forecastRow["start_sun_azimuth"], $forecastRow["end_sun_azimuth"]);
         }
 

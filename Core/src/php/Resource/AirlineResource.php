@@ -255,7 +255,7 @@
             $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
             
             $airline = $this->flightService->getAirline($airlineId);
-            if ($airline === NULL) {
+            if ($airline === null) {
                 throw new NotFoundException($airlineId);
             }
 
@@ -364,7 +364,7 @@
             $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
 
             $newName = $this->validateJsonBodyNullableField($request, "name");
-            if ($newName !== NULL) {
+            if ($newName !== null) {
                 $wasUpdated = $this->flightService->updateAirlineName($airlineId, $newName);
                 if (!$wasUpdated) {
                     throw new NotUpdatedException($airlineId);
@@ -372,7 +372,7 @@
             }
 
             $newLogo = $this->validateJsonBodyNullableField($request, "logo");
-            if ($newLogo !== NULL) {
+            if ($newLogo !== null) {
                 $wasUpdated = $this->flightService->updateAirlineLogo($airlineId, $newLogo);
                 if (!$wasUpdated) {
                     throw new NotUpdatedException($airlineId);
@@ -380,7 +380,7 @@
             }
             
             $airline = $this->flightService->getAirline($airlineId);
-            if ($airline === NULL) {
+            if ($airline === null) {
                 throw new NotFoundException($airlineId);
             }
 
@@ -472,7 +472,7 @@
                 throw new NotFoundException($airlineId);
             }
 
-            return NULL;
+            return null;
         }
         
         #[OA\Post(
@@ -560,7 +560,7 @@
             $airlineCode = $this->validateJsonBodyField($request, "code");
             
             $airline = $this->flightService->getAirline($airlineId);
-            if ($airline === NULL) {
+            if ($airline === null) {
                 throw new NotFoundException($airlineId);
             }
 
@@ -649,15 +649,15 @@
             $airlineCode = $this->validateJsonBodyField($request, "code");
             
             $airline = $this->flightService->getAirline($airlineId);
-            if ($airline === NULL) {
+            if ($airline === null) {
                 throw new NotFoundException($airlineId);
             }
 
-            $wasRemoved = $this->flightService->updateAirlineCodeAirline($airlineCode, NULL);
+            $wasRemoved = $this->flightService->updateAirlineCodeAirline($airlineCode, null);
             if (!$wasRemoved) {
                 throw new NotFoundException($airlineCode);                
             }
 
-            return NULL;
+            return null;
         }
     }

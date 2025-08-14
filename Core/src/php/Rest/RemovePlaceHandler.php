@@ -3,7 +3,7 @@
         public function handle($input) {
             global $placeService;
 
-            $response = FALSE;
+            $response = false;
             if ($input["type"] == "permanent") {
                 $response = $placeService->removePermanentPlace($input["placeId"]);
             }
@@ -11,7 +11,7 @@
                 $response = $placeService->removeCandidatePlace($input["placeId"]);
             }
             
-            if ($response === FALSE) {                
+            if ($response === false) {                
                 return $this->create404Response("places", $input["placeId"]);
             }
 
@@ -23,7 +23,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {
@@ -37,7 +37,7 @@
         public function getParameters() {
             return array(
                 $this->createPathParameter("placeId", "integer", 2507),
-                $this->createQueryParameter("type", "string", array("permanent", "candidate"), TRUE));
+                $this->createQueryParameter("type", "string", array("permanent", "candidate"), true));
         }
 
         public function getMethod() {

@@ -13,7 +13,7 @@
             }            
 
             $album = $response["body"]->findAlbum($input["albumId"]);
-            if ($album == NULL) {
+            if ($album == null) {
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
@@ -26,7 +26,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

@@ -102,6 +102,6 @@
             $userId = $this->getAccessToken($request)->getUserId();
             
             $this->deviceService->registerOrUpdateDevice($deviceType, $deviceToken, $userId);
-            return NULL;
+            return null;
         }
     }

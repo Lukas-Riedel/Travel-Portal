@@ -25,8 +25,8 @@
                 ->withParameters($address)
                 ->getFirstRow();
 
-            if ($locationRow === NULL) {
-                return NULL;
+            if ($locationRow === null) {
+                return null;
             }
 
             $sql = <<<'SQL'

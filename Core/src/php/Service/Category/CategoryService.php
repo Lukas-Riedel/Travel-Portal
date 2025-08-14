@@ -36,7 +36,7 @@
             // Include geographical region categories.
             $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
-                if ($geographicalRegion->getCountryCategoryId() === NULL
+                if ($geographicalRegion->getCountryCategoryId() === null
                     // TODO: '==' must be here because '===' doesn't work, find out why.
                     || $geographicalRegion->getCountryCategoryId() == $countryCategoryIdentifier->getId()) {
                     if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $point)) {
@@ -109,7 +109,7 @@
 
             foreach ($categoryIds as &$categoryId) {
                 $category = $this->getCategoryIdentifierById($categoryId);
-                if ($category !== NULL) {
+                if ($category !== null) {
                     $categories[] = $category;
                 }
             }
@@ -118,13 +118,13 @@
         }
 
         public function getCategory(string $categoryId) : ?Category {
-            $categories = $this->categoryMapper->selectCategories($categoryId, NULL, CategoryCategory::values(), CategoryIncludedEntity::values());
-            return count($categories) === 1 ? $categories[0] : NULL;
+            $categories = $this->categoryMapper->selectCategories($categoryId, null, CategoryCategory::values(), CategoryIncludedEntity::values());
+            return count($categories) === 1 ? $categories[0] : null;
         }
 
         public function getCategories(?string $country, array $categoryCategories, array $includedEntities) : array {
-            $countryCategoryId = $country === NULL ? NULL : $this->getOrCreateCountryCategoryIdentifier($country)->getId();
-            return $this->categoryMapper->selectCategories(NULL, $countryCategoryId, $categoryCategories, $includedEntities);
+            $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();
+            return $this->categoryMapper->selectCategories(null, $countryCategoryId, $categoryCategories, $includedEntities);
         }
 
         public function getAllGeographicalRegions() : array {
@@ -200,13 +200,13 @@
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {  
-            $countryCategoryId = $country === NULL ? NULL : $this->getOrCreateCountryCategoryIdentifier($country)->getId();                                  
+            $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();                                  
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
             $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson));
 
-            if ($countryCategoryId === NULL) {
-                foreach ($this->getCategories(NULL, array(CategoryCategory::Country->value), array()) as &$invalidatedCategory) {
+            if ($countryCategoryId === null) {
+                foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$invalidatedCategory) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($invalidatedCategory->getId());
                 }
             }
@@ -227,15 +227,15 @@
                     "type" => "Point", 
                     "coordinates" => array(
                         floatval($longitude), 
-                        floatval($latitude)))), TRUE);
+                        floatval($latitude)))), true);
             
-            $countryCategoryId = $country === NULL ? NULL : $this->getOrCreateCountryCategoryIdentifier($country)->getId();   
+            $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();   
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
             $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, 0, $geoJson));
 
             // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
-            if ($country === NULL) {
-                foreach ($this->getCategories(NULL, array(CategoryCategory::Country->value), array()) as &$category) {
+            if ($country === null) {
+                foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$category) {
                     $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
                 }
             }
@@ -255,8 +255,8 @@
                 $regionAreas[$geographicalRegion->getCategoryId()] = $area;
 
                 // Include country regions.
-                if ($geographicalRegion->getCountryCategoryId() !== NULL) {
-                    if ($geographicalRegion->getCountryCategoryId() !== NULL) {
+                if ($geographicalRegion->getCountryCategoryId() !== null) {
+                    if ($geographicalRegion->getCountryCategoryId() !== null) {
                         if (!array_key_exists($geographicalRegion->getCountryCategoryId(), $regionAreas)) {
                             $regionAreas[$geographicalRegion->getCountryCategoryId()] = 0;
                         }
@@ -324,11 +324,11 @@
         // TODO: Replace string $category by CategoryCategory $category.
         private function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
             $categoryIdentifier = $this->getCategoryIdentifier($name);
-            if ($categoryIdentifier !== NULL) {
+            if ($categoryIdentifier !== null) {
                 return $categoryIdentifier;
             }
 
-            $categoryIdentifier = new CategoryIdentifier(NULL, $name, CategoryCategory::from($category), NULL, NULL);
+            $categoryIdentifier = new CategoryIdentifier(null, $name, CategoryCategory::from($category), null, null);
             $this->categoryMapper->insertCategoryIdentifier($categoryIdentifier);
 
             return $categoryIdentifier;
@@ -356,10 +356,10 @@
             }
 
             if (method_exists($geoJson, "getComponents")) {
-                $pointInPolygon = FALSE;
+                $pointInPolygon = false;
                 foreach ($geoJson->getComponents() as &$component) {
                     if ($component->pointInPolygon($point, $pointInPolygon)) {
-                        $pointInPolygon = TRUE;
+                        $pointInPolygon = true;
                     }
                 }
                 return $pointInPolygon;
@@ -371,19 +371,19 @@
         private function arrayAny(array $array, mixed $fn) : bool {
             foreach ($array as &$value) {
                 if ($fn($value)) {
-                    return TRUE;
+                    return true;
                 }
             }
-            return FALSE;
+            return false;
         }
     
         private function arrayEvery(array $array, mixed $fn) : bool {
             foreach ($array as &$value) {
                 if (!$fn($value)) {
-                    return FALSE;
+                    return false;
                 }
             }
-            return TRUE;
+            return true;
         }
     }
 ?>

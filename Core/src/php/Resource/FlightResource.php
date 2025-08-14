@@ -183,8 +183,8 @@
             $scheduledArrival = $this->validateJsonBodyNullableField($request, "scheduledArrival");
             $actualArrival = $this->validateJsonBodyNullableField($request, "actualArrival");
 
-            if ($aircraft !== NULL && $registration !== NULL && $actualDeparture !== NULL
-                && $scheduledArrival !== NULL && $actualArrival !== NULL && isset($from["code"]) && isset($to["code"])
+            if ($aircraft !== null && $registration !== null && $actualDeparture !== null
+                && $scheduledArrival !== null && $actualArrival !== null && isset($from["code"]) && isset($to["code"])
                 && $this->isValidIataAirportCode($from["code"]) && $this->isValidIataAirportCode($to["code"])) {
                 return $this->flightService->logFlight($flight, $from["name"], $from["code"], $to["name"], $to["code"],
                     $scheduledDeparture, $actualDeparture, $scheduledArrival, $actualArrival, $registration, $aircraft);

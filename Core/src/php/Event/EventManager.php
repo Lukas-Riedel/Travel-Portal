@@ -35,7 +35,7 @@
                 ->getMappedResultSet(function($event) {
                     return array(
                         "id" => $event["id"],
-                        "args" => json_decode($event["args"], TRUE)
+                        "args" => json_decode($event["args"], true)
                     );
                 });
         }
@@ -53,15 +53,15 @@
             global $messagingClient;
 
             $channel = $messagingClient->getConsumerChannel();
-            $channel->basic_consume(WORKER_QUEUE_NAME, "", FALSE, FALSE, FALSE, FALSE, function ($message) {
-                    $this->handleEvent(json_decode($message->getBody(), TRUE));
+            $channel->basic_consume(WORKER_QUEUE_NAME, "", false, false, false, false, function ($message) {
+                    $this->handleEvent(json_decode($message->getBody(), true));
                     $message->ack();
                 }
             );
 
-            while (TRUE) {
+            while (true) {
                 try {
-                    $channel->wait(NULL, FALSE, self::WAITING_FOR_MESSAGES_TIMEOUT);
+                    $channel->wait(null, false, self::WAITING_FOR_MESSAGES_TIMEOUT);
                 }
                 catch (AMQPTimeoutException $e) {
                     break;
@@ -72,7 +72,7 @@
         private function handleEvent($event) : void {
             global $databaseProvider, $logger;
 
-            $start = microtime(TRUE);
+            $start = microtime(true);
             $logger->debug("Received the '" . $event["name"] . "' event...", $event);
             $databaseProvider->beginTransaction();
             try {
@@ -89,7 +89,7 @@
             }
             finally {
                 $databaseProvider->materializeViews();
-                $logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(TRUE) - $start) * 1000) . " milliseconds.", $event);
+                $logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
                 
                 foreach ($logger->getHandlers() as $handler) {
                     if ($handler instanceof \Monolog\Handler\BufferHandler) {

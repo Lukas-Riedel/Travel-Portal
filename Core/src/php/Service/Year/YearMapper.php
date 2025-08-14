@@ -29,8 +29,8 @@
                 ->withParameters($year)
                 ->getSingleRow();
 
-            if ($yearIdentifierRow === NULL) {
-                return NULL;
+            if ($yearIdentifierRow === null) {
+                return null;
             }
 
             return new YearIdentifier($yearIdentifierRow["id"], $this->highlightService->getHighlight($yearIdentifierRow["main_highlight_id"]));
@@ -45,7 +45,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($year !== NULL) {
+            if ($year !== null) {
                 $whereClauseBuilder->withClause("id = ?", $year);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();

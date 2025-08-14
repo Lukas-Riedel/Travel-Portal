@@ -3,7 +3,7 @@
         public function handle($input) {
             global $timeTrackingService;
 
-            $response = $timeTrackingService->getTimeTrackingEvents(isset($input["type"]) ? $input["type"] : NULL);
+            $response = $timeTrackingService->getTimeTrackingEvents(isset($input["type"]) ? $input["type"] : null);
             return $this->createResponse(200, $response);
         }
 
@@ -12,7 +12,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

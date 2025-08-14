@@ -25,7 +25,7 @@
                 FROM flight_event nfe
                 LEFT JOIN {$oldFlightEventTableName} ofe
                     ON ofe.id = nfe.id
-                WHERE ofe.flight IS NULL
+                WHERE ofe.flight IS null
             SQL;
 
             return $this->databaseProvider
@@ -57,7 +57,7 @@
                 FROM {$oldFlightEventTableName} ofe
                 LEFT JOIN flight_event nfe
                     ON ofe.id = nfe.id
-                WHERE nfe.id IS NULL
+                WHERE nfe.id IS null
             SQL;
 
             return $this->databaseProvider
@@ -77,8 +77,8 @@
                 ->withParameters($code)
                 ->getSingleRow();
 
-            if ($airportIdentifierRow === NULL) {
-                return NULL;
+            if ($airportIdentifierRow === null) {
+                return null;
             }
 
             return new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
@@ -103,7 +103,7 @@
             $sql = <<<'SQL'
                 SELECT code
                 FROM airline_code
-                WHERE airline_id IS NULL
+                WHERE airline_id IS null
             SQL;
 
             return $this->databaseProvider
@@ -124,7 +124,7 @@
                     ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id,
-                    IF(fl.actual_arrival IS NULL, NULL, fl.actual_arrival - fl.scheduled_arrival) AS delay,
+                    IF(fl.actual_arrival IS null, null, fl.actual_arrival - fl.scheduled_arrival) AS delay,
                     fai.code AS from_airport_code, 
                     fai.latitude AS from_airport_latitude, 
                     fai.longitude AS from_airport_longitude, 
@@ -155,20 +155,20 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($flightRow) {       
-                    $distance = NULL;
-                    if ($flightRow["from_airport_latitude"] != NULL && $flightRow["from_airport_longitude"] != NULL && $flightRow["to_airport_latitude"] != NULL && $flightRow["to_airport_longitude"] != NULL) {
+                    $distance = null;
+                    if ($flightRow["from_airport_latitude"] != null && $flightRow["from_airport_longitude"] != null && $flightRow["to_airport_latitude"] != null && $flightRow["to_airport_longitude"] != null) {
                         $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"],
                             $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
                     }             
 
-                    $airlineIdentifier = $flightRow["airline_id"] === NULL || $flightRow["airline_name"] === NULL ? NULL : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
+                    $airlineIdentifier = $flightRow["airline_id"] === null || $flightRow["airline_name"] === null ? null : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
-                        $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
-                        $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"] === NULL ? $this->geocodingService
+                        $flightRow["from_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
+                        $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"] === null ? $this->geocodingService
                         ->getLocation($flightRow["from"])->getTimezone() : $flightRow["from_airport_timezone"]);
                     $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"],
-                        $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
-                        $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"] === NULL ? $this->geocodingService
+                        $flightRow["to_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
+                        $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"] === null ? $this->geocodingService
                         ->getLocation($flightRow["to"])->getTimezone() : $flightRow["to_airport_timezone"]);
 
                     return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
@@ -212,8 +212,8 @@
                 ->withParameters($airlineId)
                 ->getSingleRow();
 
-            if ($airlineRow === NULL) {
-                return NULL;
+            if ($airlineRow === null) {
+                return null;
             }
 
             return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
@@ -241,8 +241,8 @@
                 ->withParameters($airlineCode)
                 ->getSingleRow();
 
-            if ($airlineRow === NULL) {
-                return NULL;
+            if ($airlineRow === null) {
+                return null;
             }
 
             return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
@@ -284,7 +284,7 @@
                     ON fl.airline_code_id = ac.id
                 LEFT JOIN airline_identifier ai
                     ON ac.airline_id = ai.id
-                WHERE fe.id IS NULL
+                WHERE fe.id IS null
             SQL;
             
             return $this->databaseProvider
@@ -292,12 +292,12 @@
                 ->getMappedResultSet(function($flightRow) {
                     $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
 
-                    $airlineIdentifier = $flightRow["airline_id"] === NULL || $flightRow["airline_name"] === NULL ? NULL : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
+                    $airlineIdentifier = $flightRow["airline_id"] === null || $flightRow["airline_name"] === null ? null : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
-                        $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
+                        $flightRow["from_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
                         $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
                     $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"],
-                        $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
+                        $flightRow["to_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
                         $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
 
                     return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
@@ -351,12 +351,12 @@
                 ->getMappedResultSet(function($flightRow) {
                     $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
 
-                    $airlineIdentifier = $flightRow["airline_id"] === NULL || $flightRow["airline_name"] === NULL ? NULL : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
+                    $airlineIdentifier = $flightRow["airline_id"] === null || $flightRow["airline_name"] === null ? null : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
                     $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_code"], 
-                        $flightRow["from_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
+                        $flightRow["from_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
                         $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
                     $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_code"],
-                        $flightRow["to_airport_country_category_id"] === NULL ? NULL : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
+                        $flightRow["to_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
                         $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
 
                     return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
@@ -375,7 +375,7 @@
                 ->withParameters($airportId)
                 ->getSingleRow();
 
-            return $airportIdentifierRow === NULL ? NULL : new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
+            return $airportIdentifierRow === null ? null : new AirportIdentifier($airportIdentifierRow["id"], $airportIdentifierRow["code"],
                 $this->categoryService->getCategoryIdentifierById($airportIdentifierRow["country_category_id"])->getName(),
                 $airportIdentifierRow["latitude"], $airportIdentifierRow["longitude"], $airportIdentifierRow["timezone"]);
         }
@@ -401,16 +401,16 @@
                 LEFT JOIN flight_log fl 
                     ON fe.flight = fl.flight 
                     AND fe.start = fl.scheduled_departure
-                WHERE fl.actual_arrival IS NULL
+                WHERE fl.actual_arrival IS null
                 ORDER BY fe.end ASC
             SQL;       
             
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($flightRow) {
-                    $from = new Airport(NULL, $flightRow["from"], NULL, NULL, NULL, NULL, NULL);
-                    $to = new Airport(NULL, $flightRow["to"], NULL, NULL, NULL, NULL, NULL);
-                    return new Flight($flightRow["flight"], NULL, NULL, NULL, NULL, $from, $to, $flightRow["start"], $flightRow["end"], NULL);
+                    $from = new Airport(null, $flightRow["from"], null, null, null, null, null);
+                    $to = new Airport(null, $flightRow["to"], null, null, null, null, null);
+                    return new Flight($flightRow["flight"], null, null, null, null, $from, $to, $flightRow["start"], $flightRow["end"], null);
                 });
         }
 

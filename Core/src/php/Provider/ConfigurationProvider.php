@@ -14,7 +14,7 @@
             $entries = array();
             
             $levelEntries = $this->databaseProvider
-                ->statementBuilder("SELECT * FROM configuration WHERE private <= ? ORDER BY `key` IS NOT NULL, type")
+                ->statementBuilder("SELECT * FROM configuration WHERE private <= ? ORDER BY `key` IS NOT null, type")
                 ->withParameters($includePrivate ? 1 : 0)
                 ->getResultSet();
 
@@ -25,7 +25,7 @@
                     $entries[$typeName] = array();
                 }
     
-                if ($entry["key"] == NULL) {
+                if ($entry["key"] == null) {
                     $value = $this->cast($entry["value"]);
                     if (!in_array($value, $entries[$typeName])) {
                         $entries[$typeName][] = $value;
@@ -54,7 +54,7 @@
             if (is_numeric($value)) {
                 return is_nan($value) || is_infinite($value) ? $value : doubleval($value);
             }
-            $convertedJson = json_decode($value, TRUE);
+            $convertedJson = json_decode($value, true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 return $convertedJson;
             }

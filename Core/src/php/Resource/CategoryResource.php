@@ -352,7 +352,7 @@
             $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
             
             $category = $this->categoryService->getCategory($categoryId);
-            if ($category === NULL) {
+            if ($category === null) {
                 throw new NotFoundException($categoryId);
             }
 
@@ -494,7 +494,7 @@
             $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
 
             $newName = $this->validateJsonBodyNullableField($request, "name");
-            if ($newName !== NULL) {
+            if ($newName !== null) {
                 $wasUpdated = $this->categoryService->updateCategoryName($categoryId, $newName);
                 if (!$wasUpdated) {
                     throw new NotUpdatedException($categoryId);
@@ -502,7 +502,7 @@
             }
             
             $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
-            if ($newMainHighlight !== NULL && isset($newMainHighlight["id"])) {
+            if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
                 $wasUpdated = $this->categoryService->updateCategoryMainHighlight($categoryId, $newMainHighlight["id"]);
                 if (!$wasUpdated) {
                     throw new NotUpdatedException($categoryId);
@@ -510,7 +510,7 @@
             }
             
             $newMetadata = $this->validateJsonBodyNullableField($request, "metadata");
-            if ($newMetadata !== NULL) {
+            if ($newMetadata !== null) {
                 if (isset($newMetadata["color"])) {
                     $wasUpdated = $this->categoryService->updateCategoryColor($categoryId, $newMetadata["color"]);
                     if (!$wasUpdated) {
@@ -534,7 +534,7 @@
             }
             
             $category = $this->categoryService->getCategory($categoryId);
-            if ($category === NULL) {
+            if ($category === null) {
                 throw new NotFoundException($categoryId);
             }
 
@@ -746,7 +746,7 @@
                 throw new NotFoundException($highlightId);                
             }
 
-            return NULL;
+            return null;
         }
 
         private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {

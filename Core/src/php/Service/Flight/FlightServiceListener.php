@@ -61,7 +61,7 @@ use Core\Service\Trip\TripService;
 
         public function onSchedulerTriggered(mixed $message) : void {
             $firstNonLoggedFlight = $this->flightService->getFirstNonLoggedFlight();
-            if ($firstNonLoggedFlight === NULL) {
+            if ($firstNonLoggedFlight === null) {
                 return;
             }
 

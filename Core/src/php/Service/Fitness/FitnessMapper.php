@@ -98,7 +98,7 @@
                 ->withParameters($timestamp)
                 ->getSingleRow();
 
-            return $fitnessRow === NULL ? NULL : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
+            return $fitnessRow === null ? null : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
                 intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
         }
 
@@ -190,7 +190,7 @@
                     ) x
                 LEFT JOIN fitness f
                     ON x.start = f.timestamp                    
-                WHERE f.timestamp IS NULL
+                WHERE f.timestamp IS null
                     OR (
                         -- TODO: Find a better way of how to update fitness records multiple times when getting rid of this query.
                         f.timestamp + (7 * 86400) > f.last_update
@@ -307,7 +307,7 @@
                         AND s.seq <= UNIX_TIMESTAMP()
                 ) x 
                     ON x.start = f.timestamp 
-                    WHERE x.start IS NULL
+                    WHERE x.start IS null
             SQL;
 
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];

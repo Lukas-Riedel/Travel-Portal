@@ -38,7 +38,7 @@
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Category->name) {
                 $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["entityId"]);
-                if ($categoryIdentifier !== NULL && $categoryIdentifier->getMainHighlight() === NULL) {
+                if ($categoryIdentifier !== null && $categoryIdentifier->getMainHighlight() === null) {
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                 }
             }
@@ -52,7 +52,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME, self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL)) {
-                $categories = $this->categoryService->getCategories(NULL, CategoryCategory::values(), array());
+                $categories = $this->categoryService->getCategories(null, CategoryCategory::values(), array());
                 foreach ($categories as &$category) {
                     $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
                 }

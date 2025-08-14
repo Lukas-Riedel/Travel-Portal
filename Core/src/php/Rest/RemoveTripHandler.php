@@ -12,11 +12,11 @@
                 return $response;
             }
 
-            $wasRemoved = ($response["body"]->getYear() !== NULL)
+            $wasRemoved = ($response["body"]->getYear() !== null)
                 ? $tripService->archiveTrip($input["tripId"])
                 : $tripService->removeCandidateTrip($input["tripId"]);
             
-            if ($wasRemoved === FALSE) {                
+            if ($wasRemoved === false) {                
                 return $this->create404Response("trips", $input["tripId"]);
             }
 
@@ -28,7 +28,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

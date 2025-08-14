@@ -13,7 +13,7 @@
             }
 
             $wasRemoved = $noteService->removePlaceNote($input["placeId"], $input["noteId"]);
-            if ($wasRemoved === FALSE) {                
+            if ($wasRemoved === false) {                
                 return $this->create404Response("place_notes", $input["noteId"]);
             }
 
@@ -25,7 +25,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

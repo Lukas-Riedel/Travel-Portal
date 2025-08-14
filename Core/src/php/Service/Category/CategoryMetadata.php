@@ -52,7 +52,7 @@
         }
 
         public function isComplete() : bool {
-            return $this->color !== NULL && $this->unicode !== NULL && $this->publicHolidaysCalendar !== NULL;
+            return $this->color !== null && $this->unicode !== null && $this->publicHolidaysCalendar !== null;
         }
 
         #[\ReturnTypeWillChange]

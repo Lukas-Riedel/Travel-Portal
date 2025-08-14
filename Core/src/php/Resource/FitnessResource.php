@@ -100,7 +100,7 @@
             $calories = $this->validateJsonBodyField($request, "calories");
             $distance = $this->validateJsonBodyField($request, "distance");
             $seconds = $this->validateJsonBodyNullableField($request, "seconds");
-            if ($seconds === NULL) {
+            if ($seconds === null) {
                 // TODO: Remove support for minutes one day. 
                 $seconds = $this->validateJsonBodyField($request, "minutes") * 60;
             }

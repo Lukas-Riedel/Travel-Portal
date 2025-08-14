@@ -29,7 +29,7 @@ use Core\Service\Year\YearService;
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
             
-            $relevantPlaces = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null,
                 array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default);
             $placesWithHighlightsWithoutQualityAttributes = array_filter($relevantPlaces, fn($place) => $this->hasHighlightsWithNullQuality($place));
             foreach ($placesWithHighlightsWithoutQualityAttributes as &$placeWithHighlightsWithoutQualityAttributes) {
@@ -37,7 +37,7 @@ use Core\Service\Year\YearService;
                     $placeWithHighlightsWithoutQualityAttributes, time());
             }
 
-            $relevantTrips = $this->tripService->getRegularTrips(NULL, NULL, NULL, array(TripIncludedEntity::Highlights->value), TripSortingStrategy::Default);
+            $relevantTrips = $this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Highlights->value), TripSortingStrategy::Default);
             $tripsWithHighlightsWithoutQualityAttributes = array_filter($relevantTrips, fn($trip) => $this->hasHighlightsWithNullQuality($trip));
             foreach ($tripsWithHighlightsWithoutQualityAttributes as &$tripWithHighlightsWithoutQualityAttributes) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::TRIP_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES_ISSUE_NAME,
@@ -48,7 +48,7 @@ use Core\Service\Year\YearService;
         }
 
         private function hasHighlightsWithNullQuality(mixed $entity) : bool {
-            return count(array_filter(array_map(fn($highlight) => $highlight->getQuality(), $entity->getHighlights()), fn($quality) => $quality === NULL)) > 0;
+            return count(array_filter(array_map(fn($highlight) => $highlight->getQuality(), $entity->getHighlights()), fn($quality) => $quality === null)) > 0;
         }
     }
 ?>

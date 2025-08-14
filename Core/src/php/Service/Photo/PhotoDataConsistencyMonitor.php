@@ -24,13 +24,13 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+                null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
             $allAlbums = $this->photoService->getAllAlbums();
 
             $allAlbumIds = array_map(fn($album) => $album->getId(), $allAlbums);
             $referencedAlbumIds = array_map(fn($date) => $date->getAlbum()->getId(), array_filter(array_merge(...array_map(
-                fn($place) => $place->getDates(), $relevantPlaces)), fn($date) => $date->getAlbum() !== NULL));
+                fn($place) => $place->getDates(), $relevantPlaces)), fn($date) => $date->getAlbum() !== null));
             $nonReferencedAlbumIds = array_diff($allAlbumIds, $referencedAlbumIds);
             foreach ($nonReferencedAlbumIds as &$nonReferencedAlbumId) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::ALBUM_WITHOUT_PLACE_ISSUE_NAME, 

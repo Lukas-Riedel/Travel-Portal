@@ -1,6 +1,6 @@
 <?php
     class HttpClient {
-        public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = NULL, $includeResponseHeaders = FALSE) {
+        public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = null, $includeResponseHeaders = false) {
             global $logger;
 
             $logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $payload));
@@ -10,13 +10,13 @@
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
             curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
             curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.1) Gecko/20061204 Firefox/2.0.0.1');
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 300);
-            curl_setopt($curl, CURLOPT_AUTOREFERER, TRUE); 
-            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+            curl_setopt($curl, CURLOPT_AUTOREFERER, true); 
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     
-            if ($payload !== NULL) {
+            if ($payload !== null) {
                 curl_setopt($curl, $method === HttpMethod::GET ? CURLOPT_GETFIELDS : CURLOPT_POSTFIELDS, $payload);
             }     
             
@@ -29,12 +29,12 @@
 
             if ($includeResponseHeaders && $isJsonResponse) {  
                 list($header, $body) = explode("\r\n\r\n", $response, 2);  
-                $result = json_decode($body, TRUE);
+                $result = json_decode($body, true);
                 $result["__httpHeaders"] = $this->parseHeaders($header);
                 return $result;
             }
 
-            return $isJsonResponse ? json_decode($response, TRUE) : $response;
+            return $isJsonResponse ? json_decode($response, true) : $response;
         }
 
         private function parseHeaders($rawHeaders) {

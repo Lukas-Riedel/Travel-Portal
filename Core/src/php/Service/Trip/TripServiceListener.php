@@ -46,7 +46,7 @@
                 $this->tripService->refreshCalendar();
                 $this->placeService->refreshCalendar($this->tripService);
                 $this->stayService->refreshCalendar($this->tripService);
-                $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== NULL), $this->tripService);
+                $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== null), $this->tripService);
                 $this->tripService->updateAllDayTripsTripsDates();
             }
         }
@@ -60,7 +60,7 @@
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Trip->name) {
                 $tripIdentifier = $this->tripService->getTripIdentifierById($message["entityId"]);
-                if ($tripIdentifier !== NULL && $tripIdentifier->getMainHighlight() === NULL) {
+                if ($tripIdentifier !== null && $tripIdentifier->getMainHighlight() === null) {
                     $this->tripService->updateTripMainHighlight($message["entityId"], $message["highlightId"]);
                 }
             }
@@ -69,7 +69,7 @@
         public function onSchedulerTriggered(mixed $message) : void {   
             if ($this->scheduler->requestExecution(self::UPDATE_TRIP_STATISTICS_ACTION_NAME, self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL)) {
                 $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-                $trips = $this->tripService->getRegularTrips(NULL, NULL, time(), array(), TripSortingStrategy::Default);
+                $trips = $this->tripService->getRegularTrips(null, null, time(), array(), TripSortingStrategy::Default);
                 
                 foreach ($trips as &$trip) {
                     if ($trip->getName() !== $dayTripsTripName) {

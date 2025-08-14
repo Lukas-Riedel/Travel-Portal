@@ -33,7 +33,7 @@
 
         public function validateQueryNullableParameter(Request $request, string $key) : ?string {
             $queryParams = $request->getQueryParams();
-            return isset($queryParams[$key]) ? $queryParams[$key] : NULL;
+            return isset($queryParams[$key]) ? $queryParams[$key] : null;
         }
 
         public function validatePathArgument(array $args, string $key) : mixed {
@@ -48,7 +48,7 @@
 
         public function validateJsonBody(Request $request) : mixed {
             $parsedBody = $request->getParsedBody();
-            if ($parsedBody === NULL) {
+            if ($parsedBody === null) {
                 throw new \InvalidArgumentException("The request body must be a valid JSON object.");
             }
             return $parsedBody;
@@ -59,7 +59,7 @@
             if (!isset($body[$field])) {
                 throw new \InvalidArgumentException("The required request body field '$field' is missing.");
             }
-            if ($body[$field] === NULL || $body[$field] === "" || $body[$field] === array()) {
+            if ($body[$field] === null || $body[$field] === "" || $body[$field] === array()) {
                 throw new \InvalidArgumentException("The required request body field '$field' is null or empty.");
             }
             return $body[$field];
@@ -67,7 +67,7 @@
         
         public function validateJsonBodyNullableField(Request $request, string $field) : mixed {
             $body = $this->validateJsonBody($request);
-            return isset($body[$field]) ? $body[$field] : NULL;
+            return isset($body[$field]) ? $body[$field] : null;
         }
     }
 ?>

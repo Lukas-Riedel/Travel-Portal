@@ -47,7 +47,7 @@
         }
 
         public function getOverallStatistics() : array {     
-            return $this->getStatistics(StatisticsType::Overall, NULL);          
+            return $this->getStatistics(StatisticsType::Overall, null);          
         }
         
         public function updateCategoryStatistics(CategoryIdentifier $categoryIdentifier) : void {
@@ -56,17 +56,17 @@
         }
         
         public function updateYearStatistics(int $year) : void {
-            $this->updateStatistics(StatisticsType::Year, $this->getBeginningOfYearTimestamp($year), min(time(), $this->getEndOfYearTimestamp($year)), NULL, $year);
+            $this->updateStatistics(StatisticsType::Year, $this->getBeginningOfYearTimestamp($year), min(time(), $this->getEndOfYearTimestamp($year)), null, $year);
             $this->eventPublisher->publishYearStatisticsUpdatedEvent($year);
         }
 
         public function updateTripStatistics(Trip $trip) : void {    
-            $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), min(time(), $trip->getEnd()), NULL, $trip->getId());
+            $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), min(time(), $trip->getEnd()), null, $trip->getId());
             $this->eventPublisher->publishTripStatisticsUpdatedEvent($trip->getId(), $trip->getYear());
         }
 
         public function updateOverallStatistics() : void {     
-            $this->updateStatistics(StatisticsType::Overall, 0, time(), NULL, NULL);          
+            $this->updateStatistics(StatisticsType::Overall, 0, time(), null, null);          
         }
 
         public function setStatisticsProviders(array $statisticsProviders) : void {
@@ -75,9 +75,9 @@
 
         // TODO: Remove the categoryId parameter.
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
-            $statisticsValidityCacheKey = sprintf(self::STATISTICS_VALIDITY_CACHE_KEY_FORMAT, $statisticsType->name, $entityId ?? "NULL");
+            $statisticsValidityCacheKey = sprintf(self::STATISTICS_VALIDITY_CACHE_KEY_FORMAT, $statisticsType->name, $entityId ?? "null");
             $cachedStatisticsValidity = $this->cacheClient->get($statisticsValidityCacheKey);            
-            if ($cachedStatisticsValidity !== NULL) {
+            if ($cachedStatisticsValidity !== null) {
                 // TODO: Extend the Scheduler functionality with an event replay option.
                 $secondsSinceLastUpdate = time() - $cachedStatisticsValidity;
                 $this->logger->debug("The statistics for the entity '{$statisticsType->name}:{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
@@ -114,7 +114,7 @@
         }
 
         private function getStatistics(StatisticsType $statisticsType, ?string $entityId) {
-            if ($statisticsType !== StatisticsType::Overall && $entityId === NULL) {
+            if ($statisticsType !== StatisticsType::Overall && $entityId === null) {
                 throw new \InvalidArgumentException("The entity identifier is required.");
             }
             

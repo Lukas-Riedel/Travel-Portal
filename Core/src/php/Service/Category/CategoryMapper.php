@@ -45,12 +45,12 @@
                 ->withParameters($name)
                 ->getFirstRow();
 
-            if ($categoryIdentifierRow === NULL) {
-                return NULL;
+            if ($categoryIdentifierRow === null) {
+                return null;
             }
 
-            $metadata = $categoryIdentifierRow["color"] === NULL && $categoryIdentifierRow["unicode"] === NULL && $categoryIdentifierRow["public_holidays_calendar"] === NULL
-                ? NULL : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+            $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
+                ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
             return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
                 $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
@@ -67,12 +67,12 @@
                 ->withParameters($categoryId)
                 ->getSingleRow();
 
-            if ($categoryIdentifierRow === NULL) {
-                return NULL;
+            if ($categoryIdentifierRow === null) {
+                return null;
             }
 
-            $metadata = $categoryIdentifierRow["color"] === NULL && $categoryIdentifierRow["unicode"] === NULL && $categoryIdentifierRow["public_holidays_calendar"] === NULL
-                ? NULL : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+            $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
+                ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
             return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
                 $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
@@ -89,10 +89,10 @@
             if (count($categoryCategories) > 0) {
                 $whereClauseBuilder->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
             }
-            if ($categoryId !== NULL) {
+            if ($categoryId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $categoryId);
             }
-            if ($countryCategoryId !== NULL) {
+            if ($countryCategoryId !== null) {
                 $whereClauseBuilder->withClause("id IN (SELECT category_id FROM region_geographical WHERE country_category_id = ?)", $countryCategoryId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
@@ -110,8 +110,8 @@
                         $statistics = $this->statisticsService->getCategoryStatistics($categoryRow["id"]);              
                     }
                     
-                    $metadata = $categoryRow["color"] === NULL && $categoryRow["unicode"] === NULL && $categoryRow["public_holidays_calendar"] === NULL
-                        ? NULL : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
+                    $metadata = $categoryRow["color"] === null && $categoryRow["unicode"] === null && $categoryRow["public_holidays_calendar"] === null
+                        ? null : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
                     return new Category($categoryRow["id"], $categoryRow["name"], CategoryCategory::from($categoryRow["category"]), $metadata,
                         $this->highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $statistics);
                 });
@@ -210,7 +210,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($category !== NULL) {
+            if ($category !== null) {
                 $whereClauseBuilder->withClause("category = ?", $category->value);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();

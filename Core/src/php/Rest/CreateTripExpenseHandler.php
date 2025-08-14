@@ -12,7 +12,7 @@
                 return $response;
             }
 
-            $response = $expenseService->createExpense($input["tripId"], $input["value"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : NULL);
+            $response = $expenseService->createExpense($input["tripId"], $input["value"], $input["currency"], $input["type"], $input["description"], isset($input["subscriptionId"]) ? $input["subscriptionId"] : null);
             return $this->createResponse(201, $response);
         }
 
@@ -21,7 +21,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

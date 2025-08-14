@@ -31,13 +31,13 @@
         }
         
         public function onAlbumUpdated(mixed $message) : void {            
-            $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $message["albumId"], NULL, NULL, NULL,
-                NULL, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value,
+            $places = $this->placeService->getRegularPlaces(null, null, null, null, $message["albumId"], null, null, null,
+                null, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value,
                     PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
-                    if ($trip !== NULL) {
+                    if ($trip !== null) {
                         $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
                     }
                 }
@@ -64,12 +64,12 @@
         }
 
         public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->placeService->getRegularPlaces($message["categoryId"], NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
+            $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null, null, null, array(), PlaceSortingStrategy::Default);
             foreach ($places as &$place) {
                 $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
             
-            $places = $this->placeService->getCandidatePlaces($message["categoryId"], NULL, NULL, array());
+            $places = $this->placeService->getCandidatePlaces($message["categoryId"], null, null, array());
             foreach ($places as &$place) {
                 $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
             }
@@ -78,7 +78,7 @@
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Place->name) {
                 $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["entityId"]);
-                if ($placeIdentifier !== NULL && $placeIdentifier->getMainHighlight() === NULL) {
+                if ($placeIdentifier !== null && $placeIdentifier->getMainHighlight() === null) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
                 }
                 $this->updatePlaceScore($message["entityId"]);
@@ -98,11 +98,11 @@
         private function updatePlaceQuality(string $placeId) : void {
             $place = $this->placeService->getRegularPlace($placeId);
 
-            if ($place !== NULL) {
+            if ($place !== null) {
                 $highlightQualities = [];
                 foreach ($place->getHighlights() as &$highlight) {
                     $highlightQuality = $highlight->getQuality();
-                    if ($highlightQuality !== NULL) {
+                    if ($highlightQuality !== null) {
                         for ($i = 0; $i < ($highlight->getId() == $place->getMainHighlight()?->getId() ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1); ++$i) {
                             $highlightQualities[] = $highlightQuality;
                         }
@@ -110,7 +110,7 @@
                 }
 
                 if (count($highlightQualities) === 0) {
-                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), NULL);
+                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), null);
                     return;
                 }
 
@@ -122,15 +122,15 @@
         private function updatePlaceScore(string $placeId) : void {
             $place = $this->placeService->getRegularPlace($placeId);
 
-            if ($place !== NULL) {
+            if ($place !== null) {
                 $buckets = array();
                 $encounteredAlbums = array();
                 foreach ($place->getDates() as &$date) {
                     $album = $date->getAlbum();
-                    if ($album !== NULL && !in_array($album->getId(), $encounteredAlbums)) {
+                    if ($album !== null && !in_array($album->getId(), $encounteredAlbums)) {
                         $encounteredAlbums[] = $album->getId();
             
-                        $tripId = $date->getTrip() === NULL
+                        $tripId = $date->getTrip() === null
                             ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
                             : $date->getTrip()->getId();
             

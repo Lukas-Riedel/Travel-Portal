@@ -22,22 +22,22 @@
 
             $response = array();    
             if ($type == "regular") {
-                $response = $placeService->getRegularPlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
-                    isset($input["labelId"]) ? $input["labelId"] : NULL,
-                    isset($input["tripId"]) ? $input["tripId"] : NULL,
-                    isset($input["year"]) ? $input["year"] : NULL,
-                    isset($input["albumId"]) ? $input["albumId"] : NULL,
-                    isset($input["photoId"]) ? $input["photoId"] : NULL,
-                    isset($input["maxQuality"]) ? $input["maxQuality"] : NULL,
-                    isset($input["minStart"]) ? $input["minStart"] : NULL,
-                    isset($input["maxEnd"]) ? $input["maxEnd"] : NULL,
+                $response = $placeService->getRegularPlaces(isset($input["categoryId"]) ? $input["categoryId"] : null,
+                    isset($input["labelId"]) ? $input["labelId"] : null,
+                    isset($input["tripId"]) ? $input["tripId"] : null,
+                    isset($input["year"]) ? $input["year"] : null,
+                    isset($input["albumId"]) ? $input["albumId"] : null,
+                    isset($input["photoId"]) ? $input["photoId"] : null,
+                    isset($input["maxQuality"]) ? $input["maxQuality"] : null,
+                    isset($input["minStart"]) ? $input["minStart"] : null,
+                    isset($input["maxEnd"]) ? $input["maxEnd"] : null,
                     isset($input["include"]) ? explode(",", $input["include"]) : array(),
                     $sortingStrategy);
             }
             else if ($type == "candidate") { 
-                $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : NULL,
-                    isset($input["tripId"]) ? $input["tripId"] : NULL,
-                    isset($input["labelId"]) ? $input["labelId"] : NULL,
+                $response = $placeService->getCandidatePlaces(isset($input["categoryId"]) ? $input["categoryId"] : null,
+                    isset($input["tripId"]) ? $input["tripId"] : null,
+                    isset($input["labelId"]) ? $input["labelId"] : null,
                     isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
 
@@ -49,7 +49,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

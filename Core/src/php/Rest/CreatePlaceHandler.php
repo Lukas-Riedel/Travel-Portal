@@ -3,7 +3,7 @@
         public function handle($input) {
             global $placeService;
     
-            $response = NULL;
+            $response = null;
             if ($input["type"] === "candidate") {
                 $response = $placeService->createCandidatePlace($input["name"], $input["address"]);
             }
@@ -22,7 +22,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

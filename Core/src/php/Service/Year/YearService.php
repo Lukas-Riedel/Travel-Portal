@@ -14,11 +14,11 @@
 
         public function getYear(int $year) : ?Year {
             $years = $this->yearMapper->selectYears($year, YearIncludedEntity::values());
-            return count($years) === 1 ? $years[0] : NULL;
+            return count($years) === 1 ? $years[0] : null;
         }
 
         public function getYears(array $includedEntities) : array {
-            return $this->yearMapper->selectYears(NULL, $includedEntities);
+            return $this->yearMapper->selectYears(null, $includedEntities);
         }
 
         public function getYearIdentifier(int $year) : ?YearIdentifier {
@@ -27,11 +27,11 @@
 
         public function getOrCreateYearIdentifier(int $year) : YearIdentifier {
             $yearIdentifier = $this->getYearIdentifier($year);
-            if ($yearIdentifier !== NULL) {
+            if ($yearIdentifier !== null) {
                 return $yearIdentifier;
             }
 
-            $yearIdentifier = new YearIdentifier($year, NULL);
+            $yearIdentifier = new YearIdentifier($year, null);
             $this->yearMapper->insertYearIdentifier($yearIdentifier);
 
             return $yearIdentifier;

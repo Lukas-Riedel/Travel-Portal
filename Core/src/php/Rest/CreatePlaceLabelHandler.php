@@ -6,7 +6,7 @@
             global $labelService, $placeService;
             
             $placeIdentifier = $placeService->getPlaceIdentifierById($input["placeId"]);
-            if ($placeIdentifier === NULL) {            
+            if ($placeIdentifier === null) {            
                 throw new EntityNotFoundException("place", $input["placeId"]);
             }
 
@@ -18,7 +18,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

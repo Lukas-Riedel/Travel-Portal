@@ -31,7 +31,7 @@
 
         public function getOrCreateLabelId(string $labelName) : string {
             $labelId = $this->labelMapper->selectLabelId($labelName);
-            if ($labelId !== NULL) {
+            if ($labelId !== null) {
                 return $labelId;
             }
 

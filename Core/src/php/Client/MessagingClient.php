@@ -10,9 +10,9 @@
 
         private const MAX_PRIORITY = 5;
 
-        private ?AMQPSSLConnection $connection = NULL;
-        private ?AMQPChannel $producerChannel = NULL;
-        private ?AMQPChannel $consumerChannel = NULL;
+        private ?AMQPSSLConnection $connection = null;
+        private ?AMQPChannel $producerChannel = null;
+        private ?AMQPChannel $consumerChannel = null;
 
         private readonly Logger $logger;
 
@@ -21,21 +21,21 @@
         }
 
         public function __destruct() {
-            if ($this->producerChannel !== NULL) {
+            if ($this->producerChannel !== null) {
                 $this->producerChannel->close();
             }
-            if ($this->consumerChannel !== NULL) {
+            if ($this->consumerChannel !== null) {
                 $this->consumerChannel->close();
             }
-            if ($this->connection !== NULL) {
+            if ($this->connection !== null) {
                 $this->connection->close();
             }
         }
 
         public function publishEvent(\Event $event, ?array $args, string $queueName) : void {
             $this->init();
-            $this->consumerChannel->queue_declare($queueName, FALSE, TRUE, FALSE, FALSE, FALSE, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
-            $this->producerChannel->queue_declare($queueName, FALSE, TRUE, FALSE, FALSE, FALSE, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
+            $this->consumerChannel->queue_declare($queueName, false, true, false, false, false, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
+            $this->producerChannel->queue_declare($queueName, false, true, false, false, false, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
 
             $payload = array(
                 "name" => $event->name,
@@ -53,13 +53,13 @@
         }
 
         private function init() {
-            if ($this->connection === NULL || $this->producerChannel === NULL) {                    
+            if ($this->connection === null || $this->producerChannel === null) {                    
                 $this->connection = new AMQPSSLConnection(RMQ_HOST, RMQ_PORT, RMQ_USER, RMQ_PW, RMQ_VHOST,
-                    array("verify_peer" => TRUE, "verify_peer_name" => TRUE),
+                    array("verify_peer" => true, "verify_peer_name" => true),
                     array("read_write_timeout" => 30, "heartbeat" => 30));
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
-                $this->consumerChannel->basic_qos(NULL, 1, NULL);
+                $this->consumerChannel->basic_qos(null, 1, null);
             }
         }
     }

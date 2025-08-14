@@ -69,23 +69,23 @@
         }
 
         public function getRegularPlace(string $placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
-            return count($regularPlaces) === 1 ? $regularPlaces[0] : NULL;
+            $regularPlaces = $this->doGetRegularPlaces($placeId, null, null, null, null, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::Default);
+            return count($regularPlaces) === 1 ? $regularPlaces[0] : null;
         }
 
         public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->doGetRegularPlaces(NULL, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+            return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
         }
 
         public function getCandidatePlace(string $placeId) : ?Place {
-            $candidatePlaces = $this->doGetCandidatePlaces($placeId, NULL, NULL, PlaceIncludedEntity::values());
-            return count($candidatePlaces) === 1 ? $candidatePlaces[0] : NULL;
+            $candidatePlaces = $this->doGetCandidatePlaces($placeId, null, null, PlaceIncludedEntity::values());
+            return count($candidatePlaces) === 1 ? $candidatePlaces[0] : null;
         }
 
         public function getCandidatePlaces(?string $categoryId, ?string $tripId, ?string $labelId, array $includedEntities) : array {
-            return $tripId !== NULL
+            return $tripId !== null
                 ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includedEntities)
-                : $this->doGetCandidatePlaces(NULL, $categoryId, $labelId, $includedEntities);
+                : $this->doGetCandidatePlaces(null, $categoryId, $labelId, $includedEntities);
         }
 
         public function getAllPlaceIdentifiers() : array {
@@ -115,7 +115,7 @@
         }
 
         public function updatePlaceExcerpt(string $placeId, ?string $excerpt) : bool {
-            if ($excerpt === NULL) {
+            if ($excerpt === null) {
                 $placeIdentifier = $this->getPlaceIdentifierById($placeId);
                 $excerpt = $this->getSuggestedExcerpt($placeIdentifier->getName(), $placeIdentifier->getCountry());
             }
@@ -126,15 +126,15 @@
             $place = $this->getRegularPlace($placeId);
             $wasUpdated = $this->placeMapper->updatePlaceName($placeId, $name);
 
-            if ($place !== NULL) {
+            if ($place !== null) {
                 foreach ($place->getDates() as &$date) {                       
                     $album = $date->getAlbum();
-                    if ($album !== NULL) {     
+                    if ($album !== null) {     
                         $wasUpdated &= $this->photoService->updateAlbumName($album->getId(), $place->getName(), $name);
                     }
 
                     $eventId = $this->placeMapper->selectPlaceEventId($placeId, $date->getStart());
-                    if ($eventId !== NULL) {  
+                    if ($eventId !== null) {  
                         $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(\Calendar::Places->value, $eventId, $name);
                     }
                 }
@@ -159,7 +159,7 @@
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -172,9 +172,9 @@
         }
 
         public function loadPlaces(string $candidateTripId, int $startOffset) : array {
-            $places = $this->doGetCandidatePlacesForTrip(NULL, $candidateTripId, array());
+            $places = $this->doGetCandidatePlacesForTrip(null, $candidateTripId, array());
 
-            $allCalendarEventsCreated = TRUE;
+            $allCalendarEventsCreated = true;
             foreach ($places as &$place) {
                 $address = $this->geocodingService->getAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());
                 foreach ($place->getDates() as &$date) {
@@ -190,18 +190,18 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(NULL, NULL, $tripId, NULL, NULL, NULL, NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
             
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
-                    if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, FALSE, NULL, NULL, NULL, $archivedTripIdentifier))))) {
+                    if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, false, null, null, null, $archivedTripIdentifier))))) {
                         $this->googleApiClient->deleteCalendarEvent(\Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
                     }
                 }
             }
             
-            return $this->doGetCandidatePlacesForTrip(NULL, $archivedTripIdentifier->getId(), array());
+            return $this->doGetCandidatePlacesForTrip(null, $archivedTripIdentifier->getId(), array());
         }
         
         public function removeCandidateEventsForCandidateTrip(string $tripId) : bool {
@@ -242,7 +242,7 @@
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
                 $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                     $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
-                    $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, NULL, NULL, NULL, $resolvedTripIdentifier)));
+                    $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));
 
                 $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 
@@ -277,7 +277,7 @@
 
         private function getOrCreatePlaceIdentifier(string $name, string $country, string $address) : PlaceIdentifier {            
             $placeIdentifier = $this->placeMapper->selectPlaceIdentifier($name, $country);
-            if ($placeIdentifier !== NULL) {
+            if ($placeIdentifier !== null) {
                 return $placeIdentifier;
             }
 
@@ -287,8 +287,8 @@
             }
             
             $location = $this->geocodingService->getLocation($address);
-            $placeIdentifier = new PlaceIdentifier(NULL, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
-                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), NULL, 0, NULL, $this->getSuggestedExcerpt($name, $country));
+            $placeIdentifier = new PlaceIdentifier(null, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
+                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
             $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
             
             $this->eventPublisher->publishPlaceCreatedEvent($placeIdentifier->getId());

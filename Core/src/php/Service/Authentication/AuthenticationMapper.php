@@ -41,8 +41,8 @@
                 ->withParameters($id)
                 ->getSingleRow();
 
-            if ($userRow === NULL) {
-                return NULL;
+            if ($userRow === null) {
+                return null;
             }
 
             return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
@@ -60,8 +60,8 @@
                 ->withParameters($username)
                 ->getSingleRow();
 
-            if ($userRow === NULL) {
-                return NULL;
+            if ($userRow === null) {
+                return null;
             }
 
             return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
@@ -79,8 +79,8 @@
                 ->withParameters($apiKey)
                 ->getSingleRow();
 
-            if ($userRow === NULL) {
-                return NULL;
+            if ($userRow === null) {
+                return null;
             }
 
             return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));

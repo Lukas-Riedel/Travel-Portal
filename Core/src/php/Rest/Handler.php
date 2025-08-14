@@ -32,7 +32,7 @@
         }
 
         protected function create204ResponseExample() {
-            return $this->createResponseExample("Item removed", 204, NULL);
+            return $this->createResponseExample("Item removed", 204, null);
         }
 
         protected function create400ResponseExample() {
@@ -40,7 +40,7 @@
         }
 
         protected function create401ResponseExample() {
-            return $this->createResponseExample("Missing access token", 401, '{"code":401,"error":"AuthenticationException","message":"The access token was not provided.","details":{"endpoint":"/categories","arguments":[],"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(96): AuthenticationService->getAccessToken(NULL)","#1 {main}"],"ipAddress":"89.103.191.6"}}');
+            return $this->createResponseExample("Missing access token", 401, '{"code":401,"error":"AuthenticationException","message":"The access token was not provided.","details":{"endpoint":"/categories","arguments":[],"trace":["#0 /data/web/virtuals/254146/virtual/www/domains/lriedel.cz/php/api.php(96): AuthenticationService->getAccessToken(null)","#1 {main}"],"ipAddress":"89.103.191.6"}}');
         }
 
         protected function create403ResponseExample() {
@@ -52,10 +52,10 @@
         }
 
         protected function createPathParameter($name, $type, $examples) {
-            return $this->createParameter("path", TRUE, $name, $type, $examples);
+            return $this->createParameter("path", true, $name, $type, $examples);
         }
 
-        protected function createQueryParameter($name, $type, $examples, $required = FALSE) {
+        protected function createQueryParameter($name, $type, $examples, $required = false) {
             return $this->createParameter("query", $required, $name, $type, $examples);
         }
 

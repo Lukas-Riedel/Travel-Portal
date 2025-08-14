@@ -205,7 +205,7 @@ use Core\Routing\NotUpdatedException;
             }
 
             $configurationEntry = $this->configurationService->getConfigurationEntry($configurationKey);
-            if ($configurationEntry === NULL) {
+            if ($configurationEntry === null) {
                 throw new NotFoundException($configurationKey);
             }
 

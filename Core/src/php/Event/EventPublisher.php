@@ -39,15 +39,15 @@
         }
 
         public function publishAllAlbumsInvalidatedEvent() : void {
-            $this->publishEvent(Event::AllAlbumsInvalidated, NULL);
+            $this->publishEvent(Event::AllAlbumsInvalidated, null);
         }
 
         public function publishAllDynamicLabelsInvalidatedEvent() : void {
-            $this->publishEvent(Event::AllDynamicLabelsInvalidated, NULL);
+            $this->publishEvent(Event::AllDynamicLabelsInvalidated, null);
         }
 
         public function publishAllHighlightsInvalidatedEvent() : void {
-            $this->publishEvent(Event::AllHighlightsInvalidated, NULL);
+            $this->publishEvent(Event::AllHighlightsInvalidated, null);
         }
 
         public function publishHighlightCreatedEvent(HighlightType $highlightType, string $entityId, string $highlightId) : void {
@@ -103,7 +103,7 @@
         }
         
         public function publishVacationResetEvent() : void {
-            $this->publishEvent(Event::VacationReset, NULL);
+            $this->publishEvent(Event::VacationReset, null);
         }
         
         public function publishApplicationStartedEvent($tables) : void {
@@ -179,7 +179,7 @@
         }
 
         public function publishOverallStatisticsInvalidatedEvent() : void {
-            $this->publishEvent(Event::OverallStatisticsInvalidated, NULL);
+            $this->publishEvent(Event::OverallStatisticsInvalidated, null);
         }
 
         public function publishTripUpdatedEvent($tripId) : void {
@@ -203,11 +203,11 @@
         }
 
         public function publishDataConsistencyScanTriggeredEvent() : void {
-            $this->publishEvent(Event::DataConsistencyScanTriggered, NULL);
+            $this->publishEvent(Event::DataConsistencyScanTriggered, null);
         }
 
         public function publishInactiveDevicesInvalidatedEvent() : void {
-            $this->publishEvent(Event::InactiveDevicesInvalidated, NULL);
+            $this->publishEvent(Event::InactiveDevicesInvalidated, null);
         }
 
         public function publishConfigurationEntryUpdated($key) : void {
@@ -215,7 +215,7 @@
         }
 
         public function publishTimeTrackingEventsAuditTriggered() : void {
-            $this->publishEvent(Event::TimeTrackingEventsAuditTriggered, NULL);
+            $this->publishEvent(Event::TimeTrackingEventsAuditTriggered, null);
         }
 
         public function publishEvent($event, $args) : void {
@@ -346,7 +346,7 @@
                     return $case;
                 }
             }
-            return NULL;
+            return null;
         }
     }
 ?>

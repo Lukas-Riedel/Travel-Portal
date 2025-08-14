@@ -4,7 +4,7 @@
             global $eventPublisher;
 
             $eventPublisher->publishEvent(Event::fromName($input["name"]), $input["args"]);
-            return $this->createResponse(204, NULL);
+            return $this->createResponse(204, null);
         }
 
         public function getRequiredRole() {
@@ -12,7 +12,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

@@ -46,11 +46,11 @@
         }
 
         public function getRequiredRole() {
-            return NULL;
+            return null;
         }
         
         public function isProtected() {
-            return FALSE;
+            return false;
         }
 
         public function getTag() {
@@ -110,7 +110,7 @@
             if (count($requestExamples) > 0) {
                 $convertedExamples = array();
                 foreach ($requestExamples as &$requestExample) {
-                    $convertedExamples[strtolower(str_replace(" ", "", $requestExample["name"]))] = array("summary" => $requestExample["name"], "value" => json_decode($requestExample["body"], TRUE));
+                    $convertedExamples[strtolower(str_replace(" ", "", $requestExample["name"]))] = array("summary" => $requestExample["name"], "value" => json_decode($requestExample["body"], true));
                 }
                 $endpoint["requestBody"] = array("content" => array("application/json" => array("examples" => $convertedExamples)));
             }
@@ -123,8 +123,8 @@
                     if (!array_key_exists($responseExample["body"]["code"], $convertedExamples)) {
                         $convertedExamples[$responseExample["body"]["code"]] = array();
                     }
-                    if ($body != NULL) {
-                        $convertedExamples[$responseExample["body"]["code"]]["content"]["application/json"]["examples"][strtolower(str_replace(" ", "", $responseExample["name"]))] = array("summary" => $responseExample["name"], "value" => json_decode($body, TRUE));
+                    if ($body != null) {
+                        $convertedExamples[$responseExample["body"]["code"]]["content"]["application/json"]["examples"][strtolower(str_replace(" ", "", $responseExample["name"]))] = array("summary" => $responseExample["name"], "value" => json_decode($body, true));
                     }
                 }
                 $endpoint["responses"] = $convertedExamples;

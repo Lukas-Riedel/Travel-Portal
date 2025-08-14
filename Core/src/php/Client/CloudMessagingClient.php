@@ -17,7 +17,7 @@
         private readonly Logger $logger;
 
         public function __construct(Logger $logger) {
-            $this->projectId = json_decode(file_get_contents(self::FIREBASE_CONFIGURATION_FILE_PATH), TRUE)["project_id"];
+            $this->projectId = json_decode(file_get_contents(self::FIREBASE_CONFIGURATION_FILE_PATH), true)["project_id"];
             $this->logger = $logger;
         }
 

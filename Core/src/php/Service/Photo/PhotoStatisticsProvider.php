@@ -37,12 +37,12 @@
             int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statistics = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL, $start, $end,
+            $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end,
                 array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
 
             if ($statisticsKind === StatisticsKind::Fact) {
                 $albums = array_filter(array_map(fn($date) => $date->getAlbum(),
-                    array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces))), fn($album) => $album !== NULL);
+                    array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces))), fn($album) => $album !== null);
 
                 if (count($albums) > 0) {
                     $totalPhotosCount = array_sum(array_map(fn($album) => $album->getImagesCount(), $albums));
@@ -56,7 +56,7 @@
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Trip || $statisticsType === StatisticsType::Category) {
                     $mostPhotosPerPlace = array_map(fn($place) => new KeyValuePair($place->getName(), array_sum(array_map(
-                        fn($date) => $date->getAlbum() !== NULL ? $date->getAlbum()->getImagesCount() : 0, $place->getDates()))),
+                        fn($date) => $date->getAlbum() !== null ? $date->getAlbum()->getImagesCount() : 0, $place->getDates()))),
                         array_filter($relevantPlaces, fn($place) => count($place->getDates()) > 0));
                     usort($mostPhotosPerPlace, fn($a, $b) => $b->getValue() <=> $a->getValue());
 
@@ -67,7 +67,7 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     $mostPhotosPerDay = $this->getStandingsStatistics(fn($place, $date) => array(sprintf(self::PHOTOS_DATE_STATISTICS_FORMAT, implode(", ",
-                        array_map(fn($place) => $place->getName(), array_filter($this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL,
+                        array_map(fn($place) => $place->getName(), array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null,
                         $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS), $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS) + self::ONE_DAY_SECONDS,
                         array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default), fn($place) => count($place->getDates()) > 0))), date(self::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {
@@ -101,7 +101,7 @@
             $statistics = array_reduce($relevantPlaces, fn($carry, $place) => array_reduce($place->getDates(), 
                 function($innerCarry, $date) use(&$place, &$keysSelector) {
                     foreach ($keysSelector($place, $date) as &$key) {
-                        if ($key !== NULL && $date->getAlbum() !== NULL) {
+                        if ($key !== null && $date->getAlbum() !== null) {
                             $innerCarry[$key] = isset($innerCarry[$key])
                                 ? $innerCarry[$key]->withValue($innerCarry[$key]->getValue() + $date->getAlbum()->getImagesCount())
                                 : new KeyValuePair($key, $date->getAlbum()->getImagesCount());

@@ -10,7 +10,7 @@
         public function __invoke(callable $callable, ServerRequestInterface $request,
             ResponseInterface $response, array $routeArguments) : ResponseInterface {
             $result = $callable($request, $response, $routeArguments);
-            if ($result === NULL) {
+            if ($result === null) {
                 $response = $response->withStatus(204);
             }
             else {

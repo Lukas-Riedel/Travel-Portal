@@ -4,13 +4,13 @@
             global $tripService;
 
             $response = $tripService->getRegularTrip($input["tripId"]);
-            if ($response !== NULL) {
+            if ($response !== null) {
                 return $this->createResponse(200, $response);
             }
     
             // No regular trip found, try candidates instead.
             $response = $tripService->getCandidateTrip($input["tripId"]);
-            if ($response !== NULL) {
+            if ($response !== null) {
                 return $this->createResponse(200, $response);
             }
 
@@ -22,7 +22,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

@@ -4,7 +4,7 @@
             global $yearService;
 
             $response = $yearService->getYear($input["year"]);
-            if ($response !== NULL) {
+            if ($response !== null) {
                 return $this->createResponse(200, $response);
             }
 
@@ -16,7 +16,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

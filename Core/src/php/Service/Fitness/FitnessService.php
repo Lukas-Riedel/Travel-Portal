@@ -48,7 +48,7 @@
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
 
-            if ($existingFitnessRecord !== NULL && ($steps < $existingFitnessRecord->getSteps()
+            if ($existingFitnessRecord !== null && ($steps < $existingFitnessRecord->getSteps()
                 || $seconds < $existingFitnessRecord->getSeconds()|| round($distance, 3) < round($existingFitnessRecord->getDistance(), 3))) {
                 $context = array(
                     "steps" => array(
@@ -68,7 +68,7 @@
                 $this->logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
                 $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
-                return FALSE;
+                return false;
             }
 
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
@@ -78,7 +78,7 @@
 
             $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION);
 
-            return TRUE;
+            return true;
         }
 
         public function removeStaleFitnessRecords() : void {

@@ -12,7 +12,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {
@@ -25,7 +25,7 @@
 
         public function getParameters() {
             return array(
-                $this->createQueryParameter("name", "string", "FitnessActivityDetected", TRUE));
+                $this->createQueryParameter("name", "string", "FitnessActivityDetected", true));
         }
 
         public function getMethod() {

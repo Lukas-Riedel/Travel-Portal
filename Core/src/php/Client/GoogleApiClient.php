@@ -19,7 +19,7 @@
             $separator = "mpr_separator";
 
             $metadata = array("name" => $name);
-            if ($folderId !== NULL) {
+            if ($folderId !== null) {
                 $metadata["parents"] = array($folderId);
             }
 
@@ -35,7 +35,7 @@
             $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", array(), $payload, $contentType);
 
             // TODO: Return whether the file was created.
-            return TRUE;
+            return true;
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
@@ -52,14 +52,14 @@
                     "dateTime" => date(DATE_RFC3339, $end),
                     "timeZone" => $homeTimezone));
 
-            if ($address !== NULL) {
+            if ($address !== null) {
                 $payload["location"] = $address;
             }
              
             $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events", array(), $payload);
                     
             // TODO: Return whether the event was created.
-            return TRUE;
+            return true;
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
@@ -67,7 +67,7 @@
             $this->executeRequest(HttpMethod::DELETE, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId));
 
             // TODO: Return whether the event was deleted.
-            return TRUE;
+            return true;
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
@@ -77,7 +77,7 @@
             $this->executeRequest(HttpMethod::PATCH, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
-            return TRUE;
+            return true;
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
@@ -87,7 +87,7 @@
             $this->executeRequest(HttpMethod::PATCH, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/" . str_replace("@google.com", "", $eventId), array(), $payload);
 
             // TODO: Return whether the event was updated.
-            return TRUE;
+            return true;
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
@@ -96,7 +96,7 @@
             $event = $this->executeRequest(HttpMethod::GET, $requestUrl);
 
             if (!array_key_exists("start", $event) || !array_key_exists("end", $event)) {
-                return FALSE;
+                return false;
             }
 
             if (array_key_exists("dateTime", $event["start"])) {
@@ -116,25 +116,25 @@
             $this->executeRequest(HttpMethod::PUT, $requestUrl, array(), $event);
 
             // TODO: Return whether the event was updated.
-            return TRUE;
+            return true;
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.
-        public function watchCalendar($calendar, $channelId, $url, $ttl, $token = NULL) : bool {                    
+        public function watchCalendar($calendar, $channelId, $url, $ttl, $token = null) : bool {                    
             $payload = array(
                 "id" => $channelId,
                 "type" => "web_hook",
                 "address" => $url,
                 "params" => array("ttl" => $ttl));
 
-            if ($token !== NULL) {
+            if ($token !== null) {
                 $payload["token"] = $token;
             }
 
             $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/calendar/v3/calendars/" . $this->getCalendarIdentifier($calendar) . "/events/watch", array(), $payload);
             
             // TODO: Return whether the calendar is watched now.
-            return TRUE;
+            return true;
         }
 
         public function updateAlbumName($externalId, $name) : bool {
@@ -143,7 +143,7 @@
             $this->executeRequest(HttpMethod::PATCH, "https://photoslibrary.googleapis.com/v1/albums/" . $externalId . "?updateMask=title", array(), $payload);
                         
             // TODO: Return whether the album was updated.
-            return TRUE;
+            return true;
         }
 
         public function updateAlbumMainPhoto($externalAlbumId, $externalPhotoId) : bool {
@@ -152,13 +152,13 @@
             $this->executeRequest(HttpMethod::PATCH, "https://photoslibrary.googleapis.com/v1/albums/" . $externalAlbumId . "?updateMask=coverPhotoMediaItemId", array(), $payload);
                         
             // TODO: Return whether the album was updated.
-            return TRUE;
+            return true;
         }
 
-        public function getAlbums($pageToken = NULL) : array {
+        public function getAlbums($pageToken = null) : array {
             $queryParameters = "?pageSize=50";
 
-            if ($pageToken != NULL) {
+            if ($pageToken != null) {
                 $queryParameters .= "&pageToken=" . $pageToken;
             }
 
@@ -191,19 +191,19 @@
             return $apiResponse;
         }
 
-        public function getMediaItems($externalAlbumId, $pageToken = NULL) : mixed {
+        public function getMediaItems($externalAlbumId, $pageToken = null) : mixed {
             $payload = array(
                 "albumId" => $externalAlbumId, 
                 "pageSize" => 100);
 
-            if ($pageToken != NULL) {
+            if ($pageToken != null) {
                 $payload["pageToken"] = $pageToken;
             }
 
             return $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/mediaItems:search", array(), $payload);
         }
 
-        public function createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId = NULL) : array {
+        public function createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId = null) : array {
             $newMediaItems = array();
 
             foreach ($newPhotos as &$newPhoto) {
@@ -218,7 +218,7 @@
                 "albumId" => $externalAlbumId,
                 "newMediaItems" => $newMediaItems);
                 
-            if ($externalReplacedPhotoId !== NULL) {
+            if ($externalReplacedPhotoId !== null) {
                 $payload["albumPosition"] = array(
                     "position" => "AFTER_MEDIA_ITEM",
                     "relativeMediaItemId" => $externalReplacedPhotoId);
@@ -233,19 +233,19 @@
                 "X-Goog-Upload-Protocol" => "raw");
             $uploadToken = $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/uploads", $headers, base64_decode($data), "application/octet-stream");
                     
-            if ($uploadToken === NULL) {
+            if ($uploadToken === null) {
                 throw new RuntimeException("The photo could not be uploaded.");
             }
 
             return $uploadToken;
         }
 
-        private function executeRequest($method, $url, $headers = array(), $payload = NULL, $contentType = NULL) : mixed {
+        private function executeRequest($method, $url, $headers = array(), $payload = null, $contentType = null) : mixed {
             global $httpClient;
 
             $convertedHeaders = array('Authorization: Bearer ' . $this->getGoogleApiAccessToken());
-            if ($payload !== NULL) {
-                if ($contentType !== NULL) {
+            if ($payload !== null) {
+                if ($contentType !== null) {
                     $convertedHeaders[] = "Content-Type: " . $contentType;
                 }
                 else {
@@ -265,7 +265,7 @@
             global $authenticationService, $cacheClient;
 
             $cachedGoogleApiAccessToken = $cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
-            if ($cachedGoogleApiAccessToken !== NULL) {
+            if ($cachedGoogleApiAccessToken !== null) {
                 return $cachedGoogleApiAccessToken;
             }
 
@@ -285,7 +285,7 @@
                 throw new InvalidArgumentException("The calendar " . $name . " does not exist.");
             }
             
-            if ($tokens[1] === NULL) {
+            if ($tokens[1] === null) {
                 throw new InvalidArgumentException("The calendar " . $name . " does not exist.");
             }
 

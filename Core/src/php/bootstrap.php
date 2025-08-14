@@ -96,7 +96,7 @@
     $logger->pushHandler($handler);
 
     // Clients.
-    $databaseProvider = new DatabaseProvider(TRUE);
+    $databaseProvider = new DatabaseProvider(true);
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $httpClient = new HttpClient();

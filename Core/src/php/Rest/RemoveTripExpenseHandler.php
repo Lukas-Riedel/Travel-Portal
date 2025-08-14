@@ -13,7 +13,7 @@
             }
 
             $response = $expenseService->removeExpense($input["expenseId"], $input["tripId"]);
-            if ($response === FALSE) {                
+            if ($response === false) {                
                 return $this->create404Response("trip_expenses", $input["expenseId"]);
             }
 
@@ -25,7 +25,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

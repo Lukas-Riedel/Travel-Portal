@@ -119,12 +119,12 @@
         public function findAlbum(string $albumId) : ?Album {
             foreach ($this->getDates() as &$date) {
                 $album = $date->getAlbum();
-                if ($album != NULL && $album->getId() == $albumId) {
+                if ($album != null && $album->getId() == $albumId) {
                     return $album;
                 }
             }
 
-            return NULL;
+            return null;
         }
 
         #[\ReturnTypeWillChange]

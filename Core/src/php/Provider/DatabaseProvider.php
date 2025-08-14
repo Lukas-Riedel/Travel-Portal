@@ -17,8 +17,8 @@
             $this->delayMaterializationIfNeeded = $delayMaterializationIfNeeded;
             $this->isDatabaseInitialized = $this
                 ->query("SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'configuration'")->fetch_assoc()["count"] > 0;
-            $this->isInTransaction = FALSE;
-            $this->shouldBeginTransaction = FALSE;
+            $this->isInTransaction = false;
+            $this->shouldBeginTransaction = false;
         }
 
         public function __destruct() {
@@ -37,9 +37,9 @@
             $this->connection->query("DROP TEMPORARY TABLE IF EXISTS materialized_view");
             $this->connection->query("CREATE TEMPORARY TABLE materialized_view AS SELECT * FROM " . $viewToMaterialize);
             $this->connection->query("DELETE FROM " . substr($viewToMaterialize, 1));
-            $start = microtime(TRUE);
+            $start = microtime(true);
             $this->connection->query("INSERT INTO " . substr($viewToMaterialize, 1) . " SELECT * FROM materialized_view");
-            $this->cache["materializationDuration"][$viewToMaterialize] = ceil(1000 * (microtime(TRUE) - $start));
+            $this->cache["materializationDuration"][$viewToMaterialize] = ceil(1000 * (microtime(true) - $start));
             $this->connection->query("INSERT INTO view_materialization (view_name, last_materialization_duration, is_materialization_delayed) VALUES ('" 
                 . $viewToMaterialize . "', " . $this->cache["materializationDuration"][$viewToMaterialize] . ", 0)");
             $this->connection->commit();
@@ -62,17 +62,17 @@
             return $this->connection->query($sql);
         }
 
-        public function statementBuilder($sql, $whereClause = NULL) {
-            if ($whereClause != NULL) {
+        public function statementBuilder($sql, $whereClause = null) {
+            if ($whereClause != null) {
                 $sql = str_replace("WHERE :CONDITIONS", $whereClause["clause"], $sql);
             }
             if ($this->shouldBeginTransaction && preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE)\b/i', $sql)) {        
                 $this->connection->begin_transaction();
-                $this->isInTransaction = TRUE;
-                $this->shouldBeginTransaction = FALSE;
+                $this->isInTransaction = true;
+                $this->shouldBeginTransaction = false;
             }
             $builder = new StatementBuilder($this->connection->prepare($sql), $sql);
-            if ($whereClause != NULL) {
+            if ($whereClause != null) {
                 $builder->withDeferredParameters(...$whereClause["parameters"]);
             }
             $this->updateViewsToMaterialize($sql);
@@ -84,7 +84,7 @@
         }
 
         public function beginTransaction() {
-            $this->shouldBeginTransaction = TRUE;
+            $this->shouldBeginTransaction = true;
         }
 
         public function commit() {
@@ -104,7 +104,7 @@
         }
 
         public function getIsNullOrEqualTo($var) {
-            return $var == NULL ? "IS NULL" : ("= '" . $this->escape($var) . "'");
+            return $var == null ? "IS null" : ("= '" . $this->escape($var) . "'");
         }
 
         public function getLastInsertedId() {
@@ -228,7 +228,7 @@
         }
 
         public function execute() {
-            return $this->doExecute(TRUE);
+            return $this->doExecute(true);
         }
 
         private function doExecute($logStatement) {
@@ -240,7 +240,7 @@
 
             $params = array_merge($this->params, $this->deferredParams);
             
-            $start = microtime(TRUE);
+            $start = microtime(true);
             try {                
                 if (empty($params)) {
                     $this->statement->execute();
@@ -253,7 +253,7 @@
                 $logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
                 throw $e;
             }
-            $duration = round((microtime(TRUE) - $start) * 1000);
+            $duration = round((microtime(true) - $start) * 1000);
             if ($duration > 100) {
                 $logger->debug("Took " . $duration . " milliseconds: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
@@ -270,7 +270,7 @@
                 return array();
             }
 
-            $this->doExecute(FALSE);
+            $this->doExecute(false);
             $result = $this->statement->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
         }
@@ -294,22 +294,22 @@
 
         public function getSingleRow() {
             $resultSet = $this->getResultSet();
-            return count($resultSet) === 1 ? $resultSet[0] : NULL;
+            return count($resultSet) === 1 ? $resultSet[0] : null;
         }
 
         public function getFirstRow() {
             $resultSet = $this->getResultSet();
-            return count($resultSet) > 0 ? $resultSet[0] : NULL;
+            return count($resultSet) > 0 ? $resultSet[0] : null;
         }
 
         public function getSingleColumn($column) {
             $row = $this->getSingleRow();
-            return $row == NULL ? NULL : $row[$column];
+            return $row == null ? null : $row[$column];
         }
 
         public function getFirstColumn($column) {
             $row = $this->getFirstRow();
-            return $row == NULL ? NULL : $row[$column];
+            return $row == null ? null : $row[$column];
         }
     }
 

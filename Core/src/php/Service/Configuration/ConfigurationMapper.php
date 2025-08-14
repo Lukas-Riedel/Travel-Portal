@@ -24,7 +24,7 @@
 
             $configurationEntries = array();
             foreach ($configurationRows as &$configurationRow) {
-                $configurationEntries[$configurationRow["key"]] = json_decode($configurationRow["value"], TRUE);
+                $configurationEntries[$configurationRow["key"]] = json_decode($configurationRow["value"], true);
             }
             return $configurationEntries;
         }
@@ -41,11 +41,11 @@
                 ->withParameters($key)
                 ->getSingleRow();
 
-            if ($configurationRow === NULL) {
-                return NULL;
+            if ($configurationRow === null) {
+                return null;
             }
 
-            return json_decode($configurationRow["value"], TRUE);;
+            return json_decode($configurationRow["value"], true);;
         }
 
         public function updateConfigurationEntry(string $key, mixed $value) : bool {

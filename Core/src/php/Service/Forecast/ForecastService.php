@@ -26,12 +26,12 @@
 
         public function isActualWeatherForecastExpired(string $placeId, int $timestamp) : bool {
             $actualForecastExpiration = $this->forecastMapper->selectActualWeatherForecastExpiration($placeId, $timestamp);
-            return $actualForecastExpiration === NULL || $actualForecastExpiration < time();
+            return $actualForecastExpiration === null || $actualForecastExpiration < time();
         }
 
         public function getWeatherForecast(string $placeId, int $timestamp) : ?Weather {
             $actualForecast = $this->forecastMapper->selectActualWeatherForecast($placeId, $timestamp);
-            return $actualForecast !== NULL
+            return $actualForecast !== null
                 ? $actualForecast 
                 : $this->forecastMapper->selectHistoricalWeatherForecast($placeId, $timestamp);
         }
@@ -79,7 +79,7 @@
             $windspeed = $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]);
             $precipitation = $this->getAverage($apiResponse["daily"]["precipitation_sum"]) / 24;
 
-            $historicalForecast = new Weather($temperature, NULL, $windspeed, $precipitation, NULL, time());
+            $historicalForecast = new Weather($temperature, null, $windspeed, $precipitation, null, time());
     
             $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
             $this->forecastMapper->insertHistoricalWeatherForecast($historicalForecast, $placeIdentifier->getId(), $timestamp);
@@ -89,13 +89,13 @@
         public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 round($placeIdentifier->getLatitude(), 4), round($placeIdentifier->getLongitude(), 4)),
-                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), NULL, TRUE);
+                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), null, true);
 
-            if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == NULL) {
+            if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == null) {
                 throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));
             }
 
-            $bestForecast = NULL;
+            $bestForecast = null;
             foreach ($apiResponse["properties"]["timeseries"] as &$forecast) {
                 $forecastTime = strtotime($forecast["time"]);
                 if ($forecastTime > $timestamp) {
@@ -104,7 +104,7 @@
                 $bestForecast = $forecast;
             }         
 
-            if ($bestForecast === NULL || strtotime($bestForecast["time"]) + 21600 < $timestamp) {
+            if ($bestForecast === null || strtotime($bestForecast["time"]) + 21600 < $timestamp) {
                 return;
             }
 
@@ -112,7 +112,7 @@
                 "temperature" => $bestForecast["data"]["instant"]["details"]["air_temperature"],
                 "clouds" => $bestForecast["data"]["instant"]["details"]["cloud_area_fraction"],
                 "wind" => $bestForecast["data"]["instant"]["details"]["wind_speed"],
-                "symbol" => NULL,
+                "symbol" => null,
                 "precipitation" => 0,
                 "updatedAt" => strtotime($apiResponse["properties"]["meta"]["updated_at"]));
             
@@ -151,7 +151,7 @@
         }
     
         private function getAverage(array $values) : ?float {
-            return count($values) === 0 ? NULL : (array_sum($values) / count($values));
+            return count($values) === 0 ? null : (array_sum($values) / count($values));
         }
     }
 ?>

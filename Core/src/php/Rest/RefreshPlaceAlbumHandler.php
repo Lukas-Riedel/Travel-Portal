@@ -13,11 +13,11 @@
             }     
 
             $album = $response["body"]->findAlbum($input["albumId"]);
-            if ($album == NULL) {
+            if ($album == null) {
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
-            $photoService->updateAlbum($input["albumId"], isset($input["mainPhotoPosition"]) ? $input["mainPhotoPosition"] : NULL);
+            $photoService->updateAlbum($input["albumId"], isset($input["mainPhotoPosition"]) ? $input["mainPhotoPosition"] : null);
 
             $response = (new GetPlaceHandler())
                 ->handle(array(
@@ -27,7 +27,7 @@
             }     
 
             $album = $response["body"]->findAlbum($input["albumId"]);
-            if ($album == NULL) {
+            if ($album == null) {
                 return $this->create404Response("place_albums", $input["albumId"]);
             }
 
@@ -39,7 +39,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

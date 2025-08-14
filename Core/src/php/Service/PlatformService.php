@@ -18,7 +18,7 @@
 
                     foreach ($row as $key => $value) {
                         $keys[] = "`" . $key . "`";
-                        $values[] = $value === NULL ? "NULL" : ("'" . str_replace("'", "''", $value) . "'");
+                        $values[] = $value === null ? "null" : ("'" . str_replace("'", "''", $value) . "'");
                     }
 
                     $dump[] = "INSERT INTO " . $table . " (" . implode(", ", $keys) . ") VALUES (" . implode(", ", $values) . ");";
@@ -27,7 +27,7 @@
                 $dump[] = "";
             }
 
-            $googleApiClient->createFile("Backup " . date("d.m.Y H:i:s") . ".sql", NULL, "application/sql", implode("\n", $dump));
+            $googleApiClient->createFile("Backup " . date("d.m.Y H:i:s") . ".sql", null, "application/sql", implode("\n", $dump));
         }
 
         public function onSchedulerTriggered(mixed $message) : void {

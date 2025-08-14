@@ -25,7 +25,7 @@
         }
 
         public function hasValue() : bool {
-            return $this->value !== NULL && (!is_array($this->value) || count($this->value) > 0);
+            return $this->value !== null && (!is_array($this->value) || count($this->value) > 0);
         }
 
         public function withLimitedValuesCount(int $maxValuesCount) : Statistics {

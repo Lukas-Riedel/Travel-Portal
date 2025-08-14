@@ -17,7 +17,7 @@
             return match ($this) {
                 self::Scheduled => "flight_event",
                 self::Watched => "flight_watched_event",
-                self::Logged => NULL
+                self::Logged => null
             };
         }
 
@@ -25,7 +25,7 @@
             return match ($this) {
                 self::Scheduled => \Calendar::Flights,
                 self::Watched => \Calendar::WatchedFlights,
-                self::Logged => NULL
+                self::Logged => null
             };
         }
     }

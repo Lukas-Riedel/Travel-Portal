@@ -32,10 +32,10 @@
             }
 
             $accessToken = $this->tryExtractAccessToken($request, self::AUTHORIZATION_HEADER);
-            if ($accessToken === NULL) {                
+            if ($accessToken === null) {                
                 $accessToken = $this->tryExtractAccessToken($request, self::GOOG_CHANNEL_TOKEN_HEADER);
             }            
-            if ($accessToken === NULL) {
+            if ($accessToken === null) {
                 throw new AuthenticationException("The access token was not provided.");
             }
 
@@ -47,7 +47,7 @@
             if (preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
                 return $this->authenticationService->getAccessToken($matches[1]);
             }
-            return NULL;
+            return null;
         }
     }
 ?>

@@ -26,7 +26,7 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantTrips = $this->tripService->getRegularTrips(NULL, NULL, time() + self::TRIP_WITHOUT_TIME_THRESHOLD_SECONDS, array(), TripSortingStrategy::Default);
+            $relevantTrips = $this->tripService->getRegularTrips(null, null, time() + self::TRIP_WITHOUT_TIME_THRESHOLD_SECONDS, array(), TripSortingStrategy::Default);
             
             $tripsWithoutTime = array_filter($relevantTrips, fn($trip) => !$this->tripService->isDayTripsTrip($trip)
                 && $this->isMidnight($trip->getStart()) && $this->isMidnight($trip->getEnd()));

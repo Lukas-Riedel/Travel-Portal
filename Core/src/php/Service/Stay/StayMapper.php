@@ -48,7 +48,7 @@
                 FROM stay_event nse
                 LEFT JOIN {$oldStayEventTableName} ose
                     ON ose.id = nse.id
-                WHERE ose.name IS NULL
+                WHERE ose.name IS null
             SQL;
 
             return $this->databaseProvider
@@ -79,7 +79,7 @@
                 FROM {$oldStayEventTableName} ose
                 LEFT JOIN stay_event nse
                     ON ose.id = nse.id
-                WHERE nse.id IS NULL
+                WHERE nse.id IS null
             SQL;
 
             return $this->databaseProvider

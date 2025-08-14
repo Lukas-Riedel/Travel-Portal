@@ -25,7 +25,7 @@ use Core\Service\Trip\TripSortingStrategy;
         }
 
         public function getHighlight(?string $highlightId) : ?Highlight {
-            return $highlightId === NULL ? NULL : $this->highlightMapper->selectHighlight($highlightId);
+            return $highlightId === null ? null : $this->highlightMapper->selectHighlight($highlightId);
         }
 
         public function getPlaceHighlights(string $placeId) : array {
@@ -44,7 +44,7 @@ use Core\Service\Trip\TripSortingStrategy;
             $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
                 $this->highlightMapper->selectHighlights(HighlightType::Category, $categoryId));
 
-            foreach ($placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+            foreach ($placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, null,
                 array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default) as &$categoryPlace) {
                     foreach ($categoryPlace->getHighlights() as &$categoryHighlightCandidate) {
                         if (!in_array($categoryHighlightCandidate->getId(), $deletedHighlightIds)) {
@@ -64,7 +64,7 @@ use Core\Service\Trip\TripSortingStrategy;
             $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
                 $this->highlightMapper->selectHighlights(HighlightType::Year, $year));
 
-            foreach ($tripService->getRegularTrips($year, NULL, NULL, array(TripIncludedEntity::Highlights->value),
+            foreach ($tripService->getRegularTrips($year, null, null, array(TripIncludedEntity::Highlights->value),
                 TripSortingStrategy::Default) as &$yearTrip) {
                     foreach ($yearTrip->getHighlights() as &$yearHighlightCandidate) {
                         if (!in_array($yearHighlightCandidate->getId(), $deletedHighlightIds)) {
@@ -83,10 +83,10 @@ use Core\Service\Trip\TripSortingStrategy;
             $highlightId = $this->getOrCreateHighlightId($photoId);
 
             // TODO: Remove the create-if-not-exists semantics.
-            $highlightNotExists = TRUE;
+            $highlightNotExists = true;
             foreach ($this->getPlaceHighlights($placeId) as &$entityHighlight) {
                 if ($entityHighlight->getId() == $highlightId) {
-                    $highlightNotExists = FALSE;
+                    $highlightNotExists = false;
                     break;
                 }
             }
@@ -112,10 +112,10 @@ use Core\Service\Trip\TripSortingStrategy;
             $highlightId = $this->getOrCreateHighlightId($photoId);
 
             // TODO: Remove the create-if-not-exists semantics.
-            $highlightNotExists = TRUE;
+            $highlightNotExists = true;
             foreach ($this->getTripHighlights($tripId) as &$entityHighlight) {
                 if ($entityHighlight->getId() == $highlightId) {
-                    $highlightNotExists = FALSE;
+                    $highlightNotExists = false;
                     break;
                 }
             }
@@ -134,7 +134,7 @@ use Core\Service\Trip\TripSortingStrategy;
 
         public function createCategoryHighlight(string $categoryId, string $photoId) : Highlight {
             $highlightId = $this->highlightMapper->selectHighlightId($photoId);
-            if ($highlightId === NULL) {
+            if ($highlightId === null) {
                 throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");
             }
 
@@ -147,7 +147,7 @@ use Core\Service\Trip\TripSortingStrategy;
 
         public function createYearHighlight(int $year, string $photoId) : Highlight {
             $highlightId = $this->highlightMapper->selectHighlightId($photoId);
-            if ($highlightId === NULL) {
+            if ($highlightId === null) {
                 throw new RuntimeException("Cannot create a highlight for the year. Does a related trip highlight exist?");
             }
 
@@ -194,20 +194,20 @@ use Core\Service\Trip\TripSortingStrategy;
 
         public function updateHighlights() : void {      
             foreach (HighlightSize::cases() as &$highlightSize) {
-                $filePaths = $this->doUpdateHighlights($highlightSize, NULL, NULL, FALSE);
+                $filePaths = $this->doUpdateHighlights($highlightSize, null, null, false);
                 $this->unlinkUnusedFiles($filePaths, $highlightSize);
             }
         }
 
         public function updateHighlight(string $highlightId) : void {
             foreach (HighlightSize::cases() as &$highlightSize) {
-                $this->doUpdateHighlights($highlightSize, $highlightId, NULL, TRUE);
+                $this->doUpdateHighlights($highlightSize, $highlightId, null, true);
             }
         }
 
         public function updateHighlightForPhoto(string $photoId) : void {
             foreach (HighlightSize::cases() as &$highlightSize) {
-                $this->doUpdateHighlights($highlightSize, NULL, $photoId, TRUE);
+                $this->doUpdateHighlights($highlightSize, null, $photoId, true);
             }
         }
 
@@ -283,7 +283,7 @@ use Core\Service\Trip\TripSortingStrategy;
         
         private function getOrCreateHighlightId(string $photoId) : string {
             $highlightId = $this->highlightMapper->selectHighlightId($photoId);
-            if ($highlightId !== NULL) {
+            if ($highlightId !== null) {
                 return $highlightId;
             }
 
@@ -303,10 +303,10 @@ use Core\Service\Trip\TripSortingStrategy;
                 if ($forceOverwrite || !file_exists($filePath)) {
                     $photoId = $this->highlightMapper->selectPhotoId($highlight->getId());
 
-                    if ($photoId !== NULL) {
+                    if ($photoId !== null) {
                         $photo = $this->photoService->getPhoto($photoId);
 
-                        if ($photo !== NULL) {
+                        if ($photo !== null) {
                             file_put_contents($filePath, file_get_contents($photo->getUrl()
                                 . "=w" . $highlightSize->getWidth()
                                 . "-h" . $highlightSize->getHeight()));

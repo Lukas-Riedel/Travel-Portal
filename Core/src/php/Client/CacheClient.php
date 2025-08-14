@@ -5,7 +5,7 @@
     
     class CacheClient {
 
-        private ?Client $redisClient = NULL;
+        private ?Client $redisClient = null;
         
         // Decrease Redis calls as much as possible by caching in memory.
         private array $cache = array();
@@ -13,17 +13,17 @@
         public function get(string $key) : mixed {
             $this->init();
             
-            $value = isset($this->cache[$key]) ? $this->cache[$key] : NULL;
-            if ($value !== NULL) {
-                return json_decode($value, TRUE);
+            $value = isset($this->cache[$key]) ? $this->cache[$key] : null;
+            if ($value !== null) {
+                return json_decode($value, true);
             }
 
             $value = $this->redisClient->get($key);
-            if ($value !== NULL) {
-                return json_decode($value, TRUE);
+            if ($value !== null) {
+                return json_decode($value, true);
             }
 
-            return NULL;
+            return null;
         }
 
         public function set(string $key, mixed $value, int $ttl) : void {
@@ -36,7 +36,7 @@
         public function trySet(string $key, mixed $value, int $ttl) : bool {
             $this->init();
 
-            $wasSet = $this->redisClient->set($key, json_encode($value), "NX", "EX", $ttl) !== NULL;
+            $wasSet = $this->redisClient->set($key, json_encode($value), "NX", "EX", $ttl) !== null;
             if ($wasSet) {                
                 $this->cache[$key] = json_encode($value);
             }
@@ -44,8 +44,8 @@
         }
 
         public function tryLock(string $key, int $ttl) : ?DistributedLock {
-            $lockValue = uniqid("", TRUE);
-            return $this->trySet($key, $lockValue, $ttl) ? new DistributedLock($this, $key, $lockValue) : NULL;
+            $lockValue = uniqid("", true);
+            return $this->trySet($key, $lockValue, $ttl) ? new DistributedLock($this, $key, $lockValue) : null;
         }
 
         public function unlock(string $key, string $value) : void {
@@ -70,7 +70,7 @@
         }
 
         private function init() {
-            if ($this->redisClient === NULL) {
+            if ($this->redisClient === null) {
                 $this->redisClient = new Client(REDIS_URL);
             }
         }

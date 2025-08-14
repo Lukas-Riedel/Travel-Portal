@@ -52,7 +52,7 @@
 
         public function getAccessToken(string $accessToken) : AccessToken {
             $decoded = base64_decode($accessToken);
-            if ($decoded === FALSE) {
+            if ($decoded === false) {
                 throw new AuthenticationException("The access token could not be read.");
             }
     
@@ -63,12 +63,12 @@
             
             list($encryptedData, $iv) = $parts;
             $decrypted = openssl_decrypt($encryptedData, self::CIPHER_ALGORITHM, $this->getAccessTokenPrivatekey(), 0, $iv);
-            if ($decrypted === FALSE) {
+            if ($decrypted === false) {
                 throw new AuthenticationException("The access token could not be read.");
             }
             
-            $decodedAccessToken = json_decode($decrypted, TRUE);
-            if ($decodedAccessToken === NULL) {
+            $decodedAccessToken = json_decode($decrypted, true);
+            if ($decodedAccessToken === null) {
                 throw new AuthenticationException("The access token could not be read.");
             }
     
@@ -80,12 +80,12 @@
         }
 
         public function authenticateWithRefreshToken(string $refreshToken) : AuthenticationResult {
-            if ($refreshToken === NULL) {
+            if ($refreshToken === null) {
                 throw new AuthenticationException("The refresh token was not provided.");
             }
 
             $decoded = base64_decode($refreshToken);
-            if ($decoded === FALSE) {
+            if ($decoded === false) {
                 throw new AuthenticationException("The refresh token could not be read.");
             }
     
@@ -96,12 +96,12 @@
             
             list($encryptedData, $iv) = $parts;
             $decrypted = openssl_decrypt($encryptedData, self::CIPHER_ALGORITHM, $this->getRefreshTokenPrivatekey(), 0, $iv);
-            if ($decrypted === FALSE) {
+            if ($decrypted === false) {
                 throw new AuthenticationException("The refresh token could not be read.");
             }
             
-            $decodedRefreshToken = json_decode($decrypted, TRUE);
-            if ($decodedRefreshToken === NULL) {
+            $decodedRefreshToken = json_decode($decrypted, true);
+            if ($decodedRefreshToken === null) {
                 throw new AuthenticationException("The refresh token could not be read.");
             }
     
@@ -114,11 +114,11 @@
 
         public function authenticateWithCredentials(string $username, string $password) : AuthenticationResult {
             $user = $this->authenticationMapper->selectUserByUsername($username);
-            if ($user === NULL) {
+            if ($user === null) {
                 throw new AuthenticationException("The user '" . $username . "' was not found.");
             }
 
-            if ($user->getPassword() === NULL) {
+            if ($user->getPassword() === null) {
                 // Set the password on the first call of the IAM endpoint for the specified user.
                 // Sufficient for now, create a separate service for users if needed.
                 $this->authenticationMapper->updateUserPassword($username, $password);
@@ -133,7 +133,7 @@
         public function authenticateWithApiKey(string $apiKey) : AuthenticationResult {
             $user = $this->authenticationMapper->selectUserByApiKey($apiKey);
 
-            if ($user === NULL) {
+            if ($user === null) {
                 throw new AuthenticationException("No user for the provided API key was found.");
             }
 
@@ -145,7 +145,7 @@
         }
 
         public function getGoogleApiAccessToken() : GoogleAuthenticationResult {            
-            $refreshToken = NULL;
+            $refreshToken = null;
             if (file_exists($this::GOOGLE_REFRESH_TOKEN_FILE_PATH)) {
                 // TODO: Decrypt the contents.
                 $refreshToken = trim(file_get_contents($this::GOOGLE_REFRESH_TOKEN_FILE_PATH));

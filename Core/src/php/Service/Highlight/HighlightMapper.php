@@ -26,8 +26,8 @@
                 ->withParameters($highlightId)
                 ->getSingleRow();
 
-            if ($highlightRow === NULL) {
-                return NULL;
+            if ($highlightRow === null) {
+                return null;
             }
 
             return $this->getHighlight($highlightRow);
@@ -73,10 +73,10 @@
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($highlightId !== NULL) {
+            if ($highlightId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $highlightId);
             }
-            if ($photoId !== NULL) {
+            if ($photoId !== null) {
                 $whereClauseBuilder->withClause("photo_id = ?", $photoId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
@@ -260,10 +260,10 @@
 
         private function getHighlight(mixed $highlightRow) : Highlight {
             $photo = $this->photoService->getPhoto($highlightRow["photo_id"]);
-            if ($photo === NULL) {
+            if ($photo === null) {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                    NULL, NULL, NULL, NULL, NULL, $highlightRow["composition"], $highlightRow["sky"],
-                    $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], NULL);
+                    null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
+                    $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], null);
             }
             else {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],

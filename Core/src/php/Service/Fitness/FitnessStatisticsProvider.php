@@ -98,7 +98,7 @@ use Core\Service\Place\PlaceService;
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $tripFitnessRecords = array_map(fn($trip) => new TripFitness($trip, $this->fitnessService->getAverageFitnessRecordForInterval($trip->getStart(), $trip->getEnd())),
-                        array_filter($this->tripService->getRegularTrips(NULL, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => !$this->tripService->isDayTripsTrip($trip)));
+                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => !$this->tripService->isDayTripsTrip($trip)));
                     if (count($tripFitnessRecords) > 0) {
                         $mostAverageSteps = $this->getStandingsStatisticsForTripRecords($tripFitnessRecords, fn($fitness) => $fitness->getSteps());
                         $statistics[] = new Statistics(self::MOST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME, $mostAverageSteps, StatisticsUnit::Steps);
@@ -122,13 +122,13 @@ use Core\Service\Place\PlaceService;
 
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
             return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
-                $places = array_filter($this->placeService->getRegularPlaces($categoryId, NULL, NULL, NULL, NULL, NULL, NULL, $record->getTimestamp(),
+                $places = array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $record->getTimestamp(),
                     $record->getTimestamp() + self::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default),
                     fn($place) => count($place->getDates()) > 0);
-                return empty($places) ? NULL : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
+                return empty($places) ? null : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
                     implode(", ", array_map(fn($place) => $place->getName(), $places)),
                     date(self::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
-            }, $records), fn($statistics) => $statistics !== NULL);
+            }, $records), fn($statistics) => $statistics !== null);
         }
     }
 ?>

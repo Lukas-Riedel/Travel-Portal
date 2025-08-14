@@ -10,7 +10,7 @@
                 $response = $tripService->getCandidateTrips(isset($input["include"]) ? explode(",", $input["include"]) : array());
             }
             else {
-                $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : NULL, NULL, NULL,
+                $response = $tripService->getRegularTrips(isset($input["year"]) ? $input["year"] : null, null, null,
                     isset($input["include"]) ? explode(",", $input["include"]) : array(), TripSortingStrategy::Default);
             }
 
@@ -22,7 +22,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

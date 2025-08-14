@@ -21,13 +21,13 @@
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($expenseRow) {
                     $mainCurrencyValue = $expenseRow["exchange_rate"] * $expenseRow["value"];
-                    if ($expenseRow["subscription_id"] !== NULL) {
+                    if ($expenseRow["subscription_id"] !== null) {
                         $mainCurrencyValue += $this->selectSubscriptionMainCurrencyValue($expenseRow["subscription_id"]) / $this->selectSubscriptionOccurrencesCount($expenseRow["subscription_id"]);
                     }
                     
                     return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"],
                         $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]), $mainCurrencyValue,
-                        $expenseRow["subscription_id"] === NULL ? NULL : $this->selectSubscription($expenseRow["subscription_id"]));
+                        $expenseRow["subscription_id"] === null ? null : $this->selectSubscription($expenseRow["subscription_id"]));
                 });
         }
 
@@ -43,18 +43,18 @@
                 ->withParameters($expenseId)
                 ->getSingleRow();
 
-            if ($expenseRow === NULL) {
-                return NULL;
+            if ($expenseRow === null) {
+                return null;
             }
 
             $mainCurrencyValue = $expenseRow["exchange_rate"] * $expenseRow["value"];
-            if ($expenseRow["subscription_id"] !== NULL) {
+            if ($expenseRow["subscription_id"] !== null) {
                 $mainCurrencyValue += $this->selectSubscriptionMainCurrencyValue($expenseRow["subscription_id"]) / $this->selectSubscriptionOccurrencesCount($expenseRow["subscription_id"]);
             }
 
             return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
                 $expenseRow["currency"], $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]),
-                $mainCurrencyValue, $expenseRow["subscription_id"] === NULL ? NULL : $this->selectSubscription($expenseRow["subscription_id"]));
+                $mainCurrencyValue, $expenseRow["subscription_id"] === null ? null : $this->selectSubscription($expenseRow["subscription_id"]));
         }
 
         public function selectSubscription(string $subscriptionId) : ?Subscription {
@@ -69,8 +69,8 @@
                 ->withParameters($subscriptionId)
                 ->getSingleRow();
 
-            if ($subscriptionRow === NULL) {
-                return NULL;
+            if ($subscriptionRow === null) {
+                return null;
             }
 
             return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],

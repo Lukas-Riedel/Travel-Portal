@@ -45,7 +45,7 @@
             ?int $shadows, ?int $circumstances, ?int $atmosphere, ?int $timestamp) {
             $this->id = $id;
             $this->url = new HighlightUrl($thumbnailUrl, $fullUrl);
-            $this->photo = new Photo($photoId, fn() => $fullUrl, $photoPermalink === NULL ? $fullUrl : $photoPermalink,
+            $this->photo = new Photo($photoId, fn() => $fullUrl, $photoPermalink === null ? $fullUrl : $photoPermalink,
                 $focalLength, $aperture, $shutterSpeed, $iso, $timestamp);
             $this->attributes = new HighlightAttributes($composition, $sky, $shadows, $circumstances, $atmosphere);
         }

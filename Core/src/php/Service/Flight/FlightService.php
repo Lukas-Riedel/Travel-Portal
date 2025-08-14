@@ -53,7 +53,7 @@
 
         public function getFirstNonLoggedFlight() : ?Flight {
             $allNonLoggedFlights = $this->flightMapper->selectAllNonLoggedFlights();
-            return count($allNonLoggedFlights) > 0 ? $allNonLoggedFlights[0] : NULL;
+            return count($allNonLoggedFlights) > 0 ? $allNonLoggedFlights[0] : null;
         }
 
         public function getAverageFlightDelay() : int {
@@ -84,7 +84,7 @@
             date_default_timezone_set(self::UTC_TIMEZONE);
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
 
-            $selectedFlight = NULL;
+            $selectedFlight = null;
             foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
                 if (($fetchedFlight["time"]["scheduled"]["departure"] - self::ONE_HOUR_SECONDS <= $scheduledDeparture) && ($fetchedFlight["time"]["scheduled"]["departure"] + self::ONE_HOUR_SECONDS >= $scheduledDeparture)) {
                     $selectedFlight = $fetchedFlight;
@@ -92,7 +92,7 @@
                 }
             }
 
-            if ($selectedFlight === NULL) {
+            if ($selectedFlight === null) {
                 throw new \RuntimeException("Cannot log the flight " . $flight . " departing at " . $scheduledDeparture . ". Is the departure time correct?");
             }
             
@@ -120,7 +120,7 @@
                 
 
             $this->flightMapper->deleteLoggedFlight($flight, $actualDeparture, $actualArrival);
-            $result = new Flight($flight, $registration, $aircraft, NULL, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
+            $result = new Flight($flight, $registration, $aircraft, null, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
             $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 
             $this->eventPublisher->publishFlightLoggedEvent($result);
@@ -129,18 +129,18 @@
         }
 
         public function createAirline(string $name, ?string $logo) : Airline {
-            $airline = new Airline(NULL, $name, array(), $logo);
+            $airline = new Airline(null, $name, array(), $logo);
             $this->flightMapper->insertAirline($airline);
             return $airline;
         }
 
         public function createFlight(FlightType $flightType, string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
             $this->googleApiClient->createCalendarEvent($flightType->getCalendar()->value,
-                $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), NULL, $scheduledDeparture, $scheduledArrival);
+                $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), null, $scheduledDeparture, $scheduledArrival);
             
-            $from = new Airport(NULL, $originAirportName, NULL, NULL, NULL, NULL, NULL);
-            $to = new Airport(NULL, $destinationAirportName, NULL, NULL, NULL, NULL, NULL);
-            return new Flight($flight, NULL, NULL, NULL, NULL, $from, $to, $scheduledDeparture, $scheduledArrival, NULL);
+            $from = new Airport(null, $originAirportName, null, null, null, null, null);
+            $to = new Airport(null, $destinationAirportName, null, null, null, null, null);
+            return new Flight($flight, null, null, null, null, $from, $to, $scheduledDeparture, $scheduledArrival, null);
         }
 
         public function getScheduledFlightsForTrip(string $tripId) : array {
@@ -175,7 +175,7 @@
 
         private function getOrCreateAirlineCodeId(string $code) : string {
             $airlineCodeId = $this->flightMapper->selectAirlineCodeId($code);
-            if ($airlineCodeId !== NULL) {
+            if ($airlineCodeId !== null) {
                 return $airlineCodeId;
             }
 
@@ -186,12 +186,12 @@
         
         private function getOrCreateAirportIdentifier(string $code) : AirportIdentifier {
             $airportIdentifier = $this->flightMapper->selectAirportIdentifier($code);
-            if ($airportIdentifier !== NULL) {
+            if ($airportIdentifier !== null) {
                 return $airportIdentifier;
             }
             
             $location = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $code));
-            $airportIdentifier = new AirportIdentifier(NULL, $code, $location->getCountry(), $location->getLatitude(),
+            $airportIdentifier = new AirportIdentifier(null, $code, $location->getCountry(), $location->getLatitude(),
                 $location->getLongitude(), $location->getTimezone());                
             $this->flightMapper->insertAirportIdentifier($airportIdentifier);
 
@@ -209,9 +209,9 @@
                 $parsedFlightEventName = $this->parseFlightEventName($flightEvent->getSummary());                
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($flightEvent->getStart(), $flightEvent->getEnd());
 
-                $from = new Airport(NULL, $parsedFlightEventName["from"], NULL, NULL, NULL, NULL, NULL);
-                $to = new Airport(NULL, $parsedFlightEventName["to"], NULL, NULL, NULL, NULL, NULL);
-                $flight = new Flight($parsedFlightEventName["flight"], NULL, NULL, NULL, NULL, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), NULL);
+                $from = new Airport(null, $parsedFlightEventName["from"], null, null, null, null, null);
+                $to = new Airport(null, $parsedFlightEventName["to"], null, null, null, null, null);
+                $flight = new Flight($parsedFlightEventName["flight"], null, null, null, null, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), null);
 
                 $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());
             }   

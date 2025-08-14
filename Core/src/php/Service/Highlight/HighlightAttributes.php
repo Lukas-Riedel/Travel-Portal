@@ -82,8 +82,8 @@
         }
 
         public function getQuality() : ?float {
-            if ($this->composition === NULL || $this->sky === NULL || $this->shadows === NULL || $this->circumstances === NULL || $this->atmosphere === NULL) {
-                return NULL;
+            if ($this->composition === null || $this->sky === null || $this->shadows === null || $this->circumstances === null || $this->atmosphere === null) {
+                return null;
             }
 
             return 5.0 / (1 / $this->composition + 1 / $this->sky + 1 / $this->shadows + 1 / $this->circumstances + 1 / $this->atmosphere);

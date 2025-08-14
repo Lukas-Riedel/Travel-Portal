@@ -23,7 +23,7 @@
                     return $case;
                 }
             }
-            return NULL;
+            return null;
         }
     }
 ?>

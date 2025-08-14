@@ -31,7 +31,7 @@ use Core\Service\Configuration\ConfigurationService;
 
         public function getLocation(string $address) : Location {
             $location = $this->doGetLocation($address);
-            if ($location !== NULL) {
+            if ($location !== null) {
                 return $location;
             }
 
@@ -41,13 +41,13 @@ use Core\Service\Configuration\ConfigurationService;
 
         private function doGetLocation(string $address) : ?Location {
             $location = $this->geocodingMapper->selectLocation($address);
-            if ($location === NULL) {
-                return NULL;
+            if ($location === null) {
+                return null;
             }
 
-            $country = NULL;
+            $country = null;
             $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
-            if ($location->getCountry() === NULL) {
+            if ($location->getCountry() === null) {
                 // TODO: Remove the UNKNOWN country, use null instead.
                 $country = $countryNames["UNKNOWN"];
             }
@@ -62,10 +62,10 @@ use Core\Service\Configuration\ConfigurationService;
         }
 
         private function createLocation(string $address) : void {        
-            $country = NULL;
-            $latitude = NULL;
-            $longitude = NULL;
-            $timezone = NULL;
+            $country = null;
+            $latitude = null;
+            $longitude = null;
+            $timezone = null;
 
             // Quick path - read all necessary data (except timezone) from the address string.
             preg_match(self::CACHED_ADDRESS_PATTERN, $address, $tokens);
@@ -76,7 +76,7 @@ use Core\Service\Configuration\ConfigurationService;
             }
 
             // Geocoding request.
-            if ($country === NULL || $latitude === NULL || $longitude === NULL) {
+            if ($country === null || $latitude === null || $longitude === null) {
                 $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
     
                 if ($apiResponse["status"] === "OK") {
@@ -97,7 +97,7 @@ use Core\Service\Configuration\ConfigurationService;
             }
 
             // Timezone request.
-            if ($latitude !== NULL && $longitude !== NULL && $timezone === NULL) {    
+            if ($latitude !== null && $longitude !== null && $timezone === null) {    
                 $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
                 
                 if (array_key_exists("timeZoneId", $apiResponse)) {

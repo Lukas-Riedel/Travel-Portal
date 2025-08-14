@@ -38,8 +38,8 @@
             $exchangeRate = $this->getExchangeRate($currency);
 
             // TODO: This is inacurrate, the subscription share is not included in the main currency value.
-            $expense = new Expense(NULL, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value,
-                $subscriptionId === NULL ? NULL : $this->expenseMapper->selectSubscription($subscriptionId));
+            $expense = new Expense(null, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value,
+                $subscriptionId === null ? null : $this->expenseMapper->selectSubscription($subscriptionId));
             $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
 
             $this->eventPublisher->publishExpenseCreatedEvent($expense->getId(), $tripId);
@@ -50,7 +50,7 @@
         public function createSubscription(float $value, string $currency, string $description, int $expiration) : Subscription {                        
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $subscription = new Subscription(NULL, $description, $value, $currency, $exchangeRate, $expiration);
+            $subscription = new Subscription(null, $description, $value, $currency, $exchangeRate, $expiration);
             $this->expenseMapper->insertSubscription($subscription);
 
             return $subscription;
@@ -101,12 +101,12 @@
             }
 
             $cachedExchangeRate = $this->expenseMapper->selectExchangeRate($currency);    
-            if ($cachedExchangeRate !== NULL) {
+            if ($cachedExchangeRate !== null) {
                 return $cachedExchangeRate;
             }    
     
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT, EXCHANGE_RATE_API_KEY, $mainCurrency));         
-            if ($apiResponse === NULL) {
+            if ($apiResponse === null) {
                 return 0;
             }
 
@@ -117,7 +117,7 @@
             }
 
             $exchangeRate = $this->expenseMapper->selectExchangeRate($currency);
-            return $exchangeRate !== NULL ? $exchangeRate : 0;
+            return $exchangeRate !== null ? $exchangeRate : 0;
         }
     }
 ?>

@@ -54,8 +54,8 @@
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {
-            $regularTrips = $this->doGetRegularTrips($tripId, NULL, NULL, NULL, TripIncludedEntity::values(), TripSortingStrategy::Default);
-            return count($regularTrips) === 1 ? $regularTrips[0] : NULL;
+            $regularTrips = $this->doGetRegularTrips($tripId, null, null, null, TripIncludedEntity::values(), TripSortingStrategy::Default);
+            return count($regularTrips) === 1 ? $regularTrips[0] : null;
         }
 
         public function getTripsContainingInterval(int $start, int $end) : array {
@@ -65,7 +65,7 @@
 
         public function getOrCreateTripIdentifierForEntity(int $entityStart, int $entityEnd) : TripIdentifier {
             $regularTripIdentifier = $this->getTripIdentifierForEntity($entityStart, $entityEnd);
-            if ($regularTripIdentifier !== NULL) {
+            if ($regularTripIdentifier !== null) {
                 return $regularTripIdentifier;
             }
 
@@ -73,16 +73,16 @@
         }
 
         public function getRegularTrips(?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
-            return $this->doGetRegularTrips(NULL, $year, $start, $end, $includedEntities, $tripSortingStrategy);
+            return $this->doGetRegularTrips(null, $year, $start, $end, $includedEntities, $tripSortingStrategy);
         }
 
         public function getCandidateTrip(string $tripId) : ?Trip {
             $candidateTrips = $this->doGetCandidateTrips($tripId,  TripIncludedEntity::values());
-            return count($candidateTrips) === 1 ? $candidateTrips[0] : NULL;
+            return count($candidateTrips) === 1 ? $candidateTrips[0] : null;
         }
 
         public function getCandidateTrips(array $includedEntities) : array {
-            return $this->doGetCandidateTrips(NULL, $includedEntities);     
+            return $this->doGetCandidateTrips(null, $includedEntities);     
         }
 
         public function getTripIdentifierById(string $tripId) : ?TripIdentifier {
@@ -109,7 +109,7 @@
 
         public function moveTrip(string $tripId, int $start) : Trip {            
             $trip = $this->getRegularTrip($tripId);
-            if ($trip === NULL) {
+            if ($trip === null) {
                 throw new \InvalidArgumentException("The trip " . $tripId . " could not be moved because it does not exist.");
             }
 
@@ -122,7 +122,7 @@
 
         public function loadTrip(string $candidateTripId, string $targetTripId) : Trip {
             $targetTrip = $this->getRegularTrip($targetTripId);
-            if ($targetTrip === NULL) {
+            if ($targetTrip === null) {
                 throw new \InvalidArgumentException("The trip could not be loaded to the trip " . $targetTripId . " because it does not exist.");
             }
 
@@ -136,11 +136,11 @@
 
         public function archiveTrip(string $tripId) : Trip {            
             $trip = $this->getRegularTrip($tripId);
-            if ($trip === NULL) {
+            if ($trip === null) {
                 throw new \InvalidArgumentException("The trip " . $tripId . " could not be archived because it does not exist.");
             }
             
-            $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), NULL);
+            $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), null);
             $this->tripMapper->insertCandidateTrip($archivedTripIdentifier->getId());
             $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
             $this->removeTripEvent($tripId);
@@ -195,11 +195,11 @@
 
         public function updateAllDayTripsTripsDates() : void {
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-            $trips = $this->getRegularTrips(NULL, NULL, NULL, array(), TripSortingStrategy::Default);
+            $trips = $this->getRegularTrips(null, null, null, array(), TripSortingStrategy::Default);
             
             foreach ($trips as &$trip) {
                 if ($trip->getName() === $dayTripsTripName) {
-                    $places = $this->placeService->getRegularPlaces(NULL, NULL, $trip->getId(), NULL, NULL, NULL, NULL, NULL, NULL,
+                    $places = $this->placeService->getRegularPlaces(null, null, $trip->getId(), null, null, null, null, null, null,
                         array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
                     $minStart = PHP_INT_MAX;
                     $maxEnd = PHP_INT_MIN;
@@ -235,16 +235,16 @@
         
         private function getOrCreateTripIdentifier(string $name, ?int $year) : TripIdentifier { 
             $tripIdentifier = $this->tripMapper->selectTripIdentifier($name, $year);
-            if ($tripIdentifier !== NULL) {
+            if ($tripIdentifier !== null) {
                 return $tripIdentifier;
             }
             
             // Make sure the year is registered so it can be used as a foreign key.
-            if ($year !== NULL) {
+            if ($year !== null) {
                 $this->yearService->getOrCreateYearIdentifier($year);
             }
 
-            $tripIdentifier = new TripIdentifier(NULL, $name, $year, NULL);
+            $tripIdentifier = new TripIdentifier(null, $name, $year, null);
             $this->tripMapper->insertTripIdentifier($tripIdentifier);
             
             return $tripIdentifier;
@@ -274,8 +274,8 @@
 
         private function getTripIdentifierForEntity(int $entityStart, int $entityEnd) : ?TripIdentifier {
             $tripId = $this->tripMapper->selectTripIdForEntity($entityStart, $entityEnd);
-            if ($tripId === NULL) {
-                return NULL;
+            if ($tripId === null) {
+                return null;
             }
             
             return $this->getTripIdentifierById($tripId);

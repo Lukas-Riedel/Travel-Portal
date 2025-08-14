@@ -44,11 +44,11 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($albumRow) {
-                    return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
-                        ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+                    return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
+                        ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                         $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                        $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
-                        $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+                        $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                        $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
                 });
         }
 
@@ -87,11 +87,11 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeName, $placeName, $placeName, $placeName)
                 ->getMappedResultSet(function($albumRow) {
-                    return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
-                        ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+                    return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
+                        ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                         $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                        $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
-                        $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+                        $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                        $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
                 });
         }
 
@@ -128,15 +128,15 @@
                 ->withParameters($albumId)
                 ->getSingleRow();
             
-            if ($albumRow === NULL) {                
-                return NULL;
+            if ($albumRow === null) {                
+                return null;
             }
 
-            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
-                ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
+                ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                 $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
-                $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+                $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
         }
 
         public function selectAlbumByName(string $albumName) : ?Album {
@@ -172,15 +172,15 @@
                 ->withParameters($albumName)
                 ->getSingleRow();
             
-            if ($albumRow === NULL) {                
-                return NULL;
+            if ($albumRow === null) {                
+                return null;
             }
 
-            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === NULL 
-                ? NULL : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
+            return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
+                ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                 $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                $albumRow["uploading_start"] === NULL ? NULL : intval($albumRow["uploading_start"]), 
-                $albumRow["uploading_progress"] === NULL ? NULL : floatval($albumRow["uploading_progress"]));
+                $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
         }
 
         public function selectAlbumForPhotoId(string $photoId) : ?Album {
@@ -195,8 +195,8 @@
                 ->withParameters($photoId)
                 ->getSingleColumn(("album_id"));
 
-            if ($albumId === NULL) {
-                return NULL;
+            if ($albumId === null) {
+                return null;
             }
 
             return $this->selectAlbum($albumId);
@@ -215,7 +215,7 @@
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
-                    AND replaced_photo_id IS NULL
+                    AND replaced_photo_id IS null
                     AND expiration > UNIX_TIMESTAMP()
                 ORDER BY batch_position
                 LIMIT 50
@@ -236,7 +236,7 @@
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
-                    AND replaced_photo_id IS NOT NULL
+                    AND replaced_photo_id IS NOT null
                     AND expiration > UNIX_TIMESTAMP()
             SQL;
             
@@ -471,7 +471,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($albumId !== NULL) {
+            if ($albumId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $albumId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
@@ -575,8 +575,8 @@
                 ->withParameters($photoId)
                 ->getSingleRow();
 
-            if ($photoRow === NULL) {
-                return NULL;
+            if ($photoRow === null) {
+                return null;
             }
 
             return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],

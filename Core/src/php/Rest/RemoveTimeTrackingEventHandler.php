@@ -4,7 +4,7 @@
             global $timeTrackingService;
 
             $response = $timeTrackingService->removeTimeTrackingEvent($input["eventId"]);
-            if ($response === FALSE) {                
+            if ($response === false) {                
                 return $this->create404Response("tracker", $input["eventId"]);
             }
 
@@ -16,7 +16,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

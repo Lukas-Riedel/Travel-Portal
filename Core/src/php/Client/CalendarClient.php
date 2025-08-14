@@ -76,8 +76,8 @@
             global $categoryService;
 
             $categoryIdentifier = $categoryService->getCategoryIdentifier($categoryName);
-            if ($categoryIdentifier === NULL || $categoryIdentifier->getMetadata() === NULL
-                || $categoryIdentifier->getMetadata()->getPublicHolidaysCalendar() === NULL) {
+            if ($categoryIdentifier === null || $categoryIdentifier->getMetadata() === null
+                || $categoryIdentifier->getMetadata()->getPublicHolidaysCalendar() === null) {
                 return array();
             }
 
@@ -92,7 +92,7 @@
                 foreach ($ical->cal["VEVENT"] as &$event) {
                     $events[] = new CalendarEvent($event["UID"],
                         html_entity_decode($event["SUMMARY"], ENT_QUOTES | ENT_HTML5), 
-                        isset($event["LOCATION"]) ? html_entity_decode(str_replace("\\", "", $event["LOCATION"]), ENT_QUOTES | ENT_HTML5) : NULL,
+                        isset($event["LOCATION"]) ? html_entity_decode(str_replace("\\", "", $event["LOCATION"]), ENT_QUOTES | ENT_HTML5) : null,
                         $this->getEventTimestamp($event["DTSTART"]),
                         $this->getEventTimestamp($event["DTEND"]),
                         isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array());
@@ -115,7 +115,7 @@
                 $tokens = explode(":", $descriptionEntry);
                 $key = trim($tokens[0]);
                 $value = (count($tokens) == 1) ? "" : trim(str_replace("\xc2\xa0", " ", $tokens[1]));
-                $attributes[$key] = ($value == "") ? NULL : $value;
+                $attributes[$key] = ($value == "") ? null : $value;
             }
 
             return $attributes;

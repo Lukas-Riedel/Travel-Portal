@@ -44,7 +44,7 @@
         }
 
         private function createNodeIdentifier(string $content) : Note {
-            $note = new Note(NULL, $content, time());
+            $note = new Note(null, $content, time());
             $this->noteMapper->insertNoteIdentifier($note);
             return $note;
         }

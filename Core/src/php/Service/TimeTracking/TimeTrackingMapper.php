@@ -21,7 +21,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($type !== NULL) {
+            if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
@@ -43,7 +43,7 @@
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
-            if ($type !== NULL) {
+            if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();

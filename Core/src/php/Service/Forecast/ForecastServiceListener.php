@@ -74,7 +74,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(),
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(),
                     time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 foreach ($places as &$place) {
@@ -87,12 +87,12 @@
             }
 
             if ($this->scheduler->requestExecution(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL,
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null,
                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
         
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    
-                        if ($date->getWeather() === NULL) {
+                        if ($date->getWeather() === null) {
                             $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
                         }
                     }
@@ -100,12 +100,12 @@
             }
 
             if ($this->scheduler->requestExecution(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME, self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL, time(), NULL,
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null,
                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    
-                        if ($date->getSun() === NULL) {
+                        if ($date->getSun() === null) {
                             $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
                         }
                     }

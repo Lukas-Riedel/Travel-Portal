@@ -22,7 +22,7 @@
 
         public function getDataConsistencyIssues() : array {
             $rawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
-            if ($rawIssues === NULL || !is_array($rawIssues)) {
+            if ($rawIssues === null || !is_array($rawIssues)) {
                 return array();
             }
 

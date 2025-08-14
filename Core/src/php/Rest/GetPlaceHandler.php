@@ -4,13 +4,13 @@
             global $placeService;
 
             $response = $placeService->getRegularPlace($input["placeId"]);
-            if ($response !== NULL) {
+            if ($response !== null) {
                 return $this->createResponse(200, $response);
             }
     
             // No regular place found, try candidates instead.
             $response = $placeService->getCandidatePlace($input["placeId"]);
-            if ($response !== NULL) {
+            if ($response !== null) {
                 return $this->createResponse(200, $response);
             }
 
@@ -22,7 +22,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

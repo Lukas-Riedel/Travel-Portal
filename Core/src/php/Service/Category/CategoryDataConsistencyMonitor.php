@@ -25,9 +25,9 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
-            $countryCategories = $this->categoryService->getCategories(NULL, array(CategoryCategory::Country->value), array());
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+                null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
+            $countryCategories = $this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array());
             $geographicalRegions = $this->categoryService->getAllGeographicalRegions();
 
             $visitedCountryNames = array_keys(array_filter(array_count_values(array_map(fn($place) => $place->getCountry(),
@@ -56,7 +56,7 @@
                 fn($category) => in_array($category->getName(), $plannedCountryNames));
 
             $countryCategoriesWithIncompleteMetadata = array_filter($plannedCountryCategories, 
-                fn($category) => $category->getMetadata() === NULL || !$category->getMetadata()->isComplete());
+                fn($category) => $category->getMetadata() === null || !$category->getMetadata()->isComplete());
             foreach ($countryCategoriesWithIncompleteMetadata as &$countryCategoryWithIncompleteMetadata) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITH_INCOMPLETE_METADATA_ISSUE_NAME,
                     $countryCategoryWithIncompleteMetadata, time());

@@ -17,7 +17,7 @@
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($entityId !== NULL) {
+            if ($entityId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $entityId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
@@ -25,12 +25,12 @@
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($statisticsRow) {
-                    return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], TRUE), StatisticsUnit::from($statisticsRow["unit"]));
+                    return new Statistics($statisticsRow["name"], json_decode($statisticsRow["value"], true), StatisticsUnit::from($statisticsRow["unit"]));
                 });
         }
 
         public function insertStatisticsRecord(StatisticsType $statisticsType, Statistics $statistics, ?string $entityId) : bool {
-            if ($entityId === NULL) {
+            if ($entityId === null) {
                 $sql = <<<SQL
                     INSERT INTO {$statisticsType->getTableName()} (
                         name, 
@@ -79,7 +79,7 @@
         }
 
         public function deleteAllStatisticsRecords(StatisticsType $statisticsType, ?string $entityId) : int {
-            if ($entityId === NULL) {
+            if ($entityId === null) {
                 $sql = <<<SQL
                     DELETE
                     FROM {$statisticsType->getTableName()}

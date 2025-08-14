@@ -25,8 +25,8 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+                null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
 
             $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() != $place->getCountry()
                 && count(array_filter($place->getCategories(), fn($category) => $category->getCategory() === CategoryCategory::Administrative)) === 0);
@@ -35,11 +35,11 @@
                     $placeWithoutAdministrativeCategory->getPlaceIdentifier(), time());
             }
             
-            $relevantPlaces = $this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+                null, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
-                fn($date) => $date->getTrip() !== NULL && ($date->getEnd() - $date->getStart()) % 86400 === 0)), $relevantPlaces);
+                fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % 86400 === 0)), $relevantPlaces);
             foreach ($placesWithDatesWithoutTime as &$placeWithDatesWithoutTime) {
                 foreach ($placeWithDatesWithoutTime->getDates() as &$dateWithoutTime) {
                     $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITHOUT_TIME_ISSUE_NAME, 
@@ -48,7 +48,7 @@
             }
 
             $placesWithDatesWithIncorrectTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
-                fn($date) => $date->getTrip() !== NULL && $date->getStart() % 1800 > 0)), $relevantPlaces);
+                fn($date) => $date->getTrip() !== null && $date->getStart() % 1800 > 0)), $relevantPlaces);
             foreach ($placesWithDatesWithIncorrectTime as &$placeWithDatesWithIncorrectTime) {
                 foreach ($placeWithDatesWithIncorrectTime->getDates() as &$dateWithIncorrectTime) {
                     $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITH_INCORRECT_TIME_ISSUE_NAME, 
@@ -57,7 +57,7 @@
             }
 
             $placesWithDatesWithIncorrectDuration = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
-                fn($date) => $date->getTrip() !== NULL && ($date->getEnd() - $date->getStart()) % 1800 > 0)), $relevantPlaces);
+                fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % 1800 > 0)), $relevantPlaces);
             foreach ($placesWithDatesWithIncorrectDuration as &$placeWithDatesWithIncorrectDuration) {
                 foreach ($placeWithDatesWithIncorrectDuration->getDates() as &$dateWithIncorrectDuration) {
                     $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITH_INCORRECT_DURATION_ISSUE_NAME, 
@@ -65,9 +65,9 @@
                 }
             }
                         
-            $relevantPlaces = array_merge($this->placeService->getRegularPlaces(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default),
-                $this->placeService->getCandidatePlaces(NULL, NULL, NULL, array(PlaceIncludedEntity::Dates->value)));
+            $relevantPlaces = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+                null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default),
+                $this->placeService->getCandidatePlaces(null, null, null, array(PlaceIncludedEntity::Dates->value)));
 
             $duplicatedPlacesGroups = array_filter(array_values(array_reduce($relevantPlaces,
                 function($carry, $place) {

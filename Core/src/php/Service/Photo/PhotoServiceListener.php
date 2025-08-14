@@ -27,7 +27,7 @@
 
         public function onAlbumUpdated(mixed $message) : void {
             $album = $this->photoService->getAlbum($message["albumId"]);
-            if ($album !== NULL) {
+            if ($album !== null) {
                 $photos = $this->photoService->getPhotos($album->getId());
     
                 if (count($photos) !== $album->getImagesCount()) {

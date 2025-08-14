@@ -57,8 +57,8 @@
                 ->withParameters($labelId)
                 ->getSingleRow();
 
-            if ($labelRow === NULL) {
-                return NULL;
+            if ($labelRow === null) {
+                return null;
             }
             
             return new Label($labelRow["id"], $labelRow["name"]);

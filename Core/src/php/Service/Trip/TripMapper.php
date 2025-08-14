@@ -99,7 +99,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
-                ->getFirstRow() !== NULL;
+                ->getFirstRow() !== null;
         }
 
         public function selectTripIdentifier(string $name, ?int $year) : ?TripIdentifier {     
@@ -115,8 +115,8 @@
                 ->withParameters($name)
                 ->getFirstRow();
 
-            if ($tripIdentifierRow === NULL) {
-                return NULL;
+            if ($tripIdentifierRow === null) {
+                return null;
             }
 
             return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
@@ -135,8 +135,8 @@
                 ->withParameters($tripId)
                 ->getFirstRow();
 
-            if ($tripIdentifierRow === NULL) {
-                return NULL;
+            if ($tripIdentifierRow === null) {
+                return null;
             }
 
             return new TripIdentifier($tripIdentifierRow["id"], $tripIdentifierRow["name"], $tripIdentifierRow["year"],
@@ -150,8 +150,8 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("year IS NULL");
-            if ($tripId !== NULL) {
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("year IS null");
+            if ($tripId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $tripId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
@@ -171,8 +171,8 @@
                         $publicHolidays = $this->calendarClient->getPublicHolidaysForCountries($countries);
                     }
         
-                    return new Trip($tripIdentifierRow["id"], $tripIdentifierRow["name"], NULL, NULL, 
-                        NULL, NULL, $countries, array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
+                    return new Trip($tripIdentifierRow["id"], $tripIdentifierRow["name"], null, null, 
+                        null, null, $countries, array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
                 });
         }
 
@@ -182,7 +182,7 @@
                 FROM trip_event nte
                 LEFT JOIN {$oldTripEventTableName} ote
                     ON ote.id = nte.id
-                WHERE ote.start IS NULL
+                WHERE ote.start IS null
             SQL;
 
             return $this->databaseProvider
@@ -211,7 +211,7 @@
                 FROM {$oldTripEventTableName} ote
                 LEFT JOIN trip_event nte
                     ON ote.id = nte.id
-                WHERE nte.id IS NULL
+                WHERE nte.id IS null
             SQL;
 
             return $this->databaseProvider
@@ -238,16 +238,16 @@
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            if ($year !== NULL) {
+            if ($year !== null) {
                 $whereClauseBuilder->withClause("ti.year = ?", $year);
             }
-            if ($tripId !== NULL) {
+            if ($tripId !== null) {
                 $whereClauseBuilder->withClause("ti.id = ?", $tripId);
             }
-            if ($start !== NULL) {
+            if ($start !== null) {
                 $whereClauseBuilder->withClause("t.start >= ?", $start);
             }
-            if ($end !== NULL) {
+            if ($end !== null) {
                 $whereClauseBuilder->withClause("t.end <= ?", $end);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();

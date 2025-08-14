@@ -13,7 +13,7 @@
             }
 
             $wasRemoved = $labelService->removeLabelForPlace($input["placeId"], $input["labelId"]);
-            if ($wasRemoved === FALSE) {                
+            if ($wasRemoved === false) {                
                 return $this->create404Response("place_labels", $input["labelId"]);
             }
 
@@ -25,7 +25,7 @@
         }
         
         public function isProtected() {
-            return TRUE;
+            return true;
         }
 
         public function getTag() {

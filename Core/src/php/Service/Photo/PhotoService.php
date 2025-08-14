@@ -57,14 +57,14 @@
         }
 
         public function updateAllAlbums() : void {            
-            $filePaths = $this->doUpdateAlbums(NULL, FALSE);
+            $filePaths = $this->doUpdateAlbums(null, false);
             $this->prunePhysicalCache($filePaths);
         }
 
-        public function updateAlbum(string $albumId, ?int $mainPhotoPosition = NULL) : void {            
+        public function updateAlbum(string $albumId, ?int $mainPhotoPosition = null) : void {            
             $this->createPendingPhotos($albumId);
 
-            if ($mainPhotoPosition !== NULL) {
+            if ($mainPhotoPosition !== null) {
                 $photos = $this->getPhotos($albumId);
 
                 $mainPhotoPosition = $mainPhotoPosition - 1;
@@ -73,19 +73,19 @@
                 }
 
                 $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);       
-                if ($externalAlbumId === NULL) {
+                if ($externalAlbumId === null) {
                     throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
                 }
     
                 $externalPhotoId = $this->photoMapper->selectPhotoExternalId($photos[$mainPhotoPosition]->getId());
-                if ($externalPhotoId === NULL) {
+                if ($externalPhotoId === null) {
                     throw new \InvalidArgumentException("A photo with the identifier " . $photos[$mainPhotoPosition]->getId() . " does not exist.");
                 }
     
                 $this->googleApiClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
             }
 
-            $this->doUpdateAlbums($albumId, TRUE);
+            $this->doUpdateAlbums($albumId, true);
         }
 
         public function getPhoto(string $photoId) : ?Photo {
@@ -103,10 +103,10 @@
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
                         fn() => $mediaItem["baseUrl"],
                         $mediaItem["productUrl"],
-                        isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : NULL,
-                        isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : NULL,
-                        isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : NULL,
-                        isset($mediaItem["mediaMetadata"]["photo"]["isoEquivalent"]) ? $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] : NULL,
+                        isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : null,
+                        isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : null,
+                        isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : null,
+                        isset($mediaItem["mediaMetadata"]["photo"]["isoEquivalent"]) ? $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] : null,
                         strtotime($mediaItem["mediaMetadata"]["creationTime"])
                     );
                 }
@@ -143,7 +143,7 @@
         public function uploadPhoto(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : PendingPhoto {
             $uploadToken = $this->googleApiClient->uploadPhoto($data);
 
-            $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, NULL, $uploadToken);
+            $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, null, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             return $pendingPhoto;
         }
@@ -151,7 +151,7 @@
         public function replacePhoto(string $fileName, string $albumId, string $replacedPhotoId, string $data) : PendingPhoto {        
             $uploadToken = $this->googleApiClient->uploadPhoto($data);
 
-            $pendingPhoto = new PendingPhoto(NULL, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
+            $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             return $pendingPhoto;
         }
@@ -166,8 +166,8 @@
             $response = $this->getAlbumsResponse($albumId);
             while (isset($response["albums"])) {
                 foreach ($response["albums"] as &$album) {
-                    $mainPhotoId = NULL;
-                    $mainImageUrl = NULL;
+                    $mainPhotoId = null;
+                    $mainImageUrl = null;
 
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $fileName = $album["coverPhotoMediaItemId"] . self::JPG_FILE_EXTENSION;
@@ -193,18 +193,18 @@
                     }
 
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
-                    $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === NULL ? NULL : new Photo($mainPhotoId,
-                        fn() => $album["coverPhotoBaseUrl"], NULL, NULL, NULL, NULL, NULL, NULL), $mainImageUrl, $album["productUrl"],
-                        $imagesCount, 0, NULL, NULL);
+                    $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === null ? null : new Photo($mainPhotoId,
+                        fn() => $album["coverPhotoBaseUrl"], null, null, null, null, null, null), $mainImageUrl, $album["productUrl"],
+                        $imagesCount, 0, null, null);
 
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.
-                    if ($albumId !== NULL && isset($album["coverPhotoMediaItemId"])) {
-                        $places = $placeService->getRegularPlaces(NULL, NULL, NULL, NULL, $currentAlbumId, NULL, NULL, NULL, NULL, array(), PlaceSortingStrategy::Default);
+                    if ($albumId !== null && isset($album["coverPhotoMediaItemId"])) {
+                        $places = $placeService->getRegularPlaces(null, null, null, null, $currentAlbumId, null, null, null, null, array(), PlaceSortingStrategy::Default);
                         foreach ($places as &$place) {
                             $highlightService->createPlaceHighlight($place->getId(), $mainPhotoId);
                             foreach ($place->getDates() as &$date) {
-                                if ($date->getTrip() !== NULL) {
+                                if ($date->getTrip() !== null) {
                                     $highlightService->createPlaceHighlight($date->getTrip()->getId(), $mainPhotoId);
                                 }
                             }
@@ -229,7 +229,7 @@
 
             // Trigger an event for updated albums.
             // As of now, the event is only triggered if the count of photos in the album has changed.
-            if ($albumId === NULL) {
+            if ($albumId === null) {
                 $changedAlbumIds = $this->photoMapper->selectAlbumIdsWithOutdatedPhotos();
                 foreach ($changedAlbumIds as &$changedAlbumId) {
                     $this->eventPublisher->publishAlbumUpdatedEvent($changedAlbumId);
@@ -261,7 +261,7 @@
                     $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
                 }
 
-                $this->createGooglePhotos($albumId, $newPhotos, NULL);                
+                $this->createGooglePhotos($albumId, $newPhotos, null);                
                 $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId);
             }
                    
@@ -301,7 +301,7 @@
         
         private function getOrCreateAlbumId(string $externalId) : string {
             $albumId = $this->photoMapper->selectAlbumId($externalId);
-            if ($albumId !== NULL) {
+            if ($albumId !== null) {
                 return $albumId;
             }
 
@@ -312,7 +312,7 @@
     
         private function getOrCreatePhotoId(string $externalId) : string {
             $photoId = $this->photoMapper->selectPhotoId($externalId);
-            if ($photoId !== NULL) {
+            if ($photoId !== null) {
                 return $photoId;
             }
 
@@ -321,13 +321,13 @@
             return $this->photoMapper->selectPhotoId($externalId);
         }
 
-        private function getAlbumsResponse(?string $albumId, ?string $pageToken = NULL) : array {
-            if ($albumId === NULL) {
+        private function getAlbumsResponse(?string $albumId, ?string $pageToken = null) : array {
+            if ($albumId === null) {
                 return $this->googleApiClient->getAlbums($pageToken);
             }
             else {
                 $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
-                if ($externalAlbumId === NULL) {
+                if ($externalAlbumId === null) {
                     throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
                 }
 
@@ -336,9 +336,9 @@
             }
         }
 
-        private function getPhotosResponse(string $albumId, ?string $pageToken = NULL) : array {
+        private function getPhotosResponse(string $albumId, ?string $pageToken = null) : array {
             $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
-            if ($externalAlbumId === NULL) {
+            if ($externalAlbumId === null) {
                 throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
 
@@ -347,14 +347,14 @@
 
         private function createGooglePhotos(string $albumId, array $newPhotos, ?string $replacedPhotoId) : array {
             $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
-            if ($externalAlbumId === NULL) {
+            if ($externalAlbumId === null) {
                 throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
 
-            $externalReplacedPhotoId = NULL;
-            if ($replacedPhotoId !== NULL) {
+            $externalReplacedPhotoId = null;
+            if ($replacedPhotoId !== null) {
                 $externalReplacedPhotoId = $this->photoMapper->selectPhotoExternalId($replacedPhotoId);    
-                if ($externalReplacedPhotoId == NULL) {
+                if ($externalReplacedPhotoId == null) {
                     throw new \InvalidArgumentException("A photo with the identifier " . $externalReplacedPhotoId . " does not exist.");
                 }
             }  
