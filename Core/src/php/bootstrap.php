@@ -1,0 +1,178 @@
+<?php
+    require_once(__DIR__ . "/../../vendor/autoload.php");
+    require_once(__DIR__ . "/../../config/secrets.php");
+    
+    require_once(__DIR__ . "/Provider/DatabaseProvider.php");
+    require_once(__DIR__ . "/Rest/Handler.php");
+    require_once(__DIR__ . "/Model/TargetError.php");
+    require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
+    require_once(__DIR__ . "/Service/PlatformService.php");
+    require_once(__DIR__ . "/Client/GoogleApiClient.php");
+    require_once(__DIR__ . "/Client/ChatClient.php");
+    require_once(__DIR__ . "/Client/HttpClient.php");
+    require_once(__DIR__ . "/Client/CalendarClient.php");
+    require_once(__DIR__ . "/Event/Scheduler.php");
+    require_once(__DIR__ . "/Event/EventManager.php");
+    require_once(__DIR__ . "/Event/EventPublisher.php");
+
+    use Itspire\MonologLoki\Handler\LokiHandler;
+    use Monolog\Handler\WhatFailureGroupHandler;
+    use Monolog\Logger;
+    use Core\Client\CacheClient;
+    use Core\Client\CloudMessagingClient;
+    use Core\Client\MessagingClient;
+    use Core\Service\Authentication\AuthenticationService;
+    use Core\Service\Category\CategoryDataConsistencyMonitor;
+    use Core\Service\Category\CategoryService;
+    use Core\Service\Category\CategoryServiceListener;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Device\DeviceService;
+    use Core\Service\Device\DeviceServiceListener;
+    use Core\Service\Expense\ExpenseService;
+    use Core\Service\Expense\ExpenseStatisticsProvider;
+    use Core\Service\Fitness\FitnessService;
+    use Core\Service\Fitness\FitnessServiceListener;
+    use Core\Service\Fitness\FitnessStatisticsProvider;
+    use Core\Service\Flight\FlightDataConsistencyMonitor;
+    use Core\Service\Flight\FlightService;
+    use Core\Service\Flight\FlightServiceListener;
+    use Core\Service\Flight\FlightStatisticsProvider;
+    use Core\Service\Forecast\ForecastService;
+    use Core\Service\Forecast\ForecastServiceListener;
+    use Core\Service\Geocoding\GeocodingService;
+    use Core\Service\Highlight\HighlightDataConsistencyMonitor;
+    use Core\Service\Highlight\HighlightService;
+    use Core\Service\Highlight\HighlightServiceListener;
+    use Core\Service\Label\LabelService;
+    use Core\Service\Label\LabelServiceListener;
+    use Core\Service\Monitoring\MonitoringService;
+    use Core\Service\Monitoring\MonitoringServiceListener;
+    use Core\Service\Note\NoteService;
+    use Core\Service\Photo\PhotoService;
+    use Core\Service\Photo\PhotoServiceListener;
+    use Core\Service\Photo\PhotoStatisticsProvider;
+    use Core\Service\Place\PlaceDataConsistencyMonitor;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceServiceListener;
+    use Core\Service\Place\PlaceStatisticsProvider;
+    use Core\Service\Photo\PhotoDataConsistencyMonitor;
+    use Core\Service\Statistics\StatisticsService;
+    use Core\Service\Statistics\StatisticsServiceListener;
+    use Core\Service\Stay\StayService;
+    use Core\Service\Stay\StayServiceListener;
+    use Core\Service\Stay\StayStatisticsProvider;
+    use Core\Service\TimeTracking\TimeTrackingService;
+    use Core\Service\TimeTracking\TimeTrackingServiceListener;
+    use Core\Service\Trip\TripDataConsistencyMonitor;
+    use Core\Service\Trip\TripService;
+    use Core\Service\Trip\TripServiceListener;
+    use Core\Service\Trip\TripStatisticsProvider;
+    use Core\Service\Year\YearService;
+    use Core\Service\Year\YearServiceListener;
+
+    $transactionId = uniqid();
+
+    // Logger.
+    $logger = new Logger("core");
+    $handler = new WhatFailureGroupHandler(array(
+        new LokiHandler(array(
+            "entrypoint" => GRAFANA_LOKI_ENTRYPOINT,
+            "context" => array(
+                "transactionId" => $transactionId
+            ),
+            "labels" => array(
+                "service" => "core",
+                "transactionId" => $transactionId
+            ),
+            "client_name" => GRAFANA_LOKI_CLIENT_NAME,
+            "auth" => array(
+                "basic" => array(
+                    GRAFANA_LOKI_USER,
+                    GRAFANA_LOKI_PASSWORD
+                )
+            )
+        ))
+    ));
+    $logger->pushHandler($handler);
+
+    // Clients.
+    $databaseProvider = new DatabaseProvider(TRUE);
+    $googleApiClient = new GoogleApiClient();
+    $chatClient = new ChatClient();
+    $httpClient = new HttpClient();
+    $calendarClient = new CalendarClient();
+    $messagingClient = new MessagingClient($logger);
+    $cloudMessagingClient = new CloudMessagingClient($logger);
+    $cacheClient = new CacheClient();
+
+    // Event producers.
+    $eventPublisher = new EventPublisher();
+    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+
+    // Services.
+    $configurationService = new ConfigurationService($databaseProvider, $eventPublisher);
+    $platformService = new PlatformService();
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
+    $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
+    $statisticsService = new StatisticsService($databaseProvider, $cacheClient, $eventPublisher, $logger);
+    $noteService = new NoteService($databaseProvider);
+    $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
+    $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
+    $photoService = new PhotoService($databaseProvider, $googleApiClient, $eventPublisher);
+    $highlightService = new HighlightService($databaseProvider, $photoService, $eventPublisher);
+    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
+    $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);
+    $fitnessService = new FitnessService($databaseProvider, $eventPublisher, $configurationService, $logger);
+    $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
+    $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
+    $labelService = new LabelService($databaseProvider, $configurationService);
+    $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
+    $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
+    $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
+    $deviceService = new DeviceService($databaseProvider, $authenticationService);
+    $monitoringService = new MonitoringService($cacheClient);
+
+    // Statistics providers.
+    $statisticsProviders = array(
+        new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService),
+        new TripStatisticsProvider($tripService),
+        new FlightStatisticsProvider($flightService),
+        new StayStatisticsProvider($stayService),
+        new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
+        new PhotoStatisticsProvider($placeService),
+        new ExpenseStatisticsProvider($expenseService, $tripService)
+    );
+    $statisticsService->setStatisticsProviders($statisticsProviders);
+
+    // Data consistency monitors.
+    $dataConsistencyMonitors = array(
+        new PhotoDataConsistencyMonitor($photoService, $placeService),
+        new FlightDataConsistencyMonitor($flightService),
+        new CategoryDataConsistencyMonitor($categoryService, $placeService),
+        new PlaceDataConsistencyMonitor($placeService),
+        new TripDataConsistencyMonitor($tripService, $configurationService),
+        new HighlightDataConsistencyMonitor($placeService, $tripService)
+    );
+    $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
+    
+    // Event listeners.
+    $listeners = array(
+        new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
+        new FitnessServiceListener($fitnessService, $eventPublisher, $scheduler),
+        new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
+        new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler),
+        new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
+        new PhotoServiceListener($photoService, $eventPublisher, $scheduler),
+        new PlaceServiceListener($placeService, $tripService, $calendarClient, $eventPublisher),
+        new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
+        new StayServiceListener($stayService, $tripService, $calendarClient),
+        new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
+        new TripServiceListener($tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
+        new YearServiceListener($yearService, $eventPublisher, $scheduler),
+        new DeviceServiceListener($deviceService, $eventPublisher, $scheduler),
+        new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
+        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        $platformService
+    );
+    $eventManager = new EventManager($listeners);
+?>

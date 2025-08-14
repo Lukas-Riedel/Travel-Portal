@@ -9,7 +9,7 @@ export function useApi() {
 
     async function sendRequest(method, path, data = {}, args = {}) {
         const queryString = new URLSearchParams(Object.entries(args).filter(([_, v]) => v !== undefined)).toString()
-        const url = import.meta.env.VITE_SERVICE_BASE_URL + path + (queryString ? "?" + queryString : "")
+        const url = import.meta.env.VITE_CORE_BASE_URL + path + (queryString ? "?" + queryString : "")
 
         try {
             const response = await axios({

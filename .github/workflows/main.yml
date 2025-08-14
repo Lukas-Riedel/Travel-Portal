@@ -5,7 +5,7 @@ jobs:
     name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
-      service: ${{ steps.filter.outputs.service }}
+      core: ${{ steps.filter.outputs.core }}
       portal: ${{ steps.filter.outputs.portal }}
       agent: ${{ steps.filter.outputs.agent }}
       bridgex: ${{ steps.filter.outputs.bridgex }}
@@ -17,18 +17,18 @@ jobs:
         id: filter
         with:
           filters: |
-            service:
-              - 'Service/**'
+            core:
+              - 'Core/**'
             portal:
               - 'Portal/**'
             agent:
               - 'Agent/**'
             bridgex:
               - 'BridgeX/**'
-  deploy-service-and-portal:
-    name: Deploy Service and Portal
+  deploy-core-and-portal:
+    name: Deploy Core and Portal
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.service == 'true' || needs.detect-changes.outputs.portal == 'true' }}
+    if: ${{ needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.portal == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -45,7 +45,7 @@ jobs:
           node-version: '18'
     - name: Install Composer Dependencies
       run: |
-        cd Service
+        cd Core
         composer install --no-dev --optimize-autoloader
     - name: Install NPM Dependencies
       run: |
@@ -71,9 +71,9 @@ jobs:
         mkdir target
         mkdir target/api
         shopt -s dotglob
-        cp -r ./Service/* target/api/
+        cp -r ./Core/* target/api/
         rm -rf target/api/public
-        cp -r ./Service/public/* target/api/
+        cp -r ./Core/public/* target/api/
         cp -r ./Portal/dist/* target/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
