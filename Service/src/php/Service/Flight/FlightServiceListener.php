@@ -52,11 +52,11 @@ use Service\Service\Trip\TripService;
                 if ($flight->getFlight() === $message["flight"] && $flight->getFrom()->getName() === $message["from"]
                     && $flight->getTo()->getName() === $message["to"] && $flight->getStart() === $message["scheduledDeparture"]) {
                         $this->flightService->fetchAndLogFlight($message["flight"], $message["from"], $message["to"], $message["scheduledDeparture"]);
+                        return;
                 }
             }
             
             $this->logger->warning("The flight '" . $flight->getFlight() . "' is already logged.", $message);
-            return;
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
