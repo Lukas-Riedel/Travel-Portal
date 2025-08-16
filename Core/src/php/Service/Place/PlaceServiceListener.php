@@ -99,7 +99,7 @@
             $place = $this->placeService->getRegularPlace($placeId);
 
             if ($place !== null) {
-                $highlightQualities = [];
+                $highlightQualities = array();
                 foreach ($place->getHighlights() as &$highlight) {
                     $highlightQuality = $highlight->getQuality();
                     if ($highlightQuality !== null) {
