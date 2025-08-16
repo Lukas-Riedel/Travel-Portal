@@ -32,7 +32,7 @@
                 });
         }
 
-        public function selectLabels() : array {
+        public function selectAllLabels() : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM label_identifier

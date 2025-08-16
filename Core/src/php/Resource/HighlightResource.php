@@ -9,7 +9,6 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
 
-    // TODO: Get rid of this resource, move the PATCH endpoint to PlaceResource, TripResource, CategoryResource, and YearResource.
     #[OA\Tag(name: "Highlights")]
     class HighlightResource extends AbstractResource {
 

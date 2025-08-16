@@ -17,8 +17,8 @@
             return $label;
         }
 
-        public function getLabels() : array {
-            return $this->labelMapper->selectLabels();
+        public function getAllLabels() : array {
+            return $this->labelMapper->selectAllLabels();
         }
 
         public function getLabelsForPlace(string $placeId) : array {

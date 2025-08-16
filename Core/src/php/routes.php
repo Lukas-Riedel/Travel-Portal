@@ -8,12 +8,13 @@
     use Core\Resource\SwaggerResource;
     use Core\Resource\FlightResource;
     use Core\Resource\GeocodingResource;
-use Core\Resource\HighlightResource;
-use Core\Resource\MonitoringResource;
+    use Core\Resource\HighlightResource;
+    use Core\Resource\LabelResource;
+    use Core\Resource\MonitoringResource;
     use Slim\App;
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
-        $highlightService, $fitnessService, $geocodingService, $monitoringService, $eventPublisher) {
+        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $eventPublisher) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -24,6 +25,7 @@ use Core\Resource\MonitoringResource;
         MonitoringResource::register($app, $monitoringService);
         EventResource::register($app, $eventPublisher);
         HighlightResource::register($app, $highlightService);
+        LabelResource::register($app, $labelService);
         SwaggerResource::register($app);
     };
 ?>
