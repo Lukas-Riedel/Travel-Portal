@@ -6,7 +6,7 @@
 
     class EventManager {
 
-        private const WAITING_FOR_MESSAGES_TIMEOUT = 15;
+        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 15;
 
         private $eventHandlers;
 
@@ -61,7 +61,7 @@
 
             while (true) {
                 try {
-                    $channel->wait(null, false, self::WAITING_FOR_MESSAGES_TIMEOUT);
+                    $channel->wait(null, false, self::WAITING_FOR_MESSAGES_TIMEOUT_SECONDS);
                 }
                 catch (AMQPTimeoutException $e) {
                     break;

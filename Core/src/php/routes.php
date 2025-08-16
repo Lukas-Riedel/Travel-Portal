@@ -1,9 +1,9 @@
 <?php
-
     use Core\Resource\AirlineResource;
     use Core\Resource\CategoryResource;
     use Core\Resource\ConfigurationResource;
     use Core\Resource\DeviceResource;
+    use Core\Resource\EventResource;
     use Core\Resource\FitnessResource;
     use Core\Resource\SwaggerResource;
     use Core\Resource\FlightResource;
@@ -12,7 +12,7 @@
     use Slim\App;
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
-        $highlightService, $fitnessService, $geocodingService, $monitoringService) {
+        $highlightService, $fitnessService, $geocodingService, $monitoringService, $eventPublisher) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -21,6 +21,7 @@
         FitnessResource::register($app, $fitnessService);
         GeocodingResource::register($app, $geocodingService);
         MonitoringResource::register($app, $monitoringService);
+        EventResource::register($app, $eventPublisher);
         SwaggerResource::register($app);
     };
 ?>

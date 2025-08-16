@@ -1,22 +1,29 @@
 <?php
     require_once(__DIR__ . "/../Model/CalendarEvent.php");
     require_once(__DIR__ . "/../Model/PublicHoliday.php");
-    
+
+    use Core\Routing\PayloadDecodingMiddleware;
     use ICal\ICal;
 
     class CalendarClient {
+        
         private const GOOGLE_CALENDAR_WATCH_TTL_SECONDS = 86400;
         
         // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function watchCalendar(string $calendar) : void {
             global $googleApiClient, $authenticationService;
 
-            // TODO: Come up with a more sophisticated solution.
             $authenticationResult = $authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
+            $payload = array(
+                "name" => Event::CalendarInvalidated->name,
+                "args" => array(
+                    "calendar" => $calendar
+                )
+            );
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
-                BASE_URL . "/events?name=" . Event::CalendarInvalidated->name . "&args[calendar]=" . $calendar, self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS,
-                "Bearer " . $authenticationResult->getAccessToken(),);
+                BASE_URL . "/events?" . PayloadDecodingMiddleware::ENCODED_REQUEST_BODY_QUERY_PARAM . "=" . base64_encode(json_encode($payload)),
+                self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS, "Bearer " . $authenticationResult->getAccessToken(),);
         }
 
         // TODO: Change string $calendar to Calendar $calendar and update usages.

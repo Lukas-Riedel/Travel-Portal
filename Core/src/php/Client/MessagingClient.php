@@ -9,6 +9,7 @@
     class MessagingClient {
 
         private const MAX_PRIORITY = 5;
+        private const HEARTBEAT_INTERVAL_SECONDS = 60;
 
         private ?AMQPSSLConnection $connection = null;
         private ?AMQPChannel $producerChannel = null;
@@ -56,7 +57,7 @@
             if ($this->connection === null || $this->producerChannel === null) {                    
                 $this->connection = new AMQPSSLConnection(RMQ_HOST, RMQ_PORT, RMQ_USER, RMQ_PW, RMQ_VHOST,
                     array("verify_peer" => true, "verify_peer_name" => true),
-                    array("read_write_timeout" => 30, "heartbeat" => 30));
+                    array("read_write_timeout" => self::HEARTBEAT_INTERVAL_SECONDS, "heartbeat" => self::HEARTBEAT_INTERVAL_SECONDS));
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
                 $this->consumerChannel->basic_qos(null, 1, null);

@@ -4,7 +4,7 @@
     use OpenApi\Attributes as OA;
 
     #[OA\Info(
-        title: "Travel Portal API",
+        title: "Core API",
         version: "1.0.0"
     )]
     #[OA\SecurityScheme(

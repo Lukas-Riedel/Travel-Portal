@@ -6,7 +6,8 @@
     use Core\Routing\ErrorHandlingMiddleware;
     use Core\Routing\JsonInvocationStrategy;
     use Core\Routing\LoggingMiddleware;
-    use Core\Routing\RequestError;
+use Core\Routing\PayloadDecodingMiddleware;
+use Core\Routing\RequestError;
     use Core\Routing\TransactionMiddleware;
     use Slim\Handlers\Strategies\RequestResponse;
 
@@ -18,12 +19,13 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->addBodyParsingMiddleware();
-    $app->addRoutingMiddleware();
-    $app->add(new TransactionMiddleware($databaseProvider));
-    $app->add(new AuthMiddleware($authenticationService, $basePath));
-    $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new LoggingMiddleware($logger));
+    $app->add(new ErrorHandlingMiddleware($logger));
+    $app->addBodyParsingMiddleware();
+    $app->add(new PayloadDecodingMiddleware());
+    $app->addRoutingMiddleware();
+    $app->add(new AuthMiddleware($authenticationService, $basePath));
+    $app->add(new TransactionMiddleware($databaseProvider));
 
     (require_once(__DIR__ . "/src/php/routes.php"))($app);
 
