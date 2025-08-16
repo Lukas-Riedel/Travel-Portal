@@ -58,11 +58,13 @@ export function useApi() {
     async function updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere) {
         return sendRequest("PATCH", "/highlights/" + highlightId,
             {
-                composition: composition,
-                sky: sky,
-                shadows: shadows,
-                circumstances: circumstances,
-                atmosphere: atmosphere
+                attributes: {
+                    composition: composition,
+                    sky: sky,
+                    shadows: shadows,
+                    circumstances: circumstances,
+                    atmosphere: atmosphere
+                }
             })
     }
 

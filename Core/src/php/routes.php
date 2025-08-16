@@ -8,7 +8,8 @@
     use Core\Resource\SwaggerResource;
     use Core\Resource\FlightResource;
     use Core\Resource\GeocodingResource;
-    use Core\Resource\MonitoringResource;
+use Core\Resource\HighlightResource;
+use Core\Resource\MonitoringResource;
     use Slim\App;
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
@@ -22,6 +23,7 @@
         GeocodingResource::register($app, $geocodingService);
         MonitoringResource::register($app, $monitoringService);
         EventResource::register($app, $eventPublisher);
+        HighlightResource::register($app, $highlightService);
         SwaggerResource::register($app);
     };
 ?>
