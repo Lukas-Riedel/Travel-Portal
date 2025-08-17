@@ -9,9 +9,8 @@
         type: "object",
         description: "A class representing a trip"
     )]
-    class Trip implements \JsonSerializable {  
+    class Trip implements \JsonSerializable {          
         private const FULL_TRIP_NAME_FORMAT = "%s %d";
-        private const ONE_DAY_SECONDS = 86400;
 
         private readonly string $id;
         private readonly string $name;

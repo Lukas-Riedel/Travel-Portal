@@ -1,0 +1,525 @@
+<?php
+    namespace Core\Resource;
+
+    use Slim\App;
+    use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
+    use OpenApi\Attributes as OA;
+    use Core\Routing\NotFoundException;
+    use Core\Routing\NotUpdatedException;
+    use Core\Service\Highlight\HighlightService;
+    use Core\Service\Year\YearIncludedEntity;
+    use Core\Service\Year\YearService;
+
+    #[OA\Tag(name: "Years")]
+    class YearResource extends AbstractResource {
+
+        private readonly YearService $yearService;
+        private readonly HighlightService $highlightService;
+
+        public function __construct(YearService $yearService, HighlightService $highlightService) {
+            $this->yearService = $yearService;
+            $this->highlightService = $highlightService;
+        }
+
+        public static function register(App $app, YearService $yearService, HighlightService $highlightService) : void {
+            $resource = new self($yearService, $highlightService);
+
+            $app->group("/years", function($group) use($resource) {
+                $group->get("", [$resource, "listYears"]);
+                $group->get("/{year}", [$resource, "getYear"]);
+                $group->patch("/{year}", [$resource, "updateYear"]);
+                $group->post("/{year}/highlights", [$resource, "createYearHighlight"]);
+                $group->delete("/{year}/highlights/{highlightId}", [$resource, "removeYearHighlight"]);
+            });
+        }
+        
+        #[OA\Get(
+            path: "/years",
+            summary: "Retrieve a collection of years",
+            operationId: "listYears",
+            tags: ["Years"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "include",
+                    in: "query",
+                    description: "The comma-separated list of included entities",
+                    example: "HIGHLIGHTS,STATISTICS"
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Retrieved a collection of years.",
+                    content: new OA\JsonContent(
+                        type: "array",
+                        items: new OA\Items(ref: "#/components/schemas/Year")
+                    )
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function listYears(Request $request, Response $response, array $routeArguments) : mixed { 
+            $include = $this->validateQueryNullableParameter($request, "include") ?? "";
+            
+            // TODO: Do not use the backing value, refactor the service code first.
+            $mappedInclude = array_map(fn($entity) => YearIncludedEntity::from($entity)->value, 
+                array_filter(explode(",", $include)));
+            
+            return $this->yearService->getYears($mappedInclude);
+        }
+
+        #[OA\Get(
+            path: "/years/{year}",
+            summary: "Retrieve a year with the specified identifier",
+            operationId: "getYear",
+            tags: ["Years"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "year",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the year",
+                    schema: new OA\Schema(type: "integer"),
+                    example: "2025",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Retrieved a year with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Year")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function getYear(Request $request, Response $response, array $routeArguments) : mixed {    
+            $yearId = $this->validatePathArgument($routeArguments, "year");
+            
+            $year = $this->yearService->getYear($yearId);
+            if ($year === null) {
+                throw new NotFoundException($yearId);
+            }
+
+            return $year;
+        }
+
+        #[OA\Patch(
+            path: "/years/{year}",
+            summary: "Update a year with the specified identifier",
+            operationId: "updateYear",
+            tags: ["Years"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "mainHighlight",
+                            description: "The main highlight of the year",
+                            type: "object",
+                            required: ["id"],
+                            properties: [
+                                new OA\Property(
+                                    property: "id",
+                                    description: "The identifier of the main highlight of the year",
+                                    type: "string",
+                                    example: "f93c6a37-9151-4747-af7f-30eac920216e"
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "year",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the year",
+                    schema: new OA\Schema(type: "integer"),
+                    example: "2025",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Updated a year with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Year")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function updateYear(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->validateAdminPermissions($request);
+
+            $yearId = $this->validatePathArgument($routeArguments, "year");
+            
+            $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
+            if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
+                $wasUpdated = $this->yearService->updateYearMainHighlight($yearId, $newMainHighlight["id"]);
+                if (!$wasUpdated) {
+                    throw new NotUpdatedException($yearId);
+                }
+            }
+                        
+            $year = $this->yearService->getYear($yearId);
+            if ($year === null) {
+                throw new NotFoundException($yearId);
+            }
+
+            return $year;
+        }
+
+        #[OA\Post(
+            path: "/years/{year}/highlights",
+            summary: "Create a highlight for a year with the specified identifier",
+            operationId: "createYearHighlight",
+            tags: ["Years"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    required: ["photo"],
+                    properties: [
+                        new OA\Property(
+                            property: "photo",
+                            description: "The photo representing the highlight",
+                            type: "object",
+                            required: ["id"],
+                            properties: [
+                                new OA\Property(
+                                    property: "id",
+                                    description: "The identifier of the photo representing the highlight",
+                                    type: "string",
+                                    example: "f93c6a37-9151-4747-af7f-30eac920216e"
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "year",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the year",
+                    schema: new OA\Schema(type: "integer"),
+                    example: "2025",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 201,
+                    description: "Success. Created a highlight for a year with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Highlight")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function createYearHighlight(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->validateAdminPermissions($request);
+
+            $yearId = $this->validatePathArgument($routeArguments, "year");
+            $photo = $this->validateJsonBodyField($request, "photo");
+            if (!is_array($photo) || !isset($photo["id"])) {
+                throw new \InvalidArgumentException("The required request body field 'photo.id' is missing.");
+            }
+
+            return $this->highlightService->createYearHighlight($yearId, $photo["id"]);
+        }
+
+        #[OA\Delete(
+            path: "/years/{year}/highlights/{highlightId}",
+            summary: "Remove a highlight for a year with the specified identifier",
+            operationId: "removeYearHighlight",
+            tags: ["Years"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "year",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the year",
+                    schema: new OA\Schema(type: "integer"),
+                    example: "2025",
+                ),
+                new OA\Parameter(
+                    name: "highlightId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the highlight",
+                    schema: new OA\Schema(type: "string"),
+                    example: "6846808f-b8d8-409c-bc78-97878b3a4446",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 204,
+                    description: "Success. Removed a highlight for a year with the specified identifier."
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function removeYearHighlight(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->validateAdminPermissions($request);
+
+            $yearId = $this->validatePathArgument($routeArguments, "year");
+            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+
+            $wasRemoved = $this->highlightService->removeYearHighlight($yearId, $highlightId);
+            if (!$wasRemoved) {
+                throw new NotFoundException($highlightId);                
+            }
+
+            return null;
+        }
+    }
+?>

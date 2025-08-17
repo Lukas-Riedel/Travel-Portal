@@ -3,6 +3,39 @@
 
     use Core\Service\Highlight\Highlight;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "Year",
+        type: "object",
+        description: "A class representing a year",
+        required: ["id"],
+        properties: [
+            new OA\Property(
+                property: "id",
+                description: "The identifier of the year",
+                type: "integer",
+                example: "2025"
+            ),
+            new OA\Property(
+                property: "mainHighlight",
+                description: "The main highlight of the year",
+                ref: "#/components/schemas/Highlight"
+            ),
+            new OA\Property(
+                property: "highlights",
+                description: "The highlights of the year",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Highlight")
+            ),
+            new OA\Property(
+                property: "statistics",
+                description: "The statistics of the year",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Statistics")
+            )
+        ]
+    )]
     class Year implements \JsonSerializable {        
         private readonly string $id;
         private readonly ?Highlight $mainHighlight;

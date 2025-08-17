@@ -1,6 +1,13 @@
 <?php
     namespace Core\Service\Year;
+
+    use OpenApi\Attributes as OA;
     
+    #[OA\Schema(
+        schema: "YearIncludedEntity",
+        type: "string",
+        description: "The entity of the year"
+    )]
     enum YearIncludedEntity : string {
         case Statistics = "STATISTICS";
         case Highlights = "HIGHLIGHTS";

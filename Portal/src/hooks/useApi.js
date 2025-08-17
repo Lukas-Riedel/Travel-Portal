@@ -616,7 +616,7 @@ export function useApi() {
             })
     }
 
-    async function listYears(include) {
+    async function listYears({ include } = {}) {
         return sendRequest("GET", "/years", {},
             {
                 include: include
@@ -630,7 +630,9 @@ export function useApi() {
     async function updateYearMainHighlight(year, mainHighlightId) {
         return sendRequest("PATCH", "/years/" + year,
             {
-                mainHighlightId: mainHighlightId
+                mainHighlight: {
+                    id: mainHighlightId
+                }
             })
     }
 

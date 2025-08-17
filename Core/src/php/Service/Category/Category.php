@@ -8,7 +8,7 @@
         schema: "Category",
         type: "object",
         description: "A class representing a category",
-        required: ["id", "name", "category", "highlights", "statistics"],
+        required: ["id", "name", "category"],
         properties: [
             new OA\Property(
                 property: "id",
