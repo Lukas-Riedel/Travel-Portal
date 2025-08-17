@@ -17,7 +17,7 @@
             $this->configurationService = $configurationService;
         }
 
-        // TODO: Replace string $type by TimeTrackingEventType $category.
+        // TODO: Replace string $type by TimeTrackingEventType $type.
         public function createTimeTrackingEvent(string $type, float $hours, string $description, int $timestamp) : TimeTrackingEvent {
             $timeTrackingEvent = new TimeTrackingEvent(null, $description, $hours, $timestamp, TimeTrackingEventType::from($type),
                 $hours + $this->timeTrackingMapper->selectBalance($type, $timestamp));
@@ -25,7 +25,7 @@
             return $timeTrackingEvent;
         }
 
-        // TODO: Replace string $type by TimeTrackingEventType $category.
+        // TODO: Replace string $type by TimeTrackingEventType $type.
         public function getTimeTrackingEvents(?string $type = null) : array {  
             return $this->timeTrackingMapper->selectTimeTrackingEvents($type);
         }

@@ -35,7 +35,7 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["description", ],
+                    required: ["description", "value", "currency", "expiration" ],
                     properties: [
                         new OA\Property(
                             property: "description",

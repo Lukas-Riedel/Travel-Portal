@@ -187,6 +187,12 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
         ))
     }
 
+    const toNoonTimestamp = (date) => {
+        const newDate = new Date(date)
+        newDate.setHours(12, 0, 0, 0)
+        return Math.floor(d.getTime() / 1000)
+    }
+
     const handleCreatePositiveOvertimeEvent = (day, expectedWorkingHours) => {
         showFormToast(
             "Zadej údaje pro vytvoření přesčasu:",
@@ -196,7 +202,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             ],
             "Přesčas byl úspěšně vytvořen",
             "Nepodařilo se vytvořit přesčas",
-            async (description, hours) => onEventCreated("overtime", description, hours, format(day, "d.M.yyyy"))
+            async (description, hours) => onEventCreated("overtime", description, hours, toNoonTimestamp(day))
         )
     }
 
@@ -206,7 +212,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }],
             success,
             error,
-            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, format(day, "d.M.yyyy"))
+            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, toNoonTimestamp(day))
         )
     }
 
@@ -256,7 +262,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }],
             "Plánovaná práce byla úspěšně modifikována",
             "Nepodařilo se modifikovat plánovanou práci",
-            async (hours) => onEventCreated("plannedWork", "Planned work", hours, format(day, "d.M.yyyy"))
+            async (hours) => onEventCreated("plannedWork", "Planned work", hours, toNoonTimestamp(day))
         )
     }
 

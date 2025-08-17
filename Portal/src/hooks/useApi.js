@@ -363,13 +363,13 @@ export function useApi() {
         return sendRequest("GET", "/subscriptions")
     }
 
-    async function createTimeTrackingEvent(type, hours, description, date) {
+    async function createTimeTrackingEvent(type, hours, description, timestamp) {
         return sendRequest("POST", "/tracker",
             {
                 type: type,
                 hours: hours,
                 description: description,
-                date: date
+                timestamp: timestamp
             })
     }
 

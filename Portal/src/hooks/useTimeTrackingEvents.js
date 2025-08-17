@@ -21,6 +21,6 @@ export const useTimeTrackingEvents = allowedTypes => {
         // TODO: Map to TimeTrackingEvent objects
         timeTrackingEvents: useMemo(() => allowedTypes.reduce((acc, type, i) => ({ ...acc, [type]: queries[i].data }), {}), [allowedTypes, ...queries.map(q => q.data)]),
         removeTimeTrackingEvent: eventId => removeTimeTrackingEvent(eventId).then(refetchTimeTrackingEvents),
-        createTimeTrackingEvent: (type, description, hours, date) => createTimeTrackingEvent(type, hours, description, date).then(refetchTimeTrackingEvents)
+        createTimeTrackingEvent: (type, description, hours, timestamp) => createTimeTrackingEvent(type, hours, description, timestamp).then(refetchTimeTrackingEvents)
     }
 }
