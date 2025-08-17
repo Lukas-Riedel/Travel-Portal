@@ -18,7 +18,7 @@
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
-        $statisticsService, $trackerService, $eventPublisher) {
+        $statisticsService, $timeTrackingService, $eventPublisher) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -31,7 +31,7 @@
         HighlightResource::register($app, $highlightService);
         LabelResource::register($app, $labelService);
         StatisticsResource::register($app, $statisticsService);
-        TrackerResource::register($app, $trackerService);
+        TrackerResource::register($app, $timeTrackingService);
         SubscriptionResource::register($app, $expenseService);
         SwaggerResource::register($app);
     };
