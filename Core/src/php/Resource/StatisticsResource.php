@@ -36,7 +36,7 @@
                     description: "Success. Retrieved a collection of statistics records.",
                     content: new OA\JsonContent(
                         type: "array",
-                        items: new OA\Items(ref: "#/components/schemas/KeyValuePair")
+                        items: new OA\Items(ref: "#/components/schemas/Statistics")
                     )
                 ),
                 new OA\Response(

@@ -1,6 +1,13 @@
 <?php
     namespace Core\Service\Statistics;
 
+    use OpenApi\Attributes as OA;
+    
+    #[OA\Schema(
+        schema: "StatisticsUnit",
+        type: "string",
+        description: "The unit of the statistics record"
+    )]
     enum StatisticsUnit : string {
         case Kilometers = "KILOMETERS";
         case Duration = "DURATION";

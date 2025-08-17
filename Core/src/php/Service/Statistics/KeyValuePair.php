@@ -13,7 +13,7 @@
                 property: "key",
                 description: "The key of the key-value pair",
                 type: "string",
-                example: "TOTAL_PHOTOS_COUNT"
+                example: "Prague"
             ),
             new OA\Property(
                 property: "value",

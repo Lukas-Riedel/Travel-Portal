@@ -47,7 +47,7 @@
                 property: "statistics",
                 description: "The statistics of the category",
                 type: "array",
-                items: new OA\Items(ref: "#/components/schemas/KeyValuePair")
+                items: new OA\Items(ref: "#/components/schemas/Statistics")
             )
         ]
     )]

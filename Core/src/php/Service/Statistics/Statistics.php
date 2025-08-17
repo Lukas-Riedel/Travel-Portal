@@ -1,6 +1,38 @@
 <?php
     namespace Core\Service\Statistics;
+    
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "Statistics",
+        type: "object",
+        description: "A class representing a statistics record",
+        required: ["key", "value"],
+        properties: [
+            new OA\Property(
+                property: "key",
+                description: "The name of the statistics record",
+                type: "string",
+                example: "TOTAL_PHOTOS_COUNT"
+            ),
+            new OA\Property(
+                property: "value",
+                description: "The value of statistics record",
+                oneOf: [
+                    new OA\Schema(type: "string"),
+                    new OA\Schema(type: "number"),
+                    new OA\Schema(type: "boolean"),
+                    new OA\Schema(type: "array", items: new OA\Items(ref: "#/components/schemas/KeyValuePair"))
+                ],
+                example: 13573
+            ),
+            new OA\Property(
+                property: "unit",
+                description: "The unit of the statistics record",
+                ref: "#/components/schemas/StatisticsUnit"
+            )
+        ]
+    )]
     class Statistics implements \JsonSerializable {        
         private readonly string $name;
         private readonly mixed $value;
