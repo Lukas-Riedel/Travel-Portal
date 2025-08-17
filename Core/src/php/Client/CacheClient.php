@@ -59,7 +59,7 @@
                 end
             LUA;
 
-            $this->redisClient->eval($lua, 1, $key, $value);
+            $this->redisClient->eval($lua, 1, $key, json_encode($value));
         }
 
         public function delete(string $key) : void {
