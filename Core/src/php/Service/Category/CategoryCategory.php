@@ -15,8 +15,6 @@
         case Ocean = "OCEAN";
         case Sea = "SEA";
         case Bay = "BAY";
-        // TODO: Delete.
-        case Variable = "VARIABLE";
         case Island = "ISLAND";
         case Region = "REGION";
 

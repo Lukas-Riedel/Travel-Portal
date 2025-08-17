@@ -12,10 +12,12 @@
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\StatisticsResource;
+    use Core\Resource\SubscriptionResource;
     use Slim\App;
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
-        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $statisticsService, $eventPublisher) {
+        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
+        $statisticsService, $eventPublisher) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -28,6 +30,7 @@
         HighlightResource::register($app, $highlightService);
         LabelResource::register($app, $labelService);
         StatisticsResource::register($app, $statisticsService);
+        SubscriptionResource::register($app, $expenseService);
         SwaggerResource::register($app);
     };
 ?>

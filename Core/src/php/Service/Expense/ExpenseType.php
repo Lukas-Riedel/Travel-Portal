@@ -1,6 +1,13 @@
 <?php
     namespace Core\Service\Expense;
+        
+    use OpenApi\Attributes as OA;
     
+    #[OA\Schema(
+        schema: "ExpenseType",
+        type: "string",
+        description: "The type of the expense"
+    )]
     enum ExpenseType : string {
         case Flight = "FLIGHT";
         case Hotel = "HOTEL";

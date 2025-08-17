@@ -81,8 +81,7 @@
                         $statistics[] = new Statistics(self::MOST_PHOTOS_PER_COUNTRY_STATISTICS_NAME, $mostPhotosPerCountry, StatisticsUnit::Photos);
                     }
 
-                    $mostPhotosPerCategory = $this->getStandingsStatistics(fn($place, $date) => array_map(fn($category) => $category->getName(),
-                        array_filter($place->getCategories(), fn($category) => $category->getCategory() !== CategoryCategory::Variable)), $relevantPlaces);
+                    $mostPhotosPerCategory = $this->getStandingsStatistics(fn($place, $date) => array_map(fn($category) => $category->getName(), $place->getCategories()), $relevantPlaces);
                     if (count($mostPhotosPerCategory) > 0) {
                         $statistics[] = new Statistics(self::MOST_PHOTOS_PER_CATEGORY_STATISTICS_NAME, $mostPhotosPerCategory, StatisticsUnit::Photos);
                     }

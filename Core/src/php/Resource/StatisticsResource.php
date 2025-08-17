@@ -1,9 +1,6 @@
 <?php
     namespace Core\Resource;
 
-    use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
-    use Core\Service\Label\LabelService;
     use Core\Service\Statistics\StatisticsService;
     use Slim\App;
     use Slim\Psr7\Request;
