@@ -190,7 +190,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const toNoonTimestamp = (date) => {
         const newDate = new Date(date)
         newDate.setHours(12, 0, 0, 0)
-        return Math.floor(d.getTime() / 1000)
+        return Math.floor(newDate.getTime() / 1000)
     }
 
     const handleCreatePositiveOvertimeEvent = (day, expectedWorkingHours) => {
