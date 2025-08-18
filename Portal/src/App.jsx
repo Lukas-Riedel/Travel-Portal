@@ -27,37 +27,33 @@ export default function App() {
 
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {
-        if (processingStartedEvents.length > 0) {
-            processingStartedEvents.forEach(event => {
-                event.markAsRead()
+        processingStartedEvents.forEach(event => {
+            event.markAsRead()
 
-                if (event.name === "PhotosUploadingTriggered") {
-                    getPlace(event.args.placeId).then(place => {
-                        toast.success(`Nahrávání fotek pro místo '${place.name}' bylo zahájeno`)
-                    })
-                }
-            })
-        }
+            if (event.name === "PhotosUploadingTriggered") {
+                getPlace(event.args.placeId).then(place => {
+                    toast.success(`Nahrávání fotek pro místo '${place.name}' bylo zahájeno`)
+                })
+            }
+        })
     }, [processingStartedEvents])
 
     const { events: processingEndedEvents } = useEvents("ProcessingEnded")
     useEffect(() => {
-        if (processingEndedEvents.length > 0) {
-            processingEndedEvents.forEach(event => {
-                event.markAsRead()
+        processingEndedEvents.forEach(event => {
+            event.markAsRead()
 
-                if (event.name === "PhotosUploadingTriggered") {
-                    getPlace(event.args.placeId).then(place => {
-                        toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
-                    })
-                }
-                else if (event.name === "PhotoReplacingTriggered") {
-                    getPlace(event.args.placeId).then(place => {
-                        toast.success(`Nahrazování fotky pro místo '${place.name}' bylo dokončeno`)
-                    })
-                }
-            })
-        }
+            if (event.name === "PhotosUploadingTriggered") {
+                getPlace(event.args.placeId).then(place => {
+                    toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
+                })
+            }
+            else if (event.name === "PhotoReplacingTriggered") {
+                getPlace(event.args.placeId).then(place => {
+                    toast.success(`Nahrazování fotky pro místo '${place.name}' bylo dokončeno`)
+                })
+            }
+        })
     }, [processingEndedEvents])
 
     return (
