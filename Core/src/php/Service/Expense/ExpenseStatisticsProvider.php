@@ -36,7 +36,7 @@
             $statistics = array();
 
             if ($statisticsKind === StatisticsKind::Fact) {
-                $relevantTrips = $this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::Default);
+                $relevantTrips = $this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::OldestAscending);
                 $totalCost = intval(array_sum(array_map(fn($trip) => $this->getTripCost($trip->getId()), $relevantTrips)));                
                 if ($totalCost > 0) {                    
                     if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
@@ -53,7 +53,7 @@
             if ($statisticsKind === StatisticsKind::Standings) {
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $mostExpensiveTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()))), 
-                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
+                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::OldestAscending), fn($trip) => $this->getTripCost($trip->getId()) > 0));
                     usort($mostExpensiveTrips, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTrips) > 0) {
                         $statistics[] = new Statistics(self::MOST_EXPENSIVE_TRIPS_STATISTICS_NAME, $mostExpensiveTrips, StatisticsUnit::MainCurrency);
@@ -61,7 +61,7 @@
                     }
 
                     $mostExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()) / $trip->getDaysCount())), 
-                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => $this->getTripCost($trip->getId()) > 0));
+                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::OldestAscending), fn($trip) => $this->getTripCost($trip->getId()) > 0));
                     usort($mostExpensiveTripsPerDay, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTripsPerDay) > 0) {
                         $statistics[] = new Statistics(self::MOST_EXPENSIVE_TRIPS_PER_DAY_STATISTICS_NAME, $mostExpensiveTripsPerDay, StatisticsUnit::MainCurrency);
@@ -71,7 +71,7 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     $relevantTrips = $this->tripService->getRegularTrips(null, $start, $end,
-                        array(TripIncludedEntity::Expenses->value, TripIncludedEntity::Stays->value), TripSortingStrategy::Default);
+                        array(TripIncludedEntity::Expenses->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
 
                     $mostExpensiveStaysPerNight = array_reduce($relevantTrips, fn($carry, $trip) => array_reduce($trip->getStays(),
                         function($innerCarry, $stay) use(&$trip) {

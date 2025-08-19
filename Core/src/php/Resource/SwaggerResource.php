@@ -12,6 +12,7 @@
             $app->get("/swagger/swagger.json", function (ServerRequestInterface $request, ResponseInterface $response) {
                 $openapi = (new Generator())->generate(array(
                     __DIR__ . "/../Resource/", 
+                    __DIR__ . "/../Client/", 
                     __DIR__ . "/../Service/", 
                     __DIR__ . "/../OpenAPI/", 
                     __DIR__ . "/../Routing/"

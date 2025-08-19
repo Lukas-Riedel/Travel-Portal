@@ -234,7 +234,7 @@
                 INNER JOIN trip_identifier ti
                     ON t.trip_id = ti.id
                 WHERE :CONDITIONS
-                {$tripSortingStrategy->value}
+                {$tripSortingStrategy->getOrderByClause()}
             SQL;
             
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();

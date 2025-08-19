@@ -1,13 +1,15 @@
 <?php
-    class CalendarEvent implements JsonSerializable {        
-        private $id;
-        private $summary;
-        private $location;
-        private $start;
-        private $end;
-        private $attributes;
+    namespace Core\Client;
 
-        public function __construct($id, $summary, $location, $start, $end, $attributes) {
+    class CalendarEvent implements \JsonSerializable {        
+        private readonly string $id;
+        private readonly string $summary;
+        private readonly ?string $location;
+        private readonly int $start;
+        private readonly int $end;
+        private readonly array $attributes;
+
+        public function __construct(string $id, string $summary, ?string $location, int $start, int $end, array $attributes) {
             $this->id = $id;
             $this->summary = $summary;
             $this->location = $location;

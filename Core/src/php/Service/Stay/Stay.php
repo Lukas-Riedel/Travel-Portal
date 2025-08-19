@@ -1,6 +1,42 @@
 <?php
     namespace Core\Service\Stay;
+    
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "Stay",
+        type: "object",
+        description: "A class representing a stay",
+        required: ["name", "address", "start", "end"],
+        properties: [
+            new OA\Property(
+                property: "name",
+                description: "The name of the stay",
+                type: "string",
+                example: "Jumeirah Burj Al Arab"
+            ),
+            new OA\Property(
+                property: "address",
+                description: "The address of the property",
+                type: "string",
+                example: "Umm Suqeim 3, Dubai, United Arab Emirates"
+            ),
+            new OA\Property(
+                property: "start",
+                description: "The start time of the stay in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1688563200
+            ),
+            new OA\Property(
+                property: "end",
+                description: "The end time of the stay in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1689786000
+            )
+        ]
+    )]
     class Stay implements \JsonSerializable {
         private const ONE_DAY_SECONDS = 86400;
 

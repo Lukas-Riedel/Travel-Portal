@@ -267,15 +267,17 @@
         )]
         public function updateLabel(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
+            $wasUpdated = false;
 
             $labelId = $this->validatePathArgument($routeArguments, "labelId");
             
             $newName = $this->validateJsonBodyNullableField($request, "name");
             if ($newName !== null) {
-                $wasUpdated = $this->labelService->updateLabelName($labelId, $newName);
-                if (!$wasUpdated) {
-                    throw new NotUpdatedException($labelId);
-                }
+                $wasUpdated |= $this->labelService->updateLabelName($labelId, $newName);
+            }
+
+            if (!$wasUpdated) {
+                throw new NotUpdatedException($labelId);
             }
 
             $label = $this->labelService->getLabel($labelId);

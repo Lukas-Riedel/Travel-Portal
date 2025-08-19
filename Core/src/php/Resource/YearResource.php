@@ -295,15 +295,17 @@
         )]
         public function updateYear(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
+            $wasUpdated = false;
 
             $yearId = $this->validatePathArgument($routeArguments, "year");
             
             $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
             if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
-                $wasUpdated = $this->yearService->updateYearMainHighlight($yearId, $newMainHighlight["id"]);
-                if (!$wasUpdated) {
-                    throw new NotUpdatedException($yearId);
-                }
+                $wasUpdated |= $this->yearService->updateYearMainHighlight($yearId, $newMainHighlight["id"]);
+            }
+            
+            if (!$wasUpdated) {
+                throw new NotUpdatedException($yearId);
             }
                         
             $year = $this->yearService->getYear($yearId);

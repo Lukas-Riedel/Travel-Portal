@@ -4,10 +4,111 @@
     use Core\Service\Highlight\Highlight;
     use OpenApi\Attributes as OA;
 
-    #[OA\Schema( //TODO
+    #[OA\Schema(
         schema: "Trip",
         type: "object",
-        description: "A class representing a trip"
+        description: "A class representing a trip",
+        required: ["id", "name"],
+        properties: [
+            new OA\Property(
+                property: "id",
+                description: "The identifier of the trip",
+                type: "string",
+                example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
+            ),
+            new OA\Property(
+                property: "name",
+                description: "The name of the trip",
+                type: "string",
+                example: "One Thousand Scents of Sri Lanka"
+            ),
+            new OA\Property(
+                property: "year",
+                description: "The year of the trip",
+                type: "integer",
+                example: 2025
+            ),
+            new OA\Property(
+                property: "mainHighlight",
+                description: "The main highlight of the trip",
+                ref: "#/components/schemas/Highlight"
+            ),
+            new OA\Property(
+                property: "start",
+                description: "The start time of the trip in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1688563200
+            ),
+            new OA\Property(
+                property: "end",
+                description: "The end time of the trip in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1689786000
+            ),
+            new OA\Property(
+                property: "countries",
+                description: "The country names visited in the trip",
+                type: "array",
+                items: new OA\Items(type: "string"),
+                example: '["Sri Lanka"]'
+            ),
+            new OA\Property(
+                property: "expenses",
+                description: "The expenses of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Expense")
+            ),
+            new OA\Property(
+                property: "stays",
+                description: "The stays of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Stay")
+            ),
+            new OA\Property(
+                property: "flights",
+                description: "The flights of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Flight")
+            ),
+            new OA\Property(
+                property: "watchedFlights",
+                description: "The watched flights of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Flight")
+            ),
+            new OA\Property(
+                property: "fitness",
+                description: "The day fitness records of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Fitness")
+            ),
+            new OA\Property(
+                property: "notes",
+                description: "The notes of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Note")
+            ),
+            new OA\Property(
+                property: "highlights",
+                description: "The highlights of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Highlight")
+            ),
+            new OA\Property(
+                property: "statistics",
+                description: "The statistics of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Statistics")
+            ),
+            new OA\Property(
+                property: "publicHolidays",
+                description: "The public holidays of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/PublicHoliday")
+            )
+        ]
     )]
     class Trip implements \JsonSerializable {          
         private const FULL_TRIP_NAME_FORMAT = "%s %d";

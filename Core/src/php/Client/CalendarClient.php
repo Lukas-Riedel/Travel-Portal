@@ -1,7 +1,7 @@
 <?php
-    require_once(__DIR__ . "/../Model/CalendarEvent.php");
-    require_once(__DIR__ . "/../Model/PublicHoliday.php");
 
+    use Core\Client\CalendarEvent;
+    use Core\Client\PublicHoliday;
     use Core\Routing\PayloadDecodingMiddleware;
     use ICal\ICal;
 

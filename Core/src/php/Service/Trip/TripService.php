@@ -54,7 +54,7 @@
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {
-            $regularTrips = $this->doGetRegularTrips($tripId, null, null, null, TripIncludedEntity::values(), TripSortingStrategy::Default);
+            $regularTrips = $this->doGetRegularTrips($tripId, null, null, null, TripIncludedEntity::values(), TripSortingStrategy::OldestAscending);
             return count($regularTrips) === 1 ? $regularTrips[0] : null;
         }
 
@@ -195,7 +195,7 @@
 
         public function updateAllDayTripsTripsDates() : void {
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-            $trips = $this->getRegularTrips(null, null, null, array(), TripSortingStrategy::Default);
+            $trips = $this->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
             
             foreach ($trips as &$trip) {
                 if ($trip->getName() === $dayTripsTripName) {

@@ -360,23 +360,22 @@
         )]
         public function updateAirline(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
+            $wasUpdated = false;
 
             $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
 
             $newName = $this->validateJsonBodyNullableField($request, "name");
             if ($newName !== null) {
-                $wasUpdated = $this->flightService->updateAirlineName($airlineId, $newName);
-                if (!$wasUpdated) {
-                    throw new NotUpdatedException($airlineId);
-                }
+                $wasUpdated |= $this->flightService->updateAirlineName($airlineId, $newName);
             }
 
             $newLogo = $this->validateJsonBodyNullableField($request, "logo");
             if ($newLogo !== null) {
-                $wasUpdated = $this->flightService->updateAirlineLogo($airlineId, $newLogo);
-                if (!$wasUpdated) {
-                    throw new NotUpdatedException($airlineId);
-                }
+                $wasUpdated |= $this->flightService->updateAirlineLogo($airlineId, $newLogo);
+            }
+
+            if (!$wasUpdated) {
+                throw new NotUpdatedException($airlineId);
             }
             
             $airline = $this->flightService->getAirline($airlineId);

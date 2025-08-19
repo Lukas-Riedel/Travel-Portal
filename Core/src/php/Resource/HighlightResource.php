@@ -242,45 +242,35 @@
         )]
         public function updateHighlight(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
+            $wasUpdated = false;
 
             $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
             
             $newAttributes = $this->validateJsonBodyNullableField($request, "attributes");
             if ($newAttributes !== null) {
                 if (isset($newAttributes["composition"])) {
-                    $wasUpdated = $this->highlightService->updateHighlightComposition($highlightId, $newAttributes["composition"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($highlightId);
-                    }
+                    $wasUpdated |= $this->highlightService->updateHighlightComposition($highlightId, $newAttributes["composition"]);
                 }
 
                 if (isset($newAttributes["sky"])) {
-                    $wasUpdated = $this->highlightService->updateHighlightSky($highlightId, $newAttributes["sky"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($highlightId);
-                    }
+                    $wasUpdated |= $this->highlightService->updateHighlightSky($highlightId, $newAttributes["sky"]);
                 }
 
                 if (isset($newAttributes["shadows"])) {
-                    $wasUpdated = $this->highlightService->updateHighlightShadows($highlightId, $newAttributes["shadows"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($highlightId);
-                    }
+                    $wasUpdated |= $this->highlightService->updateHighlightShadows($highlightId, $newAttributes["shadows"]);
                 }
 
                 if (isset($newAttributes["circumstances"])) {
-                    $wasUpdated = $this->highlightService->updateHighlightCircumstances($highlightId, $newAttributes["circumstances"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($highlightId);
-                    }
+                    $wasUpdated |= $this->highlightService->updateHighlightCircumstances($highlightId, $newAttributes["circumstances"]);
                 }
 
                 if (isset($newAttributes["atmosphere"])) {
-                    $wasUpdated = $this->highlightService->updateHighlightAtmosphere($highlightId, $newAttributes["atmosphere"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($highlightId);
-                    }
+                    $wasUpdated |= $this->highlightService->updateHighlightAtmosphere($highlightId, $newAttributes["atmosphere"]);
                 }
+            }
+
+            if (!$wasUpdated) {
+                throw new NotUpdatedException($highlightId);
             }
 
             $highlight = $this->highlightService->getHighlight($highlightId);

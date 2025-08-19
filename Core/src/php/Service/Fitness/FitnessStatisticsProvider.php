@@ -98,7 +98,7 @@ use Core\Service\Place\PlaceService;
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $tripFitnessRecords = array_map(fn($trip) => new TripFitness($trip, $this->fitnessService->getAverageFitnessRecordForInterval($trip->getStart(), $trip->getEnd())),
-                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::Default), fn($trip) => !$this->tripService->isDayTripsTrip($trip)));
+                        array_filter($this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::OldestAscending), fn($trip) => !$this->tripService->isDayTripsTrip($trip)));
                     if (count($tripFitnessRecords) > 0) {
                         $mostAverageSteps = $this->getStandingsStatisticsForTripRecords($tripFitnessRecords, fn($fitness) => $fitness->getSteps());
                         $statistics[] = new Statistics(self::MOST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME, $mostAverageSteps, StatisticsUnit::Steps);

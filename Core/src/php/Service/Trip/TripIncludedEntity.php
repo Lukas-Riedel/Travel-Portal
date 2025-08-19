@@ -1,6 +1,13 @@
 <?php
     namespace Core\Service\Trip;
     
+    use OpenApi\Attributes as OA;
+    
+    #[OA\Schema(
+        schema: "TripIncludedEntity",
+        type: "string",
+        description: "The entity of the trip"
+    )]    
     enum TripIncludedEntity : string {
         case Expenses = "EXPENSES";
         case Stays = "STAYS";

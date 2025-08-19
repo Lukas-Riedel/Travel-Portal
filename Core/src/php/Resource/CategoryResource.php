@@ -191,7 +191,7 @@
                 new OA\Parameter(
                     name: "country",
                     in: "query",
-                    description: "The country of the category",
+                    description: "The country of the categories",
                     example: "Czechia"
                 ),
                 new OA\Parameter(
@@ -490,47 +490,37 @@
         )]
         public function updateCategory(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
+            $wasUpdated = false;
 
             $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
 
             $newName = $this->validateJsonBodyNullableField($request, "name");
             if ($newName !== null) {
-                $wasUpdated = $this->categoryService->updateCategoryName($categoryId, $newName);
-                if (!$wasUpdated) {
-                    throw new NotUpdatedException($categoryId);
-                }
+                $wasUpdated |= $this->categoryService->updateCategoryName($categoryId, $newName);
             }
             
             $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
             if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
-                $wasUpdated = $this->categoryService->updateCategoryMainHighlight($categoryId, $newMainHighlight["id"]);
-                if (!$wasUpdated) {
-                    throw new NotUpdatedException($categoryId);
-                }
+                $wasUpdated |= $this->categoryService->updateCategoryMainHighlight($categoryId, $newMainHighlight["id"]);
             }
             
             $newMetadata = $this->validateJsonBodyNullableField($request, "metadata");
             if ($newMetadata !== null) {
                 if (isset($newMetadata["color"])) {
-                    $wasUpdated = $this->categoryService->updateCategoryColor($categoryId, $newMetadata["color"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($categoryId);
-                    }
+                    $wasUpdated |= $this->categoryService->updateCategoryColor($categoryId, $newMetadata["color"]);
                 }
                 
                 if (isset($newMetadata["unicode"])) {
-                    $wasUpdated = $this->categoryService->updateCategoryUnicode($categoryId, $newMetadata["unicode"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($categoryId);
-                    }
+                    $wasUpdated |= $this->categoryService->updateCategoryUnicode($categoryId, $newMetadata["unicode"]);
                 }
                 
                 if (isset($newMetadata["publicHolidaysCalendar"])) {
-                    $wasUpdated = $this->categoryService->updateCategoryPublicHolidaysCalendar($categoryId, $newMetadata["publicHolidaysCalendar"]);
-                    if (!$wasUpdated) {
-                        throw new NotUpdatedException($categoryId);
-                    }
+                    $wasUpdated |= $this->categoryService->updateCategoryPublicHolidaysCalendar($categoryId, $newMetadata["publicHolidaysCalendar"]);
                 }
+            }
+            
+            if (!$wasUpdated) {
+                throw new NotUpdatedException($categoryId);
             }
             
             $category = $this->categoryService->getCategory($categoryId);

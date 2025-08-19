@@ -14,12 +14,13 @@
     use Core\Resource\StatisticsResource;
     use Core\Resource\TrackerResource;
     use Core\Resource\SubscriptionResource;
+    use Core\Resource\TripResource;
     use Core\Resource\YearResource;
     use Slim\App;
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
-        $statisticsService, $timeTrackingService, $yearService, $eventPublisher) {
+        $statisticsService, $timeTrackingService, $yearService, $tripService, $noteService, $eventPublisher) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -35,6 +36,7 @@
         TrackerResource::register($app, $timeTrackingService);
         SubscriptionResource::register($app, $expenseService);
         YearResource::register($app, $yearService, $highlightService);
+        TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService);
         SwaggerResource::register($app);
     };
 ?>

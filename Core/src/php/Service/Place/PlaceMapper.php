@@ -74,6 +74,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSetForColumn("country_category_id", function($categoryId) {
+                    // TODO: Return CategoryIdentifier instead of string.
                     return $this->categoryService->getCategoryIdentifierById($categoryId)->getName();
                 });
         }

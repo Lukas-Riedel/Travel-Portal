@@ -135,7 +135,7 @@
                     name: "type",
                     in: "query",
                     description: "The type of the time tracking event",
-                    example: "vacation"
+                    schema: new OA\Schema(ref: "#/components/schemas/TimeTrackingEventType")
                 )
             ],
             responses: [

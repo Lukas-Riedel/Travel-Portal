@@ -2,7 +2,39 @@
     namespace Core\Service\Trip;
     
     use Core\Service\Highlight\Highlight;
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "TripIdentifier",
+        type: "object",
+        description: "A class representing a trip identifier",
+        required: ["id", "name"],
+        properties: [
+            new OA\Property(
+                property: "id",
+                description: "The identifier of the trip",
+                type: "string",
+                example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
+            ),
+            new OA\Property(
+                property: "name",
+                description: "The name of the trip",
+                type: "string",
+                example: "One Thousand Scents of Sri Lanka"
+            ),
+            new OA\Property(
+                property: "year",
+                description: "The year of the trip",
+                type: "integer",
+                example: 2025
+            ),
+            new OA\Property(
+                property: "mainHighlight",
+                description: "The main highlight of the trip",
+                ref: "#/components/schemas/Highlight"
+            )
+        ]
+    )]
     class TripIdentifier implements \JsonSerializable {
         
         private const FULL_TRIP_NAME_FORMAT = "%s %d";

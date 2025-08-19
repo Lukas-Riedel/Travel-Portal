@@ -444,7 +444,9 @@ export function useApi() {
                 description: description,
                 value: value,
                 currency: currency,
-                subscriptionId: subscriptionId
+                subscription: {
+                    id: subscriptionId
+                }
             })
     }
 

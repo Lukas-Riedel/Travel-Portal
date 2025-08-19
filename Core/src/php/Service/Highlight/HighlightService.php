@@ -65,7 +65,7 @@ use Core\Service\Trip\TripSortingStrategy;
                 $this->highlightMapper->selectHighlights(HighlightType::Year, $year));
 
             foreach ($tripService->getRegularTrips($year, null, null, array(TripIncludedEntity::Highlights->value),
-                TripSortingStrategy::Default) as &$yearTrip) {
+                TripSortingStrategy::OldestAscending) as &$yearTrip) {
                     foreach ($yearTrip->getHighlights() as &$yearHighlightCandidate) {
                         if (!in_array($yearHighlightCandidate->getId(), $deletedHighlightIds)) {
                             $highlights[] = $yearHighlightCandidate;
