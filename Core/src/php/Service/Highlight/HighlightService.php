@@ -45,7 +45,7 @@ use Core\Service\Trip\TripSortingStrategy;
                 $this->highlightMapper->selectHighlights(HighlightType::Category, $categoryId));
 
             foreach ($placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, null,
-                array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::Default) as &$categoryPlace) {
+                array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending) as &$categoryPlace) {
                     foreach ($categoryPlace->getHighlights() as &$categoryHighlightCandidate) {
                         if (!in_array($categoryHighlightCandidate->getId(), $deletedHighlightIds)) {
                             $highlights[] = $categoryHighlightCandidate;

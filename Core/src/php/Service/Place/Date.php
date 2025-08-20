@@ -4,8 +4,51 @@
     use Core\Service\Forecast\Weather;
     use Core\Service\Forecast\Sun;
     use Core\Service\Photo\Album;
-    use Core\Service\Trip\TripIdentifier;
+    use Core\Service\Trip\TripIdentifier;    
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "Date",
+        type: "object",
+        description: "A class representing a date",
+        required: ["start", "end", "layover"],
+        properties: [
+            new OA\Property(
+                property: "start",
+                description: "The start time of the date in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1688563200
+            ),
+            new OA\Property(
+                property: "end",
+                description: "The end time of the date in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1689786000
+            ),
+            new OA\Property(
+                property: "weather",
+                description: "The weather forecast for the date",
+                ref: "#/components/schemas/Weather"
+            ),
+            new OA\Property(
+                property: "sun",
+                description: "The sun position for the date",
+                ref: "#/components/schemas/Sun"
+            ),
+            new OA\Property(
+                property: "album",
+                description: "The album for the date",
+                ref: "#/components/schemas/Album"
+            ),
+            new OA\Property(
+                property: "trip",
+                description: "The trip of the date",
+                ref: "#/components/schemas/TripIdentifier"
+            )
+        ]
+    )]
     class Date implements \JsonSerializable {        
         private readonly int $start;
         private readonly int $end;

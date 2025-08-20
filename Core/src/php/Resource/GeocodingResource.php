@@ -45,7 +45,7 @@
                     description: "Success. Retrieved coordinates for the specified address.",
                     content: new OA\JsonContent(
                         type: "array",
-                        items: new OA\Items(ref: "#/components/schemas/Airline")
+                        items: new OA\Items(ref: "#/components/schemas/Location")
                     )
                 ),
                 new OA\Response(

@@ -81,7 +81,7 @@
                     in: "query",
                     description: "The sorting strategy of the trips",
                     schema: new OA\Schema(ref: "#/components/schemas/TripSortingStrategy"),                    
-                ),
+                )
             ],
             responses: [
                 new OA\Response(
@@ -145,7 +145,7 @@
             $mappedSort = TripSortingStrategy::from($sort);
             $mappedType = TripType::from($type);
             
-            return match($mappedType) {
+            return match ($mappedType) {
                 TripType::Regular => $this->tripService->getRegularTrips($year, null, null, $mappedInclude, $mappedSort),
                 TripType::Candidate => $this->tripService->getCandidateTrips($mappedInclude)
             };
@@ -559,10 +559,18 @@
 
             $trip = $this->doGetTrip($tripId);
             if ($trip->getYear() == null) {
-                $this->tripService->removeCandidateTrip($tripId);
+                $wasRemoved = $this->tripService->removeCandidateTrip($tripId);
+                
+                if (!$wasRemoved) {
+                    throw new NotFoundException($tripId);
+                }
             }
             else {
-                $this->tripService->archiveTrip($tripId);
+                $archivedTrip = $this->tripService->archiveTrip($tripId);
+                
+                if ($archivedTrip === null) {
+                    throw new NotFoundException($tripId);
+                }
             }
 
             return null;
@@ -708,6 +716,7 @@
 
             $mappedType = ExpenseType::from($type);
 
+            // TODO: Do not use the backing value, refactor the service code first.
             return $this->expenseService->createExpense($tripId, $value, $currency, $mappedType->value, $description, $subscriptionId);
         }       
 
@@ -963,7 +972,7 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["photo"],
+                    required: ["content"],
                     properties: [
                         new OA\Property(
                             property: "content",
@@ -1358,7 +1367,7 @@
             return null;
         }
 
-        private function doGetTrip(string $tripId) : Trip {            
+        private function doGetTrip(string $tripId) : Trip {
             $trip = $this->tripService->getRegularTrip($tripId);
             if ($trip !== null) {
                 return $trip;

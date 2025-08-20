@@ -48,7 +48,7 @@
             new OA\Property(
                 property: "replacedPhotoId",
                 type: "string",
-                description: "The ID of the photo being replaced",
+                description: "The identifier of the photo being replaced",
                 example: "87122d18-1ab1-4d2a-8340-858b94dbb76e"
             ),
             new OA\Property(

@@ -11,6 +11,7 @@
     use Core\Resource\HighlightResource;
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
+    use Core\Resource\PlaceResource;
     use Core\Resource\StatisticsResource;
     use Core\Resource\TrackerResource;
     use Core\Resource\SubscriptionResource;
@@ -20,7 +21,8 @@
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
-        $statisticsService, $timeTrackingService, $yearService, $tripService, $noteService, $eventPublisher) {
+        $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService,
+        $photoService, $eventPublisher) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService);
@@ -37,6 +39,7 @@
         SubscriptionResource::register($app, $expenseService);
         YearResource::register($app, $yearService, $highlightService);
         TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService);
+        PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService);
         SwaggerResource::register($app);
     };
 ?>

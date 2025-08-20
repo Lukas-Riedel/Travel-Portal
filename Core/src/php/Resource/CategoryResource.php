@@ -174,7 +174,7 @@
             $category = CategoryCategory::from($this->validateJsonBodyField($request, "category"));        
             $regionType = RegionType::from($this->validateQueryParameter($request, "type"));
 
-            return match($regionType) {
+            return match ($regionType) {
                 RegionType::Geographical => $this->handleCreateGeographicalRegion($request, $name, $category),
                 RegionType::GeographicalExtension => $this->handleCreateGeographicalExtensionRegion($request, $name, $category),
                 RegionType::Composie => $this->handleCreateCompositeRegion($request, $name, $category)

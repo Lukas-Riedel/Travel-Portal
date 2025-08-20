@@ -2,7 +2,6 @@
     namespace Core\Service\Highlight;
 
     use Core\Service\Photo\Photo;
-
     use OpenApi\Attributes as OA;
 
     #[OA\Schema(

@@ -51,7 +51,7 @@
 
             if ($statisticsKind === StatisticsKind::Fact) {        
                 $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, 
-                    null, null, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                    null, null, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $visitedPlacesCount = count($relevantPlaces);
                 if ($statisticsType === StatisticsType::Trip) {
@@ -92,7 +92,7 @@
             if ($statisticsKind === StatisticsKind::Standings) {                      
                 $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");              
                 $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, 
-                    null, null, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                    null, null, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $distances = array();
                 foreach ($relevantPlaces as &$relevantPlace) {

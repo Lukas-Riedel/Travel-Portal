@@ -200,7 +200,7 @@
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.
                     if ($albumId !== null && isset($album["coverPhotoMediaItemId"])) {
-                        $places = $placeService->getRegularPlaces(null, null, null, null, $currentAlbumId, null, null, null, null, array(), PlaceSortingStrategy::Default);
+                        $places = $placeService->getRegularPlaces(null, null, null, null, $currentAlbumId, null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
                         foreach ($places as &$place) {
                             $highlightService->createPlaceHighlight($place->getId(), $mainPhotoId);
                             foreach ($place->getDates() as &$date) {

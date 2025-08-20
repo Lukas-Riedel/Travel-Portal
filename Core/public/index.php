@@ -30,18 +30,6 @@
     (require_once(__DIR__ . "/src/php/routes.php"))($app);
 
     $app->any("/{path:.*}", function (ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
-        // TODO: Remove after rewriting all handlers, keep only the swagger fallback
-        $_GET["path"] = "/" . ltrim($routeArguments["path"], "/");
-        require __DIR__ . "/src/php/bootstrap.php";
-        ob_start();
-        include __DIR__ . "/api.php";
-        $body = ob_get_clean();
-        if (!empty($body)) {
-            $legacyCode = http_response_code() ?: 200;
-            $response->getBody()->write($body);
-            return $response->withStatus($legacyCode)->withHeader("Content-Type", "application/json");
-        }
-
         $acceptHeader = $request->getHeaderLine("Accept");
         if (str_contains($acceptHeader, "text/html")) {
             return $response
@@ -50,12 +38,12 @@
         }
 
         $error = new RequestError(404, "RouteNotFoundException",
-            "The route handler for the path '" . $request->getUri()->getPath() . "' does not exist.",
+            "The resource '" . $request->getUri()->getPath() . "' does not exist.",
             array(), $request->getUri()->getPath());
-
         $response->getBody()->write(json_encode($error));
+
         return $response
-            ->withStatus(404)
+            ->withStatus($error->getCode())
             ->withHeader("Content-Type", "application/json");
     })->setInvocationStrategy(new RequestResponse());
 

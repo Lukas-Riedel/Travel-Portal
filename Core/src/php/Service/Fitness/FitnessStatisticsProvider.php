@@ -123,7 +123,7 @@ use Core\Service\Place\PlaceService;
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
             return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
                 $places = array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $record->getTimestamp(),
-                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default),
+                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
                     fn($place) => count($place->getDates()) > 0);
                 return empty($places) ? null : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
                     implode(", ", array_map(fn($place) => $place->getName(), $places)),

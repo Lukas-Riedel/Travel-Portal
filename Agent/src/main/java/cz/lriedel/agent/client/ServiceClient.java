@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import cz.lriedel.agent.model.Album;
-import cz.lriedel.agent.model.request.AlbumPrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
 
@@ -27,10 +26,9 @@ public final class ServiceClient {
     }
 
     public Album createAlbum(long placeId, long timestamp) {
-        AlbumPrototype albumPrototype = new AlbumPrototype(timestamp);
         return Objects.requireNonNull(restTemplate.postForObject(
-                "/places/" + placeId + "/albums",
-                httpEntityProvider.getHttpEntity(albumPrototype), Album.class));
+                "/places/" + placeId + "/albums?timestamp=" + timestamp,
+                httpEntityProvider.getEmptyHttpEntity(), Album.class));
     }
 
     public void uploadPhoto(long placeId, long albumId, String fileName, long replacedPhotoId, byte[] data) {

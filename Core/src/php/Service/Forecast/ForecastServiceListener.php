@@ -75,7 +75,7 @@
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
                 $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
@@ -88,7 +88,7 @@
 
             if ($this->scheduler->requestExecution(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
                 $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null,
-                    array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                    array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
         
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    
@@ -101,7 +101,7 @@
 
             if ($this->scheduler->requestExecution(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME, self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL)) {
                 $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null,
-                    array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                    array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    

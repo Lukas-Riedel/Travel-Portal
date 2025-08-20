@@ -1,5 +1,4 @@
 <?php
-
     namespace Core\Service\Trip;
 
     use OpenApi\Attributes as OA;

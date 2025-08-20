@@ -31,7 +31,7 @@
             foreach ($this->configurationService->getConfigurationEntry("dynamicLabels") as &$dynamicLabel) {
                 $this->labelService->removeLabelForAllPlaces($this->labelService->getOrCreateLabelId($dynamicLabel["name"]));
                 $labeledPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
-                    time() - $dynamicLabel["interval"], time(), array(), PlaceSortingStrategy::Default);
+                    time() - $dynamicLabel["interval"], time(), array(), PlaceSortingStrategy::OldestAscending);
                 
                 foreach ($labeledPlaces as &$labeledPlace) {
                     $this->labelService->createLabel($labeledPlace->getId(), $dynamicLabel["name"]);

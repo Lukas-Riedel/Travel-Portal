@@ -2,8 +2,110 @@
     namespace Core\Service\Place;
 
     use Core\Service\Highlight\Highlight;
-    use Core\Service\Photo\Album;
+    use Core\Service\Photo\Album;    
+    use OpenApi\Attributes as OA;
 
+    #[OA\Schema(
+        schema: "Place",
+        type: "object",
+        description: "A class representing a place",
+        required: ["id", "name", "country", "latitude", "longitude", "timezone", "score"],
+        properties: [
+            new OA\Property(
+                property: "id",
+                description: "The identifier of the place",
+                type: "string",
+                example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
+            ),
+            new OA\Property(
+                property: "name",
+                description: "The name of the place",
+                type: "string",
+                example: "Prague"
+            ),
+            new OA\Property(
+                property: "country",
+                type: "string",
+                description: "The country of the place",
+                example: "Czechia"
+            ),
+            new OA\Property(
+                property: "latitude",
+                type: "number",
+                format: "float",
+                description: "The latitude of the place",
+                example: 50.0755
+            ),
+            new OA\Property(
+                property: "longitude",
+                type: "number",
+                format: "float",
+                description: "The longitude of the place",
+                example: 14.4378
+            ),
+            new OA\Property(
+                property: "timezone",
+                type: "string",
+                description: "The timezone of the place",
+                example: "Europe/Prague"
+            ),
+            new OA\Property(
+                property: "mainHighlight",
+                description: "The main highlight of the place",
+                ref: "#/components/schemas/Highlight"
+            ),
+            new OA\Property(
+                property: "score",
+                type: "number",
+                format: "float",
+                description: "The score of the place",
+                example: 74
+            ),
+            new OA\Property(
+                property: "quality",
+                type: "number",
+                format: "float",
+                description: "The quality of the place",
+                example: 93
+            ),
+            new OA\Property(
+                property: "excerpt",
+                type: "string",
+                description: "The excerpt of the place",
+                example: "Prague, the capital of the Czech Republic, is a city where medieval charm meets vibrant modern life. Known as the \"City of a Hundred Spires,\" it dazzles with its Gothic cathedrals, baroque palaces, and the fairytale-like Prague Castle towering above the Vltava River. Strolling across the historic Charles Bridge or wandering the cobblestone lanes of the Old Town, visitors find a mix of history, art, and lively cafés. With its rich culture and timeless beauty, Prague feels both grand and intimate, a city that leaves a lasting impression."
+            ),
+            new OA\Property(
+                property: "categories",
+                description: "The categories of the place",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Category")
+            ),
+            new OA\Property(
+                property: "highlights",
+                description: "The highlights of the place",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Highlight")
+            ),
+            new OA\Property(
+                property: "labels",
+                description: "The labels of the place",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Label")
+            ),
+            new OA\Property(
+                property: "notes",
+                description: "The notes of the place",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Note")
+            ),
+            new OA\Property(
+                property: "dates",
+                description: "The dates of the place",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Date")
+            )
+        ]
+    )]
     class Place implements \JsonSerializable {        
         private readonly string $id;
         private readonly string $name;

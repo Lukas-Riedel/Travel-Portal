@@ -1,6 +1,13 @@
 <?php
     namespace Core\Service\Place;
 
+    use OpenApi\Attributes as OA;
+    
+    #[OA\Schema(
+        schema: "PlaceIncludedEntity",
+        type: "string",
+        description: "The entity of the place"
+    )]
     enum PlaceIncludedEntity : string {
         case Excerpt = "EXCERPT";
         case Categories = "CATEGORIES";

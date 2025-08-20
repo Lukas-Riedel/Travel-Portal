@@ -145,7 +145,7 @@
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
                         array_filter(array_map(function($placeId) use(&$start, &$end) {
                             $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end,
-                                array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                                array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                             return count($places) === 0 ? null : $places[0];
                         }, explode(",", $categoryRow["place_ids"])), fn($place) => $place !== null));
                 });
@@ -196,7 +196,7 @@
                 INNER JOIN place_identifier pi
                     ON pe.place_id = pi.id
                 WHERE :CONDITIONS
-                {$placeSortingStrategy->value}
+                {$placeSortingStrategy->getOrderByClause()}
             SQL;
 
             $homeTimeZone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];

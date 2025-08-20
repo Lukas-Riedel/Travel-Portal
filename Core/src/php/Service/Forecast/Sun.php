@@ -1,6 +1,40 @@
 <?php
     namespace Core\Service\Forecast;
 
+    use OpenApi\Attributes as OA;
+
+    #[OA\Schema(
+        schema: "Sun",
+        type: "object",
+        description: "A class representing a sun position",
+        required: ["temperature", "wind", "precipitation", "lastUpdate"],
+        properties: [
+            new OA\Property(
+                property: "sunrise",
+                description: "The sunrise time in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1720358685
+            ),
+            new OA\Property(
+                property: "lastUpdate",
+                description: "The sunset time in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1720423994
+            ),
+            new OA\Property(
+                property: "altitude",
+                description: "The altitude of the sun for the measured interval",
+                ref: "#/components/schemas/Interval"
+            ),
+            new OA\Property(
+                property: "azimuth",
+                description: "The azimuth of the sun for the measured interval",
+                ref: "#/components/schemas/Interval"
+            )
+        ]
+    )]
     class Sun implements \JsonSerializable {
         private readonly int $sunrise;
         private readonly int $sunset;

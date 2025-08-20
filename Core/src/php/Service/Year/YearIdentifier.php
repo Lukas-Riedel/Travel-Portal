@@ -2,7 +2,6 @@
     namespace Core\Service\Year;
 
     use Core\Service\Highlight\Highlight;
-
     use OpenApi\Attributes as OA;
 
     #[OA\Schema(

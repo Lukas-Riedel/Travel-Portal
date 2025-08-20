@@ -188,34 +188,18 @@ export function useApi() {
             })
     }
 
-    async function listEvents(name) {
-        return sendRequest("GET", "/events", {},
+    async function createCandidatePlace(name, address) {
+        return sendRequest("POST", "/places?type=candidate&address=" + encodeURIComponent(address),
             {
                 name: name
-            }
-        )
-    }
-
-    async function removeEvent(eventId) {
-        return sendRequest("DELETE", "/events/" + eventId)
-    }
-
-    async function createCandidatePlace(name, address) {
-        return sendRequest("POST", "/places",
-            {
-                type: "candidate",
-                name: name,
-                address: address
             })
             .then(place => new Place(place))
     }
 
     async function createPermanentPlace(name, address) {
-        return sendRequest("POST", "/places",
+        return sendRequest("POST", "/places?type=permanent&address=" + encodeURIComponent(address),
             {
-                type: "permanent",
-                name: name,
-                address: address
+                name: name
             })
             .then(place => new Place(place))
     }
@@ -276,7 +260,9 @@ export function useApi() {
     async function updatePlaceMainHighlight(placeId, mainHighlightId) {
         return sendRequest("PATCH", "/places/" + placeId,
             {
-                mainHighlightId: mainHighlightId
+                mainHighlight: {
+                    id: mainHighlightId
+                }
             })
             .then(place => new Place(place))
     }
@@ -290,24 +276,15 @@ export function useApi() {
     }
 
     async function removeCandidatePlace(placeId) {
-        return sendRequest("DELETE", "/places/" + placeId, {},
-            {
-                type: "candidate"
-            })
+        return sendRequest("DELETE", "/places/" + placeId + "?type=candidate")
     }
 
     async function removePermanentPlace(placeId) {
-        return sendRequest("DELETE", "/places/" + placeId, {},
-            {
-                type: "permanent"
-            })
+        return sendRequest("DELETE", "/places/" + placeId + "?type=permanent")
     }
 
     async function createPlaceAlbum(placeId, timestamp) {
-        return sendRequest("POST", "/places/" + placeId + "/albums",
-            {
-                timestamp: timestamp
-            })
+        return sendRequest("POST", "/places/" + placeId + "/albums?timestamp=" + timestamp)
     }
 
     async function refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition } = {}) {
@@ -333,7 +310,9 @@ export function useApi() {
     async function createPlaceHighlight(placeId, photoId) {
         return sendRequest("POST", "/places/" + placeId + "/highlights",
             {
-                photoId: photoId
+                photo: {
+                    id: photoId
+                }
             })
     }
 
@@ -532,7 +511,9 @@ export function useApi() {
     async function createTripHighlight(tripId, photoId) {
         return sendRequest("POST", "/trips/" + tripId + "/highlights",
             {
-                photoId: photoId
+                photo: {
+                    id: photoId
+                }
             })
     }
 
@@ -641,7 +622,9 @@ export function useApi() {
     async function createYearHighlight(year, photoId) {
         return sendRequest("POST", "/years/" + year + "/highlights",
             {
-                photoId: photoId
+                photo: {
+                    id: photoId
+                }
             })
     }
 
@@ -672,8 +655,6 @@ export function useApi() {
         replaceConfigurationEntry,
         getCoordinates,
         createEvent,
-        listEvents,
-        removeEvent,
         createCandidatePlace,
         createPermanentPlace,
         listRegularPlaces,

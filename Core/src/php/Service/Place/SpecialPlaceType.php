@@ -1,9 +1,16 @@
 <?php
     namespace Core\Service\Place;
 
-    enum SpecialPlaceType {
-        case Candidate;
-        case Permanent;
+    use OpenApi\Attributes as OA;
+    
+    #[OA\Schema(
+        schema: "SpecialPlaceType",
+        type: "string",
+        description: "The type of the special place"
+    )]
+    enum SpecialPlaceType : string {
+        case Candidate = "candidate";
+        case Permanent = "permanent";
 
         public function getTableName() : string {
             return match ($this) {

@@ -23,7 +23,7 @@ export default function PlacePage() {
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote } = usePlace(placeId)
-    const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "score" })
+    const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "-score" })
 
     return (
         <>

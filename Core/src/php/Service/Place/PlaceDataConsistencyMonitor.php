@@ -26,7 +26,7 @@
             $dataConsistencyIssues = array();
 
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
-                null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::Default);
+                null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() != $place->getCountry()
                 && count(array_filter($place->getCategories(), fn($category) => $category->getCategory() === CategoryCategory::Administrative)) === 0);
@@ -36,7 +36,7 @@
             }
             
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
-                null, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default);
+                null, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
                 fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % 86400 === 0)), $relevantPlaces);
@@ -66,7 +66,7 @@
             }
                         
             $relevantPlaces = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
-                null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::Default),
+                null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
                 $this->placeService->getCandidatePlaces(null, null, null, array(PlaceIncludedEntity::Dates->value)));
 
             $duplicatedPlacesGroups = array_filter(array_values(array_reduce($relevantPlaces,

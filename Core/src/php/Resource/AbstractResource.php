@@ -69,5 +69,10 @@
             $body = $this->validateJsonBody($request);
             return isset($body[$field]) ? $body[$field] : null;
         }
+
+        public function validateJsonBodyFieldExistence(Request $request, string $field) : bool {
+            $body = $this->validateJsonBody($request);
+            return array_key_exists($field, $body);
+        }
     }
 ?>

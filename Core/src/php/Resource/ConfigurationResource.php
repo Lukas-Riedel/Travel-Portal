@@ -8,7 +8,7 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Routing\NotFoundException;
-use Core\Routing\NotUpdatedException;
+    use Core\Routing\NotUpdatedException;
 
     #[OA\Tag(name: "Configuration")]
     class ConfigurationResource extends AbstractResource {
