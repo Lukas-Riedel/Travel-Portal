@@ -224,7 +224,8 @@
                     "relativeMediaItemId" => $externalReplacedPhotoId);
             }
             
-            return $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate", array(), $payload)["newMediaItemResults"];
+            $response = $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate", array(), $payload);
+            return isset($response["newMediaItemResults"]) ? $response["newMediaItemResults"] : array();
         }
         
         public function uploadPhoto($data) : string {
