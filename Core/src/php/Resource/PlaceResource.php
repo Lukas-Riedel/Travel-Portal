@@ -1458,7 +1458,10 @@ use Core\Service\Photo\PhotoService;
                 throw new NotFoundException($albumId);
             }
 
-            return $this->photoService->updateAlbum($albumId, $mainPhotoPosition);
+            $this->photoService->updateAlbum($albumId, $mainPhotoPosition);
+            
+            $place = $this->doGetPlace($placeId);
+            return $place->findAlbum($albumId);
         }
 
         #[OA\Post(
