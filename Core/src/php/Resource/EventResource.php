@@ -102,7 +102,7 @@
             $this->validateAdminPermissions($request);
 
             $name = $this->validateJsonBodyField($request, "name");
-            $args = $this->validateJsonBodyField($request, "args");
+            $args = $this->validateJsonBodyNullableField($request, "args");
             
             $this->eventPublisher->publishEvent(\Event::fromName($name), $args);
 
