@@ -401,14 +401,16 @@ export function useApi() {
     async function updateTripMainHighlight(tripId, mainHighlightId) {
         return sendRequest("PATCH", "/trips/" + tripId,
             {
-                mainHighlightId: mainHighlightId
+                mainHighlight: {
+                    id: mainHighlightId
+                }
             })
     }
 
     async function replaceTrip(tripId, candidateTripId) {
         return sendRequest("PUT", "/trips/" + tripId,
             {
-                candidateTripId: candidateTripId
+                id: candidateTripId
             })
     }
 
