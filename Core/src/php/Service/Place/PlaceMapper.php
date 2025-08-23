@@ -325,7 +325,7 @@
                     else {
                         $weather = null;
                         $sun = null;
-                        if ($placeRow["end"] > time()) {
+                        if ($placeRow["start"] > time()) {
                             $weather = $this->forecastService->getWeatherForecast($placeRow["id"], $placeRow["start"]);
                             $sun = $this->forecastService->getDaylightForecast($placeRow["id"], $placeRow["start"]);
                         }
