@@ -1708,8 +1708,6 @@ use Core\Service\Photo\PhotoService;
             ]
         )]
         public function listPlaceAlbumPhotos(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
-
             $placeId = $this->validatePathArgument($routeArguments, "placeId");
             $albumId = $this->validatePathArgument($routeArguments, "albumId");
             
