@@ -117,7 +117,7 @@
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
-    $photoService = new PhotoService($databaseProvider, $googleApiClient, $eventPublisher);
+    $photoService = new PhotoService($databaseProvider, $googleApiClient, $eventPublisher, $cacheClient);
     $highlightService = new HighlightService($databaseProvider, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher);

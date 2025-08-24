@@ -1,12 +1,16 @@
 <?php
     namespace Core\Service\Photo;
 
-    use Core\Service\Place\PlaceIdentifier;
+use Core\Client\CacheClient;
+use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Place\PlaceSortingStrategy;
 
     class PhotoService {
 
         private const PENDING_PHOTOS_EXPIRATION_INTERVAL = 86400;
+        
+        private const FETCHED_ALBUM_CACHE_KEY_FORMAT = "PhotoService:FetchedAlbum:%s";
+        private const FETCHED_ALBUM_CACHE_TTL = 3300;
 
         private const JPG_FILE_EXTENSION = ".jpg";
 
@@ -21,11 +25,15 @@
         private readonly \GoogleApiClient $googleApiClient;
         
         private readonly \EventPublisher $eventPublisher;
+        
+        private readonly CacheClient $cacheClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient,
+            \EventPublisher $eventPublisher, CacheClient $cacheClient) {
             $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
+            $this->cacheClient = $cacheClient;
         }
 
         public function getAllAlbums() : array {
@@ -65,7 +73,7 @@
             $this->createPendingPhotos($albumId);
 
             if ($mainPhotoPosition !== null) {
-                $photos = $this->getPhotos($albumId);
+                $photos = $this->getPhotos($albumId, true);
 
                 $mainPhotoPosition = $mainPhotoPosition - 1;
                 if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
@@ -92,7 +100,17 @@
             return $this->photoMapper->selectPhoto($photoId);
         }
 
-        public function getPhotos(string $albumId) : array {
+        public function getPhotos(string $albumId, bool $forceRefetch = false) : array {
+            $fetchedAlbumKey = sprintf(self::FETCHED_ALBUM_CACHE_KEY_FORMAT, $albumId);
+            if ($forceRefetch) {
+                $this->cacheClient->delete($fetchedAlbumKey);
+            }
+
+            $cachedPhotos = $this->cacheClient->get($fetchedAlbumKey);
+            if ($cachedPhotos !== null && is_array($cachedPhotos)) {
+                return $cachedPhotos;
+            }            
+
             $photos = array();
 
             // Fetch photos.
@@ -124,6 +142,9 @@
             foreach ($photos as &$photo) {
                 $this->photoMapper->insertPhoto($photo, $albumId);
             }
+
+            // Cache photos for faster access in the future.
+            $this->cacheClient->set($fetchedAlbumKey, $photos, self::FETCHED_ALBUM_CACHE_TTL);
 
             // The count of photos is different from what was previously stored in the database. Invalidate the album.
             if (count($photos) !== $deletedPhotosCount) {
