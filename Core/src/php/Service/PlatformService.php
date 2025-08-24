@@ -3,6 +3,9 @@
         public function onApplicationStarted(mixed $message) : void {
             global $databaseProvider, $googleApiClient;
 
+            // TODO: Enable after resolving the memory issues.
+            return;
+
             $dump = array();
 
             foreach (explode(",", $message["tables"]) as &$table) {
