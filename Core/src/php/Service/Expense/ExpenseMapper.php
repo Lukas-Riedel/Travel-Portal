@@ -92,40 +92,6 @@
                 });
         }
 
-        public function selectExchangeRate(string $currency) : ?float {
-            $sql = <<<'SQL'
-                SELECT exchange_rate
-                FROM cache_exchange_rate
-                WHERE currency = ?
-                    AND expiration > UNIX_TIMESTAMP()
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($currency)
-                ->getSingleColumn("exchange_rate");
-        }
-
-        public function insertExchangeRate(string $currency, float $exchangeRate, int $validity) : bool {
-            $sql = <<<'SQL'
-                INSERT INTO cache_exchange_rate (
-                    currency,
-                    exchange_rate,
-                    expiration
-                )
-                VALUES (
-                    ?,
-                    ?,
-                    UNIX_TIMESTAMP() + ?
-                )
-            SQL;
-
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($currency, $exchangeRate, $validity)
-                ->execute() === 1;
-        }
-
         public function insertExpense(Expense $expense, string $tripId, ?string $subscriptionId) : bool {
             $sql = <<<'SQL'
                 INSERT INTO expense (

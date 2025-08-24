@@ -9,8 +9,8 @@ use Core\Service\Place\PlaceIdentifier;
 
         private const PENDING_PHOTOS_EXPIRATION_INTERVAL = 86400;
         
-        private const FETCHED_ALBUM_CACHE_KEY_FORMAT = "PhotoService:FetchedAlbum:%s";
-        private const FETCHED_ALBUM_CACHE_TTL = 3300;
+        private const ALBUM_PHOTOS_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:%s";
+        private const ALBUM_PHOTOS_CACHE_TTL = 3300;
 
         private const JPG_FILE_EXTENSION = ".jpg";
 
@@ -101,7 +101,7 @@ use Core\Service\Place\PlaceIdentifier;
         }
 
         public function getPhotos(string $albumId, bool $forceRefetch = false) : array {
-            $fetchedAlbumKey = sprintf(self::FETCHED_ALBUM_CACHE_KEY_FORMAT, $albumId);
+            $fetchedAlbumKey = sprintf(self::ALBUM_PHOTOS_CACHE_KEY_FORMAT, $albumId);
             if ($forceRefetch) {
                 $this->cacheClient->delete($fetchedAlbumKey);
             }
@@ -144,7 +144,7 @@ use Core\Service\Place\PlaceIdentifier;
             }
 
             // Cache photos for faster access in the future.
-            $this->cacheClient->set($fetchedAlbumKey, $photos, self::FETCHED_ALBUM_CACHE_TTL);
+            $this->cacheClient->set($fetchedAlbumKey, $photos, self::ALBUM_PHOTOS_CACHE_TTL);
 
             // The count of photos is different from what was previously stored in the database. Invalidate the album.
             if (count($photos) !== $deletedPhotosCount) {
