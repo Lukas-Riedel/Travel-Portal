@@ -13,10 +13,12 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
-        // TODO: Integrate into the statistics cached value.
-        private const STATISTICS_VALIDITY_INTERVAL = 900;
-        private const STATISTICS_VALIDITY_CACHE_KEY_FORMAT = "StatisticsService:StatisticsValidity:%s:%s";
+        private const STATISTICS_VALIDITY_SECONDS = 900;
 
+        private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
+        private const STATISTICS_COLLECTION_CACHE_TTL = 365 * 86400;
+
+        // TODO: Remove after all statistics are re-computed and stored to Redis.
         private readonly StatisticsMapper $statisticsMapper;
 
         private readonly CacheClient $cacheClient;
@@ -75,14 +77,18 @@
 
         // TODO: Remove the categoryId parameter.
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
-            $statisticsValidityCacheKey = sprintf(self::STATISTICS_VALIDITY_CACHE_KEY_FORMAT, $statisticsType->name, $entityId ?? "null");
-            $cachedStatisticsValidity = $this->cacheClient->get($statisticsValidityCacheKey);            
-            if ($cachedStatisticsValidity !== null) {
-                // TODO: Extend the Scheduler functionality with an event replay option.
-                $secondsSinceLastUpdate = time() - $cachedStatisticsValidity;
-                $this->logger->debug("The statistics for the entity '{$statisticsType->name}:{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
-                    array("statisticsType" => $statisticsType->name, "entityId" => $entityId));
-                return;
+            $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
+            $cachedStatisticsCollection = $this->cacheClient->get($statisticsCollectionCacheKey);            
+            if ($cachedStatisticsCollection !== null) {
+                $secondsSinceLastUpdate = time() - $cachedStatisticsCollection["timestamp"];
+
+                // Do not compute the same statistics within a short interval to avoid flooding worker processes.
+                if ($secondsSinceLastUpdate < self::STATISTICS_VALIDITY_SECONDS) {
+                    // TODO: Extend the Scheduler functionality with an event replay option.
+                    $this->logger->debug("The statistics for the entity '{$statisticsType->name}:{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
+                        array("statisticsType" => $statisticsType->name, "entityId" => $entityId));
+                    return;
+                }
             }
 
             $updatedStatisticsRecords = array();
@@ -102,7 +108,11 @@
             foreach ($updatedStatisticsRecords as &$updatedStatisticsRecord) {
                 $this->statisticsMapper->insertStatisticsRecord($statisticsType, $updatedStatisticsRecord, $entityId);
             }
-            $this->cacheClient->set($statisticsValidityCacheKey, time(), self::STATISTICS_VALIDITY_INTERVAL);
+
+            if (count($updatedStatisticsRecords) > 0) {
+                $this->cacheClient->set($statisticsCollectionCacheKey, new StatisticsCollection($updatedStatisticsRecords, time()),
+                    self::STATISTICS_COLLECTION_CACHE_TTL);
+            }
         }
         
         private function getBeginningOfYearTimestamp(int $year) : int {
@@ -113,12 +123,22 @@
             return strtotime(sprintf(self::END_OF_YEAR_DATE_FORMAT, $year));
         }
 
-        private function getStatistics(StatisticsType $statisticsType, ?string $entityId) {
+        private function getStatistics(StatisticsType $statisticsType, ?string $entityId) : array {
             if ($statisticsType !== StatisticsType::Overall && $entityId === null) {
                 throw new \InvalidArgumentException("The entity identifier is required.");
             }
+
+            $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
+            $statisticsCollection = $this->cacheClient->get($statisticsCollectionCacheKey);
+            if ($statisticsCollection !== null) {
+                return $statisticsCollection["statistics"];
+            }
             
             return $this->statisticsMapper->selectStatisticsRecords($statisticsType, $entityId);
+        }
+
+        private function getStatisticsCollectionCacheKey(StatisticsType $statisticsType, string $entityId) : string {
+            return sprintf(self::STATISTICS_COLLECTION_CACHE_KEY_FORMAT, $statisticsType->name, $entityId ?? "null");
         }
     }
 ?>
