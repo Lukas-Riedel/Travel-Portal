@@ -20,10 +20,10 @@
             $conflictingFitnessRecords = $this->fitnessService->getConflictingFitnessRecords();
             foreach ($conflictingFitnessRecords as &$conflictingFitnessRecord) {
                 $existingFitnessRecord = $this->fitnessService->getFitnessRecordForInterval($conflictingFitnessRecord->getTimestamp(),
-                    FitnessService::FITNESS_RECORD_DURATION);
+                    $conflictingFitnessRecord->getTimestamp() + FitnessService::FITNESS_RECORD_DURATION);
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::CONFLICTING_FITNESS_RECORDS_ISSUE_NAME,
                     new TimeBasedFitnessCollection($conflictingFitnessRecord->getTimestamp(), 
-                        array($conflictingFitnessRecord, $existingFitnessRecord)), time());
+                        array($conflictingFitnessRecord->getFitness(), $existingFitnessRecord)), time());
             }
 
             return $dataConsistencyIssues;

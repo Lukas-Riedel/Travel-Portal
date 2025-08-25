@@ -24,7 +24,7 @@ const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy", 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
     const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode,
-        createGeographicalExtensionCategory, removeCandidatePlace, logFlight } = useApi()
+        createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness } = useApi()
     const { publishAllAlbumsInvalidatedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
@@ -117,6 +117,7 @@ export default function AdminPage() {
                     dataConsistencyIssues={dataConsistencyIssues}
                     airlines={airlines}
                     onAirlineCodeAssigned={createAirlineCode}
+                    onFitnessOverwritten={replaceFitness}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionCategory}
                     onPlaceRemoved={removeCandidatePlace}

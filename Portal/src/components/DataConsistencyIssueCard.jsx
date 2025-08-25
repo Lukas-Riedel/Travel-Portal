@@ -9,7 +9,7 @@ import { formatDuration, formatEvents } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
 
-export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned,
+export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessOverwritten,
     onAllAlbumsInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
@@ -25,6 +25,31 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     }
 
     const dataConsistencyIssues = {
+        "CONFLICTING_FITNESS_RECORDS": {
+            name: "Konfliktní záznamy o aktivitě",
+            getProperties: fitnessCollection => {
+                const properties = {
+                    "Čas": getDateTimeString(fitnessCollection.timestamp)
+                }
+
+                for (let i = 0; i < fitnessCollection.fitness.length; ++i) {
+                    const fitness = fitnessCollection.fitness[i]
+                    properties["Záznam " + (i + 1)] = `${fitness.steps} kroků, ${fitness.seconds} sekund, ${fitness.calories} kalorií, ${fitness.distance} kilometrů`
+                }
+
+                return properties
+            },
+            resolve: fitnessCollection => showFormToast(
+                "Vyber preferovaný záznam:",
+                [
+                    { type: "select", required: true, options: Array.from({ length: fitnessCollection.fitness.length }, (_, index) => ({ id: index, name: "Záznam " + (index + 1) })) }
+                ],
+                "Záznam byl úspěšně nahrazen",
+                "Nepodařilo se nahradit záznam",
+                fitnessIndex => onFitnessOverwritten(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps, fitnessCollection.fitness[fitnessIndex].seconds, 
+                    fitnessCollection.fitness[fitnessIndex].calories, fitnessCollection.fitness[fitnessIndex].distance, true)
+            )
+        },
         "PLACE_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {
             name: "Místo s highlighty bez atributů kvality",
             getProperties: place => (

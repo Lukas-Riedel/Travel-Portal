@@ -146,13 +146,13 @@ use Core\Service\Fitness\FitnessService;
 
     // Data consistency monitors.
     $dataConsistencyMonitors = array(
+        new FitnessDataConsistencyMonitor($fitnessService),
         new PhotoDataConsistencyMonitor($photoService, $placeService),
         new FlightDataConsistencyMonitor($flightService),
         new CategoryDataConsistencyMonitor($categoryService, $placeService),
         new PlaceDataConsistencyMonitor($placeService),
         new TripDataConsistencyMonitor($tripService, $configurationService),
-        new HighlightDataConsistencyMonitor($placeService, $tripService),
-        new FitnessDataConsistencyMonitor($fitnessService)
+        new HighlightDataConsistencyMonitor($placeService, $tripService)
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
     
