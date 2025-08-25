@@ -22,6 +22,10 @@
             $this->logger = $logger;
         }
         
+        public function getConflictingFitnessRecords() : array {
+            return $this->fitnessMapper->selectConflictingFitnessRecords();
+        }
+
         public function getFitnessRecordTimestampsToUpdate() : array {
             return $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate();
         }
@@ -43,12 +47,15 @@
                 $end, $fitnessSortingStrategy);
         }
 
-        public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance) : bool {
+        public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance, bool $forceUpdate = false) : bool {
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
+            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION), $calories, $distance);
+            
+            $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
 
-            if ($existingFitnessRecord !== null && ($steps < $existingFitnessRecord->getSteps()
+            if (!$forceUpdate && $existingFitnessRecord !== null && ($steps < $existingFitnessRecord->getSteps()
                 || $seconds < $existingFitnessRecord->getSeconds()|| round($distance, 3) < round($existingFitnessRecord->getDistance(), 3))) {
                 $context = array(
                     "steps" => array(
@@ -67,13 +74,14 @@
 
                 $this->logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
-                $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
-                return false;
+                $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);                
+                $this->fitnessMapper->insertConflictingFitnessRecord($fitnessRecord, $timestamp);
+                
+                // TODO: Return false after reworking transactional consistency (all statements in this block would be rollbacked in case of returning false).
+                return true;
             }
 
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
-
-            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION), $calories, $distance);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
             $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION);

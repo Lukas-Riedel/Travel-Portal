@@ -43,6 +43,12 @@
                     description: "The timestamp of the record",
                     schema: new OA\Schema(type: "string"),
                     example: "1754252500",
+                ),
+                new OA\Parameter(
+                    name: "forceOverwrite",
+                    in: "query",
+                    description: "Whether the fitness record should be forcibly overwritten or not",
+                    schema: new OA\Schema(type: "boolean")
                 )
             ],
             responses: [
@@ -104,8 +110,9 @@
                 // TODO: Remove support for minutes one day. 
                 $seconds = $this->validateJsonBodyField($request, "minutes") * 60;
             }
+            $forceOverwrite = filter_var($this->validateQueryNullableParameter($request, "forceOverwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
 
-            $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $calories, $distance);
+            $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $calories, $distance, $forceOverwrite);
             if (!$wasReplaced) {
                 throw new NotUpdatedException($timestamp);
             }

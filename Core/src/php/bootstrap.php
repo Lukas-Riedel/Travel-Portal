@@ -29,7 +29,8 @@
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseStatisticsProvider;
-    use Core\Service\Fitness\FitnessService;
+use Core\Service\Fitness\FitnessDataConsistencyMonitor;
+use Core\Service\Fitness\FitnessService;
     use Core\Service\Fitness\FitnessServiceListener;
     use Core\Service\Fitness\FitnessStatisticsProvider;
     use Core\Service\Flight\FlightDataConsistencyMonitor;
@@ -150,7 +151,8 @@
         new CategoryDataConsistencyMonitor($categoryService, $placeService),
         new PlaceDataConsistencyMonitor($placeService),
         new TripDataConsistencyMonitor($tripService, $configurationService),
-        new HighlightDataConsistencyMonitor($placeService, $tripService)
+        new HighlightDataConsistencyMonitor($placeService, $tripService),
+        new FitnessDataConsistencyMonitor($fitnessService)
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
     

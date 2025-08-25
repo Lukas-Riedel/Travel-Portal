@@ -83,12 +83,23 @@
                 intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
         }
 
+        public function selectConflictingFitnessRecords() : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM fitness_conflict
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($fitnessRow) {
+                    return new TimeBasedFitness(intval($fitnessRow["timestamp"]), intval($fitnessRow["steps"]), 
+                        intval($fitnessRow["seconds"]), intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+                });
+        }
+
         public function selectFitnessRecord(int $timestamp) : ?Fitness {
             $sql = <<<'SQL'
-                SELECT steps,
-                    seconds,
-                    calories,
-                    distance
+                SELECT *
                 FROM fitness
                 WHERE timestamp = ?
             SQL;
@@ -232,6 +243,30 @@
                 ->execute() === 1;
         }
 
+        public function insertConflictingFitnessRecord(Fitness $fitness, int $timestamp) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO fitness_conflict (
+                    timestamp, 
+                    steps, 
+                    seconds, 
+                    calories, 
+                    distance
+                )
+                VALUES (
+                    ?, 
+                    ?,
+                    ?, 
+                    ?, 
+                    ?
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getCalories(), $fitness->getDistance())
+                ->execute() === 1;
+        }
+
         public function updateFitnessRecordLastUpdate(int $timestamp) : bool {
             $sql = <<<'SQL'
                 UPDATE fitness
@@ -249,6 +284,19 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM fitness
+                WHERE timestamp = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($timestamp)
+                ->execute();
+        }
+
+        public function deleteConflictingFitnessRecord(int $timestamp) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM fitness_conflict
                 WHERE timestamp = ?
             SQL;
 
