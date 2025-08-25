@@ -18,9 +18,6 @@
         private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
         private const STATISTICS_COLLECTION_CACHE_TTL = 365 * 86400;
 
-        // TODO: Remove after all statistics are re-computed and stored to Redis.
-        private readonly StatisticsMapper $statisticsMapper;
-
         private readonly CacheClient $cacheClient;
         
         private readonly \EventPublisher $eventPublisher;
@@ -29,8 +26,7 @@
 
         private array $statisticsProviders = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, CacheClient $cacheClient, \EventPublisher $eventPublisher, Logger $logger) {
-            $this->statisticsMapper = new StatisticsMapper($databaseProvider);
+        public function __construct(CacheClient $cacheClient, \EventPublisher $eventPublisher, Logger $logger) {
             $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
@@ -103,11 +99,6 @@
                     }
                 }
             }
-            
-            $this->statisticsMapper->deleteAllStatisticsRecords($statisticsType, $entityId);
-            foreach ($updatedStatisticsRecords as &$updatedStatisticsRecord) {
-                $this->statisticsMapper->insertStatisticsRecord($statisticsType, $updatedStatisticsRecord, $entityId);
-            }
 
             if (count($updatedStatisticsRecords) > 0) {
                 $this->cacheClient->set($statisticsCollectionCacheKey, new StatisticsCollection($updatedStatisticsRecords, time()),
@@ -129,12 +120,7 @@
             }
 
             $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
-            $statisticsCollection = $this->cacheClient->get($statisticsCollectionCacheKey);
-            if ($statisticsCollection !== null) {
-                return $statisticsCollection["statistics"];
-            }
-            
-            return $this->statisticsMapper->selectStatisticsRecords($statisticsType, $entityId);
+            return $this->cacheClient->get($statisticsCollectionCacheKey) ?? array();
         }
 
         private function getStatisticsCollectionCacheKey(StatisticsType $statisticsType, string $entityId) : string {

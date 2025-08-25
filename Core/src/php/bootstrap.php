@@ -113,7 +113,7 @@
     $platformService = new PlatformService();
     $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
-    $statisticsService = new StatisticsService($databaseProvider, $cacheClient, $eventPublisher, $logger);
+    $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
