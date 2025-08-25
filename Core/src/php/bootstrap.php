@@ -129,7 +129,7 @@
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $deviceService = new DeviceService($databaseProvider, $authenticationService);
-    $monitoringService = new MonitoringService($cacheClient);
+    $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
 
     // Statistics providers.
     $statisticsProviders = array(

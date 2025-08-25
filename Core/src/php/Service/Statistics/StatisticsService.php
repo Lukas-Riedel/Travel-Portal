@@ -81,8 +81,7 @@
                 // Do not compute the same statistics within a short interval to avoid flooding worker processes.
                 if ($secondsSinceLastUpdate < self::STATISTICS_VALIDITY_SECONDS) {
                     // TODO: Extend the Scheduler functionality with an event replay option.
-                    $this->logger->debug("The statistics for the entity '{$statisticsType->name}:{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...",
-                        array("statisticsType" => $statisticsType->name, "entityId" => $entityId));
+                    $this->logger->debug("The statistics for the entity '{$statisticsType->name}{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...");
                     return;
                 }
             }
@@ -120,10 +119,32 @@
             }
 
             $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
-            return $this->cacheClient->get($statisticsCollectionCacheKey) ?? array();
+            $statisticsCollection = $this->cacheClient->get($statisticsCollectionCacheKey);
+            if ($statisticsCollection !== null) {
+                return $statisticsCollection["statistics"];
+            }
+
+            $this->logger->warning("The statistics for the entity '{$statisticsType->name}{$entityId}' are not available, scheduling an update...");
+
+            switch ($statisticsType) {
+                case StatisticsType::Overall:
+                    $this->eventPublisher->publishOverallStatisticsInvalidatedEvent();
+                    break;
+                case StatisticsType::Trip:
+                    $this->eventPublisher->publishTripStatisticsInvalidatedEvent($entityId);
+                    break;
+                case StatisticsType::Category:
+                    $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($entityId);
+                    break;
+                case StatisticsType::Year:
+                    $this->eventPublisher->publishYearStatisticsInvalidatedEvent($entityId);
+                    break;
+            }
+
+            return array();
         }
 
-        private function getStatisticsCollectionCacheKey(StatisticsType $statisticsType, string $entityId) : string {
+        private function getStatisticsCollectionCacheKey(StatisticsType $statisticsType, ?string $entityId) : string {
             return sprintf(self::STATISTICS_COLLECTION_CACHE_KEY_FORMAT, $statisticsType->name, $entityId ?? "null");
         }
     }

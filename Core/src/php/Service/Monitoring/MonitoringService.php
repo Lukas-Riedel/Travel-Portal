@@ -2,6 +2,7 @@
     namespace Core\Service\Monitoring;
 
     use Core\Client\CacheClient;
+    use Monolog\Logger;
 
     class MonitoringService {
         
@@ -9,11 +10,17 @@
         private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = 365 * 86400;
 
         private readonly CacheClient $cacheClient;
+        
+        private readonly \EventPublisher $eventPublisher;
+
+        private readonly Logger $logger;
 
         private array $dataConsistencyMonitors = array();
 
-        public function __construct(CacheClient $cacheClient) {
+        public function __construct(CacheClient $cacheClient, \EventPublisher $eventPublisher, Logger $logger) {
             $this->cacheClient = $cacheClient;
+            $this->eventPublisher = $eventPublisher;
+            $this->logger = $logger;
         }
 
         public function setDataConsistencyMonitors(array $dataConsistencyMonitors) : void {
@@ -22,11 +29,16 @@
 
         public function getDataConsistencyIssues() : array {
             $rawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
-            if ($rawIssues === null || !is_array($rawIssues)) {
-                return array();
+            if ($rawIssues !== null) {
+                return array_map(fn($dataConsistencyIssue) => new DataConsistencyIssue($dataConsistencyIssue["name"],
+                    $dataConsistencyIssue["context"], $dataConsistencyIssue["timestamp"]), $rawIssues);
             }
 
-            return array_map(fn($dataConsistencyIssue) => new DataConsistencyIssue($dataConsistencyIssue["name"], $dataConsistencyIssue["context"], $dataConsistencyIssue["timestamp"]), $rawIssues);
+            $this->logger->warning("The data consistency issues are not available, triggering a data consistency scan...");
+
+            $this->eventPublisher->publishDataConsistencyScanTriggeredEvent();
+
+            return array();
         }
 
         public function fetchDataConsistencyIssues() : void {
