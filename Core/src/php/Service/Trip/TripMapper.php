@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
     use Core\Service\Flight\FlightService;
@@ -27,9 +28,11 @@
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
+        private readonly ConfigurationService $configurationService;
+
         public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
-            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService) {
+            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, ConfigurationService $configurationService) {
             $this->databaseProvider = $databaseProvider;
             $this->calendarClient = $calendarClient;
             $this->placeService = $placeService;
@@ -40,6 +43,7 @@
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
+            $this->configurationService = $configurationService;
         }
 
         public function selectTripEventId(string $tripId) : ?string {
@@ -297,7 +301,9 @@
                     }
     
                     $statistics = array();
-                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities)) {
+                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities)
+                            && $tripRow["name"] !== $this->configurationService->getConfigurationEntry("trips")["dayTripsName"]
+                            && $tripRow["start"] < time()) {
                         $statistics = $this->statisticsService->getTripStatistics($tripRow["id"]);                 
                     }
     
