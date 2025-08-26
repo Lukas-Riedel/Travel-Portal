@@ -15,6 +15,21 @@
             return $apiResponse["id"];
         }
 
+        public function createFolder($name, $folderId) : ?string {
+            $payload = array(
+                "name" => $name,
+                "mimeType" => "application/vnd.google-apps.folder"
+            );
+
+            if ($folderId !== null) {
+                $payload["parents"] = array($folderId);
+            }
+
+            $file = $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/drive/v3/files", array(), $payload);
+
+            return isset($file["id"]) ? $file["id"] : null;
+        }
+
         public function createFile($name, $folderId, $contentType, $content) : bool {
             $separator = "mpr_separator";
 
