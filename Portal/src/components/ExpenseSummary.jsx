@@ -117,7 +117,9 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
 
     const loadingRows = Array.from({ length: loadingRowsCount })
         .map((_, index) => (
-            <LoadingExpenseRow key={index} />
+            <LoadingExpenseRow
+                key={index}
+                detailedView={detailedView} />
         ))
 
     const expenseCandidateRows = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
@@ -484,19 +486,19 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     )
 }
 
-function LoadingExpenseRow() {
+function LoadingExpenseRow({ detailedView }) {
     const { isAdmin } = useAuth()
 
     return (
         <tr>
-            <td
-                className="p-3"
-                colSpan={isAdmin ? 6 : 5}>
-                <div className="flex justify-center items-center h-full w-full">
-                    <TailSpin
-                        color="black"
-                        height={24}
-                        width={24} />
+            <td className="p-3 sm:hidden" colSpan={isAdmin && detailedView ? 5 : 4}>
+                <div className="flex justify-center items-center w-full">
+                    <TailSpin color="black" height={24} width={24} />
+                </div>
+            </td>
+            <td className="p-3 hidden sm:table-cell" colSpan={isAdmin && detailedView ? 6 : 5}>
+                <div className="flex justify-center items-center w-full">
+                    <TailSpin color="black" height={24} width={24} />
                 </div>
             </td>
         </tr>
