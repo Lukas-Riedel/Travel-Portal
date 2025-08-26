@@ -8,7 +8,7 @@
         schema: "Fitness",
         type: "object",
         description: "A class representing a fitness record",
-        required: ["steps", "seconds", "calories", "distance"],
+        required: ["steps", "seconds", "distance"],
         properties: [
             new OA\Property(
                 property: "steps",
@@ -23,13 +23,6 @@
                 example: 3721
             ),
             new OA\Property(
-                property: "calories",
-                type: "number",
-                format: "float",
-                description: "The number of calories burned within the record",
-                example: 321.5
-            ),
-            new OA\Property(
                 property: "distance",
                 type: "number",
                 format: "float",
@@ -41,13 +34,11 @@
     class Fitness implements \JsonSerializable {        
         private readonly int $steps;
         private readonly int $seconds;
-        private readonly float $calories;
         private readonly float $distance;
 
-        public function __construct(int $steps, int $seconds, float $calories, float $distance) {
+        public function __construct(int $steps, int $seconds, float $distance) {
             $this->steps = $steps;
             $this->seconds = $seconds;
-            $this->calories = $calories;
             $this->distance = $distance;
         }
 
@@ -57,10 +48,6 @@
 
         public function getSeconds() : int {
             return $this->seconds;
-        }
-
-        public function getCalories() : float {
-            return $this->calories;
         }
 
         public function getDistance() : float {

@@ -47,11 +47,11 @@
                 $end, $fitnessSortingStrategy);
         }
 
-        public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $calories, float $distance, bool $forceUpdate = false) : bool {
+        public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $distance, bool $forceUpdate = false) : bool {
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
-            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION), $calories, $distance);
+            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION), $distance);
             
             $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
 

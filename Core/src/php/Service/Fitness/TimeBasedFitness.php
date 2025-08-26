@@ -27,9 +27,9 @@
         private readonly int $timestamp;
         private readonly Fitness $fitness;
 
-        public function __construct(int $timestamp, int $steps, int $seconds, float $calories, float $distance) {
+        public function __construct(int $timestamp, int $steps, int $seconds, float $distance) {
             $this->timestamp = $timestamp;
-            $this->fitness = new Fitness($steps, $seconds, $calories, $distance);
+            $this->fitness = new Fitness($steps, $seconds, $distance);
         }
 
         public function getTimestamp() : int {

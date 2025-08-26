@@ -5,7 +5,7 @@ import showFormToast from "./FormToast"
 import showConfirmToast from "./ConfirmToast"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
 import { useApi } from "../hooks/useApi"
-import { formatDuration, formatEvents } from "../utils/formatters"
+import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
 
@@ -34,7 +34,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
                 for (let i = 0; i < fitnessCollection.fitness.length; ++i) {
                     const fitness = fitnessCollection.fitness[i]
-                    properties["Záznam " + (i + 1)] = `${fitness.steps} kroků, ${fitness.seconds} sekund, ${fitness.calories} kalorií, ${fitness.distance} kilometrů`
+                    properties["Záznam " + (i + 1)] = `${formatSteps(fitness.steps)}, ${formatKilometers((Math.round(fitness.distance) / 1000).toFixed(1))}, ${formatDuration(fitness.seconds)}`
                 }
 
                 return properties
@@ -46,8 +46,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 ],
                 "Záznam byl úspěšně nahrazen",
                 "Nepodařilo se nahradit záznam",
-                fitnessIndex => onFitnessOverwritten(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps, fitnessCollection.fitness[fitnessIndex].seconds, 
-                    fitnessCollection.fitness[fitnessIndex].calories, fitnessCollection.fitness[fitnessIndex].distance, true)
+                fitnessIndex => onFitnessOverwritten(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
+                    fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true)
             )
         },
         "PLACE_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {

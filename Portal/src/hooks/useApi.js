@@ -173,12 +173,11 @@ export function useApi() {
             })
     }
 
-    async function replaceFitness(timestamp, steps, seconds, calories, distance, forceOverwrite = false) {
+    async function replaceFitness(timestamp, steps, seconds, distance, forceOverwrite = false) {
         return sendRequest("PUT", "/fitness/" + timestamp + "?forceOverwrite=" + encodeURIComponent(forceOverwrite),
             {
                 steps: steps,
                 seconds: seconds,
-                calories: calories,
                 distance: distance
             })
     }

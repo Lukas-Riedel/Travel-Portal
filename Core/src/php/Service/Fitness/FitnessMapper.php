@@ -17,7 +17,6 @@
             $sql = <<<'SQL'
                 SELECT ROUND(SUM(steps) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS steps,
                     ROUND(SUM(seconds) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS seconds,
-                    ROUND(SUM(calories) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS calories,
                     ROUND(SUM(distance) / COUNT(DISTINCT FLOOR(timestamp / 86400))) AS distance
                 FROM fitness
                 WHERE timestamp >= ?
@@ -29,22 +28,16 @@
                 ->withParameters($start, $end)
                 ->getSingleRow();
 
-            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
-                intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]), doubleval($fitnessRow["distance"]));
         }
         
         public function selectTimeBasedFitnessRecordsPerDayForInterval(int $start, int $end, FitnessSortingStrategy $fitnessSortingStrategy) : array {
             $sql = <<<SQL
-                SELECT timestamp,
-                    steps,
-                    seconds,
-                    calories,
-                    distance
+                SELECT *
                 FROM (
                     SELECT timestamp - (timestamp % 86400) AS timestamp,
                         SUM(steps) AS steps,
                         SUM(seconds) AS seconds,
-                        SUM(calories) AS calories,
                         SUM(distance) AS distance
                     FROM fitness
                     GROUP BY timestamp - (timestamp % 86400)
@@ -58,8 +51,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($fitnessRow) {
-                    return new TimeBasedFitness(intval($fitnessRow["timestamp"]), intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
-                        intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+                    return new TimeBasedFitness(intval($fitnessRow["timestamp"]), intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]), doubleval($fitnessRow["distance"]));
                 });
         }
 
@@ -67,7 +59,6 @@
             $sql = <<<'SQL'
                 SELECT SUM(steps) AS steps,
                     SUM(seconds) AS seconds,
-                    SUM(calories) AS calories,
                     SUM(distance) AS distance
                 FROM fitness
                 WHERE timestamp >= ?
@@ -79,8 +70,7 @@
                 ->withParameters($start, $end)
                 ->getSingleRow();
 
-            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
-                intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+            return new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]), doubleval($fitnessRow["distance"]));
         }
 
         public function selectConflictingFitnessRecords() : array {
@@ -93,7 +83,7 @@
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($fitnessRow) {
                     return new TimeBasedFitness(intval($fitnessRow["timestamp"]), intval($fitnessRow["steps"]), 
-                        intval($fitnessRow["seconds"]), intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+                        intval($fitnessRow["seconds"]), doubleval($fitnessRow["distance"]));
                 });
         }
 
@@ -109,8 +99,7 @@
                 ->withParameters($timestamp)
                 ->getSingleRow();
 
-            return $fitnessRow === null ? null : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]),
-                intval($fitnessRow["calories"]), doubleval($fitnessRow["distance"]));
+            return $fitnessRow === null ? null : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]), doubleval($fitnessRow["distance"]));
         }
 
         public function selectMinimumDistancePerStep() : float {
@@ -217,6 +206,7 @@
                 ->getResultSetForColumn("start");
         }
 
+        // TODO: Switch to TimeBasedFitness.
         public function insertFitnessRecord(Fitness $fitness, int $timestamp) : bool {
             $sql = <<<'SQL'
                 INSERT INTO fitness (
@@ -224,7 +214,6 @@
                     last_update, 
                     steps, 
                     seconds, 
-                    calories, 
                     distance
                 )
                 VALUES (
@@ -232,30 +221,28 @@
                     UNIX_TIMESTAMP(),
                     ?,
                     ?, 
-                    ?, 
                     ?
                 )
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getCalories(), $fitness->getDistance())
+                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getDistance())
                 ->execute() === 1;
         }
 
+        // TODO: Switch to TimeBasedFitness.
         public function insertConflictingFitnessRecord(Fitness $fitness, int $timestamp) : bool {
             $sql = <<<'SQL'
                 INSERT INTO fitness_conflict (
                     timestamp, 
                     steps, 
                     seconds, 
-                    calories, 
                     distance
                 )
                 VALUES (
                     ?, 
                     ?,
-                    ?, 
                     ?, 
                     ?
                 )
@@ -263,7 +250,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getCalories(), $fitness->getDistance())
+                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getDistance())
                 ->execute() === 1;
         }
 

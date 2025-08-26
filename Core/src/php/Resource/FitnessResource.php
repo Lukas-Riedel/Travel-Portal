@@ -103,7 +103,6 @@
 
             $timestamp = $this->validatePathArgument($routeArguments, "timestamp");
             $steps = $this->validateJsonBodyField($request, "steps");
-            $calories = $this->validateJsonBodyField($request, "calories");
             $distance = $this->validateJsonBodyField($request, "distance");
             $seconds = $this->validateJsonBodyNullableField($request, "seconds");
             if ($seconds === null) {
@@ -112,7 +111,7 @@
             }
             $forceOverwrite = filter_var($this->validateQueryNullableParameter($request, "forceOverwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
 
-            $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $calories, $distance, $forceOverwrite);
+            $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $distance, $forceOverwrite);
             if (!$wasReplaced) {
                 throw new NotUpdatedException($timestamp);
             }
