@@ -34,7 +34,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
                 for (let i = 0; i < fitnessCollection.fitness.length; ++i) {
                     const fitness = fitnessCollection.fitness[i]
-                    properties["Záznam " + (i + 1)] = `${formatSteps(fitness.steps)}, ${formatKilometers((Math.round(fitness.distance) / 1000).toFixed(1))}, ${formatDuration(fitness.seconds)}`
+                    properties["Záznam " + (i + 1)] = `<ul class="list-disc ml-6"><li>${formatSteps(fitness.steps)}</li><li>${formatKilometers((Math.round(fitness.distance) / 1000).toFixed(1))}</li><li>${formatDuration(fitness.seconds)}</li></ul>`
                 }
 
                 return properties
@@ -276,7 +276,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                             <li
                                 key={key}
                                 className="text-gray-700 truncate">
-                                <span className="font-semibold">{key}:</span> {value}
+                                <span className="font-semibold">{key}:</span> <span dangerouslySetInnerHTML={{ __html: value }} />
                             </li>
                         ))}
                     </ul>
