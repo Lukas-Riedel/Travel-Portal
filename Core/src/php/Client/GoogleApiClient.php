@@ -1,4 +1,5 @@
 <?php
+    // TODO: Across this class return what API returns - e.g., for createFile, return the File object, or null if any error occurred.
     class GoogleApiClient {
         private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "GoogleApiClient:GoogleApiAccessToken";
 
@@ -13,6 +14,33 @@
             }
 
             return $apiResponse["id"];
+        }
+
+        public function getFolder($name, $folderId) : mixed {
+            return $this->getFile($name, "application/vnd.google-apps.folder", $folderId);
+        }
+
+        public function getFile($name, $mimeType, $folderId) : mixed {
+            $queryTokens = array();
+            if ($name !== null) {
+                $queryTokens[] = "name = '{$name}'";
+            }
+            if ($mimeType !== null) {
+                $queryTokens[] = "mimeType = '{$mimeType}'";
+            }
+            if ($folderId !== null) {
+                $queryTokens[] = "'{$folderId}' in parents";
+            }
+
+            $apiResponse = $this->executeRequest(HttpMethod::GET, "https://www.googleapis.com/drive/v3/files?pageSize=2&q=" . rawurlencode(implode(" and ", $queryTokens)));
+
+            if (isset($apiResponse["error"])) {
+                throw new RuntimeException($apiResponse["error"]["message"]);
+            }
+
+            $files = $apiResponse["files"];
+
+            return count($files) === 1 ? $files[0] : null;
         }
 
         public function createFolder($name, $folderId) : ?string {

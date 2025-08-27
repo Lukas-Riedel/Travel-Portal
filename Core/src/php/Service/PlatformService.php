@@ -1,16 +1,18 @@
 <?php
     class PlatformService {        
+        private const BACKUP_FOLDER_NAME = "Travel Portal Backups";
+
         public function onApplicationStarted(mixed $message) : void {
             global $databaseProvider, $googleApiClient;
 
-            // TODO: Enable after resolving the memory issues.
-            return;
+            $rootBackupFolder = $googleApiClient->getFolder(self::BACKUP_FOLDER_NAME, null);
+            $rootBackupFolderId = $rootBackupFolder === null ? $googleApiClient->createFolder(self::BACKUP_FOLDER_NAME, null) : $rootBackupFolder["id"];
 
-            $dump = array();
+            $backupFolderId = $googleApiClient->createFolder(date("d.m.Y H:i:s"), $rootBackupFolderId);
 
             foreach (explode(",", $message["tables"]) as &$table) {
-                $dump[] = "-- " . $table;
-        
+                $dump = array();
+
                 $rows = $databaseProvider
                     ->statementBuilder("SELECT * FROM " . $table)
                     ->getResultSet();
@@ -27,10 +29,8 @@
                     $dump[] = "INSERT INTO " . $table . " (" . implode(", ", $keys) . ") VALUES (" . implode(", ", $values) . ");";
                 }
 
-                $dump[] = "";
+                $googleApiClient->createFile($table . ".sql", $backupFolderId, "application/sql", implode("\n", $dump));
             }
-
-            $googleApiClient->createFile("Backup " . date("d.m.Y H:i:s") . ".sql", null, "application/sql", implode("\n", $dump));
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
