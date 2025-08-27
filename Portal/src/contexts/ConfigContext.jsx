@@ -7,17 +7,17 @@ const ConfigContext = createContext()
 export function ConfigurationProvider({ children }) {
     const { listConfigurationEntries, replaceConfigurationEntry } = useApi()
 
-    const configuration = useQuery({
+    const query = useQuery({
         queryKey: ["listConfigurationEntries", "public"],
         queryFn: () => listConfigurationEntries("public"),
-        staleTime: 1000 * 60 * 60 * 24,
-    }).data
+        staleTime: 1000 * 60 * 60 * 24
+    })
 
     const refetchConfiguration = _ => query.refetch()
 
     return (
         <ConfigContext.Provider value={{
-            configuration, 
+            configuration: query.data, 
             updateConfigurationEntry: (key, value) => replaceConfigurationEntry(key, value).then(refetchConfiguration)
         }}>
             {children}

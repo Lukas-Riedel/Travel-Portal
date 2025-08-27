@@ -306,7 +306,7 @@
         }
 
         private function getSuggestedExcerpt(string $name, string $country) : ?string {
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeExcerpt"];
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeExcerpt"];
             return $this->chatClient->getResponse($prompt, array("name" => $name, "country" => $country));
         }
 

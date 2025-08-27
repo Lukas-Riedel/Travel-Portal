@@ -167,10 +167,7 @@ export function useApi() {
     }
 
     async function replaceConfigurationEntry(key, value) {
-        return sendRequest("PUT", "/configuration/" + key,
-            {
-                value: value
-            })
+        return sendRequest("PUT", "/configuration/" + key, value)
     }
 
     async function replaceFitness(timestamp, steps, seconds, distance, forceOverwrite = false) {
