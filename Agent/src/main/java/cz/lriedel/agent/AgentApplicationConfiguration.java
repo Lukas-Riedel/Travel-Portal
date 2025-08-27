@@ -13,6 +13,7 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EnableRabbit
 @EnableRetry
 @EnableAspectJAutoProxy
+@EnableScheduling
 @ComponentScan
 @Configuration
 public class AgentApplicationConfiguration {

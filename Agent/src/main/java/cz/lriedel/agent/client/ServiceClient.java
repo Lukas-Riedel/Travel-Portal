@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import cz.lriedel.agent.model.Album;
+import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
 
@@ -23,6 +24,12 @@ public final class ServiceClient {
         this.restTemplate = restTemplate;
         this.retryTemplate = retryTemplate;
         this.httpEntityProvider = httpEntityProvider;
+    }
+
+    public void registerDevice(String token) {
+        DevicePrototype devicePrototype = new DevicePrototype(token);
+        retryTemplate.execute(context -> restTemplate.postForObject(
+            "/devices", httpEntityProvider.getHttpEntity(devicePrototype), Void.class));
     }
 
     public Album createAlbum(long placeId, long timestamp) {
