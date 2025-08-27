@@ -19,8 +19,6 @@
         private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
 
-        private const GET_SUGGESTED_EXCERPT_CHAT_PROMPT_FORMAT = "Please write an article about the place %s (%s) for my travel blog. The article will be published without editing, so it must be well-written, accurate, engaging, and factually rich. Focus on a general description of the place, highlighting its history, geographical setting, cultural and natural features, social and economic significance, and any unique characteristics that make it stand out. If it is a city or larger town, you may briefly mention population size or other essential facts, but avoid long descriptions of climate, transportation, or technical data. Do not list specific tourist attractions and do not use marketing phrases like \"taste the local specialties\". The text should read smoothly and naturally, avoiding a dry encyclopedic tone, and instead capture what makes the place distinctive and worth knowing about. Keep it around 200 to 400 words depending on the significance of the place. Write it as a single paragraph without headings, emojis, or direct calls to action. The article should provide the reader with a valuable, factual, and comprehensive overview that sparks curiosity to learn more.";
-        
         private readonly PlaceMapper $placeMapper;
 
         private readonly \ChatClient $chatClient;
@@ -308,7 +306,8 @@
         }
 
         private function getSuggestedExcerpt(string $name, string $country) : ?string {
-            return $this->chatClient->getResponse(sprintf(self::GET_SUGGESTED_EXCERPT_CHAT_PROMPT_FORMAT, $name, $country));
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeExcerpt"];
+            return $this->chatClient->getResponse($prompt, array("name" => $name, "country" => $country));
         }
 
         private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) : int {

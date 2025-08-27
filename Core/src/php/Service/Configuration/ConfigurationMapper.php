@@ -57,7 +57,7 @@
             
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters(json_encode($value), $key)
+                ->withParameters(json_encode($value, JSON_UNESCAPED_UNICODE), $key)
                 ->execute() === 1;
         }
     }
