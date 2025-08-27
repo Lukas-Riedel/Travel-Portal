@@ -6,20 +6,22 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
     use Core\Service\Flight\FlightService;
+    use Monolog\Logger;
 
     #[OA\Tag(name: "Airlines")]
     class AirlineResource extends AbstractResource {
 
         private readonly FlightService $flightService;
+        private readonly Logger $logger;
 
-        public function __construct(FlightService $flightService) {
+        public function __construct(FlightService $flightService, Logger $logger) {
             $this->flightService = $flightService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, FlightService $flightService) : void {
-            $resource = new self($flightService);
+        public static function register(App $app, FlightService $flightService, Logger $logger) : void {
+            $resource = new self($flightService, $logger);
 
             $app->group("/airlines", function($group) use($resource) {
                 $group->post("", [$resource, "createAirline"]);
@@ -375,7 +377,7 @@
             }
 
             if (!$wasUpdated) {
-                throw new NotUpdatedException($airlineId);
+                $this->logger->warning("The airline with the identifier '{$airlineId}' was not updated.");
             }
             
             $airline = $this->flightService->getAirline($airlineId);
@@ -565,7 +567,7 @@
 
             $wasUpdated = $this->flightService->updateAirlineCodeAirline($airlineCode, $airlineId);
             if (!$wasUpdated) {
-                throw new NotUpdatedException($airlineCode);                
+                $this->logger->warning("The airline code '{$airlineCode}' was not updated.");           
             }
 
             return $this->flightService->getAirline($airlineId);

@@ -22,24 +22,24 @@
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
         $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService,
-        $photoService, $eventPublisher) {
+        $photoService, $eventPublisher, $logger) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
-        AirlineResource::register($app, $flightService);
+        AirlineResource::register($app, $flightService, $logger);
         FlightResource::register($app, $flightService); 
-        CategoryResource::register($app, $categoryService, $highlightService);
+        CategoryResource::register($app, $categoryService, $highlightService, $logger);
         FitnessResource::register($app, $fitnessService);
         GeocodingResource::register($app, $geocodingService);
         MonitoringResource::register($app, $monitoringService);
         EventResource::register($app, $eventPublisher);
-        HighlightResource::register($app, $highlightService);
-        LabelResource::register($app, $labelService);
+        HighlightResource::register($app, $highlightService, $logger);
+        LabelResource::register($app, $labelService, $logger);
         StatisticsResource::register($app, $statisticsService);
         TrackerResource::register($app, $timeTrackingService);
         SubscriptionResource::register($app, $expenseService);
-        YearResource::register($app, $yearService, $highlightService);
-        TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService);
-        PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService);
+        YearResource::register($app, $yearService, $highlightService, $logger);
+        TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService, $logger);
+        PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
         SwaggerResource::register($app);
     };
 ?>

@@ -2,8 +2,8 @@
     namespace Core\Resource;
 
     use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
     use Core\Service\Highlight\HighlightService;
+    use Monolog\Logger;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -13,13 +13,15 @@
     class HighlightResource extends AbstractResource {
 
         private readonly HighlightService $highlightService;
+        private readonly Logger $logger;
 
-        public function __construct(HighlightService $highlightService) {
+        public function __construct(HighlightService $highlightService, Logger $logger) {
             $this->highlightService = $highlightService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, HighlightService $highlightService) : void {
-            $resource = new self($highlightService);
+        public static function register(App $app, HighlightService $highlightService, Logger $logger) : void {
+            $resource = new self($highlightService, $logger);
 
             $app->group("/highlights", function($group) use($resource) {
                 $group->get("/{highlightId}", [$resource, "getHighlight"]);
@@ -270,7 +272,7 @@
             }
 
             if (!$wasUpdated) {
-                throw new NotUpdatedException($highlightId);
+                $this->logger->warning("The highlight with the identifier '{$highlightId}' was not updated.");
             }
 
             $highlight = $this->highlightService->getHighlight($highlightId);

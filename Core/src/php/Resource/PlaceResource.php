@@ -6,18 +6,17 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
     use Core\Service\Label\LabelService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Note\NoteService;
-use Core\Service\Photo\PendingPhoto;
-use Core\Service\Photo\PhotoService;
+    use Core\Service\Photo\PhotoService;
     use Core\Service\Place\Place;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Place\PlaceType;
     use Core\Service\Place\SpecialPlaceType;
+    use Monolog\Logger;
 
     #[OA\Tag(name: "Places")]
     class PlaceResource extends AbstractResource {
@@ -27,17 +26,19 @@ use Core\Service\Photo\PhotoService;
         private readonly LabelService $labelService;
         private readonly NoteService $noteService;
         private readonly HighlightService $highlightService;
+        private readonly Logger $logger;
 
-        public function __construct(PlaceService $placeService, PhotoService $photoService, LabelService $labelService, NoteService $noteService, HighlightService $highlightService) {
+        public function __construct(PlaceService $placeService, PhotoService $photoService, LabelService $labelService, NoteService $noteService, HighlightService $highlightService, Logger $logger) {
             $this->placeService = $placeService;
             $this->photoService = $photoService;
             $this->labelService = $labelService;
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, PlaceService $placeService, PhotoService $photoService, LabelService $labelService, NoteService $noteService, HighlightService $highlightService) : void {
-            $resource = new self($placeService, $photoService, $labelService, $noteService, $highlightService);
+        public static function register(App $app, PlaceService $placeService, PhotoService $photoService, LabelService $labelService, NoteService $noteService, HighlightService $highlightService, Logger $logger) : void {
+            $resource = new self($placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
 
             $app->group("/places", function($group) use($resource) {
                 $group->post("", [$resource, "createPlace"]);
@@ -548,7 +549,7 @@ use Core\Service\Photo\PhotoService;
             }      
             
             if (!$wasUpdated) {
-                throw new NotUpdatedException($placeId);
+                $this->logger->warning("The place with the identifier '{$placeId}' was not updated.");
             }
 
             return $this->doGetPlace($placeId);

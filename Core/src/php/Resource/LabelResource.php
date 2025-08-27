@@ -2,8 +2,8 @@
     namespace Core\Resource;
 
     use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
     use Core\Service\Label\LabelService;
+    use Monolog\Logger;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -13,13 +13,15 @@
     class LabelResource extends AbstractResource {
         
         private readonly LabelService $labelService;
+        private readonly Logger $logger;
 
-        public function __construct(LabelService $labelService) {
+        public function __construct(LabelService $labelService, Logger $logger) {
             $this->labelService = $labelService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, LabelService $labelService) : void {
-            $resource = new self($labelService);
+        public static function register(App $app, LabelService $labelService, Logger $logger) : void {
+            $resource = new self($labelService, $logger);
 
             $app->group("/labels", function($group) use($resource) {
                 $group->get("", [$resource, "listLabels"]);
@@ -277,7 +279,7 @@
             }
 
             if (!$wasUpdated) {
-                throw new NotUpdatedException($labelId);
+                $this->logger->warning("The label with the identifier '{$labelId}' was not updated.");
             }
 
             $label = $this->labelService->getLabel($labelId);

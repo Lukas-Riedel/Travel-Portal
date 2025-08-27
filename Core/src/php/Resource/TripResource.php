@@ -16,6 +16,7 @@
     use Core\Service\Trip\TripService;
     use Core\Service\Trip\TripSortingStrategy;
     use Core\Service\Trip\TripType;
+    use Monolog\Logger;
 
     #[OA\Tag(name: "Trips")]
     class TripResource extends AbstractResource {
@@ -24,16 +25,18 @@
         private readonly ExpenseService $expenseService;
         private readonly NoteService $noteService;
         private readonly HighlightService $highlightService;
+        private readonly Logger $logger;
 
-        public function __construct(TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService) {
+        public function __construct(TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService, Logger $logger) {
             $this->tripService = $tripService;
             $this->expenseService = $expenseService;
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService) : void {
-            $resource = new self($tripService, $expenseService, $noteService, $highlightService);
+        public static function register(App $app, TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService, Logger $logger) : void {
+            $resource = new self($tripService, $expenseService, $noteService, $highlightService, $logger);
 
             $app->group("/trips", function($group) use($resource) {
                 $group->get("", [$resource, "listTrips"]);
@@ -471,7 +474,7 @@
             }        
             
             if (!$wasUpdated) {
-                throw new NotUpdatedException($tripId);
+                $this->logger->warning("The trip with the identifier '{$tripId}' was not updated.");
             }
 
             return $this->doGetTrip($tripId);
@@ -854,7 +857,7 @@
             }
 
             if (!$wasUpdated) {
-                throw new NotUpdatedException($expenseId);
+                $this->logger->warning("The expense with the identifier '{$expenseId}' was not updated.");
             }
 
             $expense = $this->expenseService->getExpense($expenseId);

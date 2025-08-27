@@ -6,27 +6,29 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Category\CategoryIncludedEntity;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\RegionType;
     use Core\Service\Highlight\HighlightService;
+    use Monolog\Logger;
 
     #[OA\Tag(name: "Categories")]
     class CategoryResource extends AbstractResource {
 
         private readonly CategoryService $categoryService;
         private readonly HighlightService $highlightService;
+        private readonly Logger $logger;
 
-        public function __construct(CategoryService $categoryService, HighlightService $highlightService) {
+        public function __construct(CategoryService $categoryService, HighlightService $highlightService, Logger $logger) {
             $this->categoryService = $categoryService;
             $this->highlightService = $highlightService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, CategoryService $categoryService, HighlightService $highlightService) : void {
-            $resource = new self($categoryService, $highlightService);
+        public static function register(App $app, CategoryService $categoryService, HighlightService $highlightService, Logger $logger) : void {
+            $resource = new self($categoryService, $highlightService, $logger);
 
             $app->group("/categories", function($group) use($resource) {
                 $group->post("", [$resource, "createCategory"]); // TODO: Refactor to createRegion?
@@ -520,7 +522,7 @@
             }
             
             if (!$wasUpdated) {
-                throw new NotUpdatedException($categoryId);
+                $this->logger->warning("The category with the identifier '{$categoryId}' was not updated.");
             }
             
             $category = $this->categoryService->getCategory($categoryId);

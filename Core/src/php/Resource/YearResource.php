@@ -6,24 +6,26 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Year\YearIncludedEntity;
     use Core\Service\Year\YearService;
+    use Monolog\Logger;
 
     #[OA\Tag(name: "Years")]
     class YearResource extends AbstractResource {
 
         private readonly YearService $yearService;
         private readonly HighlightService $highlightService;
+        private readonly Logger $logger;
 
-        public function __construct(YearService $yearService, HighlightService $highlightService) {
+        public function __construct(YearService $yearService, HighlightService $highlightService, Logger $logger) {
             $this->yearService = $yearService;
             $this->highlightService = $highlightService;
+            $this->logger = $logger;
         }
 
-        public static function register(App $app, YearService $yearService, HighlightService $highlightService) : void {
-            $resource = new self($yearService, $highlightService);
+        public static function register(App $app, YearService $yearService, HighlightService $highlightService, Logger $logger) : void {
+            $resource = new self($yearService, $highlightService, $logger);
 
             $app->group("/years", function($group) use($resource) {
                 $group->get("", [$resource, "listYears"]);
@@ -305,7 +307,7 @@
             }
             
             if (!$wasUpdated) {
-                throw new NotUpdatedException($yearId);
+                $this->logger->warning("The year '{$yearId}' was not updated.");
             }
                         
             $year = $this->yearService->getYear($yearId);
