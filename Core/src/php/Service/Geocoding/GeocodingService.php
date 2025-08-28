@@ -49,7 +49,7 @@ use Core\Service\Configuration\ConfigurationService;
             $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
             if ($location->getCountry() === null) {
                 // TODO: Remove the UNKNOWN country, use null instead.
-                $country = $countryNames["UNKNOWN"];
+                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
             }
             else if (in_array($location->getCountry(), array_map(fn($c) => $c["country"], $countryNames))) {
                 $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $location->getCountry()))[0]["name"];
