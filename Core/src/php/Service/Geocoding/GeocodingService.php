@@ -7,8 +7,8 @@ use Core\Service\Configuration\ConfigurationService;
 
         private const EARTH_RADIUS_KM = 6378;
         
-        private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+), (.+)\)}";
-        private const CACHED_ADDRESS_FORMAT = "%s, %s (%s, %s)";
+        private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+) (.+)\) \[(.+)\]}";
+        private const CACHED_ADDRESS_FORMAT = "%s, %s (%s %s) [%s]";
 
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
@@ -26,17 +26,21 @@ use Core\Service\Configuration\ConfigurationService;
         }
 
         public function getAddress(string $placeName, Location $location) : string {
-            return sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(), $location->getLatitude(), $location->getLongitude());
+            return sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(), $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
         }
 
         public function getLocation(string $address) : Location {
+            $location = $this->tryParseLocation($address);
+            if ($location !== null) {
+                return $location;
+            }
+
             $location = $this->doGetLocation($address);
             if ($location !== null) {
                 return $location;
             }
 
-            $this->createLocation($address);
-            return $this->doGetLocation($address);
+            return $this->createLocation($address);
         }
 
         private function doGetLocation(string $address) : ?Location {
@@ -61,19 +65,20 @@ use Core\Service\Configuration\ConfigurationService;
             return new Location($country, $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
         }
 
-        private function createLocation(string $address) : void {        
+        private function tryParseLocation(string $address) : ?Location {
+            preg_match(self::CACHED_ADDRESS_PATTERN, $address, $tokens);
+            if (count($tokens) !== 5) {
+                return null;
+            }
+            
+            return new Location($tokens[1], $tokens[2], $tokens[3], $tokens[4]);
+        }
+
+        private function createLocation(string $address) : Location {
             $country = null;
             $latitude = null;
             $longitude = null;
             $timezone = null;
-
-            // Quick path - read all necessary data (except timezone) from the address string.
-            preg_match(self::CACHED_ADDRESS_PATTERN, $address, $tokens);
-            if (count($tokens) === 4) {
-                $country = array_values(array_filter($this->configurationService->getConfigurationEntry("countryNames"), fn($country) => $country["name"] == $tokens[1]))[0]["country"];
-                $latitude = $tokens[2];
-                $longitude = $tokens[3];
-            }
 
             // Geocoding request.
             if ($country === null || $latitude === null || $longitude === null) {
@@ -105,7 +110,10 @@ use Core\Service\Configuration\ConfigurationService;
                 }
             }
 
-            $this->geocodingMapper->insertLocation(new Location($country, $latitude, $longitude, $timezone), $address);
+            $location = new Location($country, $latitude, $longitude, $timezone);
+            $this->geocodingMapper->insertLocation($location, $address);
+
+            return $location;
         }
 
         public function getDistance(float $aLatitude, float $aLongitude, float $bLatitude, float $bLongitude) : float {
