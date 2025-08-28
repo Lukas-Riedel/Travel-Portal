@@ -1,7 +1,8 @@
 <?php
     namespace Core\Service\Geocoding;
 
-use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\CacheClient;
+    use Core\Service\Configuration\ConfigurationService;
 
     class GeocodingService {
 
@@ -9,19 +10,22 @@ use Core\Service\Configuration\ConfigurationService;
         
         private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+) (.+)\) \[(.+)\]}";
         private const CACHED_ADDRESS_FORMAT = "%s, %s (%s %s) [%s]";
+        
+        private const ADDRESS_CACHE_KEY_FORMAT = "GeocodingService:Address:%s";
+        private const ADDRESS_CACHE_TTL = 365 * 86400;
 
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
-
-        private readonly GeocodingMapper $geocodingMapper;
         
         private readonly ConfigurationService $configurationService;
 
+        private readonly CacheClient $cacheClient;
+
         private readonly \HttpClient $httpClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \HttpClient $httpClient) {
-            $this->geocodingMapper = new GeocodingMapper($databaseProvider);
+        public function __construct(ConfigurationService $configurationService, CacheClient $cacheClient, \HttpClient $httpClient) {
             $this->configurationService = $configurationService;
+            $this->cacheClient = $cacheClient;
             $this->httpClient = $httpClient;
         }
 
@@ -43,26 +47,35 @@ use Core\Service\Configuration\ConfigurationService;
             return $this->createLocation($address);
         }
 
+        public function getDistance(float $aLatitude, float $aLongitude, float $bLatitude, float $bLongitude) : float {
+            $alpha = ($bLatitude - $aLatitude) / 2;
+            $beta = ($bLongitude - $aLongitude) / 2;
+            $a = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($aLatitude))
+                * cos(deg2rad($bLatitude)) * sin(deg2rad($beta)) * sin(deg2rad($beta));
+            $c = asin(min(1, sqrt($a)));
+            return 2 * self::EARTH_RADIUS_KM * $c;
+        }
+
         private function doGetLocation(string $address) : ?Location {
-            $location = $this->geocodingMapper->selectLocation($address);
+            $location = $this->cacheClient->get($this->getAddressCacheKey($address), self::ADDRESS_CACHE_TTL);
             if ($location === null) {
                 return null;
             }
 
             $country = null;
             $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
-            if ($location->getCountry() === null) {
+            if ($location["country"] === null) {
                 // TODO: Remove the UNKNOWN country, use null instead.
                 $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
             }
-            else if (in_array($location->getCountry(), array_map(fn($c) => $c["country"], $countryNames))) {
-                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $location->getCountry()))[0]["name"];
+            else if (in_array($location["country"], array_map(fn($c) => $c["country"], $countryNames))) {
+                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $location["country"]))[0]["name"];
             }
             else {
-                throw new \RuntimeException("Unknown country '" . $location->getCountry() . "' encountered.");
+                throw new \RuntimeException("Unknown country '" . $location["country"] . "' encountered.");
             }
 
-            return new Location($country, $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
+            return new Location($country, $location["latitude"], $location["longitude"], $location["timezone"]);
         }
 
         private function tryParseLocation(string $address) : ?Location {
@@ -81,27 +94,27 @@ use Core\Service\Configuration\ConfigurationService;
             $timezone = null;
 
             // Geocoding request.
-            if ($country === null || $latitude === null || $longitude === null) {
-                $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
-    
-                if ($apiResponse["status"] === "OK") {
-                    if (count($apiResponse["results"]) > 0) {
-                        $resolvedLocation = $apiResponse["results"][0];
-    
-                        $latitude = $resolvedLocation["geometry"]["location"]["lat"];
-                        $longitude = $resolvedLocation["geometry"]["location"]["lng"];
-                        
-                        foreach ($resolvedLocation["address_components"] as &$addressComponent) {
-                            if (in_array("country", $addressComponent["types"])) {
-                                $country = $addressComponent["long_name"];
-                                break;
-                            }
+            // TODO: Move to GoogleApiClient.
+            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
+
+            if ($apiResponse["status"] === "OK") {
+                if (count($apiResponse["results"]) > 0) {
+                    $resolvedLocation = $apiResponse["results"][0];
+
+                    $latitude = $resolvedLocation["geometry"]["location"]["lat"];
+                    $longitude = $resolvedLocation["geometry"]["location"]["lng"];
+                    
+                    foreach ($resolvedLocation["address_components"] as &$addressComponent) {
+                        if (in_array("country", $addressComponent["types"])) {
+                            $country = $addressComponent["long_name"];
+                            break;
                         }
                     }
                 }
             }
 
             // Timezone request.
+            // TODO: Move to GoogleApiClient.
             if ($latitude !== null && $longitude !== null && $timezone === null) {    
                 $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
                 
@@ -111,18 +124,13 @@ use Core\Service\Configuration\ConfigurationService;
             }
 
             $location = new Location($country, $latitude, $longitude, $timezone);
-            $this->geocodingMapper->insertLocation($location, $address);
+            $this->cacheClient->set($this->getAddressCacheKey($address), $location, self::ADDRESS_CACHE_TTL);
 
             return $location;
         }
 
-        public function getDistance(float $aLatitude, float $aLongitude, float $bLatitude, float $bLongitude) : float {
-            $alpha = ($bLatitude - $aLatitude) / 2;
-            $beta = ($bLongitude - $aLongitude) / 2;
-            $a = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($aLatitude))
-                * cos(deg2rad($bLatitude)) * sin(deg2rad($beta)) * sin(deg2rad($beta));
-            $c = asin(min(1, sqrt($a)));
-            return 2 * self::EARTH_RADIUS_KM * $c;
+        private function getAddressCacheKey(string $address) : string {
+            return sprintf(self::ADDRESS_CACHE_KEY_FORMAT, $address);
         }
     }
 ?>

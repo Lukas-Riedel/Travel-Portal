@@ -10,16 +10,24 @@
         // Decrease Redis calls as much as possible by caching in memory.
         private array $cache = array();
 
-        public function get(string $key) : mixed {
+        public function get(string $key, ?int $newTtl = null) : mixed {
             $this->init();
             
             $value = isset($this->cache[$key]) ? $this->cache[$key] : null;
             if ($value !== null) {
+                if ($newTtl !== null) {
+                    $this->redisClient->expire($key, $newTtl);                    
+                }
+
                 return json_decode($value, true);
             }
 
             $value = $this->redisClient->get($key);
             if ($value !== null) {
+                if ($newTtl !== null) {
+                    $this->redisClient->expire($key, $newTtl);                    
+                }
+
                 return json_decode($value, true);
             }
 

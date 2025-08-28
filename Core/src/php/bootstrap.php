@@ -117,7 +117,7 @@ use Core\Service\Fitness\FitnessService;
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseProvider);
     $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
-    $geocodingService = new GeocodingService($databaseProvider, $configurationService, $httpClient);
+    $geocodingService = new GeocodingService($configurationService, $cacheClient, $httpClient);
     $photoService = new PhotoService($databaseProvider, $googleApiClient, $eventPublisher, $cacheClient);
     $highlightService = new HighlightService($databaseProvider, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
