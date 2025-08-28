@@ -36,7 +36,7 @@ export default class Place {
 
     getPastTrips() {
         return [...new globalThis.Map(
-            this.dates
+            (this.dates ?? [])
                 .filter(date => date.start < Date.now() / 1000)
                 .map(date => date.trip)
                 .filter(trip => trip !== null)
@@ -46,7 +46,7 @@ export default class Place {
 
     getAllTrips() {
         return [...new globalThis.Map(
-            this.dates
+            (this.dates ?? [])
                 .map(date => date.trip)
                 .filter(trip => trip !== null)
                 .map(trip => [trip.id, trip]))
@@ -54,7 +54,7 @@ export default class Place {
     }
 
     getAlbums() {
-        return this.dates
+        return (this.dates ?? [])
             .map(date => date.album)
             .filter(album => album != null)
     }
@@ -64,10 +64,10 @@ export default class Place {
     }
 
     getDateByAlbumId(albumId) {
-        return this.dates.find(date => date.album?.id === albumId)
+        return (this.dates ?? []).find(date => date.album?.id === albumId)
     }
 
     getDate(date) {
-        return this.dates.find(d => isSameDay(date, fromUnixTime(d.start)))
+        return (this.dates ?? []).find(d => isSameDay(date, fromUnixTime(d.start)))
     }
 }

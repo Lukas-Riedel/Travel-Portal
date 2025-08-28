@@ -12,7 +12,7 @@ export default function FlightsPage() {
     const statistics = useStatistics()
 
     const flights = useMemo(() => {
-        const filteredFlights = trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration);
+        const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration);
         return filteredFlights && [...filteredFlights].reverse()
     }, [trips])
 

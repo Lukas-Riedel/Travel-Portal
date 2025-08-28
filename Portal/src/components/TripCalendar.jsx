@@ -55,7 +55,7 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                         day={day}
                         events={places && trip.getEvents(day, places, timezone)}
                         stay={trip.getStay(day)}
-                        fitness={trip.fitness[index]}
+                        fitness={trip.fitness && trip.fitness[index]}
                         publicHoliday={trip.getPublicHoliday(day)}
                         timezone={timezone}
                         onPhotosAdded={onPhotosAdded} />

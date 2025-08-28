@@ -45,7 +45,7 @@ export default function YearPage() {
             {isAdmin && (
                 <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
             )}
-            <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses)} />
+            <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses ?? [])} />
         </>
     )
 }

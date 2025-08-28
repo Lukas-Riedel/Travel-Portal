@@ -50,7 +50,7 @@ export default function AdminPage() {
     }, [activeTab])
 
     const watchedFlights = useMemo(() => {
-        const filteredFlights = trips?.flatMap(trip => trip.watchedFlights);
+        const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? []);
         return filteredFlights && [...filteredFlights].sort((a, b) => a.start - b.start)
     }, [trips])
 
@@ -96,7 +96,7 @@ export default function AdminPage() {
                 <>
                     <TripSummary tripId={upcomingOrCurrentTrip?.id} />
                     <NoteBar
-                        notes={upcomingOrCurrentTrip?.notes}
+                        notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
                         onNoteCreated={createTripNote}
                         onNoteRemoved={removeTripNote} />
                     <ExpenseSummary

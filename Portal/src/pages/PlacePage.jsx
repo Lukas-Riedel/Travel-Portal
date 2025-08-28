@@ -34,14 +34,14 @@ export default function PlacePage() {
                 onNameChanged={updatePlaceName} />
             <HighlightCarousel
                 place={place}
-                highlights={place?.highlights}
+                highlights={place && (place.highlights ?? [])}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removePlaceHighlight}
                 onMainHighlightUpdated={updatePlaceMainHighlight}
                 onHighlightQualityAttributesUpdated={updatePlaceHighlightQualityAttributes} />
-            <CategoryBar categories={place?.categories} />
+            <CategoryBar categories={place && (place.categories ?? [])} />
             <LabelBar
-                labels={place?.labels}
+                labels={place && (place.labels ?? [])}
                 onLabelAdded={createPlaceLabel}
                 onLabelRemoved={removePlaceLabel} />
             <PlaceContent
@@ -64,7 +64,7 @@ export default function PlacePage() {
             <SunAltitudeBar place={place} />
             {isAdmin && (
                 <NoteBar
-                    notes={place?.notes}
+                    notes={place && (place.notes ?? [])}
                     onNoteCreated={createPlaceNote}
                     onNoteRemoved={removePlaceNote} />
             )}

@@ -13,7 +13,7 @@ export default function AirportPage() {
     const countryCategories = useCategories({ categories: "COUNTRY" })
 
     const flights = useMemo(() => {
-        const filteredFlights = trips?.flatMap(trip => trip.flights)?.filter(flight => flight.registration)
+        const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)
             ?.filter(flight => flight.from.id === airportId || flight.to.id === airportId)
         return filteredFlights && [...filteredFlights].reverse()
     }, [trips])

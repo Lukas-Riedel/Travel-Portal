@@ -15,7 +15,7 @@ export default function AirlinePage() {
     const { airline, updateAirlineName, removeAirline } = useAirline(airlineId)
 
     const flights = useMemo(() => {
-        const filteredTrips = trips?.flatMap(trip => trip.flights)?.filter(flight => flight.airline?.id === airline?.id)
+        const filteredTrips = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.airline?.id === airline?.id)
         return filteredTrips && [...filteredTrips].reverse()
     }, [trips])
 

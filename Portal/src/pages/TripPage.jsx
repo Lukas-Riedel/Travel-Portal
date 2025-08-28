@@ -81,7 +81,7 @@ export default function TripPage() {
             )}
             {isAdmin && (
                 <NoteBar
-                    notes={trip?.notes}
+                    notes={trip && (trip.notes ?? [])}
                     onNoteCreated={createTripNote}
                     onNoteRemoved={removeTripNote} />
             )}
