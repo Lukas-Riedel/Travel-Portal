@@ -36,6 +36,13 @@ export function useApi() {
                 token: token
             })
     }
+    
+    async function listDevices({ type } = {}) {
+        return sendRequest("GET", "/devices", {},
+            {
+                type: type
+            })
+    }
 
     async function getLabel(labelId) {
         return sendRequest("GET", "/labels/" + labelId)
@@ -172,11 +179,14 @@ export function useApi() {
     }
 
     async function replaceFitness(timestamp, steps, seconds, distance, forceOverwrite = false) {
-        return sendRequest("PUT", "/fitness/" + timestamp + "?forceOverwrite=" + encodeURIComponent(forceOverwrite),
+        return sendRequest("PUT", "/fitness/" + timestamp,
             {
                 steps: steps,
                 seconds: seconds,
                 distance: distance
+            },
+            {
+                forceOverwrite: forceOverwrite
             })
     }
 
@@ -196,17 +206,25 @@ export function useApi() {
     }
 
     async function createCandidatePlace(name, address) {
-        return sendRequest("POST", "/places?type=candidate&address=" + encodeURIComponent(address),
+        return sendRequest("POST", "/places",
             {
                 name: name
+            },
+            {
+                type: "candidate",
+                address: address
             })
             .then(place => new Place(place))
     }
 
     async function createPermanentPlace(name, address) {
-        return sendRequest("POST", "/places?type=permanent&address=" + encodeURIComponent(address),
+        return sendRequest("POST", "/places",
             {
                 name: name
+            },
+            {
+                type: "permanent",
+                address: address
             })
             .then(place => new Place(place))
     }
@@ -283,15 +301,24 @@ export function useApi() {
     }
 
     async function removeCandidatePlace(placeId) {
-        return sendRequest("DELETE", "/places/" + placeId + "?type=candidate")
+        return sendRequest("DELETE", "/places/" + placeId, {},
+            {
+                type: "candidate"
+            })
     }
 
     async function removePermanentPlace(placeId) {
-        return sendRequest("DELETE", "/places/" + placeId + "?type=permanent")
+        return sendRequest("DELETE", "/places/" + placeId, {},
+            {
+                type: "permanent"
+            })
     }
 
     async function createPlaceAlbum(placeId, timestamp) {
-        return sendRequest("POST", "/places/" + placeId + "/albums?timestamp=" + timestamp)
+        return sendRequest("POST", "/places/" + placeId + "/albums", {},
+            {
+                timestamp: timestamp
+            })
     }
 
     async function refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition } = {}) {
@@ -645,6 +672,7 @@ export function useApi() {
         createAirlineCode,
         removeAirlineCode,
         createDevice,
+        listDevices,
         getLabel,
         listLabels,
         updateLabelName,

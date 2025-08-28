@@ -18,8 +18,10 @@ import { useAirlines } from "../hooks/useAirlines"
 import { useEvents } from "../hooks/useEvents"
 import ConfigurationEditor from "../components/ConfigurationEditor"
 import { useConfiguration } from "../contexts/ConfigContext"
+import DeviceCardGrid from "../components/DeviceCardGrid"
+import { useDevices } from "../hooks/useDevices"
 
-const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy", "Konfigurace"]
+const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy", "Konfigurace", "Zařízení"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
@@ -29,7 +31,8 @@ export default function AdminPage() {
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
-    const airlines = useAirlines();
+    const airlines = useAirlines()
+    const devices = useDevices({ type: "AGENT" })
     const trips = useRegularTrips({ include: "WATCHED_FLIGHTS" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
@@ -128,6 +131,14 @@ export default function AdminPage() {
                 <ConfigurationEditor
                     configuration={configuration}
                     onConfigurationUpdated={updateConfigurationEntry} />
+            )}
+            {activeTab === 4 && (
+                <>
+                    <DeviceCardGrid devices={devices} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleFlightCreated} />
+                </>
             )}
         </>
     )

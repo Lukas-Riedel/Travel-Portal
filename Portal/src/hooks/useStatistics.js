@@ -8,7 +8,7 @@ export const useStatistics = () => {
 
     const query = useQuery({
         queryKey: ["listStatistics"],
-        queryFn: () => listStatistics(),
+        queryFn: listStatistics,
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 

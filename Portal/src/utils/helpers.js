@@ -8,8 +8,8 @@ export function getDateString(timestamp) {
 }
 
 // TODO: Make sure all code that needs to format datetime uses this function.
-export function getDateTimeString(timestamp) {
-    return timestamp && format(fromUnixTime(timestamp), "d.M.yyyy H:mm")
+export function getDateTimeString(timestamp, includeYear = true) {
+    return timestamp && format(fromUnixTime(timestamp), includeYear ? "d.M.yyyy H:mm" : "d.M. H:mm")
 }
 
 // TODO: Make sure all code that needs to format time uses this function.

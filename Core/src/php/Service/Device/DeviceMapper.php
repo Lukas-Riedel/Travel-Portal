@@ -19,6 +19,7 @@
                 SELECT *
                 FROM device
                 WHERE :CONDITIONS
+                ORDER BY last_seen DESC
             SQL;
 
             $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
