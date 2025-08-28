@@ -1,5 +1,6 @@
 package cz.lriedel.agent.client;
 
+import java.net.InetAddress;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import cz.lriedel.agent.model.Album;
 import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
+import lombok.SneakyThrows;
 
 @Component
 public final class ServiceClient {
@@ -26,8 +28,9 @@ public final class ServiceClient {
         this.httpEntityProvider = httpEntityProvider;
     }
 
+    @SneakyThrows
     public void registerDevice(String token) {
-        DevicePrototype devicePrototype = new DevicePrototype(token);
+        DevicePrototype devicePrototype = new DevicePrototype("AGENT", InetAddress.getLocalHost().getHostName(), token);
         retryTemplate.execute(context -> restTemplate.postForObject(
             "/devices", httpEntityProvider.getHttpEntity(devicePrototype), Void.class));
     }

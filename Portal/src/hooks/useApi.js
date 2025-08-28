@@ -32,6 +32,7 @@ export function useApi() {
         return sendRequest("POST", "/devices",
             {
                 type: "PORTAL",
+                name: navigator.userAgent,
                 token: token
             })
     }

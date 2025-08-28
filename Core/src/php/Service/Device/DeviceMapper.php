@@ -26,7 +26,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($deviceType->value, implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRoles($requiredRoles))))
                 ->getMappedResultSet(function($deviceRow) {
-                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["token"], $deviceRow["user_id"]);
+                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["name"], $deviceRow["token"], $deviceRow["user_id"]);
                 });
         }
 
@@ -34,11 +34,13 @@
             $sql = <<<'SQL'
                 INSERT INTO device (
                     type,
+                    name,
                     token,
                     user_id,
                     last_seen
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?,
                     ?,
@@ -48,7 +50,7 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getType()->value, $device->getToken(), $device->getUserId())
+                ->withParameters($device->getType()->value, $device->getName(), $device->getToken(), $device->getUserId())
                 ->execute() === 1;
         }
 

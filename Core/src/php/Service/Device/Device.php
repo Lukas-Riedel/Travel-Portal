@@ -7,12 +7,18 @@
         schema: "Device",
         type: "object",
         description: "A class representing a device",
-        required: ["type", "token", "userId"],
+        required: ["type", "name", "token", "userId"],
         properties: [
             new OA\Property(
                 property: "type",
                 description: "The type of the device",
                 ref: "#/components/schemas/DeviceType"
+            ),
+            new OA\Property(
+                property: "name",
+                description: "The name of the device",
+                type: "string",
+                example: "DESKTOP-PC"
             ),
             new OA\Property(
                 property: "token",
@@ -28,14 +34,16 @@
             ),
         ]
     )]
-    class Device {
+    class Device implements \JsonSerializable {
 
         private readonly DeviceType $type;
+        private readonly string $name;
         private readonly string $token;
         private readonly string $userId;
 
-        public function __construct(DeviceType $type, string $token, string $userId) {
+        public function __construct(DeviceType $type, string $name, string $token, string $userId) {
             $this->type = $type;
+            $this->name = $name;
             $this->token = $token;
             $this->userId = $userId;
         }
@@ -44,12 +52,21 @@
             return $this->type;
         }
 
+        public function getName() : string {
+            return $this->name;
+        }
+
         public function getToken() : string {
             return $this->token;
         }
 
         public function getUserId() : string {
             return $this->userId;
+        }
+
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize() : mixed {
+            return get_object_vars($this);
         }
     }
 ?>

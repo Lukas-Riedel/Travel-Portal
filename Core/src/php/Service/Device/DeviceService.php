@@ -18,10 +18,11 @@
             return $this->deviceMapper->selectDevices($deviceType, $requiredRoles);
         }
 
-        public function registerOrUpdateDevice(DeviceType $deviceType, string $token, string $userId) : void {
-            $device = new Device($deviceType, $token, $userId);
+        public function registerOrUpdateDevice(DeviceType $deviceType, string $name, string $token, string $userId) : Device {
+            $device = new Device($deviceType, $name, $token, $userId);
             $this->deviceMapper->deleteDevice($device);
             $this->deviceMapper->insertDevice($device);
+            return $device;
         }
 
         public function unregisterInactiveDevices() : int {

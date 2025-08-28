@@ -35,16 +35,22 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["type", "token"],
+                    required: ["type", "name", "token"],
                     properties: [
                         new OA\Property(
                             property: "type",
                             ref: "#/components/schemas/DeviceType"
                         ),
                         new OA\Property(
-                            property: "token",
+                            property: "name",
+                            description: "The name of the device",
                             type: "string",
-                            description: "Device token",
+                            example: "DESKTOP-PC"
+                        ),
+                        new OA\Property(
+                            property: "token",
+                            description: "The token of the device",
+                            type: "string",
                             example: "devjFpQfdQ32P6cG0X6DrY:APA9332t1acBH11y41gABcDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRAFDCmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc"
                         )
                     ]
@@ -52,8 +58,9 @@
             ),
             responses: [
                 new OA\Response(
-                    response: 204,
-                    description: "Success. The device was created."
+                    response: 201,
+                    description: "Success. The device was created.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Device")
                 ),
                 new OA\Response(
                     response: 400,
@@ -97,11 +104,13 @@
             ]
         )]
         public function createDevice(Request $request, Response $response, array $routeArguments) : mixed {
-            $deviceType = DeviceType::from($this->validateJsonBodyField($request, "type"));
+            $deviceType = $this->validateJsonBodyField($request, "type");
+            $deviceName = $this->validateJsonBodyField($request, "name");
             $deviceToken = $this->validateJsonBodyField($request, "token");
             $userId = $this->getAccessToken($request)->getUserId();
+
+            $mappedType = DeviceType::from($deviceType);
             
-            $this->deviceService->registerOrUpdateDevice($deviceType, $deviceToken, $userId);
-            return null;
+            return $this->deviceService->registerOrUpdateDevice($mappedType, $deviceName, $deviceToken, $userId);
         }
     }
