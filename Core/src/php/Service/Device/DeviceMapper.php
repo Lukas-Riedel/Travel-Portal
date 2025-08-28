@@ -14,19 +14,24 @@
             $this->authenticationService = $authenticationService;
         }
 
-        public function selectDevices(DeviceType $deviceType, array $requiredRoles) : array {
+        public function selectDevices(?DeviceType $deviceType, array $requiredRoles) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM device
-                WHERE type = ?
-                    AND FIND_IN_SET(user_id, ?)
+                WHERE :CONDITIONS
             SQL;
+
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+                ->withClause("FIND_IN_SET(user_id, ?)", implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRoles($requiredRoles))));
+            if ($deviceType !== null) {
+                $whereClauseBuilder->withClause("type = ?", $deviceType->value);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
             
             return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters($deviceType->value, implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRoles($requiredRoles))))
+                ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($deviceRow) {
-                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["name"], $deviceRow["token"], $deviceRow["user_id"]);
+                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["name"], $deviceRow["token"], $deviceRow["user_id"], $deviceRow["last_seen"]);
                 });
         }
 
@@ -44,13 +49,13 @@
                     ?,
                     ?,
                     ?,
-                    UNIX_TIMESTAMP()
+                    ?
                 )
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getType()->value, $device->getName(), $device->getToken(), $device->getUserId())
+                ->withParameters($device->getType()->value, $device->getName(), $device->getToken(), $device->getUserId(), $device->getLastSeen())
                 ->execute() === 1;
         }
 

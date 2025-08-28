@@ -7,7 +7,7 @@
         schema: "Device",
         type: "object",
         description: "A class representing a device",
-        required: ["type", "name", "token", "userId"],
+        required: ["type", "name", "token", "lastSeen"],
         properties: [
             new OA\Property(
                 property: "type",
@@ -27,11 +27,12 @@
                 example: "devjFpQfdQ32P6cG0X6DrY:APA9332t1acBH11y41gABcDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRAFDCmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc"
             ),
             new OA\Property(
-                property: "userId",
-                description: "The identifier of the user owning the device",
-                type: "string",
-                example: "8c742eaf-a238-47cd-8d23-6704edf2cc58"
-            ),
+                property: "lastSeen",
+                description: "The last seen time of the device in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1688563200
+            )
         ]
     )]
     class Device implements \JsonSerializable {
@@ -40,12 +41,14 @@
         private readonly string $name;
         private readonly string $token;
         private readonly string $userId;
+        private readonly int $lastSeen;
 
-        public function __construct(DeviceType $type, string $name, string $token, string $userId) {
+        public function __construct(DeviceType $type, string $name, string $token, string $userId, int $lastSeen) {
             $this->type = $type;
             $this->name = $name;
             $this->token = $token;
             $this->userId = $userId;
+            $this->lastSeen = $lastSeen;
         }
 
         public function getType() : DeviceType {
@@ -64,9 +67,15 @@
             return $this->userId;
         }
 
+        public function getLastSeen() : int {
+            return $this->lastSeen;
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return get_object_vars($this);
+            $objectVars = get_object_vars($this);
+            unset($objectVars["userId"]);
+            return $objectVars;
         }
     }
 ?>
