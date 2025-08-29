@@ -8,6 +8,7 @@
         private ?Client $redisClient = null;
         
         // Decrease Redis calls as much as possible by caching in memory.
+        // TODO: Remove after moving from shared webhosting
         private array $cache = array();
 
         public function get(string $key, ?int $newTtl = null) : mixed {
@@ -15,19 +16,11 @@
             
             $value = isset($this->cache[$key]) ? $this->cache[$key] : null;
             if ($value !== null) {
-                if ($newTtl !== null) {
-                    $this->redisClient->expire($key, $newTtl);                    
-                }
-
                 return json_decode($value, true);
             }
 
-            $value = $this->redisClient->get($key);
+            $value = $this->doGet($key, $newTtl);
             if ($value !== null) {
-                if ($newTtl !== null) {
-                    $this->redisClient->expire($key, $newTtl);                    
-                }
-
                 return json_decode($value, true);
             }
 
@@ -81,6 +74,22 @@
             if ($this->redisClient === null) {
                 $this->redisClient = new Client(REDIS_URL);
             }
+        }
+
+        private function doGet(string $key, ?int $newTtl = null) : mixed {
+            if ($newTtl !== null) {
+                $lua = <<<'LUA'
+                    local val = redis.call("GET", KEYS[1])
+                    if val then
+                        redis.call("EXPIRE", KEYS[1], ARGV[1])
+                    end
+                    return val
+                LUA;
+
+                return $this->redisClient->eval($lua, 1, $key, $newTtl);
+            }
+
+            return $this->redisClient->get($key);
         }
     }
 ?>
