@@ -642,8 +642,8 @@
 
             $placeId = $this->validatePathArgument($routeArguments, "placeId");
             $type = $this->validateQueryParameter($request, "type");
-            
-            $mappedType = PlaceType::from($type);
+                        
+            $mappedType = SpecialPlaceType::from($type);
 
             $wasRemoved = match ($mappedType) {
                 SpecialPlaceType::Permanent => $this->placeService->removePermanentPlace($placeId),
