@@ -63,20 +63,7 @@
                 return null;
             }
 
-            $country = null;
-            $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
-            if ($location["country"] === null) {
-                // TODO: Remove the UNKNOWN country, use null instead.
-                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
-            }
-            else if (in_array($location["country"], array_map(fn($c) => $c["country"], $countryNames))) {
-                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $location["country"]))[0]["name"];
-            }
-            else {
-                throw new \RuntimeException("Unknown country '" . $location["country"] . "' encountered.");
-            }
-
-            return new Location($country, $location["latitude"], $location["longitude"], $location["timezone"]);
+            return new Location($location["country"], $location["latitude"], $location["longitude"], $location["timezone"]);
         }
 
         private function tryParseLocation(string $address) : ?Location {
@@ -106,7 +93,17 @@
                     
                     foreach ($resolvedLocation["address_components"] as &$addressComponent) {
                         if (in_array("country", $addressComponent["types"])) {
-                            $country = $addressComponent["long_name"];
+                            $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
+                            if ($addressComponent["long_name"] === null) {
+                                // TODO: Remove the UNKNOWN country, use null instead.
+                                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
+                            }
+                            else if (in_array($addressComponent["long_name"], array_map(fn($c) => $c["country"], $countryNames))) {
+                                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $addressComponent["long_name"]))[0]["name"];
+                            }
+                            else {
+                                throw new \RuntimeException("Unknown country '" . $addressComponent["long_name"] . "' encountered.");
+                            }
                             break;
                         }
                     }

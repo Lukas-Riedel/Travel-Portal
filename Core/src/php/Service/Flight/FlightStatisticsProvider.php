@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Flight;
-    
+
+    use Core\Common\CommonConstants;
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
     use Core\Service\Statistics\StatisticsKind;
