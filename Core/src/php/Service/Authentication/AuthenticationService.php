@@ -1,12 +1,13 @@
 <?php
     namespace Core\Service\Authentication;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
     class AuthenticationService {
 
         private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 3 * 24;
-        private const BEARER_TOKEN_VALIDITY = 3600;
+        private const BEARER_TOKEN_VALIDITY = CommonConstants::ONE_HOUR_SECONDS;
         private const ADMIN_USER_ID = "999";
 
         private const DELIMITER = "::";

@@ -1,16 +1,15 @@
 <?php
     namespace Core\Service\Highlight;
 
-use RuntimeException;
-use Core\Service\Photo\PhotoService;
-use Core\Service\Place\PlaceIncludedEntity;
-use Core\Service\Place\PlaceSortingStrategy;
-use Core\Service\Trip\TripIncludedEntity;
-use Core\Service\Trip\TripSortingStrategy;
+    use Core\Common\CommonConstants;
+    use RuntimeException;
+    use Core\Service\Photo\PhotoService;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Service\Trip\TripIncludedEntity;
+    use Core\Service\Trip\TripSortingStrategy;
 
     class HighlightService {
-        
-        private const JPG_FILE_EXTENSION = ".jpg";
 
         private readonly HighlightMapper $highlightMapper;
 
@@ -297,7 +296,7 @@ use Core\Service\Trip\TripSortingStrategy;
 
             $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
             foreach ($highlights as &$highlight) {
-                $fileName = $highlight->getId() . self::JPG_FILE_EXTENSION;
+                $fileName = $highlight->getId() . CommonConstants::JPG_FILE_EXTENSION;
                 $filePath = $this->getPhysicalCachePath($highlightSize) . "/" . $fileName;
     
                 if ($forceOverwrite || !file_exists($filePath)) {

@@ -1,17 +1,18 @@
 <?php
     namespace Core\Service\Statistics;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryService;
-use Core\Service\Flight\Airport;
-use Core\Service\Flight\Flight;
-use Core\Service\Flight\FlightService;
-use Core\Service\Place\PlaceService;
+    use Core\Service\Flight\Airport;
+    use Core\Service\Flight\Flight;
+    use Core\Service\Flight\FlightService;
+    use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripService;
 
     class StatisticsServiceListener {
         
         private const UPDATE_OVERALL_STATISTICS_ACTION_NAME = "UPDATE_OVERALL_STATISTICS";
-        private const UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL = 86400 * 21;
+        private const UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly StatisticsService $statisticsService;
 

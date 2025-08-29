@@ -1,9 +1,11 @@
 <?php
     namespace Core\Service\TimeTracking;
 
+    use Core\Common\CommonConstants;
+
     class TimeTrackingMapper {
 
-        private const STALE_USED_OVERTIME_THRESHOLD_SECONDS = 90 * 86400;
+        private const STALE_USED_OVERTIME_THRESHOLD_SECONDS = 3 * CommonConstants::ONE_MONTH_SECONDS;
         
         private readonly \DatabaseProvider $databaseProvider;
 

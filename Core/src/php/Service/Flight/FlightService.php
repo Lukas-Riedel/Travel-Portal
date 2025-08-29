@@ -1,13 +1,12 @@
 <?php
     namespace Core\Service\Flight;
-    
+
+    use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryService;
     use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Trip\TripService;
 
     class FlightService {
-
-        private const ONE_HOUR_SECONDS = 3600;
 
         private const UTC_TIMEZONE = "UTC";
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
@@ -86,7 +85,7 @@
 
             $selectedFlight = null;
             foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
-                if (($fetchedFlight["time"]["scheduled"]["departure"] - self::ONE_HOUR_SECONDS <= $scheduledDeparture) && ($fetchedFlight["time"]["scheduled"]["departure"] + self::ONE_HOUR_SECONDS >= $scheduledDeparture)) {
+                if (($fetchedFlight["time"]["scheduled"]["departure"] - CommonConstants::ONE_HOUR_SECONDS <= $scheduledDeparture) && ($fetchedFlight["time"]["scheduled"]["departure"] + CommonConstants::ONE_HOUR_SECONDS >= $scheduledDeparture)) {
                     $selectedFlight = $fetchedFlight;
                     break;
                 }

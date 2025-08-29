@@ -2,11 +2,12 @@
 
     namespace Core\Service\Device;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
 
     class DeviceService {
 
-        private const DEVICE_INACTIVITY_THRESHOLD = 30 * 86400;
+        private const DEVICE_INACTIVITY_THRESHOLD_SECONDS = CommonConstants::ONE_MONTH_SECONDS;
 
         private readonly DeviceMapper $deviceMapper;
 
@@ -27,7 +28,7 @@
 
         public function unregisterInactiveDevices() : int {
             // TODO: Ping unregistered device so it can eventually register again.
-            return $this->deviceMapper->deleteInactiveDevices(self::DEVICE_INACTIVITY_THRESHOLD);
+            return $this->deviceMapper->deleteInactiveDevices(self::DEVICE_INACTIVITY_THRESHOLD_SECONDS);
         }
     }
 ?>

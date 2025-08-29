@@ -3,6 +3,7 @@
 
     use Monolog\Logger;
     use Core\Client\CacheClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Trip\Trip;
 
@@ -16,7 +17,7 @@
         private const STATISTICS_VALIDITY_SECONDS = 900;
 
         private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
-        private const STATISTICS_COLLECTION_CACHE_TTL = 365 * 86400;
+        private const STATISTICS_COLLECTION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
         private readonly CacheClient $cacheClient;
         

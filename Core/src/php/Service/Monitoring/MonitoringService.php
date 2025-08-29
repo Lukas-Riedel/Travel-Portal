@@ -2,12 +2,13 @@
     namespace Core\Service\Monitoring;
 
     use Core\Client\CacheClient;
+    use Core\Common\CommonConstants;
     use Monolog\Logger;
 
     class MonitoringService {
         
         private const DATA_CONSISTENCY_ISSUES_CACHE_KEY = "MonitoringService:DataConsistencyIssues";
-        private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = 365 * 86400;
+        private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
         private readonly CacheClient $cacheClient;
         

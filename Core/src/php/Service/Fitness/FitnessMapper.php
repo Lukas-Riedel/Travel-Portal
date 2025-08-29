@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Fitness;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
     class FitnessMapper {
@@ -201,8 +202,8 @@
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, 
-                    FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION)
+                ->withParameters(CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS, 
+                    CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS)
                 ->getResultSetForColumn("start");
         }
 
@@ -348,7 +349,7 @@
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters(FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName, FitnessService::FITNESS_RECORD_DURATION, $dayTripsTripName)
+                ->withParameters(CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName)
                 ->execute();
         }
     }

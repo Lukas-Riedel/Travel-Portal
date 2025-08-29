@@ -1,10 +1,12 @@
 <?php
     namespace Core\Service\Photo;
 
+    use Core\Common\CommonConstants;
+
     class PhotoServiceListener {
 
         private const FETCH_ALBUMS_ACTION_NAME = "FETCH_ALBUMS";
-        private const FETCH_ALBUMS_ACTION_INTERVAL = 21600;
+        private const FETCH_ALBUMS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly PhotoService $photoService;
         

@@ -1,24 +1,21 @@
 <?php
     namespace Core\Service\Photo;
 
-use Core\Client\CacheClient;
-use Core\Service\Place\PlaceIdentifier;
+    use Core\Client\CacheClient;
+    use Core\Common\CommonConstants;
+    use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Place\PlaceSortingStrategy;
 
     class PhotoService {
 
-        private const PENDING_PHOTOS_EXPIRATION_INTERVAL = 86400;
+        private const PENDING_PHOTOS_EXPIRATION_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
         
         private const ALBUM_PHOTOS_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:%s";
-        private const ALBUM_PHOTOS_CACHE_TTL = 3300;
-
-        private const JPG_FILE_EXTENSION = ".jpg";
+        private const ALBUM_PHOTOS_CACHE_TTL = 3000;
 
         private const ALBUM_THUMBNAIL_WIDTH = 350;
         private const ALBUM_THUMBNAIL_HEIGHT = 233;
         private const ALBUM_THUMBNAIL_CACHE_PATH = "cache/album";
-
-        private const DMY_DATE_FORMAT = "j.n.Y";
 
         private readonly PhotoMapper $photoMapper;
 
@@ -191,7 +188,7 @@ use Core\Service\Place\PlaceIdentifier;
                     $mainImageUrl = null;
 
                     if (isset($album["coverPhotoMediaItemId"])) {
-                        $fileName = $album["coverPhotoMediaItemId"] . self::JPG_FILE_EXTENSION;
+                        $fileName = $album["coverPhotoMediaItemId"] . CommonConstants::JPG_FILE_EXTENSION;
                         $filePath = $this->getPhysicalCachePath() . "/" . $fileName;
             
                         if ($forceOverwrite || !file_exists($filePath)) {
@@ -317,7 +314,7 @@ use Core\Service\Place\PlaceIdentifier;
         }
 
         private function getAlbumName(string $placeName, int $timestamp) : string {
-            return $placeName . " " . date(self::DMY_DATE_FORMAT, $timestamp);
+            return $placeName . " " . date(CommonConstants::DMY_DATE_FORMAT, $timestamp);
         }
         
         private function getOrCreateAlbumId(string $externalId) : string {

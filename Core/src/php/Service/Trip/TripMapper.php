@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
@@ -12,8 +13,6 @@
     use Core\Service\Stay\StayService;
 
     class TripMapper {
-
-        private const ONE_DAY_SECONDS = 86400;
 
         private readonly \DatabaseProvider $databaseProvider;
 
@@ -283,10 +282,10 @@
     
                     $fitness = array();
                     if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
-                        $startOfDay = $tripRow["start"] - ($tripRow["start"] % self::ONE_DAY_SECONDS);
+                        $startOfDay = $tripRow["start"] - ($tripRow["start"] % CommonConstants::ONE_DAY_SECONDS);
                         while ($startOfDay < $tripRow["end"]) {
                             $fitness[] = $this->fitnessService->getFitnessRecordForOneDay($startOfDay);
-                            $startOfDay += self::ONE_DAY_SECONDS;
+                            $startOfDay += CommonConstants::ONE_DAY_SECONDS;
                         }
                     }
     

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Place;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Monitoring\DataConsistencyIssue;
     use Core\Service\Monitoring\DataConsistencyMonitor;
@@ -39,7 +40,7 @@
                 null, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
-                fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % 86400 === 0)), $relevantPlaces);
+                fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % CommonConstants::ONE_DAY_SECONDS === 0)), $relevantPlaces);
             foreach ($placesWithDatesWithoutTime as &$placeWithDatesWithoutTime) {
                 foreach ($placeWithDatesWithoutTime->getDates() as &$dateWithoutTime) {
                     $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITHOUT_TIME_ISSUE_NAME, 

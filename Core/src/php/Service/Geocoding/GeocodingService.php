@@ -2,6 +2,7 @@
     namespace Core\Service\Geocoding;
 
     use Core\Client\CacheClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
     class GeocodingService {
@@ -12,7 +13,7 @@
         private const CACHED_ADDRESS_FORMAT = "%s, %s (%s %s) [%s]";
         
         private const ADDRESS_CACHE_KEY_FORMAT = "GeocodingService:Address:%s";
-        private const ADDRESS_CACHE_TTL = 365 * 86400;
+        private const ADDRESS_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
@@ -94,7 +95,6 @@
             $timezone = null;
 
             // Geocoding request.
-            // TODO: Move to GoogleApiClient.
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
 
             if ($apiResponse["status"] === "OK") {
@@ -114,7 +114,6 @@
             }
 
             // Timezone request.
-            // TODO: Move to GoogleApiClient.
             if ($latitude !== null && $longitude !== null && $timezone === null) {    
                 $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
                 

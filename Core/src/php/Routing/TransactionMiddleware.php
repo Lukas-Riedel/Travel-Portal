@@ -7,8 +7,9 @@
     use Psr\Http\Message\ResponseInterface;
     use Core\Provider\DatabaseProvider;
 
+    // TODO: Remove, split into smaller transactions.
     class TransactionMiddleware implements MiddlewareInterface {
-        private \DatabaseProvider $databaseProvider;
+        private readonly \DatabaseProvider $databaseProvider;
 
         public function __construct(\DatabaseProvider $databaseProvider) {
             $this->databaseProvider = $databaseProvider;

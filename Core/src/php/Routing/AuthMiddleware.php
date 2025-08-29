@@ -1,6 +1,7 @@
 <?php
     namespace Core\Routing;
 
+    use Core\Common\CommonConstants;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
@@ -10,8 +11,6 @@
     use Core\Service\Authentication\AuthenticationService;
 
     class AuthMiddleware implements MiddlewareInterface {
-
-        public const ACCESS_TOKEN_ATTRIBUTE_KEY = "accessToken";
 
         private const BEARER_TOKEN_PATTERN = "/Bearer\s+(.*)$/i";
         private const GOOG_CHANNEL_TOKEN_HEADER = "X-Goog-Channel-Token";
@@ -39,7 +38,7 @@
                 throw new AuthenticationException("The access token was not provided.");
             }
 
-            return $handler->handle($request->withAttribute(self::ACCESS_TOKEN_ATTRIBUTE_KEY, $accessToken));
+            return $handler->handle($request->withAttribute(CommonConstants::ACCESS_TOKEN_REQUEST_ATTRIBUTE_KEY, $accessToken));
         }
 
         private function tryExtractAccessToken(ServerRequestInterface $request, string $header) : ?AccessToken {

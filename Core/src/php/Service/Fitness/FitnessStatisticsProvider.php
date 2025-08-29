@@ -1,8 +1,9 @@
 <?php
     namespace Core\Service\Fitness;
 
-use Core\Service\Place\PlaceIncludedEntity;
-use Core\Service\Place\PlaceService;
+    use Core\Common\CommonConstants;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
@@ -14,9 +15,6 @@ use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripSortingStrategy;
 
     class FitnessStatisticsProvider implements StatisticsProvider {
-
-        private const ONE_DAY_SECONDS = 86400;    
-        private const DMY_DATE_FORMAT = "j.n.Y";
 
         private const PLACES_AND_DATE_FORMAT = "%s @ %s";
 
@@ -123,11 +121,11 @@ use Core\Service\Place\PlaceService;
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
             return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
                 $places = array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $record->getTimestamp(),
-                    $record->getTimestamp() + self::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
+                    $record->getTimestamp() + CommonConstants::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
                     fn($place) => count($place->getDates()) > 0);
                 return empty($places) ? null : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
                     implode(", ", array_map(fn($place) => $place->getName(), $places)),
-                    date(self::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
+                    date(CommonConstants::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
             }, $records), fn($statistics) => $statistics !== null);
         }
     }

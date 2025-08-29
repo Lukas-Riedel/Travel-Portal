@@ -1,10 +1,12 @@
 <?php
     namespace Core\Service\Monitoring;
 
+    use Core\Common\CommonConstants;
+
     class MonitoringServiceListener {
         
         private const RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME = "RUN_DATA_CONSISTENCY_SCAN";
-        private const RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL = 3600;
+        private const RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly MonitoringService $monitoringService;
 

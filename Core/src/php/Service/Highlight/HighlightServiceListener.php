@@ -1,10 +1,12 @@
 <?php
     namespace Core\Service\Highlight;
 
+    use Core\Common\CommonConstants;
+
     class HighlightServiceListener {
         
         private const FETCH_HIGHLIGHTS_ACTION_NAME = "FETCH_HIGHLIGHTS";
-        private const FETCH_HIGHLIGHTS_ACTION_INTERVAL = 21600;
+        private const FETCH_HIGHLIGHTS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly HighlightService $highlightService;
 

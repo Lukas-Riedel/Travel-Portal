@@ -6,8 +6,8 @@
     class AuthorizationException extends \Exception {
 
         public function __construct(AccessToken $accessToken) {
-            // TODO: Improve the message based on the data from the access token.
-            parent::__construct("You are not allowed to access this resource.", 0, null);
+            $userId = $accessToken->getUserId();
+            parent::__construct("The user '$userId' to access this resource.", 0, null);
         }
     }
 ?>

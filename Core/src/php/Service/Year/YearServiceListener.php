@@ -1,12 +1,13 @@
 <?php
     namespace Core\Service\Year;
-    
+
+    use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
 
     class YearServiceListener {
         
         private const UPDATE_YEAR_STATISTICS_ACTION_NAME = "UPDATE_YEAR_STATISTICS";
-        private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 86400 * 21;
+        private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly YearService $yearService;
 

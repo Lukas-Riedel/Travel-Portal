@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Place;
-    
+
+    use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Trip\TripService;
 
@@ -11,8 +12,6 @@
         private const PHOTO_SCORE_MULTIPLIER = 1;
 
         private const MAIN_HIGHLIGHT_QUALITY_MULTIPLIER = 3;
-
-        private const ONE_YEAR_SECONDS = 365 * 86400;
 
         private readonly PlaceService $placeService;
 
@@ -131,7 +130,7 @@
                         $encounteredAlbums[] = $album->getId();
             
                         $tripId = $date->getTrip() === null
-                            ? intval($date->getStart() / self::ONE_YEAR_SECONDS)
+                            ? intval($date->getStart() / CommonConstants::ONE_YEAR_SECONDS)
                             : $date->getTrip()->getId();
             
                         if (!isset($buckets[$tripId])) {

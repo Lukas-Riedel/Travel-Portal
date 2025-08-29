@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Label;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -8,7 +9,7 @@
     class LabelServiceListener {
         
         private const UPDATE_DYNAMIC_LABELS_ACTION_NAME = "UPDATE_DYNAMIC_LABELS";
-        private const UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL = 43200;
+        private const UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly LabelService $labelService;
 

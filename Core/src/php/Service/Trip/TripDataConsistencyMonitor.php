@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Monitoring\DataConsistencyIssue;
     use Core\Service\Monitoring\DataConsistencyMonitor;
@@ -10,7 +11,7 @@
         private const HOURS_MINUTES_TIME_FORMAT = "H:i";
         private const MIDNIGHT_IN_HOURS_MINUTES_TIME_FORMAT = "00:00";
 
-        private const TRIP_WITHOUT_TIME_THRESHOLD_SECONDS = 60 * 86400;
+        private const TRIP_WITHOUT_TIME_THRESHOLD_SECONDS = 2 * CommonConstants::ONE_MONTH_SECONDS;
 
         private const TRIP_WITHOUT_TIME_ISSUE_NAME = "TRIP_WITHOUT_TIME";
 

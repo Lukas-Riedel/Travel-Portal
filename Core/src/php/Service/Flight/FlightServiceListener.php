@@ -1,13 +1,14 @@
 <?php
     namespace Core\Service\Flight;
 
-use Monolog\Logger;
-use Core\Service\Trip\TripService;
+    use Core\Common\CommonConstants;
+    use Monolog\Logger;
+    use Core\Service\Trip\TripService;
 
     class FlightServiceListener {
         
         private const LOG_FLIGHTS_ACTION_NAME = "LOG_FLIGHTS";
-        private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 14400;
+        private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 4 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly FlightService $flightService;
         

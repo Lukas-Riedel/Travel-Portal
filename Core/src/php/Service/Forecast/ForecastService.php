@@ -2,6 +2,7 @@
     namespace Core\Service\Forecast;
     
     use AurorasLive\SunCalc;
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Place\PlaceIdentifier;
 
@@ -60,12 +61,12 @@
 
         public function updateHistoricalWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {
             $oneYearAgoTimestamp = $timestamp;
-            while ($oneYearAgoTimestamp > time() - (1 + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER) * 86400) {
-                $oneYearAgoTimestamp -= 86400 * 365;
+            while ($oneYearAgoTimestamp > time() - (1 + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER) * CommonConstants::ONE_DAY_SECONDS) {
+                $oneYearAgoTimestamp -= CommonConstants::ONE_YEAR_SECONDS;
             } 
     
-            $startDate = date(self::YMD_DATE_FORMAT, $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * 86400);
-            $endDate = date(self::YMD_DATE_FORMAT, $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * 86400);
+            $startDate = date(self::YMD_DATE_FORMAT, $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
+            $endDate = date(self::YMD_DATE_FORMAT, $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
         
             $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $startDate, $endDate,
@@ -104,7 +105,7 @@
                 $bestForecast = $forecast;
             }         
 
-            if ($bestForecast === null || strtotime($bestForecast["time"]) + 21600 < $timestamp) {
+            if ($bestForecast === null || strtotime($bestForecast["time"]) + 6 * CommonConstants::ONE_HOUR_SECONDS < $timestamp) {
                 return;
             }
 
@@ -143,7 +144,7 @@
 
             $actualForecast = new Weather($convertedForecast["temperature"], $convertedForecast["clouds"], $convertedForecast["wind"],
                 $convertedForecast["precipitation"], $convertedForecast["symbol"], $convertedForecast["updatedAt"]);
-            $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + 3600);
+            $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + CommonConstants::ONE_HOUR_SECONDS);
 
             $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
             $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp, $expiration);

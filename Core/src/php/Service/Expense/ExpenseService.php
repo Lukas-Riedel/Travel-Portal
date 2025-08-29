@@ -2,6 +2,7 @@
     namespace Core\Service\Expense;
 
     use Core\Client\CacheClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
     class ExpenseService {
@@ -9,7 +10,7 @@
         private const GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT = "https://v6.exchangerate-api.com/v6/%s/latest/%s";
         
         private const EXCHANGE_RATE_CACHE_KEY = "ExpenseService:ExchangeRates";
-        private const EXCHANGE_RATE_CACHE_TTL = 86400;
+        private const EXCHANGE_RATE_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
         private readonly ExpenseMapper $expenseMapper;
         

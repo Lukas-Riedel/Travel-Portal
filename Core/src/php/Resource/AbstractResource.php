@@ -1,7 +1,8 @@
 <?php
     namespace Core\Resource;
 
-    use Core\Routing\AuthMiddleware;
+use Core\Common\CommonConstants;
+use Core\Routing\AuthMiddleware;
     use Core\Routing\AuthorizationException;
     use Core\Service\Authentication\AccessToken;
     use Slim\Psr7\Request;
@@ -10,7 +11,7 @@
     abstract class AbstractResource {
 
         public function getAccessToken(Request $request) : AccessToken {
-            return $request->getAttribute(AuthMiddleware::ACCESS_TOKEN_ATTRIBUTE_KEY);
+            return $request->getAttribute(CommonConstants::ACCESS_TOKEN_REQUEST_ATTRIBUTE_KEY);
         }
 
         public function validateAdminPermissions(Request $request) : void {          

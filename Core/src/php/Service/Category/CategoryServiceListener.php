@@ -1,13 +1,14 @@
 <?php
     namespace Core\Service\Category;
-    
+
+    use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Place\PlaceService;
 
     class CategoryServiceListener {
         
         private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
-        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 86400 * 21;
+        private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly CategoryService $categoryService;
 

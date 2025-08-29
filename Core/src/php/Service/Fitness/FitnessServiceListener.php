@@ -1,6 +1,8 @@
 <?php
     namespace Core\Service\Fitness;
 
+    use Core\Common\CommonConstants;
+
     class FitnessServiceListener {
 
         private const FETCH_FITNESS_ACTION_NAME = "FETCH_FITNESS";
@@ -21,12 +23,12 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, FitnessService::FITNESS_RECORD_DURATION)) {
+            if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, CommonConstants::FITNESS_RECORD_DURATION_SECONDS)) {
                 $timestampsToUpdate = $this->fitnessService->getFitnessRecordTimestampsToUpdate();
 
                 foreach ($timestampsToUpdate as &$timestampToUpdate) {
                     $this->eventPublisher->publishFitnessActivityDetectedEvent($timestampToUpdate,
-                        $timestampToUpdate + FitnessService::FITNESS_RECORD_DURATION);
+                        $timestampToUpdate + CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
                 }
             }
         }

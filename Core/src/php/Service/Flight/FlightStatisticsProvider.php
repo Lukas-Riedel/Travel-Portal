@@ -9,8 +9,6 @@
     use Core\Service\Statistics\StatisticsUnit;
 
     class FlightStatisticsProvider implements StatisticsProvider {
-
-        private const DMY_DATE_FORMAT = "j.n.Y";
         
         private const TOTAL_FLIGHTS_COUNT_STATISTICS_NAME = "TOTAL_FLIGHTS_COUNT";
         private const TOTAL_AIRBORNE_DISTANCE_STATISTICS_NAME = "TOTAL_AIRBORNE_DISTANCE";
@@ -109,21 +107,21 @@
                     }
 
                     $longestFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(self::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
+                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DurationDescending));
                     if (count($longestFlights) > 0) {
                         $statistics[] = new Statistics(self::LONGEST_FLIGHTS_STATISTICS_NAME, $longestFlights, StatisticsUnit::Duration);
                     }
 
                     $shortestFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(self::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
+                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DurationAscending));
                     if (count($shortestFlights) > 0) {
                         $statistics[] = new Statistics(self::SHORTEST_FLIGHTS_STATISTICS_NAME, $shortestFlights, StatisticsUnit::Duration);
                     }
 
                     $mostDelayedFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(self::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDelay()),
+                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDelay()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DelayDescending));
                     if (count($mostDelayedFlights) > 0) {
                         $statistics[] = new Statistics(self::MOST_DELAYED_FLIGHTS_STATISTICS_NAME, $mostDelayedFlights, StatisticsUnit::Duration);

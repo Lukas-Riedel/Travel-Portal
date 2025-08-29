@@ -1,14 +1,16 @@
 <?php
     namespace Core\Service\TimeTracking;
 
+    use Core\Common\CommonConstants;
+
     class TimeTrackingServiceListener {
         
-        private const BEGINNING_OF_YEAR = "1.1.";
+        private const BEGINNING_OF_YEAR_DATE_FORMAT = "1.1.%s";
 
         private const RESET_OPENING_BALANCES_ACTION_NAME = "RESET_OPENING_BALANCES";
         
         private const CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME = "CONSOLIDATE_TIME_TRACKING_EVENTS";
-        private const CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL = 86400;
+        private const CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
 
         private readonly TimeTrackingService $timeTrackingService;
 
@@ -42,7 +44,7 @@
         }
 
         private function getBeginningOfCurrentYear() : string {
-            return self::BEGINNING_OF_YEAR . date("Y");
+            return sprintf(self::BEGINNING_OF_YEAR_DATE_FORMAT, date("Y"));
         }
     }
 ?>

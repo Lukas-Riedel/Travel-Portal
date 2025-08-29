@@ -2,12 +2,12 @@
 
     use Core\Client\CalendarEvent;
     use Core\Client\PublicHoliday;
-    use Core\Routing\PayloadDecodingMiddleware;
+    use Core\Common\CommonConstants;
     use ICal\ICal;
 
     class CalendarClient {
         
-        private const GOOGLE_CALENDAR_WATCH_TTL_SECONDS = 86400;
+        private const GOOGLE_CALENDAR_WATCH_TTL_SECONDS = CommonConstants::ONE_DAY_SECONDS;
         
         // TODO: Change string $calendar to Calendar $calendar and update usages.
         public function watchCalendar(string $calendar) : void {
@@ -22,7 +22,7 @@
             );
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
-                BASE_URL . "/events?" . PayloadDecodingMiddleware::ENCODED_REQUEST_BODY_QUERY_PARAM . "=" . base64_encode(json_encode($payload)),
+                BASE_URL . "/events?" . CommonConstants::ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY . "=" . base64_encode(json_encode($payload)),
                 self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS, "Bearer " . $authenticationResult->getAccessToken(),);
         }
 

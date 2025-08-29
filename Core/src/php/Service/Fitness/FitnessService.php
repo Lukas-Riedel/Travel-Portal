@@ -1,14 +1,11 @@
 <?php
     namespace Core\Service\Fitness;
 
+    use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Service\Configuration\ConfigurationService;
 
     class FitnessService {
-
-        public const FITNESS_RECORD_DURATION = 1800;
-
-        private const ONE_DAY_SECONDS = 86400;
 
         private readonly FitnessMapper $fitnessMapper;
 
@@ -31,7 +28,7 @@
         }
 
         public function getFitnessRecordForOneDay(int $timestamp) : Fitness {
-            return $this->fitnessMapper->selectFitnessRecordForInterval($timestamp, $timestamp + self::ONE_DAY_SECONDS);
+            return $this->fitnessMapper->selectFitnessRecordForInterval($timestamp, $timestamp + CommonConstants::ONE_DAY_SECONDS);
         }
 
         public function getFitnessRecordForInterval(int $start, int $end) : Fitness {
@@ -43,7 +40,7 @@
         }
 
         public function getTimeBasedFitnessRecordsPerDayForInterval(int $start, int $end, FitnessSortingStrategy $fitnessSortingStrategy) : array {
-            return $this->fitnessMapper->selectTimeBasedFitnessRecordsPerDayForInterval(self::ONE_DAY_SECONDS * floor($start / self::ONE_DAY_SECONDS),
+            return $this->fitnessMapper->selectTimeBasedFitnessRecordsPerDayForInterval(CommonConstants::ONE_DAY_SECONDS * floor($start / CommonConstants::ONE_DAY_SECONDS),
                 $end, $fitnessSortingStrategy);
         }
 
@@ -51,7 +48,7 @@
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
-            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION), $distance);
+            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION_SECONDS), $distance);
             
             $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
 
@@ -84,7 +81,7 @@
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
-            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION);
+            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION_SECONDS);
 
             return true;
         }

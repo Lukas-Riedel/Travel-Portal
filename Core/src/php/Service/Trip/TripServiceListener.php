@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Flight\FlightService;
     use Core\Service\Flight\FlightType;
@@ -11,7 +12,7 @@
     class TripServiceListener {
         
         private const UPDATE_TRIP_STATISTICS_ACTION_NAME = "UPDATE_TRIP_STATISTICS";
-        private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 86400 * 21;
+        private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly TripService $tripService;
 

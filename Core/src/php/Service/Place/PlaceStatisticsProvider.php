@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Place;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Geocoding\GeocodingService;
@@ -12,8 +13,6 @@
     use Core\Service\Statistics\StatisticsUnit;
 
     class PlaceStatisticsProvider implements StatisticsProvider {
-
-        private const ONE_DAY_SECONDS = 86400;
 
         private const TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_COUNTRIES_COUNT";
         private const TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_PLACES_COUNT";
@@ -65,7 +64,7 @@
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Category) {
                     if ($visitedPlacesCount > 0) {
-                        $totalTravelDaysCount = count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS),
+                        $totalTravelDaysCount = count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces)))));
                         $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME, $totalTravelDaysCount, StatisticsUnit::Days);
                     }
@@ -102,7 +101,7 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $travelDaysCountByCountry = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
-                        count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS),
+                        count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $visitedCategory->getPlaces())))))),
                         $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Country, VisitedCategoriesSortingStrategy::TravelDaysCountDescending));
                     if (count($travelDaysCountByCountry) > 0) {
@@ -110,7 +109,7 @@
                     }
                     
                     $travelDaysCountByContinent = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
-                        count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % self::ONE_DAY_SECONDS),
+                        count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $visitedCategory->getPlaces())))))),
                         $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Continent, VisitedCategoriesSortingStrategy::TravelDaysCountDescending));
                     if (count($travelDaysCountByContinent) > 0) {

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Forecast;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -48,7 +49,7 @@
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
-                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400 > $date->getStart()) {
+                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
                         $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
                     }
                             
@@ -62,7 +63,7 @@
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
-                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400 > $date->getStart()) {
+                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
                         $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
                     }
                             
@@ -75,7 +76,7 @@
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
                 $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * 86400, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {

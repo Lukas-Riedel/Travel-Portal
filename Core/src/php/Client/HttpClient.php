@@ -1,4 +1,5 @@
 <?php
+    // TODO: Use only within another client, never in the service code. Extract such usages to separate clients.
     class HttpClient {
         public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = null, $includeResponseHeaders = false) {
             global $logger;

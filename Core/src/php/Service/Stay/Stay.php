@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Stay;
-    
+
+    use Core\Common\CommonConstants;
     use OpenApi\Attributes as OA;
 
     #[OA\Schema(
@@ -38,8 +39,6 @@
         ]
     )]
     class Stay implements \JsonSerializable {
-        private const ONE_DAY_SECONDS = 86400;
-
         private readonly string $name;
         private readonly string $address;
         private readonly int $start;
@@ -69,7 +68,7 @@
         }
 
         public function getNightsCount() : int {
-            return round(($this->end - $this->start) / self::ONE_DAY_SECONDS) - 1;
+            return round(($this->end - $this->start) / CommonConstants::ONE_DAY_SECONDS) - 1;
         }
 
         #[\ReturnTypeWillChange]

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Place;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
     use Core\Service\Configuration\ConfigurationService;
@@ -11,9 +12,6 @@
     use Core\Service\Photo\PhotoService;
 
     class PlaceMapper {
-
-        private const DMY_DATE_FORMAT = "j.n.Y";
-        private const ONE_DAY_SECONDS = 86400;
 
         private const VISITED_CATEGORIES_TEMPORARY_TABLE_NAME = "visited_categories";
 
@@ -213,10 +211,10 @@
             if ($albumId !== null) {
                 $album = $this->photoService->getAlbum($albumId);
                 if ($album !== null) {                    
-                    $albumDate = \DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                    $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
-                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS);
+                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -225,10 +223,10 @@
             if ($photoId !== null) {
                 $album = $this->photoService->getAlbumForPhotoId($photoId);
                 if ($album !== null) {
-                    $albumDate = \DateTime::createFromFormat(self::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                    $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
-                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS);
+                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -313,12 +311,12 @@
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
                     if ($placeRow["trip_id"] === null) {
                         foreach ($permanentPlaceAlbums as &$permanentPlaceAlbum) {
-                            $albumDate = \DateTime::createFromFormat(self::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                            $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                             $albumDate->setTime(0, 0);
                             $albumTimestamp = $albumDate->getTimestamp();
 
-                            if (($minStart === null || $minStart <= $albumTimestamp) && ($maxEnd === null || $albumTimestamp + self::ONE_DAY_SECONDS <= $maxEnd)) {
-                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + self::ONE_DAY_SECONDS, false, null, null, $permanentPlaceAlbum, null));
+                            if (($minStart === null || $minStart <= $albumTimestamp) && ($maxEnd === null || $albumTimestamp + CommonConstants::ONE_DAY_SECONDS <= $maxEnd)) {
+                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS, false, null, null, $permanentPlaceAlbum, null));
                             }
                         }
                     }
