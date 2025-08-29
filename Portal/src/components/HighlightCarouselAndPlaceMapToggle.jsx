@@ -38,7 +38,7 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
                 ref={carouselRef}
                 style={showMap ? { position: "absolute", left: "-9999px", top: 0, width: "100%" } : { width: "100%" }}>
                 <HighlightCarousel
-                    highlights={entity?.highlights}
+                    highlights={entity && (entity.highlights ?? [])}
                     onPhotoReplaced={onPhotoReplaced}
                     onHighlightRemoved={onHighlightRemoved}
                     onMainHighlightUpdated={onMainHighlightUpdated}
