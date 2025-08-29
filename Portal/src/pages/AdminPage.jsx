@@ -25,8 +25,8 @@ const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy", 
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
-    const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode,
-        createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness } = useApi()
+    const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum,
+        listRegularPlaces, createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness } = useApi()
     const { publishAllAlbumsInvalidatedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
@@ -122,6 +122,8 @@ export default function AdminPage() {
                     onAirlineCodeAssigned={createAirlineCode}
                     onFitnessOverwritten={replaceFitness}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
+                    onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "DATES" })
+                        .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionCategory}
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}

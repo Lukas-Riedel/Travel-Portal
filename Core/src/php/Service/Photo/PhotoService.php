@@ -36,6 +36,10 @@
         public function getAllAlbums() : array {
             return $this->photoMapper->selectAllAlbums();            
         }
+
+        public function getReplacedPhotos() : array {
+            return $this->photoMapper->selectReplacedPhotos();
+        }
         
         public function getAlbum(string $albumId) : ?Album {
             return $this->photoMapper->selectAlbum($albumId);
@@ -104,7 +108,7 @@
             }
 
             $cachedPhotos = $this->cacheClient->get($fetchedAlbumKey);
-            if ($cachedPhotos !== null && is_array($cachedPhotos)) {
+            if ($cachedPhotos !== null) {
                 return $cachedPhotos;
             }            
 
@@ -223,7 +227,7 @@
                             $highlightService->createPlaceHighlight($place->getId(), $mainPhotoId);
                             foreach ($place->getDates() as &$date) {
                                 if ($date->getTrip() !== null) {
-                                    $highlightService->createPlaceHighlight($date->getTrip()->getId(), $mainPhotoId);
+                                    $highlightService->createTripHighlight($date->getTrip()->getId(), $mainPhotoId);
                                 }
                             }
                         }
@@ -292,12 +296,17 @@
                 );
 
                 $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
-                $createdMediaItemId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
-                $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdMediaItemId);
-                
+                $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
+
+                $oldPhotoExternalId = $this->photoMapper->selectPhotoExternalId($pendingPhoto->getReplacedPhotoId());
+
+                $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhotoExternalId);                
                 if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
-                    $this->googleApiClient->updateAlbumMainPhoto($this->photoMapper->selectAlbumExternalId($albumId), $createdMediaItemId);
+                    $this->googleApiClient->updateAlbumMainPhoto($this->photoMapper->selectAlbumExternalId($albumId), $createdPhotoExternalId);
                 }
+                
+                $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true);
+                $this->photoMapper->insertPhoto($this->getPhoto($pendingPhoto->getReplacedPhotoId())->withReplacedId($oldPhotoNewId), $albumId);
 
                 $this->eventPublisher->publishPhotoInvalidatedEvent($pendingPhoto->getReplacedPhotoId());
             }
@@ -328,13 +337,13 @@
             return $this->photoMapper->selectAlbumId($externalId);
         }
     
-        private function getOrCreatePhotoId(string $externalId) : string {
+        private function getOrCreatePhotoId(string $externalId, bool $replaced = false) : string {
             $photoId = $this->photoMapper->selectPhotoId($externalId);
             if ($photoId !== null) {
                 return $photoId;
             }
 
-            $this->photoMapper->insertPhotoId($externalId);
+            $this->photoMapper->insertPhotoId($externalId, $replaced);
 
             return $this->photoMapper->selectPhotoId($externalId);
         }

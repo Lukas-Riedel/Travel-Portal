@@ -11,6 +11,7 @@
 
         private const ALBUM_WITHOUT_PLACE_ISSUE_NAME = "ALBUM_WITHOUT_PLACE";
         private const EMPTY_ALBUM_ISSUE_NAME = "EMPTY_ALBUM";
+        private const REPLACED_PHOTO_ISSUE_NAME = "REPLACED_PHOTO";
 
         private readonly PhotoService $photoService;
 
@@ -40,6 +41,11 @@
             $emptyAlbums = array_filter($allAlbums, fn($album) => $album->getImagesCount() === 0);
             foreach ($emptyAlbums as &$emptyAlbum) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::EMPTY_ALBUM_ISSUE_NAME, $emptyAlbum, time());
+            }
+
+            $replacedPhotos = $this->photoService->getReplacedPhotos();
+            foreach ($replacedPhotos as &$replacedPhoto) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::REPLACED_PHOTO_ISSUE_NAME, $replacedPhoto, time());
             }
 
             return $dataConsistencyIssues;

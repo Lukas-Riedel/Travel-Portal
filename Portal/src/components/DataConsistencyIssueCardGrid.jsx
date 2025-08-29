@@ -2,7 +2,7 @@ import CardGrid from "./CardGrid"
 import DataConsistencyIssueCard from "./DataConsistencyIssueCard"
 
 export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, airlines, onAirlineCodeAssigned, onFitnessOverwritten,
-        onAllAlbumsInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
+        onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
     return (
         <CardGrid cardsPerRowCount={4}>
             {dataConsistencyIssues?.map((dataConsistencyIssue, idx) => (
@@ -13,6 +13,7 @@ export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, ai
                     onAirlineCodeAssigned={onAirlineCodeAssigned}
                     onFitnessOverwritten={onFitnessOverwritten}
                     onAllAlbumsInvalidated={onAllAlbumsInvalidated}
+                    onPhotoInvalidated={onPhotoInvalidated}
                     onGeographicalExtensionCategoryAdded={onGeographicalExtensionCategoryAdded}
                     onPlaceRemoved={onPlaceRemoved}
                     onFlightLogged={onFlightLogged}

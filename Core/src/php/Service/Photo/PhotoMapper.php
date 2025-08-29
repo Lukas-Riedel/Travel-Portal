@@ -14,6 +14,20 @@
             $this->googleApiClient = $googleApiClient;
         }
 
+        public function selectReplacedPhotos() : array {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM photo_identifier
+                WHERE replaced = 1
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getMappedResultSetForColumn("id", function($photoId) {
+                    return $this->doSelectPhoto($photoId, fn() => null);
+                });
+        }
+
         public function selectAllAlbums() : array {
             $sql = <<<'SQL'
                 SELECT
@@ -434,19 +448,21 @@
                 ->execute() === 1;
         }
 
-        public function insertPhotoId(string $externalId) : bool {    
+        public function insertPhotoId(string $externalId, bool $replaced) : bool {    
             $sql = <<<'SQL'
                 INSERT INTO photo_identifier (
-                    external_id
+                    external_id,
+                    replaced
                 )
                 VALUES (
+                    ?,
                     ?
                 )
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($externalId)
+                ->withParameters($externalId, $replaced ? 1 : 0)
                 ->execute() === 1;
         }
 

@@ -10,14 +10,14 @@ import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessOverwritten,
-    onAllAlbumsInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
+    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
 
     const { listCategories } = useApi()
 
     const handleRefreshAllAlbums = () => {
-        showConfirmToast("Pokud byla provedena jakákoliv změna v albu, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",
+        showConfirmToast("Pokud bylo album odstraněno, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",
             "Všechna alba budou brzy aktualizována",
             "Nepodařilo se aktualizovat všchna alba",
             onAllAlbumsInvalidated
@@ -106,6 +106,22 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             resolve: album => {
                 window.open(album.permalink, "_blank")
                 handleRefreshAllAlbums()
+            }
+        },
+        "REPLACED_PHOTO": {
+            name: "Nahrazená fotka k odstranění",
+            getProperties: photo => (
+                {
+                    "Čas pořízení": getDateTimeString(photo.timestamp)
+                }
+            ),
+            resolve: photo => {
+                window.open(photo.permalink, "_blank")
+                showConfirmToast("Pokud byla fotka odstraněna, je potřeba aktualizovat její alba. Přeješ si pokračovat?",
+                    "Alba byla úspěšně aktualizována",
+                    "Nepodařilo se aktualizovat alba",
+                    async () => onPhotoInvalidated(photo.id)
+                )
             }
         },
         "AIRLINE_CODE_WITHOUT_AIRLINE": {

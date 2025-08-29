@@ -90,7 +90,7 @@
             return $this->id;
         }
 
-        public function getUrl() : string {
+        public function getUrl() : ?string {
             // Compute the URL only when it is needed to avoid unnecessary Google API calls.
             return ($this->urlProvider)();
         }
@@ -117,6 +117,10 @@
 
         public function getTimestamp() : ?int {
             return $this->timestamp;
+        }
+    
+        public function withReplacedId(string $newId) : Photo {
+            return new Photo($newId, $this->urlProvider, $this->permalink, $this->focalLength, $this->aperture, $this->shutterSpeed, $this->iso, $this->timestamp);
         }
 
         #[\ReturnTypeWillChange]
