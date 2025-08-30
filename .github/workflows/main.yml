@@ -106,11 +106,42 @@ jobs:
           distribution: 'temurin'
       - name: Verify
         run: mvn verify -f Agent/pom.xml
-  deploy-bridgex-android:
-    name: Deploy BridgeX Android
+  deploy-bridgex:
+    name: Deploy BridgeX
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.bridgex == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Set Up Android SDK
+        uses: android-actions/setup-android@v2
+      - name: Grant Execute Permission for Gradlew
+        run: |
+          cd BridgeX
+          chmod +x ./gradlew
+      - name: Prepare keystore
+        run: |
+          cd BridgeX
+          cd app
+          echo "${{ secrets.BRIDGEX_KEYSTORE_BASE64 }}" | base64 --decode > bridgex.jks
+      - name: Build APK
+        run: |
+          cd BridgeX
+          ./gradlew assembleRelease
+        env:
+          VERSION_TAG: ${{ github.run_number }}
+          KEYSTORE_FILE: bridgex.jks
+          KEYSTORE_PASSWORD: ${{ secrets.BRIDGEX_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.BRIDGEX_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.BRIDGEX_KEY_PASSWORD }}
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridgex-apk
+          path: BridgeX/app/build/outputs/apk/release/app-release.apk

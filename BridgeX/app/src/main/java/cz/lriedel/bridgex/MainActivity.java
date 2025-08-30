@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
 
         webView = findViewById(R.id.webview);
 
-        // základní nastavení
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -27,13 +26,10 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowFileAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
-        // WebViewClient zajišťuje, že linky zůstanou ve WebView
         webView.setWebViewClient(new WebViewClient());
 
-        // volitelně WebChromeClient pro podporu alertů, console.log, apod.
         webView.setWebChromeClient(new WebChromeClient());
 
-        // načtení HTTPS stránky
         webView.loadUrl("https://lriedel.cz");
     }
 
