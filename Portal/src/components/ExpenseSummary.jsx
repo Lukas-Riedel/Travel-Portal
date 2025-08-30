@@ -14,67 +14,67 @@ import showInputToast from "./InputToast"
 import { getDateString } from "../utils/helpers"
 
 const expenseTypes = {
-    ATTRACTION: {
+    attraction: {
         icon: FerrisWheel,
         label: "Atrakce",
         color: "text-yellow-600"
     },
-    FLIGHT: {
+    flight: {
         icon: Plane,
         label: "Letenky",
         color: "text-sky-600"
     },
-    HOTEL: {
+    hotel: {
         icon: Bed,
         label: "Ubytování",
         color: "text-amber-800"
     },
-    INTERCITY_TRANSPORT: {
+    intercityTransport: {
         icon: TrainFront,
         label: "Meziměstská doprava",
         color: "text-fuchsia-500"
     },
-    PUBLIC_TRANSPORT: {
+    publicTransport: {
         icon: BusFront,
         label: "Městská doprava",
         color: "text-indigo-700"
     },
-    AIRPORT_TRANSFER: {
+    airportTransfer: {
         icon: CarTaxiFront,
         label: "Letištní transfery",
         color: "text-orange-600"
     },
-    ORGANIZED_TOUR: {
+    organizedTour: {
         icon: Users,
         label: "Organizované zájezdy",
         color: "text-rose-700"
     },
-    CAR_RENTAL: {
+    carRental: {
         icon: CarFront,
         label: "Půjčení auta",
         color: "text-emerald-700"
     },
-    FUEL: {
+    fuel: {
         icon: Fuel,
         label: "Palivo",
         color: "text-red-700"
     },
-    CITY_TAX: {
+    cityTax: {
         icon: Building2,
         label: "Městské daně",
         color: "text-stone-600"
     },
-    PARKING: {
+    parking: {
         icon: SquareParking,
         label: "Parkování",
         color: "text-blue-900"
     },
-    VISA: {
+    visa: {
         icon: Landmark,
         label: "Víza, vstupní a výstupní poplatky",
         color: "text-green-700"
     },
-    OTHER: {
+    other: {
         icon: DollarSign,
         label: "Ostatní",
         color: "text-neutral-700"

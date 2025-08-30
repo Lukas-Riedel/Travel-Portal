@@ -72,7 +72,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
 
     const formatTimestamp = (timestamp, timestampTimezone) => format(toZonedTime(fromUnixTime(timestamp), timezone || timestampTimezone), "HH:mm")
 
-    const handlePhotosAdded = (placeId, albumId, timestamp) => {
+    const handlePhotosAdded = (placeId, placeName, albumId, timestamp) => {
         showFormToast(
             "Zadej cestu k fotkám k nahrání:",
             [
@@ -81,7 +81,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             ],
             "Nahrávání fotek bude brzy zahájeno",
             "Při nahrávání fotek došlo k chybě",
-            async (path, mainPhotoPosition) => onPhotosAdded(placeId, albumId, timestamp, path, mainPhotoPosition)
+            async (path, mainPhotoPosition) => onPhotosAdded(placeId, placeName, albumId, timestamp, path, mainPhotoPosition)
         )
     }
 
@@ -207,7 +207,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     </Link>
                                     {onPhotosAdded && isAdmin && (
                                         <button className="text-indigo-600"
-                                            onClick={() => handlePhotosAdded(event.id, event.album?.id, event.start)}>
+                                            onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start)}>
                                             <ImagePlus size={16} />
                                         </button>
                                     )}

@@ -15,7 +15,7 @@
                 FROM stay_event
                 WHERE start >= ?
                     AND end <= ?
-                {$staySortingStrategy->value}
+                {$staySortingStrategy->getOrderByClause()}
             SQL;
 
             return $this->databaseProvider

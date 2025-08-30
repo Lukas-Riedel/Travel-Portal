@@ -9,9 +9,9 @@
         description: "The type of the statistics record"
     )]
     enum StatisticsType : string {
-        case Overall = "ALL";
-        case Trip = "TRIP";
-        case Category = "CATEGORY";
-        case Year = "YEAR";
+        case Overall = "all";
+        case Trip = "trip";
+        case Category = "category";
+        case Year = "year";
     }
 ?>

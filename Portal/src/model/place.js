@@ -11,7 +11,7 @@ export default class Place {
     }
 
     getCategory(type) {
-        if (type === "MOST_SPECIFIC_WITH_METADATA") {
+        if (type === "mostSpecificWithMetadata") {
             return this.categories?.findLast(category => category.metadata != null
                 && category.metadata.color != null && category.metadata.unicode != null)
         }

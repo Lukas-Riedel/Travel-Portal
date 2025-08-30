@@ -342,7 +342,7 @@
                     ON ac.airline_id = ai.id
                 WHERE fl.scheduled_departure >= ?
                     AND fl.scheduled_arrival <= ?
-                {$flightSortingStrategy->value}
+                {$flightSortingStrategy->getOrderByClause()}
             SQL;
             
             return $this->databaseProvider

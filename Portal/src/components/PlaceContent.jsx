@@ -54,7 +54,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                 if (!place.isPermanent() && !placeDate) {
                     return Promise.reject("Unable to upload photos for the regular place for the date that does not exist.")
                 }
-                return onPhotosAdded(place.id, placeDate?.album?.id, timestamp, path, mainPhotoPosition)
+                return onPhotosAdded(place.id, place.name, placeDate?.album?.id, timestamp, path, mainPhotoPosition)
             }
         )
     }
@@ -110,7 +110,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
 
             <PlaceMap
                 places={[place]}
-                placeMainCategorySelector={place => place?.getCategory("MOST_SPECIFIC_WITH_METADATA")}
+                placeMainCategorySelector={place => place?.getCategory("mostSpecificWithMetadata")}
                 onRightClick={handleLocationUpdated} />
         </div>
     ) : (

@@ -48,7 +48,7 @@ public final class PhotoService {
         this.photoFetcher = photoFetcher;
     }
 
-    public void replacePhoto(long placeId, long albumId, long replacedPhotoId, Path path) {
+    public void replacePhoto(String placeId, String albumId, String replacedPhotoId, Path path) {
         log.info("Uploading a replacement for the photo {}...", replacedPhotoId);
         serviceClient.uploadPhoto(placeId, albumId, getPhotoName(path),
                 replacedPhotoId, photoFetcher.fetch(path));
@@ -56,7 +56,7 @@ public final class PhotoService {
         serviceClient.refreshAlbum(placeId, albumId);
     }
     
-    public void uploadPhotos(long placeId, @Nullable Long timestamp, @Nullable Long albumId,
+    public void uploadPhotos(String placeId, @Nullable Long timestamp, @Nullable String albumId,
                              @Nullable Integer mainPhotoPosition, Path path) {
         if (albumId == null) {
             log.info("Album for place {} does not exist. Creating a new album...", placeId);
@@ -74,7 +74,7 @@ public final class PhotoService {
     }
 
     @SneakyThrows
-    private void uploadPhotos(long placeId, long albumId, Path path) {
+    private void uploadPhotos(String placeId, String albumId, Path path) {
         try (Stream<Path> paths = Files.list(path)) {
             ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
             Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime))
@@ -111,7 +111,7 @@ public final class PhotoService {
     }
 
     @SneakyThrows
-    private double uploadPhoto(long placeId, long albumId, String batchId, int expectedBatchSize, int batchPosition, Path path) {
+    private double uploadPhoto(String placeId, String albumId, String batchId, int expectedBatchSize, int batchPosition, Path path) {
         long start = System.currentTimeMillis();
         serviceClient.uploadPhoto(placeId, albumId, getPhotoName(path), batchId, expectedBatchSize, batchPosition, photoFetcher.fetch(path));
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;

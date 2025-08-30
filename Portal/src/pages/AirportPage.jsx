@@ -9,8 +9,8 @@ import FlightMap from "../components/FlightMap"
 export default function AirportPage() {
     const { airportId } = useParams()
 
-    const trips = useRegularTrips({ include: "FLIGHTS" })
-    const countryCategories = useCategories({ categories: "COUNTRY" })
+    const trips = useRegularTrips({ include: "flights" })
+    const countryCategories = useCategories({ categories: "country" })
 
     const flights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)

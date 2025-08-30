@@ -31,7 +31,7 @@ export function useApi() {
     async function createDevice(token) {
         return sendRequest("POST", "/devices",
             {
-                type: "PORTAL",
+                type: "portal",
                 name: navigator.userAgent,
                 token: token
             })

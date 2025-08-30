@@ -200,13 +200,13 @@
                     name: "categories",
                     in: "query",
                     description: "The comma-separated list of category categories",
-                    example: "COUNTRY,ADMINISTRATIVE"
+                    example: "country,administrative"
                 ),
                 new OA\Parameter(
                     name: "include",
                     in: "query",
                     description: "The comma-separated list of included entities",
-                    example: "HIGHLIGHTS,STATISTICS"
+                    example: "highlights,statistics"
                 )
             ],
             responses: [

@@ -32,8 +32,8 @@ export default function AdminPage() {
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const airlines = useAirlines()
-    const devices = useDevices({ type: "AGENT" })
-    const trips = useRegularTrips({ include: "WATCHED_FLIGHTS" })
+    const devices = useDevices({ type: "agent" })
+    const trips = useRegularTrips({ include: "watchedFlights" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
 
@@ -122,7 +122,7 @@ export default function AdminPage() {
                     onAirlineCodeAssigned={createAirlineCode}
                     onFitnessOverwritten={replaceFitness}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
-                    onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "DATES" })
+                    onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "dates" })
                         .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionCategory}
                     onPlaceRemoved={removeCandidatePlace}

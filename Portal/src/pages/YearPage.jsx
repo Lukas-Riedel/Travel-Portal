@@ -19,10 +19,10 @@ export default function YearPage() {
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
-    const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "CATEGORIES" })
-    const yearTrips = useRegularTrips({ year: yearParameter, include: "EXPENSES" })
+    const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "categories" })
+    const yearTrips = useRegularTrips({ year: yearParameter, include: "expenses" })
 
-    const countryCategoriesMap = useMemo(() => new Map(yearPlaces?.map(place => place.getCategory("COUNTRY"))
+    const countryCategoriesMap = useMemo(() => new Map(yearPlaces?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [yearPlaces])
 
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)

@@ -68,22 +68,22 @@ export function formatMainCurrency(value, mainCurrency) {
 
 export function formatStatisticsUnit(unit, value, mainCurrency) {
     const statisticsUnits = {
-        "KILOMETERS": formatKilometers,
-        "PHOTOS": formatPhotos,
-        "DURATION": formatDuration,
-        "COUNTRIES": formatCountries,
-        "PLACES": formatPlaces,
-        "MAIN_CURRENCY": v => formatMainCurrency(v, mainCurrency),
-        "DAYS": formatDays,
-        "FLIGHTS": formatFlights,
-        "STEPS": formatSteps,
-        "BEFORE_DAYS_TIMESTAMP": formatBeforeDays,
-        "VISITS": formatVisits,
-        "AIRPORTS": formatAirports,
-        "NIGHTS": formatNights
+        "kilometers": formatKilometers,
+        "photos": formatPhotos,
+        "duration": formatDuration,
+        "countries": formatCountries,
+        "places": formatPlaces,
+        "mainCurrency": v => formatMainCurrency(v, mainCurrency),
+        "days": formatDays,
+        "flights": formatFlights,
+        "steps": formatSteps,
+        "beforeDaysTimestamp": formatBeforeDays,
+        "visits": formatVisits,
+        "airports": formatAirports,
+        "nights": formatNights
     }
 
-    return statisticsUnits[unit] ? statisticsUnits[unit](value) : unit
+    return statisticsUnits[unit] ? statisticsUnits[unit](value) : (value + " " + unit)
 }
 
 function format(value, forms) {

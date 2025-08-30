@@ -16,7 +16,7 @@ export default function TripSummary({ tripId }) {
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { trip } = useTrip(tripId)
-    const tripPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES" })
+    const tripPlaces = useRegularPlaces({ tripId, include: "categories,dates" })
 
     const [timezone, setTimezone] = useState(undefined)
     useEffect(() => {
@@ -47,7 +47,7 @@ export default function TripSummary({ tripId }) {
         end: startOfDay(toZonedTime(fromUnixTime(trip?.end - 1), timezone))
     }), [timezone, trip])
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
-    const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("COUNTRY"))
+    const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
     return trip ? (

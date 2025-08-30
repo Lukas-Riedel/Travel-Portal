@@ -45,7 +45,7 @@
                 ) x
                 WHERE timestamp >= ?
                     AND timestamp < ?
-                {$fitnessSortingStrategy->value}
+                {$fitnessSortingStrategy->getOrderByClause()}
             SQL;
 
             return $this->databaseProvider

@@ -16,9 +16,9 @@ export default function YearsPage() {
     const { isAdmin } = useAuth()
 
     const years = useYears()
-    const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES" })
+    const places = useTimeFilteredRegularPlaces({ include: "categories" })
     const trips = useRegularTrips()
-    const countryCategories = useCategories({ categories: "COUNTRY" })
+    const countryCategories = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
     const countryCategoriesMap = useMemo(() => {

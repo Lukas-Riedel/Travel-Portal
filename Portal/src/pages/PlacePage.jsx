@@ -23,13 +23,13 @@ export default function PlacePage() {
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote } = usePlace(placeId)
-    const places = useTimeFilteredRegularPlaces({ include: "CATEGORIES", sort: "-score" })
+    const places = useTimeFilteredRegularPlaces({ include: "categories", sort: "-score" })
 
     return (
         <>
             <PageHeader
                 name={place?.name}
-                categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                categories={place && [place.getCategory("mostSpecificWithMetadata")]}
                 internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score }}
                 onNameChanged={updatePlaceName} />
             <HighlightCarousel

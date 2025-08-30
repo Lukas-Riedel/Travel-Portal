@@ -47,7 +47,7 @@
                     name: "include",
                     in: "query",
                     description: "The comma-separated list of included entities",
-                    example: "HIGHLIGHTS,STATISTICS"
+                    example: "highlights,statistics"
                 )
             ],
             responses: [

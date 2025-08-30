@@ -54,7 +54,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 src={date?.album?.mainImageUrl}
                 firstLineText={place?.name}
                 secondLineText={getDateString(date?.start)}
-                categories={place && [place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                categories={place && [place.getCategory("mostSpecificWithMetadata")]}
                 onClick={openGallery} />
             {isAdmin && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">

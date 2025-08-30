@@ -9,7 +9,7 @@
         description: "The kind of the statistics record"
     )]
     enum StatisticsKind : string {
-        case Fact = "FACT";
-        case Standings = "STANDINGS";
+        case Fact = "fact";
+        case Standings = "standings";
     }
 ?>

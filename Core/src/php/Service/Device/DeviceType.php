@@ -9,9 +9,9 @@
         description: "An enum representing a device type"
     )]
     enum DeviceType : string {
-        case Portal = "PORTAL";
-        case Agent = "AGENT";
-        case BridgeX = "BRIDGEX";
+        case Portal = "portal";
+        case Agent = "agent";
+        case BridgeX = "bridgex";
         
         public static function values() : array {
             return array_map(fn($case) => $case->value, self::cases());

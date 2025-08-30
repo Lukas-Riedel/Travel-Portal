@@ -47,7 +47,7 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
             "",
             "Nahrazování fotky bude brzy zahájeno",
             "Při nahrazování fotky došlo k chybě",
-            async (path) => onPhotoReplaced(place.id, album.id, photo.id, path)
+            async (path) => onPhotoReplaced(place.id, place.name, album.id, photo.id, path)
                 .then(() => window.open(photo.permalink, "_blank"))
         )
     }
@@ -71,14 +71,14 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
                 <PhotoTile
                     src={photo.url + "=w350-h233"}
                     to={photo.permalink}
-                    categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                    categories={[place.getCategory("mostSpecificWithMetadata")]}
                     firstLineText={place.name} />
             )}
             {overlayType === 2 && (
                 <PhotoTile
                     src={photo.url + "=w350-h233"}
                     to={photo.permalink}
-                    categories={[place.getCategory("MOST_SPECIFIC_WITH_METADATA")]}
+                    categories={[place.getCategory("mostSpecificWithMetadata")]}
                     firstLineText={place.name}
                     secondLineText={getDateString(Date.now() / 1000)} />
             )}

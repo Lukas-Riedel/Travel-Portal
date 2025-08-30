@@ -30,38 +30,38 @@ public final class ServiceClient {
 
     @SneakyThrows
     public void registerDevice(String token) {
-        DevicePrototype devicePrototype = new DevicePrototype("AGENT", InetAddress.getLocalHost().getHostName(), token);
+        DevicePrototype devicePrototype = new DevicePrototype("agent", InetAddress.getLocalHost().getHostName(), token);
         retryTemplate.execute(context -> restTemplate.postForObject(
             "/devices", httpEntityProvider.getHttpEntity(devicePrototype), Void.class));
     }
 
-    public Album createAlbum(long placeId, long timestamp) {
+    public Album createAlbum(String placeId, long timestamp) {
         return Objects.requireNonNull(restTemplate.postForObject(
                 "/places/" + placeId + "/albums?timestamp=" + timestamp,
                 httpEntityProvider.getEmptyHttpEntity(), Album.class));
     }
 
-    public void uploadPhoto(long placeId, long albumId, String fileName, long replacedPhotoId, byte[] data) {
+    public void uploadPhoto(String placeId, String albumId, String fileName, String replacedPhotoId, byte[] data) {
         PhotoPrototype photoPrototype = new PhotoPrototype(fileName, replacedPhotoId, Base64.getEncoder().encodeToString(data));
         retryTemplate.execute(context -> restTemplate.postForObject(
                 "/places/" + placeId + "/albums/" + albumId + "/photos",
                 httpEntityProvider.getHttpEntity(photoPrototype), Void.class));
     }
 
-    public void uploadPhoto(long placeId, long albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition, byte[] data) {
+    public void uploadPhoto(String placeId, String albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition, byte[] data) {
         PhotoPrototype photoPrototype = new PhotoPrototype(fileName, batchId, expectedBatchSize, batchPosition, Base64.getEncoder().encodeToString(data));
         retryTemplate.execute(context -> restTemplate.postForObject(
                 "/places/" + placeId + "/albums/" + albumId + "/photos",
                 httpEntityProvider.getHttpEntity(photoPrototype), Void.class));
     }
 
-    public Album refreshAlbum(long placeId, long albumId) {
+    public Album refreshAlbum(String placeId, String albumId) {
         return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.postForObject(
                 "/places/" + placeId + "/albums/" + albumId + "/refresh",
                 httpEntityProvider.getEmptyHttpEntity(), Album.class)));
     }
 
-    public Album refreshAlbum(long placeId, long albumId, int mainPhotoPosition) {
+    public Album refreshAlbum(String placeId, String albumId, int mainPhotoPosition) {
         return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.postForObject(
                 "/places/" + placeId + "/albums/" + albumId + "/refresh?mainPhotoPosition=" + mainPhotoPosition,
                 httpEntityProvider.getEmptyHttpEntity(), Album.class)));

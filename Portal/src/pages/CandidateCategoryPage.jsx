@@ -10,9 +10,9 @@ export default function CandidateCategoryPage() {
     const { categoryId } = useParams()
 
     const { category, updateCategoryName } = useCategory(categoryId)
-    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: "CATEGORIES" })
+    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: "categories" })
 
-    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("COUNTRY"))
+    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])
 
     return (

@@ -133,7 +133,7 @@
                 ) p
                     ON c.place_id = p.place_id
                 GROUP BY c.category_id
-                {$visitedCategoriesSortingStrategy->value}
+                {$visitedCategoriesSortingStrategy->getOrderByClause()}
             SQL;
             
             return $this->databaseProvider

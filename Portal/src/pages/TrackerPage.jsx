@@ -9,7 +9,7 @@ import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents";
 export default function TrackerPage() {
     const { isAdmin } = useAuth()
 
-    const trips = useRegularTrips({ include: "FLIGHTS" })
+    const trips = useRegularTrips({ include: "flights" })
     const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["overtime", "vacation", "selfcare", "tenure", "plannedWork"])
     const { isFreeDay } = usePublicHolidays()
 

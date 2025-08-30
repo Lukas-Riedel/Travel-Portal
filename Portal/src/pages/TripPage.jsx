@@ -25,18 +25,18 @@ export default function TripPage() {
         createTripExpense, updateTripExpenseDescription, updateTripExpenseValue,
         removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes } = useTrip(tripId)
     const { candidateTrips } = useCandidateTrips()
-    const regularPlaces = useRegularPlaces({ tripId, include: "CATEGORIES,DATES", sort: "-score" })
-    const { candidatePlaces } = useCandidatePlaces({ tripId, include: "CATEGORIES,DATES", sort: "-score" })
+    const regularPlaces = useRegularPlaces({ tripId, include: "categories,dates", sort: "-score" })
+    const { candidatePlaces } = useCandidatePlaces({ tripId, include: "categories,dates", sort: "-score" })
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : regularPlaces, [trip, regularPlaces, candidatePlaces])
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
-    const countryCategoriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("COUNTRY"))
+    const countryCategoriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [tripPlacesWithoutLayover])
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
             return countryCategoriesMap.get(place?.country)
         }
-        return place?.getCategory("MOST_SPECIFIC_WITH_METADATA")
+        return place?.getCategory("mostSpecificWithMetadata")
     }
     
     return (

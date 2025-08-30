@@ -12,12 +12,12 @@ import LoadingCard from "./LoadingCard"
 export default function TripCard({ trip, onTripRemoved }) {
     const { isAdmin } = useAuth()
 
-    const regularPlaces = useRegularPlaces({ tripId: trip?.id, include: "CATEGORIES,DATES" })
-    const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: "CATEGORIES,DATES" })
+    const regularPlaces = useRegularPlaces({ tripId: trip?.id, include: "categories,dates" })
+    const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: "categories,dates" })
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : regularPlaces, [trip, regularPlaces, candidatePlaces])
 
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
-    const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("COUNTRY"))
+    const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
     const days = useMemo(() => tripPlaces?.reduce((acc, place) => (

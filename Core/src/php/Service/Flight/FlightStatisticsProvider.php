@@ -40,7 +40,7 @@
             int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statistics = array();
 
-            $flights = $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::Default);
+            $flights = $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::ScheduledDepartureTimeAscending);
 
             if ($statisticsKind === StatisticsKind::Fact) {                
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {

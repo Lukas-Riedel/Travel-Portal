@@ -166,7 +166,7 @@
                 SELECT subject_category_id
                 FROM region_composite
                 WHERE category_id = ?
-                    AND type = 'INCLUDE'
+                    AND included = 1
             SQL;
 
             return $this->databaseProvider
@@ -180,7 +180,7 @@
                 SELECT subject_category_id
                 FROM region_composite
                 WHERE category_id = ?
-                    AND type = 'EXCLUDE'
+                    AND included = 0
             SQL;
     
             return $this->databaseProvider
@@ -321,12 +321,12 @@
                 INSERT INTO region_composite (
                     category_id,
                     subject_category_id,
-                    type
+                    included
                 )
                 VALUES (
                     ?,
                     ?,
-                    'INCLUDE'
+                    1
                 )
             SQL;
 
@@ -341,12 +341,12 @@
                 INSERT INTO region_composite (
                     category_id,
                     subject_category_id,
-                    type
+                    included
                 )
                 VALUES (
                     ?,
                     ?,
-                    'EXCLUDE'
+                    0
                 )
             SQL;
 

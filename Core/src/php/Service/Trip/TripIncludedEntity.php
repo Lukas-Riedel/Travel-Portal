@@ -9,15 +9,15 @@
         description: "The entity of the trip"
     )]    
     enum TripIncludedEntity : string {
-        case Expenses = "EXPENSES";
-        case Stays = "STAYS";
-        case Flights = "FLIGHTS";
-        case WatchedFlights = "WATCHED_FLIGHTS";
-        case Fitness = "FITNESS";
-        case Notes = "NOTES";
-        case Highlights = "HIGHLIGHTS";
-        case Statistics = "STATISTICS";
-        case PublicHolidays = "PUBLIC_HOLIDAYS";
+        case Expenses = "expenses";
+        case Stays = "stays";
+        case Flights = "flights";
+        case WatchedFlights = "watchedFlights";
+        case Fitness = "fitness";
+        case Notes = "notes";
+        case Highlights = "highlights";
+        case Statistics = "statistics";
+        case PublicHolidays = "publicHolidays";
 
         public static function values() : array {
             return array_map(fn($case) => $case->value, self::cases());

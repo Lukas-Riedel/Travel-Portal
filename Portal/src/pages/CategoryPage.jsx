@@ -18,9 +18,9 @@ export default function CategoryPage() {
     const { isAdmin } = useAuth()
 
     const { category, updateCategoryName, updateCategoryMetadata, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
-    const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "CATEGORIES", sort: "-score" })
+    const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "categories", sort: "-score" })
 
-    const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("COUNTRY"))
+    const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [categoryPlaces])
 
     const totalScore = useMemo(() => categoryPlaces?.map(place => place.score).filter(Boolean)
@@ -35,7 +35,7 @@ export default function CategoryPage() {
         if (place?.country === category?.name) {
             return category
         }
-        return place?.getCategory("MOST_SPECIFIC_WITH_METADATA")
+        return place?.getCategory("mostSpecificWithMetadata")
     }
 
     const handleMetadataChanged = () => {

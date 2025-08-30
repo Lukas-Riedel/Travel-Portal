@@ -21,7 +21,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
-    const currentHighlightPlaces = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? INVALID_PHOTO_ID, include: "DATES" })
+    const currentHighlightPlaces = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? INVALID_PHOTO_ID, include: "dates" })
     const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
         ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const [isPaused, setIsPaused] = useState(isAdmin)
@@ -55,7 +55,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
             "",
             "Nahrazování fotky bude brzy zahájeno",
             "Při nahrazování fotky došlo k chybě",
-            async (path) => onPhotoReplaced(place.id, currentHighlightAlbumId, shuffledHighlights[currentHighlightIndex].photo.id, path)
+            async (path) => onPhotoReplaced(place.id, place.name, currentHighlightAlbumId, shuffledHighlights[currentHighlightIndex].photo.id, path)
                 .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
         )
     }

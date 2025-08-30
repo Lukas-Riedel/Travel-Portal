@@ -4,12 +4,13 @@ import java.nio.file.Path;
 
 import org.apache.commons.lang3.Validate;
 
-public record PhotoReplacingTriggeredEventArgs(long placeId, long albumId, long replacedPhotoId, Path path) implements EventArgs {
+public record PhotoReplacingTriggeredEventArgs(String placeId, String placeName, String albumId, String replacedPhotoId, Path path) implements EventArgs {
 
     public PhotoReplacingTriggeredEventArgs {
-        Validate.isTrue(placeId > 0, "Invalid place identifier.");
-        Validate.isTrue(albumId > 0, "Invalid album identifier.");
-        Validate.isTrue(replacedPhotoId > 0, "Invalid photo identifier.");
+        Validate.notBlank(placeId, "The place identifier cannot be blank.");
+        Validate.notBlank(placeName, "The place name cannot be blank.");
+        Validate.notBlank(placeId, "The place identifier cannot be blank.");
+        Validate.notBlank(replacedPhotoId, "The replaced photo identifier cannot be blank.");
         Validate.isTrue(path.toFile().exists(), "The photo does not exist.");
     }
 }
