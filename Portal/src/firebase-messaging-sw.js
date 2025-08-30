@@ -53,10 +53,10 @@ self.addEventListener("notificationclick", function(event) {
     if (event.notification.data.name === "PhotosUploadingTriggered") {
         event.notification.close()
         event.waitUntil(
-            clients.openWindow("/place/" + event.notification.data.args.placeId)
+            clients.openWindow(portalBaseUrl + "/place/" + event.notification.data.args.placeId)
         )
     }
-        else if (event.notification.data.name === "PhotoReplacingTriggered") {
+    else if (event.notification.data.name === "PhotoReplacingTriggered") {
         event.notification.close()
         event.waitUntil(
             clients.openWindow(portalBaseUrl + "/place/" + event.notification.data.args.placeId)

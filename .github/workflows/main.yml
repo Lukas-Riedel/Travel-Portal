@@ -57,17 +57,17 @@ jobs:
         npm run build
       env:
         VITE_SW_VERSION: ${{ github.run_number }}
-        VITE_PORTAL_BASE_URL: ${{ secrets.PORTAL_BASE_URL }}
-        VITE_CORE_BASE_URL: ${{ secrets.CORE_BASE_URL }}
-        VITE_IAM_BASE_URL: ${{ secrets.IAM_BASE_URL }}
+        VITE_PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
+        VITE_CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
+        VITE_IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
         VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-        VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-        VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-        VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-        VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-        VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-        VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+        VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
+        VITE_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+        VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.FIREBASE_STORAGE_BUCKET }}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+        VITE_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+        VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.FIREBASE_MEASUREMENT_ID }}
         VITE_FIREBASE_VAPID_KEY: ${{ secrets.FIREBASE_VAPID_KEY }}
     - name: Prepare Files
       run: |
@@ -81,16 +81,16 @@ jobs:
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: 254146.w46.wedos.net
-        username: w254146
+        server: ${{ vars.FTP_SERVER }}
+        username: ${{ vars.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: target/
-        server-dir: www/domains/lriedel.cz/
+        server-dir: ${{ vars.FTP_DIRECTORY }}
     - name: Deploy
       uses: muhfaris/request-action@v0.1.2
       with:
         method: GET
-        url: https://lriedel.cz/api/deploy.php
+        url: ${{ vars.CORE_BASE_URL }}/deploy.php
   verify-agent:
     name: Verify Agent
     needs: detect-changes
