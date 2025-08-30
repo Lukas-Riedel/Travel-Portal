@@ -10,7 +10,7 @@ import LoadingCard from "./LoadingCard"
 export default function PlaceCard({ place, onPlaceRemoved }) {
     const { isAdmin } = useAuth()
 
-    const mostSpecificCategory = useMemo(() => place?.getCategory("COUNTRY"), [place])
+    const mostSpecificCategory = useMemo(() => place?.getCategory("country"), [place])
 
     const handleDelete = () => {
         showConfirmToast(

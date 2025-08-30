@@ -10,7 +10,7 @@
     )]
     enum StaySortingStrategy : string {
         case DurationDescending = "-duration";
-        case DurationAscending = "-duration";
+        case DurationAscending = "duration";
 
         public function getOrderByClause() : string {
             return match ($this) {
