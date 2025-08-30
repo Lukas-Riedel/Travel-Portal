@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Osobní portál</string>
+    <string name="notifications_granted">Oprávnění pro notifikace byla udělena</string>
+    <string name="notifications_denied">Oprávnění pro notifikace nebyla udělena</string>
+    <string name="foreground_location_granted">Oprávnění pro polohu byla udělena</string>
+    <string name="foreground_location_denied">Oprávnění pro polohu nebyla udělena</string>
+    <string name="background_location_granted">Oprávnění pro polohu na pozadí byla udělena</string>
+    <string name="background_location_denied">Oprávnění pro polohu na pozadí nebyla udělena</string>
+    <string name="all_permissions_granted">Všechna oprávnění byla udělena</string>
 </resources>

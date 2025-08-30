@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
     const { getAccessTokenForApiKey, getAccessTokenForUser, getAccessTokenForRefreshToken } = useIam()
     const [accessToken, setAccessToken] = useState(() => {
         const stored = localStorage.getItem("accessToken")
+        // TODO: Do something if the token is expired, to avoid spamming the backend log with 401 errors.
         return stored ? JSON.parse(stored) : null
     })
 
@@ -49,6 +50,10 @@ export const AuthProvider = ({ children }) => {
             return
         }
 
+        if (typeof Android !== "undefined" && Android.setRefreshToken) {
+            Android.setRefreshToken(accessToken.refreshToken)
+        }
+
         const refreshThreshold = 60 * 1000
         const delay = accessToken.expiration - Date.now() - refreshThreshold
 
@@ -61,7 +66,6 @@ export const AuthProvider = ({ children }) => {
 
         return () => clearTimeout(timeout)
     }, [accessToken])
-
 
     useEffect(() => {
         if (!accessToken) {

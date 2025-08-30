@@ -69,10 +69,10 @@ export default function TripPage() {
                 placeMainCategorySelector={getPlaceCategory} />
             {!trip?.isDayTrips() && !trip?.isCandidate() && (
                 <ExpenseSummary
-                    expenses={trip?.expenses}
+                    expenses={trip && (trip.expenses ?? [])}
                     expenseCandidates={trip?.isPast() ? [] : [
-                        ...(trip?.flights?.map(flight => ({ type: "FLIGHT", description: `${flight.from?.name} - ${flight.to?.name}` })) ?? []),
-                        ...(trip?.stays?.map(stay => ({ type: "HOTEL", description: stay.name })) ?? [])
+                        ...(trip?.flights?.map(flight => ({ type: "flight", description: `${flight.from?.name} - ${flight.to?.name}` })) ?? []),
+                        ...(trip?.stays?.map(stay => ({ type: "hotel", description: stay.name })) ?? [])
                     ]}
                     onExpenseCreated={createTripExpense}
                     onExpenseDescriptionUpdated={updateTripExpenseDescription}

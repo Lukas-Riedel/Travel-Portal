@@ -10,20 +10,23 @@ android {
 
     defaultConfig {
         applicationId = "cz.lriedel.bridgex"
-        minSdk = 26
+        minSdk = 27
         targetSdk = 36
         versionCode = System.getenv("VERSION_TAG")?.toInt() ?: 1
         versionName = "1.0.${System.getenv("VERSION_TAG") ?: "1"}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val portalUrl = (project.findProperty("PORTAL_BASE_URL") ?: System.getenv("PORTAL_BASE_URL")) as String
+        buildConfigField("String", "PORTAL_BASE_URL", "\"$portalUrl\"")
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("KEYSTORE_FILE"))
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
+            storeFile = file((project.findProperty("KEYSTORE_FILE") ?: System.getenv("KEYSTORE_FILE")) as String)
+            storePassword = (project.findProperty("KEYSTORE_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")) as String
+            keyAlias = (project.findProperty("KEY_ALIAS") ?: System.getenv("KEY_ALIAS")) as String
+            keyPassword = (project.findProperty("KEY_PASSWORD") ?: System.getenv("KEY_PASSWORD")) as String
         }
     }
 
@@ -48,6 +51,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }

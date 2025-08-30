@@ -6,7 +6,7 @@
 
     class AuthenticationService {
 
-        private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 3 * 24;
+        private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 7 * 24;
         private const BEARER_TOKEN_VALIDITY = CommonConstants::ONE_HOUR_SECONDS;
         private const ADMIN_USER_ID = "999";
 

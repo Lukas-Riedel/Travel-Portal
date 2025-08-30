@@ -11,7 +11,7 @@
     enum VisitedCategoriesSortingStrategy : string {
         case TravelDaysCountAscending = "travelDays";
         case TravelDaysCountDescending = "-travelDays";
-        case VisitedPlacesCountAscending = "-visitedPlaces";
+        case VisitedPlacesCountAscending = "visitedPlaces";
         case VisitedPlacesCountDescending = "-visitedPlaces";        
         
         public function getOrderByClause() : string {

@@ -114,7 +114,6 @@ export default function PlansPage() {
                             places={filteredVisitedPlaces}
                             placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
                     </div>
-                    {furthestPlace && (
                         <Slider
                             name="Maximální kvalita"
                             valueFormatter={value => `${value}%`}
@@ -122,7 +121,6 @@ export default function PlansPage() {
                             minValue={Math.ceil(lowestQualityPlace?.quality)}
                             maxValue={100}
                             onValueChanged={setMaxQuality} />
-                    )}
                     <CategoryCardGrid
                         categories={countryCategories}
                         categoriesPlaces={countriesVisitedPlaces} />
