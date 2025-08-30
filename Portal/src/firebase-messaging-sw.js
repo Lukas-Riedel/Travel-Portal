@@ -22,6 +22,8 @@ const firebaseConfig = {
     measurementId: __VITE_FIREBASE_MEASUREMENT_ID__,
 }
 
+const portalBaseUrl = __VITE_PORTAL_BASE_URL__
+
 const app = initializeApp(firebaseConfig)
 const messaging = getMessaging(app)
 
@@ -31,16 +33,33 @@ onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "ProcessingEnded") {
         const wrappedEvent = JSON.parse(payload.data.args)
         if (wrappedEvent.name === "PhotosUploadingTriggered") {
-            self.registration.showNotification("Nahrávání fotek bylo dokončeno.", {
-                body: "",
-                icon: "icon-192.png"
+            self.registration.showNotification("Fotky byly nahrány", {
+                body: "Místo " + wrappedEvent.args.placeName + " má nové fotky",
+                icon: "icon-192.png",
+                data: wrappedEvent
             })
         }
         else if (wrappedEvent.name === "PhotoReplacingTriggered") {
-            self.registration.showNotification("Nahrazování fotky bylo dokončeno.", {
-                body: "",
-                icon: "icon-192.png"
+            self.registration.showNotification("Fotka byla nahrazena", {
+                body: "Místo " + wrappedEvent.args.placeName + " má novou fotku",
+                icon: "icon-192.png",
+                data: wrappedEvent
             })
         }
+    }
+})
+
+self.addEventListener("notificationclick", function(event) {
+    if (event.notification.data.name === "PhotosUploadingTriggered") {
+        event.notification.close()
+        event.waitUntil(
+            clients.openWindow("/place/" + event.notification.data.args.placeId)
+        )
+    }
+        else if (event.notification.data.name === "PhotoReplacingTriggered") {
+        event.notification.close()
+        event.waitUntil(
+            clients.openWindow(portalBaseUrl + "/place/" + event.notification.data.args.placeId)
+        )
     }
 })

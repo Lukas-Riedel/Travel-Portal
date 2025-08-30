@@ -17,23 +17,18 @@ import AirlinePage from "./pages/AirlinePage"
 import PlansPage from "./pages/PlansPage"
 import CandidateCategoryPage from "./pages/CandidateCategoryPage"
 import CandidateLabelPage from "./pages/CandidateLabelPage"
-import { useApi } from "./hooks/useApi"
 import { useEvents } from "./hooks/useEvents"
 import AlbumPage from "./pages/AlbumPage"
 import AdminPage from "./pages/AdminPage"
 
 export default function App() {
-    const { getPlace } = useApi()
-
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {
         processingStartedEvents.forEach(event => {
             event.markAsRead()
 
             if (event.name === "PhotosUploadingTriggered") {
-                getPlace(event.args.placeId).then(place => {
-                    toast.success(`Nahrávání fotek pro místo '${place.name}' bylo zahájeno`)
-                })
+                toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo zahájeno`)
             }
         })
     }, [processingStartedEvents])
@@ -44,14 +39,10 @@ export default function App() {
             event.markAsRead()
 
             if (event.name === "PhotosUploadingTriggered") {
-                getPlace(event.args.placeId).then(place => {
-                    toast.success(`Nahrávání fotek pro místo '${place.name}' bylo dokončeno`)
-                })
+                toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo dokončeno`)
             }
             else if (event.name === "PhotoReplacingTriggered") {
-                getPlace(event.args.placeId).then(place => {
-                    toast.success(`Nahrazování fotky pro místo '${place.name}' bylo dokončeno`)
-                })
+                toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo dokončeno`)
             }
         })
     }, [processingEndedEvents])
