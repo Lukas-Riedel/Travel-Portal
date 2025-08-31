@@ -8,16 +8,14 @@ import android.webkit.WebViewClient;
 public class CustomWebViewClient extends WebViewClient {
 
     private final MainActivity mainActivity;
-    private final String portalBaseUrl;
 
-    public CustomWebViewClient(MainActivity mainActivity, String portalBaseUrl) {
+    public CustomWebViewClient(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        this.portalBaseUrl = portalBaseUrl;
     }
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-        if (request.getUrl().toString().startsWith(portalBaseUrl)) {
+        if (request.getUrl().toString().startsWith(cz.lriedel.bridgex.BuildConfig.PORTAL_BASE_URL)) {
             return false;
         }
 

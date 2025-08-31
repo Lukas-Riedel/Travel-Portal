@@ -18,7 +18,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         val portalUrl = (project.findProperty("PORTAL_BASE_URL") ?: System.getenv("PORTAL_BASE_URL")) as String
-        buildConfigField("String", "PORTAL_BASE_URL", "\"$portalUrl\"")
+        buildConfigField("String", "PORTAL_BASE_URL", "\"$portalUrl/\"")
+
+        val iamUrl = (project.findProperty("IAM_BASE_URL") ?: System.getenv("IAM_BASE_URL")) as String
+        buildConfigField("String", "IAM_BASE_URL", "\"$iamUrl/\"")
+
+        val coreUrl = (project.findProperty("CORE_BASE_URL") ?: System.getenv("CORE_BASE_URL")) as String
+        buildConfigField("String", "CORE_BASE_URL", "\"$coreUrl/\"")
     }
 
     signingConfigs {
@@ -67,11 +73,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
 }

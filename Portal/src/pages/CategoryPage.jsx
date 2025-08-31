@@ -67,7 +67,7 @@ export default function CategoryPage() {
                 onHighlightRemoved={removeCategoryHighlight}
                 onMainHighlightUpdated={updateCategoryMainHighlight}
                 onHighlightQualityAttributesUpdated={updateCategoryHighlightQualityAttributes} />
-            <StatisticsPanel statistics={category?.statistics} />
+            <StatisticsPanel statistics={category && (category.statistics ?? [])} />
             <PlaceTileGrid
                 places={categoryPlaces}
                 placeMainCategorySelector={getPlaceCategory} />

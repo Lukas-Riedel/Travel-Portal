@@ -13,11 +13,9 @@ import androidx.core.view.WindowInsetsCompat;
 public class MainActivity extends AppCompatActivity {
 
     private static final String ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME = "Android";
-    private static final String PORTAL_BASE_URL = cz.lriedel.bridgex.BuildConfig.PORTAL_BASE_URL;
 
     private WebView webView;
     private PermissionManager permissionManager;
-    private AuthenticationService authenticationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        authenticationService = new AuthenticationService(this);
-
         permissionManager = new PermissionManager(this);
         permissionManager.requestAllPermissions(true);
 
@@ -49,15 +45,18 @@ public class MainActivity extends AppCompatActivity {
         settings.setDomStorageEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setGeolocationEnabled(true);
-        
-        webView.setWebViewClient(new CustomWebViewClient(this, PORTAL_BASE_URL));
-        webView.setWebChromeClient(new CustomWebChromeClient());
 
-        webView.addJavascriptInterface(new AndroidBridge(permissionManager, authenticationService), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME);
+        AuthenticationService authenticationService = new AuthenticationService(this);
+        DeviceInitializer deviceInitializer = new DeviceInitializer(this, authenticationService);
+        webView.setWebViewClient(new CustomWebViewClient(this));
+        webView.setWebChromeClient(new CustomWebChromeClient());
+        webView.addJavascriptInterface(new AndroidBridge(permissionManager, authenticationService, deviceInitializer), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME);
 
         if (savedInstanceState == null) {
-            webView.loadUrl(PORTAL_BASE_URL);
+            webView.loadUrl(cz.lriedel.bridgex.BuildConfig.PORTAL_BASE_URL);
         }
+
+        deviceInitializer.initialize("TODO");
     }
 
     @Override

@@ -54,9 +54,7 @@ export default function TripPage() {
                 onHighlightRemoved={removeTripHighlight}
                 onMainHighlightUpdated={updateTripMainHighlight}
                 onHighlightQualityAttributesUpdated={updateTripHighlightQualityAttributes} />
-            {trip?.start < Date.now() / 1000 && (
-                <StatisticsPanel statistics={trip?.statistics} />
-            )}
+            <StatisticsPanel statistics={trip && (trip.statistics ?? [])} />
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}

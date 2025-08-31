@@ -40,7 +40,7 @@ export default function YearPage() {
                 onHighlightRemoved={removeYearHighlight}
                 onMainHighlightUpdated={updateYearMainHighlight}
                 onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />
-            <StatisticsPanel statistics={year?.statistics} />
+            <StatisticsPanel statistics={year && (year.statistics ?? [])} />
             <TripTileGrid trips={yearTrips && getSortedTrips(yearTrips, isAdmin)} />
             {isAdmin && (
                 <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
