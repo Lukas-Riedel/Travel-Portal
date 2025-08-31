@@ -17,7 +17,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public void setRefreshToken(String refreshToken) {
         authenticationService.setRefreshToken(refreshToken);
-        deviceInitializer.initialize("TODO");
+        deviceInitializer.initialize();
     }
 
     @JavascriptInterface

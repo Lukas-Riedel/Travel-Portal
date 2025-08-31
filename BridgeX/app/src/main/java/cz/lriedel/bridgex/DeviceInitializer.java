@@ -2,8 +2,13 @@ package cz.lriedel.bridgex;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings;
+
+import androidx.annotation.Nullable;
+
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -25,6 +30,9 @@ public class DeviceInitializer {
 
     private static final String DEVICE_NAME_KEY = "device_name";
 
+    private static final String DEVICE_PREFERENCES_NAME = "DevicePreferences";
+    private static final String FCM_TOKEN_KEY = "FcmToken";
+
     private final String deviceName;
     private final CoreClient coreClient;
 
@@ -33,10 +41,22 @@ public class DeviceInitializer {
         this.coreClient = CoreClient.create(authenticationService);
     }
 
-    public void initialize(String fcmToken) {
-        for (DeviceType deviceType : DeviceType.values()) {
-            coreClient.createDevice(new DeviceRequest(deviceType.getValue(), deviceName, fcmToken)).enqueue(EMPTY_CALLBACK);
-        }
+    public void initialize() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        return;
+                    }
+
+                    String fcmToken = task.getResult();
+                    if (fcmToken == null) {
+                        return;
+                    }
+
+                    for (DeviceType deviceType : DeviceType.values()) {
+                        coreClient.createDevice(new DeviceRequest(deviceType.getValue(), deviceName, fcmToken)).enqueue(EMPTY_CALLBACK);
+                    }
+                });
     }
 
     private static String getPrettyDeviceName(Context context) {
@@ -54,8 +74,7 @@ public class DeviceInitializer {
         }
     }
 
-    private static String capitalize(String str) {
-        if (str == null || str.isEmpty()) return str;
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    private static String capitalize(@Nullable String str) {
+        return str == null || str.isEmpty() ? str : str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 }

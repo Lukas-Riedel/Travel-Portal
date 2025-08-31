@@ -18,13 +18,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         val portalUrl = (project.findProperty("PORTAL_BASE_URL") ?: System.getenv("PORTAL_BASE_URL")) as String
-        buildConfigField("String", "PORTAL_BASE_URL", "\"$portalUrl/\"")
-
         val iamUrl = (project.findProperty("IAM_BASE_URL") ?: System.getenv("IAM_BASE_URL")) as String
-        buildConfigField("String", "IAM_BASE_URL", "\"$iamUrl/\"")
-
         val coreUrl = (project.findProperty("CORE_BASE_URL") ?: System.getenv("CORE_BASE_URL")) as String
+        val firebaseApiKey = (project.findProperty("FIREBASE_API_KEY") ?: System.getenv("FIREBASE_API_KEY")) as String
+        val firebaseAuthDomain = (project.findProperty("FIREBASE_AUTH_DOMAIN") ?: System.getenv("FIREBASE_AUTH_DOMAIN")) as String
+        val firebaseProjectId = (project.findProperty("FIREBASE_PROJECT_ID") ?: System.getenv("FIREBASE_PROJECT_ID")) as String
+        val firebaseStorageBucket = (project.findProperty("FIREBASE_STORAGE_BUCKET") ?: System.getenv("FIREBASE_STORAGE_BUCKET")) as String
+        val firebaseMessagingSenderId = (project.findProperty("FIREBASE_MESSAGING_SENDER_ID") ?: System.getenv("FIREBASE_MESSAGING_SENDER_ID")) as String
+        val firebaseAppId = (project.findProperty("FIREBASE_APP_ID") ?: System.getenv("FIREBASE_APP_ID")) as String
+        val firebaseMeasurementId = (project.findProperty("FIREBASE_MEASUREMENT_ID") ?: System.getenv("FIREBASE_MEASUREMENT_ID")) as String
+        val firebaseVapidKey = (project.findProperty("FIREBASE_VAPID_KEY") ?: System.getenv("FIREBASE_VAPID_KEY")) as String
+
+        buildConfigField("String", "PORTAL_BASE_URL", "\"$portalUrl/\"")
+        buildConfigField("String", "IAM_BASE_URL", "\"$iamUrl/\"")
         buildConfigField("String", "CORE_BASE_URL", "\"$coreUrl/\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"$firebaseApiKey\"")
+        buildConfigField("String", "FIREBASE_AUTH_DOMAIN", "\"$firebaseAuthDomain\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"$firebaseProjectId\"")
+        buildConfigField("String", "FIREBASE_STORAGE_BUCKET", "\"$firebaseStorageBucket\"")
+        buildConfigField("String", "FIREBASE_MESSAGING_SENDER_ID", "\"$firebaseMessagingSenderId\"")
+        buildConfigField("String", "FIREBASE_APP_ID", "\"$firebaseAppId\"")
+        buildConfigField("String", "FIREBASE_MEASUREMENT_ID", "\"$firebaseMeasurementId\"")
+        buildConfigField("String", "FIREBASE_VAPID_KEY", "\"$firebaseVapidKey\"")
     }
 
     signingConfigs {
@@ -75,4 +90,7 @@ dependencies {
     implementation(libs.androidx.material)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.common)
+    implementation(libs.firebase.messaging)
 }

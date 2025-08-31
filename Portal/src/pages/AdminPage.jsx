@@ -32,7 +32,10 @@ export default function AdminPage() {
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const airlines = useAirlines()
-    const devices = useDevices({ type: "agent" })
+    const agentDevices = useDevices({ type: "agent" })
+    const bridgexDevices = useDevices({ type: "bridgex" })
+    // TODO: Add REST API support for querying multiple device types.
+    const devices = useMemo(() => [...(agentDevices ?? []), ...(bridgexDevices ?? [])], [agentDevices, bridgexDevices])
     const trips = useRegularTrips({ include: "watchedFlights" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
