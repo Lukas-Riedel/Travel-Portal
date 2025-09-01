@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Map;
 
+// TODO: Rename to NotificationFactory
 public interface NotificationProcessor {
 
      @Nullable

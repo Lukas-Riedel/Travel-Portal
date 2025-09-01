@@ -18,8 +18,8 @@
             $this->publishEvent(Event::DaylightForecastUpdated, array("placeId" => $placeId, "start" => $start, "end" => $end));
         }
 
-        public function publishFitnessActivityDetectedEvent($start, $end) {
-            $this->publishEvent(Event::FitnessActivityDetected, array("start" => $start, "end" => $end));
+        public function publishFitnessActivityDetectedEvent($intervals) {
+            $this->publishEvent(Event::FitnessActivityDetected, array("intervals" => $intervals));
         }
 
         public function publishCategoryCreatedEvent($categoryId) {
@@ -225,7 +225,7 @@
                 case EventTarget::CloudMessaging:
                     // TODO: Figure out how to resolve the device type and required roles - introduce more "bit masks" to the event type backing value.
                     $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getToken(),
-                        $deviceService->getDevices(DeviceType::Portal, array("ADMIN"))));
+                        $deviceService->getDevices($event === Event::FitnessActivityDetected ? DeviceType::BridgeX : DeviceType::Portal, array("ADMIN"))));
                     break;
                 case EventTarget::WorkerQueue:
                     $messagingClient->publishEvent($event, $args, WORKER_QUEUE_NAME);
@@ -258,7 +258,6 @@
         case WorkerQueue = 1;
         case AgentQueue = 2;
         case CloudMessaging = 3;
-        case Legacy = 4;
     }
 
     enum Event : int {
@@ -326,11 +325,9 @@
         case PhotoReplacingTriggered = 2001;
 
         // FCM
-        case ProcessingStarted = 3100;
-        case ProcessingEnded = 3101;
-
-        // BridgeX
-        case FitnessActivityDetected = 4003;
+        case ProcessingStarted = 3000;
+        case ProcessingEnded = 3001;
+        case FitnessActivityDetected = 3100;
         
         public function getTarget() : EventTarget {
             return EventTarget::from(floor($this->value / 1000));

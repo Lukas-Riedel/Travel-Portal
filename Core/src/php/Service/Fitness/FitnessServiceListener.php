@@ -6,6 +6,9 @@
     class FitnessServiceListener {
 
         private const FETCH_FITNESS_ACTION_NAME = "FETCH_FITNESS";
+        private const FETCH_FITNESS_ACTION_INTERVAL = CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+
+        private const INTERVALS_BATCH_MAX_SIZE = 50;
 
         private readonly FitnessService $fitnessService;
 
@@ -23,12 +26,24 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, CommonConstants::FITNESS_RECORD_DURATION_SECONDS)) {
+            if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, self::FETCH_FITNESS_ACTION_INTERVAL)) {
                 $timestampsToUpdate = $this->fitnessService->getFitnessRecordTimestampsToUpdate();
 
+                $intervals = array();
                 foreach ($timestampsToUpdate as &$timestampToUpdate) {
-                    $this->eventPublisher->publishFitnessActivityDetectedEvent($timestampToUpdate,
-                        $timestampToUpdate + CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
+                    $intervals[] = array(
+                        "start" => $timestampToUpdate,
+                        "end" => $timestampToUpdate + CommonConstants::FITNESS_RECORD_DURATION_SECONDS
+                    );
+
+                    if (count($intervals) == self::INTERVALS_BATCH_MAX_SIZE) {
+                        $this->eventPublisher->publishFitnessActivityDetectedEvent($intervals);
+                        $intervals = array();
+                    }
+                }
+                
+                if (count($intervals) > 0) {
+                    $this->eventPublisher->publishFitnessActivityDetectedEvent($intervals);
                 }
             }
         }

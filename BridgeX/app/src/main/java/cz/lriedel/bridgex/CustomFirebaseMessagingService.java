@@ -40,7 +40,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
         super.onCreate();
 
         deviceInitializer = new DeviceInitializer(getApplicationContext(), new AuthenticationService(getApplicationContext()));
-        notificationProcessors = Stream.of(new ProcessingEndedNotificationProcessor()).collect(Collectors
+        notificationProcessors = Stream.<NotificationProcessor>of(new ProcessingEndedNotificationProcessor(), new FitnessActivityDetectedNotificationProcessor()).collect(Collectors
                 .toMap(ProcessingEndedNotificationProcessor::getSupportedEventName, Function.identity()));
     }
 
