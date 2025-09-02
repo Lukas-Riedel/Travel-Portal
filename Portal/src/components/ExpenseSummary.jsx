@@ -168,9 +168,9 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                     ) : (
                         <>
                             <col className="w-[11%]" />
+                            <col className="min-w-[30%]" />
+                            <col className="min-w-[10%]" />
                             <col className="w-[30%]" />
-                            <col className="w-[21%]" />
-                            <col className="min-w-[18%]" />
                             <col className="w-[18%] hidden sm:table-column" />
                         </>
                     )}
