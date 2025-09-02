@@ -33,13 +33,6 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                     className={"block w-full text-left px-3 py-2 rounded hover:bg-gray-200"}>
                     Google APIs
                 </a>
-                {typeof Android !== "undefined" && Android.requestAllPermissions && (
-                    <button
-                        onClick={Android.requestAllPermissions}
-                        className={"block w-full text-left px-3 py-2 rounded hover:bg-gray-200"}>
-                        Android Permissions
-                    </button>
-                )}
             </div>
             <div className="flex-1 p-3 overflow-auto">
                 {selectedKey && (

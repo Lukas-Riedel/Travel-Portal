@@ -104,11 +104,7 @@
             $timestamp = $this->validatePathArgument($routeArguments, "timestamp");
             $steps = $this->validateJsonBodyField($request, "steps");
             $distance = $this->validateJsonBodyField($request, "distance");
-            $seconds = $this->validateJsonBodyNullableField($request, "seconds");
-            if ($seconds === null) {
-                // TODO: Remove support for minutes one day. 
-                $seconds = $this->validateJsonBodyField($request, "minutes") * 60;
-            }
+            $seconds = $this->validateJsonBodyField($request, "seconds");
             $forceOverwrite = filter_var($this->validateQueryNullableParameter($request, "forceOverwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
 
             $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $distance, $forceOverwrite);

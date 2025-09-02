@@ -31,6 +31,9 @@
                 $payload = array(
                     "message" => array(
                         "token" => $deviceToken,
+                        "android" => array(
+                            "priority" => "high"
+                        ),
                         "data" => array(
                             "event" => $event->name,
                             "args" => json_encode($args)

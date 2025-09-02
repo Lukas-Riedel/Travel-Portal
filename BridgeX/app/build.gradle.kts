@@ -2,15 +2,20 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.plugin.parcelize")
 }
 
 android {
     namespace = "cz.lriedel.bridgex"
     compileSdk = 36
 
+    lint {
+        disable += "NullSafeMutableLiveData"
+    }
+
     defaultConfig {
         applicationId = "cz.lriedel.bridgex"
-        minSdk = 27
+        minSdk = 34
         targetSdk = 36
         versionCode = System.getenv("VERSION_TAG")?.toInt() ?: 1
         versionName = "1.0.${System.getenv("VERSION_TAG") ?: "1"}"
@@ -93,4 +98,6 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.common)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.health.connect)
+    implementation(libs.kotlin.parcelize.runtime)
 }

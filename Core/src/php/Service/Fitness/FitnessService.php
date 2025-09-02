@@ -23,8 +23,8 @@
             return $this->fitnessMapper->selectConflictingFitnessRecords();
         }
 
-        public function getFitnessRecordTimestampsToUpdate() : array {
-            return $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate();
+        public function getFitnessRecordTimestampsToUpdate(int $limit) : array {
+            return $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate($limit);
         }
 
         public function getFitnessRecordForOneDay(int $timestamp) : Fitness {
@@ -48,7 +48,7 @@
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
-            $fitnessRecord = new Fitness($steps, min($seconds, self::FITNESS_RECORD_DURATION_SECONDS), $distance);
+            $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
             
             $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
 
@@ -81,7 +81,7 @@
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
-            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + self::FITNESS_RECORD_DURATION_SECONDS);
+            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
 
             return true;
         }

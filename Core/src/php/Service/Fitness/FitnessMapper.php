@@ -144,8 +144,8 @@
 
         // TODO: Drop this crazy SQL, implement in the application code.
         // TODO: This references tables of other services which it shouldn't.
-        public function selectFitnessRecordTimestampsToUpdate() : array {
-            $sql = <<<'SQL'
+        public function selectFitnessRecordTimestampsToUpdate(int $limit) : array {
+            $sql = <<<SQL
                 SELECT x.start
                 FROM (
                     SELECT s.seq AS start
@@ -197,6 +197,7 @@
                         f.timestamp + (7 * 86400) > f.last_update
                         AND f.last_update + 86400 < UNIX_TIMESTAMP()
                     )
+                LIMIT {$limit}
             SQL;
 
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
