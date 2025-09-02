@@ -20,8 +20,6 @@
 
             $app->group("/events", function($group) use($resource) {
                 $group->post("", [$resource, "createEvent"]);
-                $group->get("", [$resource, "listEvents"]);
-                $group->delete("/{eventId}", [$resource, "removeEvent"]);
             });
         }
 
@@ -105,26 +103,6 @@
             $args = $this->validateJsonBodyNullableField($request, "args");
             
             $this->eventPublisher->publishEvent(\Event::fromName($name), $args);
-
-            return null;
-        }
-
-        public function listEvents(Request $request, Response $response, array $routeArguments) : mixed {
-            global $eventManager;
-            
-            $this->validateAdminPermissions($request);
-            $name = $this->validateQueryParameter($request, "name");
-
-            return $eventManager->getEvents($name);
-        }
-
-        public function removeEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            global $eventManager;
-            
-            $this->validateAdminPermissions($request);
-            $eventId = $this->validatePathArgument($routeArguments, "eventId");
-
-            $eventManager->removeEvent($eventId);
 
             return null;
         }

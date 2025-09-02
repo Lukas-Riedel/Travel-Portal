@@ -26,29 +26,6 @@
             }
         }
 
-        public function getEvents($name) : array {
-            global $databaseProvider;
-
-            return $databaseProvider
-                ->statementBuilder("SELECT * FROM queue_event WHERE event = ?")
-                ->withParameters($name)
-                ->getMappedResultSet(function($event) {
-                    return array(
-                        "id" => $event["id"],
-                        "args" => json_decode($event["args"], true)
-                    );
-                });
-        }
-
-        public function removeEvent($eventId) : bool {
-            global $databaseProvider;
-
-            return $databaseProvider
-                ->statementBuilder("DELETE FROM queue_event WHERE id = ?")
-                ->withParameters($eventId)
-                ->execute() === 1;
-        }
-
         public function handleEvents() : void {
             global $messagingClient;
 

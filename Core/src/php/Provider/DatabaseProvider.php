@@ -258,7 +258,7 @@
                 $logger->debug("Took " . $duration . " milliseconds: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
 
-            if ($logStatement && !str_contains($this->sql, "INSERT INTO") && !str_contains($this->sql, "queue_event") && !str_contains($this->sql, "cache") && $this->statement->affected_rows > 0) {
+            if ($logStatement && !str_contains($this->sql, "INSERT INTO") && $this->statement->affected_rows > 0) {
                 $logger->debug("Affected " . $this->statement->affected_rows . " rows: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
 

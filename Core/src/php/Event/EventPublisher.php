@@ -233,23 +233,6 @@
                 case EventTarget::AgentQueue:
                     $messagingClient->publishEvent($event, $args, AGENT_QUEUE_NAME);
                     break;
-                default:
-                    $argsJson = json_encode($args, JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT | JSON_HEX_TAG);
-
-                    $databaseProvider->beginTransaction();
-
-                    $databaseProvider
-                        ->statementBuilder("DELETE FROM queue_event WHERE event = ? AND args = ?")
-                        ->withParameters($event->name, $argsJson)
-                        ->execute();
-                        
-                    $databaseProvider
-                        ->statementBuilder("INSERT INTO queue_event (event, args, priority) VALUES (?, ?, ?)")
-                        ->withParameters($event->name, $argsJson, $event->value)
-                        ->execute();
-
-                    $databaseProvider->commit();
-                    break;
             }
         }
     }
