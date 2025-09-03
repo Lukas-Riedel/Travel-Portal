@@ -5,6 +5,8 @@
     use Core\Service\Category\CategoryService;
     use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Trip\TripService;
+    use enshrined\svgSanitize\Sanitizer;
+    use enshrined\svgSanitize\data\AllowedTags;
 
     class FlightService {
 
@@ -155,7 +157,17 @@
         }
 
         public function updateAirlineLogo(string $airlineCode, string $logo) : bool {
-            return $this->flightMapper->updateAirlineLogo($airlineCode, $logo);
+            $sanitizer = new Sanitizer();
+            $allowedTags = new AllowedTags(array(
+                "svg" => array("xmlns", "viewBox", "width", "height"),
+                "g"   => array("transform"),
+                "path"=> array("d", "fill", "stroke", "stroke-width", "transform")
+            ));
+
+            $sanitizer->setAllowedTags($allowedTags);
+            $sanitizer->removeRemoteReferences(true);
+
+            return $this->flightMapper->updateAirlineLogo($airlineCode, $sanitizer->sanitize($logo));
         }
 
         public function updateAirlineCodeAirline(string $airlineCode, ?string $airlineId) : bool {

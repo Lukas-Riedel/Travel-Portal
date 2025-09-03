@@ -631,7 +631,7 @@ export function useApi() {
     async function updateAirlineLogo(airlineId, logo) {
         return sendRequest("PATCH", "/airlines/" + airlineId,
             {
-                name: logo
+                logo: logo
             })
     }
 

@@ -30,7 +30,7 @@
                 $group->patch("/{airlineId}", [$resource, "updateAirline"]);
                 $group->delete("/{airlineId}", [$resource, "removeAirline"]);
                 $group->get("/{airlineId}/codes", [$resource, "createAirlineCode"]);
-                $group->get("/{airlineId}/codes/{airlineCode}", [$resource, "deleteAirlineCode"]);
+                $group->delete("/{airlineId}/codes/{airlineCode}", [$resource, "removeAirlineCode"]);
             });
         }
         
@@ -576,7 +576,7 @@
         #[OA\Delete(
             path: "/airlines/{airlineId}/codes/{airlineCode}",
             summary: "Delete a code for an airline with the specified identifier",
-            operationId: "deleteAirlineCode",
+            operationId: "removeAirlineCode",
             tags: ["Airlines"],
             security: [ ["bearerAuth" => []] ],
             parameters: [
@@ -643,7 +643,7 @@
                 )
             ]
         )]
-        public function deleteAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
+        public function removeAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
             $this->validateAdminPermissions($request);
 
             $airlineId = $this->validatePathArgument($routeArguments, "airlineId");

@@ -16,7 +16,22 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                     const loadingId = toast.loading("Probíhá zpracování...")
 
                     try {
-                        await onSubmitted(...fields.map((_, index) => inputRefs.current[index]?.value?.trim() || undefined))
+                        await onSubmitted(...fields.map((_, index) => {
+                            const el = inputRefs.current[index]
+                            if (!el) {
+                                return undefined
+                            }
+
+                            if (el.tagName === "SELECT" && el.multiple) {
+                                const values = Array.from(el.selectedOptions, o => o.value).map(v => v.trim())
+                                return values.length > 0 ? values : undefined
+                            } else if ("value" in el) {
+                                const val = el.value?.trim()
+                                return val ? val : undefined
+                            }
+
+                            return undefined
+                        }))
                         toast.dismiss(loadingId)
                         toast.success(success)
                     }
@@ -48,6 +63,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                             ref={element => (inputRefs.current[index] = element)}
                                             className="border rounded px-2 py-1 w-full text-sm"
                                             defaultValue={field.value ?? ""}
+                                            multiple={field.multiple}
                                             disabled={field.disabled}>
                                             {field.options?.map((option, index) => (
                                                 <option

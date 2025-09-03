@@ -3,7 +3,7 @@ import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useAirlines = () => {
-    const { listAirlines } = useApi()
+    const { listAirlines, createAirline, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({
@@ -11,7 +11,16 @@ export const useAirlines = () => {
         queryFn: listAirlines,
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24
     })
+    
+    const refetchAirlines = _ => query.refetch()
 
-    // TODO: Map to Airline objects
-    return query.data
+    return {
+        // TODO: Map to Airline objects
+        airlines: query.data,
+        createAirline: name => createAirline(name).then(refetchAirlines),
+        updateAirlineName: (airlineId, name) => updateAirlineName(airlineId, name).then(refetchAirlines),
+        updateAirlineLogo: (airlineId, logo) => updateAirlineLogo(airlineId, logo).then(refetchAirlines),
+        removeAirline: airlineId => removeAirline(airlineId).then(refetchAirlines),
+        removeAirlineCode: (airlineId, code) => removeAirlineCode(airlineId, code).then(refetchAirlines)
+    }
 }

@@ -20,8 +20,11 @@ import ConfigurationEditor from "../components/ConfigurationEditor"
 import { useConfiguration } from "../contexts/ConfigContext"
 import DeviceCardGrid from "../components/DeviceCardGrid"
 import { useDevices } from "../hooks/useDevices"
+import AirlineCardGrid from "../components/AirlineCardGrid"
+import showInputToast from "../components/InputToast"
 
-const labels = ["Aktuální výlet", "Sledované lety", "Hlášené problémy", "Konfigurace", "Zařízení"]
+// TODO: Make it dynamic - if the sub-page has nothing to show, hide the label.
+const labels = ["Aktuální výlet", "Sledované lety", "Aerolinky", "Hlášené problémy", "Konfigurace", "Zařízení"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
@@ -31,11 +34,8 @@ export default function AdminPage() {
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
-    const airlines = useAirlines()
-    const agentDevices = useDevices({ type: "agent" })
-    const bridgexDevices = useDevices({ type: "bridgex" })
-    // TODO: Add REST API support for querying multiple device types.
-    const devices = useMemo(() => [...(agentDevices ?? []), ...(bridgexDevices ?? [])], [agentDevices, bridgexDevices])
+    const { airlines, createAirline, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
+    const devices = useDevices({ type: "agent" })
     const trips = useRegularTrips({ include: "watchedFlights" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
@@ -89,6 +89,15 @@ export default function AdminPage() {
         )
     }
 
+    const handleAirlineCreated = () => {
+        showInputToast("Zadej název aerolinky k přidání:",
+            "",
+            "Aerolinka byla úspěšně přidána",
+            "Při přidávání aerolinky došlo k chybě",
+            createAirline
+        )
+    }
+
     return isAdmin && (
         <>
             <TabMenu
@@ -119,6 +128,19 @@ export default function AdminPage() {
                 </>
             )}
             {activeTab === 2 && (
+                <>
+                    <AirlineCardGrid
+                        airlines={airlines}
+                        onAirlineRemoved={removeAirline}
+                        onAirlineNameUpdated={updateAirlineName}
+                        onAirlineLogoUpdated={updateAirlineLogo}
+                        onAirlineCodeRemoved={removeAirlineCode} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleAirlineCreated} />
+                </>
+            )}
+            {activeTab === 3 && (
                 <DataConsistencyIssueCardGrid
                     dataConsistencyIssues={dataConsistencyIssues}
                     airlines={airlines}
@@ -132,12 +154,12 @@ export default function AdminPage() {
                     onFlightLogged={logFlight}
                     onRegionManagementOpened={() => { /** TODO: Set active tab to the region management. */ }} />
             )}
-            {activeTab === 3 && (
+            {activeTab === 4 && (
                 <ConfigurationEditor
                     configuration={configuration}
                     onConfigurationUpdated={updateConfigurationEntry} />
             )}
-            {activeTab === 4 && (
+            {activeTab === 5 && (
                 <>
                     <DeviceCardGrid devices={devices} />
                     <FloatingButton

@@ -185,6 +185,7 @@
                 LEFT JOIN airline_code ac
                     ON ai.id = ac.airline_id
                 GROUP BY ai.id
+                ORDER BY ai.name
             SQL;
             
             return $this->databaseProvider
