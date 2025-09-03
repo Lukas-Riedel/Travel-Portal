@@ -229,7 +229,7 @@
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
-                    AND replaced_photo_id IS null
+                    AND replaced_photo_id IS NULL
                     AND expiration > UNIX_TIMESTAMP()
                 ORDER BY batch_position
                 LIMIT 50

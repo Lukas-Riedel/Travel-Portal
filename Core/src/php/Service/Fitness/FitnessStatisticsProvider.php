@@ -71,25 +71,25 @@
             
             if ($statisticsKind === StatisticsKind::Standings) {                
                 $mostStepsPerDayRecords = $this->getStandingsStatisticsForDayRecords($this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::StepsDescending),
-                    fn($record) => $record->getFitness()->getSteps(), $categoryId);
+                    fn($record) => $record->getFitness()->getSteps(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($mostStepsPerDayRecords) > 0) {
                     $statistics[] = new Statistics(self::MOST_STEPS_PER_DAY_STATISTICS_NAME, $mostStepsPerDayRecords, StatisticsUnit::Steps);
                 }
                 
                 $leastStepsPerDayRecords = $this->getStandingsStatisticsForDayRecords($this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::StepsAscending),
-                    fn($record) => $record->getFitness()->getSteps(), $categoryId);
+                    fn($record) => $record->getFitness()->getSteps(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($leastStepsPerDayRecords) > 0) {
                     $statistics[] = new Statistics(self::LEAST_STEPS_PER_DAY_STATISTICS_NAME, $leastStepsPerDayRecords, StatisticsUnit::Steps);
                 }
                 
                 $mostTimeInMotionPerDayRecords = $this->getStandingsStatisticsForDayRecords($this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::TimeInMotionDescending),
-                    fn($record) => $record->getFitness()->getSeconds(), $categoryId);
+                    fn($record) => $record->getFitness()->getSeconds(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($mostTimeInMotionPerDayRecords) > 0) {
                     $statistics[] = new Statistics(self::MOST_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, $mostTimeInMotionPerDayRecords, StatisticsUnit::Duration);
                 }
                 
                 $leastTimeInMotionPerDayRecords = $this->getStandingsStatisticsForDayRecords($this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::TimeInMotionAscending),
-                    fn($record) => $record->getFitness()->getSeconds(), $categoryId);
+                    fn($record) => $record->getFitness()->getSeconds(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($leastTimeInMotionPerDayRecords) > 0) {
                     $statistics[] = new Statistics(self::LEAST_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, $leastTimeInMotionPerDayRecords, StatisticsUnit::Duration);
                 }
@@ -118,9 +118,9 @@
             return $standings;
         }
 
-        private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId) : array {
-            return array_filter(array_map(function($record) use(&$categoryId, &$valueSelector) {
-                $places = array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $record->getTimestamp(),
+        private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId, ?string $tripId) : array {
+            return array_filter(array_map(function($record) use(&$categoryId, &$tripId, &$valueSelector) {
+                $places = array_filter($this->placeService->getRegularPlaces($categoryId, null, $tripId, null, null, null, null, $record->getTimestamp(),
                     $record->getTimestamp() + CommonConstants::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
                     fn($place) => count($place->getDates()) > 0);
                 return empty($places) ? null : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,

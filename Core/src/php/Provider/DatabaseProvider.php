@@ -104,7 +104,7 @@
         }
 
         public function getIsNullOrEqualTo($var) {
-            return $var == null ? "IS null" : ("= '" . $this->escape($var) . "'");
+            return $var == null ? "IS NULL" : ("= '" . $this->escape($var) . "'");
         }
 
         public function getLastInsertedId() {

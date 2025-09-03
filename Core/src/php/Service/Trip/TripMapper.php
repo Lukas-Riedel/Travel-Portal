@@ -153,7 +153,7 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("year IS null");
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("year IS NULL");
             if ($tripId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $tripId);
             }
@@ -185,7 +185,7 @@
                 FROM trip_event nte
                 LEFT JOIN {$oldTripEventTableName} ote
                     ON ote.id = nte.id
-                WHERE ote.start IS null
+                WHERE ote.start IS NULL
             SQL;
 
             return $this->databaseProvider
@@ -214,7 +214,7 @@
                 FROM {$oldTripEventTableName} ote
                 LEFT JOIN trip_event nte
                     ON ote.id = nte.id
-                WHERE nte.id IS null
+                WHERE nte.id IS NULL
             SQL;
 
             return $this->databaseProvider
@@ -258,6 +258,8 @@
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($tripRow) use(&$includedEntities) {
+                    $isDayTrip = $tripRow["name"] === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
+
                     $countries = $this->placeService->getCountriesForTrip($tripRow["id"]);
                     
                     $expenses = array();
@@ -284,7 +286,10 @@
                     if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
                         $startOfDay = $tripRow["start"] - ($tripRow["start"] % CommonConstants::ONE_DAY_SECONDS);
                         while ($startOfDay < $tripRow["end"]) {
-                            $fitness[] = $this->fitnessService->getFitnessRecordForOneDay($startOfDay);
+                            $dayStart = max($startOfDay, $isDayTrip ? 0 : $tripRow["start"]);
+                            $dayEnd = min($startOfDay + CommonConstants::ONE_DAY_SECONDS, $isDayTrip ? PHP_INT_MAX : $tripRow["end"]);
+
+                            $fitness[] = $this->fitnessService->getFitnessRecordForInterval($dayStart, $dayEnd);
                             $startOfDay += CommonConstants::ONE_DAY_SECONDS;
                         }
                     }
@@ -300,9 +305,7 @@
                     }
     
                     $statistics = array();
-                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities)
-                            && $tripRow["name"] !== $this->configurationService->getConfigurationEntry("trips")["dayTripsName"]
-                            && $tripRow["start"] < time()) {
+                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities) && !$isDayTrip && $tripRow["start"] < time()) {
                         $statistics = $this->statisticsService->getTripStatistics($tripRow["id"]);                 
                     }
     

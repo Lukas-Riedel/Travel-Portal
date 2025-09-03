@@ -254,10 +254,10 @@
                 $whereClauseBuilder->withClause("pi.quality <= ?", $maxQuality);
             }
             if ($minStart !== null) {
-                $whereClauseBuilder->withClause("(? <= pe.start OR pe.start IS null)", $minStart);
+                $whereClauseBuilder->withClause("(? <= pe.start OR pe.start IS NULL)", $minStart);
             }
             if ($maxEnd !== null) {
-                $whereClauseBuilder->withClause("(pe.end <= ? OR pe.start IS null)", $maxEnd);
+                $whereClauseBuilder->withClause("(pe.end <= ? OR pe.start IS NULL)", $maxEnd);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
@@ -558,7 +558,7 @@
                 FROM place_event npe
                 LEFT JOIN {$oldPlaceEventTableName} ope
                     ON ope.id = npe.id
-                WHERE ope.start IS null
+                WHERE ope.start IS NULL
             SQL;
 
             return $this->databaseProvider
@@ -588,7 +588,7 @@
                 FROM {$oldPlaceEventTableName} ope
                 LEFT JOIN place_event npe
                     ON ope.id = npe.id
-                WHERE npe.id IS null
+                WHERE npe.id IS NULL
             SQL;
 
             return $this->databaseProvider

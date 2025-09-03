@@ -25,7 +25,7 @@
                 FROM flight_event nfe
                 LEFT JOIN {$oldFlightEventTableName} ofe
                     ON ofe.id = nfe.id
-                WHERE ofe.flight IS null
+                WHERE ofe.flight IS NULL
             SQL;
 
             return $this->databaseProvider
@@ -57,7 +57,7 @@
                 FROM {$oldFlightEventTableName} ofe
                 LEFT JOIN flight_event nfe
                     ON ofe.id = nfe.id
-                WHERE nfe.id IS null
+                WHERE nfe.id IS NULL
             SQL;
 
             return $this->databaseProvider
@@ -103,7 +103,7 @@
             $sql = <<<'SQL'
                 SELECT code
                 FROM airline_code
-                WHERE airline_id IS null
+                WHERE airline_id IS NULL
             SQL;
 
             return $this->databaseProvider
@@ -124,7 +124,7 @@
                     ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id,
-                    IF(fl.actual_arrival IS null, null, fl.actual_arrival - fl.scheduled_arrival) AS delay,
+                    IF(fl.actual_arrival IS NULL, null, fl.actual_arrival - fl.scheduled_arrival) AS delay,
                     fai.code AS from_airport_code, 
                     fai.latitude AS from_airport_latitude, 
                     fai.longitude AS from_airport_longitude, 
@@ -284,7 +284,7 @@
                     ON fl.airline_code_id = ac.id
                 LEFT JOIN airline_identifier ai
                     ON ac.airline_id = ai.id
-                WHERE fe.id IS null
+                WHERE fe.id IS NULL
             SQL;
             
             return $this->databaseProvider
@@ -401,7 +401,7 @@
                 LEFT JOIN flight_log fl 
                     ON fe.flight = fl.flight 
                     AND fe.start = fl.scheduled_departure
-                WHERE fl.actual_arrival IS null
+                WHERE fl.actual_arrival IS NULL
                 ORDER BY fe.end ASC
             SQL;       
             

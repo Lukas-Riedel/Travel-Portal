@@ -4,6 +4,7 @@
     use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Service\Configuration\ConfigurationService;
+use RuntimeException;
 
     class FitnessService {
 
@@ -27,10 +28,6 @@
             return $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate($limit);
         }
 
-        public function getFitnessRecordForOneDay(int $timestamp) : Fitness {
-            return $this->fitnessMapper->selectFitnessRecordForInterval($timestamp, $timestamp + CommonConstants::ONE_DAY_SECONDS);
-        }
-
         public function getFitnessRecordForInterval(int $start, int $end) : Fitness {
             return $this->fitnessMapper->selectFitnessRecordForInterval($start, $end);
         }
@@ -45,6 +42,11 @@
         }
 
         public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $distance, bool $forceUpdate = false) : bool {
+            $end = $timestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+            if ($end > time()) {
+                throw new RuntimeException("Unable to update a fitness record for an unfinished interval (" . $timestamp  . " - " . $end . ")");
+            }
+
             $distance = $this->getCorrectedDistance($distance, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
@@ -81,7 +83,7 @@
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
-            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $timestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
+            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $end);
 
             return true;
         }

@@ -191,7 +191,8 @@
                     ) x
                 LEFT JOIN fitness f
                     ON x.start = f.timestamp                    
-                WHERE f.timestamp IS null
+                WHERE f.timestamp IS NULL
+                    AND x.start + ? <= UNIX_TIMESTAMP()
                     OR (
                         -- TODO: Find a better way of how to update fitness records multiple times when getting rid of this query.
                         f.timestamp + (7 * 86400) > f.last_update
@@ -204,7 +205,8 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters(CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS, 
-                    CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS)
+                    CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS,
+                    CommonConstants::FITNESS_RECORD_DURATION_SECONDS)
                 ->getResultSetForColumn("start");
         }
 
@@ -344,7 +346,7 @@
                         AND s.seq <= UNIX_TIMESTAMP()
                 ) x 
                     ON x.start = f.timestamp 
-                    WHERE x.start IS null
+                    WHERE x.start IS NULL
             SQL;
 
             $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
