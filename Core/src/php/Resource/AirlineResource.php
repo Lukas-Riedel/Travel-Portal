@@ -647,7 +647,7 @@
             $this->validateAdminPermissions($request);
 
             $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
-            $airlineCode = $this->validateJsonBodyField($request, "code");
+            $airlineCode = $this->validatePathArgument($routeArguments, "airlineCode");
             
             $airline = $this->flightService->getAirline($airlineId);
             if ($airline === null) {

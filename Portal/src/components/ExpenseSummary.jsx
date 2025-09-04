@@ -91,6 +91,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
     const { isAdmin } = useAuth()
 
     const [detailedView, setDetailedView] = useState(isAdmin)
+    const [duplicatedExpense, setDuplicatedExpense] = useState({})
     const totalCost = useMemo(() => expenses?.reduce((sum, e) => sum + (e.mainCurrencyValue || 0), 0) ?? 0, [expenses])
 
     const detailedRows = useMemo(() => (expenses ?? [])
@@ -100,6 +101,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 expense={expense}
                 onExpenseDescriptionUpdated={onExpenseDescriptionUpdated}
                 onExpenseValueUpdated={onExpenseValueUpdated}
+                onExpenseDuplicated={setDuplicatedExpense}
                 onExpenseRemoved={onExpenseRemoved} />
         )), [expenses, configuration, isAdmin, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved])
 
@@ -123,14 +125,14 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
         ))
 
     const expenseCandidateRows = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
-        expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), {}]
+        expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), duplicatedExpense]
         .map((expenseCandidate, index) => (
             <ExpenseCandidateRow
                 key={index}
                 lastAddedExpense={expenses?.at(-1)}
                 expenseCandidate={expenseCandidate}
                 onExpenseCreated={onExpenseCreated} />
-        )), [expenseCandidates, expenses, onExpenseCreated])
+        )), [expenseCandidates, expenses, duplicatedExpense, onExpenseCreated])
 
     const actualRows = useMemo(() => {
         if (!expenses) {
@@ -241,36 +243,36 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
 function AggregatedExpenseRow({ type, cost, totalCost }) {
     const { configuration } = useConfiguration()
 
-    const Icon = expenseTypes[type]?.icon || expenseTypes.OTHER.icon
+    const Icon = expenseTypes[type]?.icon || expenseTypes.other.icon
     return (
         <tr
             key={type}
             className="hover:bg-gray-100">
             <td className="p-3 text-center">
-                <div className={`flex justify-center items-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}>
+                <div className={`flex justify-center items-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
                     <Icon className="w-5 h-5 flex-shrink-0" />
                 </div>
             </td>
             <td
-                className={`p-3 text-center truncate ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}
+                className={`p-3 text-center truncate ${expenseTypes[type]?.color || expenseTypes.other.color}`}
                 colSpan={2}>
-                {expenseTypes[type]?.label || expenseTypes.OTHER.label}
+                {expenseTypes[type]?.label || expenseTypes.other.label}
             </td>
-            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color}`}>
+            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span>
                         {`${cost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                     </span>
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.OTHER.color} hidden sm:table-cell`}>
+            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.other.color} hidden sm:table-cell`}>
                 {totalCost > 0 ? ((100 * cost / totalCost).toFixed(1)) : "0.0"} %
             </td>
         </tr>
     )
 }
 
-function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }) {
+function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
 
@@ -306,18 +308,26 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
         )
     }
 
-    const Icon = expenseTypes[expense.type]?.icon || expenseTypes.OTHER.icon
+    const Icon = expenseTypes[expense.type]?.icon || expenseTypes.other.icon
     return (
         <tr
             key={expense.id}
             className="hover:bg-gray-100">
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
-                <div className="flex justify-center items-center">
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                </div>
+            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+                {onExpenseDuplicated ? (
+                    <button
+                        className="flex justify-center items-center"
+                        onClick={() => onExpenseDuplicated(expense)}>
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                    </button>
+                ) : (
+                    <div className="flex justify-center items-center">
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                    </div>
+                )}
             </td>
             <td
-                className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}
+                className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}
                 colSpan={2}>
                 <div className="flex justify-center items-center space-x-1">
                     <span className="truncate">
@@ -333,7 +343,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     )}
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
+            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span>
                         {`${expense?.value} ${expense?.currency}`}
@@ -347,19 +357,21 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     )}
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color} hidden sm:table-cell`}>
+            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color} hidden sm:table-cell`}>
                 {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
             </td>
-            {isAdmin && onExpenseRemoved && (
-                <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.OTHER.color}`}>
-                    <button
-                        className="p-1 btn-icon-hover"
-                        onClick={() => handleRemove(expense)}>
-                        <Trash2 size={16} />
-                    </button>
-                </td>
-            )}
-        </tr>
+            {
+                isAdmin && onExpenseRemoved && (
+                    <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+                        <button
+                            className="p-1 btn-icon-hover"
+                            onClick={() => handleRemove(expense)}>
+                            <Trash2 size={16} />
+                        </button>
+                    </td>
+                )
+            }
+        </tr >
     )
 }
 
@@ -384,7 +396,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
             setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || "")
             setNewSubscriptionId(expenseCandidate?.subscriptionId)
         }
-    }, [])
+    }, [expenseCandidate])
 
     const handleExpenseCreated = () => {
         showConfirmToast("Opravdu chceš přidat nový výdaj?",
