@@ -71,7 +71,8 @@ class MainActivity : AppCompatActivity() {
     private fun loadWebViewUrl(savedInstanceState: Bundle?, placeId: String?) {
         val url = BuildConfig.PORTAL_BASE_URL + placeId?.let { "place/$it" }.orEmpty()
         if (savedInstanceState == null) {
-            webView.loadUrl(url)
+            val bustParam = System.currentTimeMillis() / (3600 * 1000)
+            webView.loadUrl("$url?t=$bustParam")
         }
     }
 
