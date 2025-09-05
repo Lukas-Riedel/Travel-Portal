@@ -12,10 +12,10 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
 
     const [overlayType, setOverlayType] = useState(0)
 
-    const canPlaceHighlightBeAdded = useMemo(() => onPlaceHighlightCreated && place?.highlights &&
-        !place.highlights.some(highlight => highlight.photo.id === photo.id), [place, photo])
-    const canTripHighlightBeAdded = useMemo(() => onTripHighlightCreated && trip?.highlights &&
-        !trip.highlights.some(highlight => highlight.photo.id === photo.id), [trip, photo])
+    const canPlaceHighlightBeAdded = useMemo(() => onPlaceHighlightCreated && place &&
+        !place.highlights?.some(highlight => highlight.photo.id === photo.id), [place, photo])
+    const canTripHighlightBeAdded = useMemo(() => onTripHighlightCreated && trip &&
+        !trip.highlights?.some(highlight => highlight.photo.id === photo.id), [trip, photo])
 
     const handleHighlightCreated = () => {
         showFormToast(
