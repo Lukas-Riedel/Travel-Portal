@@ -1,4 +1,4 @@
-package cz.lriedel.bridgex.fitness
+package cz.lriedel.bridgex.geocoding
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,26 +16,20 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class FitnessForegroundService : Service() {
+class GeocodingForegroundService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val authenticationService by lazy { AuthenticationService(this) }
-    private val fitnessService by lazy { FitnessService(this, authenticationService) }
+    private val geocodingService by lazy { GeocodingService(this, authenticationService) }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val intervals = intent?.getParcelableArrayListExtra("intervals", FitnessInterval::class.java) ?: emptyList()
-
-        startForeground(NOTIFICATION_ID, createNotification(intervals.size))
+        startForeground(NOTIFICATION_ID, createNotification())
 
         serviceScope.launch {
             try {
-                for (interval in intervals) {
-                    try {
-                        fitnessService.updateFitness(interval.start, interval.end)
-                    }
-                    catch (e: Exception) {
-                        Log.e(FitnessForegroundService::class.java.simpleName, "An error occurred when updating fitness.", e)
-                    }
-                }
+                geocodingService.updateCurrentLocation()
+            }
+            catch (e: Exception) {
+                Log.e(GeocodingForegroundService::class.java.simpleName, "An error occurred when uploading current location.", e)
             }
             finally {
                 stopForeground(true)
@@ -52,7 +46,7 @@ class FitnessForegroundService : Service() {
         serviceScope.cancel()
     }
 
-    private fun createNotification(itemsCount: Int): Notification {
+    private fun createNotification(): Notification {
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW).apply {
             setSound(null, null)
             enableVibration(false)
@@ -63,8 +57,8 @@ class FitnessForegroundService : Service() {
         notificationManager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.title_synchronization_started))
-            .setContentText(getString(R.string.message_synchronization_started, itemsCount))
+            .setContentTitle(getString(R.string.title_current_location_update_started))
+            .setContentText(getString(R.string.message_current_location_update_started))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
@@ -72,7 +66,7 @@ class FitnessForegroundService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1
-        private const val CHANNEL_ID = "FitnessForegroundService"
-        private const val CHANNEL_NAME = "Fitness Data Synchronization"
+        private const val CHANNEL_ID = "GeocodingForegroundService"
+        private const val CHANNEL_NAME = "Current Location Update"
     }
 }

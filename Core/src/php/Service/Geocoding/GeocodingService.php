@@ -14,8 +14,17 @@
         
         private const ADDRESS_CACHE_KEY_FORMAT = "GeocodingService:Address:%s";
         private const ADDRESS_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
+        
+        private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s:%s";
+        private const LOCATION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
+        
+        private const CURRENT_ADDRESS_CACHE_KEY = "GeocodingService:CurrentAddress";
+        private const CURRENT_ADDRESS_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
+        // TODO: Move to GoogleApiClient.
+        // TODO: Make the language parameter configurable.
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
+        private const GET_ADDRESS_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&latlng=%s,%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
         
         private readonly ConfigurationService $configurationService;
@@ -30,18 +39,30 @@
             $this->httpClient = $httpClient;
         }
 
+        public function getCurrentAddress() : ?Address {
+            $address = $this->cacheClient->get(self::CURRENT_ADDRESS_CACHE_KEY);
+            return $address !== null ? new Address($address["address"], $address["lastUpdate"]) : null;
+        }
+
+        public function trackLocation(float $latitude, float $longitude) : Address {
+            $address = new Address($this->doGetAddress($latitude, $longitude), time());
+            $this->cacheClient->set(self::CURRENT_ADDRESS_CACHE_KEY, $address, self::CURRENT_ADDRESS_CACHE_TTL);
+            return $address;
+        }
+
+
         public function getAddress(string $placeName, Location $location) : string {
             return sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(), $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
         }
 
-        public function getLocation(string $address) : Location {
+        public function getLocation(string $address, bool $apiFetchEnabled = true) : ?Location {
             $location = $this->tryParseLocation($address);
             if ($location !== null) {
                 return $location;
             }
 
-            $location = $this->doGetLocation($address);
-            if ($location !== null) {
+            $location = $this->tryGetCachedLocation($address);
+            if ($location !== null || !$apiFetchEnabled) {
                 return $location;
             }
 
@@ -56,14 +77,27 @@
             $c = asin(min(1, sqrt($a)));
             return 2 * self::EARTH_RADIUS_KM * $c;
         }
+        
+        private function doGetAddress(float $latitude, float $longitude) : string {
+            $address = $this->tryGetCachedAddress($latitude, $longitude);
+            if ($address !== null) {
+                return $address;
+            }
 
-        private function doGetLocation(string $address) : ?Location {
+            return $this->createAddress($latitude, $longitude);
+        }
+
+        private function tryGetCachedLocation(string $address) : ?Location {
             $location = $this->cacheClient->get($this->getAddressCacheKey($address), self::ADDRESS_CACHE_TTL);
             if ($location === null) {
                 return null;
             }
 
             return new Location($location["country"], $location["latitude"], $location["longitude"], $location["timezone"]);
+        }
+
+        private function tryGetCachedAddress(float $latitude, float $longitude) : ?string {
+            return $this->cacheClient->get($this->getLocationCacheKey($latitude, $longitude), self::LOCATION_CACHE_TTL);
         }
 
         private function tryParseLocation(string $address) : ?Location {
@@ -125,8 +159,28 @@
             return $location;
         }
 
+        private function createAddress(float $latitude, float $longitude) : string {
+            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+
+            if ($apiResponse["status"] === "OK") {
+                if (count($apiResponse["results"]) > 0) {
+                    if (isset($apiResponse["results"][0]["formatted_address"])) {
+                        $address = $apiResponse["results"][0]["formatted_address"];
+                        $this->cacheClient->set($this->getLocationCacheKey($latitude, $longitude), $address, self::LOCATION_CACHE_TTL);
+                        return $address;
+                    }
+                }
+            }
+
+            throw new \RuntimeException("Unable to obtain an address for the coordinates.");
+        }
+
         private function getAddressCacheKey(string $address) : string {
             return sprintf(self::ADDRESS_CACHE_KEY_FORMAT, $address);
+        }
+
+        private function getLocationCacheKey(float $latitude, float $longitude) : string {
+            return sprintf(self::LOCATION_CACHE_KEY_FORMAT, round($latitude, 3), round($longitude, 3));
         }
     }
 ?>

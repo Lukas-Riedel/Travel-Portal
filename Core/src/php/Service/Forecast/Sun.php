@@ -17,7 +17,7 @@
                 example: 1720358685
             ),
             new OA\Property(
-                property: "lastUpdate",
+                property: "sunset",
                 description: "The sunset time in epoch seconds",
                 type: "integer",
                 format: "int64",

@@ -21,7 +21,7 @@
             $this->logger = $logger;
         }
 
-        public function publishEvent(\Event $event, array $args, array $deviceTokens) : void {
+        public function publishEvent(\Event $event, ?array $args, array $deviceTokens) : void {
             global $httpClient;
 
             $url = sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId);
@@ -36,7 +36,7 @@
                         ),
                         "data" => array(
                             "event" => $event->name,
-                            "args" => json_encode($args)
+                            "args" => json_encode((object) ($args ?? []))
                         )
                     )
                 );

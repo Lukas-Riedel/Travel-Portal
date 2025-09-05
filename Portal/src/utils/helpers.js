@@ -101,3 +101,7 @@ export function isDaylightSavingTime(timestamp, timezone) {
 export function getOnlyElement(arr) {
     return arr?.length === 1 ? arr[0] : undefined
 }
+
+export function getEuclideanDistance(a, b) {
+    return 111.0 * Math.hypot(a.latitude - b.latitude, a.longitude - b.longitude)
+}

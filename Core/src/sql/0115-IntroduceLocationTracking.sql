@@ -1,0 +1,1 @@
+INSERT INTO scheduler (action, last_triggered) VALUES ('TRACK_LOCATION', UNIX_TIMESTAMP());

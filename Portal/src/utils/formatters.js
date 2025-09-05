@@ -59,7 +59,34 @@ export function formatNights(value) {
 }
 
 export function formatBeforeDays(value) {
-    return `Před ${format(Math.floor((Date.now() / 1000 - value) / 86400), ["dnem", "dny", "dny"])}`
+    return format(Math.floor((Date.now() / 1000 - value) / 86400), ["dnem", "dny", "dny"])
+}
+
+export function formatBeforeMinutes(value) {
+    return format(Math.floor((Date.now() / 1000 - value) / 60), ["minutou", "minutami", "minutami"])
+}
+
+export function formatBeforeHours(value) {
+    return format(Math.floor((Date.now() / 1000 - value) / 3600), ["hodinou", "hodinami", "hodinami"])
+}
+
+export function formatTimeAgo(timestamp) {
+    const seconds = Math.floor(Date.now() / 1000 - timestamp)
+    if (seconds < 60) {
+        return "několika sekundami"
+    }
+
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) {
+        return formatBeforeMinutes(timestamp)
+    }
+
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) {
+        return formatBeforeHours(timestamp)
+    }
+    
+    return formatBeforeDays(timestamp);
 }
 
 export function formatMainCurrency(value, mainCurrency) {
@@ -77,7 +104,7 @@ export function formatStatisticsUnit(unit, value, mainCurrency) {
         "days": formatDays,
         "flights": formatFlights,
         "steps": formatSteps,
-        "beforeDaysTimestamp": formatBeforeDays,
+        "beforeDaysTimestamp": v => "Před " + formatBeforeDays(v),
         "visits": formatVisits,
         "airports": formatAirports,
         "nights": formatNights

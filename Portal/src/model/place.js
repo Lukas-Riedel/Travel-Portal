@@ -19,7 +19,7 @@ export default class Place {
     }
 
     getEuclideanDistanceTo(place) {
-        return Math.hypot(this.latitude - place.latitude, this.longitude - place.longitude)
+        return 111.0 * Math.hypot(this.latitude - place.latitude, this.longitude - place.longitude)
     }
 
     getHaversineDistanceTo(place) {

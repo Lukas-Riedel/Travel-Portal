@@ -22,6 +22,10 @@
             $this->publishEvent(Event::FitnessActivityDetected, array("intervals" => $intervals));
         }
 
+        public function publishLocationUpdateDetectedEvent() : void {
+            $this->publishEvent(Event::LocationUpdateDetected, null);
+        }
+
         public function publishCategoryCreatedEvent($categoryId) {
             $this->publishEvent(Event::CategoryCreated, array("categoryId" => $categoryId));
         }
@@ -225,7 +229,8 @@
                 case EventTarget::CloudMessaging:
                     // TODO: Figure out how to resolve the device type and required roles - introduce more "bit masks" to the event type backing value.
                     $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getToken(),
-                        $deviceService->getDevices($event === Event::FitnessActivityDetected ? DeviceType::BridgeX : DeviceType::Portal, array("ADMIN"))));
+                        $deviceService->getDevices(($event === Event::FitnessActivityDetected || $event === Event::LocationUpdateDetected) 
+                            ? DeviceType::BridgeX : DeviceType::Portal, array("ADMIN"))));
                     break;
                 case EventTarget::WorkerQueue:
                     $messagingClient->publishEvent($event, $args, WORKER_QUEUE_NAME);
@@ -311,6 +316,7 @@
         case ProcessingStarted = 3000;
         case ProcessingEnded = 3001;
         case FitnessActivityDetected = 3100;
+        case LocationUpdateDetected = 3101;
         
         public function getTarget() : EventTarget {
             return EventTarget::from(floor($this->value / 1000));

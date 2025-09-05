@@ -7,16 +7,25 @@ import { useTrip } from "../hooks/useTrip"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
-import { Earth, House } from "lucide-react"
+import { Earth, House, LocateFixedIcon, LocateOffIcon } from "lucide-react"
 import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
+import { useAuth } from "../contexts/AuthContext"
+import { useCurrentAddress } from "../hooks/useCurrentAddress"
+import { formatTimeAgo } from "../utils/formatters"
 
 export default function TripSummary({ tripId }) {
+    const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { trip } = useTrip(tripId)
     const tripPlaces = useRegularPlaces({ tripId, include: "categories,dates" })
+    const currentAddress = useCurrentAddress([
+        ...(trip?.stays.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
+        ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.name, address: "Letiště " + flight.from.name, radius: 3.0 })) ?? []),
+        ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.to.name, address: "Letiště " + flight.to.name, radius: 3.0 })) ?? [])
+    ])
 
     const [timezone, setTimezone] = useState(undefined)
     useEffect(() => {
@@ -71,6 +80,32 @@ export default function TripSummary({ tripId }) {
                 <div className="text-xl text-gray-700">
                     {getDateRangeString(trip.start, trip.end)}
                 </div>
+                {currentAddress && trip.isCurrent() && (
+                    <>
+                        {currentAddress.lastUpdate + 1800 > Date.now() / 1000 ? (
+                            <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-6 hover:underline hover:text-green-400 transition-colors duration-200">
+                                <LocateFixedIcon size={16} />
+                                <a
+                                    className="text-xs truncate"
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(currentAddress.address)}`}>
+                                    {currentAddress.name}
+                                </a>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center w-full text-red-600 space-x-1 mt-6 hover:underline hover:text-red-400 transition-colors duration-200">
+                                <LocateOffIcon size={16} />
+                                <a
+                                    className="text-xs truncate"
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(currentAddress.address)}`}>
+                                    {currentAddress.name}
+                                </a>
+                            </div>
+                        )}
+                        <span className="text-[10px] text-gray-500 mt-1">
+                            Aktualizováno před {formatTimeAgo(currentAddress.lastUpdate)}
+                        </span>
+                    </>
+                )}
             </div>
             {days?.map((day, index) => (
                 <DayCard

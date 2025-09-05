@@ -29,7 +29,8 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
     private val notificationFactories: Map<String, NotificationFactory> by lazy {
         listOf(
             ProcessingEndedNotificationFactory(this),
-            FitnessActivityDetectedNotificationFactory(this)
+            FitnessActivityDetectedNotificationFactory(this),
+            LocationUpdateDetectedNotificationFactory(this)
         ).associateBy { factory ->
             factory.javaClass.simpleName.replace(NotificationFactory::class.java.simpleName, "")
         }

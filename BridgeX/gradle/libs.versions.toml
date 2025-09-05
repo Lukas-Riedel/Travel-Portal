@@ -8,6 +8,7 @@ activityCompose = "1.10.1"
 firebaseBom = "34.2.0"
 composeBom = "2024.04.01"
 health-connect = "1.1.0-alpha06"
+play-services-location = "21.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -27,6 +28,7 @@ firebase-common = { group = "com.google.firebase", name = "firebase-common" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 androidx-health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "health-connect" }
 kotlin-parcelize-runtime = { group = "org.jetbrains.kotlin", name = "kotlin-parcelize-runtime", version.ref = "kotlin" }
+location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

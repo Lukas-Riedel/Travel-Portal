@@ -29,8 +29,8 @@
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseStatisticsProvider;
-use Core\Service\Fitness\FitnessDataConsistencyMonitor;
-use Core\Service\Fitness\FitnessService;
+    use Core\Service\Fitness\FitnessDataConsistencyMonitor;
+    use Core\Service\Fitness\FitnessService;
     use Core\Service\Fitness\FitnessServiceListener;
     use Core\Service\Fitness\FitnessStatisticsProvider;
     use Core\Service\Flight\FlightDataConsistencyMonitor;
@@ -40,6 +40,7 @@ use Core\Service\Fitness\FitnessService;
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
     use Core\Service\Geocoding\GeocodingService;
+    use Core\Service\Geocoding\GeocodingServiceListener;
     use Core\Service\Highlight\HighlightDataConsistencyMonitor;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightServiceListener;
@@ -173,6 +174,7 @@ use Core\Service\Fitness\FitnessService;
         new DeviceServiceListener($deviceService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        new GeocodingServiceListener($tripService, $eventPublisher, $scheduler),
         $platformService
     );
     $eventManager = new EventManager($listeners);

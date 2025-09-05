@@ -231,6 +231,10 @@
                 $this->publicHolidays);
         }
 
+        public function isCurrent() : bool {
+            return ($this->start < time()) && ($this->end > time());
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

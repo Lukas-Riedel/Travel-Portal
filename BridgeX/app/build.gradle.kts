@@ -100,4 +100,5 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.health.connect)
     implementation(libs.kotlin.parcelize.runtime)
+    implementation(libs.location)
 }

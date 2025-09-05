@@ -12,6 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface CoreClient {
     @POST("devices")
@@ -23,6 +24,12 @@ interface CoreClient {
     suspend fun replaceFitness(
         @Path("timestamp") timestamp: Long,
         @Body fitnessRequest: FitnessRequest
+    )
+
+    @POST("location/track")
+    suspend fun trackLocation(
+        @Query("latitude") latitude: Double,
+        @Query("longitude") longitude: Double
     )
 
     companion object {

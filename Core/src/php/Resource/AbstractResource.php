@@ -14,6 +14,11 @@ use Core\Routing\AuthMiddleware;
             return $request->getAttribute(CommonConstants::ACCESS_TOKEN_REQUEST_ATTRIBUTE_KEY);
         }
 
+        public function isAdmin(Request $request) : bool {
+            $accessToken = $this->getAccessToken($request);
+            return $accessToken->isAdmin();
+        }
+
         public function validateAdminPermissions(Request $request) : void {          
             $accessToken = $this->getAccessToken($request);
             if (!$accessToken->isAdmin()) {
