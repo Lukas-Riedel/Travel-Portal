@@ -2,6 +2,7 @@
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
     use Core\Routing\AuthMiddleware;
+    use Core\Routing\CorsMiddleware;
     use Slim\Factory\AppFactory;
     use Core\Routing\ErrorHandlingMiddleware;
     use Core\Routing\JsonInvocationStrategy;
@@ -26,6 +27,7 @@
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new LoggingMiddleware($logger));
+    $app->add(new CorsMiddleware(explode(",", ALLOWED_REQUEST_ORIGINS)));
 
     (require_once(__DIR__ . "/src/php/routes.php"))($app);
 

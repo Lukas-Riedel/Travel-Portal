@@ -1,8 +1,16 @@
 <?php
     use Core\Service\Authentication\AuthenticationService;
 
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
+    // TODO: Use explode(",", ALLOWED_REQUEST_ORIGINS) when switching to Slim. Needed for other planned functionality.
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    header("Content-Type: application/json");
+
+    if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+        http_response_code(200);
+        exit();
+    }
     
     require_once(__DIR__ . "/src/php/bootstrap.php");
 

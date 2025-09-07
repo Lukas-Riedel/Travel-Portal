@@ -21,7 +21,6 @@
                     ->withHeader("Content-Type", "application/json");
             }
             return $response
-                ->withHeader("Access-Control-Allow-Origin", "*")
                 ->withHeader("Cache-Control", "no-cache, no-store, must-revalidate")
                 ->withHeader("Pragma", "no-cache")
                 ->withHeader("Expires", "0");
