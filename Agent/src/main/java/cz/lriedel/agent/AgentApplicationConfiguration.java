@@ -1,5 +1,6 @@
 package cz.lriedel.agent;
 
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -54,5 +55,10 @@ public class AgentApplicationConfiguration {
         retryTemplate.setBackOffPolicy(backOffPolicy);
 
         return retryTemplate;
+    }
+
+    @Bean
+    public ExifRewriter exifRewriter() {
+        return new ExifRewriter();
     }
 }

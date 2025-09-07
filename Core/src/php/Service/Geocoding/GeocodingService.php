@@ -16,7 +16,7 @@
         private const ADDRESS_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
         
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s:%s";
-        private const LOCATION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
+        private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
         
         private const CURRENT_ADDRESS_CACHE_KEY = "GeocodingService:CurrentAddress";
         private const CURRENT_ADDRESS_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;

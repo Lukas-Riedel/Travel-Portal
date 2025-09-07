@@ -22,13 +22,13 @@ class EventListener {
 
     @RabbitHandler
     public void onPhotoReplacingTriggered(PhotoReplacingTriggeredEventArgs args) {
-        log.info("Received an event to replace a photo...");
+        log.info("Received a request to replace a photo...");
         photoService.replacePhoto(args.placeId(), args.albumId(), args.replacedPhotoId(), args.path());
     }
 
     @RabbitHandler
     public void onPhotosUploadingTriggered(PhotosUploadingTriggeredEventArgs args) {
-        log.info("Received an event to upload photos...");
+        log.info("Received a request to upload photos...");
         photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(),
             args.mainPhotoPosition(), args.path());
     }

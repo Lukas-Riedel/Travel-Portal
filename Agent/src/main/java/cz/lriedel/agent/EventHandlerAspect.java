@@ -7,6 +7,7 @@ import java.util.Map;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import cz.lriedel.agent.client.ServiceClient;
@@ -27,6 +28,7 @@ final class EventHandlerAspect {
         this.serviceClient = serviceClient;
     }
 
+    @Nullable
     @Around("@annotation(org.springframework.amqp.rabbit.annotation.RabbitHandler) && execution(* *(..))")
     public Object aroundRabbitHandler(ProceedingJoinPoint pjp) throws Throwable {
         Object eventArgs = pjp.getArgs()[0];
@@ -39,6 +41,10 @@ final class EventHandlerAspect {
 
         try {
             return pjp.proceed();
+        }
+        catch (Exception e) {
+            log.error(String.format("An exception occurred when processing '%s (%s)'.", eventName, eventArgs), e);
+            return null;
         }
         finally {
             serviceClient.createEvent("ProcessingEnded", event);
