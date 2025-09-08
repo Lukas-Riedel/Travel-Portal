@@ -20,6 +20,7 @@ class DeviceInitializer(
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
     private val deviceName: String = getPrettyDeviceName(context)
+    private val deviceId: String = getOrCreateDeviceId()
     private val coreClient: CoreClient = create(authenticationService)
 
     fun initialize(fcmToken: String) {
@@ -28,7 +29,7 @@ class DeviceInitializer(
         for (deviceType in DeviceType.entries) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    coreClient.createDevice(DeviceRequest(getOrCreateDeviceId(), deviceType.value, deviceName, DeviceData(fcmToken)))
+                    coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName, DeviceData(fcmToken)))
                 }
                 catch (e: Exception) {
                     Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when initializing a device.", e)

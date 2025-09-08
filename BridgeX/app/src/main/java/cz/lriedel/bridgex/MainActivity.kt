@@ -74,6 +74,9 @@ class MainActivity : AppCompatActivity() {
             val bustParam = System.currentTimeMillis() / (3600 * 1000)
             webView.loadUrl("$url?t=$bustParam")
         }
+        else {
+            webView.restoreState(savedInstanceState)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

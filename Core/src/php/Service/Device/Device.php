@@ -29,7 +29,11 @@
             new OA\Property(
                 property: "data",
                 description: "The data of the device",
-                type: "object"
+                type: "object",
+                additionalProperties: true,
+                example: [
+                    "fcmToken" => "fcm-1234567890"
+                ]
             ),
             new OA\Property(
                 property: "lastSeen",
