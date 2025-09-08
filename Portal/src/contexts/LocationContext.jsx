@@ -6,12 +6,23 @@ export function LocationProvider({ children }) {
     const [currentLocation, setCurrentLocation] = useState(null)
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(location => {
-            setCurrentLocation({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude
-            })
-        })
+        navigator.geolocation.watchPosition(
+            location => {
+                setCurrentLocation({
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude
+                })
+            },
+            error => {
+                console.error("Geolocation error:", error)
+            },
+            {
+                maximumAge: 15 * 60 * 1000, // 15 minutes
+                enableHighAccuracy: false,
+                timeout: 10 * 1000 // 10 seconds
+            }
+        )
+
     }, [])
 
     return (
