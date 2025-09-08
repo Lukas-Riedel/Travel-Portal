@@ -3,11 +3,13 @@ import { getToken, onMessage } from "firebase/messaging"
 import { messaging } from "../lib/firebase"
 import { useApi } from "../hooks/useApi"
 import { useAuth } from "./AuthContext"
+import { useConfiguration } from "./ConfigContext"
 
 const NotificationContext = createContext()
 
 export const NotificationProvider = ({ children }) => {
     const { accessToken } = useAuth()
+    const { deviceId } = useConfiguration()
     const { createDevice } = useApi()
 
     const [messages, setMessages] = useState([])
@@ -44,7 +46,7 @@ export const NotificationProvider = ({ children }) => {
 
     useEffect(() => {
         if (fcmToken && accessToken) {
-            createDevice(fcmToken)
+            createDevice(deviceId, { "fcmToken": fcmToken })
         }
     }, [fcmToken, accessToken])
 

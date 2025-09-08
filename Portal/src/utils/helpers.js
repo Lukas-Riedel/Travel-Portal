@@ -1,6 +1,7 @@
 import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { optimize } from "svgo"
+import { v4 as uuidv4 } from "uuid"
 
 // TODO: Make sure all code that needs to format date uses this function.
 export function getDateString(timestamp) {

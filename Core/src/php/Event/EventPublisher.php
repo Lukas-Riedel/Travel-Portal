@@ -228,7 +228,8 @@
             switch ($event->getTarget()) {
                 case EventTarget::CloudMessaging:
                     // TODO: Figure out how to resolve the device type and required roles - introduce more "bit masks" to the event type backing value.
-                    $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getToken(),
+                    // TODO: Make sure fcmToken is present.
+                    $cloudMessagingClient->publishEvent($event, $args, array_map(fn($device) => $device->getData()["fcmToken"],
                         $deviceService->getDevices(($event === Event::FitnessActivityDetected || $event === Event::LocationUpdateDetected) 
                             ? DeviceType::BridgeX : DeviceType::Portal, array("ADMIN"))));
                     break;

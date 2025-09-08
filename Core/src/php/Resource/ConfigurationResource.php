@@ -1,7 +1,6 @@
 <?php
     namespace Core\Resource;
 
-    use OpenApi\Attributes\AdditionalProperties;
     use Core\Service\Configuration\ConfigurationService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -40,12 +39,7 @@
                     description: "Success. Retrieved a collection of configuration entries.",
                     content: new OA\JsonContent(
                         type: "object",
-                        additionalProperties: new AdditionalProperties(
-                            oneOf: [
-                                new OA\Schema(type: "array", items: new OA\Items()),
-                                new OA\Schema(type: "object")
-                            ]
-                        )
+                        additionalProperties: true
                     )
                 ),
                 new OA\Response(
@@ -114,12 +108,7 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    additionalProperties: new AdditionalProperties(
-                        oneOf: [
-                            new OA\Schema(type: "array", items: new OA\Items()),
-                            new OA\Schema(type: "object")
-                        ]
-                    ),
+                    additionalProperties: true,
                     example: [
                         "mainCurrency" => "EUR"
                     ]
@@ -131,12 +120,7 @@
                     description: "Success. Returned a replace configuration entry with the specified key.",
                     content: new OA\JsonContent(
                         type: "object",
-                        additionalProperties: new AdditionalProperties(
-                            oneOf: [
-                                new OA\Schema(type: "array", items: new OA\Items()),
-                                new OA\Schema(type: "object")
-                            ]
-                        )
+                        additionalProperties: true
                     )
                 ),
                 new OA\Response(

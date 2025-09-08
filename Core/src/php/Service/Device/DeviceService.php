@@ -19,8 +19,8 @@
             return $this->deviceMapper->selectDevices($deviceType, $requiredRoles);
         }
 
-        public function registerOrUpdateDevice(DeviceType $deviceType, string $name, string $token, string $userId) : Device {
-            $device = new Device($deviceType, $name, $token, $userId, time());
+        public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {
+            $device = new Device($id, $deviceType, $name, $data, $userId, time());
             $this->deviceMapper->deleteDevice($device);
             $this->deviceMapper->insertDevice($device);
             return $device;

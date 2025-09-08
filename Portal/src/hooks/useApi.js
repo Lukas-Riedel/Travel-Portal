@@ -28,12 +28,13 @@ export function useApi() {
         }
     }
 
-    async function createDevice(token) {
+    async function createDevice(deviceId, data) {
         return sendRequest("POST", "/devices",
             {
+                id: deviceId,
                 type: "portal",
                 name: navigator.userAgent,
-                token: token
+                data: data
             })
     }
     

@@ -7,8 +7,14 @@
         schema: "Device",
         type: "object",
         description: "A class representing a device",
-        required: ["type", "name", "token", "lastSeen"],
+        required: ["id", "type", "name", "lastSeen"],
         properties: [
+            new OA\Property(
+                property: "id",
+                description: "The device-generated identifier of the device",
+                type: "string",
+                example: "8f3b0c9a-5cfa-4d47-bf5e-8e8f9f3a1a2b"
+            ),
             new OA\Property(
                 property: "type",
                 description: "The type of the device",
@@ -21,10 +27,9 @@
                 example: "DESKTOP-PC"
             ),
             new OA\Property(
-                property: "token",
-                description: "The token of the device",
-                type: "string",
-                example: "devjFpQfdQ32P6cG0X6DrY:APA9332t1acBH11y41gABcDiMuK2HsEOzDbI5Mh1vGBn-1Da6TggFUQb28KlIWDHRAFDCmmhFv7XHDvWTZFihX6bOCDcUQCzIFxa9vFGKKcVJsc"
+                property: "data",
+                description: "The data of the device",
+                type: "object"
             ),
             new OA\Property(
                 property: "lastSeen",
@@ -36,19 +41,24 @@
         ]
     )]
     class Device implements \JsonSerializable {
-
+        private readonly string $id;
         private readonly DeviceType $type;
         private readonly string $name;
-        private readonly string $token;
+        private readonly mixed $data;
         private readonly string $userId;
         private readonly int $lastSeen;
 
-        public function __construct(DeviceType $type, string $name, string $token, string $userId, int $lastSeen) {
+        public function __construct(string $id, DeviceType $type, string $name, mixed $data, string $userId, int $lastSeen) {
+            $this->id = $id;
             $this->type = $type;
             $this->name = $name;
-            $this->token = $token;
+            $this->data = $data;
             $this->userId = $userId;
             $this->lastSeen = $lastSeen;
+        }
+
+        public function getId() : string {
+            return $this->id;
         }
 
         public function getType() : DeviceType {
@@ -59,8 +69,8 @@
             return $this->name;
         }
 
-        public function getToken() : string {
-            return $this->token;
+        public function getData() : mixed {
+            return $this->data;
         }
 
         public function getUserId() : string {

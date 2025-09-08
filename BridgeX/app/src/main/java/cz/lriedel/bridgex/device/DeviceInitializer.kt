@@ -1,6 +1,7 @@
 package cz.lriedel.bridgex.device
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -16,6 +17,8 @@ class DeviceInitializer(
     context: Context,
     authenticationService: AuthenticationService
 ) {
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
     private val deviceName: String = getPrettyDeviceName(context)
     private val coreClient: CoreClient = create(authenticationService)
 
@@ -25,7 +28,7 @@ class DeviceInitializer(
         for (deviceType in DeviceType.entries) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    coreClient.createDevice(DeviceRequest(deviceType.value, deviceName, fcmToken))
+                    coreClient.createDevice(DeviceRequest(getOrCreateDeviceId(), deviceType.value, deviceName, DeviceData(fcmToken)))
                 }
                 catch (e: Exception) {
                     Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when initializing a device.", e)
@@ -46,7 +49,18 @@ class DeviceInitializer(
             }
     }
 
+    private fun getOrCreateDeviceId(): String {
+        var deviceId = sharedPreferences.getString(DEVICE_ID_KEY, null)
+        if (deviceId == null) {
+            deviceId = java.util.UUID.randomUUID().toString()
+            sharedPreferences.edit().putString(DEVICE_ID_KEY, deviceId).apply()
+        }
+        return deviceId
+    }
+
     companion object {
+        private const val DEVICE_PREFERENCES_NAME = "DevicePreferences"
+        private const val DEVICE_ID_KEY = "deviceId"
         private const val DEVICE_NAME_KEY = "device_name"
 
         private fun getPrettyDeviceName(context: Context): String {

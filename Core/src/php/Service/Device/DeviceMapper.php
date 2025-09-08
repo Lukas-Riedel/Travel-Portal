@@ -32,20 +32,23 @@
             return $this->databaseProvider
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($deviceRow) {
-                    return new Device(DeviceType::from($deviceRow["type"]), $deviceRow["name"], $deviceRow["token"], $deviceRow["user_id"], $deviceRow["last_seen"]);
+                    return new Device($deviceRow["id"], DeviceType::from($deviceRow["type"]), $deviceRow["name"],
+                        json_decode($deviceRow["data"], true), $deviceRow["user_id"], $deviceRow["last_seen"]);
                 });
         }
 
         public function insertDevice(Device $device) : bool {
             $sql = <<<'SQL'
                 INSERT INTO device (
+                    id,
                     type,
                     name,
-                    token,
+                    data,
                     user_id,
                     last_seen
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?,
                     ?,
@@ -56,7 +59,8 @@
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getType()->value, $device->getName(), $device->getToken(), $device->getUserId(), $device->getLastSeen())
+                ->withParameters($device->getId(), $device->getType()->value, $device->getName(), json_encode($device->getData()),
+                    $device->getUserId(), $device->getLastSeen())
                 ->execute() === 1;
         }
 
@@ -64,13 +68,12 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM device
-                WHERE type = ?
-                    AND token = ?
+                WHERE id = ?
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getType()->value, $device->getToken())
+                ->withParameters($device->getId())
                 ->execute();
         }
 

@@ -1,4 +1,6 @@
 package cz.lriedel.agent.model.request;
 
-public record DevicePrototype(String type, String name, String token) {
+import org.springframework.lang.Nullable;
+
+public record DevicePrototype(String id, String type, String name, @Nullable Object data) {
 }
