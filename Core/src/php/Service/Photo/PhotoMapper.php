@@ -567,7 +567,7 @@
 
         private function selectIndoorPhotosCount(string $albumId) : int {
             $sql = <<<'SQL'
-                SELECT COUNT(*)
+                SELECT COUNT(*) AS count
                 FROM photo
                 WHERE album_id = ?
                     AND iso >= ?
@@ -576,7 +576,7 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($albumId, self::INDOOR_PHOTO_ISO_THRESHOLD)
-                ->execute() === 1;
+                ->getSingleColumn("count");
         }
 
         private function doSelectPhoto(string $photoId, callable $urlProvider) : ?Photo {
