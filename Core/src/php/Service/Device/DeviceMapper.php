@@ -69,11 +69,12 @@
                 DELETE
                 FROM device
                 WHERE id = ?
+                    AND type = ?
             SQL;
 
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters($device->getId())
+                ->withParameters($device->getId(), $device->getType()->value)
                 ->execute();
         }
 

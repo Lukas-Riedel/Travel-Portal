@@ -1,7 +1,7 @@
 DROP TABLE device;
 
 CREATE TABLE device (
-    id varchar(36) NOT NULL PRIMARY KEY,
+    id text NOT NULL,
     name text NOT NULL,
     type text NOT NULL,
     data text NOT NULL,

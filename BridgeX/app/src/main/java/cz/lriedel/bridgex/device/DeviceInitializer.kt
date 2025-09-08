@@ -26,8 +26,8 @@ class DeviceInitializer(
     fun initialize(fcmToken: String) {
         Log.d(DeviceInitializer::class.java.simpleName, "Received a request to initialize a device...")
 
-        for (deviceType in DeviceType.entries) {
-            CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
+            for (deviceType in DeviceType.entries) {
                 try {
                     coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName, DeviceData(fcmToken)))
                 }
