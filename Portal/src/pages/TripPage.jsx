@@ -69,7 +69,7 @@ export default function TripPage() {
                 <ExpenseSummary
                     expenses={trip && (trip.expenses ?? [])}
                     expenseCandidates={trip?.isPast() ? [] : [
-                        ...(trip?.flights?.map(flight => ({ type: "flight", description: `${flight.from?.name} - ${flight.to?.name}` })) ?? []),
+                        ...(trip?.flights?.map(flight => ({ type: "flight", description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
                         ...(trip?.stays?.map(stay => ({ type: "hotel", description: stay.name })) ?? [])
                     ]}
                     onExpenseCreated={createTripExpense}

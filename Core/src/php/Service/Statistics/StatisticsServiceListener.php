@@ -82,8 +82,8 @@
 
         public function onFlightLogged(mixed $message) : void {
             $flight = new Flight($message["flight"], null, null, null, null,
-                new Airport(null, $message["from"]["name"], null, null, null, null, null),
-                new Airport(null, $message["to"]["name"], null, null, null, null, null),
+                new Airport(null, $message["from"]["name"], null, null, null, null, null, null),
+                new Airport(null, $message["to"]["name"], null, null, null, null, null, null),
                 $message["start"], $message["end"], null);
             $tripId = $this->flightService->getTripIdForFlight($flight);
             if ($tripId !== null) {

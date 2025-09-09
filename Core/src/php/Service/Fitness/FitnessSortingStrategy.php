@@ -18,8 +18,8 @@
             return match ($this) {
                 self::StepsAscending => "ORDER BY steps ASC",
                 self::StepsDescending => "ORDER BY steps DESC",
-                self::TimeInMotionAscending => "ORDER BY seconds DESC",
-                self::TimeInMotionDescending => "ORDER BY seconds ASC"
+                self::TimeInMotionAscending => "ORDER BY seconds ASC",
+                self::TimeInMotionDescending => "ORDER BY seconds DESC"
             };
         }
     }

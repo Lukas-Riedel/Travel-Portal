@@ -16,6 +16,12 @@
                 example: "8f3b0c9a-5cfa-4d47-bf5e-8e8f9f3a1a2b"
             ),
             new OA\Property(
+                property: "longName",
+                description: "The long name of the airport",
+                type: "string",
+                example: "Václav Havel Prague Airport"
+            ),
+            new OA\Property(
                 property: "code",
                 description: "The IATA code of the airport",
                 type: "string",
@@ -51,15 +57,17 @@
     )]
     class AirportIdentifier implements \JsonSerializable {        
         private ?string $id;
+        private ?string $longName;
         private readonly string $code;
         private readonly string $country;
         private readonly float $latitude;
         private readonly float $longitude;
         private readonly string $timezone;
 
-        public function __construct(?string $id, string $code, string $country,
+        public function __construct(?string $id, ?string $longName, string $code, string $country,
             float $latitude, float $longitude, string $timezone) {
             $this->id = $id;
+            $this->longName = $longName;
             $this->code = $code;
             $this->country = $country;
             $this->latitude = $latitude;
@@ -69,6 +77,10 @@
 
         public function getId() : string {
             return $this->id;
+        }
+
+        public function getLongName() : ?string {
+            return $this->longName;
         }
 
         public function setId(string $id) : void {

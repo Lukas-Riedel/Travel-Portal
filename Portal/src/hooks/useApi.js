@@ -58,6 +58,21 @@ export function useApi() {
             {
                 name: name
             })
+    }    
+
+    async function getAirport(airportId) {
+        return sendRequest("GET", "/airports/" + airportId)
+    }
+
+    async function listAirports() {
+        return sendRequest("GET", "/airports")
+    }
+
+    async function updateAirportName(airportId, longName) {
+        return sendRequest("PATCH", "/airports/" + airportId,
+            {
+                longName: longName
+            })
     }
 
     async function getHighlight(highlightId) {
@@ -681,6 +696,9 @@ export function useApi() {
         getLabel,
         listLabels,
         updateLabelName,
+        getAirport,
+        listAirports,
+        updateAirportName,
         getHighlight,
         updateHighlightQualityAttributes,
         createGeographicalCategory,

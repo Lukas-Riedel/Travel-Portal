@@ -23,8 +23,8 @@ export default function TripSummary({ tripId }) {
     const tripPlaces = useRegularPlaces({ tripId, include: "categories,dates" })
     const currentAddress = useCurrentAddress([
         ...(trip?.stays.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
-        ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.name, address: "Letiště " + flight.from.name, radius: 3.0 })) ?? []),
-        ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.to.name, address: "Letiště " + flight.to.name, radius: 3.0 })) ?? [])
+        ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
+        ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, radius: 3.0 })) ?? [])
     ])
 
     const [timezone, setTimezone] = useState(undefined)

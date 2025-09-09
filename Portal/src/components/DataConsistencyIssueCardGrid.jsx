@@ -1,8 +1,8 @@
 import CardGrid from "./CardGrid"
 import DataConsistencyIssueCard from "./DataConsistencyIssueCard"
 
-export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, airlines, onAirlineCodeAssigned, onFitnessOverwritten,
-        onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
+export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
+        onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened, onCategoryMetadataChanged }) {
     return (
         <CardGrid cardsPerRowCount={4}>
             {dataConsistencyIssues?.map((dataConsistencyIssue, idx) => (
@@ -11,12 +11,15 @@ export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, ai
                     dataConsistencyIssue={dataConsistencyIssue}
                     airlines={airlines}
                     onAirlineCodeAssigned={onAirlineCodeAssigned}
-                    onFitnessOverwritten={onFitnessOverwritten}
+                    onFitnessReplaced={onFitnessReplaced}
+                    onAirportNameChanged={onAirportNameChanged}
+                    onAirlineLogoChanged={onAirlineLogoChanged}
                     onAllAlbumsInvalidated={onAllAlbumsInvalidated}
                     onPhotoInvalidated={onPhotoInvalidated}
                     onGeographicalExtensionCategoryAdded={onGeographicalExtensionCategoryAdded}
                     onPlaceRemoved={onPlaceRemoved}
                     onFlightLogged={onFlightLogged}
+                    onCategoryMetadataChanged={onCategoryMetadataChanged}
                     onRegionManagementOpened={onRegionManagementOpened} />
             ))}
         </CardGrid>

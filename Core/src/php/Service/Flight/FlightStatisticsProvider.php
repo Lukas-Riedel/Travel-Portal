@@ -76,7 +76,7 @@
             if ($statisticsKind === StatisticsKind::Standings) {                
                 if ($statisticsType === StatisticsType::Overall) {
                     $mostUsedFlights = $this->getStandingsStatistics($flights, fn($flight) => sprintf(self::FLIGHT_CODE_STATISTICS_FORMAT, 
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), $flight->getFlight()));
+                        $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), $flight->getFlight()));
                     if (count($mostUsedFlights) > 0) {
                         $statistics[] = new Statistics(self::MOST_USED_FLIGHTS_STATISTICS_NAME, $mostUsedFlights, StatisticsUnit::Flights);
                     }
@@ -101,28 +101,28 @@
                     }
                     
                     $mostUsedAirports = $this->getStandingsStatistics($flights,
-                        fn($flight) => sprintf(self::AIRPORT_STATISTICS_FORMAT, $flight->getFrom()->getName(), $flight->getFrom()->getCode()),
-                        fn($flight) => sprintf(self::AIRPORT_STATISTICS_FORMAT, $flight->getTo()->getName(), $flight->getTo()->getCode()));
+                        fn($flight) => sprintf(self::AIRPORT_STATISTICS_FORMAT, $flight->getFrom()->getLongName(), $flight->getFrom()->getCode()),
+                        fn($flight) => sprintf(self::AIRPORT_STATISTICS_FORMAT, $flight->getTo()->getLongName(), $flight->getTo()->getCode()));
                     if (count($mostUsedAirports) > 0) {
                         $statistics[] = new Statistics(self::MOST_USED_AIRPORTS_STATISTICS_NAME, $mostUsedAirports, StatisticsUnit::Flights);
                     }
 
                     $longestFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
+                        $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DurationDescending));
                     if (count($longestFlights) > 0) {
                         $statistics[] = new Statistics(self::LONGEST_FLIGHTS_STATISTICS_NAME, $longestFlights, StatisticsUnit::Duration);
                     }
 
                     $shortestFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
+                        $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DurationAscending));
                     if (count($shortestFlights) > 0) {
                         $statistics[] = new Statistics(self::SHORTEST_FLIGHTS_STATISTICS_NAME, $shortestFlights, StatisticsUnit::Duration);
                     }
 
                     $mostDelayedFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
-                        $flight->getFrom()->getName(), $flight->getTo()->getName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDelay()),
+                        $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDelay()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DelayDescending));
                     if (count($mostDelayedFlights) > 0) {
                         $statistics[] = new Statistics(self::MOST_DELAYED_FLIGHTS_STATISTICS_NAME, $mostDelayedFlights, StatisticsUnit::Duration);

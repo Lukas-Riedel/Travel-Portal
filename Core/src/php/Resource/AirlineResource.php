@@ -29,7 +29,7 @@
                 $group->get("/{airlineId}", [$resource, "getAirline"]);
                 $group->patch("/{airlineId}", [$resource, "updateAirline"]);
                 $group->delete("/{airlineId}", [$resource, "removeAirline"]);
-                $group->get("/{airlineId}/codes", [$resource, "createAirlineCode"]);
+                $group->post("/{airlineId}/codes", [$resource, "createAirlineCode"]);
                 $group->delete("/{airlineId}/codes/{airlineCode}", [$resource, "removeAirlineCode"]);
             });
         }

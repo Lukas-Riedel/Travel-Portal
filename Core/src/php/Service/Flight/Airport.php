@@ -7,7 +7,7 @@
         schema: "Airport",
         type: "object",
         description: "A class representing an airport",
-        required: ["name"],
+        required: ["shortName"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -16,10 +16,16 @@
                 example: "8f3b0c9a-5cfa-4d47-bf5e-8e8f9f3a1a2b"
             ),
             new OA\Property(
-                property: "name",
-                description: "The name of the airport",
+                property: "shortName",
+                description: "The short name of the airport",
                 type: "string",
                 example: "Prague"
+            ),
+            new OA\Property(
+                property: "longName",
+                description: "The long name of the airport",
+                type: "string",
+                example: "Václav Havel Prague Airport"
             ),
             new OA\Property(
                 property: "code",
@@ -57,17 +63,19 @@
     )]
     class Airport implements \JsonSerializable {        
         private readonly ?string $id;
-        private readonly string $name;
+        private readonly string $shortName;
+        private readonly ?string $longName;
         private readonly ?string $code;
         private readonly ?string $country;
         private readonly ?float $latitude;
         private readonly ?float $longitude;
         private readonly ?string $timezone;
 
-        public function __construct(?string $id, string $name, ?string $code,
-         ?string $country, ?float $latitude, ?float $longitude, ?string $timezone) {
+        public function __construct(?string $id, string $shortName, ?string $longName, ?string $code,
+            ?string $country, ?float $latitude, ?float $longitude, ?string $timezone) {
             $this->id = $id;
-            $this->name = $name;
+            $this->shortName = $shortName;
+            $this->longName = $longName;
             $this->code = $code;
             $this->country = $country;
             $this->latitude = $latitude;
@@ -75,31 +83,35 @@
             $this->timezone = $timezone;
         }
 
-        public function getId() : string {
+        public function getId() : ?string {
             return $this->id;
         }
 
-        public function getName() : string {
-            return $this->name;
+        public function getShortName() : string {
+            return $this->shortName;
         }
 
-        public function getCode() : string {
+        public function getLongName() : ?string {
+            return $this->longName;
+        }
+
+        public function getCode() : ?string {
             return $this->code;
         }
 
-        public function getCountry() : string {
+        public function getCountry() : ?string {
             return $this->country;
         }
 
-        public function getLatitude() : float {
+        public function getLatitude() : ?float {
             return $this->latitude;
         }
 
-        public function getLongitude() : float {
+        public function getLongitude() : ?float {
             return $this->longitude;
         }
 
-        public function getTimezone() : string {
+        public function getTimezone() : ?string {
             return $this->timezone;
         }
 

@@ -17,16 +17,16 @@ export default function FlightCard({ flight }) {
             <div className="flex items-center space-x-2">
                 <Icon
                     size={16}
-                    className="text-sky-600" />
+                    className="text-sky-600 flex-shrink-0" />
                 {airport.id ? (
                     <Link
                         to={`/airport/${airport.id}`}
                         className="hover:underline text-sky-600 font-medium">
-                        {airport.name} ({airport.code})
+                        {airport.longName ?? `${airport.shortName} (${airport.code})`}
                     </Link>
                 ) : (
                     <span className="text-sky-600 font-medium">
-                        {airport.name}
+                        {airport.shortName}
                     </span>
                 )}
             </div>
@@ -60,7 +60,7 @@ export default function FlightCard({ flight }) {
                     )}
                 </div>
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
-                    {airline && (airline.logo ? (
+                    {airline?.logo ? (
                         <div
                             className="max-w-full max-h-full"
                             style={{
@@ -75,7 +75,7 @@ export default function FlightCard({ flight }) {
                         <div className="text-gray-400 text-sm text-center">
                             Logo není k dispozici
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
             {renderFlightEndpoint(flight.from, flight.start, PlaneTakeoff)}
@@ -102,7 +102,7 @@ export default function FlightCard({ flight }) {
                 )}
                 {flight.start > Date.now() / 1000 && (
                     <a
-                        href={`https://www.google.com/travel/flights?q=One way flight from ${flight.from.name} to ${flight.to.name} on ${format(toZonedTime(fromUnixTime(flight.start), flight.from.timezone), "d.M.yyyy")}`}
+                        href={`https://www.google.com/travel/flights?q=One way flight from ${flight.from.shortName} to ${flight.to.shortName} on ${format(toZonedTime(fromUnixTime(flight.start), flight.from.timezone), "d.M.yyyy")}`}
                         className="hover:underline">
                         Zkontrolovat cenu
                     </a>

@@ -44,7 +44,7 @@ export const useCurrentAddress = (knownAddresses = []) => {
                 const distance = getEuclideanDistance(visitedAirport, currentCoordinates)
 
                 if (distance <= airportRadius) {
-                    setCurrentAddress({ name: "Letiště " + visitedAirport.name, address: "Letiště " + visitedAirport.code })
+                    setCurrentAddress({ name: visitedAirport.longName ?? `Letiště ${visitedAirport.shortName}`, address: visitedAirport.longName ?? `Letiště ${visitedAirport.code}` })
                     return
                 }
             }
@@ -63,7 +63,7 @@ export const useCurrentAddress = (knownAddresses = []) => {
         }
 
         resolveCurrentAddress()
-    }, [query.data?.address, knownAddresses.length])
+    }, [query.data?.address, knownAddresses.length, visitedAirports.length])
 
     // TODO: Map to Address object
     return currentAddress && { ...currentAddress, lastUpdate: query.data.lastUpdate }

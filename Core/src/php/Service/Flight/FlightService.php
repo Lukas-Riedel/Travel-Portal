@@ -69,6 +69,25 @@
             return $this->flightMapper->selectAirlines();
         }
 
+        public function getAllAirports() : array {
+            // TODO: Implement in a more efficient way.
+            $allFlights = $this->getLoggedFlightsForInterval(0, PHP_INT_MAX, FlightSortingStrategy::ScheduledDepartureTimeAscending);
+            $fromAirports = array_map(fn($flight) => $flight->getFrom(), $allFlights);
+            $toAirports = array_map(fn($flight) => $flight->getTo(), $allFlights);
+            $allAirports = array_merge($fromAirports, $toAirports);
+            return array_values(array_reduce($allAirports, function ($carry, $airport) {
+                if (!isset($carry[$airport->getId()])) {
+                    $carry[$airport->getId()] = $airport;
+                }
+                return $carry;
+            }, array()));
+        }
+
+        public function getAirport(string $airportId) : ?Airport {
+            // TODO: Implement in a more efficient way.
+            return current(array_filter($this->getAllAirports(), fn($airport) => $airport->getId() === $airportId)) ?: null;
+        }
+
         public function getAirline(string $airlineId) : ?Airline {
             return $this->flightMapper->selectAirline($airlineId);
         }
@@ -112,9 +131,9 @@
             $originAirportIdentifier = $this->getOrCreateAirportIdentifier($originAirportCode);
             $destinationAirportIdentifier = $this->getOrCreateAirportIdentifier($destinationAirportCode);
 
-            $from = new Airport($originAirportIdentifier->getId(), $originAirportName, $originAirportIdentifier->getCode(), $originAirportIdentifier->getCountry(), 
+            $from = new Airport($originAirportIdentifier->getId(), $originAirportName, $originAirportIdentifier->getLongName(), $originAirportIdentifier->getCode(), $originAirportIdentifier->getCountry(), 
                 $originAirportIdentifier->getLatitude(), $originAirportIdentifier->getLongitude(), $originAirportIdentifier->getTimezone());
-            $to = new Airport($destinationAirportIdentifier->getId(), $destinationAirportName, $destinationAirportIdentifier->getCode(), $destinationAirportIdentifier->getCountry(),
+            $to = new Airport($destinationAirportIdentifier->getId(), $destinationAirportName, $destinationAirportIdentifier->getLongName(), $destinationAirportIdentifier->getCode(), $destinationAirportIdentifier->getCountry(),
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude(), $destinationAirportIdentifier->getTimezone());
             $distance = $this->geocodingService->getDistance($originAirportIdentifier->getLatitude(), $originAirportIdentifier->getLongitude(),
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
@@ -139,8 +158,8 @@
             $this->googleApiClient->createCalendarEvent($flightType->getCalendar()->value,
                 $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), null, $scheduledDeparture, $scheduledArrival);
             
-            $from = new Airport(null, $originAirportName, null, null, null, null, null);
-            $to = new Airport(null, $destinationAirportName, null, null, null, null, null);
+            $from = new Airport(null, $originAirportName, null, null, null, null, null, null);
+            $to = new Airport(null, $destinationAirportName, null, null, null, null, null, null);
             return new Flight($flight, null, null, null, null, $from, $to, $scheduledDeparture, $scheduledArrival, null);
         }
 
@@ -174,6 +193,10 @@
             return $this->flightMapper->updateAirlineCodeAirline($this->flightMapper->selectAirlineCodeId($airlineCode), $airlineId);
         }
 
+        public function updateAirportName(string $airportId, string $name) : bool {
+            return $this->flightMapper->updateAirportName($airportId, $name);
+        }
+
         public function removeAirline(string $airlineId) : bool {
             return $this->flightMapper->deleteAirline($airlineId) > 0;
         }
@@ -202,7 +225,7 @@
             }
             
             $location = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $code));
-            $airportIdentifier = new AirportIdentifier(null, $code, $location->getCountry(), $location->getLatitude(),
+            $airportIdentifier = new AirportIdentifier(null, null, $code, $location->getCountry(), $location->getLatitude(),
                 $location->getLongitude(), $location->getTimezone());                
             $this->flightMapper->insertAirportIdentifier($airportIdentifier);
 
@@ -220,8 +243,8 @@
                 $parsedFlightEventName = $this->parseFlightEventName($flightEvent->getSummary());                
                 $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($flightEvent->getStart(), $flightEvent->getEnd());
 
-                $from = new Airport(null, $parsedFlightEventName["from"], null, null, null, null, null);
-                $to = new Airport(null, $parsedFlightEventName["to"], null, null, null, null, null);
+                $from = new Airport(null, $parsedFlightEventName["from"], null, null, null, null, null, null);
+                $to = new Airport(null, $parsedFlightEventName["to"], null, null, null, null, null, null);
                 $flight = new Flight($parsedFlightEventName["flight"], null, null, null, null, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), null);
 
                 $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());

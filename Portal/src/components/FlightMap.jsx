@@ -60,11 +60,11 @@ export default function FlightMap({ flights, airportMainCategorySelector }) {
         <Map
             points={airports.map(airport => {
                 return {
-                    name: airport?.name + " (" + airport?.code + ")",
-                    latitude: airport?.latitude,
-                    longitude: airport?.longitude,
+                    name: airport.longName ?? airport.code,
+                    latitude: airport.latitude,
+                    longitude: airport.longitude,
                     color: airportMainCategorySelector(airport)?.metadata?.color,
-                    onClick: () => window.location.href = "/airport/" + airport?.id
+                    onClick: () => window.location.href = "/airport/" + airport.id
                 }
             })}
             lines={flightPaths?.map(fp => ({

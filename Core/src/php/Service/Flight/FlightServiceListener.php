@@ -50,8 +50,8 @@
 
         public function onFlightArrived(mixed $message) : void {          
             foreach ($this->flightService->getAllNonLoggedFlights() as &$flight) {
-                if ($flight->getFlight() === $message["flight"] && $flight->getFrom()->getName() === $message["from"]
-                    && $flight->getTo()->getName() === $message["to"] && $flight->getStart() === $message["scheduledDeparture"]) {
+                if ($flight->getFlight() === $message["flight"] && $flight->getFrom()->getShortName() === $message["from"]
+                    && $flight->getTo()->getShortName() === $message["to"] && $flight->getStart() === $message["scheduledDeparture"]) {
                         $this->flightService->fetchAndLogFlight($message["flight"], $message["from"], $message["to"], $message["scheduledDeparture"]);
                         return;
                 }
@@ -71,8 +71,8 @@
                 : time() - $lastTriggered + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
 
             if ($this->scheduler->requestDynamicExecution(self::LOG_FLIGHTS_ACTION_NAME, $intervalSelector)) {
-                $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getName(),
-                    $firstNonLoggedFlight->getTo()->getName(), $firstNonLoggedFlight->getStart());
+                $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getShortName(),
+                    $firstNonLoggedFlight->getTo()->getShortName(), $firstNonLoggedFlight->getStart());
             }
         }
     }

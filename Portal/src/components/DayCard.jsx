@@ -160,13 +160,13 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                             <Link
                                                 to={`/airport/${event.from.id}`}
                                                 className="hover:underline hover:text-sky-300 transition-colors duration-200">
-                                                {event.from.name}
+                                                {event.from.shortName}
                                             </Link>
                                         ) : (
                                             <a
-                                                href={`https://www.google.com/maps/search/Letiště ${event.from.name}`}
+                                                href={`https://www.google.com/maps/search/Letiště ${event.from.shortName}`}
                                                 className="hover:underline hover:text-sky-300 transition-colors duration-200">
-                                                {event.from.name}
+                                                {event.from.shortName}
                                             </a>
                                         )}
                                         {` → `}
@@ -174,13 +174,13 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                             <Link
                                                 to={`/airport/${event.to.id}`}
                                                 className="hover:underline hover:text-sky-300 transition-colors duration-200">
-                                                {event.to.name}
+                                                {event.to.shortName}
                                             </Link>
                                         ) : (
                                             <a
-                                                href={`https://www.google.com/maps/search/Letiště ${event.to.name}`}
+                                                href={`https://www.google.com/maps/search/Letiště ${event.to.shortName}`}
                                                 className="hover:underline hover:text-sky-300 transition-colors duration-200">
-                                                {event.to.name}
+                                                {event.to.shortName}
                                             </a>
                                         )}
                                     </span>

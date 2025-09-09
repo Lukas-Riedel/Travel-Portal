@@ -1,5 +1,6 @@
 <?php
     use Core\Resource\AirlineResource;
+    use Core\Resource\AirportResource;
     use Core\Resource\CategoryResource;
     use Core\Resource\ConfigurationResource;
     use Core\Resource\DeviceResource;
@@ -40,6 +41,7 @@
         YearResource::register($app, $yearService, $highlightService, $logger);
         TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService, $logger);
         PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
+        AirportResource::register($app, $flightService, $logger);
         SwaggerResource::register($app);
     };
 ?>

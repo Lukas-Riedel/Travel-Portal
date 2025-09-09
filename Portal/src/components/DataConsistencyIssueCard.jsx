@@ -8,9 +8,10 @@ import { useApi } from "../hooks/useApi"
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
+import showInputToast from "./InputToast"
 
-export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessOverwritten,
-    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened }) {
+export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
+    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened, onCategoryMetadataChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
 
@@ -46,7 +47,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 ],
                 "Záznam byl úspěšně nahrazen",
                 "Nepodařilo se nahradit záznam",
-                fitnessIndex => onFitnessOverwritten(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
+                fitnessIndex => onFitnessReplaced(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
                     fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true)
             )
         },
@@ -81,7 +82,17 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kalendář": category.metadata?.publicHolidaysCalendar || "N/A"
                 }
             ),
-            resolve: category => navigate(`/category/${category.id}`)
+            resolve: category => showFormToast(
+                "Zadej metadata kategorie:",
+                [
+                    { label: "Barva", required: false, value: category.metadata?.color },
+                    { label: "Unicode", required: false, value: category.metadata?.unicode },
+                    { label: "Kalendář", required: false, value: category.metadata?.publicHolidaysCalendar }
+                ],
+                "Metadata byla úspěšně aktualizována",
+                "Při aktualizování metadat došlo k chybě",
+                async (color, unicode, publicHolidaysCalendar) => onCategoryMetadataChanged(category.id, { color, unicode, publicHolidaysCalendar })
+            )
         },
         "ALBUM_WITHOUT_PLACE": {
             name: "Album bez přiřazeného místa",
@@ -159,7 +170,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 }
             ),
             resolve: async (place) => {
-                const categories = await listCategories({ country: place.country, categories: "ADMINISTRATIVE" });
+                const categories = await listCategories({ country: place.country, categories: "administrative" });
                 return showFormToast(
                     "Vyber administrativní kategorii k přiřazení:",
                     [
@@ -167,7 +178,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     ],
                     "Kategorie byla úspěšně přiřazena",
                     "Při přiřazování kategorie došlo k chybě",
-                    async (name) => onGeographicalExtensionCategoryAdded(name, place.country, "ADMINISTRATIVE", place.latitude, place.longitude)
+                    async (name) => onGeographicalExtensionCategoryAdded(name, place.country, "administrative", place.latitude, place.longitude)
                 )
             }
         },
@@ -194,13 +205,13 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: trip => window.open((d => `https://calendar.google.com/calendar/u/0/r/week/${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`)(fromUnixTime(trip.start)), "_blank")
         },
-        "LOGGED_FLIGHTS_WITHOUT_FLIGHT_EVENT": {
+        "LOGGED_FLIGHT_WITHOUT_FLIGHT_EVENT": {
             name: "Let bez události v kalendáři",
             getProperties: flight => (
                 {
                     "Let": flight.flight,
-                    "Z": flight.from.name,
-                    "Do": flight.to.name,
+                    "Z": flight.from.code,
+                    "Do": flight.to.code,
                     "Odlet": getDateTimeString(flight.start),
                     "Přílet": getDateTimeString(flight.end)
                 }
@@ -251,13 +262,44 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 onPlaceRemoved
             )
         },
+        "AIRPORT_WITHOUT_LONG_NAME": {
+            name: "Nepojmenované letiště",
+            getProperties: airport => (
+                {
+                    "Název": airport.shortName,
+                    "Kód": airport.code
+                }
+            ),
+            resolve: airport => showInputToast(
+                "Zadej nové jméno letiště:",
+                "",
+                "Jméno letiště bylo úspěšně aktualizováno",
+                "Nepodařilo se aktualizovat jméno letiště",
+                async (name) => onAirportNameChanged(airport.id, name)
+            )
+        },
+        "AIRLINE_WITHOUT_LOGO": {
+            name: "Aerolinka bez loga",
+            getProperties: airline => (
+                {
+                    "Název": airline.name
+                }
+            ),
+            resolve: airline => showInputToast(
+                "Zadej nové logo aerolinky:",
+                "",
+                "Logo aerolinky bylo úspěšně aktualizováno",
+                "Nepodařilo se aktualizovat logo aerolinky",
+                async (logo) => onAirlineLogoChanged(airline.id, logo)
+            )
+        },
         "NON_LOGGED_FLIGHT": {
             name: "Nezalogovaný let",
             getProperties: flight => (
                 {
                     "Let": flight.flight,
-                    "Z": flight.from.name,
-                    "Do": flight.to.name,
+                    "Z": flight.from.shortName,
+                    "Do": flight.to.shortName,
                     "Plánovaný odlet": getDateTimeString(flight.start),
                     "Plánovaný přílet": getDateTimeString(flight.end)
                 }
@@ -266,7 +308,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 showConfirmToast("Opravdu chceš zalogovat vybraný let?",
                     "Let byl úspěšně zalogován",
                     "Nepodařilo se zalogovat let",
-                    async () => onFlightLogged(flight.flight, flight.from.name, flight.to.name, flight.start)
+                    async () => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start)
                 )
         },
         "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME": {

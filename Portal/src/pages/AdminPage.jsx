@@ -22,19 +22,21 @@ import DeviceCardGrid from "../components/DeviceCardGrid"
 import { useDevices } from "../hooks/useDevices"
 import AirlineCardGrid from "../components/AirlineCardGrid"
 import showInputToast from "../components/InputToast"
+import { useAirports } from "../hooks/useAirports"
 
 // TODO: Make it dynamic - if the sub-page has nothing to show, hide the label.
 const labels = ["Aktuální výlet", "Sledované lety", "Aerolinky", "Hlášené problémy", "Konfigurace", "Zařízení"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
-    const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum,
+    const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum, updateCategoryMetadata,
         listRegularPlaces, createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness } = useApi()
     const { publishAllAlbumsInvalidatedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
+    const { updateAirportName } = useAirports()
     const devices = useDevices({ type: "agent" })
     const trips = useRegularTrips({ include: "watchedFlights" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
@@ -145,13 +147,16 @@ export default function AdminPage() {
                     dataConsistencyIssues={dataConsistencyIssues}
                     airlines={airlines}
                     onAirlineCodeAssigned={createAirlineCode}
-                    onFitnessOverwritten={replaceFitness}
+                    onFitnessReplaced={replaceFitness}
+                    onAirlineLogoChanged={updateAirlineLogo}
+                    onAirportNameChanged={updateAirportName}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
                     onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "dates" })
                         .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionCategory}
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}
+                    onCategoryMetadataChanged={updateCategoryMetadata}
                     onRegionManagementOpened={() => { /** TODO: Set active tab to the region management. */ }} />
             )}
             {activeTab === 4 && (

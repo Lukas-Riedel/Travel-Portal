@@ -51,8 +51,8 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                 if (flightDate === targetDay) {
                     return {
                         flight: firstFlight.flight,
-                        from: firstFlight.from.name,
-                        to: firstFlight.to.name,
+                        from: firstFlight.from.shortName,
+                        to: firstFlight.to.shortName,
                         time: firstFlight.start,
                         icon: PlaneTakeoff
                     }
@@ -65,8 +65,8 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                 if (flightDate === targetDay) {
                     return {
                         flight: lastFlight.flight,
-                        from: lastFlight.from.name,
-                        to: lastFlight.to.name,
+                        from: lastFlight.from.shortName,
+                        to: lastFlight.to.shortName,
                         time: lastFlight.end,
                         icon: PlaneLanding
                     }
