@@ -47,7 +47,7 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
             "",
             "Nahrazování fotky bude brzy zahájeno",
             "Při nahrazování fotky došlo k chybě",
-            async (path) => onPhotoReplaced(place.id, place.name, album.id, photo.id, path)
+            async (path) => onPhotoReplaced(place.id, album.id, place.name, photo.id, path)
                 .then(() => window.open(photo.permalink, "_blank"))
         )
     }
