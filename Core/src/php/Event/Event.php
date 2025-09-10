@@ -170,28 +170,28 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
         }
 
-        public static function CategoryStatisticsInvalidated() : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        public static function CategoryStatisticsInvalidated(string $categoryId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("categoryId" => $categoryId));
         }
 
-        public static function TripStatisticsInvalidated() : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        public static function TripStatisticsInvalidated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
         }
 
-        public static function YearStatisticsInvalidated() : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        public static function YearStatisticsInvalidated(int $year) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("year" => $year));
         }
 
         public static function OverallStatisticsInvalidated() : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
         }
 
-        public static function CategoryStatisticsUpdated() : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        public static function CategoryStatisticsUpdated(string $categoryId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("categoryId" => $categoryId));
         }
 
-        public static function TripStatisticsUpdated() : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        public static function TripStatisticsUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
         }
 
         public static function YearStatisticsUpdated(int $year) : Event {
@@ -254,7 +254,7 @@
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array("intervals" => $intervals));
         }
 
-        public static function LocationUpdateDetected() : Event {
+        public static function BridgeXLogOnRequested() : Event {
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array());
         }
 

@@ -176,7 +176,7 @@
 
             $allCalendarEventsCreated = true;
             foreach ($places as &$place) {
-                $address = $this->geocodingService->getAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());
+                $address = $this->geocodingService->getFormattedAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());
                 foreach ($place->getDates() as &$date) {
                     $allCalendarEventsCreated &= $this->googleApiClient->createCalendarEvent(\Calendar::Places->value, $place->getName(), $address, $startOffset + $date->getStart(), $startOffset + $date->getEnd());
                 }
@@ -247,7 +247,7 @@
                 $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 
                 // Update address to match a common format.
-                $newAddress = $this->geocodingService->getAddress($placeIdentifier->getName(), $resolvedLocation);
+                $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
                 if ($this->normalize($placeEvent->getLocation()) !== $this->normalize($newAddress)) {
                     $this->googleApiClient->updateCalendarEventLocation(\Calendar::Places->value, $placeEvent->getId(), $newAddress);
                 }

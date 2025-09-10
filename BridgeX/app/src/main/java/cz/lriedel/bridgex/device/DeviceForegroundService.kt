@@ -1,4 +1,4 @@
-package cz.lriedel.bridgex.geocoding
+package cz.lriedel.bridgex.device
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,20 +16,20 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class GeocodingForegroundService : Service() {
+class DeviceForegroundService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val authenticationService by lazy { AuthenticationService(this) }
-    private val geocodingService by lazy { GeocodingService(this, authenticationService) }
+    private val deviceInitializer by lazy { DeviceInitializer(this, authenticationService) }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIFICATION_ID, createNotification())
 
         serviceScope.launch {
             try {
-                geocodingService.updateCurrentLocation()
+                deviceInitializer.initialize()
             }
             catch (e: Exception) {
-                Log.e(GeocodingForegroundService::class.java.simpleName, "An error occurred when uploading current location.", e)
+                Log.e(DeviceForegroundService::class.java.simpleName, "An error occurred when initializing the device.", e)
             }
             finally {
                 stopForeground(true)
@@ -66,7 +66,7 @@ class GeocodingForegroundService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1
-        private const val CHANNEL_ID = "GeocodingForegroundService"
+        private const val CHANNEL_ID = "DeviceForegroundService"
         private const val CHANNEL_NAME = "Current Location Update"
     }
 }

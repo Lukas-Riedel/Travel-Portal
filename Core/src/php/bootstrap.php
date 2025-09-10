@@ -172,10 +172,9 @@
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
         new TripServiceListener($tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
         new YearServiceListener($yearService, $eventPublisher, $scheduler),
-        new DeviceServiceListener($deviceService, $eventPublisher, $scheduler),
+        new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
-        new GeocodingServiceListener($tripService, $eventPublisher, $scheduler),
         $platformService
     );
     $eventManager = new EventManager($messagingClient, $databaseProvider, $logger, $listeners);

@@ -1,21 +1,26 @@
 import { useQuery } from "@tanstack/react-query"
 import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useVisitedAirports } from "./useVisitedAirports"
 import { getEuclideanDistance } from "../utils/helpers"
+import { useDevices } from "./useDevices"
 
 const airportRadius = 3.0
 
-export const useCurrentAddress = (knownAddresses = []) => {
-    const { getCurrentAddress, getCoordinates } = useApi()
+export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
+    const { getAddress, getCoordinates } = useApi()
     const { isAdmin } = useAuth()
     const [currentAddress, setCurrentAddress] = useState(null)
     const visitedAirports = useVisitedAirports()
+    const devices = useDevices({ type: "bridgex" })
+
+    const lastSeenDevice = useMemo(() => devices?.find(device => device.data?.latitude && device.data?.longitude), [devices])
 
     const query = useQuery({
-        queryKey: ["getCurrentAddress"],
-        queryFn: getCurrentAddress,
+        queryKey: ["getAddress", lastSeenDevice?.data.latitude, lastSeenDevice?.data.longitude],
+        queryFn: () => getAddress(lastSeenDevice?.data.latitude, lastSeenDevice?.data.longitude),
+        enabled: !!lastSeenDevice,
         staleTime: isAdmin ? 0 : 1000 * 60 * 15
     })
 
@@ -65,6 +70,10 @@ export const useCurrentAddress = (knownAddresses = []) => {
         resolveCurrentAddress()
     }, [query.data?.address, knownAddresses.length, visitedAirports.length])
 
-    // TODO: Map to Address object
-    return currentAddress && { ...currentAddress, lastUpdate: query.data.lastUpdate }
+    return currentAddress && {
+        ...currentAddress,
+        battery: lastSeenDevice.data.battery,
+        timezone: lastSeenDevice.data.timezone,
+        lastSeen: lastSeenDevice.lastSeen
+    }
 }

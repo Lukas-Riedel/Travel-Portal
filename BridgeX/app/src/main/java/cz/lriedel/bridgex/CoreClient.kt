@@ -26,12 +26,6 @@ interface CoreClient {
         @Body fitnessRequest: FitnessRequest
     )
 
-    @POST("location/track")
-    suspend fun trackLocation(
-        @Query("latitude") latitude: Double,
-        @Query("longitude") longitude: Double
-    )
-
     companion object {
         @JvmStatic
         fun create(authenticationService: AuthenticationService): CoreClient {

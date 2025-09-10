@@ -79,10 +79,6 @@ export function useApi() {
         return sendRequest("GET", "/highlights/" + highlightId)
     }
 
-    async function getCurrentAddress() {
-        return sendRequest("GET", "/location")
-    }
-
     async function updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere) {
         return sendRequest("PATCH", "/highlights/" + highlightId,
             {
@@ -214,6 +210,14 @@ export function useApi() {
         return sendRequest("GET", "/coordinates", {},
             {
                 address: address
+            })
+    }
+
+    async function getAddress(latitude, longitude) {
+        return sendRequest("GET", "/address", {},
+            {
+                latitude: latitude,
+                longitude: longitude
             })
     }
 
@@ -775,6 +779,6 @@ export function useApi() {
         createYearHighlight,
         removeYearHighlight,
         replaceFitness,
-        getCurrentAddress
+        getAddress
     }
 }

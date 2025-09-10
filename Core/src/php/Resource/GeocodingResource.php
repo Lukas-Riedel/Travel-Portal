@@ -24,9 +24,8 @@ use Slim\App;
                 $group->get("", [$resource, "getCoordinates"]);
             });
 
-            $app->group("/location", function($group) use($resource) {
-                $group->post("/track", [$resource, "trackLocation"]);
-                $group->get("", [$resource, "getLocation"]);
+            $app->group("/address", function($group) use($resource) {
+                $group->get("", [$resource, "getAddress"]);
             });
         }
 
@@ -115,10 +114,10 @@ use Slim\App;
             return $location;
         }
 
-        #[OA\Post(
-            path: "/location/track",
-            summary: "Track the location",
-            operationId: "trackLocation",
+        #[OA\Get(
+            path: "/address",
+            summary: "Retrieve address for the specified coordinates",
+            operationId: "getAddress",
             tags: ["Geocoding"],
             security: [ ["bearerAuth" => []] ],
             parameters: [
@@ -139,70 +138,8 @@ use Slim\App;
             ],
             responses: [
                 new OA\Response(
-                    response: 201,
-                    description: "Success. The location was tracked.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/Address")
-                ),
-                new OA\Response(
-                    response: 400,
-                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Bad Request",
-                                ref: "#/components/examples/BadRequest"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 401,
-                    description: "Unauthorized. The request required user authentication.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Unauthorized",
-                                ref: "#/components/examples/Unauthorized"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 403,
-                    description: "Forbidden. The user did not have access to the requested resource.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Forbidden",
-                                ref: "#/components/examples/Forbidden"
-                            )
-                        ]
-                    )
-                )
-            ]
-        )]
-        public function trackLocation(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
-
-            $latitude = $this->validateQueryParameter($request, "latitude");
-            $longitude = $this->validateQueryParameter($request, "longitude");
-            
-            return $this->geocodingService->trackLocation($latitude, $longitude);
-        }
-
-        #[OA\Get(
-            path: "/location",
-            summary: "Retrieve tracked location",
-            operationId: "getLocation",
-            tags: ["Geocoding"],
-            security: [ ["bearerAuth" => []] ],
-            responses: [
-                new OA\Response(
                     response: 200,
-                    description: "Success. Retrieved tracked location.",
+                    description: "Success. Retrieved address for the specified coordinates.",
                     content: new OA\JsonContent(ref: "#/components/schemas/Address")
                 ),
                 new OA\Response(
@@ -259,10 +196,13 @@ use Slim\App;
                 )
             ]
         )]
-        public function getLocation(Request $request, Response $response, array $routeArguments) : mixed {            
-            $address = $this->geocodingService->getCurrentAddress();
+        public function getAddress(Request $request, Response $response, array $routeArguments) : mixed {       
+            $latitude = $this->validateQueryParameter($request, "latitude");
+            $longitude = $this->validateQueryParameter($request, "longitude");
+
+            $address = $this->geocodingService->getAddress($latitude, $longitude, $this->isAdmin($request));
             if ($address === null) {
-                throw new NotFoundException(time());
+                throw new NotFoundException("$latitude $longitude");
             }
             return $address;
         }

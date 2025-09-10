@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
-import { getDateRangeString } from "../utils/helpers"
+import { getDateRangeString, getTimeString } from "../utils/helpers"
 import DayCard from "./DayCard"
 import { Link } from "react-router-dom"
 import { useTrip } from "../hooks/useTrip"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
-import { Earth, House, LocateFixedIcon, LocateOffIcon } from "lucide-react"
+import { Battery, Clock, Earth, House, LocateFixedIcon, LocateOffIcon } from "lucide-react"
 import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
-import { useCurrentAddress } from "../hooks/useCurrentAddress"
+import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { formatTimeAgo } from "../utils/formatters"
 
 export default function TripSummary({ tripId }) {
@@ -21,7 +21,7 @@ export default function TripSummary({ tripId }) {
 
     const { trip } = useTrip(tripId)
     const tripPlaces = useRegularPlaces({ tripId, include: "categories,dates" })
-    const currentAddress = useCurrentAddress([
+    const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
         ...(trip?.stays.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
         ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
         ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, radius: 3.0 })) ?? [])
@@ -80,15 +80,15 @@ export default function TripSummary({ tripId }) {
                 <div className="text-xl text-gray-700">
                     {getDateRangeString(trip.start, trip.end)}
                 </div>
-                {currentAddress && trip.isCurrent() && (
+                {lastSeenBridgeXDevice && (isAdmin || trip.isCurrent()) && (
                     <>
-                        {currentAddress.lastUpdate + 1800 > Date.now() / 1000 ? (
+                        {lastSeenBridgeXDevice.lastSeen + 1800 > Date.now() / 1000 ? (
                             <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-6 hover:underline hover:text-green-400 transition-colors duration-200">
                                 <LocateFixedIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={`https://www.google.com/maps/search/${encodeURIComponent(currentAddress.address)}`}>
-                                    {currentAddress.name}
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.address)}`}>
+                                    {lastSeenBridgeXDevice.name}
                                 </a>
                             </div>
                         ) : (
@@ -96,14 +96,32 @@ export default function TripSummary({ tripId }) {
                                 <LocateOffIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={`https://www.google.com/maps/search/${encodeURIComponent(currentAddress.address)}`}>
-                                    {currentAddress.name}
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.address)}`}>
+                                    {lastSeenBridgeXDevice.name}
                                 </a>
                             </div>
                         )}
-                        <span className="text-[10px] text-gray-500 mt-1">
-                            Aktualizováno před {formatTimeAgo(currentAddress.lastUpdate)}
-                        </span>
+                        <ul className="text-[10px] text-gray-500 mt-2 space-y-0.5">
+                            <li className="flex justify-center items-center space-x-2">
+                                <div className="flex items-center space-x-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>
+                                        {getTimeString(toZonedTime(new Date(), lastSeenBridgeXDevice.timezone).getTime() / 1000)}
+                                    </span>
+                                </div>
+                                <span>|</span>
+                                <div className="flex items-center space-x-1">
+                                    <Battery className="w-3 h-3" />
+                                    <span>
+                                        {lastSeenBridgeXDevice.battery}%
+                                    </span>
+                                </div>
+                            </li>
+                            <li className="text-center">
+                                Aktualizováno před {formatTimeAgo(lastSeenBridgeXDevice.lastSeen)}
+                            </li>
+                        </ul>
+
                     </>
                 )}
             </div>

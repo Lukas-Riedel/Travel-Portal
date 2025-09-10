@@ -38,7 +38,7 @@
             android:foregroundServiceType="health"/>
 
         <service
-            android:name=".geocoding.GeocodingForegroundService"
+            android:name=".device.DeviceForegroundService"
             android:exported="false"
             android:foregroundServiceType="location"/>
 
