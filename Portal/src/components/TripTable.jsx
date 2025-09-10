@@ -1,4 +1,4 @@
-import { fromUnixTime, eachDayOfInterval, startOfDay, addDays, differenceInCalendarDays } from "date-fns"
+import { fromUnixTime, eachDayOfInterval, startOfDay, addDays, differenceInCalendarDays, isSameDay } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { getDateRangeString, getEvents, sumEventHours, isInTrip } from "../utils/helpers"
 import { Link } from "react-router-dom"
@@ -23,11 +23,6 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
     }, [])
 
     const includePlannedTimeOff = isFreeDay && overtimeEvents && plannedWorkEvents && vacationEvents && selfcareEvents && tenureEvents
-    const columns = useMemo(() => {
-        const firstColumnWidth = 25
-        const variableColumnsCount = includePlannedTimeOff && !isMobile ? 6 : 3
-        return [firstColumnWidth, ...Array(variableColumnsCount).fill((100 - firstColumnWidth) / variableColumnsCount)]
-    }, [includePlannedTimeOff, isMobile])
 
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
     const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
@@ -36,7 +31,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
     const latestAllowedDateStartOfDay = useMemo(() => startOfDay(fromUnixTime(trips?.at(-1)?.end)), [trips])
 
     const days = eachDayOfInterval({
-        start: startOfDay(startOfDay(overtimeEvents?.[0]?.timestamp ? addDays(fromUnixTime(overtimeEvents[0].timestamp), 1) : new Date())),
+        start: startOfDay(overtimeEvents?.some(event => isSameDay(fromUnixTime(event.timestamp), new Date())) ? addDays(new Date(), 1) : new Date()),
         end: latestAllowedDateStartOfDay
     })
 
