@@ -42,7 +42,7 @@
                 "name" => $event->name,
                 "args" => $args
             );
-            $message = new AMQPMessage(json_encode($payload), array("content_type" => "application/json", "priority" => $event->getPriority()));
+            $message = new AMQPMessage(json_encode($payload, JSON_UNESCAPED_UNICODE), array("content_type" => "application/json", "priority" => $event->getPriority()));
 
             $this->logger->debug("Publishing the '" . $event->name . "' event to RabbitMQ...", $payload);
             $this->producerChannel->basic_publish($message, "", $queueName);
