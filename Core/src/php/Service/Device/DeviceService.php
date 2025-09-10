@@ -15,8 +15,8 @@
             $this->deviceMapper = new DeviceMapper($databaseProvider, $authenticationService);
         }
         
-        public function getDevices(?DeviceType $deviceType, array $requiredRoles) : array {
-            return $this->deviceMapper->selectDevices($deviceType, $requiredRoles);
+        public function getDevices(?DeviceType $deviceType, ?string $requiredRole) : array {
+            return $this->deviceMapper->selectDevices($deviceType, $requiredRole);
         }
 
         public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {

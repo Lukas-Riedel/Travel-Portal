@@ -47,8 +47,8 @@
             return $this->authenticationMapper->selectUserById($userId);
         }
 
-        public function getUsersWithRoles(array $roles) : array {
-            return $this->authenticationMapper->selectUsersWithRoles($roles);
+        public function getUsersWithRole(string $role) : array {
+            return $this->authenticationMapper->selectUsersWithRole($role);
         }
 
         public function getAccessToken(string $accessToken) : AccessToken {

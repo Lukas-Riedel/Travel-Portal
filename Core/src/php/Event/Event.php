@@ -247,7 +247,7 @@
         }
 
         public static function ProcessingEnded(string $name, mixed $args) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }
 
         public static function FitnessActivityDetected(array $intervals) : Event {

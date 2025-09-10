@@ -33,15 +33,17 @@
                 $deviceTokens = array();
 
                 foreach ($event->getSupportedDeviceTypes() as &$deviceType) {
-                    $devices = $this->deviceService->getDevices($deviceType, $event->getRequiredRoles());
+                    foreach ($event->getRequiredRoles() as &$requiredRole) {
+                        $devices = $this->deviceService->getDevices($deviceType, $requiredRole);
 
-                    foreach ($devices as &$device) {
-                        $data = $device->getData();
+                        foreach ($devices as &$device) {
+                            $data = $device->getData();
 
-                        if ($data !== null && isset($data["fcmToken"]) && !in_array($data["fcmToken"], $deviceTokens)) {
-                            $deviceTokens[] = $data["fcmToken"];
+                            if ($data !== null && isset($data["fcmToken"]) && !in_array($data["fcmToken"], $deviceTokens)) {
+                                $deviceTokens[] = $data["fcmToken"];
+                            }
                         }
-                    }
+                        }
                 }
 
                 $this->cloudMessagingClient->publish($event, $deviceTokens);

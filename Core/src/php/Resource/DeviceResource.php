@@ -196,6 +196,6 @@
 
             $mappedType = $type === null ? null : DeviceType::from($type);
             
-            return $this->deviceService->getDevices($mappedType, array());
+            return $this->deviceService->getDevices($mappedType, null);
         }
     }

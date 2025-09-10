@@ -14,7 +14,7 @@
             $this->authenticationService = $authenticationService;
         }
 
-        public function selectDevices(?DeviceType $deviceType, array $requiredRoles) : array {
+        public function selectDevices(?DeviceType $deviceType, ?string $requiredRole) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM device
@@ -22,8 +22,10 @@
                 ORDER BY last_seen DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
-                ->withClause("FIND_IN_SET(user_id, ?)", implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRoles($requiredRoles))));
+            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            if ($requiredRole !== null) {
+                $whereClauseBuilder->withClause("FIND_IN_SET(user_id, ?)", implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRole($requiredRole))));
+            }
             if ($deviceType !== null) {
                 $whereClauseBuilder->withClause("type = ?", $deviceType->value);
             }

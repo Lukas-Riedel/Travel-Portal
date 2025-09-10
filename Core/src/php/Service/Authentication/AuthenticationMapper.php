@@ -9,21 +9,16 @@
             $this->databaseProvider = $databaseProvider;
         }
 
-        public function selectUsersWithRoles(array $roles) : array {
+        public function selectUsersWithRole(string $role) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM user
-                WHERE :CONDITIONS
+                WHERE FIND_IN_SET(?, roles)
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
-            foreach ($roles as &$role) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(?, roles)", $role);
-            }
-            $whereClause = $whereClauseBuilder->buildForAnd();
-            
             return $this->databaseProvider
-                ->statementBuilder($sql, $whereClause)
+                ->statementBuilder($sql)
+                ->withParameters($role)
                 ->getMappedResultSet(function($userRow) {
                     return new User($userRow["id"], $userRow["username"], $userRow["password"], explode(",", $userRow["roles"]));
                 });
