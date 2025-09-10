@@ -1,6 +1,8 @@
 <?php
     namespace Core\Client;
 
+    use Core\Event\Event;
+    use Core\Event\EventPriority;
     use Monolog\Logger;
     use PhpAmqpLib\Channel\AMQPChannel;
     use PhpAmqpLib\Connection\AMQPSSLConnection;
@@ -8,7 +10,6 @@
 
     class MessagingClient {
 
-        private const MAX_PRIORITY = 5;
         private const HEARTBEAT_INTERVAL_SECONDS = 60;
 
         private ?AMQPSSLConnection $connection = null;
@@ -33,19 +34,18 @@
             }
         }
 
-        public function publishEvent(\Event $event, ?array $args, string $queueName) : void {
+        public function publish(string $queueName, Event $event, ?EventPriority $eventPriority = null) : void {
             $this->init();
-            $this->consumerChannel->queue_declare($queueName, false, true, false, false, false, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
-            $this->producerChannel->queue_declare($queueName, false, true, false, false, false, array("x-max-priority" => array("I", self::MAX_PRIORITY)));
 
-            $payload = array(
-                "name" => $event->name,
-                "args" => $args
-            );
-            $message = new AMQPMessage(json_encode($payload, JSON_UNESCAPED_UNICODE), array("content_type" => "application/json", "priority" => $event->getPriority()));
+            $json = json_encode($event, JSON_UNESCAPED_UNICODE);
 
-            $this->logger->debug("Publishing the '" . $event->name . "' event to RabbitMQ...", $payload);
-            $this->producerChannel->basic_publish($message, "", $queueName);
+            $messageHeaders = array("content_type" => "application/json");
+            if ($eventPriority !== null) {
+                $messageHeaders["priority"] = $eventPriority->value;
+            }
+
+            $this->logger->debug("Publishing the '" . $event->getName() . "' event to RabbitMQ...", json_decode($json, true));
+            $this->producerChannel->basic_publish(new AMQPMessage($json, $messageHeaders), "", $queueName);
         }
 
         public function getConsumerChannel() : AMQPChannel {

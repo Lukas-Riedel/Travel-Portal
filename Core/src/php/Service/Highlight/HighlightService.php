@@ -8,6 +8,8 @@
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Trip\TripIncludedEntity;
     use Core\Service\Trip\TripSortingStrategy;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class HighlightService {
 
@@ -15,9 +17,9 @@
 
         private readonly PhotoService $photoService;
         
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService, EventPublisher $eventPublisher) {
             $this->highlightMapper = new HighlightMapper($databaseProvider, $photoService);
             $this->photoService = $photoService;
             $this->eventPublisher = $eventPublisher;
@@ -93,9 +95,9 @@
             if ($highlightNotExists) {
                 $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
 
-                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Place, $placeId, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place, $placeId, $highlightId));
                 foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
-                    $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Category, $category->getId(), $highlightId);                    
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category, $category->getId(), $highlightId));                    
                 }
 
                 $this->updateHighlight($highlightId);
@@ -122,8 +124,8 @@
             if ($highlightNotExists) {
                 $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
 
-                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Trip, $tripId, $highlightId);                
-                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Year, $tripService->getRegularTrip($tripId)->getYear(), $highlightId);            
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip, $tripId, $highlightId));                
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));            
 
                 $this->updateHighlight($highlightId);
             }
@@ -139,7 +141,7 @@
 
             $wasCreated = $this->highlightMapper->deleteHighlight(highlightType::Category, $categoryId, $highlightId) > 0;
             if ($wasCreated) {
-                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Category, $categoryId, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category, $categoryId, $highlightId));
             }   
             return $this->getHighlight($highlightId);
         }
@@ -152,7 +154,7 @@
 
             $wasCreated = $this->highlightMapper->deleteHighlight(highlightType::Year, $year, $highlightId) > 0;
             if ($wasCreated) {
-                $this->eventPublisher->publishHighlightCreatedEvent(HighlightType::Year, $year, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year, $year, $highlightId));
             }   
             return $this->getHighlight($highlightId);
         }
@@ -160,7 +162,7 @@
         public function removePlaceHighlight(string $placeId, string $highlightId) : bool {
             $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Place, $placeId, $highlightId) > 0;
             if ($wasRemoved) {
-                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Place, $placeId, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Place, $placeId, $highlightId));
                 $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }        
             return $wasRemoved;
@@ -169,7 +171,7 @@
         public function removeTripHighlight(string $tripId, string $highlightId) : bool {
             $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Trip, $tripId, $highlightId) > 0;
             if ($wasRemoved) {
-                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Trip, $tripId, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Trip, $tripId, $highlightId));
                 $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }
             return $wasRemoved;
@@ -178,7 +180,7 @@
         public function removeCategoryHighlight(string $categoryId, string $highlightId) : bool {
             $wasRemoved = $this->highlightMapper->insertHighlight(HighlightType::Category, $categoryId, $highlightId);
             if ($wasRemoved) {
-                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Category, $categoryId, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category, $categoryId, $highlightId));
             }
             return $wasRemoved;
         }
@@ -186,7 +188,7 @@
         public function removeYearHighlight(int $year, string $highlightId) : bool {
             $wasRemoved = $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
             if ($wasRemoved) {
-                $this->eventPublisher->publishHighlightRemovedEvent(HighlightType::Year, $year, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year, $year, $highlightId));
             }
             return $wasRemoved;
         }
@@ -253,7 +255,7 @@
         private function publishHighlightUpdatedEvents(string $highlightId) : void {
             foreach (HighlightType::cases() as &$highlightType) {
                 foreach ($this->getEntityIdsForHighlightId($highlightType, $highlightId) as &$entityId) {
-                    $this->eventPublisher->publishHighlightUpdatedEvent($highlightType, $entityId, $highlightId);
+                    $this->eventPublisher->publish(Event::HighlightUpdated($highlightType, $entityId, $highlightId));
                 }
             }
         }

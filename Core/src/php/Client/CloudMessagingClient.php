@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client;
 
+    use Core\Event\Event;
     use Google\Auth\Credentials\ServiceAccountCredentials;
     use HttpMethod;
     use Monolog\Logger;
@@ -21,7 +22,7 @@
             $this->logger = $logger;
         }
 
-        public function publishEvent(\Event $event, ?array $args, array $deviceTokens) : void {
+        public function publish(Event $event, array $deviceTokens) : void {
             global $httpClient;
 
             $url = sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId);
@@ -35,13 +36,13 @@
                             "priority" => "high"
                         ),
                         "data" => array(
-                            "event" => $event->name,
-                            "args" => json_encode((object) ($args ?? []))
+                            "event" => $event->getName(),
+                            "args" => json_encode((object) $event->getArgs())
                         )
                     )
                 );
                 
-                $this->logger->debug("Publishing the '" . $event->name . "' event to FCM...", $payload);
+                $this->logger->debug("Publishing the '" . $event->getName() . "' event to FCM...", $payload);
                 $httpClient->executeRequest(HttpMethod::POST, $url, array("Authorization: Bearer " . $accessToken, "Content-Type: application/json"), json_encode($payload));
             }
         }

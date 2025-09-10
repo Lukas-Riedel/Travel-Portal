@@ -2,6 +2,8 @@
     namespace Core\Service\Stay;
 
     use Core\Service\Trip\TripService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class StayService {
 
@@ -11,9 +13,9 @@
 
         private readonly \CalendarClient $calendarClient;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, EventPublisher $eventPublisher) {
             $this->stayMapper = new StayMapper($databaseProvider);
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
@@ -40,17 +42,17 @@
             
             $affectedTripIds = $this->stayMapper->selectTripIdsForCreatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishStayEventCreatedEvent($affectedTripId);
+                $this->eventPublisher->publish(Event::StayEventCreated($affectedTripId));
             }
             
             $affectedTripIds = $this->stayMapper->selectTripIdsForUpdatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishStayEventUpdatedEvent($affectedTripId);
+                $this->eventPublisher->publish(Event::StayEventUpdated($affectedTripId));
             }
             
             $affectedTripIds = $this->stayMapper->selectTripIdsForDeletedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishStayEventRemovedEvent($affectedTripId);
+                $this->eventPublisher->publish(Event::StayEventRemoved($affectedTripId));
             }
         }
     }

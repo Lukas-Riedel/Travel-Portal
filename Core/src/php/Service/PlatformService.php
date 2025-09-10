@@ -1,4 +1,7 @@
 <?php
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    
     class PlatformService {        
         private const BACKUP_FOLDER_NAME = "Travel Portal Backups";
 
@@ -37,8 +40,8 @@
             global $configurationService, $scheduler, $eventPublisher;
 
             if ($scheduler->requestExecution("WATCH_CALENDAR", 82800)) {
-                foreach (array_keys($configurationService->getConfigurationEntry("calendars")) as $calendar) {
-                    $eventPublisher->publishCalendarWatchRenewingEvent($calendar); 
+                foreach (\Calendar::cases() as $calendar) {
+                    $eventPublisher->publish(Event::CalendarWatchRenewing($calendar)); 
                 }
             }
         }

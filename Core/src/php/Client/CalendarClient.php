@@ -3,6 +3,8 @@
     use Core\Client\CalendarEvent;
     use Core\Client\PublicHoliday;
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
     use ICal\ICal;
 
     class CalendarClient {
@@ -14,15 +16,10 @@
             global $googleApiClient, $authenticationService;
 
             $authenticationResult = $authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
-            $payload = array(
-                "name" => Event::CalendarInvalidated->name,
-                "args" => array(
-                    "calendar" => $calendar
-                )
-            );
+            $event = Event::CalendarInvalidated(\Calendar::from($calendar));
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
-                BASE_URL . "/events?" . CommonConstants::ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY . "=" . base64_encode(json_encode($payload)),
+                BASE_URL . "/events?" . CommonConstants::ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY . "=" . base64_encode(json_encode($event)),
                 self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS, "Bearer " . $authenticationResult->getAccessToken(),);
         }
 

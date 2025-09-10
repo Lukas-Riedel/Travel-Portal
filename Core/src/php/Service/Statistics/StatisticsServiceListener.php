@@ -8,6 +8,9 @@
     use Core\Service\Flight\FlightService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class StatisticsServiceListener {
         
@@ -21,12 +24,12 @@
         private readonly CategoryService $categoryService;
         private readonly FlightService $flightService;
         
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
         public function __construct(StatisticsService $statisticsService, PlaceService $placeService,
             TripService $tripService, CategoryService $categoryService, FlightService $flightService,
-            \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+            EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->statisticsService = $statisticsService;
             $this->placeService = $placeService;
             $this->tripService = $tripService;
@@ -82,9 +85,9 @@
 
         public function onFlightLogged(mixed $message) : void {
             $flight = new Flight($message["flight"], null, null, null, null,
-                new Airport(null, $message["from"]["name"], null, null, null, null, null, null),
-                new Airport(null, $message["to"]["name"], null, null, null, null, null, null),
-                $message["start"], $message["end"], null);
+                new Airport(null, $message["from"], null, null, null, null, null, null),
+                new Airport(null, $message["to"], null, null, null, null, null, null),
+                $message["scheduledDeparture"], $message["scheduledArrival"], null);
             $tripId = $this->flightService->getTripIdForFlight($flight);
             if ($tripId !== null) {
                 $trip = $this->tripService->getRegularTrip($tripId);
@@ -179,11 +182,11 @@
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
+                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($tripId));
             }
 
             foreach ($place->getCategories() as &$category) {
-                $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
+                $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
             }        
         }
 
@@ -201,11 +204,11 @@
             }
 
             foreach ($tripIdsToUpdate as &$tripId) {
-                $this->eventPublisher->publishTripStatisticsInvalidatedEvent($tripId);
+                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($tripId));
             }
 
             foreach ($place->getCategories() as &$category) {
-                $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
+                $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
             }
         }
 
@@ -230,7 +233,7 @@
             }
 
             foreach ($place->getCategories() as &$category) {
-                $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
+                $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
             }
         }
 
@@ -312,7 +315,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_OVERALL_STATISTICS_ACTION_NAME, self::UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL)) {
-                $this->eventPublisher->publishOverallStatisticsInvalidatedEvent();
+                $this->eventPublisher->publish(Event::OverallStatisticsInvalidated());
             }
         }
     }

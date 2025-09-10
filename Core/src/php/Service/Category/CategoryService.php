@@ -5,6 +5,8 @@
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Statistics\StatisticsService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class CategoryService {
 
@@ -14,13 +16,13 @@
 
         private readonly ConfigurationService $configurationService;
         
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         private array $categoryIdToCategoryIdentifierCache = array();
         private array $placeIdToCategoryIdsCache = array();
 
         public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
-            HighlightService $highlightService, StatisticsService $statisticsService, \EventPublisher $eventPublisher) {
+            HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService, $configurationService);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
@@ -69,7 +71,7 @@
 
             foreach (array_unique($categoryIds) as &$categoryId) {  
                 $this->categoryMapper->insertCategory($placeIdentifier->getId(), $categoryId);
-                $this->eventPublisher->publishCategoryUpdatedEvent($categoryId);
+                $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
             }
         }
 
@@ -139,7 +141,7 @@
             $wasUpdated = $this->categoryMapper->updateCategoryName($categoryId, $name);
             
             if ($wasUpdated) {
-                $this->eventPublisher->publishCategoryUpdatedEvent($categoryId);
+                $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
             }
 
             return $wasUpdated;
@@ -185,7 +187,7 @@
             foreach ($includedRegions as &$includedRegion) {
                 $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
                 $this->categoryMapper->insertCompositeRegionInclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
-                $this->eventPublisher->publishCategoryInvalidatedEvent($subjectCategoryIdentifier->getId());
+                $this->eventPublisher->publish(Event::CategoryInvalidated($subjectCategoryIdentifier->getId()));
             }
 
             foreach ($excludedRegions as &$excludedRegion) {
@@ -193,7 +195,7 @@
                 $this->categoryMapper->insertCompositeRegionExclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
             }
     
-            $this->eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
+            $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
             
             return $categoryIdentifier;
         }
@@ -207,14 +209,14 @@
 
             if ($countryCategoryId === null) {
                 foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$invalidatedCategory) {
-                    $this->eventPublisher->publishCategoryInvalidatedEvent($invalidatedCategory->getId());
+                    $this->eventPublisher->publish(Event::CategoryInvalidated($invalidatedCategory->getId()));
                 }
             }
             else {
-                $this->eventPublisher->publishCategoryInvalidatedEvent($countryCategoryId);
+                $this->eventPublisher->publish(Event::CategoryInvalidated($countryCategoryId));
             }
     
-            $this->eventPublisher->publishCategoryCreatedEvent($categoryIdentifier->getId());
+            $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
             
             return $categoryIdentifier;
         }
@@ -236,11 +238,11 @@
             // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
             if ($country === null) {
                 foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$category) {
-                    $this->eventPublisher->publishCategoryInvalidatedEvent($category->getId());
+                    $this->eventPublisher->publish(Event::CategoryInvalidated($category->getId()));
                 }
             }
             else {
-                $this->eventPublisher->publishCategoryInvalidatedEvent($this->getCategoryIdentifier($country)->getId());
+                $this->eventPublisher->publish(Event::CategoryInvalidated($this->getCategoryIdentifier($country)->getId()));
             }
 
             return $categoryIdentifier;

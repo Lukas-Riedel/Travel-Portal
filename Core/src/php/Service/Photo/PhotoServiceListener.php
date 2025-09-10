@@ -2,6 +2,9 @@
     namespace Core\Service\Photo;
 
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class PhotoServiceListener {
 
@@ -10,10 +13,10 @@
 
         private readonly PhotoService $photoService;
         
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(PhotoService $photoService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(PhotoService $photoService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->photoService = $photoService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -33,14 +36,14 @@
                 $photos = $this->photoService->getPhotos($album->getId(), true);
     
                 if (count($photos) !== $album->getImagesCount()) {
-                    $this->eventPublisher->publishAlbumInvalidatedEvent($album->getId());
+                    $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));
                 }
             }
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_ALBUMS_ACTION_NAME, self::FETCH_ALBUMS_ACTION_INTERVAL)) {
-                $this->eventPublisher->publishAllAlbumsInvalidatedEvent();
+                $this->eventPublisher->publish(Event::AllAlbumsInvalidated());
             }
         }
     }

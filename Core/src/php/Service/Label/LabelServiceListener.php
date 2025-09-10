@@ -5,6 +5,9 @@
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class LabelServiceListener {
         
@@ -17,10 +20,10 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(LabelService $labelService, PlaceService $placeService, ConfigurationService $configurationService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(LabelService $labelService, PlaceService $placeService, ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->labelService = $labelService;
             $this->placeService = $placeService;
             $this->configurationService = $configurationService;
@@ -42,7 +45,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME, self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL)) {
-                $this->eventPublisher->publishAllDynamicLabelsInvalidatedEvent();                
+                $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());                
             }
         }
     }

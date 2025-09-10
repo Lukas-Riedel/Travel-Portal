@@ -3,6 +3,9 @@
 
     use Core\Service\Trip\TripService;
     use Core\Service\Trip\TripSortingStrategy;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class GeocodingServiceListener {
 
@@ -11,10 +14,10 @@
 
         private readonly TripService $tripService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(TripService $tripService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(TripService $tripService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -25,7 +28,7 @@
                 $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestDescending);
                 foreach ($trips as $trip) {
                     if ($trip->isCurrent() && !$this->tripService->isDayTripsTrip($trip)) {
-                        $this->eventPublisher->publishLocationUpdateDetectedEvent();
+                        $this->eventPublisher->publish(Event::LocationUpdateDetected());
                         break;
                     }
                 }

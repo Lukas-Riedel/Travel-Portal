@@ -1,6 +1,8 @@
 <?php
     namespace Core\Resource;
 
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -9,13 +11,13 @@
     #[OA\Tag(name: "Events")]
     class EventResource extends AbstractResource {
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
-        public function __construct(\EventPublisher $eventPublisher) {
+        public function __construct(EventPublisher $eventPublisher) {
             $this->eventPublisher = $eventPublisher;
         }
 
-        public static function register(App $app, \EventPublisher $eventPublisher) : void {
+        public static function register(App $app, EventPublisher $eventPublisher) : void {
             $resource = new self($eventPublisher);
 
             $app->group("/events", function($group) use($resource) {
@@ -101,8 +103,19 @@
 
             $name = $this->validateJsonBodyField($request, "name");
             $args = $this->validateJsonBodyNullableField($request, "args");
-            
-            $this->eventPublisher->publishEvent(\Event::fromName($name), $args);
+
+            $method = new \ReflectionMethod(Event::class, $name);
+
+            $orderedArgs = array();
+            foreach ($method->getParameters() as $parameter) {
+                $parameterName = $parameter->getName();
+                if (!array_key_exists($parameterName, $args) && !$parameter->isDefaultValueAvailable()) {
+                    throw new \RuntimeException("The required argument '$parameterName' is missing for the '$name' event.");
+                }
+                $orderedArgs[] = isset($args[$parameterName]) ? $args[$parameterName] : $parameter->getDefaultValue();
+            }
+
+            $this->eventPublisher->publish($method->invokeArgs(null, $orderedArgs));
 
             return null;
         }

@@ -1,20 +1,24 @@
 <?php
+    namespace Core\Event;
+
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+
     class Scheduler {
 
         private readonly \DatabaseProvider $databaseProvider;
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, EventPublisher $eventPublisher) {
             $this->databaseProvider = $databaseProvider;
             $this->eventPublisher = $eventPublisher;
         }
 
         public function schedule() {
-            $this->eventPublisher->publishSchedulerTriggeredEvent();
+            $this->eventPublisher->publish(Event::SchedulerTriggered());
         }
 
         public function requestExecution(string $action, int $interval) : bool {
-            // TODO: Insert the action if not persent.
             $sql = <<<'SQL'
                 UPDATE scheduler
                 SET last_triggered = UNIX_TIMESTAMP()
@@ -22,9 +26,44 @@
                     AND last_triggered <= UNIX_TIMESTAMP() - ?
             SQL;
 
-            return $this->databaseProvider
+            $wasRequested = $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($action, $interval)
+                ->execute() === 1;
+
+            if ($wasRequested) {
+                return true;
+            }
+
+            $sql = <<<'SQL'
+                SELECT 1
+                FROM scheduler
+                WHERE action = ?
+            SQL;
+
+            $actionExists = $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($action)
+                ->getSingleRow() !== null;
+            
+            if ($actionExists) {
+                return false;
+            }
+
+            $sql = <<<'SQL'
+                INSERT INTO scheduler (
+                    action, 
+                    last_triggered
+                )
+                VALUES (
+                    ?,
+                    UNIX_TIMESTAMP()
+                )
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($action)
                 ->execute() === 1;
         }
 

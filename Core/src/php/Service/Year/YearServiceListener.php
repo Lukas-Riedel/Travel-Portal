@@ -3,6 +3,9 @@
 
     use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class YearServiceListener {
         
@@ -11,10 +14,10 @@
 
         private readonly YearService $yearService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(YearService $yearService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(YearService $yearService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->yearService = $yearService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -34,7 +37,7 @@
                 $years = $this->yearService->getYears(array());
                 
                 foreach ($years as &$year) {
-                    $this->eventPublisher->publishYearStatisticsInvalidatedEvent($year->getId());
+                    $this->eventPublisher->publish(Event::YearStatisticsInvalidated($year->getId()));
                 }                        
             }
         }

@@ -1,6 +1,8 @@
 package cz.lriedel.agent;
 
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -38,6 +40,11 @@ public class AgentApplicationConfiguration {
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
+    }
+
+    @Bean
+    public Queue agentQueue(@Value("${queue.agent.name}") String agentQueueName) {
+        return QueueBuilder.durable(agentQueueName).build();
     }
 
     @Bean

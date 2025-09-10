@@ -4,6 +4,9 @@
     use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Service\Trip\TripService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class FlightServiceListener {
         
@@ -16,13 +19,13 @@
 
         private readonly \CalendarClient $calendarClient;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
         private readonly Logger $logger;
 
         public function __construct(FlightService $flightService, TripService $tripService, \CalendarClient $calendarClient,
-            \EventPublisher $eventPublisher, \Scheduler $scheduler, Logger $logger) {
+            EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
             $this->flightService = $flightService;
             $this->tripService = $tripService;
             $this->calendarClient = $calendarClient;
@@ -71,8 +74,8 @@
                 : time() - $lastTriggered + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
 
             if ($this->scheduler->requestDynamicExecution(self::LOG_FLIGHTS_ACTION_NAME, $intervalSelector)) {
-                $this->eventPublisher->publishFlightArrivedEvent($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getShortName(),
-                    $firstNonLoggedFlight->getTo()->getShortName(), $firstNonLoggedFlight->getStart());
+                $this->eventPublisher->publish(Event::FlightArrived($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getShortName(),
+                    $firstNonLoggedFlight->getTo()->getShortName(), $firstNonLoggedFlight->getStart()));
             }
         }
     }

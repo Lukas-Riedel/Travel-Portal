@@ -1,4 +1,8 @@
 <?php
+
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+
     require_once(__DIR__ . "/src/php/bootstrap.php");
     
     $onError = function($level, $message, $file, $line) {
@@ -80,7 +84,7 @@
             ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
         $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
 
-        $eventPublisher->publishApplicationStartedEvent($tablesToBackup);
+        $eventPublisher->publish(Event::ApplicationStarted($tablesToBackup));
     }
     
     http_response_code(200);

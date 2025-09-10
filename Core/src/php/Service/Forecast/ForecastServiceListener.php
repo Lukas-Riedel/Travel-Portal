@@ -5,6 +5,9 @@
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class ForecastServiceListener {
 
@@ -20,10 +23,10 @@
 
         private readonly PlaceService $placeService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(ForecastService $forecastService, PlaceService $placeService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(ForecastService $forecastService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->forecastService = $forecastService;
             $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
@@ -50,11 +53,11 @@
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
                     if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
-                        $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
+                        $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                     }
                             
-                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
-                    $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                    $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
+                    $this->eventPublisher->publish(Event::DaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd()));
                 }
             }
         }
@@ -64,11 +67,11 @@
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
                     if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
-                        $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
+                        $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                     }
                             
-                    $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
-                    $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                    $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
+                    $this->eventPublisher->publish(Event::DaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd()));
                 }
             }
         }
@@ -81,7 +84,7 @@
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
                         if ($this->forecastService->isActualWeatherForecastExpired($place->getId(), $date->getStart())) {
-                            $this->eventPublisher->publishActualWeatherForecastUpdated($place->getId(), $date->getStart());
+                            $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                         }
                     }
                 }
@@ -94,7 +97,7 @@
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    
                         if ($date->getWeather() === null) {
-                            $this->eventPublisher->publishHistoricalWeatherForecastUpdated($place->getId(), $date->getStart());
+                            $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
                         }
                     }
                 }
@@ -107,7 +110,7 @@
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {    
                         if ($date->getSun() === null) {
-                            $this->eventPublisher->publishDaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd());
+                            $this->eventPublisher->publish(Event::DaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd()));
                         }
                     }
                 }

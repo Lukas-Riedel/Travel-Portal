@@ -4,6 +4,9 @@
     use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Place\PlaceService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class CategoryServiceListener {
         
@@ -14,10 +17,10 @@
 
         private readonly PlaceService $placeService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(CategoryService $categoryService, PlaceService $placeService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(CategoryService $categoryService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->categoryService = $categoryService;
             $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
@@ -55,7 +58,7 @@
             if ($this->scheduler->requestExecution(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME, self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL)) {
                 $categories = $this->categoryService->getCategories(null, CategoryCategory::values(), array());
                 foreach ($categories as &$category) {
-                    $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($category->getId());
+                    $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
                 }
             }
         }

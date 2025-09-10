@@ -4,6 +4,8 @@
     use Core\Client\CacheClient;
     use Core\Common\CommonConstants;
     use Monolog\Logger;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class MonitoringService {
         
@@ -12,13 +14,13 @@
 
         private readonly CacheClient $cacheClient;
         
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         private readonly Logger $logger;
 
         private array $dataConsistencyMonitors = array();
 
-        public function __construct(CacheClient $cacheClient, \EventPublisher $eventPublisher, Logger $logger) {
+        public function __construct(CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
             $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
@@ -37,7 +39,7 @@
 
             $this->logger->warning("The data consistency issues are not available, triggering a data consistency scan...");
 
-            $this->eventPublisher->publishDataConsistencyScanTriggeredEvent();
+            $this->eventPublisher->publish(Event::DataConsistencyScanTriggered());
 
             return array();
         }

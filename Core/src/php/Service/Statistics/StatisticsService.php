@@ -6,6 +6,8 @@
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Trip\Trip;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class StatisticsService {
 
@@ -21,13 +23,13 @@
 
         private readonly CacheClient $cacheClient;
         
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         private readonly Logger $logger;
 
         private array $statisticsProviders = array();
 
-        public function __construct(CacheClient $cacheClient, \EventPublisher $eventPublisher, Logger $logger) {
+        public function __construct(CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
             $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
@@ -51,17 +53,17 @@
         
         public function updateCategoryStatistics(CategoryIdentifier $categoryIdentifier) : void {
             $this->updateStatistics(StatisticsType::Category, 0, time(), $categoryIdentifier->getId(), $categoryIdentifier->getId());
-            $this->eventPublisher->publishCategoryStatisticsUpdatedEvent($categoryIdentifier->getId());
+            $this->eventPublisher->publish(Event::CategoryStatisticsUpdated($categoryIdentifier->getId()));
         }
         
         public function updateYearStatistics(int $year) : void {
             $this->updateStatistics(StatisticsType::Year, $this->getBeginningOfYearTimestamp($year), min(time(), $this->getEndOfYearTimestamp($year)), null, $year);
-            $this->eventPublisher->publishYearStatisticsUpdatedEvent($year);
+            $this->eventPublisher->publish(Event::YearStatisticsUpdated($year));
         }
 
         public function updateTripStatistics(Trip $trip) : void {    
             $this->updateStatistics(StatisticsType::Trip, $trip->getStart(), min(time(), $trip->getEnd()), null, $trip->getId());
-            $this->eventPublisher->publishTripStatisticsUpdatedEvent($trip->getId(), $trip->getYear());
+            $this->eventPublisher->publish(Event::TripStatisticsUpdated($trip->getId(), $trip->getYear()));
         }
 
         public function updateOverallStatistics() : void {     
@@ -129,16 +131,16 @@
 
             switch ($statisticsType) {
                 case StatisticsType::Overall:
-                    $this->eventPublisher->publishOverallStatisticsInvalidatedEvent();
+                    $this->eventPublisher->publish(Event::OverallStatisticsInvalidated());
                     break;
                 case StatisticsType::Trip:
-                    $this->eventPublisher->publishTripStatisticsInvalidatedEvent($entityId);
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($entityId));
                     break;
                 case StatisticsType::Category:
-                    $this->eventPublisher->publishCategoryStatisticsInvalidatedEvent($entityId);
+                    $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($entityId));
                     break;
                 case StatisticsType::Year:
-                    $this->eventPublisher->publishYearStatisticsInvalidatedEvent($entityId);
+                    $this->eventPublisher->publish(Event::YearStatisticsInvalidated($entityId));
                     break;
             }
 

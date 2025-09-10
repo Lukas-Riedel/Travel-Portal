@@ -2,6 +2,9 @@
     namespace Core\Service\Fitness;
 
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class FitnessServiceListener {
 
@@ -13,10 +16,10 @@
 
         private readonly FitnessService $fitnessService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(FitnessService $fitnessService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(FitnessService $fitnessService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->fitnessService = $fitnessService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -40,7 +43,7 @@
                         );
                     }
                     
-                    $this->eventPublisher->publishFitnessActivityDetectedEvent($intervals);
+                    $this->eventPublisher->publish(Event::FitnessActivityDetected($intervals));
                 }
             }
         }

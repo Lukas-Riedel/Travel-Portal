@@ -2,6 +2,9 @@
     namespace Core\Service\TimeTracking;
 
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class TimeTrackingServiceListener {
         
@@ -14,10 +17,10 @@
 
         private readonly TimeTrackingService $timeTrackingService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(TimeTrackingService $timeTrackingService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(TimeTrackingService $timeTrackingService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->timeTrackingService = $timeTrackingService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -35,11 +38,11 @@
             $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
             $intervalSelector = fn($lastTriggered) => $lastTriggered < $beginningOfCurrentYearTimestamp ? 0 : PHP_INT_MAX;
             if ($this->scheduler->requestDynamicExecution(self::RESET_OPENING_BALANCES_ACTION_NAME, $intervalSelector)) {
-                $this->eventPublisher->publishVacationResetEvent();                  
+                $this->eventPublisher->publish(Event::VacationReset());                  
             }
 
             if ($this->scheduler->requestExecution(self::CONSOLIDATE_TIME_TRACKING_EVENTS_ACTION_NAME, self::CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL)) {
-                $this->eventPublisher->publishTimeTrackingEventsAuditTriggered();                
+                $this->eventPublisher->publish(Event::TimeTrackingEventsAuditTriggered());                
             }
         }
 

@@ -11,8 +11,6 @@
     require_once(__DIR__ . "/Client/HttpClient.php");
     require_once(__DIR__ . "/Client/CalendarClient.php");
     require_once(__DIR__ . "/Event/Scheduler.php");
-    require_once(__DIR__ . "/Event/EventManager.php");
-    require_once(__DIR__ . "/Event/EventPublisher.php");
 
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
@@ -20,6 +18,9 @@
     use Core\Client\CacheClient;
     use Core\Client\CloudMessagingClient;
     use Core\Client\MessagingClient;
+    use Core\Event\EventManager;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryService;
@@ -107,13 +108,14 @@
     $cacheClient = new CacheClient();
 
     // Event producers.
-    $eventPublisher = new EventPublisher();
+    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);
     $scheduler = new Scheduler($databaseProvider, $eventPublisher);
 
     // Services.
     $configurationService = new ConfigurationService($databaseProvider, $eventPublisher);
     $platformService = new PlatformService();
     $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
+    $deviceService = new DeviceService($databaseProvider, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseProvider);
@@ -130,7 +132,6 @@
     $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
-    $deviceService = new DeviceService($databaseProvider, $authenticationService);
     $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
 
     // Statistics providers.
@@ -157,7 +158,7 @@
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
     
-    // Event listeners.
+    // Events handling.
     $listeners = array(
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
         new FitnessServiceListener($fitnessService, $eventPublisher, $scheduler),
@@ -177,5 +178,6 @@
         new GeocodingServiceListener($tripService, $eventPublisher, $scheduler),
         $platformService
     );
-    $eventManager = new EventManager($listeners);
+    $eventManager = new EventManager($messagingClient, $databaseProvider, $logger, $listeners);
+    $eventPublisher->setDeviceService($deviceService);
 ?>

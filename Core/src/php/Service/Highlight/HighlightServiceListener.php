@@ -2,6 +2,9 @@
     namespace Core\Service\Highlight;
 
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class HighlightServiceListener {
         
@@ -10,10 +13,10 @@
 
         private readonly HighlightService $highlightService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(HighlightService $highlightService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(HighlightService $highlightService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->highlightService = $highlightService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -33,7 +36,7 @@
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_HIGHLIGHTS_ACTION_NAME, self::FETCH_HIGHLIGHTS_ACTION_INTERVAL)) {
-                $this->eventPublisher->publishAllHighlightsInvalidatedEvent();            
+                $this->eventPublisher->publish(Event::AllHighlightsInvalidated());            
             }
         }
     }

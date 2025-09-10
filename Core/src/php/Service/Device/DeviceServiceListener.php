@@ -1,7 +1,10 @@
 <?php
     namespace Core\Service\Device;
 
-use Core\Common\CommonConstants;
+    use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class DeviceServiceListener {
         
@@ -10,10 +13,10 @@ use Core\Common\CommonConstants;
 
         private readonly DeviceService $deviceService;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
-        public function __construct(DeviceService $deviceService, \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+        public function __construct(DeviceService $deviceService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->deviceService = $deviceService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -25,7 +28,7 @@ use Core\Common\CommonConstants;
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME, self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL)) {
-                $this->eventPublisher->publishInactiveDevicesInvalidatedEvent();
+                $this->eventPublisher->publish(Event::InactiveDevicesInvalidated());
             }
         }
     }

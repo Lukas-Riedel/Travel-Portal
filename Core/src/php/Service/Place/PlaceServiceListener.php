@@ -4,6 +4,8 @@
     use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Trip\TripService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class PlaceServiceListener {
 
@@ -19,10 +21,10 @@
 
         private readonly \CalendarClient $calendarClient;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         public function __construct(PlaceService $placeService, TripService $tripService,
-            \CalendarClient $calendarClient, \EventPublisher $eventPublisher) {
+            \CalendarClient $calendarClient, EventPublisher $eventPublisher) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->calendarClient = $calendarClient;
@@ -37,12 +39,12 @@
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
                     if ($trip !== null) {
-                        $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
+                        $this->eventPublisher->publish(Event::TripStatisticsInvalidated($trip->getId()));
                     }
                 }
 
                 foreach ($place->getCategories() as &$category) {
-                    $this->eventPublisher->publishCategoryUpdatedEvent($category->getId());
+                    $this->eventPublisher->publish(Event::CategoryUpdated($category->getId()));
                 }
 
                 $this->updatePlaceScore($place->getPlaceIdentifier()->getId());
@@ -65,12 +67,12 @@
         public function onCategoryInvalidated(mixed $message) : void {
             $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
             foreach ($places as &$place) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
+                $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }
             
             $places = $this->placeService->getCandidatePlaces($message["categoryId"], null, null, array());
             foreach ($places as &$place) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($place->getPlaceIdentifier()->getId());
+                $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }
         }
 

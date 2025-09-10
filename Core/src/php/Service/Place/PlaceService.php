@@ -12,6 +12,8 @@
     use Core\Service\Photo\PhotoService;
     use Core\Service\Trip\TripIdentifier;
     use Core\Service\Trip\TripService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class PlaceService {
         
@@ -32,12 +34,12 @@
 
         private readonly GeocodingService $geocodingService;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, \ChatClient $chatClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
-            NoteService $noteService, GeocodingService $geocodingService, \EventPublisher $eventPublisher) {
+            NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseProvider, $configurationService, $categoryService, $labelService, $forecastService,
                 $photoService, $highlightService, $noteService);
             $this->chatClient = $chatClient;
@@ -98,7 +100,7 @@
             $wasUpdated = $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
 
             if ($wasUpdated) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($placeId);
+                $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
             }
 
             return $wasUpdated;
@@ -139,7 +141,7 @@
             }
 
             if ($wasUpdated) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($placeId);
+                $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
                 $this->updatePlaceExcerpt($placeId, $this->getSuggestedExcerpt($name, $place->getCountry()));
             }
 
@@ -150,7 +152,7 @@
             $wasUpdated = $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude);
             
             if ($wasUpdated) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($placeId);
+                $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
             }
 
             return $wasUpdated;
@@ -253,20 +255,20 @@
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForCreatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publishPlaceCreatedEvent($affectedPlaceId);
-                $this->eventPublisher->publishPlaceEventCreatedEvent($affectedPlaceId);
+                $this->eventPublisher->publish(Event::PlaceCreated($affectedPlaceId));
+                $this->eventPublisher->publish(Event::PlaceEventCreated($affectedPlaceId));
             }
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForUpdatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publishPlaceUpdatedEvent($affectedPlaceId);
-                $this->eventPublisher->publishPlaceEventUpdatedEvent($affectedPlaceId);
+                $this->eventPublisher->publish(Event::PlaceUpdated($affectedPlaceId));
+                $this->eventPublisher->publish(Event::PlaceEventUpdated($affectedPlaceId));
             }
             
             $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publishPlaceRemovedEvent($affectedPlaceId);
-                $this->eventPublisher->publishPlaceEventRemovedEvent($affectedPlaceId);
+                $this->eventPublisher->publish(Event::PlaceRemoved($affectedPlaceId));
+                $this->eventPublisher->publish(Event::PlaceEventRemoved($affectedPlaceId));
             }
 
             $this->placeMapper->deleteStalePlaceIdentifiers();
@@ -289,7 +291,7 @@
                 $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
             $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
             
-            $this->eventPublisher->publishPlaceCreatedEvent($placeIdentifier->getId());
+            $this->eventPublisher->publish(Event::PlaceCreated($placeIdentifier->getId()));
 
             return $placeIdentifier;
         }
@@ -298,7 +300,7 @@
             $wasRemoved = $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
 
             if ($wasRemoved) {
-                $this->eventPublisher->publishPlaceRemovedEvent($placeId);
+                $this->eventPublisher->publish(Event::PlaceRemoved($placeId));
                 $this->placeMapper->deleteStalePlaceIdentifiers();
             }
 

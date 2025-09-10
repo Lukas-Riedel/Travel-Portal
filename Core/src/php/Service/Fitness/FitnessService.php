@@ -4,17 +4,18 @@
     use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Service\Configuration\ConfigurationService;
-use RuntimeException;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class FitnessService {
 
         private readonly FitnessMapper $fitnessMapper;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         private readonly Logger $logger;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
+        public function __construct(\DatabaseProvider $databaseProvider, EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
             $this->fitnessMapper = new FitnessMapper($databaseProvider, $configurationService);
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
@@ -44,7 +45,7 @@ use RuntimeException;
         public function updateFitnessRecord(int $timestamp, int $steps, int $seconds, float $distance, bool $forceUpdate = false) : bool {
             $end = $timestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
             if ($end > time()) {
-                throw new RuntimeException("Unable to update a fitness record for an unfinished interval (" . $timestamp  . " - " . $end . ")");
+                throw new \RuntimeException("Unable to update a fitness record for an unfinished interval ($timestamp - $end)");
             }
 
             $distance = $this->getCorrectedDistance($distance, $steps);
@@ -83,7 +84,7 @@ use RuntimeException;
             $this->fitnessMapper->deleteFitnessRecord($timestamp);
             $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
-            $this->eventPublisher->publishFitnessDataUpdatedEvent($timestamp, $end);
+            $this->eventPublisher->publish(Event::FitnessDataUpdated($timestamp, $end));
 
             return true;
         }

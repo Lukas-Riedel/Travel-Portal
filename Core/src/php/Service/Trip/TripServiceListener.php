@@ -8,6 +8,9 @@
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Place\PlaceService;
     use Core\Service\Stay\StayService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
 
     class TripServiceListener {
         
@@ -24,12 +27,12 @@
 
         private readonly \CalendarClient $calendarClient;
 
-        private readonly \EventPublisher $eventPublisher;
-        private readonly \Scheduler $scheduler;
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
 
         public function __construct(TripService $tripService, PlaceService $placeService, StayService $stayService,
             FlightService $flightService, ConfigurationService $configurationService, \CalendarClient $calendarClient,
-            \EventPublisher $eventPublisher, \Scheduler $scheduler) {
+            EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
@@ -74,7 +77,7 @@
                 
                 foreach ($trips as &$trip) {
                     if ($trip->getName() !== $dayTripsTripName) {
-                        $this->eventPublisher->publishTripStatisticsInvalidatedEvent($trip->getId());
+                        $this->eventPublisher->publish(Event::TripStatisticsInvalidated($trip->getId()));
                     }
                 }                        
             }

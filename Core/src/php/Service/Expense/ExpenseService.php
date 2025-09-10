@@ -4,6 +4,8 @@
     use Core\Client\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class ExpenseService {
 
@@ -18,12 +20,12 @@
         
         private readonly ConfigurationService $configurationService;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         private readonly CacheClient $cacheClient;
 
         public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient,
-            ConfigurationService $configurationService, \EventPublisher $eventPublisher, CacheClient $cacheClient) {
+            ConfigurationService $configurationService, EventPublisher $eventPublisher, CacheClient $cacheClient) {
             $this->expenseMapper = new ExpenseMapper($databaseProvider);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
@@ -48,7 +50,7 @@
                 $subscriptionId === null ? null : $this->expenseMapper->selectSubscription($subscriptionId));
             $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
 
-            $this->eventPublisher->publishExpenseCreatedEvent($expense->getId(), $tripId);
+            $this->eventPublisher->publish(Event::ExpenseCreated($expense->getId(), $tripId));
 
             return $expense;
         }
@@ -69,7 +71,7 @@
         public function updateExpenseDescription(string $expenseId, string $description, string $tripId) : bool {   
             $wasUpdated = $this->expenseMapper->updateExpenseDescription($expenseId, $description);
                 
-            $this->eventPublisher->publishExpenseUpdatedEvent($expenseId, $tripId);
+            $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));
 
             return $wasUpdated;
         }
@@ -77,7 +79,7 @@
         public function updateExpenseValue(string $expenseId, float $value, string $tripId) : bool {            
             $wasUpdated = $this->expenseMapper->updateExpenseValue($expenseId, $value);
                 
-            $this->eventPublisher->publishExpenseUpdatedEvent($expenseId, $tripId);
+            $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));
 
             return $wasUpdated;
         }
@@ -87,7 +89,7 @@
 
             $wasUpdated = $this->expenseMapper->updateExpenseCurrency($expenseId, $currency, $exchangeRate);
                 
-            $this->eventPublisher->publishExpenseUpdatedEvent($expenseId, $tripId);
+            $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));
 
             return $wasUpdated;
         }
@@ -95,7 +97,7 @@
         public function removeExpense(string $expenseId, string $tripId) : bool {
             $wasRemoved = $this->expenseMapper->deleteExpense($expenseId) > 0;
                 
-            $this->eventPublisher->publishExpenseRemovedEvent($expenseId, $tripId);
+            $this->eventPublisher->publish(Event::ExpenseRemoved($expenseId, $tripId));
 
             return $wasRemoved;
         }

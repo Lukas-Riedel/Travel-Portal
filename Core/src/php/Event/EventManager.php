@@ -1,35 +1,48 @@
 <?php
+    namespace Core\Event;
 
+    use Core\Client\MessagingClient;
+    use Core\Event\EventPriority;
+    use Monolog\Handler\BufferHandler;
+    use Monolog\Logger;
     use PhpAmqpLib\Exception\AMQPTimeoutException;
-
-    require_once(__DIR__ . "/../Model/TargetError.php");
 
     class EventManager {
 
         private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 15;
 
-        private $eventHandlers;
+        private const EVENT_HANDLER_METHOD_PREFIX = "on";
 
-        public function __construct($listeners = array()) {
-            $this->eventHandlers = array();
+        private readonly MessagingClient $messagingClient;
+        private readonly \DatabaseProvider $databaseProvider;
 
+        private readonly Logger $logger;
+
+        private readonly array $eventHandlers;
+
+        public function __construct(MessagingClient $messagingClient, \DatabaseProvider $databaseProvider, Logger $logger, array $listeners) {
+            $this->messagingClient = $messagingClient;
+            $this->databaseProvider = $databaseProvider;
+            $this->logger = $logger;
+            
+            $eventHandlers = array();
             foreach ($listeners as &$listener) {
                 foreach (get_class_methods($listener) as &$method) {
-                    if (str_starts_with($method, "on")) {
-                        $handledEvent = substr($method, 2);
-                        if (!isset($this->eventHandlers[$handledEvent])) {
-                            $this->eventHandlers[$handledEvent] = array();
+                    if (str_starts_with($method, self::EVENT_HANDLER_METHOD_PREFIX)) {
+                        $handledEvent = substr($method, strlen(self::EVENT_HANDLER_METHOD_PREFIX));
+                        if (!isset($eventHandlers[$handledEvent])) {
+                            $eventHandlers[$handledEvent] = array();
                         }
-                        $this->eventHandlers[$handledEvent][] = $listener;
+                        $eventHandlers[$handledEvent][] = $listener;
                     }
                 }
             }
+            $this->eventHandlers = $eventHandlers;
         }
 
         public function handleEvents() : void {
-            global $messagingClient;
-
-            $channel = $messagingClient->getConsumerChannel();
+            $channel = $this->messagingClient->getConsumerChannel();
+            $channel->queue_declare(WORKER_QUEUE_NAME, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
             $channel->basic_consume(WORKER_QUEUE_NAME, "", false, false, false, false, function ($message) {
                     $this->handleEvent(json_decode($message->getBody(), true));
                     $message->ack();
@@ -47,31 +60,30 @@
         }
 
         private function handleEvent($event) : void {
-            global $databaseProvider, $logger;
-
             $start = microtime(true);
-            $logger->debug("Received the '" . $event["name"] . "' event...", $event);
-            $databaseProvider->beginTransaction();
+            $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
+            $this->databaseProvider->beginTransaction();
             try {
-                $handlerMethod = "on" . $event["name"];
-                foreach ($this->eventHandlers[$event["name"]] as &$eventHandler) {
+                $handlerMethod = self::EVENT_HANDLER_METHOD_PREFIX . $event["name"];
+                foreach ($this->eventHandlers[$event["name"]] as $eventHandler) {
                     $eventHandler->$handlerMethod($event["args"]);
                 }
-                $databaseProvider->commit();
+                $this->databaseProvider->commit();
             }
-            catch (Throwable $e) {
-                $databaseProvider->rollback();
-                $error = new TargetError(400, $e, $event["args"]);
-                $logger->error(basename(str_replace("\\", "/", get_class($e))) . ": " . $e->getMessage(), array("error" => $error));
+            catch (\Throwable $e) {
+                $this->databaseProvider->rollback();
+                $this->logger->error("The processing of the '" . $event["name"] . "' event failed. Reason: " . $e->getMessage(), array("event" => $event, "exception" => $e));
             }
             finally {
-                $databaseProvider->materializeViews();
-                $logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
-                
-                foreach ($logger->getHandlers() as $handler) {
-                    if ($handler instanceof \Monolog\Handler\BufferHandler) {
-                        $handler->flush();
-                    }
+                $this->logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
+                $this->flushLogger();
+            }
+        }
+
+        private function flushLogger() {
+            foreach ($this->logger->getHandlers() as &$handler) {
+                if ($handler instanceof BufferHandler) {
+                    $handler->flush();
                 }
             }
         }

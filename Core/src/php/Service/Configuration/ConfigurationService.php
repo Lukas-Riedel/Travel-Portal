@@ -1,13 +1,16 @@
 <?php
     namespace Core\Service\Configuration;
+    
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class ConfigurationService {
 
         private readonly ConfigurationMapper $configurationMapper;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \EventPublisher $eventPublisher) {
+        public function __construct(\DatabaseProvider $databaseProvider, EventPublisher $eventPublisher) {
             $this->configurationMapper = new ConfigurationMapper($databaseProvider);
             $this->eventPublisher = $eventPublisher;
         }
@@ -23,7 +26,7 @@
         public function updateConfigurationEntry(string $key, mixed $value) : bool {
             $wasUpdated = $this->configurationMapper->updateConfigurationEntry($key, $value);
             if ($wasUpdated) {
-                $this->eventPublisher->publishConfigurationEntryUpdated($key);
+                $this->eventPublisher->publish(Event::ConfigurationEntryUpdated($key));
             }
             return $wasUpdated;
         }

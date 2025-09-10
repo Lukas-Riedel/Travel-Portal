@@ -5,6 +5,8 @@
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class PhotoService {
 
@@ -21,12 +23,12 @@
 
         private readonly \GoogleApiClient $googleApiClient;
         
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
         
         private readonly CacheClient $cacheClient;
 
         public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient,
-            \EventPublisher $eventPublisher, CacheClient $cacheClient) {
+            EventPublisher $eventPublisher, CacheClient $cacheClient) {
             $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
@@ -149,7 +151,7 @@
 
             // The count of photos is different from what was previously stored in the database. Invalidate the album.
             if (count($photos) !== $deletedPhotosCount) {
-                $this->eventPublisher->publishAlbumInvalidatedEvent($albumId);
+                $this->eventPublisher->publish(Event::AlbumInvalidated($albumId));
             }
 
             return $photos;
@@ -254,11 +256,11 @@
             if ($albumId === null) {
                 $changedAlbumIds = $this->photoMapper->selectAlbumIdsWithOutdatedPhotos();
                 foreach ($changedAlbumIds as &$changedAlbumId) {
-                    $this->eventPublisher->publishAlbumUpdatedEvent($changedAlbumId);
+                    $this->eventPublisher->publish(Event::AlbumUpdated($changedAlbumId));
                 }
             }
             else {
-                $this->eventPublisher->publishAlbumUpdatedEvent($albumId);
+                $this->eventPublisher->publish(Event::AlbumUpdated($albumId));
             }
 
             // Final clean-up.
@@ -308,7 +310,7 @@
                 $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true);
                 $this->photoMapper->insertPhoto($this->getPhoto($pendingPhoto->getReplacedPhotoId())->withReplacedId($oldPhotoNewId), $albumId);
 
-                $this->eventPublisher->publishPhotoInvalidatedEvent($pendingPhoto->getReplacedPhotoId());
+                $this->eventPublisher->publish(Event::PhotoInvalidated($pendingPhoto->getReplacedPhotoId()));
             }
         }
 

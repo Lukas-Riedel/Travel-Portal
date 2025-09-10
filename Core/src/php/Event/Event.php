@@ -1,0 +1,270 @@
+<?php
+    namespace Core\Event;
+
+    use Core\Service\Device\DeviceType;
+    use Core\Service\Highlight\HighlightType;
+
+    abstract class Event implements \JsonSerializable {
+        private readonly string $name;
+        private readonly array $args;
+
+        public function __construct(string $name, array $args) {
+            $this->name = $name;
+            $this->args = $args;
+        }
+
+        public function getName() : string {
+            return $this->name;
+        }
+
+        public function getArgs() : array {
+            return $this->args;
+        }
+
+        public static function ApplicationStarted(mixed $tables) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("tables" => $tables));
+        }
+
+        public static function SchedulerTriggered() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array());
+        }
+
+        public static function CalendarWatchRenewing(\Calendar $calendar) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => $calendar->value));
+        }
+
+        public static function CalendarInvalidated(\Calendar $calendar) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => $calendar->value));
+        }
+
+        public static function HighlightCreated(HighlightType $highlightType, string $entityId, string $highlightId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("highlightType" => $highlightType->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        }
+
+        public static function HighlightUpdated(HighlightType $highlightType, string $entityId, string $highlightId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("highlightType" => $highlightType->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        }
+
+        public static function DataConsistencyScanTriggered() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array());
+        }
+
+        public static function ActualWeatherForecastUpdated(string $placeId, int $start) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
+        }
+
+        public static function DaylightForecastUpdated(string $placeId, int $start) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
+        }
+
+        public static function HistoricalWeatherForecastUpdated(string $placeId, int $start) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
+        }
+
+        public static function FlightArrived(string $flight, string $from, string $to, int $scheduledDeparture) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture));
+        }
+
+        public static function VacationReset() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array());
+        }
+
+        public static function AllDynamicLabelsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array());
+        }
+
+        public static function PhotoInvalidated(string $photoId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("photoId" => $photoId));
+        }
+
+        public static function AllHighlightsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array());
+        }
+
+        public static function AlbumInvalidated(string $albumId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("albumId" => $albumId));
+        }
+
+        public static function AllAlbumsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array());
+        }
+
+        public static function AlbumUpdated(string $albumId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("albumId" => $albumId));
+        }
+
+        public static function TripEventCreated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("tripId" => $tripId));
+        }
+
+        public static function PlaceEventCreated(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("placeId" => $placeId));
+        }
+
+        public static function PlaceCreated(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("placeId" => $placeId));
+        }
+
+        public static function PlaceUpdated(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("placeId" => $placeId));
+        }
+
+        public static function FlightLogged(string $flight, string $from, string $to, int $scheduledDeparture, int $scheduledArrival) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("flight" => $flight, "from" => $from,
+                "to" => $to, "scheduledDeparture" => $scheduledDeparture, "scheduledArrival" => $scheduledArrival));
+        }
+
+        public static function CategoryInvalidated(string $categoryId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("categoryId" => $categoryId));
+        }
+
+        public static function CategoryCreated(string $categoryId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("categoryId" => $categoryId));
+        }
+
+        public static function CategoryUpdated(string $categoryId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("categoryId" => $categoryId));
+        }
+
+        public static function ExpenseCreated(string $expenseId, string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("expenseId" => $expenseId, "tripId" => $tripId));
+        }
+
+        public static function ExpenseUpdated(string $expenseId, string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("expenseId" => $expenseId, "tripId" => $tripId));
+        }
+
+        public static function StayEventCreated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function StayEventUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function TripUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function TripEventUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function PlaceEventUpdated(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("placeId" => $placeId));
+        }
+
+        public static function ConfigurationEntryUpdated(string $key) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("key" => $key));
+        }
+
+        public static function FlightEventCreated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function TimeTrackingEventsAuditTriggered() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function InactiveDevicesInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function CategoryStatisticsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function TripStatisticsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function YearStatisticsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function OverallStatisticsInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function CategoryStatisticsUpdated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function TripStatisticsUpdated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
+        public static function YearStatisticsUpdated(int $year) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("year" => $year));
+        }
+
+        public static function HighlightRemoved(HighlightType $highlightType, string $entityId, string $highlightId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("highlightType" => $highlightType->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        }
+
+        public static function StayEventRemoved(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
+        }
+
+        public static function FlightEventRemoved(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
+        }
+
+        public static function ExpenseRemoved(string $expenseId, string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("expenseId" => $expenseId, "tripId" => $tripId));
+        }
+
+        public static function TripEventRemoved(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
+        }
+
+        public static function PlaceEventRemoved(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("placeId" => $placeId));
+        }
+
+        public static function FitnessDataUpdated(int $start, int $end) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("start" => $start, "end" => $end));
+        }
+
+        public static function PlaceRemoved(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("placeId" => $placeId));
+        }
+
+        public static function FlightEventUpdated(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("placeId" => $placeId));
+        }
+
+        public static function PhotosUploadingTriggered(string $placeId, string $placeName, string $albumId, int $timestamp, string $path, ?int $mainPhotoPosition = null) : Event {
+            return new AgentEvent(Event::getEventName(), array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "timestamp" => $timestamp, "path" => $path, "mainPhotoPosition" => $mainPhotoPosition));
+        }
+
+        public static function PhotoReplacingTriggered(string $placeId, string $placeName, string $albumId, string $replacedPhotoId, string $path) : Event {
+            return new AgentEvent(Event::getEventName(), array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "replacedPhotoId" => $replacedPhotoId, "path" => $path));
+        }
+
+        public static function ProcessingStarted(string $name, mixed $args) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+        }
+
+        public static function ProcessingEnded(string $name, mixed $args) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+        }
+
+        public static function FitnessActivityDetected(array $intervals) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array("intervals" => $intervals));
+        }
+
+        public static function LocationUpdateDetected() : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array());
+        }
+
+        private static function getEventName() : string {
+            return debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]["function"];
+        }
+
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize() : mixed {
+            return get_object_vars($this);
+        }
+    }
+?>

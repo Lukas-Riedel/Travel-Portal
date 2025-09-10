@@ -13,6 +13,8 @@
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Stay\StayService;
     use Core\Service\Year\YearService;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
 
     class TripService {
 
@@ -33,11 +35,11 @@
         private readonly YearService $yearService;
         private readonly NoteService $noteService;
 
-        private readonly \EventPublisher $eventPublisher;
+        private readonly EventPublisher $eventPublisher;
 
         public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
-            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, \EventPublisher $eventPublisher) {
+            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $placeService,
                 $stayService, $flightService, $expenseService, $fitnessService, $noteService,
                 $highlightService, $statisticsService, $configurationService);
@@ -102,7 +104,7 @@
             }
 
             if ($wasUpdated) {
-                $this->eventPublisher->publishTripUpdatedEvent($tripId);
+                $this->eventPublisher->publish(Event::TripUpdated($tripId));
             }
 
             return $wasUpdated;
@@ -175,18 +177,18 @@
             
             $affectedTripIds = $this->tripMapper->selectTripIdsForCreatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishTripEventCreatedEvent($affectedTripId);
+                $this->eventPublisher->publish(Event::TripEventCreated($affectedTripId));
             }
             
             $affectedTripIds = $this->tripMapper->selectTripIdsForUpdatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishTripUpdatedEvent($affectedTripId);
-                $this->eventPublisher->publishTripEventUpdatedEvent($affectedTripId);
+                $this->eventPublisher->publish(Event::TripUpdated($affectedTripId));
+                $this->eventPublisher->publish(Event::TripEventUpdated($affectedTripId));
             }
             
             $affectedTripIds = $this->tripMapper->selectTripIdsForDeletedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
             foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publishTripEventRemovedEvent($affectedTripId);
+                $this->eventPublisher->publish(Event::TripEventRemoved($affectedTripId));
             }
         }
 
