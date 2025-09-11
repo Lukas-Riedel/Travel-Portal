@@ -16,7 +16,7 @@
             global $googleApiClient, $authenticationService;
 
             $authenticationResult = $authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
-            $event = Event::CalendarInvalidated(\Calendar::from($calendar));
+            $event = Event::CalendarInvalidated(\Calendar::from($calendar)->value);
 
             $googleApiClient->watchCalendar($calendar, $calendar . "_" . time(),
                 BASE_URL . "/events?" . CommonConstants::ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY . "=" . base64_encode(json_encode($event)),

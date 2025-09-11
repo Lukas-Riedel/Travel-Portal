@@ -29,20 +29,20 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array());
         }
 
-        public static function CalendarWatchRenewing(\Calendar $calendar) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => $calendar->value));
+        public static function CalendarWatchRenewing(string $calendar) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => \Calendar::from($calendar)->value));
         }
 
-        public static function CalendarInvalidated(\Calendar $calendar) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => $calendar->value));
+        public static function CalendarInvalidated(string $calendar) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => \Calendar::from($calendar)->value));
         }
 
-        public static function HighlightCreated(HighlightType $highlightType, string $entityId, string $highlightId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("highlightType" => $highlightType->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        public static function HighlightCreated(string $highlightType, string $entityId, string $highlightId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
-        public static function HighlightUpdated(HighlightType $highlightType, string $entityId, string $highlightId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("highlightType" => $highlightType->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        public static function HighlightUpdated(string $highlightType, string $entityId, string $highlightId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
         public static function DataConsistencyScanTriggered() : Event {

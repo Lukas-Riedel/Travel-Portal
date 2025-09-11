@@ -41,7 +41,7 @@
 
             if ($scheduler->requestExecution("WATCH_CALENDAR", 82800)) {
                 foreach (\Calendar::cases() as $calendar) {
-                    $eventPublisher->publish(Event::CalendarWatchRenewing($calendar)); 
+                    $eventPublisher->publish(Event::CalendarWatchRenewing($calendar->value)); 
                 }
             }
         }
