@@ -295,7 +295,10 @@
         }
 
         public function onTripStatisticsUpdated(mixed $message) : void {
-            $this->statisticsService->updateYearStatistics($message["tripId"]);
+            $trip = $this->tripService->getRegularTrip($message["tripId"]);
+            if ($trip !== null) {
+                $this->statisticsService->updateYearStatistics($trip->getYear());
+            }
         }
 
         public function onOverallStatisticsInvalidated(mixed $message) : void {

@@ -3,6 +3,7 @@
 
     use Core\Client\MessagingClient;
     use Core\Event\EventPriority;
+    use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
     use Monolog\Logger;
     use PhpAmqpLib\Exception\AMQPTimeoutException;
@@ -17,13 +18,15 @@
         private readonly \DatabaseProvider $databaseProvider;
 
         private readonly Logger $logger;
+        private readonly OpenLineageEventManager $openLineageEventManager;
 
         private readonly array $eventHandlers;
 
-        public function __construct(MessagingClient $messagingClient, \DatabaseProvider $databaseProvider, Logger $logger, array $listeners) {
+        public function __construct(MessagingClient $messagingClient, \DatabaseProvider $databaseProvider, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
             $this->messagingClient = $messagingClient;
             $this->databaseProvider = $databaseProvider;
             $this->logger = $logger;
+            $this->openLineageEventManager = $openLineageEventManager;
             
             $eventHandlers = array();
             foreach ($listeners as &$listener) {
@@ -59,8 +62,9 @@
             }
         }
 
-        private function handleEvent($event) : void {
+        private function handleEvent(mixed $event) : void {
             $start = microtime(true);
+            $this->openLineageEventManager->initializeEvent(WORKER_QUEUE_NAME . "/" . $event["name"]);
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
             $this->databaseProvider->beginTransaction();
             try {
@@ -77,6 +81,7 @@
             finally {
                 $this->logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
                 $this->flushLogger();
+                $this->openLineageEventManager->publishCurrentEvent();
             }
         }
 

@@ -7,6 +7,7 @@
     use Core\Routing\ErrorHandlingMiddleware;
     use Core\Routing\JsonInvocationStrategy;
     use Core\Routing\LoggingMiddleware;
+    use Core\Routing\OpenLineageMiddleware;
     use Core\Routing\PayloadDecodingMiddleware;
     use Core\Routing\RequestError;
     use Core\Routing\TransactionMiddleware;
@@ -27,6 +28,7 @@
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new LoggingMiddleware($logger));
+    $app->add(new OpenLineageMiddleware($openLineageEventManager));
     $app->add(new CorsMiddleware(explode(",", ALLOWED_REQUEST_ORIGINS)));
 
     (require_once(__DIR__ . "/src/php/routes.php"))($app);

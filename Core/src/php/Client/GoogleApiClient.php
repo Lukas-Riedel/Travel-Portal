@@ -1,8 +1,7 @@
 <?php
     // TODO: Across this class return what API returns - e.g., for createFile, return the File object, or null if any error occurred.
     class GoogleApiClient {
-        private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "GoogleApiClient:GoogleApiAccessToken";
-
+    
         public function createAlbum($albumName) : string {
             $payload = array(
                 "album" => array(
@@ -285,9 +284,9 @@
         }
 
         private function executeRequest($method, $url, $headers = array(), $payload = null, $contentType = null) : mixed {
-            global $httpClient;
+            global $httpClient, $authenticationService;
 
-            $convertedHeaders = array('Authorization: Bearer ' . $this->getGoogleApiAccessToken());
+            $convertedHeaders = array("Authorization: Bearer " . $authenticationService->getGoogleApiAccessToken());
             if ($payload !== null) {
                 if ($contentType !== null) {
                     $convertedHeaders[] = "Content-Type: " . $contentType;
@@ -303,21 +302,6 @@
             }
 
             return $httpClient->executeRequest($method, $url, $convertedHeaders, $payload);
-        }
-
-        private function getGoogleApiAccessToken() : string {
-            global $authenticationService, $cacheClient;
-
-            $cachedGoogleApiAccessToken = $cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
-            if ($cachedGoogleApiAccessToken !== null) {
-                return $cachedGoogleApiAccessToken;
-            }
-
-            $googleAuthenticationResult = $authenticationService->getGoogleApiAccessToken();
-            $cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $googleAuthenticationResult->getAccessToken(),
-                $googleAuthenticationResult->getExpiresIn());
-
-            return $googleAuthenticationResult->getAccessToken();
         }
 
         // TODO: Move to Calendar enum.

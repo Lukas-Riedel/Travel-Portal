@@ -1,10 +1,17 @@
 <?php
     namespace Core\Service\Authentication;
 
+    use Core\Client\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
     class AuthenticationService {
+        
+        private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleApiAccessToken";
+        private const IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IbmCloudAccessToken";
+
+        private const GOOGLE_API_IAM_URL = "https://oauth2.googleapis.com/token";
+        private const IBM_CLOUD_IAM_URL = "https://iam.test.cloud.ibm.com/identity/token";
 
         private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 7 * 24;
         private const BEARER_TOKEN_VALIDITY = CommonConstants::ONE_HOUR_SECONDS;
@@ -36,11 +43,13 @@
         private readonly ConfigurationService $configurationService;
 
         private readonly \HttpClient $httpClient;
+        private readonly CacheClient $cacheClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \HttpClient $httpClient) {
+        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \HttpClient $httpClient, CacheClient $cacheClient) {
             $this->authenticationMapper = new AuthenticationMapper($databaseProvider);
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
+            $this->cacheClient = $cacheClient;
         }
 
         public function getUser(string $userId) : ?User {
@@ -145,7 +154,12 @@
             return $this->generateAuthenticationResult(self::ADMIN_USER_ID, array("ADMIN", "USER"), $validity);
         }
 
-        public function getGoogleApiAccessToken() : GoogleAuthenticationResult {            
+        public function getGoogleApiAccessToken() : string {
+            $cachedGoogleApiAccessToken = $this->cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
+            if ($cachedGoogleApiAccessToken !== null) {
+                return $cachedGoogleApiAccessToken;
+            }
+
             $refreshToken = null;
             if (file_exists($this::GOOGLE_REFRESH_TOKEN_FILE_PATH)) {
                 // TODO: Decrypt the contents.
@@ -161,16 +175,41 @@
                 "redirect_uri" => IAM_BASE_URL,
                 "refresh_token" => $refreshToken,
                 "grant_type" => "refresh_token",
-                "access_type" => "offline");     
+                "access_type" => "offline"
+            );     
 
-            $response = $this->httpClient->executeRequest(\HttpMethod::POST, "https://oauth2.googleapis.com/token", 
+            $response = $this->httpClient->executeRequest(\HttpMethod::POST, self::GOOGLE_API_IAM_URL, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["access_token"])) {
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
+            $this->cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
 
-            return new GoogleAuthenticationResult($response["access_token"], $response["expires_in"]);
+            return $response["access_token"];
+        }
+
+        public function getIbmCloudAccessToken() : string {
+            $cacheIbmCloudAccessToken = $this->cacheClient->get(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY);
+            if ($cacheIbmCloudAccessToken !== null) {
+                return $cacheIbmCloudAccessToken;
+            }
+
+            $payload = array(
+                "apikey" => IBM_CLOUD_API_KEY,
+                "response_type" => "cloud_iam",
+                "grant_type" => "urn:ibm:params:oauth:grant-type:apikey"
+            );     
+
+            $response = $this->httpClient->executeRequest(\HttpMethod::POST, self::IBM_CLOUD_IAM_URL, 
+                array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+
+            if (!isset($response["access_token"])) {
+                throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
+            }
+            $this->cacheClient->set(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
+
+            return $response["access_token"];
         }
 
         public function fetchGoogleApiRefreshToken(string $code) : void {

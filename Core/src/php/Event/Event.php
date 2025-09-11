@@ -53,8 +53,8 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
         }
 
-        public static function DaylightForecastUpdated(string $placeId, int $start) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
+        public static function DaylightForecastUpdated(string $placeId, int $start, int $end,) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start, "end" => $end));
         }
 
         public static function HistoricalWeatherForecastUpdated(string $placeId, int $start) : Event {
@@ -232,6 +232,10 @@
 
         public static function FlightEventUpdated(string $placeId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("placeId" => $placeId));
+        }
+
+        public static function OpenLineageEventPublished(mixed $event) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("event" => $event));
         }
 
         public static function PhotosUploadingTriggered(string $placeId, string $placeName, string $albumId, int $timestamp, string $path, ?int $mainPhotoPosition = null) : Event {

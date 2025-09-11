@@ -113,7 +113,7 @@ export default function TripSummary({ tripId }) {
                                 <div className="flex items-center space-x-1">
                                     <Battery className="w-3 h-3" />
                                     <span>
-                                        {lastSeenBridgeXDevice.battery}%
+                                        {Math.round(lastSeenBridgeXDevice.battery)}%
                                     </span>
                                 </div>
                             </li>

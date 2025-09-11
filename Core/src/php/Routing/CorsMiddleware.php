@@ -15,7 +15,7 @@
             $this->allowedOrigins = $allowedOrigins;
         }
 
-        public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
+        public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
             $origin = $request->getHeaderLine("Origin");            
 
             if (strtoupper($request->getMethod()) === "OPTIONS") {

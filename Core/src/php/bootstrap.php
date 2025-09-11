@@ -21,6 +21,8 @@
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\OpenLineage\OpenLineageEventManager;
+    use Core\OpenLineage\OpenLineageEventManagerListener;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryService;
@@ -98,10 +100,10 @@
     $logger->pushHandler($handler);
 
     // Clients.
+    $httpClient = new HttpClient();
     $databaseProvider = new DatabaseProvider(true);
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
-    $httpClient = new HttpClient();
     $calendarClient = new CalendarClient();
     $messagingClient = new MessagingClient($logger);
     $cloudMessagingClient = new CloudMessagingClient($logger);
@@ -114,7 +116,7 @@
     // Services.
     $configurationService = new ConfigurationService($databaseProvider, $eventPublisher);
     $platformService = new PlatformService();
-    $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient);
+    $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient, $cacheClient);
     $deviceService = new DeviceService($databaseProvider, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
@@ -157,8 +159,14 @@
         new HighlightDataConsistencyMonitor($placeService, $tripService)
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
+
+    // OpenLineage manager.
+    $openLineageEventManager = new OpenLineageEventManager($authenticationService, $httpClient, $eventPublisher);
+    $messagingClient->setOpenLineageEventManager($openLineageEventManager);
+    $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
+    $cacheClient->setOpenLineageEventManager($openLineageEventManager);
     
-    // Events handling.
+    // Event listeners.
     $listeners = array(
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
         new FitnessServiceListener($fitnessService, $eventPublisher, $scheduler),
@@ -175,8 +183,9 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        new OpenLineageEventManagerListener($openLineageEventManager),
         $platformService
     );
-    $eventManager = new EventManager($messagingClient, $databaseProvider, $logger, $listeners);
-    $eventPublisher->setDeviceService($deviceService);
+    $eventManager = new EventManager($messagingClient, $databaseProvider, $logger, $openLineageEventManager, $listeners);
+    $eventPublisher->setDeviceService($deviceService);    
 ?>
