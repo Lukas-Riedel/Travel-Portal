@@ -6,7 +6,7 @@
     
     class CacheClient {
         
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s:%s/%s";
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s:%s";
 
         private ?Client $redisClient = null;
         
@@ -110,7 +110,7 @@
 
         private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
             $parsedUrl = parse_url(REDIS_URL);
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"], $parsedUrl["port"] ?? 6379, 0);
+            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"], $parsedUrl["port"] ?? 6379);
             $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
             $callable($namespace, $name, $value);
         }

@@ -8,9 +8,7 @@
         public function onApplicationStarted(mixed $message) : void {
             global $databaseProvider, $googleApiClient;
 
-            $rootBackupFolder = $googleApiClient->getFolder(self::BACKUP_FOLDER_NAME, null);
-            $rootBackupFolderId = $rootBackupFolder === null ? $googleApiClient->createFolder(self::BACKUP_FOLDER_NAME, null) : $rootBackupFolder["id"];
-
+            $rootBackupFolderId = $googleApiClient->getOrCreateFolderId(self::BACKUP_FOLDER_NAME, null);
             $backupFolderId = $googleApiClient->createFolder(date("d.m.Y H:i:s"), $rootBackupFolderId);
 
             foreach (explode(",", $message["tables"]) as &$table) {

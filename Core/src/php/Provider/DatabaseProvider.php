@@ -1,5 +1,12 @@
 <?php
+
+    use Core\OpenLineage\OpenLineageEventManager;
+    use PHPSQLParser\PHPSQLParser;
+
     class DatabaseProvider {
+        
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "mysql://%s";
+        private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s.%s";
 
         private $connection;
         private $viewsToMaterialize;
@@ -7,6 +14,7 @@
         private $isDatabaseInitialized;
         private $isInTransaction;
         private $shouldBeginTransaction;
+        private $openLineageEventManager;
 
         private $cache = array();
 
@@ -25,6 +33,10 @@
             if ($this->isDatabaseInitialized) {
                 $this->materializeViews();
             }
+        }
+
+        public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
+            $this->openLineageEventManager = $openLineageEventManager;
         }
 
         public function isDatabaseInitialized() {
@@ -63,6 +75,7 @@
         }
 
         public function statementBuilder($sql, $whereClause = null) {
+            global $logger;
             if ($whereClause != null) {
                 $sql = str_replace("WHERE :CONDITIONS", $whereClause["clause"], $sql);
             }
@@ -74,6 +87,12 @@
             $builder = new StatementBuilder($this->connection->prepare($sql), $sql);
             if ($whereClause != null) {
                 $builder->withDeferredParameters(...$whereClause["parameters"]);
+            }
+            try {
+                $this->addOpenLineageDatasets($sql); 
+            }
+            catch (\Exception $e) {
+                $logger->error("Unable to add OpenLineage datasets. Reasion: " . $e->getMessage(), array("exception" => $e));
             }
             $this->updateViewsToMaterialize($sql);
             return $builder;
@@ -195,6 +214,89 @@
             if (!in_array($view, $dependencies)) {
                 $dependencies[] = $view;
             }
+        }
+
+        private function addOpenLineageDatasets(string $sql) : void {
+            $parser = new PHPSQLParser($sql);
+            $parsed = $parser->parsed;
+
+            $inputTables = array();
+            $outputTables = array();
+
+            $collectTables = function($parsedPart) use (&$inputTables, &$collectTables) {
+                if (empty($parsedPart)) {
+                    return;
+                }
+
+                foreach ($parsedPart as $entry) {
+                    if (isset($entry["expr_type"]) && $entry["expr_type"] === "table") {
+                        $inputTables[$entry["table"]] = $entry["table"];
+                    }
+                    if (isset($entry["sub_tree"]) && !empty($entry["sub_tree"])) {
+                        $collectTables($entry["sub_tree"]);
+                    }
+                    if (isset($entry["join"]) && !empty($entry["join"])) {
+                        $collectTables($entry["join"]);
+                    }
+                }
+            };
+
+            if (isset($parsed["FROM"]) && !empty($parsed["FROM"])) {
+                $collectTables($parsed["FROM"]);
+            }
+
+            foreach (array("INSERT", "UPDATE", "DELETE") as $type) {
+                if (isset($parsed[$type]) && !empty($parsed[$type])) {
+                    foreach ($parsed[$type] as $entry) {
+                        if (isset($entry["expr_type"]) && $entry["expr_type"] === "table") {
+                            $outputTables[$entry["table"]] = $entry["table"];
+                        }                        
+                        if (isset($entry["sub_tree"]) && !empty($entry["sub_tree"])) {
+                            $collectTables($entry["sub_tree"]);
+                        }
+                        if (isset($entry["join"]) && !empty($entry["join"])) {
+                            $collectTables($entry["join"]);
+                        }
+                    }
+                }
+            }
+
+            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, DB_HOST);
+
+            foreach ($inputTables as $table) {
+                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, DB_NAME, $table);
+                $columns = $this->fetchTableColumns($table);
+                $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, array_fill_keys($columns, null));
+            }
+
+            foreach ($outputTables as $table) {
+                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, DB_NAME, $table);
+                $columns = $this->fetchTableColumns($table);
+                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, array_fill_keys($columns, null));
+            }
+        }
+
+        private function fetchTableColumns(string $table) : array {
+            $escapedDbName = $this->connection->real_escape_string(DB_NAME);
+            $escapedTableName = $this->connection->real_escape_string($table);
+
+            $sql = <<<SQL
+                SELECT COLUMN_NAME
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = '{$escapedDbName}'
+                    AND TABLE_NAME = '{$escapedTableName}'
+                ORDER BY ORDINAL_POSITION
+            SQL;
+
+            $result = $this->connection->query($sql);
+
+            $columns = array();
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $columns[] = $row["COLUMN_NAME"];
+                }
+            }
+            return $columns;
         }
     }
 

@@ -25,6 +25,7 @@
         "php-amqplib/php-amqplib": "3.1",
         "predis/predis": "^3.2",
         "itspire/monolog-loki": "^2.1",
-        "enshrined/svg-sanitize": "^0.22.0"
+        "enshrined/svg-sanitize": "^0.22.0",
+        "greenlion/php-sql-parser": "^4.7"
     }
 }

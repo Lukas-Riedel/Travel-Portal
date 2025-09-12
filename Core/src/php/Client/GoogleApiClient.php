@@ -15,12 +15,17 @@
             return $apiResponse["id"];
         }
 
+        public function getOrCreateFolderId($name, $folderId) : string {
+            $folder = $this->getFolder($name, $folderId);
+            return $folder === null ? $this->createFolder($name, $folderId) : $folder["id"];
+        }
+
         public function getFolder($name, $folderId) : mixed {
             return $this->getFile($name, "application/vnd.google-apps.folder", $folderId);
         }
 
         public function getFile($name, $mimeType, $folderId) : mixed {
-            $queryTokens = array();
+            $queryTokens = array("trashed = false");
             if ($name !== null) {
                 $queryTokens[] = "name = '{$name}'";
             }

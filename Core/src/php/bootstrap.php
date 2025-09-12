@@ -21,6 +21,8 @@
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\OpenLineage\GoogleDriveOpenLineageEventPublisher;
+    use Core\OpenLineage\IbmCloudOpenLineageEventPublisher;
     use Core\OpenLineage\OpenLineageEventManager;
     use Core\OpenLineage\OpenLineageEventManagerListener;
     use Core\Service\Authentication\AuthenticationService;
@@ -43,7 +45,6 @@
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
     use Core\Service\Geocoding\GeocodingService;
-    use Core\Service\Geocoding\GeocodingServiceListener;
     use Core\Service\Highlight\HighlightDataConsistencyMonitor;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightServiceListener;
@@ -161,10 +162,15 @@
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
 
     // OpenLineage manager.
-    $openLineageEventManager = new OpenLineageEventManager($authenticationService, $httpClient, $eventPublisher);
+    $openLineageEventPublishers = array(
+        new IbmCloudOpenLineageEventPublisher($authenticationService, $httpClient),
+        new GoogleDriveOpenLineageEventPublisher($googleApiClient)
+    );
+    $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher);
     $messagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cacheClient->setOpenLineageEventManager($openLineageEventManager);
+    $databaseProvider->setOpenLineageEventManager($openLineageEventManager);
     
     // Event listeners.
     $listeners = array(

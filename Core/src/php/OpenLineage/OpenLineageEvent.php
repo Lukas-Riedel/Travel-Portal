@@ -3,6 +3,8 @@
 
     class OpenLineageEvent implements \JsonSerializable {
 
+        private const UNKNOWN_COLUMN_PLACEHOLDER = "UNKNOWN";
+
         private readonly string $jobName;
         private array $inputs;
         private array $outputs;
@@ -50,13 +52,15 @@
 
         private static function createDataset(string $namespace, string $name, mixed $data) : mixed {
             $convertedData = json_decode(json_encode($data), true);
-            $columns = is_array($convertedData) && array_keys($convertedData) !== range(0, count($convertedData) - 1) ? array_keys($convertedData) : array(0);
+            $columns = is_array($convertedData) && (empty($convertedData)
+                || array_keys($convertedData) !== range(0, count($convertedData) - 1))
+                ? array_keys($convertedData) : array(self::UNKNOWN_COLUMN_PLACEHOLDER);
             return array(
                 "namespace" => $namespace,
                 "name" => $name,
                 "facets" => array(
                     "schema" => array(
-                        "fields" => array_map(fn($col) => array("name" => $col, "type" => "string"), $columns)
+                        "fields" => array_map(fn($column) => array("name" => $column), $columns)
                     )
                 )
             );
