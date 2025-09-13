@@ -4,8 +4,12 @@
     <string name="title_current_location_update_started">Probíhá odesílání aktuální polohy</string>
     <string name="title_photos_uploaded">Fotky byly nahrány</string>
     <string name="title_photo_replaced">Fotka byla nahrazena</string>
+    <string name="title_photos_not_uploaded">Fotky nebyly nahrány</string>
+    <string name="title_photo_not_replaced">Fotka nebyla nahrazena</string>
     <string name="message_synchronization_started">Bude synchronizováno %1$d záznamů</string>
     <string name="message_current_location_update_started"></string>
     <string name="message_photos_uploaded">Místo %1$s má nové fotky</string>
     <string name="message_photo_replaced">Místo %1$s má novou fotku</string>
+    <string name="message_photos_not_uploaded">Nahrávání fotek pro místo %1$s se nezdařilo</string>
+    <string name="message_photo_not_replaced">Nahrazování fotky pro místo %1$s se nezdařilo</string>
 </resources>

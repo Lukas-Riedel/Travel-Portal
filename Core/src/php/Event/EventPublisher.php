@@ -21,7 +21,7 @@
             $this->deviceService = $deviceService;
         }
 
-        // TODO: Go through every event and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
+        // TODO: Go through all events and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
         public function publish(Event $event) : void {
             if ($event instanceof WorkerEvent) {
                 $this->messagingClient->publish(WORKER_QUEUE_NAME, $event, $event->getPriority());
@@ -47,6 +47,11 @@
                 }
 
                 $this->cloudMessagingClient->publish($event, $deviceTokens);
+            }
+            else if ($event instanceof CompositeEvent) {
+                foreach ($event->getEvents() as $subEvent) {
+                    $this->publish($subEvent);
+                }
             }
             else {
                 throw new \RuntimeException("The event '" . $event->getName() . "' could not be published because it has an unsupported event type.");

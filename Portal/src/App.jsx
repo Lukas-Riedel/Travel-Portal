@@ -47,6 +47,20 @@ export default function App() {
         })
     }, [processingEndedEvents])
 
+    const { events: processingFailedEvents } = useEvents("ProcessingFailed")
+    useEffect(() => {
+        processingFailedEvents.forEach(event => {
+            event.markAsRead()
+
+            if (event.name === "PhotosUploadingTriggered") {
+                toast.success(`Nahrávání fotek pro místo ${event.args.placeName} se nezdařilo`)
+            }
+            else if (event.name === "PhotoReplacingTriggered") {
+                toast.success(`Nahrazování fotky pro místo ${event.args.placeName} se nezdařilo`)
+            }
+        })
+    }, [processingFailedEvents])
+
     return (
         <>
             <Toaster position="top-center" offset={96} />

@@ -565,6 +565,19 @@
                 ->execute();
         }
 
+        public function deletePendingPhotosForAlbum(string $albumId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM photo_pending
+                WHERE album_id = ?
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->execute();
+        }
+
         private function selectIndoorPhotosCount(string $albumId) : int {
             $sql = <<<'SQL'
                 SELECT COUNT(*) AS count

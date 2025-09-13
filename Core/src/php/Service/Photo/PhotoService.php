@@ -179,6 +179,10 @@
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             return $pendingPhoto;
         }
+
+        public function removePendingPhotosForAlbum(string $albumId) : void {
+            $this->photoMapper->deletePendingPhotosForAlbum($albumId);
+        }
         
         private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
             global $highlightService, $placeService;

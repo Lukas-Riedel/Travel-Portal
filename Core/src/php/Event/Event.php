@@ -254,6 +254,16 @@
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }
 
+        public static function ProcessingFailed(string $name, mixed $args) : Event {
+            $eventName = Event::getEventName();
+            $eventArgs = array("name" => $name, "args" => $args);
+
+            return new CompositeEvent($eventName, $eventArgs, array(
+                new CloudMessagingEvent($eventName, array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), $eventArgs),
+                new WorkerEvent($eventName, EventPriority::Highest, $eventArgs)
+            ));
+        }
+
         public static function FitnessActivityDetected(array $intervals) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array("intervals" => $intervals));
         }

@@ -40,14 +40,16 @@ final class EventHandlerAspect {
         serviceClient.createEvent("ProcessingStarted", event);
 
         try {
-            return pjp.proceed();
+            Object result = pjp.proceed();        
+            serviceClient.createEvent("ProcessingEnded", event);
+            return result;
         }
         catch (Exception e) {
+            serviceClient.createEvent("ProcessingFailed", event);
             log.error(String.format("An exception occurred when processing '%s (%s)'.", eventName, eventArgs), e);
             return null;
         }
         finally {
-            serviceClient.createEvent("ProcessingEnded", event);
             log.info("Processing of '{} ({})' ended in {} milliseconds.", eventName, eventArgs, System.currentTimeMillis() - start);
         }
     }

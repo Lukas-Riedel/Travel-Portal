@@ -29,6 +29,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
     private val notificationFactories: Map<String, NotificationFactory> by lazy {
         listOf(
             ProcessingEndedNotificationFactory(this),
+            ProcessingFailedNotificationFactory(this),
             FitnessActivityDetectedNotificationFactory(this),
             DeviceLogOnRequestedNotificationFactory(this)
         ).associateBy { factory ->

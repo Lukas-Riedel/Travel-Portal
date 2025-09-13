@@ -47,6 +47,24 @@ onBackgroundMessage(messaging, payload => {
             })
         }
     }
+
+    if (payload.data.event === "ProcessingFailed") {
+        const wrappedEvent = JSON.parse(payload.data.args)
+        if (wrappedEvent.name === "PhotosUploadingTriggered") {
+            self.registration.showNotification("Fotky nebyly nahrány", {
+                body: "Nahrávání fotek pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
+                icon: "icon-192.png",
+                data: wrappedEvent
+            })
+        }
+        else if (wrappedEvent.name === "PhotoReplacingTriggered") {
+            self.registration.showNotification("Fotka nebyla nahrazena", {
+                body: "Nahrazování fotky pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
+                icon: "icon-192.png",
+                data: wrappedEvent
+            })
+        }
+    }
 })
 
 self.addEventListener("notificationclick", function(event) {
