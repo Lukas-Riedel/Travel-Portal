@@ -11,7 +11,7 @@
 
     class MessagingClient {
 
-        private const HEARTBEAT_INTERVAL_SECONDS = 60;
+        private const HEARTBEAT_INTERVAL_SECONDS = 300;
 
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
@@ -72,7 +72,7 @@
             if ($this->connection === null || $this->producerChannel === null) {                    
                 $this->connection = new AMQPSSLConnection(RMQ_HOST, RMQ_PORT, RMQ_USER, RMQ_PW, RMQ_VHOST,
                     array("verify_peer" => true, "verify_peer_name" => true),
-                    array("read_write_timeout" => self::HEARTBEAT_INTERVAL_SECONDS, "heartbeat" => self::HEARTBEAT_INTERVAL_SECONDS));
+                    array("read_write_timeout" => round(1.2 * self::HEARTBEAT_INTERVAL_SECONDS), "heartbeat" => self::HEARTBEAT_INTERVAL_SECONDS));
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
                 $this->consumerChannel->basic_qos(null, 1, null);
