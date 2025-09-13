@@ -92,7 +92,7 @@
                 $this->addOpenLineageDatasets($sql); 
             }
             catch (\Exception $e) {
-                $logger->error("Unable to add OpenLineage datasets. Reasion: " . $e->getMessage(), array("exception" => $e));
+                $logger->warn("Unable to add OpenLineage datasets. Reasion: " . $e->getMessage(), array("exception" => $e));
             }
             $this->updateViewsToMaterialize($sql);
             return $builder;

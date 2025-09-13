@@ -92,6 +92,12 @@
             }
         }
 
+        public function onHighlightRemoved(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Place->name) {
+                $this->updatePlaceQuality($message["entityId"]);
+            }
+        }
+
         public function onPlaceUpdated(mixed $message) : void {
             $this->updatePlaceQuality($message["placeId"]);
         }

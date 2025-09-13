@@ -51,8 +51,8 @@ export default function PlansPage() {
         return acc
     }, {}), [filteredCandidatePlaces])
 
-    const filteredVisitedPlaces = useMemo(() => visitedPlaces?.filter(place => place.quality && place.quality <= maxQuality), [visitedPlaces, maxQuality])
-    const lowestQualityPlace = useMemo(() => visitedPlaces?.filter(place => place.quality)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined), [visitedPlaces])
+    const filteredVisitedPlaces = useMemo(() => visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality), [visitedPlaces, maxQuality])
+    const lowestQualityPlace = useMemo(() => visitedPlaces?.filter(place => place?.quality ?? 0)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined), [visitedPlaces])
 
     const countriesVisitedPlaces = useMemo(() => filteredVisitedPlaces?.reduce((acc, place) => {
         if (!acc[place.country]) {
@@ -118,7 +118,7 @@ export default function PlansPage() {
                         name="Maximální kvalita"
                         valueFormatter={value => `${value}%`}
                         value={maxQuality}
-                        minValue={Math.ceil(lowestQualityPlace?.quality)}
+                        minValue={Math.ceil(lowestQualityPlace?.quality ?? 0)}
                         maxValue={100}
                         onValueChanged={setMaxQuality} />
                     <CategoryCardGrid
