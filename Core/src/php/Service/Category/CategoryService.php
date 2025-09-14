@@ -18,6 +18,8 @@
         
         private readonly EventPublisher $eventPublisher;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         private array $categoryIdToCategoryIdentifierCache = array();
         private array $placeIdToCategoryIdsCache = array();
 
@@ -26,6 +28,7 @@
             $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService, $configurationService);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
+            $this->databaseProvider = $databaseProvider;
         }
 
         public function updateCategories(PlaceIdentifier $placeIdentifier) : void {
@@ -67,12 +70,14 @@
             }
 
             // Persist the categories.
-            $this->categoryMapper->deleteCategories($placeIdentifier->getId());
+            $this->databaseProvider->executeAtomically(function() use(&$placeIdentifier, &$categoryIds) {
+                $this->categoryMapper->deleteCategories($placeIdentifier->getId());
 
-            foreach (array_unique($categoryIds) as &$categoryId) {  
-                $this->categoryMapper->insertCategory($placeIdentifier->getId(), $categoryId);
-                $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
-            }
+                foreach (array_unique($categoryIds) as &$categoryId) {  
+                    $this->categoryMapper->insertCategory($placeIdentifier->getId(), $categoryId);
+                    $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
+                }
+            });
         }
 
         public function getCategoryIdentifier(string $name) : ?CategoryIdentifier { 
@@ -137,13 +142,14 @@
             return $this->categoryMapper->updateCategoryMainHighlight($categoryId, $highlightIdentifier);
         }
 
-        public function updateCategoryName(string $categoryId, string $name) : bool {            
-            $wasUpdated = $this->categoryMapper->updateCategoryName($categoryId, $name);
-            
-            if ($wasUpdated) {
-                $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
-            }
-
+        public function updateCategoryName(string $categoryId, string $name) : bool {
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$categoryId, &$name) {
+                $wasUpdated &= $this->categoryMapper->updateCategoryName($categoryId, $name);                
+                if ($wasUpdated) {
+                    $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
+                }
+            });
             return $wasUpdated;
         }
 
@@ -182,20 +188,22 @@
 
             // Create the region.
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
-            $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
+            $this->databaseProvider->executeAtomically(function() use(&$categoryIdentifier, &$includedRegions, &$excludedRegions) {
+                $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
 
-            foreach ($includedRegions as &$includedRegion) {
-                $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
-                $this->categoryMapper->insertCompositeRegionInclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
-                $this->eventPublisher->publish(Event::CategoryInvalidated($subjectCategoryIdentifier->getId()));
-            }
+                foreach ($includedRegions as &$includedRegion) {
+                    $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
+                    $this->categoryMapper->insertCompositeRegionInclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
+                    $this->eventPublisher->publish(Event::CategoryInvalidated($subjectCategoryIdentifier->getId()));
+                }
 
-            foreach ($excludedRegions as &$excludedRegion) {
-                $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedRegion);
-                $this->categoryMapper->insertCompositeRegionExclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
-            }
-    
-            $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
+                foreach ($excludedRegions as &$excludedRegion) {
+                    $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedRegion);
+                    $this->categoryMapper->insertCompositeRegionExclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
+                }
+                
+                $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
+            });
             
             return $categoryIdentifier;
         }
@@ -204,8 +212,6 @@
         public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : CategoryIdentifier {  
             $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();                                  
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
-            $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
-            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson));
 
             if ($countryCategoryId === null) {
                 foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$invalidatedCategory) {
@@ -215,8 +221,14 @@
             else {
                 $this->eventPublisher->publish(Event::CategoryInvalidated($countryCategoryId));
             }
-    
-            $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
+            
+            $geographicalRegion = new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson);
+            $this->databaseProvider->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion) {
+                $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
+                $this->categoryMapper->insertGeographicalRegion($geographicalRegion);    
+                
+                $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
+            });
             
             return $categoryIdentifier;
         }
@@ -233,17 +245,20 @@
             
             $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();   
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
-            $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, 0, $geoJson));
 
-            // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
-            if ($country === null) {
-                foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$category) {
-                    $this->eventPublisher->publish(Event::CategoryInvalidated($category->getId()));
+            $this->databaseProvider->executeAtomically(function() use(&$countryCategoryId, &$categoryIdentifier, &$geoJson, &$country) {
+                $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, 0, $geoJson));
+
+                // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
+                if ($country === null) {
+                    foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$category) {
+                        $this->eventPublisher->publish(Event::CategoryInvalidated($category->getId()));
+                    }
                 }
-            }
-            else {
-                $this->eventPublisher->publish(Event::CategoryInvalidated($this->getCategoryIdentifier($country)->getId()));
-            }
+                else {
+                    $this->eventPublisher->publish(Event::CategoryInvalidated($this->getCategoryIdentifier($country)->getId()));
+                }
+            });
 
             return $categoryIdentifier;
         }
@@ -287,11 +302,12 @@
             }
 
             // Persist the region areas.
-            $this->categoryMapper->deleteAllRegionAreas();
-
-            foreach ($regionAreas as $categoryId => $area) {
-                $this->categoryMapper->insertRegionArea($categoryId, $area);
-            }
+            $this->databaseProvider->executeAtomically(function() use(&$regionAreas) {
+                $this->categoryMapper->deleteAllRegionAreas();
+                foreach ($regionAreas as $categoryId => $area) {
+                    $this->categoryMapper->insertRegionArea($categoryId, $area);
+                }
+            });
         }
 
         public function getAllNonTrivialGeographicalRegions() : array {

@@ -27,12 +27,15 @@
         
         private readonly CacheClient $cacheClient;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient,
             EventPublisher $eventPublisher, CacheClient $cacheClient) {
             $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
             $this->cacheClient = $cacheClient;
+            $this->databaseProvider = $databaseProvider;
         }
 
         public function getAllAlbums() : array {
@@ -141,18 +144,20 @@
             }
         
             // Persist photos.
-            $deletedPhotosCount = $this->photoMapper->deletePhotos($albumId);        
-            foreach ($photos as &$photo) {
-                $this->photoMapper->insertPhoto($photo, $albumId);
-            }
+            $this->databaseProvider->executeAtomically(function() use(&$photos, &$albumId) {
+                $deletedPhotosCount = $this->photoMapper->deletePhotos($albumId);        
+                foreach ($photos as &$photo) {
+                    $this->photoMapper->insertPhoto($photo, $albumId);
+                }
+
+                // The count of photos is different from what was previously stored in the database. Invalidate the album.
+                if (count($photos) !== $deletedPhotosCount) {
+                    $this->eventPublisher->publish(Event::AlbumInvalidated($albumId));
+                }
+            });
 
             // Cache photos for faster access in the future.
             $this->cacheClient->set($fetchedAlbumKey, $photos, self::ALBUM_PHOTOS_CACHE_TTL);
-
-            // The count of photos is different from what was previously stored in the database. Invalidate the album.
-            if (count($photos) !== $deletedPhotosCount) {
-                $this->eventPublisher->publish(Event::AlbumInvalidated($albumId));
-            }
 
             return $photos;
         }
@@ -250,22 +255,24 @@
             }
         
             // Persist albums.
-            $this->photoMapper->deleteAlbums($albumId);        
-            foreach ($albums as &$album) {
-                $this->photoMapper->insertAlbum($album);
-            }
-
-            // Trigger an event for updated albums.
-            // As of now, the event is only triggered if the count of photos in the album has changed.
-            if ($albumId === null) {
-                $changedAlbumIds = $this->photoMapper->selectAlbumIdsWithOutdatedPhotos();
-                foreach ($changedAlbumIds as &$changedAlbumId) {
-                    $this->eventPublisher->publish(Event::AlbumUpdated($changedAlbumId));
+            $this->databaseProvider->executeAtomically(function() use(&$albumId, &$albums) {
+                $this->photoMapper->deleteAlbums($albumId);        
+                foreach ($albums as &$album) {
+                    $this->photoMapper->insertAlbum($album);
                 }
-            }
-            else {
-                $this->eventPublisher->publish(Event::AlbumUpdated($albumId));
-            }
+
+                // Trigger an event for updated albums.
+                // As of now, the event is only triggered if the count of photos in the album has changed.
+                if ($albumId === null) {
+                    $changedAlbumIds = $this->photoMapper->selectAlbumIdsWithOutdatedPhotos();
+                    foreach ($changedAlbumIds as &$changedAlbumId) {
+                        $this->eventPublisher->publish(Event::AlbumUpdated($changedAlbumId));
+                    }
+                }
+                else {
+                    $this->eventPublisher->publish(Event::AlbumUpdated($albumId));
+                }
+            });
 
             // Final clean-up.
             $this->photoMapper->deleteStaleAlbumIdentifiers();
@@ -279,17 +286,19 @@
             // Process pending photos with fixed position.
             $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId);        
             while (count($pendingPhotos) > 0) {
-                $newPhotos = array();
-                foreach ($pendingPhotos as &$pendingPhoto) {
-                    $newPhotos[] = array(
-                        "uploadToken" => $pendingPhoto->getUploadToken(),
-                        "fileName" => $pendingPhoto->getFileName()
-                    );
+                $this->databaseProvider->executeAtomically(function() use(&$albumId, &$pendingPhotos) {
+                    $newPhotos = array();
+                    foreach ($pendingPhotos as &$pendingPhoto) {
+                        $newPhotos[] = array(
+                            "uploadToken" => $pendingPhoto->getUploadToken(),
+                            "fileName" => $pendingPhoto->getFileName()
+                        );
+                        $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
+                    }
 
-                    $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
-                }
+                    $this->createGooglePhotos($albumId, $newPhotos, null);                      
+                });
 
-                $this->createGooglePhotos($albumId, $newPhotos, null);                
                 $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId);
             }
                    
@@ -301,20 +310,23 @@
                     "fileName" => $pendingPhoto->getFileName()
                 );
 
-                $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
-                $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
-
                 $oldPhotoExternalId = $this->photoMapper->selectPhotoExternalId($pendingPhoto->getReplacedPhotoId());
+                $albumExternalId = $this->photoMapper->selectAlbumExternalId($albumId);
 
-                $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhotoExternalId);                
-                if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
-                    $this->googleApiClient->updateAlbumMainPhoto($this->photoMapper->selectAlbumExternalId($albumId), $createdPhotoExternalId);
-                }
-                
-                $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true);
-                $this->photoMapper->insertPhoto($this->getPhoto($pendingPhoto->getReplacedPhotoId())->withReplacedId($oldPhotoNewId), $albumId);
+                $this->databaseProvider->executeAtomically(function() use(&$albumId, &$albumExternalId, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
+                    $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
+                    $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
 
-                $this->eventPublisher->publish(Event::PhotoInvalidated($pendingPhoto->getReplacedPhotoId()));
+                    $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhotoExternalId);                
+                    if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
+                        $this->googleApiClient->updateAlbumMainPhoto($albumExternalId, $createdPhotoExternalId);
+                    }
+                    
+                    $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true);
+                    $this->photoMapper->insertPhoto($this->getPhoto($pendingPhoto->getReplacedPhotoId())->withReplacedId($oldPhotoNewId), $albumId);
+
+                    $this->eventPublisher->publish(Event::PhotoInvalidated($pendingPhoto->getReplacedPhotoId()));
+                });
             }
         }
 

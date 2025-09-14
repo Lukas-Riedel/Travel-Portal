@@ -30,7 +30,9 @@
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(TripService $tripService, PlaceService $placeService, StayService $stayService,
+        private readonly \DatabaseProvider $databaseProvider;
+
+        public function __construct(\DatabaseProvider $databaseProvider, TripService $tripService, PlaceService $placeService, StayService $stayService,
             FlightService $flightService, ConfigurationService $configurationService, \CalendarClient $calendarClient,
             EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
@@ -41,17 +43,20 @@
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->databaseProvider = $databaseProvider;
         }
         
         public function onCalendarInvalidated(mixed $message) : void {
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
             if ($message["calendar"] === \Calendar::Trips->value) {
-                $this->tripService->removeAllDayTripsTrips();
-                $this->tripService->refreshCalendar();
-                $this->placeService->refreshCalendar($this->tripService);
-                $this->stayService->refreshCalendar($this->tripService);
-                $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== null), $this->tripService);
-                $this->tripService->updateAllDayTripsTripsDates();
+                $this->databaseProvider->executeAtomically(function() {
+                    $this->tripService->removeAllDayTripsTrips();
+                    $this->tripService->refreshCalendar();
+                    $this->placeService->refreshCalendar($this->tripService);
+                    $this->stayService->refreshCalendar($this->tripService);
+                    $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== null), $this->tripService);
+                    $this->tripService->updateAllDayTripsTripsDates();
+                });
             }
         }
         

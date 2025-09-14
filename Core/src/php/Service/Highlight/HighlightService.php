@@ -19,10 +19,13 @@
         
         private readonly EventPublisher $eventPublisher;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService, EventPublisher $eventPublisher) {
             $this->highlightMapper = new HighlightMapper($databaseProvider, $photoService);
             $this->photoService = $photoService;
             $this->eventPublisher = $eventPublisher;
+            $this->databaseProvider = $databaseProvider;
         }
 
         public function getHighlight(?string $highlightId) : ?Highlight {
@@ -78,7 +81,7 @@
         }
 
         public function createPlaceHighlight(string $placeId, string $photoId) : Highlight {
-            // TODO: Introduce a property for PlaceService $placeService.
+            // TODO: Introduce a property for PlaceService $placeService, or move publishing CategoryHighlightCreated to onHighlightCreated.
             global $placeService;
 
             $highlightId = $this->getOrCreateHighlightId($photoId);
@@ -93,12 +96,14 @@
             }
 
             if ($highlightNotExists) {
-                $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
+                $this->databaseProvider->executeAtomically(function() use(&$placeId, &$highlightId, &$placeService) {
+                    $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
 
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));
-                foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));                    
-                }
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));
+                    foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
+                        $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));                    
+                    }
+                });
 
                 $this->updateHighlight($highlightId);
             }
@@ -107,7 +112,7 @@
         }
 
         public function createTripHighlight(string $tripId, string $photoId) : Highlight {
-            // TODO: Introduce a property for TripService $tripService.
+            // TODO: Introduce a property for TripService $tripService, or move publishing YearHighlightCreated to onHighlightCreated.
             global $tripService;
 
             $highlightId = $this->getOrCreateHighlightId($photoId);
@@ -122,10 +127,12 @@
             }
 
             if ($highlightNotExists) {
-                $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
+                $this->databaseProvider->executeAtomically(function() use(&$tripId, &$highlightId, &$tripService) {
+                    $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
 
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));                
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));            
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));                
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));   
+                });         
 
                 $this->updateHighlight($highlightId);
             }
@@ -139,10 +146,13 @@
                 throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");
             }
 
-            $wasCreated = $this->highlightMapper->deleteHighlight(highlightType::Category, $categoryId, $highlightId) > 0;
-            if ($wasCreated) {
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId));
-            }   
+            $wasCreated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasCreated) {
+                $wasCreated &= $this->highlightMapper->deleteHighlight(highlightType::Category, $categoryId, $highlightId) > 0;
+                if ($wasCreated) {
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId));
+                }                   
+            });
             return $this->getHighlight($highlightId);
         }
 
@@ -152,44 +162,65 @@
                 throw new RuntimeException("Cannot create a highlight for the year. Does a related trip highlight exist?");
             }
 
-            $wasCreated = $this->highlightMapper->deleteHighlight(highlightType::Year, $year, $highlightId) > 0;
-            if ($wasCreated) {
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $year, $highlightId));
-            }   
+            $wasCreated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$year, &$highlightId, &$wasCreated) {
+                $wasCreated &= $this->highlightMapper->deleteHighlight(highlightType::Year, $year, $highlightId) > 0;
+                if ($wasCreated) {
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $year, $highlightId));
+                }                  
+            });
             return $this->getHighlight($highlightId);
         }
 
         public function removePlaceHighlight(string $placeId, string $highlightId) : bool {
-            $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Place, $placeId, $highlightId) > 0;
-            if ($wasRemoved) {
-                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Place, $placeId, $highlightId));
+            $wasRemoved = true;
+            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$highlightId, &$wasRemoved) {
+                $wasRemoved &= $this->highlightMapper->deleteHighlight(HighlightType::Place, $placeId, $highlightId) > 0;
+                if ($wasRemoved) {
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Place, $placeId, $highlightId));
+                }                    
+            });  
+
+            if ($wasRemoved) {                
                 $this->highlightMapper->deleteStaleHighlightIdentifiers();
-            }        
+            }  
             return $wasRemoved;
         }
 
         public function removeTripHighlight(string $tripId, string $highlightId) : bool {
-            $wasRemoved = $this->highlightMapper->deleteHighlight(HighlightType::Trip, $tripId, $highlightId) > 0;
+            $wasRemoved = true;
+            $this->databaseProvider->executeAtomically(function() use(&$tripId, &$highlightId, &$wasRemoved) {            
+                $wasRemoved &= $this->highlightMapper->deleteHighlight(HighlightType::Trip, $tripId, $highlightId) > 0;
+                if ($wasRemoved) {
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Trip, $tripId, $highlightId));
+                }
+            });  
+
             if ($wasRemoved) {
-                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Trip, $tripId, $highlightId));
                 $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }
             return $wasRemoved;
         }
 
         public function removeCategoryHighlight(string $categoryId, string $highlightId) : bool {
-            $wasRemoved = $this->highlightMapper->insertHighlight(HighlightType::Category, $categoryId, $highlightId);
-            if ($wasRemoved) {
-                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category, $categoryId, $highlightId));
-            }
+            $wasRemoved = true;
+            $this->databaseProvider->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasRemoved) {
+                $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Category, $categoryId, $highlightId);
+                if ($wasRemoved) {
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category, $categoryId, $highlightId));
+                }
+            });
             return $wasRemoved;
         }
 
         public function removeYearHighlight(int $year, string $highlightId) : bool {
-            $wasRemoved = $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
-            if ($wasRemoved) {
-                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year, $year, $highlightId));
-            }
+            $wasRemoved = true;            
+            $this->databaseProvider->executeAtomically(function() use(&$year, &$highlightId, &$wasRemoved) {
+                $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
+                if ($wasRemoved) {
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year, $year, $highlightId));
+                }
+            });
             return $wasRemoved;
         }
 
@@ -213,42 +244,57 @@
         }
 
         public function updateHighlightComposition(string $highlightId, int $composition) : bool {
-            $wasUpdated = $this->highlightMapper->updateHighlightComposition($highlightId, $composition);
-            if ($wasUpdated) {
-                $this->publishHighlightUpdatedEvents($highlightId);
-            }
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$highlightId, &$composition, &$wasUpdated) {
+                $wasUpdated &= $this->highlightMapper->updateHighlightComposition($highlightId, $composition);
+                if ($wasUpdated) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
             return $wasUpdated;
         }
 
         public function updateHighlightSky(string $highlightId, int $sky) : bool {
-            $wasUpdated = $this->highlightMapper->updateHighlightSky($highlightId, $sky);
-            if ($wasUpdated) {
-                $this->publishHighlightUpdatedEvents($highlightId);
-            }
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$highlightId, &$sky, &$wasUpdated) {
+                $wasUpdated &= $this->highlightMapper->updateHighlightSky($highlightId, $sky);
+                if ($wasUpdated) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
             return $wasUpdated;
         }
 
         public function updateHighlightShadows(string $highlightId, int $shadows) : bool {
-            $wasUpdated = $this->highlightMapper->updateHighlightShadows($highlightId, $shadows);
-            if ($wasUpdated) {
-                $this->publishHighlightUpdatedEvents($highlightId);
-            }
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$highlightId, &$shadows, &$wasUpdated) {
+                $wasUpdated &= $this->highlightMapper->updateHighlightShadows($highlightId, $shadows);
+                if ($wasUpdated) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
             return $wasUpdated;
         }
 
         public function updateHighlightCircumstances(string $highlightId, int $circumstances) : bool {
-            $wasUpdated = $this->highlightMapper->updateHighlightCircumstances($highlightId, $circumstances);
-            if ($wasUpdated) {
-                $this->publishHighlightUpdatedEvents($highlightId);
-            }
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$highlightId, &$circumstances, &$wasUpdated) {
+                $wasUpdated &= $this->highlightMapper->updateHighlightCircumstances($highlightId, $circumstances);
+                if ($wasUpdated) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
             return $wasUpdated;
         }
 
         public function updateHighlightAtmosphere(string $highlightId, int $atmosphere) : bool {
-            $wasUpdated = $this->highlightMapper->updateHighlightAtmosphere($highlightId, $atmosphere);
-            if ($wasUpdated) {
-                $this->publishHighlightUpdatedEvents($highlightId);
-            }
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$highlightId, &$atmosphere, &$wasUpdated) {
+                $wasUpdated &= $this->highlightMapper->updateHighlightAtmosphere($highlightId, $atmosphere);
+                if ($wasUpdated) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
             return $wasUpdated;
         }
 

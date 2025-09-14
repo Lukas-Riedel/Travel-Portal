@@ -37,6 +37,8 @@
 
         private readonly EventPublisher $eventPublisher;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, EventPublisher $eventPublisher) {
@@ -50,6 +52,7 @@
             $this->yearService = $yearService;
             $this->noteService = $noteService;
             $this->eventPublisher = $eventPublisher;
+            $this->databaseProvider = $databaseProvider;
         }        
 
         public function isDayTripsTrip(Trip $trip) : bool {
@@ -97,16 +100,18 @@
         }
 
         public function updateTripName(string $tripId, string $name) : bool {
-            $wasUpdated = $this->tripMapper->updateTripName($tripId, $name);
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$tripId, &$name) {
+                $wasUpdated &= $this->tripMapper->updateTripName($tripId, $name);
 
-            if ($wasUpdated) {
-                $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(\Calendar::Trips->value, $this->getTripEventId($tripId), $name);
-            }
+                if ($wasUpdated) {
+                    $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(\Calendar::Trips->value, $this->getTripEventId($tripId), $name);
+                }
 
-            if ($wasUpdated) {
-                $this->eventPublisher->publish(Event::TripUpdated($tripId));
-            }
-
+                if ($wasUpdated) {
+                    $this->eventPublisher->publish(Event::TripUpdated($tripId));
+                }
+            });
             return $wasUpdated;
         }
 
@@ -129,9 +134,11 @@
                 throw new \InvalidArgumentException("The trip could not be loaded to the trip " . $targetTripId . " because it does not exist.");
             }
 
-            $this->placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
+            $this->databaseProvider->executeAtomically(function() use(&$candidateTripId, &$targetTrip, &$targetTripId) {
+                $this->placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
+                $this->noteService->updateTripNoteOwner($candidateTripId, $targetTripId);
+            });
 
-            $this->noteService->updateTripNoteOwner($candidateTripId, $targetTripId);
             $this->tripMapper->deleteStaleTripIdentifiers();
             
             return $targetTrip;
@@ -144,52 +151,62 @@
             }
             
             $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), null);
-            $this->tripMapper->insertCandidateTrip($archivedTripIdentifier->getId());
-            $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
-            $this->removeTripEvent($tripId);
 
-            $this->noteService->updateTripNoteOwner($tripId, $archivedTripIdentifier->getId());
+            $this->databaseProvider->executeAtomically(function() use(&$tripId, &$trip, &$archivedTripIdentifier) {
+                $this->tripMapper->insertCandidateTrip($archivedTripIdentifier->getId());
+                $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
+                $this->removeTripEvent($tripId);
+                $this->noteService->updateTripNoteOwner($tripId, $archivedTripIdentifier->getId());
+            });
+
             $this->tripMapper->deleteStaleTripIdentifiers();
             
             return $this->getCandidateTrip($archivedTripIdentifier->getId());
         }
 
         public function removeCandidateTrip(string $tripId) : bool {
-            $wasDeleted = $this->placeService->removeCandidateEventsForCandidateTrip($tripId)
-                && $this->tripMapper->deleteCandidateTrip($tripId);
-            if ($wasDeleted) {
+            $wasRemoved = true;
+            $this->databaseProvider->executeAtomically(function() use(&$wasRemoved, &$tripId) {                
+                $wasRemoved &= $this->placeService->removeCandidateEventsForCandidateTrip($tripId) 
+                    && $this->tripMapper->deleteCandidateTrip($tripId);
+            });
+
+            if ($wasRemoved) {
                 $this->tripMapper->deleteStaleTripIdentifiers();
             }
-            return $wasDeleted;
+            return $wasRemoved;
         }
 
         public function refreshCalendar() : void {
             $this->tripMapper->createTripEventTemporaryTable(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
-            $this->tripMapper->deleteAllTripEvents();
+            $tripEvents = $this->calendarClient->getEvents(\Calendar::Trips->value);
             
-            foreach ($this->calendarClient->getEvents(\Calendar::Trips->value) as &$tripEvent) {
-                $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
-                $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
-                    $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
+            $this->databaseProvider->executeAtomically(function() use(&$tripEvents) {
+                $this->tripMapper->deleteAllTripEvents();            
+                foreach ($tripEvents as &$tripEvent) {
+                    $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
+                    $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
+                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
-                $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
-            }
-            
-            $affectedTripIds = $this->tripMapper->selectTripIdsForCreatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publish(Event::TripEventCreated($affectedTripId));
-            }
-            
-            $affectedTripIds = $this->tripMapper->selectTripIdsForUpdatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publish(Event::TripUpdated($affectedTripId));
-                $this->eventPublisher->publish(Event::TripEventUpdated($affectedTripId));
-            }
-            
-            $affectedTripIds = $this->tripMapper->selectTripIdsForDeletedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedTripIds as &$affectedTripId) {
-                $this->eventPublisher->publish(Event::TripEventRemoved($affectedTripId));
-            }
+                    $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
+                }
+                
+                $affectedTripIds = $this->tripMapper->selectTripIdsForCreatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publish(Event::TripEventCreated($affectedTripId));
+                }
+                
+                $affectedTripIds = $this->tripMapper->selectTripIdsForUpdatedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publish(Event::TripUpdated($affectedTripId));
+                    $this->eventPublisher->publish(Event::TripEventUpdated($affectedTripId));
+                }
+                
+                $affectedTripIds = $this->tripMapper->selectTripIdsForDeletedTripEvents(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publish(Event::TripEventRemoved($affectedTripId));
+                }
+            });
         }
 
         public function removeAllDayTripsTrips() : void {

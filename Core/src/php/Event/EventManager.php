@@ -67,16 +67,13 @@
             $start = microtime(true);
             $this->openLineageEventManager->initializeEvent(WORKER_QUEUE_NAME . "/" . $event["name"]);
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
-            $this->databaseProvider->beginTransaction();
             try {
                 $handlerMethod = self::EVENT_HANDLER_METHOD_PREFIX . $event["name"];
                 foreach ($this->eventHandlers[$event["name"]] as $eventHandler) {
                     $eventHandler->$handlerMethod($event["args"]);
                 }
-                $this->databaseProvider->commit();
             }
             catch (\Throwable $e) {
-                $this->databaseProvider->rollback();
                 $this->logger->error("The processing of the '" . $event["name"] . "' event failed. Reason: " . $e->getMessage(), array("event" => $event, "exception" => $e));
             }
             finally {

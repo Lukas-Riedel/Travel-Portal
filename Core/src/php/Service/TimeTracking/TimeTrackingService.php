@@ -12,9 +12,12 @@
 
         private readonly ConfigurationService $configurationService;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
             $this->timeTrackingMapper = new TimeTrackingMapper($databaseProvider);
             $this->configurationService = $configurationService;
+            $this->databaseProvider = $databaseProvider;
         }
 
         // TODO: Replace string $type by TimeTrackingEventType $type.
@@ -41,18 +44,20 @@
 
         public function resetOpeningBalances(string $beginningOfYearDate) : void {
             foreach ($this->configurationService->getConfigurationEntry("timeTracking")["timeOffHours"] as $eventType => $openingBalance) {
-                $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);
-                $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
+                $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);                
+                $this->databaseProvider->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearDate) {
+                    $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 
-                if ($wasReset) {    
-                    if ($carryOverBalance !== null && $carryOverBalance > 0) {
-                        $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearDate);
+                    if ($wasReset) {    
+                        if ($carryOverBalance !== null && $carryOverBalance > 0) {
+                            $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearDate);
+                        }
+                        
+                        if ($openingBalance > 0) {
+                            $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearDate);
+                        }
                     }
-                    
-                    if ($openingBalance > 0) {
-                        $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearDate);
-                    }
-                }
+                });
             }
         }
     }

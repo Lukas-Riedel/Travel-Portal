@@ -78,8 +78,10 @@
         }
 
         public function selectVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {            
+            $temporaryTableName = self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME;
+            
             $sql = <<<SQL
-                DROP TEMPORARY TABLE IF EXISTS {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME}
+                DROP TEMPORARY TABLE IF EXISTS {$temporaryTableName}
             SQL;
             
             $this->databaseProvider
@@ -87,7 +89,7 @@
                 ->execute();
 
             $sql = <<<SQL
-                CREATE TEMPORARY TABLE {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME} (
+                CREATE TEMPORARY TABLE {$temporaryTableName} (
                     category_id bigint(20) unsigned NOT NULL,
                     place_id bigint(20) unsigned NOT NULL
                 )
@@ -100,7 +102,7 @@
             foreach ($this->categoryService->getCategoryIdsForCategory($category) as &$categoryId) {
                 foreach ($this->categoryService->getPlaceIdsForCategoryId($categoryId) as &$placeId) {                    
                     $sql = <<<SQL
-                        INSERT INTO {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME} (
+                        INSERT INTO {$temporaryTableName} (
                             category_id,
                             place_id
                         )
@@ -119,7 +121,7 @@
 
             $sql = <<<SQL
                 SELECT c.category_id, GROUP_CONCAT(DISTINCT c.place_id SEPARATOR ",") AS place_ids
-                FROM {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME} c
+                FROM {$temporaryTableName} c
                 INNER JOIN (
                     SELECT place_id, start
                     FROM place_event

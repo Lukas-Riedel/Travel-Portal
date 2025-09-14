@@ -76,7 +76,7 @@
                         }
                     }
                     
-                    $this->logger->debug("Totally " . count($intervals) . " fitness records will be updated.", array("intervals" => $intervals));
+                    $this->logger->debug("Totally " . count($intervals) . " fitness record(s) will be updated.", array("intervals" => $intervals));
                     $this->eventPublisher->publish(Event::FitnessActivityDetected($intervals));
                 }
             }

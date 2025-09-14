@@ -36,6 +36,8 @@
 
         private readonly EventPublisher $eventPublisher;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         public function __construct(\DatabaseProvider $databaseProvider, \ChatClient $chatClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
@@ -50,6 +52,7 @@
             $this->photoService = $photoService;
             $this->geocodingService = $geocodingService;
             $this->eventPublisher = $eventPublisher;
+            $this->databaseProvider = $databaseProvider;
         }
 
         public function getDatesForTripAndCountry(string $tripId, string $country) : array {
@@ -97,12 +100,13 @@
         }
 
         public function updatePlaceMainHighlight(string $placeId, string $highlightIdentifier) : bool {
-            $wasUpdated = $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
-
-            if ($wasUpdated) {
-                $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
-            }
-
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$highlightIdentifier, &$wasUpdated) {
+                $wasUpdated &= $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
+                if ($wasUpdated) {
+                    $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
+                }
+            });
             return $wasUpdated;
         }
 
@@ -124,21 +128,25 @@
 
         public function updatePlaceName(string $placeId, string $name) : bool {
             $place = $this->getRegularPlace($placeId);
-            $wasUpdated = $this->placeMapper->updatePlaceName($placeId, $name);
 
-            if ($place !== null) {
-                foreach ($place->getDates() as &$date) {                       
-                    $album = $date->getAlbum();
-                    if ($album !== null) {     
-                        $wasUpdated &= $this->photoService->updateAlbumName($album->getId(), $place->getName(), $name);
-                    }
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$name, &$place, &$wasUpdated) {
+                $wasUpdated &= $this->placeMapper->updatePlaceName($placeId, $name);
 
-                    $eventId = $this->placeMapper->selectPlaceEventId($placeId, $date->getStart());
-                    if ($eventId !== null) {  
-                        $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(\Calendar::Places->value, $eventId, $name);
+                if ($place !== null) {
+                    foreach ($place->getDates() as &$date) {                       
+                        $album = $date->getAlbum();
+                        if ($album !== null) {     
+                            $wasUpdated &= $this->photoService->updateAlbumName($album->getId(), $place->getName(), $name);
+                        }
+
+                        $eventId = $this->placeMapper->selectPlaceEventId($placeId, $date->getStart());
+                        if ($eventId !== null) {  
+                            $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(\Calendar::Places->value, $eventId, $name);
+                        }
                     }
                 }
-            }
+            });
 
             if ($wasUpdated) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
@@ -149,12 +157,13 @@
         }
 
         public function updatePlaceLocation(string $placeId, float $latitude, float $longitude) : bool {
-            $wasUpdated = $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude);
-            
-            if ($wasUpdated) {
-                $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
-            }
-
+            $wasUpdated = true;
+            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$latitude, &$longitude, &$wasUpdated) {
+                $wasUpdated &= $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude);            
+                if ($wasUpdated) {
+                    $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
+                }
+            });
             return $wasUpdated;
         }
 
@@ -192,14 +201,16 @@
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
             $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             
-            foreach ($places as &$place) {
-                foreach ($place->getDates() as &$date) {
-                    $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
-                    if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, false, null, null, null, $archivedTripIdentifier))))) {
-                        $this->googleApiClient->deleteCalendarEvent(\Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
+            $this->databaseProvider->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
+                foreach ($places as &$place) {
+                    foreach ($place->getDates() as &$date) {
+                        $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
+                        if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, false, null, null, null, $archivedTripIdentifier))))) {
+                            $this->googleApiClient->deleteCalendarEvent(\Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
+                        }
                     }
                 }
-            }
+            });
             
             return $this->doGetCandidatePlacesForTrip(null, $archivedTripIdentifier->getId(), array());
         }
@@ -230,46 +241,49 @@
 
         public function refreshCalendar(TripService $tripService) : void {
             $this->placeMapper->createPlaceEventTemporaryTable(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-            $this->placeMapper->deleteAllPlaceEvents();
-                
-            foreach ($this->calendarClient->getEvents(\Calendar::Places->value) as &$placeEvent) {
-                $resolvedLocation = $this->geocodingService->getLocation($placeEvent->getLocation());
-                $placeIdentifier = $this->getOrCreatePlaceIdentifier($placeEvent->getSummary(), $resolvedLocation->getCountry(), $placeEvent->getLocation());                        
-                $timeOffset = $this->getTimezoneOffset($placeEvent->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $placeIdentifier->getTimezone());
-                $start = $placeEvent->getStart() + $timeOffset;
-                $end = $placeEvent->getEnd() + $timeOffset;     
-                $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
-                $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
-                $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                    $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
-                    $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));
+            $placeEvents = $this->calendarClient->getEvents(\Calendar::Places->value);
 
-                $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
+            $this->databaseProvider->executeAtomically(function() use(&$placeEvents, &$tripService) {
+                $this->placeMapper->deleteAllPlaceEvents();                
+                foreach ($placeEvents as &$placeEvent) {
+                    $resolvedLocation = $this->geocodingService->getLocation($placeEvent->getLocation());
+                    $placeIdentifier = $this->getOrCreatePlaceIdentifier($placeEvent->getSummary(), $resolvedLocation->getCountry(), $placeEvent->getLocation());                        
+                    $timeOffset = $this->getTimezoneOffset($placeEvent->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $placeIdentifier->getTimezone());
+                    $start = $placeEvent->getStart() + $timeOffset;
+                    $end = $placeEvent->getEnd() + $timeOffset;     
+                    $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
+                    $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
+                    $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
+                        $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
+                        $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));
 
-                // Update address to match a common format.
-                $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
-                if ($this->normalize($placeEvent->getLocation()) !== $this->normalize($newAddress)) {
-                    $this->googleApiClient->updateCalendarEventLocation(\Calendar::Places->value, $placeEvent->getId(), $newAddress);
+                    $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
+
+                    // Update address to match a common format.
+                    $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
+                    if ($this->normalize($placeEvent->getLocation()) !== $this->normalize($newAddress)) {
+                        $this->googleApiClient->updateCalendarEventLocation(\Calendar::Places->value, $placeEvent->getId(), $newAddress);
+                    }
                 }
-            }
-            
-            $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForCreatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publish(Event::PlaceCreated($affectedPlaceId));
-                $this->eventPublisher->publish(Event::PlaceEventCreated($affectedPlaceId));
-            }
-            
-            $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForUpdatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publish(Event::PlaceUpdated($affectedPlaceId));
-                $this->eventPublisher->publish(Event::PlaceEventUpdated($affectedPlaceId));
-            }
-            
-            $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-            foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                $this->eventPublisher->publish(Event::PlaceRemoved($affectedPlaceId));
-                $this->eventPublisher->publish(Event::PlaceEventRemoved($affectedPlaceId));
-            }
+                
+                $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForCreatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                    $this->eventPublisher->publish(Event::PlaceCreated($affectedPlaceId));
+                    $this->eventPublisher->publish(Event::PlaceEventCreated($affectedPlaceId));
+                }
+                
+                $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForUpdatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                    $this->eventPublisher->publish(Event::PlaceUpdated($affectedPlaceId));
+                    $this->eventPublisher->publish(Event::PlaceEventUpdated($affectedPlaceId));
+                }
+                
+                $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                    $this->eventPublisher->publish(Event::PlaceRemoved($affectedPlaceId));
+                    $this->eventPublisher->publish(Event::PlaceEventRemoved($affectedPlaceId));
+                }
+            });
 
             $this->placeMapper->deleteStalePlaceIdentifiers();
             $this->placeMapper->deleteVisitedCandidatePlaces();
@@ -289,21 +303,28 @@
             $location = $this->geocodingService->getLocation($address);
             $placeIdentifier = new PlaceIdentifier(null, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
                 $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
-            $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
-            
-            $this->eventPublisher->publish(Event::PlaceCreated($placeIdentifier->getId()));
+            $this->databaseProvider->executeAtomically(function() use(&$placeIdentifier) {
+                $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
+                
+                $this->eventPublisher->publish(Event::PlaceCreated($placeIdentifier->getId()));
+            });
 
             return $placeIdentifier;
         }
 
         private function removeSpecialPlace(SpecialPlaceType $specialPlaceType, string $placeId) : bool {
-            $wasRemoved = $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
+            $wasRemoved = true;
+            $this->databaseProvider->executeAtomically(function() use(&$specialPlaceType, &$placeId, &$wasRemoved) {
+                $wasRemoved &= $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
+
+                if ($wasRemoved) {
+                    $this->eventPublisher->publish(Event::PlaceRemoved($placeId));
+                }
+            });
 
             if ($wasRemoved) {
-                $this->eventPublisher->publish(Event::PlaceRemoved($placeId));
                 $this->placeMapper->deleteStalePlaceIdentifiers();
             }
-
             return $wasRemoved;
         }
 
@@ -327,8 +348,10 @@
             $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
 
             // TODO: Remove the create-if-not-exists semantics.
-            $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeIdentifier->getId());
-            $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
+            $this->databaseProvider->executeAtomically(function() use(&$specialPlaceType, &$placeIdentifier) {
+                $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeIdentifier->getId());
+                $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
+            });
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
@@ -352,8 +375,10 @@
             if (count($place->getDates()) > 0) {
                 $firstDate = $place->getDates()[0];
                 if ($firstDate->getStart() > time()) {
-                    $this->placeMapper->deleteSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
-                    $this->placeMapper->insertSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
+                    $this->databaseProvider->executeAtomically(function() use(&$place) {
+                        $this->placeMapper->deleteSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
+                        $this->placeMapper->insertSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
+                    });
                 }
             }
         }

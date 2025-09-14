@@ -13,11 +13,14 @@
 
         private readonly EventPublisher $eventPublisher;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         private readonly Logger $logger;
 
         public function __construct(\DatabaseProvider $databaseProvider, EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
             $this->fitnessMapper = new FitnessMapper($databaseProvider, $configurationService);
             $this->eventPublisher = $eventPublisher;
+            $this->databaseProvider = $databaseProvider;
             $this->logger = $logger;
         }
         
@@ -53,8 +56,6 @@
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
             $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
             
-            $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
-
             if (!$forceUpdate && $existingFitnessRecord !== null && ($steps < $existingFitnessRecord->getSteps()
                 || $seconds < $existingFitnessRecord->getSeconds()|| round($distance, 3) < round($existingFitnessRecord->getDistance(), 3))) {
                 $context = array(
@@ -74,17 +75,22 @@
 
                 $this->logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
-                $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);                
-                $this->fitnessMapper->insertConflictingFitnessRecord($fitnessRecord, $timestamp);
+                $this->databaseProvider->executeAtomically(function() use(&$fitnessRecord, &$timestamp) {
+                    $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);  
+                    $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);              
+                    $this->fitnessMapper->insertConflictingFitnessRecord($fitnessRecord, $timestamp);                    
+                });
                 
-                // TODO: Return false after reworking transactional consistency (all statements in this block would be rollbacked in case of returning false).
-                return true;
+                return false;
             }
 
-            $this->fitnessMapper->deleteFitnessRecord($timestamp);
-            $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
+            $this->databaseProvider->executeAtomically(function() use(&$fitnessRecord, &$timestamp, &$end) {
+                $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
+                $this->fitnessMapper->deleteFitnessRecord($timestamp);
+                $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
 
-            $this->eventPublisher->publish(Event::FitnessDataUpdated($timestamp, $end));
+                $this->eventPublisher->publish(Event::FitnessDataUpdated($timestamp, $end));
+            });
 
             return true;
         }

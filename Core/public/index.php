@@ -10,7 +10,6 @@
     use Core\Routing\OpenLineageMiddleware;
     use Core\Routing\PayloadDecodingMiddleware;
     use Core\Routing\RequestError;
-    use Core\Routing\TransactionMiddleware;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/src/php/bootstrap.php");
@@ -21,7 +20,6 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new TransactionMiddleware($databaseProvider));
     $app->add(new AuthMiddleware($authenticationService, $basePath));
     $app->addRoutingMiddleware();
     $app->add(new PayloadDecodingMiddleware());

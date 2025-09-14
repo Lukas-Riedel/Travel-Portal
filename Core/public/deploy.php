@@ -42,23 +42,19 @@
             $migrationScriptFileNameTokens = explode("-", $migrationScriptFileName);
             $delimiter = count($migrationScriptFileNameTokens) == 3 ? str_replace(".sql", "", $migrationScriptFileNameTokens[2]) : ";";
 
-            $databaseProvider->beginTransaction();
             try {
                 set_error_handler($onError);
-
-                foreach (explode($delimiter, $migrationScript) as &$migrationSubScript) {
-                    if (trim($migrationSubScript) !== "") {             
-                        $databaseProvider->query($migrationSubScript);
+                $databaseProvider->executeAtomically(function() use(&$migrationScript, &$hash, &$delimiter, &$databaseProvider, &$migrationScriptFileName) {
+                    foreach (explode($delimiter, $migrationScript) as &$migrationSubScript) {
+                        if (trim($migrationSubScript) !== "") {             
+                            $databaseProvider->query($migrationSubScript);
+                        }
                     }
-                }
 
-                $databaseProvider
-                    ->query("INSERT INTO migration_script (name, hash, timestamp) VALUES ('" . $migrationScriptFileName . "', '" . $hash . "', UNIX_TIMESTAMP())");
-                
-                $databaseProvider->commit();
+                    $databaseProvider->query("INSERT INTO migration_script (name, hash, timestamp) VALUES ('" . $migrationScriptFileName . "', '" . $hash . "', UNIX_TIMESTAMP())");
+                });
             }
             catch (Throwable $e) {
-                $databaseProvider->rollback();
                 http_response_code(500);
                 die($e->getMessage());
             }

@@ -480,7 +480,7 @@
             return $wasInserted;
         }
 
-        public function insertFlight(Flight $flight, $airlineCodeId, int $scheduledDeparture, int $scheduledArrival) : bool {
+        public function insertFlight(Flight $flight, string $airlineCodeId, int $scheduledDeparture, int $scheduledArrival) : bool {
             $sql = <<<'SQL'
                 INSERT INTO flight_log (
                     flight, 

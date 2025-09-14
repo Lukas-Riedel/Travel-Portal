@@ -5,8 +5,11 @@
 
         private readonly NoteMapper $noteMapper;
 
+        private readonly \DatabaseProvider $databaseProvider;
+
         public function __construct(\DatabaseProvider $databaseProvider) {
             $this->noteMapper = new NoteMapper($databaseProvider);
+            $this->databaseProvider = $databaseProvider;
         }
 
         public function createTripNote(string $tripId, string $content) : Note {
@@ -38,14 +41,11 @@
         }
 
         private function createNote(NoteType $noteType, string $entityId, string $content) : Note {
-            $note = $this->createNodeIdentifier($content);
-            $this->noteMapper->insertNote($noteType, $entityId, $note->getId());
-            return $note;
-        }
-
-        private function createNodeIdentifier(string $content) : Note {
             $note = new Note(null, $content, time());
-            $this->noteMapper->insertNoteIdentifier($note);
+            $this->databaseProvider->executeAtomically(function() use (&$noteType, &$entityId, &$note) {
+                $this->noteMapper->insertNoteIdentifier($note);
+                $this->noteMapper->insertNote($noteType, $entityId, $note->getId());                
+            });
             return $note;
         }
     }

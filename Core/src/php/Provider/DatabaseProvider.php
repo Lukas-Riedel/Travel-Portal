@@ -16,6 +16,7 @@
         private $shouldBeginTransaction;
         private $openLineageEventManager;
 
+        private $isInAtomicExecution;
         private $cache = array();
 
         public function __construct($delayMaterializationIfNeeded) {
@@ -27,6 +28,7 @@
                 ->query("SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'configuration'")->fetch_assoc()["count"] > 0;
             $this->isInTransaction = false;
             $this->shouldBeginTransaction = false;
+            $this->isInAtomicExecution = false;
         }
 
         public function __destruct() {
@@ -72,6 +74,28 @@
 
         public function query($sql) {
             return $this->connection->query($sql);
+        }
+
+        public function executeAtomically(callable $callable) : void {
+            if ($this->isInAtomicExecution) {
+                $callable();
+            }
+
+            else {
+                $this->isInAtomicExecution = true;
+                $this->connection->begin_transaction();
+                try {
+                    $callable();
+                    $this->connection->commit();
+                }
+                catch (\Throwable $e) {
+                    $this->connection->rollback();
+                    throw $e;
+                }   
+                finally {
+                    $this->isInAtomicExecution = false;
+                } 
+            }        
         }
 
         public function statementBuilder($sql, $whereClause = null) {
