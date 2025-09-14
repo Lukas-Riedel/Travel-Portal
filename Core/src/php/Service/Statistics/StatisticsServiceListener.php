@@ -40,46 +40,25 @@
         }
 
         public function onCategoryUpdated(mixed $message) : void {
-            $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["categoryId"]);
-            if ($categoryIdentifier !== null) {
-                $this->statisticsService->updateCategoryStatistics($categoryIdentifier);
-            }
-        }
-
-        public function onCategoryStatisticsInvalidated(mixed $message) : void {
-            $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["categoryId"]);
-            if ($categoryIdentifier !== null) {
-                $this->statisticsService->updateCategoryStatistics($categoryIdentifier);
-            }
+            $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($message["categoryId"]));
         }
 
         public function onExpenseCreated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onExpenseUpdated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onExpenseRemoved(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onFitnessDataUpdated(mixed $message) : void {
             $trips = $this->tripService->getTripsContainingInterval($message["start"], $message["end"]);
             foreach ($trips as &$trip) {
-                if (!$this->tripService->isDayTripsTrip($trip)) {
-                    $this->statisticsService->updateTripStatistics($trip);
-                }
+                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($trip->getId()));
             }
         }
 
@@ -90,104 +69,71 @@
                 $message["scheduledDeparture"], $message["scheduledArrival"], null);
             $tripId = $this->flightService->getTripIdForFlight($flight);
             if ($tripId !== null) {
-                $trip = $this->tripService->getRegularTrip($tripId);
-                if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                    $this->statisticsService->updateTripStatistics($trip);
-                }
+                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
             }
         }
 
         public function onFlightEventCreated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onFlightEventUpdated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onFlightEventRemoved(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
-        public function onPlaceUpdated(mixed $message) : void {
-            $place = $this->placeService->getRegularPlace($message["placeId"]);
-            if ($place === null) {
-                return;
-            }
-            
-            $tripIdsToUpdate = array();
-            foreach ($place->getDates() as &$date) {
-                if ($date->getTrip() !== null && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                    $tripIdsToUpdate[] = $date->getTrip()->getId();
-                }
-            }
-
-            foreach ($tripIdsToUpdate as &$tripId) {
-                $trip = $this->tripService->getRegularTrip($tripId);
-                if (!$this->tripService->isDayTripsTrip($trip)) {
-                    $this->statisticsService->updateTripStatistics($trip);
-                }
-            }
-
-            foreach ($place->getCategories() as &$category) {
-                $this->statisticsService->updateCategoryStatistics($category);
-            }
-        }
-
-        public function onPlaceRemoved(mixed $message) : void {
+        public function onPlaceUpdated(mixed $message) : void {            
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             if ($place === null) {
                 return;
             }
 
-            $tripIdsToUpdate = array();
             foreach ($place->getDates() as &$date) {
-                if ($date->getTrip() !== null && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                    $tripIdsToUpdate[] = $date->getTrip()->getId();
+                if ($date->getTrip() !== null) {
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($date->getTrip()->getId()));
                 }
-            }
-
-            foreach ($tripIdsToUpdate as &$tripId) {
-                $trip = $this->tripService->getRegularTrip($tripId);
-                if (!$this->tripService->isDayTripsTrip($trip)) {
-                    $this->statisticsService->updateTripStatistics($trip);
-                }
-            }
-
-            foreach ($place->getCategories() as &$category) {
-                $this->statisticsService->updateCategoryStatistics($category);
-            }
-        }
-
-        public function onPlaceEventCreated(mixed $message) : void {
-            $place = $this->placeService->getRegularPlace($message["placeId"]);
-            if ($place === null) {
-                return;
-            }
-
-            $tripIdsToUpdate = array();
-            foreach ($place->getDates() as &$date) {
-                if ($date->getTrip() !== null && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                    $tripIdsToUpdate[] = $date->getTrip()->getId();
-                }
-            }
-
-            foreach ($tripIdsToUpdate as &$tripId) {
-                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($tripId));
             }
 
             foreach ($place->getCategories() as &$category) {
                 $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
-            }        
+            }
+        }
+
+        public function onPlaceRemoved(mixed $message) : void {            
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === null) {
+                return;
+            }
+
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== null) {
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($date->getTrip()->getId()));
+                }
+            }
+
+            foreach ($place->getCategories() as &$category) {
+                $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
+            }
+        }
+
+        public function onPlaceEventCreated(mixed $message) : void {            
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === null) {
+                return;
+            }
+
+            foreach ($place->getDates() as &$date) {
+                if ($date->getTrip() !== null) {
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($date->getTrip()->getId()));
+                }
+            }
+
+            foreach ($place->getCategories() as &$category) {
+                $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($category->getId()));
+            }   
         }
 
         public function onPlaceEventUpdated(mixed $message) : void {
@@ -196,15 +142,10 @@
                 return;
             }
 
-            $tripIdsToUpdate = array();
             foreach ($place->getDates() as &$date) {
-                if ($date->getTrip() !== null && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                    $tripIdsToUpdate[] = $date->getTrip()->getId();
+                if ($date->getTrip() !== null) {
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($date->getTrip()->getId()));
                 }
-            }
-
-            foreach ($tripIdsToUpdate as &$tripId) {
-                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($tripId));
             }
 
             foreach ($place->getCategories() as &$category) {
@@ -218,17 +159,9 @@
                 return;
             }
 
-            $tripIdsToUpdate = array();
             foreach ($place->getDates() as &$date) {
-                if ($date->getTrip() !== null && !in_array($date->getTrip()->getId(), $tripIdsToUpdate)) {
-                    $tripIdsToUpdate[] = $date->getTrip()->getId();
-                }
-            }
-
-            foreach ($tripIdsToUpdate as &$tripId) {
-                $trip = $this->tripService->getRegularTrip($tripId);
-                if (!$this->tripService->isDayTripsTrip($trip)) {
-                    $this->statisticsService->updateTripStatistics($trip);
+                if ($date->getTrip() !== null) {
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($date->getTrip()->getId()));
                 }
             }
 
@@ -238,66 +171,52 @@
         }
 
         public function onStayEventCreated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onStayEventUpdated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onStayEventRemoved(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onTripUpdated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onTripEventCreated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onTripEventUpdated(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onTripEventRemoved(mixed $message) : void {
-            $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
-                $this->statisticsService->updateTripStatistics($trip);
-            }
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
         public function onYearStatisticsUpdated(mixed $message) : void {
-            $this->statisticsService->updateOverallStatistics();
+            $this->eventPublisher->publish(Event::OverallStatisticsInvalidated());
         }
 
         public function onCategoryStatisticsUpdated(mixed $message) : void {
-            $this->statisticsService->updateOverallStatistics();
+            $this->eventPublisher->publish(Event::OverallStatisticsInvalidated());
         }
 
         public function onTripStatisticsUpdated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
             if ($trip !== null) {
-                $this->statisticsService->updateYearStatistics($trip->getYear());
+                $this->eventPublisher->publish(Event::YearStatisticsInvalidated($trip->getYear()));
+            }
+        }
+
+        public function onCategoryStatisticsInvalidated(mixed $message) : void {
+            $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["categoryId"]);
+            if ($categoryIdentifier !== null) {
+                $this->statisticsService->updateCategoryStatistics($categoryIdentifier);
             }
         }
 
