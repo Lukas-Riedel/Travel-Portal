@@ -134,9 +134,7 @@
                 foreach ($allPlaces as $place) {
                     foreach ($place->getDates() as $date) {
                         $dayKey = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
-                        if (!isset($placesByDay[$dayKey])) {
-                            $placesByDay[$dayKey] = array();
-                        }
+                        $placesByDay[$dayKey] ??= array();
                         $placesByDay[$dayKey][] = $place;
                     }
                 }

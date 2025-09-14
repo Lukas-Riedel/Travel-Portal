@@ -63,16 +63,8 @@
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
-                    $allDates = array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces));
-                    $timestamps = array_map(fn($date) => $date->getStart(), $allDates);
-                    $minTimestamp = min($timestamps);
-                    $maxTimestamp = max($timestamps) + CommonConstants::ONE_DAY_SECONDS;
-
-                    $allPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $minTimestamp, 
-                        $maxTimestamp, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-
                     $placesByDay = array();
-                    foreach ($allPlaces as $place) {
+                    foreach ($relevantPlaces as $place) {
                         foreach ($place->getDates() as $date) {
                             $dayKey = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
                             $placesByDay[$dayKey] ??= array();

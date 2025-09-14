@@ -248,9 +248,7 @@
 
             $placeIdsToCategoryIds = array();
             foreach ($categoryRows as &$categoryRow) {
-                if (!isset($placeIdsToCategoryIds[$categoryRow["place_id"]])) {
-                    $placeIdsToCategoryIds[$categoryRow["place_id"]] = array();
-                }
+                $placeIdsToCategoryIds[$categoryRow["place_id"]] ??= array();
                 $placeIdsToCategoryIds[$categoryRow["place_id"]][] = $categoryRow["category_id"];
             }
 

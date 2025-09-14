@@ -23,7 +23,7 @@
         public function get(string $key, ?int $newTtl = null) : mixed {
             $this->init();
             
-            $value = isset($this->cache[$key]) ? $this->cache[$key] : null;
+            $value = $this->cache[$key] ?? null;
             if ($value !== null) {
                 if ($newTtl !== null) {
                     $this->redisClient->expire($key, $newTtl);

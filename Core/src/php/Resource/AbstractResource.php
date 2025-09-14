@@ -38,8 +38,7 @@ use Core\Routing\AuthMiddleware;
         }
 
         public function validateQueryNullableParameter(Request $request, string $key) : ?string {
-            $queryParams = $request->getQueryParams();
-            return isset($queryParams[$key]) ? $queryParams[$key] : null;
+            return $request->getQueryParams()[$key] ?? null;
         }
 
         public function validatePathArgument(array $args, string $key) : mixed {
@@ -72,8 +71,7 @@ use Core\Routing\AuthMiddleware;
         }
         
         public function validateJsonBodyNullableField(Request $request, string $field) : mixed {
-            $body = $this->validateJsonBody($request);
-            return isset($body[$field]) ? $body[$field] : null;
+            return $this->validateJsonBody($request)[$field] ?? null;
         }
 
         public function validateJsonBodyFieldExistence(Request $request, string $field) : bool {

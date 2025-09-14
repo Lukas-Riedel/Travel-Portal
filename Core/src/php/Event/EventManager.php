@@ -34,9 +34,7 @@
                 foreach (get_class_methods($listener) as &$method) {
                     if (str_starts_with($method, self::EVENT_HANDLER_METHOD_PREFIX)) {
                         $handledEvent = substr($method, strlen(self::EVENT_HANDLER_METHOD_PREFIX));
-                        if (!isset($eventHandlers[$handledEvent])) {
-                            $eventHandlers[$handledEvent] = array();
-                        }
+                        $eventHandlers[$handledEvent] ??= array();
                         $eventHandlers[$handledEvent][] = $listener;
                     }
                 }

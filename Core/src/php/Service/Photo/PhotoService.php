@@ -127,10 +127,10 @@
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
                         fn() => $mediaItem["baseUrl"],
                         $mediaItem["productUrl"],
-                        isset($mediaItem["mediaMetadata"]["photo"]["focalLength"]) ? $mediaItem["mediaMetadata"]["photo"]["focalLength"] : null,
-                        isset($mediaItem["mediaMetadata"]["photo"]["apertureFNumber"]) ? $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] : null,
+                        $mediaItem["mediaMetadata"]["photo"]["focalLength"] ?? null,
+                        $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] ?? null,
                         isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : null,
-                        isset($mediaItem["mediaMetadata"]["photo"]["isoEquivalent"]) ? $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] : null,
+                        $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] ?? null,
                         strtotime($mediaItem["mediaMetadata"]["creationTime"])
                     );
                 }

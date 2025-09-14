@@ -59,7 +59,7 @@
 
             $file = $this->executeRequest(HttpMethod::POST, "https://www.googleapis.com/drive/v3/files", array(), $payload);
 
-            return isset($file["id"]) ? $file["id"] : null;
+            return $file["id"] ?? null;
         }
 
         public function createFile($name, $folderId, $contentType, $content) : bool {
@@ -272,7 +272,7 @@
             }
             
             $response = $this->executeRequest(HttpMethod::POST, "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate", array(), $payload);
-            return isset($response["newMediaItemResults"]) ? $response["newMediaItemResults"] : array();
+            return $response["newMediaItemResults"] ?? array();
         }
         
         public function uploadPhoto($data) : string {

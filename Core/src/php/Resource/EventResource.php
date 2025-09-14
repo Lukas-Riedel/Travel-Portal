@@ -112,7 +112,7 @@
                 if (!array_key_exists($parameterName, $args) && !$parameter->isDefaultValueAvailable()) {
                     throw new \RuntimeException("The required argument '$parameterName' is missing for the '$name' event.");
                 }
-                $orderedArgs[] = isset($args[$parameterName]) ? $args[$parameterName] : $parameter->getDefaultValue();
+                $orderedArgs[] = $args[$parameterName] ?? $parameter->getDefaultValue();
             }
 
             $this->eventPublisher->publish($method->invokeArgs(null, $orderedArgs));

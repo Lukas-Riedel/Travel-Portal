@@ -81,9 +81,7 @@
             $toAirports = array_map(fn($flight) => $flight->getTo(), $allFlights);
             $allAirports = array_merge($fromAirports, $toAirports);
             return array_values(array_reduce($allAirports, function ($carry, $airport) {
-                if (!isset($carry[$airport->getId()])) {
-                    $carry[$airport->getId()] = $airport;
-                }
+                $carry[$airport->getId()] ??= $airport;
                 return $carry;
             }, array()));
         }

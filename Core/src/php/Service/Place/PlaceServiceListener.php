@@ -141,10 +141,7 @@
                             ? intval($date->getStart() / CommonConstants::ONE_YEAR_SECONDS)
                             : $date->getTrip()->getId();
             
-                        if (!isset($buckets[$tripId])) {
-                            $buckets[$tripId] = 0;
-                        }            
-                        
+                        $buckets[$tripId] ??= 0;
                         $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
                             ? $album->getImagesCount() // This is an indoor-only location.
                             : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.

@@ -74,9 +74,7 @@
                 function($carry, $place) {
                     // Rounding to two decimal places will consider all places in the circle of +/- 1.1 km as duplicates.
                     $key = round($place->getLatitude(), 2) . "," . round($place->getLongitude(), 2);
-                    if (!isset($carry[$key])) {
-                        $carry[$key] = [];
-                    }
+                    $carry[$key] ??= array();
                     // Do not add the same place twice (the first one is always a regular place, the other one can be a candidate place).
                     if (count(array_filter($carry[$key], fn($existingPlace) => $existingPlace->getName() == $place->getName())) === 0) {
                         $carry[$key][] = $place;                        

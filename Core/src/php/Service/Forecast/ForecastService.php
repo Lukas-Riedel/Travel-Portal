@@ -152,7 +152,8 @@
 
             $actualForecast = new Weather($convertedForecast["temperature"], $convertedForecast["clouds"], $convertedForecast["wind"],
                 $convertedForecast["precipitation"], $convertedForecast["symbol"], $convertedForecast["updatedAt"]);
-            $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + CommonConstants::ONE_HOUR_SECONDS);
+            $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) 
+                ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + CommonConstants::ONE_HOUR_SECONDS);
 
             $this->databaseProvider->executeAtomically(function() use (&$placeIdentifier, &$actualForecast, &$timestamp, &$expiration) {
                 $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
