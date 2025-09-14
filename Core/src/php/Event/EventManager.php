@@ -81,7 +81,7 @@
             finally {
                 $this->logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
                 $this->flushLogger();
-                $this->openLineageEventManager->publishCurrentEvent();
+                $this->openLineageEventManager->publishCurrentEventAsync();
             }
         }
 

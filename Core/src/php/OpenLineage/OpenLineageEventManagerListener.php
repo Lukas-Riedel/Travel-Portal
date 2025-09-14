@@ -10,7 +10,8 @@
         }
 
         public function onOpenLineageEventPublished(mixed $message) : void {
-            $this->openLineageEventManager->publishEvent(new OpenLineageEvent($message["event"]["job"]["name"], $message["event"]["inputs"], $message["event"]["outputs"]));
+            $this->openLineageEventManager->publishEvent(new OpenLineageEvent($message["event"]["eventTime"], $message["event"]["job"]["name"],
+                $message["event"]["inputs"], $message["event"]["outputs"]));
         }
     }
 ?>

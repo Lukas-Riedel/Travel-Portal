@@ -5,11 +5,13 @@
 
         private const UNKNOWN_COLUMN_PLACEHOLDER = "UNKNOWN";
 
+        private readonly string $eventTime;
         private readonly string $jobName;
         private array $inputs;
         private array $outputs;
 
-        public function __construct(string $jobName, array $inputs, array $outputs) {
+        public function __construct(string $eventTime, string $jobName, array $inputs, array $outputs) {
+            $this->eventTime = $eventTime;
             $this->jobName = $jobName;
             $this->inputs = $inputs;
             $this->outputs = $outputs;
@@ -35,7 +37,7 @@
         public function jsonSerialize() : mixed {
             return array(
                 "eventType" => "COMPLETE",
-                "eventTime" => (new \DateTime("now", new \DateTimeZone("UTC")))->format("Y-m-d\TH:i:s\Z"),
+                "eventTime" => $this->eventTime,
                 "run" => array(
                     "runId" => self::uuid()
                 ),

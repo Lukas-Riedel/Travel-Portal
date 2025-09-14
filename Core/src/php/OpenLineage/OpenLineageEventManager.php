@@ -19,7 +19,7 @@
         }
 
         public function initializeEvent(string $jobName) : void {
-            $this->event = new OpenLineageEvent($jobName, array(), array());
+            $this->event = new OpenLineageEvent((new \DateTime("now", new \DateTimeZone("UTC")))->format("Y-m-d\TH:i:s\Z"), $jobName, array(), array());
         }
 
         public function getCurrentEvent() : ?OpenLineageEvent {
