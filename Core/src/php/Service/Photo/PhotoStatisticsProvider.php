@@ -63,10 +63,26 @@
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
+                    $allDates = array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces));
+                    $timestamps = array_map(fn($date) => $date->getStart(), $allDates);
+                    $minTimestamp = min($timestamps);
+                    $maxTimestamp = max($timestamps) + CommonConstants::ONE_DAY_SECONDS;
+
+                    $allPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $minTimestamp, 
+                        $maxTimestamp, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+
+                    $placesByDay = array();
+                    foreach ($allPlaces as $place) {
+                        foreach ($place->getDates() as $date) {
+                            $dayKey = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
+                            $placesByDay[$dayKey] ??= array();
+                            $placesByDay[$dayKey][] = $place;
+                        }
+                    }
+
                     $mostPhotosPerDay = $this->getStandingsStatistics(fn($place, $date) => array(sprintf(self::PHOTOS_DATE_STATISTICS_FORMAT, implode(", ",
-                        array_map(fn($place) => $place->getName(), array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null,
-                        $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS), $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS) + CommonConstants::ONE_DAY_SECONDS,
-                        array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending), fn($place) => count($place->getDates()) > 0))), date(CommonConstants::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
+                        array_map(fn($place) => $place->getName(), $placesByDay[date(CommonConstants::DMY_DATE_FORMAT, $date->getStart())])),
+                        date(CommonConstants::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {
                         $statistics[] = new Statistics(self::MOST_PHOTOS_PER_DAY_STATISTICS_NAME, $mostPhotosPerDay, StatisticsUnit::Photos);
                     }

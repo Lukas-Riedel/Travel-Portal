@@ -80,7 +80,6 @@
             if ($this->isInAtomicExecution) {
                 $callable();
             }
-
             else {
                 $this->isInAtomicExecution = true;
                 $this->connection->begin_transaction();
