@@ -36,6 +36,8 @@
         private readonly PlaceService $placeService;
         private readonly TripService $tripService;
 
+        private array $placesCache = array();
+
         public function __construct(FitnessService $fitnessService, PlaceService $placeService, TripService $tripService) {
             $this->fitnessService = $fitnessService;
             $this->placeService = $placeService;
@@ -119,11 +121,30 @@
         }
 
         private function getStandingsStatisticsForDayRecords(array $records, callable $valueSelector, ?string $categoryId, ?string $tripId) : array {
-            return array_filter(array_map(function($record) use(&$categoryId, &$tripId, &$valueSelector) {
-                $places = array_filter($this->placeService->getRegularPlaces($categoryId, null, $tripId, null, null, null, null, $record->getTimestamp(),
-                    $record->getTimestamp() + CommonConstants::ONE_DAY_SECONDS, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
-                    fn($place) => count($place->getDates()) > 0);
-                return empty($places) ? null : new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
+            $timestamps = array_map(fn($record) => $record->getTimestamp(), $records);
+            $minTimestamp = min($timestamps);
+            $maxTimestamp = max($timestamps) + CommonConstants::ONE_DAY_SECONDS;
+
+            $cacheKey = ($categoryId ?? "null") . "_" . ($tripId ?? "null") . "_" . $minTimestamp . "_" . $maxTimestamp;
+            if (!isset($this->placesCache[$cacheKey])) {
+                $allPlaces = $this->placeService->getRegularPlaces($categoryId, null, $tripId, null, null, null, null, $minTimestamp, 
+                    $maxTimestamp, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+
+                $placesByDay = array();
+                foreach ($allPlaces as $place) {
+                    foreach ($place->getDates() as $date) {
+                        $dayKey = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
+                        $placesByDay[$dayKey][] = $place;
+                    }
+                }
+
+                $this->placesCache[$cacheKey] = $placesByDay;
+            }
+
+            return array_filter(array_map(function($record) use(&$cacheKey, &$valueSelector) {
+                $dayKey = date(CommonConstants::DMY_DATE_FORMAT, $record->getTimestamp());
+                $places = $this->placesCache[$cacheKey][$dayKey] ?? array();
+                return empty($places) ? null :new KeyValuePair(sprintf(self::PLACES_AND_DATE_FORMAT,
                     implode(", ", array_map(fn($place) => $place->getName(), $places)),
                     date(CommonConstants::DMY_DATE_FORMAT, $record->getTimestamp())), $valueSelector($record));
             }, $records), fn($statistics) => $statistics !== null);
