@@ -2,15 +2,16 @@
     namespace Core\Service\Label;
 
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Database\DatabaseClient;
 
     class LabelMapper {
         
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService) {
+            $this->databaseClient = $databaseClient;
             $this->configurationService = $configurationService;
         }
 
@@ -24,7 +25,7 @@
                 ORDER BY li.name ASC
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->getMappedResultSet(function($labelRow) {
@@ -38,7 +39,7 @@
                 FROM label_identifier
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($labelRow) {
                     return new Label($labelRow["id"], $labelRow["name"]);
@@ -52,7 +53,7 @@
                 WHERE id = ?
             SQL;
 
-            $labelRow = $this->databaseProvider
+            $labelRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelId)
                 ->getSingleRow();
@@ -71,7 +72,7 @@
                 WHERE label_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelId)
                 ->getResultSetForColumn("place_id");
@@ -84,7 +85,7 @@
                 WHERE name = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelName)
                 ->getSingleColumn("id");
@@ -102,7 +103,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $labelId)
                 ->execute() === 1;
@@ -118,7 +119,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelName)
                 ->execute() === 1;
@@ -132,7 +133,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $labelId)
                 ->execute() === 1;
@@ -146,7 +147,7 @@
                     AND label_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $labelId)
                 ->execute();
@@ -159,7 +160,7 @@
                 WHERE label_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelId)
                 ->execute();
@@ -172,7 +173,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
                 ->withClause("id NOT IN (SELECT label_id FROM label)");
 
             $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 
@@ -183,7 +184,7 @@
 
             $whereClause = $whereClauseBuilder->buildForAnd();
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->execute();
         }

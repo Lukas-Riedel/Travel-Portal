@@ -1,16 +1,18 @@
 <?php
     namespace Core\Service\Photo;
+    
+    use Core\Client\Database\DatabaseClient;
 
     class PhotoMapper {
 
         private const INDOOR_PHOTO_ISO_THRESHOLD = 640;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly \GoogleApiClient $googleApiClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, \GoogleApiClient $googleApiClient) {
+            $this->databaseClient = $databaseClient;
             $this->googleApiClient = $googleApiClient;
         }
 
@@ -21,7 +23,7 @@
                 WHERE replaced = 1
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSetForColumn("id", function($photoId) {
                     return $this->doSelectPhoto($photoId, fn() => null);
@@ -55,7 +57,7 @@
                     ON a.id = pp.album_id
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($albumRow) {
                     return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
@@ -97,7 +99,7 @@
                     OR a.name LIKE CONCAT(?, ' __.__.____')
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeName, $placeName, $placeName, $placeName)
                 ->getMappedResultSet(function($albumRow) {
@@ -137,7 +139,7 @@
                 WHERE id = ?
             SQL;
 
-            $albumRow = $this->databaseProvider
+            $albumRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->getSingleRow();
@@ -181,7 +183,7 @@
                 WHERE name = ?
             SQL;
 
-            $albumRow = $this->databaseProvider
+            $albumRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumName)
                 ->getSingleRow();
@@ -204,7 +206,7 @@
                 WHERE id = ?
             SQL;
 
-            $albumId = $this->databaseProvider
+            $albumId = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photoId)
                 ->getSingleColumn(("album_id"));
@@ -235,7 +237,7 @@
                 LIMIT 50
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->getMappedResultSet(function($photoRow) {
@@ -254,7 +256,7 @@
                     AND expiration > UNIX_TIMESTAMP()
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->getMappedResultSet(function($photoRow) {
@@ -271,7 +273,7 @@
                 WHERE external_id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($externalId)
                 ->getFirstColumn("id");
@@ -284,7 +286,7 @@
                 WHERE external_id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($externalId)
                 ->getFirstColumn("id");
@@ -297,7 +299,7 @@
                 WHERE id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->getFirstColumn("external_id");
@@ -310,7 +312,7 @@
                 WHERE id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photoId)
                 ->getFirstColumn("external_id");
@@ -327,7 +329,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("id");
         }
@@ -354,7 +356,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($album->getName(), $album->getId(), $album->getMainPhoto()?->getId(), $album->getMainImageUrl(),
                     $album->getImagesCount(), $this->selectIndoorPhotosCount($album->getId()), $album->getPermalink())
@@ -385,7 +387,7 @@
                 )
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photo->getId(), $albumId, $photo->getFocalLength(), $photo->getAperture(),
                     $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink())
@@ -418,7 +420,7 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($pendingPhoto->getAlbumId(), $pendingPhoto->getFileName(), $pendingPhoto->getBatchId(),
                     $pendingPhoto->getExpectedBatchSize(), $pendingPhoto->getBatchPosition(),  $pendingPhoto->getReplacedPhotoId(),
@@ -426,7 +428,7 @@
                 ->execute() === 1;
 
             if ($wasInserted) {
-                $pendingPhoto->setId($this->databaseProvider->getLastInsertedId());
+                $pendingPhoto->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -442,7 +444,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($externalId)
                 ->execute() === 1;
@@ -460,7 +462,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($externalId, $replaced ? 1 : 0)
                 ->execute() === 1;
@@ -473,7 +475,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($newExternalId, $photoId)
                 ->execute() === 1;
@@ -486,13 +488,13 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($albumId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $albumId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->execute();
         }
@@ -504,7 +506,7 @@
                 WHERE album_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->execute();
@@ -517,7 +519,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($id)
                 ->execute();
@@ -533,7 +535,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -548,7 +550,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -560,7 +562,7 @@
                 WHERE expiration <= UNIX_TIMESTAMP()
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -572,7 +574,7 @@
                 WHERE album_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->execute();
@@ -586,7 +588,7 @@
                     AND iso >= ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($albumId, self::INDOOR_PHOTO_ISO_THRESHOLD)
                 ->getSingleColumn("count");
@@ -599,7 +601,7 @@
                 WHERE id = ?
             SQL;            
                 
-            $photoRow = $this->databaseProvider
+            $photoRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photoId)
                 ->getSingleRow();

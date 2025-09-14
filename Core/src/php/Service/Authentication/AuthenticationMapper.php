@@ -1,12 +1,14 @@
 <?php
     namespace Core\Service\Authentication;
 
+    use Core\Client\Database\DatabaseClient;
+
     class AuthenticationMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectUsersWithRole(string $role) : array {
@@ -16,7 +18,7 @@
                 WHERE FIND_IN_SET(?, roles)
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($role)
                 ->getMappedResultSet(function($userRow) {
@@ -31,7 +33,7 @@
                 WHERE id = ?
             SQL;
             
-            $userRow = $this->databaseProvider
+            $userRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($id)
                 ->getSingleRow();
@@ -50,7 +52,7 @@
                 WHERE username = ?
             SQL;
             
-            $userRow = $this->databaseProvider
+            $userRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($username)
                 ->getSingleRow();
@@ -69,7 +71,7 @@
                 WHERE api_key = ?
             SQL;
             
-            $userRow = $this->databaseProvider
+            $userRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($apiKey)
                 ->getSingleRow();
@@ -88,7 +90,7 @@
                 WHERE username = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(password_hash($password, PASSWORD_DEFAULT), $username)
                 ->execute() === 1;

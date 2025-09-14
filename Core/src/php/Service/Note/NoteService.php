@@ -1,15 +1,18 @@
 <?php
     namespace Core\Service\Note;
+    
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class NoteService {
 
         private readonly NoteMapper $noteMapper;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->noteMapper = new NoteMapper($databaseProvider);
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->noteMapper = new NoteMapper($databaseClient);
+            $this->transactionManager = $databaseClient;
         }
 
         public function createTripNote(string $tripId, string $content) : Note {
@@ -42,7 +45,7 @@
 
         private function createNote(NoteType $noteType, string $entityId, string $content) : Note {
             $note = new Note(null, $content, time());
-            $this->databaseProvider->executeAtomically(function() use (&$noteType, &$entityId, &$note) {
+            $this->transactionManager->executeAtomically(function() use (&$noteType, &$entityId, &$note) {
                 $this->noteMapper->insertNoteIdentifier($note);
                 $this->noteMapper->insertNote($noteType, $entityId, $note->getId());                
             });

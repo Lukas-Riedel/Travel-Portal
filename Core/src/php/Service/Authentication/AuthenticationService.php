@@ -2,6 +2,7 @@
     namespace Core\Service\Authentication;
 
     use Core\Client\CacheClient;
+    use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
@@ -45,8 +46,8 @@
         private readonly \HttpClient $httpClient;
         private readonly CacheClient $cacheClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, \HttpClient $httpClient, CacheClient $cacheClient) {
-            $this->authenticationMapper = new AuthenticationMapper($databaseProvider);
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, \HttpClient $httpClient, CacheClient $cacheClient) {
+            $this->authenticationMapper = new AuthenticationMapper($databaseClient);
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->cacheClient = $cacheClient;

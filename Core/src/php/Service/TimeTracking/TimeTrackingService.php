@@ -2,6 +2,8 @@
     namespace Core\Service\TimeTracking;
 
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class TimeTrackingService {
 
@@ -12,12 +14,12 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
-            $this->timeTrackingMapper = new TimeTrackingMapper($databaseProvider);
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService) {
+            $this->timeTrackingMapper = new TimeTrackingMapper($databaseClient);
             $this->configurationService = $configurationService;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
 
         // TODO: Replace string $type by TimeTrackingEventType $type.
@@ -45,7 +47,7 @@
         public function resetOpeningBalances(string $beginningOfYearDate) : void {
             foreach ($this->configurationService->getConfigurationEntry("timeTracking")["timeOffHours"] as $eventType => $openingBalance) {
                 $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);                
-                $this->databaseProvider->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearDate) {
+                $this->transactionManager->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearDate) {
                     $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 
                     if ($wasReset) {    

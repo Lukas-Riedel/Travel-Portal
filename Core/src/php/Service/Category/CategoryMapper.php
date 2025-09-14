@@ -1,22 +1,23 @@
 <?php
     namespace Core\Service\Category;
 
+    use Core\Client\Database\DatabaseClient;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Statistics\StatisticsService;
 
     class CategoryMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
         private readonly ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, HighlightService $highlightService,
+        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService,
             StatisticsService $statisticsService, ConfigurationService $configurationService) {
-            $this->databaseProvider = $databaseProvider;
+            $this->databaseClient = $databaseClient;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
             $this->configurationService = $configurationService;
@@ -28,7 +29,7 @@
                 FROM category_identifier
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("name");
         }
@@ -40,7 +41,7 @@
                 WHERE name = ?
             SQL;
 
-            $categoryIdentifierRow = $this->databaseProvider
+            $categoryIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name)
                 ->getFirstRow();
@@ -62,7 +63,7 @@
                 WHERE id = ?
             SQL;
 
-            $categoryIdentifierRow = $this->databaseProvider
+            $categoryIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId)
                 ->getSingleRow();
@@ -85,7 +86,7 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if (count($categoryCategories) > 0) {
                 $whereClauseBuilder->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
             }
@@ -97,7 +98,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($categoryRow) use(&$includedEntities) {
                     $highlights = array();
@@ -123,7 +124,7 @@
                 FROM region_geographical
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($geographicalRegionRow) {
                     return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country_category_id"],
@@ -138,7 +139,7 @@
                 WHERE json NOT LIKE '%Point%'
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($geographicalRegionRow) {
                     return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country_category_id"],
@@ -152,7 +153,7 @@
                 FROM region_composite
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($compositeRegionRow) {
                     return new CompositeRegion($compositeRegionRow["category_id"],
@@ -169,7 +170,7 @@
                     AND included = 1
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($compositeRegionCategoryId)
                 ->getResultSetForColumn("subject_category_id");
@@ -183,7 +184,7 @@
                     AND included = 0
             SQL;
     
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($compositeRegionCategoryId)
                 ->getResultSetForColumn("subject_category_id");
@@ -196,7 +197,7 @@
                 WHERE place_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->getResultSetForColumn("category_id");
@@ -209,13 +210,13 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($category !== null) {
                 $whereClauseBuilder->withClause("category = ?", $category->value);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSetForColumn("id");
         }
@@ -227,7 +228,7 @@
                 WHERE category_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId)
                 ->getResultSetForColumn("place_id");
@@ -242,7 +243,7 @@
                 ORDER BY ra.area DESC
             SQL;
 
-            $categoryRows = $this->databaseProvider
+            $categoryRows = $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSet();
 
@@ -267,7 +268,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $categoryId)
                 ->execute() === 1;
@@ -285,7 +286,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId, $area)
                 ->execute() === 1;
@@ -307,7 +308,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($geographicalRegion->getCategoryId(), $geographicalRegion->getCountryCategoryId(),
                     $geographicalRegion->getRadius(), $geographicalRegion->getGeoJson())
@@ -328,7 +329,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId, $subjectCategoryId)
                 ->execute() === 1;
@@ -348,7 +349,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId, $subjectCategoryId)
                 ->execute() === 1;
@@ -366,13 +367,13 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryIdentifier->getName(), $categoryIdentifier->getCategory()->value)
                 ->execute() === 1;
 
             if ($wasInserted) {
-                $categoryIdentifier->setId($this->databaseProvider->getLastInsertedId());
+                $categoryIdentifier->setId($this->databaseClient->getLastInsertedId());
             }
             
             return $wasInserted;
@@ -385,7 +386,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($highlightIdentifier, $categoryId)
                 ->execute() === 1;
@@ -398,7 +399,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $categoryId)
                 ->execute() === 1;
@@ -411,7 +412,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($color, $categoryId)
                 ->execute() === 1;
@@ -424,7 +425,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($unicode, $categoryId)
                 ->execute() === 1;
@@ -437,7 +438,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($publicHolidaysCalendar, $categoryId)
                 ->execute() === 1;
@@ -450,7 +451,7 @@
                 WHERE place_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->execute();
@@ -463,7 +464,7 @@
                 WHERE category_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId)
                 ->execute();
@@ -474,10 +475,10 @@
                 DELETE
                 FROM region_geographical
                 WHERE category_id = ?
-                    AND country_category_id {$this->databaseProvider->getIsNullOrEqualTo($countryCategoryId)}
+                    AND country_category_id {$this->databaseClient->getIsNullOrEqualTo($countryCategoryId)}
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryId)
                 ->execute();
@@ -489,7 +490,7 @@
                 FROM region_area
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }        
@@ -502,14 +503,14 @@
             SQL;
             
             $countryNames = array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames"));
-            $whereClause = $this->databaseProvider->whereClauseBuilder()
+            $whereClause = $this->databaseClient->whereClauseBuilder()
                 ->withClause("name NOT IN (" . implode(",", array_fill(0, count($countryNames), "?")) . ")", ...$countryNames)
                 ->withClause("id NOT IN (SELECT category_id FROM region_geographical)")
                 ->withClause("id NOT IN (SELECT category_id FROM region_composite)")
                 ->withClause("id NOT IN (SELECT subject_category_id FROM region_composite)")
                 ->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->execute();
         }

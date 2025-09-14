@@ -6,7 +6,7 @@
         private const BACKUP_FOLDER_NAME = "Travel Portal Backups";
 
         public function onApplicationStarted(mixed $message) : void {
-            global $databaseProvider, $googleApiClient;
+            global $databaseClient, $googleApiClient;
 
             $rootBackupFolderId = $googleApiClient->getOrCreateFolderId(self::BACKUP_FOLDER_NAME, null);
             $backupFolderId = $googleApiClient->createFolder(date("d.m.Y H:i:s"), $rootBackupFolderId);
@@ -14,7 +14,7 @@
             foreach (explode(",", $message["tables"]) as &$table) {
                 $dump = array();
 
-                $rows = $databaseProvider
+                $rows = $databaseClient
                     ->statementBuilder("SELECT * FROM " . $table)
                     ->getResultSet();
 

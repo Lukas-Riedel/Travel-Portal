@@ -1,12 +1,14 @@
 <?php
     namespace Core\Service\Note;
+    
+    use Core\Client\Database\DatabaseClient;
 
     class NoteMapper {
         
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectNotes(NoteType $noteType, string $entityId) : array {
@@ -18,7 +20,7 @@
                 WHERE n.id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId)
                 ->getMappedResultSet(function($noteRow) {
@@ -38,14 +40,14 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($note->getContent(), $note->getTimestamp())
                 ->execute();
                  
 
             if ($wasInserted) {
-                $note->setId($this->databaseProvider->getLastInsertedId());
+                $note->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -63,7 +65,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId, $noteId)
                 ->execute() === 1;            
@@ -76,7 +78,7 @@
                 WHERE note_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId, $noteId)
                 ->execute() === 1;
@@ -95,7 +97,7 @@
                     )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($noteId, $entityId)
                 ->execute();

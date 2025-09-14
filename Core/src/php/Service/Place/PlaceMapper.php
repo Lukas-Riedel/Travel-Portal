@@ -10,12 +10,13 @@
     use Core\Service\Label\LabelService;
     use Core\Service\Note\NoteService;
     use Core\Service\Photo\PhotoService;
+    use Core\Client\Database\DatabaseClient;
 
     class PlaceMapper {
 
         private const VISITED_CATEGORIES_TEMPORARY_TABLE_NAME = "visited_categories";
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly ConfigurationService $configurationService;
 
@@ -28,9 +29,9 @@
 
         private array $countries = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
             ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService, NoteService $noteService) {
-            $this->databaseProvider = $databaseProvider;
+            $this->databaseClient = $databaseClient;
             $this->categoryService = $categoryService;
             $this->labelService = $labelService;
             $this->forecastService = $forecastService;
@@ -50,7 +51,7 @@
                     AND pi.country_category_id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId, $this->categoryService->getCategoryIdentifier($country)->getId())
                 ->getResultSetForColumn("date");
@@ -68,7 +69,7 @@
                 ORDER BY MIN(pe.start)
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSetForColumn("country_category_id", function($categoryId) {
@@ -84,7 +85,7 @@
                 DROP TEMPORARY TABLE IF EXISTS {$temporaryTableName}
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
 
@@ -95,7 +96,7 @@
                 )
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
 
@@ -117,7 +118,7 @@
                 }
             }     
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql . " " . implode(", ", $values))
                 ->withParameters(...$parameters)
                 ->execute();
@@ -143,7 +144,7 @@
             SQL;
 
             $placesCache = array();            
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($categoryRow) use(&$start, &$end, &$placesCache) {
@@ -168,7 +169,7 @@
                 WHERE pce.trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSetForColumn("country_category_id", function($categoryId) {
@@ -208,7 +209,7 @@
             SQL;
 
             $homeTimeZone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
             }
@@ -271,7 +272,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
-            $placeRows = $this->databaseProvider
+            $placeRows = $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
 
@@ -357,7 +358,7 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
                 ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE end < UNIX_TIMESTAMP())")
                 ->withClause("pi.id NOT IN (SELECT place_id FROM place_permanent)");
             if ($placeId !== null) {
@@ -383,7 +384,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            $placeRows = $this->databaseProvider
+            $placeRows = $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
 
@@ -435,7 +436,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("trip_id = ?", $tripId);
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("trip_id = ?", $tripId);
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {
@@ -447,7 +448,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            $placeRows = $this->databaseProvider
+            $placeRows = $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
                 
@@ -499,7 +500,7 @@
                 FROM place_identifier
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($placeIdentifierRow) {
                     return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
@@ -515,7 +516,7 @@
                     AND country_category_id = ?
             SQL;
 
-            $placeIdentifierRow = $this->databaseProvider
+            $placeIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $this->categoryService->getCategoryIdentifier($country)->getId())
                 ->getSingleRow();
@@ -535,7 +536,7 @@
                 WHERE id = ?
             SQL;
 
-            $placeIdentifierRow = $this->databaseProvider
+            $placeIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->getSingleRow();
@@ -556,7 +557,7 @@
                     AND start = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $start)
                 ->getSingleColumn("id");
@@ -571,7 +572,7 @@
                 WHERE ope.start IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("place_id");
         }
@@ -587,7 +588,7 @@
                     OR ope.layover <> npe.layover
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("place_id");
         }
@@ -601,7 +602,7 @@
                 WHERE npe.id IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("place_id");
         }
@@ -613,7 +614,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($highlightIdentifier, $placeId)
                 ->execute() === 1;
@@ -626,7 +627,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($score, $placeId)
                 ->execute() === 1;
@@ -639,7 +640,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($quality, $placeId)
                 ->execute() === 1;
@@ -652,7 +653,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($excerpt, $placeId)
                 ->execute() === 1;
@@ -666,7 +667,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $placeId)
                 ->execute() === 1;
@@ -696,7 +697,7 @@
                 )
             SQL;
             
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeIdentifier->getName(), $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
                     $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getExcerpt(),
@@ -704,7 +705,7 @@
                 ->execute() === 1;
                 
             if ($wasInserted) {
-                $placeIdentifier->setId($this->databaseProvider->getLastInsertedId());
+                $placeIdentifier->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -728,7 +729,7 @@
 
             $wasInserted = count($place->getDates()) > 0;
             foreach ($place->getDates() as &$date) {                
-                $wasInserted &= $this->databaseProvider
+                $wasInserted &= $this->databaseClient
                     ->statementBuilder($sql)
                     ->withParameters($place->getId(), $date->getTrip()->getId(), $date->getStart(), $date->getEnd())
                     ->execute() === 1;
@@ -759,7 +760,7 @@
 
             $wasInserted = count($place->getDates()) > 0;
             foreach ($place->getDates() as &$date) {                
-                $wasInserted &= $this->databaseProvider
+                $wasInserted &= $this->databaseClient
                     ->statementBuilder($sql)
                     ->withParameters($eventId, $place->getId(), $date->getTrip()->getId(), $date->getStart(), $date->getEnd(), $date->isLayover() ? 1 : 0)
                     ->execute() === 1;
@@ -767,7 +768,7 @@
 
             return $wasInserted;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeEvent->getId(), $placeIdentifier->getId(), $resolvedTripIdentifier->getId(), $start, $end, $isLayover ? 1 : 0)
                 ->execute();
@@ -783,7 +784,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->execute();
@@ -797,7 +798,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($latitude, $longitude, $placeId)
                 ->execute() === 1;
@@ -810,7 +811,7 @@
                 WHERE trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->execute();
@@ -822,7 +823,7 @@
                 FROM place_event
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -849,7 +850,7 @@
                     )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -869,7 +870,7 @@
                     )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -881,7 +882,7 @@
                 WHERE place_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->execute();
@@ -892,7 +893,7 @@
                 DROP TEMPORARY TABLE IF EXISTS {$tableName}
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();    
 
@@ -902,7 +903,7 @@
                     FROM place_event
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }

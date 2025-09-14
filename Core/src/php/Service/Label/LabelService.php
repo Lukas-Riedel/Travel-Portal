@@ -2,13 +2,14 @@
     namespace Core\Service\Label;
 
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Database\DatabaseClient;
 
     class LabelService {
 
         private readonly LabelMapper $labelMapper;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
-            $this->labelMapper = new LabelMapper($databaseProvider, $configurationService);
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService) {
+            $this->labelMapper = new LabelMapper($databaseClient, $configurationService);
         }
         
         public function createLabel(string $placeId, string $labelName) : Label {

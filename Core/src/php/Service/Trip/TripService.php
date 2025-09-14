@@ -15,6 +15,8 @@
     use Core\Service\Year\YearService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class TripService {
 
@@ -37,12 +39,12 @@
 
         private readonly EventPublisher $eventPublisher;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
+        public function __construct(DatabaseClient $databaseClient, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, EventPublisher $eventPublisher) {
-            $this->tripMapper = new TripMapper($databaseProvider, $calendarClient, $placeService,
+            $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
                 $stayService, $flightService, $expenseService, $fitnessService, $noteService,
                 $highlightService, $statisticsService, $configurationService);
             $this->calendarClient = $calendarClient;
@@ -52,7 +54,7 @@
             $this->yearService = $yearService;
             $this->noteService = $noteService;
             $this->eventPublisher = $eventPublisher;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }        
 
         public function isDayTripsTrip(Trip $trip) : bool {
@@ -101,7 +103,7 @@
 
         public function updateTripName(string $tripId, string $name) : bool {
             $wasUpdated = true;
-            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$tripId, &$name) {
+            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$tripId, &$name) {
                 $wasUpdated &= $this->tripMapper->updateTripName($tripId, $name);
 
                 if ($wasUpdated) {
@@ -134,7 +136,7 @@
                 throw new \InvalidArgumentException("The trip could not be loaded to the trip " . $targetTripId . " because it does not exist.");
             }
 
-            $this->databaseProvider->executeAtomically(function() use(&$candidateTripId, &$targetTrip, &$targetTripId) {
+            $this->transactionManager->executeAtomically(function() use(&$candidateTripId, &$targetTrip, &$targetTripId) {
                 $this->placeService->loadPlaces($candidateTripId, $targetTrip->getStart());
                 $this->noteService->updateTripNoteOwner($candidateTripId, $targetTripId);
             });
@@ -152,7 +154,7 @@
             
             $archivedTripIdentifier = $this->getOrCreateTripIdentifier($trip->getName(), null);
 
-            $this->databaseProvider->executeAtomically(function() use(&$tripId, &$trip, &$archivedTripIdentifier) {
+            $this->transactionManager->executeAtomically(function() use(&$tripId, &$trip, &$archivedTripIdentifier) {
                 $this->tripMapper->insertCandidateTrip($archivedTripIdentifier->getId());
                 $this->placeService->archivePlaces($tripId, $trip->getStart(), $archivedTripIdentifier);
                 $this->removeTripEvent($tripId);
@@ -166,7 +168,7 @@
 
         public function removeCandidateTrip(string $tripId) : bool {
             $wasRemoved = true;
-            $this->databaseProvider->executeAtomically(function() use(&$wasRemoved, &$tripId) {                
+            $this->transactionManager->executeAtomically(function() use(&$wasRemoved, &$tripId) {                
                 $wasRemoved &= $this->placeService->removeCandidateEventsForCandidateTrip($tripId) 
                     && $this->tripMapper->deleteCandidateTrip($tripId);
             });
@@ -181,7 +183,7 @@
             $this->tripMapper->createTripEventTemporaryTable(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
             $tripEvents = $this->calendarClient->getEvents(\Calendar::Trips->value);
             
-            $this->databaseProvider->executeAtomically(function() use(&$tripEvents) {
+            $this->transactionManager->executeAtomically(function() use(&$tripEvents) {
                 $this->tripMapper->deleteAllTripEvents();            
                 foreach ($tripEvents as &$tripEvent) {
                     $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));

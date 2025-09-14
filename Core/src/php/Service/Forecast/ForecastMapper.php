@@ -1,12 +1,14 @@
 <?php
     namespace Core\Service\Forecast;
+    
+    use Core\Client\Database\DatabaseClient;
 
     class ForecastMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectActualWeatherForecast(string $placeId, int $timestamp) : ?Weather {
@@ -17,7 +19,7 @@
                     AND timestamp = ?
             SQL;
 
-            $forecastRow = $this->databaseProvider
+            $forecastRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->getSingleRow();
@@ -34,7 +36,7 @@
                     AND timestamp = ?
             SQL;
 
-            $forecastRow = $this->databaseProvider
+            $forecastRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->getSingleRow();
@@ -51,7 +53,7 @@
                     AND timestamp = ?
             SQL;
 
-            $forecastRow = $this->databaseProvider
+            $forecastRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->getSingleRow();
@@ -68,7 +70,7 @@
                     AND timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->getSingleColumn("expiration");
@@ -98,7 +100,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp, $sun->getSunrise(), $sun->getSunset(), $sun->getAltitude()->getStart(),
                     $sun->getAltitude()->getEnd(), $sun->getAzimuth()->getStart(), $sun->getAzimuth()->getEnd())
@@ -123,7 +125,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation())
                 ->execute() === 1;
@@ -155,7 +157,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation(),
                     $weather->getClouds(), $weather->getSymbol(), $weather->getLastUpdate(), $expiration)
@@ -170,7 +172,7 @@
                     AND timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->execute();
@@ -184,7 +186,7 @@
                     AND timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->execute();
@@ -198,7 +200,7 @@
                     AND timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp)
                 ->execute();
@@ -211,7 +213,7 @@
                 WHERE timestamp < UNIX_TIMESTAMP();
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -223,7 +225,7 @@
                 WHERE timestamp < UNIX_TIMESTAMP();
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -235,7 +237,7 @@
                 WHERE timestamp < UNIX_TIMESTAMP();
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }

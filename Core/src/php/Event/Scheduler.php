@@ -1,16 +1,17 @@
 <?php
     namespace Core\Event;
 
+    use Core\Client\Database\DatabaseClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
 
     class Scheduler {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
         private readonly EventPublisher $eventPublisher;
 
-        public function __construct(\DatabaseProvider $databaseProvider, EventPublisher $eventPublisher) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher) {
+            $this->databaseClient = $databaseClient;
             $this->eventPublisher = $eventPublisher;
         }
 
@@ -26,7 +27,7 @@
                     AND last_triggered <= UNIX_TIMESTAMP() - ?
             SQL;
 
-            $wasRequested = $this->databaseProvider
+            $wasRequested = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($action, $interval)
                 ->execute() === 1;
@@ -41,7 +42,7 @@
                 WHERE action = ?
             SQL;
 
-            $actionExists = $this->databaseProvider
+            $actionExists = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($action)
                 ->getSingleRow() !== null;
@@ -61,7 +62,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($action)
                 ->execute() === 1;
@@ -74,7 +75,7 @@
                 WHERE action = ?
             SQL;
 
-            $lastTriggered = $this->databaseProvider
+            $lastTriggered = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($action)
                 ->getSingleColumn("last_triggered");

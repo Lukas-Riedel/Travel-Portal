@@ -5,6 +5,8 @@
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Place\PlaceIdentifier;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class ForecastService {
 
@@ -19,13 +21,13 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient, ConfigurationService $configurationService) {
-            $this->forecastMapper = new ForecastMapper($databaseProvider);
+        public function __construct(DatabaseClient $databaseClient, \HttpClient $httpClient, ConfigurationService $configurationService) {
+            $this->forecastMapper = new ForecastMapper($databaseClient);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
 
         public function isActualWeatherForecastExpired(string $placeId, int $timestamp) : bool {
@@ -57,7 +59,7 @@
                 $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI,
                 $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI);
             
-            $this->databaseProvider->executeAtomically(function() use (&$placeIdentifier, &$daylightForecast, &$start) {
+            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$daylightForecast, &$start) {
                 $this->forecastMapper->deleteDaylightForecast($placeIdentifier->getId(), $start);
                 $this->forecastMapper->insertDaylightForecast($daylightForecast, $placeIdentifier->getId(), $start);
             });
@@ -88,7 +90,7 @@
 
             $historicalForecast = new Weather($temperature, null, $windspeed, $precipitation, null, time());
     
-            $this->databaseProvider->executeAtomically(function() use (&$placeIdentifier, &$historicalForecast, &$timestamp) {
+            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$historicalForecast, &$timestamp) {
                 $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
                 $this->forecastMapper->insertHistoricalWeatherForecast($historicalForecast, $placeIdentifier->getId(), $timestamp);                
             });
@@ -155,7 +157,7 @@
             $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) 
                 ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + CommonConstants::ONE_HOUR_SECONDS);
 
-            $this->databaseProvider->executeAtomically(function() use (&$placeIdentifier, &$actualForecast, &$timestamp, &$expiration) {
+            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$actualForecast, &$timestamp, &$expiration) {
                 $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
                 $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp, $expiration);
             });

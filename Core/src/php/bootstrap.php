@@ -2,7 +2,6 @@
     require_once(__DIR__ . "/../../vendor/autoload.php");
     require_once(__DIR__ . "/../../config/secrets.php");
     
-    require_once(__DIR__ . "/Provider/DatabaseProvider.php");
     require_once(__DIR__ . "/Model/TargetError.php");
     require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
     require_once(__DIR__ . "/Service/PlatformService.php");
@@ -17,7 +16,8 @@
     use Monolog\Logger;
     use Core\Client\CacheClient;
     use Core\Client\CloudMessagingClient;
-    use Core\Client\MessagingClient;
+use Core\Client\Database\MySQLDatabaseClient;
+use Core\Client\MessagingClient;
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
@@ -101,8 +101,8 @@
     $logger->pushHandler($handler);
 
     // Clients.
+    $databaseClient = new MySQLDatabaseClient(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, $logger);
     $httpClient = new HttpClient();
-    $databaseProvider = new DatabaseProvider(true);
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $calendarClient = new CalendarClient();
@@ -112,29 +112,29 @@
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);
-    $scheduler = new Scheduler($databaseProvider, $eventPublisher);
+    $scheduler = new Scheduler($databaseClient, $eventPublisher);
 
     // Services.
-    $configurationService = new ConfigurationService($databaseProvider, $eventPublisher);
+    $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
     $platformService = new PlatformService();
-    $authenticationService = new AuthenticationService($databaseProvider, $configurationService, $httpClient, $cacheClient);
-    $deviceService = new DeviceService($databaseProvider, $authenticationService);
-    $timeTrackingService = new TimeTrackingService($databaseProvider, $configurationService);
+    $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
+    $deviceService = new DeviceService($databaseClient, $authenticationService);
+    $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
-    $noteService = new NoteService($databaseProvider);
-    $stayService = new StayService($databaseProvider, $calendarClient, $eventPublisher);
+    $noteService = new NoteService($databaseClient);
+    $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($configurationService, $cacheClient, $httpClient);
-    $photoService = new PhotoService($databaseProvider, $googleApiClient, $eventPublisher, $cacheClient);
-    $highlightService = new HighlightService($databaseProvider, $photoService, $eventPublisher);
-    $categoryService = new CategoryService($databaseProvider, $configurationService, $highlightService, $statisticsService, $eventPublisher);
-    $expenseService = new ExpenseService($databaseProvider, $httpClient, $configurationService, $eventPublisher, $cacheClient);
-    $fitnessService = new FitnessService($databaseProvider, $eventPublisher, $configurationService, $logger);
-    $flightService = new FlightService($databaseProvider, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
-    $forecastService = new ForecastService($databaseProvider, $httpClient, $configurationService);
-    $labelService = new LabelService($databaseProvider, $configurationService);
-    $yearService = new YearService($databaseProvider, $highlightService, $statisticsService);
-    $placeService = new PlaceService($databaseProvider, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
-    $tripService = new TripService($databaseProvider, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
+    $photoService = new PhotoService($databaseClient, $googleApiClient, $eventPublisher, $cacheClient);
+    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher);
+    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
+    $expenseService = new ExpenseService($databaseClient, $httpClient, $configurationService, $eventPublisher, $cacheClient);
+    $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
+    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
+    $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService);
+    $labelService = new LabelService($databaseClient, $configurationService);
+    $yearService = new YearService($databaseClient, $highlightService, $statisticsService);
+    $placeService = new PlaceService($databaseClient, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
+    $tripService = new TripService($databaseClient, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
 
     // Statistics providers.
@@ -170,7 +170,7 @@
     $messagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cacheClient->setOpenLineageEventManager($openLineageEventManager);
-    $databaseProvider->setOpenLineageEventManager($openLineageEventManager);
+    $databaseClient->setOpenLineageEventManager($openLineageEventManager);
     $httpClient->setOpenLineageEventManager($openLineageEventManager);
     
     // Event listeners.
@@ -185,7 +185,7 @@
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
-        new TripServiceListener($databaseProvider, $tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
+        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $flightService, $configurationService, $calendarClient, $eventPublisher, $scheduler),
         new YearServiceListener($yearService, $eventPublisher, $scheduler),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
@@ -193,6 +193,6 @@
         new OpenLineageEventManagerListener($openLineageEventManager),
         $platformService
     );
-    $eventManager = new EventManager($messagingClient, $databaseProvider, $logger, $openLineageEventManager, $listeners);
+    $eventManager = new EventManager($messagingClient, $databaseClient, $logger, $openLineageEventManager, $listeners);
     $eventPublisher->setDeviceService($deviceService);    
 ?>

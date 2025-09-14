@@ -6,6 +6,8 @@
     use Core\Service\Configuration\ConfigurationService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class ExpenseService {
 
@@ -24,16 +26,16 @@
 
         private readonly CacheClient $cacheClient;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \HttpClient $httpClient,
+        public function __construct(DatabaseClient $databaseClient, \HttpClient $httpClient,
             ConfigurationService $configurationService, EventPublisher $eventPublisher, CacheClient $cacheClient) {
-            $this->expenseMapper = new ExpenseMapper($databaseProvider);
+            $this->expenseMapper = new ExpenseMapper($databaseClient);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->cacheClient = $cacheClient;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
 
         public function getExpensesForTrip(string $tripId) : array {
@@ -51,7 +53,7 @@
             // TODO: This is inacurrate, the subscription share is not included in the main currency value.
             $expense = new Expense(null, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value,
                 $subscriptionId === null ? null : $this->expenseMapper->selectSubscription($subscriptionId));
-            $this->databaseProvider->executeAtomically(function() use(&$expense, &$tripId, &$subscriptionId) {
+            $this->transactionManager->executeAtomically(function() use(&$expense, &$tripId, &$subscriptionId) {
                 $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
 
                 $this->eventPublisher->publish(Event::ExpenseCreated($expense->getId(), $tripId));
@@ -75,7 +77,7 @@
  
         public function updateExpenseDescription(string $expenseId, string $description, string $tripId) : bool {  
             $wasUpdated = true; 
-            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$description, &$tripId) {
+            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$description, &$tripId) {
                 $wasUpdated &= $this->expenseMapper->updateExpenseDescription($expenseId, $description);
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));
@@ -86,7 +88,7 @@
 
         public function updateExpenseValue(string $expenseId, float $value, string $tripId) : bool {   
             $wasUpdated = true; 
-            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$description, &$tripId) {
+            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$description, &$tripId) {
                 $wasUpdated &= $this->expenseMapper->updateExpenseValue($expenseId, $value);
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));
@@ -99,7 +101,7 @@
             $exchangeRate = $this->getExchangeRate($currency);
 
             $wasUpdated = true; 
-            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$currency, &$exchangeRate, &$tripId) {
+            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$currency, &$exchangeRate, &$tripId) {
                 $wasUpdated &= $this->expenseMapper->updateExpenseCurrency($expenseId, $currency, $exchangeRate);
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));
@@ -110,7 +112,7 @@
 
         public function removeExpense(string $expenseId, string $tripId) : bool {
             $wasRemoved = true;
-            $this->databaseProvider->executeAtomically(function() use(&$wasRemoved, &$expenseId, &$tripId) {
+            $this->transactionManager->executeAtomically(function() use(&$wasRemoved, &$expenseId, &$tripId) {
                 $wasRemoved &= $this->expenseMapper->deleteExpense($expenseId) > 0;
                 if ($wasRemoved) {
                     $this->eventPublisher->publish(Event::ExpenseRemoved($expenseId, $tripId));

@@ -1,12 +1,14 @@
 <?php
     namespace Core\Service\Configuration;
 
+    use Core\Client\Database\DatabaseClient;
+
     class ConfigurationMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectAllConfigurationEntries(bool $allowPrivate) : mixed {
@@ -17,7 +19,7 @@
                 ORDER BY `key` ASC
             SQL;
             
-            $configurationRows = $this->databaseProvider
+            $configurationRows = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($allowPrivate ? 1 : 0)
                 ->getResultSet();
@@ -36,7 +38,7 @@
                 WHERE `key` = ?
             SQL;
             
-            $configurationRow = $this->databaseProvider
+            $configurationRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($key)
                 ->getSingleRow();
@@ -55,7 +57,7 @@
                 WHERE `key` = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(json_encode($value, JSON_UNESCAPED_UNICODE), $key)
                 ->execute() === 1;

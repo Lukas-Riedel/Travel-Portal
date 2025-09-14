@@ -1,19 +1,16 @@
 <?php
     namespace Core\Service\Fitness;
 
-    use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Database\DatabaseClient;
 
     class FitnessMapper {
 
         private const UPDATE_THRESHOLD_DAYS = 7;
 
-        private readonly \DatabaseProvider $databaseProvider;
-        private readonly ConfigurationService $configurationService;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService) {
-            $this->databaseProvider = $databaseProvider;
-            $this->configurationService = $configurationService;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectAverageFitnessRecordForInterval(int $start, int $end) : Fitness { 
@@ -26,7 +23,7 @@
                     AND timestamp < ?
             SQL;
 
-            $fitnessRow = $this->databaseProvider
+            $fitnessRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getSingleRow();
@@ -50,7 +47,7 @@
                 {$fitnessSortingStrategy->getOrderByClause()}
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($fitnessRow) {
@@ -68,7 +65,7 @@
                     AND timestamp < ?
             SQL;
 
-            $fitnessRow = $this->databaseProvider
+            $fitnessRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getSingleRow();
@@ -82,7 +79,7 @@
                 FROM fitness_conflict
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($fitnessRow) {
                     return new TimeBasedFitness(intval($fitnessRow["timestamp"]), intval($fitnessRow["steps"]), 
@@ -97,7 +94,7 @@
                 WHERE timestamp = ?
             SQL;
 
-            $fitnessRow = $this->databaseProvider
+            $fitnessRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timestamp)
                 ->getSingleRow();
@@ -111,7 +108,7 @@
                 FROM fitness
             SQL;
 
-            $fitnessRow = $this->databaseProvider
+            $fitnessRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->getSingleRow();
 
@@ -124,7 +121,7 @@
                 FROM fitness
             SQL;
 
-            $fitnessRow = $this->databaseProvider
+            $fitnessRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->getSingleRow();
 
@@ -137,7 +134,7 @@
                 FROM fitness
             SQL;
 
-            $fitnessRow = $this->databaseProvider
+            $fitnessRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->getSingleRow();
 
@@ -152,7 +149,7 @@
                     OR timestamp + ? * 86400 > UNIX_TIMESTAMP()
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(self::UPDATE_THRESHOLD_DAYS, self::UPDATE_THRESHOLD_DAYS)
                 ->getResultSetForColumn("timestamp");
@@ -164,7 +161,7 @@
                 FROM fitness
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("timestamp");
         }
@@ -188,7 +185,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getDistance())
                 ->execute() === 1;
@@ -211,7 +208,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getDistance())
                 ->execute() === 1;
@@ -224,7 +221,7 @@
                 WHERE timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timestamp)
                 ->execute() === 1;
@@ -237,7 +234,7 @@
                 WHERE timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timestamp)
                 ->execute();
@@ -250,7 +247,7 @@
                 WHERE timestamp = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timestamp)
                 ->execute();

@@ -2,15 +2,16 @@
     namespace Core\Service\Highlight;
     
     use Core\Service\Photo\PhotoService;
+    use Core\Client\Database\DatabaseClient;
 
     class HighlightMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly PhotoService $photoService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, PhotoService $photoService) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService) {
+            $this->databaseClient = $databaseClient;
             $this->photoService = $photoService;
         }
 
@@ -21,7 +22,7 @@
                 WHERE id = ?
             SQL;
     
-            $highlightRow = $this->databaseProvider
+            $highlightRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($highlightId)
                 ->getSingleRow();
@@ -42,7 +43,7 @@
                 WHERE ht.id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId)
                 ->getMappedResultSet(function($highlightRow) { 
@@ -59,7 +60,7 @@
                 WHERE ht.highlight_id = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId)
                 ->getResultSetForColumn("id");
@@ -72,7 +73,7 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($highlightId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $highlightId);
             }
@@ -81,7 +82,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($highlightRow) { 
                     return $this->getHighlight($highlightRow);
@@ -95,7 +96,7 @@
                 WHERE photo_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photoId)
                 ->getFirstColumn("id");
@@ -108,7 +109,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($highlightId)
                 ->getFirstColumn("photo_id");
@@ -124,7 +125,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photoId)
                 ->execute() === 1;
@@ -142,7 +143,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId, $highlightId)
                 ->execute() === 1;
@@ -155,7 +156,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($imageUrl, $highlightId)
                 ->execute() === 1;
@@ -168,7 +169,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($composition, $highlightId)
                 ->execute() === 1;
@@ -181,7 +182,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($sky, $highlightId)
                 ->execute() === 1;
@@ -194,7 +195,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($shadows, $highlightId)
                 ->execute() === 1;
@@ -207,7 +208,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($circumstances, $highlightId)
                 ->execute() === 1;
@@ -220,7 +221,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($atmosphere, $highlightId)
                 ->execute() === 1;
@@ -234,7 +235,7 @@
                     AND highlight_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($entityId, $highlightId)
                 ->execute();
@@ -253,7 +254,7 @@
                     )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }

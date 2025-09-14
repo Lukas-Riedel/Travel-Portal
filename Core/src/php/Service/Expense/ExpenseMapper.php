@@ -1,12 +1,14 @@
 <?php
     namespace Core\Service\Expense;
+    
+    use Core\Client\Database\DatabaseClient;
 
     class ExpenseMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectExpensesForTrip(string $tripId) : array { 
@@ -16,7 +18,7 @@
                 WHERE trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($expenseRow) {
@@ -38,7 +40,7 @@
                 WHERE id = ?
             SQL;
 
-            $expenseRow = $this->databaseProvider
+            $expenseRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($expenseId)
                 ->getSingleRow();
@@ -64,7 +66,7 @@
                 WHERE id = ?
             SQL;
 
-            $subscriptionRow = $this->databaseProvider
+            $subscriptionRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($subscriptionId)
                 ->getSingleRow();
@@ -84,7 +86,7 @@
                 WHERE expiration > UNIX_TIMESTAMP()
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($subscriptionRow) {
                     return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
@@ -116,14 +118,14 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId, $expense->getValue(), $expense->getCurrency(), $expense->getExchangeRate(), $expense->getType()->value,
                     $expense->getDescription(), $subscriptionId)
                 ->execute() === 1;                
 
             if ($wasInserted) {
-                $expense->setId($this->databaseProvider->getLastInsertedId());
+                $expense->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -147,14 +149,14 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($subscription->getValue(), $subscription->getCurrency(), $subscription->getExchangeRate(),
                     $subscription->getDescription(), $subscription->getExpiration())
                 ->execute() === 1;                
 
             if ($wasInserted) {
-                $subscription->setId($this->databaseProvider->getLastInsertedId());
+                $subscription->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -167,7 +169,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($description, $expenseId)
                 ->execute() === 1;
@@ -180,7 +182,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($value, $expenseId)
                 ->execute() === 1;
@@ -194,7 +196,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($currency, $exchangeRate, $expenseId)
                 ->execute() === 1;
@@ -207,7 +209,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($expenseId)
                 ->execute();
@@ -220,7 +222,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($subscriptionId)
                 ->getSingleColumn("main_currency_value");
@@ -233,7 +235,7 @@
                 WHERE subscription_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($subscriptionId)
                 ->getSingleColumn("occurrences");

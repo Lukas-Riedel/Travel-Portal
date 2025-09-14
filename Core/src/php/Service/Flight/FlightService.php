@@ -9,6 +9,8 @@
     use Core\Service\Trip\TripService;
     use enshrined\svgSanitize\Sanitizer;
     use enshrined\svgSanitize\data\AllowedTags;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class FlightService {
 
@@ -31,19 +33,19 @@
         private readonly \GoogleApiClient $googleApiClient;
 
         private readonly EventPublisher $eventPublisher;
+        
+        private readonly TransactionManager $transactionManager;
 
-        private readonly \DatabaseProvider $databaseProvider;
-
-        public function __construct(\DatabaseProvider $databaseProvider, GeocodingService $geocodingService, CategoryService $categoryService,
+        public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
             \HttpClient $httpClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, EventPublisher $eventPublisher) {
-            $this->flightMapper = new FlightMapper($databaseProvider, $categoryService, $geocodingService);
+            $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
             $this->httpClient = $httpClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
         public function getLoggedFlightsWithoutEvent() : array {
             return $this->flightMapper->selectLoggedFlightsWithoutEvent();
@@ -142,7 +144,7 @@
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
             
             $result = new Flight($flight, $registration, $aircraft, null, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
-            $this->databaseProvider->executeAtomically(function() use (&$result, &$airlineCodeId, &$scheduledDeparture, &$scheduledArrival) {
+            $this->transactionManager->executeAtomically(function() use (&$result, &$airlineCodeId, &$scheduledDeparture, &$scheduledArrival) {
                 $this->flightMapper->deleteLoggedFlight($result->getFlight(), $result->getStart(), $result->getEnd());
                 $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 
@@ -243,7 +245,7 @@
 
             $flightEvents = $this->calendarClient->getEvents($flightType->getCalendar()->value);
             
-            $this->databaseProvider->executeAtomically(function() use(&$flightType, &$flightEvents, &$tripService) {
+            $this->transactionManager->executeAtomically(function() use(&$flightType, &$flightEvents, &$tripService) {
                 $this->flightMapper->deleteAllFlightEvents($flightType);
                 foreach ($flightEvents as &$flightEvent) {
                     $parsedFlightEventName = $this->parseFlightEventName($flightEvent->getSummary());                

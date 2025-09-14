@@ -1,16 +1,17 @@
 <?php
     namespace Core\Service\Device;
 
+    use Core\Client\Database\DatabaseClient;
     use Core\Service\Authentication\AuthenticationService;
 
     class DeviceMapper {
         
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly AuthenticationService $authenticationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, AuthenticationService $authenticationService) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, AuthenticationService $authenticationService) {
+            $this->databaseClient = $databaseClient;
             $this->authenticationService = $authenticationService;
         }
 
@@ -22,7 +23,7 @@
                 ORDER BY last_seen DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($requiredRole !== null) {
                 $whereClauseBuilder->withClause("FIND_IN_SET(user_id, ?)", implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRole($requiredRole))));
             }
@@ -31,7 +32,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($deviceRow) {
                     return new Device($deviceRow["id"], DeviceType::from($deviceRow["type"]), $deviceRow["name"],
@@ -59,7 +60,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($device->getId(), $device->getType()->value, $device->getName(), json_encode($device->getData()),
                     $device->getUserId(), $device->getLastSeen())
@@ -74,7 +75,7 @@
                     AND type = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($device->getId(), $device->getType()->value)
                 ->execute();
@@ -87,7 +88,7 @@
                 WHERE last_seen + ? < UNIX_TIMESTAMP()
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($inactivityThreshold)
                 ->execute();            

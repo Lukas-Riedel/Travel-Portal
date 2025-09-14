@@ -14,6 +14,8 @@
     use Core\Service\Trip\TripService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class PlaceService {
         
@@ -36,13 +38,13 @@
 
         private readonly EventPublisher $eventPublisher;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \ChatClient $chatClient, \CalendarClient $calendarClient,
+        public function __construct(DatabaseClient $databaseClient, \ChatClient $chatClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
-            $this->placeMapper = new PlaceMapper($databaseProvider, $configurationService, $categoryService, $labelService, $forecastService,
+            $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
                 $photoService, $highlightService, $noteService);
             $this->chatClient = $chatClient;
             $this->calendarClient = $calendarClient;
@@ -52,7 +54,7 @@
             $this->photoService = $photoService;
             $this->geocodingService = $geocodingService;
             $this->eventPublisher = $eventPublisher;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
 
         public function getDatesForTripAndCountry(string $tripId, string $country) : array {
@@ -101,7 +103,7 @@
 
         public function updatePlaceMainHighlight(string $placeId, string $highlightIdentifier) : bool {
             $wasUpdated = true;
-            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$highlightIdentifier, &$wasUpdated) {
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightIdentifier, &$wasUpdated) {
                 $wasUpdated &= $this->placeMapper->updatePlaceMainHighlight($placeId, $highlightIdentifier);
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
@@ -130,7 +132,7 @@
             $place = $this->getRegularPlace($placeId);
 
             $wasUpdated = true;
-            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$name, &$place, &$wasUpdated) {
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$name, &$place, &$wasUpdated) {
                 $wasUpdated &= $this->placeMapper->updatePlaceName($placeId, $name);
 
                 if ($place !== null) {
@@ -158,7 +160,7 @@
 
         public function updatePlaceLocation(string $placeId, float $latitude, float $longitude) : bool {
             $wasUpdated = true;
-            $this->databaseProvider->executeAtomically(function() use(&$placeId, &$latitude, &$longitude, &$wasUpdated) {
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$latitude, &$longitude, &$wasUpdated) {
                 $wasUpdated &= $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude);            
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
@@ -201,7 +203,7 @@
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
             $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             
-            $this->databaseProvider->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
+            $this->transactionManager->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
                         $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
@@ -243,7 +245,7 @@
             $this->placeMapper->createPlaceEventTemporaryTable(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             $placeEvents = $this->calendarClient->getEvents(\Calendar::Places->value);
 
-            $this->databaseProvider->executeAtomically(function() use(&$placeEvents, &$tripService) {
+            $this->transactionManager->executeAtomically(function() use(&$placeEvents, &$tripService) {
                 $this->placeMapper->deleteAllPlaceEvents();                
                 foreach ($placeEvents as &$placeEvent) {
                     $resolvedLocation = $this->geocodingService->getLocation($placeEvent->getLocation());
@@ -303,7 +305,7 @@
             $location = $this->geocodingService->getLocation($address);
             $placeIdentifier = new PlaceIdentifier(null, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
                 $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
-            $this->databaseProvider->executeAtomically(function() use(&$placeIdentifier) {
+            $this->transactionManager->executeAtomically(function() use(&$placeIdentifier) {
                 $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
                 
                 $this->eventPublisher->publish(Event::PlaceCreated($placeIdentifier->getId()));
@@ -314,7 +316,7 @@
 
         private function removeSpecialPlace(SpecialPlaceType $specialPlaceType, string $placeId) : bool {
             $wasRemoved = true;
-            $this->databaseProvider->executeAtomically(function() use(&$specialPlaceType, &$placeId, &$wasRemoved) {
+            $this->transactionManager->executeAtomically(function() use(&$specialPlaceType, &$placeId, &$wasRemoved) {
                 $wasRemoved &= $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
 
                 if ($wasRemoved) {
@@ -348,7 +350,7 @@
             $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
 
             // TODO: Remove the create-if-not-exists semantics.
-            $this->databaseProvider->executeAtomically(function() use(&$specialPlaceType, &$placeIdentifier) {
+            $this->transactionManager->executeAtomically(function() use(&$specialPlaceType, &$placeIdentifier) {
                 $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeIdentifier->getId());
                 $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
             });
@@ -375,7 +377,7 @@
             if (count($place->getDates()) > 0) {
                 $firstDate = $place->getDates()[0];
                 if ($firstDate->getStart() > time()) {
-                    $this->databaseProvider->executeAtomically(function() use(&$place) {
+                    $this->transactionManager->executeAtomically(function() use(&$place) {
                         $this->placeMapper->deleteSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
                         $this->placeMapper->insertSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
                     });

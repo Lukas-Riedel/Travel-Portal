@@ -7,6 +7,8 @@
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class PhotoService {
 
@@ -27,15 +29,15 @@
         
         private readonly CacheClient $cacheClient;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \GoogleApiClient $googleApiClient,
+        public function __construct(DatabaseClient $databaseClient, \GoogleApiClient $googleApiClient,
             EventPublisher $eventPublisher, CacheClient $cacheClient) {
-            $this->photoMapper = new PhotoMapper($databaseProvider, $googleApiClient);
+            $this->photoMapper = new PhotoMapper($databaseClient, $googleApiClient);
             $this->googleApiClient = $googleApiClient;
             $this->eventPublisher = $eventPublisher;
             $this->cacheClient = $cacheClient;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
 
         public function getAllAlbums() : array {
@@ -144,7 +146,7 @@
             }
         
             // Persist photos.
-            $this->databaseProvider->executeAtomically(function() use(&$photos, &$albumId) {
+            $this->transactionManager->executeAtomically(function() use(&$photos, &$albumId) {
                 $deletedPhotosCount = $this->photoMapper->deletePhotos($albumId);        
                 foreach ($photos as &$photo) {
                     $this->photoMapper->insertPhoto($photo, $albumId);
@@ -255,7 +257,7 @@
             }
         
             // Persist albums.
-            $this->databaseProvider->executeAtomically(function() use(&$albumId, &$albums) {
+            $this->transactionManager->executeAtomically(function() use(&$albumId, &$albums) {
                 $this->photoMapper->deleteAlbums($albumId);        
                 foreach ($albums as &$album) {
                     $this->photoMapper->insertAlbum($album);
@@ -286,7 +288,7 @@
             // Process pending photos with fixed position.
             $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId);        
             while (count($pendingPhotos) > 0) {
-                $this->databaseProvider->executeAtomically(function() use(&$albumId, &$pendingPhotos) {
+                $this->transactionManager->executeAtomically(function() use(&$albumId, &$pendingPhotos) {
                     $newPhotos = array();
                     foreach ($pendingPhotos as &$pendingPhoto) {
                         $newPhotos[] = array(
@@ -313,7 +315,7 @@
                 $oldPhotoExternalId = $this->photoMapper->selectPhotoExternalId($pendingPhoto->getReplacedPhotoId());
                 $albumExternalId = $this->photoMapper->selectAlbumExternalId($albumId);
 
-                $this->databaseProvider->executeAtomically(function() use(&$albumId, &$albumExternalId, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
+                $this->transactionManager->executeAtomically(function() use(&$albumId, &$albumExternalId, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
                     $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
                     $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
 

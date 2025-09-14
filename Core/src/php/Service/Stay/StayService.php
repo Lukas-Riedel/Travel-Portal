@@ -4,6 +4,8 @@
     use Core\Service\Trip\TripService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class StayService {
 
@@ -15,13 +17,13 @@
 
         private readonly EventPublisher $eventPublisher;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient, EventPublisher $eventPublisher) {
-            $this->stayMapper = new StayMapper($databaseProvider);
+        public function __construct(DatabaseClient $databaseClient, \CalendarClient $calendarClient, EventPublisher $eventPublisher) {
+            $this->stayMapper = new StayMapper($databaseClient);
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
         
         public function getStaysForTrip(string $tripId) : array {
@@ -36,7 +38,7 @@
             $this->stayMapper->createStayEventTemporaryTable(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
             $stayEvents = $this->calendarClient->getEvents(\Calendar::Stays->value);
 
-            $this->databaseProvider->executeAtomically(function() use(&$tripService, &$stayEvents) {
+            $this->transactionManager->executeAtomically(function() use(&$tripService, &$stayEvents) {
                 $this->stayMapper->deleteAllStayEvents();                
                 foreach ($stayEvents as &$stayEvent) {
                     $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($stayEvent->getStart(), $stayEvent->getEnd());

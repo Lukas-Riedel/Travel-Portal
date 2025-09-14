@@ -11,10 +11,11 @@
     use Core\Service\Place\PlaceService;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Stay\StayService;
+    use Core\Client\Database\DatabaseClient;
 
     class TripMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly \CalendarClient $calendarClient;
 
@@ -29,10 +30,10 @@
 
         private readonly ConfigurationService $configurationService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, \CalendarClient $calendarClient,
+        public function __construct(DatabaseClient $databaseClient, \CalendarClient $calendarClient,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, ConfigurationService $configurationService) {
-            $this->databaseProvider = $databaseProvider;
+            $this->databaseClient = $databaseClient;
             $this->calendarClient = $calendarClient;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
@@ -52,7 +53,7 @@
                 WHERE trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getSingleColumn("id");
@@ -72,7 +73,7 @@
                     AND end >= ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getResultSetForColumn("trip_id");
@@ -86,7 +87,7 @@
                     AND ? <= end
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(($entityStart + $entityEnd) / 2, ($entityStart + $entityEnd) / 2)
                 ->getSingleColumn("trip_id");
@@ -99,7 +100,7 @@
                 WHERE trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getFirstRow() !== null;
@@ -110,10 +111,10 @@
                 SELECT * 
                 FROM trip_identifier
                 WHERE name = ?
-                    AND year {$this->databaseProvider->getIsNullOrEqualTo($year)}
+                    AND year {$this->databaseClient->getIsNullOrEqualTo($year)}
             SQL;
 
-            $tripIdentifierRow = $this->databaseProvider
+            $tripIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name)
                 ->getFirstRow();
@@ -133,7 +134,7 @@
                 WHERE id = ?
             SQL;
 
-            $tripIdentifierRow = $this->databaseProvider
+            $tripIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getFirstRow();
@@ -153,13 +154,13 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("year IS NULL");
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("year IS NULL");
             if ($tripId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $tripId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($tripIdentifierRow) use(&$includedEntities) {
                     $countries = $this->placeService->getCountriesForCandidateTrip($tripIdentifierRow["id"]);
@@ -188,7 +189,7 @@
                 WHERE ote.start IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -203,7 +204,7 @@
                     OR ote.end <> nte.end
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -217,7 +218,7 @@
                 WHERE nte.id IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -240,7 +241,7 @@
                 {$tripSortingStrategy->getOrderByClause()}
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($year !== null) {
                 $whereClauseBuilder->withClause("ti.year = ?", $year);
             }
@@ -255,7 +256,7 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($tripRow) use(&$includedEntities) {
                     $isDayTrip = $tripRow["name"] === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
@@ -335,7 +336,7 @@
                 )
             SQL;            
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($trip->getId(), $trip->getStart(), $trip->getEnd())
                 ->execute() === 1;
@@ -353,13 +354,13 @@
                 )
             SQL;            
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripIdentifier->getName(), $tripIdentifier->getYear())
                 ->execute() === 1;
 
             if ($wasInserted) {
-                $tripIdentifier->setId($this->databaseProvider->getLastInsertedId());
+                $tripIdentifier->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -381,7 +382,7 @@
                 )
             SQL;            
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($eventId, $trip->getId(), $trip->getStart(), $trip->getEnd())
                 ->execute() === 1;
@@ -397,7 +398,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->execute();
@@ -411,7 +412,7 @@
                 WHERE trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end, $tripId)
                 ->execute() === 1;
@@ -424,7 +425,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($highlightIdentifier, $tripId)
                 ->execute() === 1;
@@ -437,7 +438,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $tripId)
                 ->execute() === 1;
@@ -449,7 +450,7 @@
                 FROM trip_event
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -470,7 +471,7 @@
                     )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -482,7 +483,7 @@
                 WHERE trip_id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->execute();
@@ -494,7 +495,7 @@
                 FROM trip_day_trip
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -504,7 +505,7 @@
                 DROP TEMPORARY TABLE IF EXISTS {$tableName}
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();    
 
@@ -514,7 +515,7 @@
                     FROM trip_event
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }

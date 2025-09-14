@@ -2,6 +2,8 @@
 
     namespace Core\Service\Device;
 
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
 
@@ -11,11 +13,11 @@
 
         private readonly DeviceMapper $deviceMapper;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, AuthenticationService $authenticationService) {
-            $this->deviceMapper = new DeviceMapper($databaseProvider, $authenticationService);
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, AuthenticationService $authenticationService) {
+            $this->deviceMapper = new DeviceMapper($databaseClient, $authenticationService);
+            $this->transactionManager = $databaseClient;
         }
         
         public function getDevices(?DeviceType $deviceType, ?string $requiredRole) : array {
@@ -24,7 +26,7 @@
 
         public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {
             $device = new Device($id, $deviceType, $name, $data, $userId, time());
-            $this->databaseProvider->executeAtomically(function() use ($device) {
+            $this->transactionManager->executeAtomically(function() use ($device) {
                 $this->deviceMapper->deleteDevice($device);
                 $this->deviceMapper->insertDevice($device);
             });

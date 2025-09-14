@@ -1,7 +1,5 @@
 <?php
-
     use Core\Event\Event;
-    use Core\Event\EventPublisher;
 
     require_once(__DIR__ . "/src/php/bootstrap.php");
     
@@ -17,16 +15,12 @@
     asort($migrationScriptFileNames);
 
     $alreadyAppliedScripts = array();
-    if ($databaseProvider->isDatabaseInitialized()) {
-        $alreadyAppliedScriptsRows = $databaseProvider
-            ->query("SELECT * FROM migration_script");
-
-        if ($alreadyAppliedScriptsRows) {
-            while ($alreadyAppliedScriptsRow = $alreadyAppliedScriptsRows->fetch_assoc()) {
-                $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
-                    "hash" => $alreadyAppliedScriptsRow["hash"],
-                    "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
-            }
+    if ($databaseClient->isDatabaseInitialized()) {
+        $alreadyAppliedScriptsRows = $databaseClient->query("SELECT * FROM migration_script");
+        foreach ($alreadyAppliedScriptsRows as &$alreadyAppliedScriptsRow) {
+            $alreadyAppliedScripts[$alreadyAppliedScriptsRow["name"]] = array(
+                "hash" => $alreadyAppliedScriptsRow["hash"],
+                "timestamp" => $alreadyAppliedScriptsRow["timestamp"]);
         }
     }
 
@@ -44,14 +38,14 @@
 
             try {
                 set_error_handler($onError);
-                $databaseProvider->executeAtomically(function() use(&$migrationScript, &$hash, &$delimiter, &$databaseProvider, &$migrationScriptFileName) {
+                $databaseClient->executeAtomically(function() use(&$migrationScript, &$hash, &$delimiter, &$databaseClient, &$migrationScriptFileName) {
                     foreach (explode($delimiter, $migrationScript) as &$migrationSubScript) {
                         if (trim($migrationSubScript) !== "") {             
-                            $databaseProvider->query($migrationSubScript);
+                            $databaseClient->query($migrationSubScript);
                         }
                     }
 
-                    $databaseProvider->query("INSERT INTO migration_script (name, hash, timestamp) VALUES ('" . $migrationScriptFileName . "', '" . $hash . "', UNIX_TIMESTAMP())");
+                    $databaseClient->query("INSERT INTO migration_script (name, hash, timestamp) VALUES ('" . $migrationScriptFileName . "', '" . $hash . "', UNIX_TIMESTAMP())");
                 });
             }
             catch (Throwable $e) {
@@ -68,17 +62,16 @@
         }
     }
 
-    if (!$databaseProvider->isDatabaseInitialized()) {
-        $databaseProvider
+    if (!$databaseClient->isDatabaseInitialized()) {
+        $databaseClient
             ->query("INSERT INTO user (username, password, api_key, roles) VALUES ('guest', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER')");
-        $databaseProvider
+        $databaseClient
             ->query("INSERT INTO user (username, password, api_key, roles) VALUES ('admin', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER,ADMIN')");
-    }
-    
-    if ($databaseProvider->isDatabaseInitialized()) {
-        $tablesToBackupRow = $databaseProvider
+    }    
+    else {
+        $tablesToBackupRows = $databaseClient
             ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
-        $tablesToBackup = $tablesToBackupRow->fetch_assoc()["tables"];
+        $tablesToBackup = $tablesToBackupRows[0]["tables"];
 
         $eventPublisher->publish(Event::ApplicationStarted($tablesToBackup));
     }

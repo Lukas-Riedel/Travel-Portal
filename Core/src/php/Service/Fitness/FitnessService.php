@@ -6,21 +6,23 @@
     use Core\Service\Configuration\ConfigurationService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class FitnessService {
 
         private readonly FitnessMapper $fitnessMapper;
 
         private readonly EventPublisher $eventPublisher;
-
-        private readonly \DatabaseProvider $databaseProvider;
+        
+        private readonly TransactionManager $transactionManager;
 
         private readonly Logger $logger;
 
-        public function __construct(\DatabaseProvider $databaseProvider, EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
-            $this->fitnessMapper = new FitnessMapper($databaseProvider, $configurationService);
+        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
+            $this->fitnessMapper = new FitnessMapper($databaseClient);
             $this->eventPublisher = $eventPublisher;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
             $this->logger = $logger;
         }
         
@@ -75,7 +77,7 @@
 
                 $this->logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
-                $this->databaseProvider->executeAtomically(function() use(&$fitnessRecord, &$timestamp) {
+                $this->transactionManager->executeAtomically(function() use(&$fitnessRecord, &$timestamp) {
                     $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);  
                     $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);              
                     $this->fitnessMapper->insertConflictingFitnessRecord($fitnessRecord, $timestamp);                    
@@ -84,7 +86,7 @@
                 return false;
             }
 
-            $this->databaseProvider->executeAtomically(function() use(&$fitnessRecord, &$timestamp, &$end) {
+            $this->transactionManager->executeAtomically(function() use(&$fitnessRecord, &$timestamp, &$end) {
                 $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
                 $this->fitnessMapper->deleteFitnessRecord($timestamp);
                 $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
@@ -103,8 +105,7 @@
             
             foreach ($allTimestamps as &$timestamp) {
                 if (!isset($allRequiredTimestampsMap[$timestamp])) {
-                    // TODO: Uncomment and remove the logging message once deemed safe.
-                    // $this->fitnessMapper->deleteFitnessRecord($timestamp);
+                    $this->fitnessMapper->deleteFitnessRecord($timestamp);
                     $logger->info("Removing stale fitness record for timestamp {$timestamp}...");
                 }
             }

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Event;
 
+    use Core\Client\Database\DatabaseClient;
     use Core\Client\MessagingClient;
     use Core\Event\EventPriority;
     use Core\OpenLineage\OpenLineageEventManager;
@@ -16,16 +17,16 @@
         private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
 
         private readonly MessagingClient $messagingClient;
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly Logger $logger;
         private readonly OpenLineageEventManager $openLineageEventManager;
 
         private readonly array $eventHandlers;
 
-        public function __construct(MessagingClient $messagingClient, \DatabaseProvider $databaseProvider, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
+        public function __construct(MessagingClient $messagingClient, DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
             $this->messagingClient = $messagingClient;
-            $this->databaseProvider = $databaseProvider;
+            $this->databaseClient = $databaseClient;
             $this->logger = $logger;
             $this->openLineageEventManager = $openLineageEventManager;
             

@@ -2,15 +2,16 @@
     namespace Core\Service\TimeTracking;
 
     use Core\Common\CommonConstants;
+    use Core\Client\Database\DatabaseClient;
 
     class TimeTrackingMapper {
 
         private const STALE_USED_OVERTIME_THRESHOLD_SECONDS = 3 * CommonConstants::ONE_MONTH_SECONDS;
         
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectTimeTrackingEvents(?string $type) : array {
@@ -22,13 +23,13 @@
                     id DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($trackingEventRow) use(&$type) {
                     return new TimeTrackingEvent($trackingEventRow["id"], $trackingEventRow["description"], floatval($trackingEventRow["hours"]),
@@ -44,13 +45,13 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
             if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getSingleColumn("balance");
         }
@@ -63,7 +64,7 @@
                     AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($type)
                 ->getSingleColumn("balance");
@@ -85,7 +86,7 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timeTrackingEvent->getType()->value, $timeTrackingEvent->getHours(),
                     $timeTrackingEvent->getDescription(), $timeTrackingEvent->getTimestamp())
@@ -93,7 +94,7 @@
                  
 
             if ($wasInserted) {
-                $timeTrackingEvent->setId($this->databaseProvider->getLastInsertedId());
+                $timeTrackingEvent->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -106,7 +107,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($eventId)
                 ->execute();
@@ -120,7 +121,7 @@
                     AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($type)
                 ->execute();
@@ -134,7 +135,7 @@
                     AND timestamp <= (UNIX_TIMESTAMP() - 86400)
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(TimeTrackingEventType::PlannedWork->value)
                 ->execute();
@@ -159,7 +160,7 @@
                     AND type = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(self::STALE_USED_OVERTIME_THRESHOLD_SECONDS, 
                     TimeTrackingEventType::Overtime->value, TimeTrackingEventType::Overtime->value, TimeTrackingEventType::Overtime->value)

@@ -11,6 +11,8 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
 
     class TripServiceListener {
         
@@ -30,9 +32,9 @@
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
-        public function __construct(\DatabaseProvider $databaseProvider, TripService $tripService, PlaceService $placeService, StayService $stayService,
+        public function __construct(DatabaseClient $databaseClient, TripService $tripService, PlaceService $placeService, StayService $stayService,
             FlightService $flightService, ConfigurationService $configurationService, \CalendarClient $calendarClient,
             EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
@@ -43,13 +45,13 @@
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
         
         public function onCalendarInvalidated(mixed $message) : void {
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
             if ($message["calendar"] === \Calendar::Trips->value) {
-                $this->databaseProvider->executeAtomically(function() {
+                $this->transactionManager->executeAtomically(function() {
                     $this->tripService->removeAllDayTripsTrips();
                     $this->tripService->refreshCalendar();
                     $this->placeService->refreshCalendar($this->tripService);

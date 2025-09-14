@@ -3,16 +3,17 @@
 
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Statistics\StatisticsService;
+    use Core\Client\Database\DatabaseClient;
     
     class YearMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, HighlightService $highlightService, StatisticsService $statisticsService) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, StatisticsService $statisticsService) {
+            $this->databaseClient = $databaseClient;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
         }
@@ -24,7 +25,7 @@
                 WHERE id = ?
             SQL;
 
-            $yearIdentifierRow = $this->databaseProvider
+            $yearIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($year)
                 ->getSingleRow();
@@ -44,13 +45,13 @@
                 ORDER BY id DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseProvider->whereClauseBuilder();
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($year !== null) {
                 $whereClauseBuilder->withClause("id = ?", $year);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($yearRow) use(&$includedEntities) {
                     $highlights = array();
@@ -77,13 +78,13 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($yearIdentifier->getId())
                 ->execute() === 1;
 
             if ($yearIdentifier) {
-                $yearIdentifier->setId($this->databaseProvider->getLastInsertedId());
+                $yearIdentifier->setId($this->databaseClient->getLastInsertedId());
             }
             
             return $wasInserted;
@@ -96,7 +97,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($highlightIdentifier, $year)
                 ->execute() === 1;

@@ -1,12 +1,14 @@
 <?php
     namespace Core\Service\Stay;
+    
+    use Core\Client\Database\DatabaseClient;
 
     class StayMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
-        public function __construct(\DatabaseProvider $databaseProvider) {
-            $this->databaseProvider = $databaseProvider;
+        public function __construct(DatabaseClient $databaseClient) {
+            $this->databaseClient = $databaseClient;
         }
 
         public function selectStaysForInterval(int $start, int $end, StaySortingStrategy $staySortingStrategy) : array {
@@ -18,7 +20,7 @@
                 {$staySortingStrategy->getOrderByClause()}
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($stayRow) {
@@ -34,7 +36,7 @@
                 ORDER BY start
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($stayRow) {
@@ -51,7 +53,7 @@
                 WHERE ose.name IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -68,7 +70,7 @@
                     OR ose.end <> nse.end
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -82,7 +84,7 @@
                 WHERE nse.id IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -107,7 +109,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($eventId, $stay->getName(), $tripId, $stay->getStart(), $stay->getEnd(), $stay->getAddress())
                 ->execute() === 1;
@@ -118,7 +120,7 @@
                 DELETE FROM stay_event
             SQL;
 
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -128,7 +130,7 @@
                 DROP TEMPORARY TABLE IF EXISTS {$tableName}
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();    
 
@@ -138,7 +140,7 @@
                     FROM stay_event
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }

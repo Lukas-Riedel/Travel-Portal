@@ -1,6 +1,8 @@
 <?php
     namespace Core\Service\Category;
 
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Place\PlaceIdentifier;
@@ -18,17 +20,17 @@
         
         private readonly EventPublisher $eventPublisher;
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly TransactionManager $transactionManager;
 
         private array $categoryIdToCategoryIdentifierCache = array();
         private array $placeIdToCategoryIdsCache = array();
 
-        public function __construct(\DatabaseProvider $databaseProvider, ConfigurationService $configurationService,
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
             HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher) {
-            $this->categoryMapper = new CategoryMapper($databaseProvider, $highlightService, $statisticsService, $configurationService);
+            $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $configurationService);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
-            $this->databaseProvider = $databaseProvider;
+            $this->transactionManager = $databaseClient;
         }
 
         public function updateCategories(PlaceIdentifier $placeIdentifier) : void {
@@ -70,7 +72,7 @@
             }
 
             // Persist the categories.
-            $this->databaseProvider->executeAtomically(function() use(&$placeIdentifier, &$categoryIds) {
+            $this->transactionManager->executeAtomically(function() use(&$placeIdentifier, &$categoryIds) {
                 $this->categoryMapper->deleteCategories($placeIdentifier->getId());
 
                 foreach (array_unique($categoryIds) as &$categoryId) {  
@@ -144,7 +146,7 @@
 
         public function updateCategoryName(string $categoryId, string $name) : bool {
             $wasUpdated = true;
-            $this->databaseProvider->executeAtomically(function() use(&$wasUpdated, &$categoryId, &$name) {
+            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$categoryId, &$name) {
                 $wasUpdated &= $this->categoryMapper->updateCategoryName($categoryId, $name);                
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
@@ -188,7 +190,7 @@
 
             // Create the region.
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
-            $this->databaseProvider->executeAtomically(function() use(&$categoryIdentifier, &$includedRegions, &$excludedRegions) {
+            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$includedRegions, &$excludedRegions) {
                 $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
 
                 foreach ($includedRegions as &$includedRegion) {
@@ -223,7 +225,7 @@
             }
             
             $geographicalRegion = new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson);
-            $this->databaseProvider->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion) {
+            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion) {
                 $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);    
                 
@@ -246,7 +248,7 @@
             $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();   
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
 
-            $this->databaseProvider->executeAtomically(function() use(&$countryCategoryId, &$categoryIdentifier, &$geoJson, &$country) {
+            $this->transactionManager->executeAtomically(function() use(&$countryCategoryId, &$categoryIdentifier, &$geoJson, &$country) {
                 $this->categoryMapper->insertGeographicalRegion(new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, 0, $geoJson));
 
                 // TODO: Improve by publishing an event that would invalidate categories only for the specific coordinates.
@@ -302,7 +304,7 @@
             }
 
             // Persist the region areas.
-            $this->databaseProvider->executeAtomically(function() use(&$regionAreas) {
+            $this->transactionManager->executeAtomically(function() use(&$regionAreas) {
                 $this->categoryMapper->deleteAllRegionAreas();
                 foreach ($regionAreas as $categoryId => $area) {
                     $this->categoryMapper->insertRegionArea($categoryId, $area);

@@ -96,6 +96,7 @@
 
         private function init() {
             if ($this->redisClient === null) {
+                // TODO: Propagate from constructor.
                 $this->redisClient = new Client(REDIS_URL);
             }
         }

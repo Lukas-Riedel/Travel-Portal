@@ -3,18 +3,19 @@
 
     use Core\Service\Category\CategoryService;
     use Core\Service\Geocoding\GeocodingService;
+    use Core\Client\Database\DatabaseClient;
 
     class FlightMapper {
 
-        private readonly \DatabaseProvider $databaseProvider;
+        private readonly DatabaseClient $databaseClient;
 
         private readonly CategoryService $categoryService;
 
         private readonly GeocodingService $geocodingService;
 
-        public function __construct(\DatabaseProvider $databaseProvider, CategoryService $categoryService,
+        public function __construct(DatabaseClient $databaseClient, CategoryService $categoryService,
             GeocodingService $geocodingService) {
-            $this->databaseProvider = $databaseProvider;
+            $this->databaseClient = $databaseClient;
             $this->categoryService = $categoryService;
             $this->geocodingService = $geocodingService;
         }
@@ -28,7 +29,7 @@
                 WHERE ofe.flight IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -46,7 +47,7 @@
                     OR ofe.end <> nfe.end
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -60,7 +61,7 @@
                 WHERE nfe.id IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("trip_id");
         }
@@ -72,7 +73,7 @@
                 WHERE code = ?
             SQL;
 
-            $airportIdentifierRow = $this->databaseProvider
+            $airportIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($code)
                 ->getSingleRow();
@@ -93,7 +94,7 @@
                 WHERE code = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($code)
                 ->getSingleColumn("id");
@@ -106,7 +107,7 @@
                 WHERE airline_id IS NULL
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getResultSetForColumn("code");
         }
@@ -153,7 +154,7 @@
                 ORDER BY start
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($flightRow) {       
@@ -190,7 +191,7 @@
                 ORDER BY ai.name
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($airlineRow) {
                     return new Airline($airlineRow["id"], $airlineRow["name"], explode(",", $airlineRow["codes"]), $airlineRow["logo"]);
@@ -210,7 +211,7 @@
                 GROUP BY ai.id
             SQL;
 
-            $airlineRow = $this->databaseProvider
+            $airlineRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airlineId)
                 ->getSingleRow();
@@ -239,7 +240,7 @@
                 GROUP BY ai.id
             SQL;
 
-            $airlineRow = $this->databaseProvider
+            $airlineRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airlineCode)
                 ->getSingleRow();
@@ -292,7 +293,7 @@
                 WHERE fe.id IS NULL
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($flightRow) {
                     $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
@@ -352,7 +353,7 @@
                 {$flightSortingStrategy->getOrderByClause()}
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
                 ->getMappedResultSet(function($flightRow) {
@@ -377,7 +378,7 @@
                 WHERE id = ?
             SQL;
 
-            $airportIdentifierRow = $this->databaseProvider
+            $airportIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airportId)
                 ->getSingleRow();
@@ -395,7 +396,7 @@
                     AND start = ?
             SQL;
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($flight->getFlight(), $flight->getStart())
                 ->getSingleColumn("trip_id");
@@ -412,7 +413,7 @@
                 ORDER BY fe.end ASC
             SQL;       
             
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($flightRow) {
                     $from = new Airport(null, $flightRow["from"], null, null, null, null, null, null);
@@ -428,7 +429,7 @@
                 WHERE actual_arrival - scheduled_arrival > 0
             SQL;
 
-            return intval($this->databaseProvider
+            return intval($this->databaseClient
                 ->statementBuilder($sql)
                 ->getSingleColumn("average_delay"));
         }
@@ -443,7 +444,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($code)
                 ->execute() === 1;
@@ -467,14 +468,14 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airportIdentifier->getCode(), $this->categoryService->getOrCreateCountryCategoryIdentifier($airportIdentifier->getCountry())->getId(),
                     $airportIdentifier->getLatitude(), $airportIdentifier->getLongitude(), $airportIdentifier->getTimezone())
                 ->execute();
 
             if ($wasInserted) {
-                $airportIdentifier->setId($this->databaseProvider->getLastInsertedId());
+                $airportIdentifier->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -508,7 +509,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($flight->getFlight(), $flight->getRegistration(), $airlineCodeId, $flight->getAircraft(), $flight->getFrom()->getId(), 
                     $flight->getTo()->getId(), $scheduledDeparture, $flight->getStart(), $scheduledArrival, $flight->getEnd())
@@ -537,7 +538,7 @@
                 )
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($eventId, $tripId, $flight->getFlight(), $flight->getFrom()->getShortName(),
                     $flight->getTo()->getShortName(), $flight->getStart(), $flight->getEnd())
@@ -556,13 +557,13 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseProvider
+            $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airline->getName(), $airline->getLogo())
                 ->execute() === 1;
                 
             if ($wasInserted) {
-                $airline->setId($this->databaseProvider->getLastInsertedId());
+                $airline->setId($this->databaseClient->getLastInsertedId());
             }
 
             return $wasInserted;
@@ -575,7 +576,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airlineId, $airlineCodeId)
                 ->execute() === 1;
@@ -588,7 +589,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $airlineId)
                 ->execute() === 1;
@@ -601,7 +602,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($logo, $airlineId)
                 ->execute() === 1;
@@ -614,7 +615,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $airportId)
                 ->execute() === 1;
@@ -629,7 +630,7 @@
                     AND actual_arrival = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($flight, $actualDeparture, $actualArrival)
                 ->execute();
@@ -641,7 +642,7 @@
                 FROM {$flightType->getTableName()}
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
@@ -653,7 +654,7 @@
                 WHERE id = ?
             SQL;
 
-            return $this->databaseProvider
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airlineId)
                 ->execute();
@@ -664,7 +665,7 @@
                 DROP TEMPORARY TABLE IF EXISTS {$tableName}
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();    
 
@@ -674,7 +675,7 @@
                     FROM flight_event
             SQL;
             
-            $this->databaseProvider
+            $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
         }
