@@ -1,6 +1,17 @@
 <?php
+    use Core\OpenLineage\OpenLineageEventManager;
+    
     // TODO: Use only within another client, never in the service code. Extract such usages to separate clients.
     class HttpClient {
+        
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s";
+
+        private ?OpenLineageEventManager $openLineageEventManager = null;
+
+        public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
+            $this->openLineageEventManager = $openLineageEventManager;
+        }
+
         public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = null, $includeResponseHeaders = false) {
             global $logger;
 
@@ -27,6 +38,16 @@
             $isJsonResponse = $returnType === "application/json";
 
             curl_close($curl);
+
+            $parsedUrl = parse_url($url);
+            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
+            $name = $parsedUrl["path"];
+            if ($method === HttpMethod::GET) {
+                $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $payload);
+            }
+            else {
+                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $payload);
+            }
 
             if ($includeResponseHeaders && $isJsonResponse) {  
                 list($header, $body) = explode("\r\n\r\n", $response, 2);  

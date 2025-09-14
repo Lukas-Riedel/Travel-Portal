@@ -44,6 +44,10 @@
             $this->fitnessService->removeStaleFitnessRecords();
         }
 
+        public function onTripEventRemoved(mixed $message) : void {
+            $this->fitnessService->removeStaleFitnessRecords();
+        }
+
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, self::FETCH_FITNESS_ACTION_INTERVAL)) {
                 $timestampsToUpdate = array();

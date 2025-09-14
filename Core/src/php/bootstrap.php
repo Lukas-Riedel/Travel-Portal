@@ -171,6 +171,7 @@
     $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cacheClient->setOpenLineageEventManager($openLineageEventManager);
     $databaseProvider->setOpenLineageEventManager($openLineageEventManager);
+    $httpClient->setOpenLineageEventManager($openLineageEventManager);
     
     // Event listeners.
     $listeners = array(
