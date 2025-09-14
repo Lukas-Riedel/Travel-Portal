@@ -41,49 +41,25 @@
         }
 
         public function onPlaceEventRemoved(mixed $message) : void {
-            $this->fitnessService->removeStaleFitnessRecords();
+            $this->fitnessService->removeUnreferencedFitnessRecords($this->getAllRequiredFitnessRecordTimestamps());
         }
 
         public function onTripEventRemoved(mixed $message) : void {
-            $this->fitnessService->removeStaleFitnessRecords();
+            $this->fitnessService->removeUnreferencedFitnessRecords($this->getAllRequiredFitnessRecordTimestamps());
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, self::FETCH_FITNESS_ACTION_INTERVAL)) {
-                $timestampsToUpdate = array();
-
                 $validTimestamps = array_flip($this->fitnessService->getAllValidFitnessRecordTimestamps());
-                $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
-
-                foreach ($trips as &$trip) {
-                    if ($this->tripService->isDayTripsTrip($trip)) {
-                        $places = $this->placeService->getRegularPlaces(null, null, $trip->getId(), null, null, null, null, null, null,
-                            array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-
-                        foreach ($places as &$place) {
-                            foreach ($place->getDates() as &$date) {
-                                $currentTimestamp = $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS);
-                                while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS <= min(time(), $date->getEnd() - ($date->getEnd() % CommonConstants::ONE_DAY_SECONDS) + CommonConstants::ONE_DAY_SECONDS)) {
-                                    if (!isset($validTimestamps[$currentTimestamp])) {
-                                        $timestampsToUpdate[] = $currentTimestamp;
-                                    }
-                                    $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        $currentTimestamp = $trip->getStart() - ($trip->getStart() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
-                        while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS <= min(time(), $trip->getEnd() - ($trip->getEnd() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS) + CommonConstants::FITNESS_RECORD_DURATION_SECONDS)) {
-                            if (!isset($validTimestamps[$currentTimestamp])) {
-                                $timestampsToUpdate[] = $currentTimestamp;
-                            }
-                            $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
-                        }
+                $allRequiredTimestamps = $this->getAllRequiredFitnessRecordTimestamps();
+                
+                $timestampsToUpdate = array();
+                foreach ($allRequiredTimestamps as &$requiredTimestamp) {
+                    if (!isset($validTimestamps[$requiredTimestamp])) {
+                        $timestampsToUpdate[] = $requiredTimestamp;
                     }
                 }
 
-                $timestampsToUpdate = array_unique($timestampsToUpdate);
                 if (count($timestampsToUpdate) > 0) {                
                     $intervals = array();
                     foreach ($timestampsToUpdate as &$timestampToUpdate) {
@@ -104,6 +80,39 @@
                     $this->eventPublisher->publish(Event::FitnessActivityDetected($intervals));
                 }
             }
+        }
+
+        private function getAllRequiredFitnessRecordTimestamps() : array {
+            $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
+
+            $allTimestamps = array();
+            foreach ($trips as &$trip) {
+                if ($this->tripService->isDayTripsTrip($trip)) {
+                    $places = $this->placeService->getRegularPlaces(null, null, $trip->getId(), null, null, null, null, null, null,
+                        array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+
+                    foreach ($places as &$place) {
+                        foreach ($place->getDates() as &$date) {
+                            $currentTimestamp = $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS);
+                            while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS
+                                <= min(time(), $date->getEnd() - ($date->getEnd() % CommonConstants::ONE_DAY_SECONDS) + CommonConstants::ONE_DAY_SECONDS)) {
+                                $allTimestamps[] = $currentTimestamp;
+                                $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+                            }
+                        }
+                    }
+                }
+                else {
+                    $currentTimestamp = $trip->getStart() - ($trip->getStart() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
+                    while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS
+                        <= min(time(), $trip->getEnd() - ($trip->getEnd() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS) + CommonConstants::FITNESS_RECORD_DURATION_SECONDS)) {
+                        $allTimestamps[] = $currentTimestamp;
+                        $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+                    }
+                }
+            }
+
+            return array_unique($allTimestamps);
         }
     }
 ?>

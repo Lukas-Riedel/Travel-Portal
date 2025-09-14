@@ -89,8 +89,19 @@
             return true;
         }
 
-        public function removeStaleFitnessRecords() : void {
-            $this->fitnessMapper->deleteStaleFitnessRecords();
+        public function removeUnreferencedFitnessRecords(array $allRequiredTimestamps) : void {
+            global $logger;
+
+            $allRequiredTimestampsMap = array_flip($allRequiredTimestamps);
+            $allTimestamps = $this->fitnessMapper->selectAllFitnessRecordTimestamps();
+            
+            foreach ($allTimestamps as &$timestamp) {
+                if (!isset($allRequiredTimestampsMap[$timestamp])) {
+                    // TODO: Uncomment and remove the logging message once deemed safe.
+                    // $this->fitnessMapper->deleteFitnessRecord($timestamp);
+                    $logger->info("Removing stale fitness record for timestamp {$timestamp}...");
+                }
+            }
         }
 
         private function getCorrectedDistance(float $distance, int $steps) : float {

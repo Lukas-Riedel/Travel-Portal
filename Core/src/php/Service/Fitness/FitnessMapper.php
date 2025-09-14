@@ -158,6 +158,17 @@
                 ->getResultSetForColumn("timestamp");
         }
 
+        public function selectAllFitnessRecordTimestamps() : array {
+            $sql = <<<'SQL'
+                SELECT timestamp
+                FROM fitness
+            SQL;
+
+            return $this->databaseProvider
+                ->statementBuilder($sql)
+                ->getResultSetForColumn("timestamp");
+        }
+
         // TODO: Switch to TimeBasedFitness.
         public function insertFitnessRecord(Fitness $fitness, int $timestamp) : bool {
             $sql = <<<'SQL'
@@ -242,65 +253,6 @@
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($timestamp)
-                ->execute();
-        }
-
-        // TODO: Drop this crazy SQL, implement in the application code.
-        // TODO: This references tables of other services which it shouldn't.
-        public function deleteStaleFitnessRecords() : int {
-            $sql = <<<'SQL'
-                DELETE f 
-                FROM fitness f 
-                LEFT JOIN (
-                    SELECT s.seq AS start 
-                    FROM (
-                        SELECT (
-                            SELECT MIN(start)
-                            FROM trip_event
-                        ) + ? * seq AS seq
-                        FROM seq_0_to_200000
-                    ) s 
-                    JOIN (
-                        SELECT * 
-                        FROM trip_event 
-                        WHERE trip_id NOT IN (
-                            SELECT id 
-                            FROM trip_identifier 
-                            WHERE name = ?
-                        )
-                    ) t 
-                    WHERE s.seq >= t.start 
-                        AND s.seq <= t.end 
-                        AND s.seq <= UNIX_TIMESTAMP() 
-                    UNION 
-                    SELECT s.seq AS start
-                    FROM (
-                        SELECT (
-                            SELECT MIN(start) - 86400
-                            FROM place_event
-                        ) + ? * seq AS seq
-                        FROM seq_0_to_200000
-                    ) s 
-                    JOIN (
-                        SELECT pe.* 
-                        FROM place_event pe
-                        INNER JOIN trip_identifier ti 
-                            ON pe.trip_id = ti.id 
-                        WHERE ti.name = ?
-                            AND YEAR(FROM_UNIXTIME(pe.start)) = ti.year
-                    ) p 
-                    WHERE s.seq >= p.start - (p.start % 86400) 
-                        AND s.seq <= 86400 + p.end - (p.end % 86400) 
-                        AND s.seq <= UNIX_TIMESTAMP()
-                ) x 
-                    ON x.start = f.timestamp 
-                    WHERE x.start IS NULL
-            SQL;
-
-            $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-            return $this->databaseProvider
-                ->statementBuilder($sql)
-                ->withParameters(CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName)
                 ->execute();
         }
     }
