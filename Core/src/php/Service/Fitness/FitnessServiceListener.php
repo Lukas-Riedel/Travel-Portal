@@ -48,8 +48,8 @@
             if ($this->scheduler->requestExecution(self::FETCH_FITNESS_ACTION_NAME, self::FETCH_FITNESS_ACTION_INTERVAL)) {
                 $timestampsToUpdate = array();
 
-                $validTimestamps = array_flip($this->fitnessService->getValidFitnessRecordTimestamps());
-                $trips = $this->tripService->getRegularTrips(null, time(), null, array(), TripSortingStrategy::OldestAscending);
+                $validTimestamps = array_flip($this->fitnessService->getAllValidFitnessRecordTimestamps());
+                $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
 
                 foreach ($trips as &$trip) {
                     if ($this->tripService->isDayTripsTrip($trip)) {
@@ -65,17 +65,13 @@
                                     }
                                     $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
                                 }
-
-                                if (!isset($validTimestamps[$currentTimestamp])) {
-                                    $timestampsToUpdate[] = $date->getStart();
-                                }
                             }
                         }
                     }
                     else {
-                        $currentTimestamp = $trip->getStart();
-                        while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS <= min(time(), $trip->getEnd())) {
-                            if (!in_array($currentTimestamp, $validTimestamps)) {
+                        $currentTimestamp = $trip->getStart() - ($trip->getStart() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
+                        while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS <= min(time(), $trip->getEnd() - ($trip->getEnd() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS) + CommonConstants::FITNESS_RECORD_DURATION_SECONDS)) {
+                            if (!isset($validTimestamps[$currentTimestamp])) {
                                 $timestampsToUpdate[] = $currentTimestamp;
                             }
                             $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;

@@ -13,6 +13,7 @@
         private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 15;
 
         private const EVENT_HANDLER_METHOD_PREFIX = "on";
+        private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
 
         private readonly MessagingClient $messagingClient;
         private readonly \DatabaseProvider $databaseProvider;
@@ -81,7 +82,12 @@
             finally {
                 $this->logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
                 $this->flushLogger();
-                $this->openLineageEventManager->publishCurrentEventAsync();
+                if ($event["name"] === self::OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME) {
+                    $this->openLineageEventManager->publishCurrentEvent();
+                }
+                else {
+                    $this->openLineageEventManager->publishCurrentEventAsync();
+                }
             }
         }
 

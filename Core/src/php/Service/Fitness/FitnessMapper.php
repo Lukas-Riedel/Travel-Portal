@@ -144,7 +144,7 @@
             return doubleval($fitnessRow["average_distance_per_step"]);
         }
 
-        public function selectValidFitnessRecordTimestamps() : array {
+        public function selectAllValidFitnessRecordTimestamps() : array {
             $sql = <<<'SQL'
                 SELECT timestamp
                 FROM fitness

@@ -18,13 +18,13 @@
         }
 
         public function addInput(string $namespace, string $name, mixed $data) : void {
-            if (!array_filter($this->inputs, fn($ds) => $ds["namespace"] === $namespace && $ds["name"] === $name)) {
+            if (!array_filter($this->inputs, fn($dataset) => $dataset["namespace"] === $namespace && $dataset["name"] === $name)) {
                 $this->inputs[] = self::createDataset($namespace, $name, $data);
             }
         }
 
         public function addOutput(string $namespace, string $name, mixed $data) : void {
-            if (!array_filter($this->outputs, fn($ds) => $ds["namespace"] === $namespace && $ds["name"] === $name)) {
+            if (!array_filter($this->outputs, fn($dataset) => $dataset["namespace"] === $namespace && $dataset["name"] === $name)) {
                 $this->outputs[] = self::createDataset($namespace, $name, $data);
             }
         }
