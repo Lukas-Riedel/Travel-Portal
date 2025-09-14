@@ -25,8 +25,8 @@
             return $this->fitnessMapper->selectConflictingFitnessRecords();
         }
 
-        public function getFitnessRecordTimestampsToUpdate(int $limit) : array {
-            return $this->fitnessMapper->selectFitnessRecordTimestampsToUpdate($limit);
+        public function getValidFitnessRecordTimestamps() : array {
+            return $this->fitnessMapper->selectValidFitnessRecordTimestamps();
         }
 
         public function getFitnessRecordForInterval(int $start, int $end) : Fitness {

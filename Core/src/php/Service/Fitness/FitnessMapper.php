@@ -6,6 +6,8 @@
 
     class FitnessMapper {
 
+        private const UPDATE_THRESHOLD_DAYS = 7;
+
         private readonly \DatabaseProvider $databaseProvider;
         private readonly ConfigurationService $configurationService;
 
@@ -142,72 +144,18 @@
             return doubleval($fitnessRow["average_distance_per_step"]);
         }
 
-        // TODO: Drop this crazy SQL, implement in the application code.
-        // TODO: This references tables of other services which it shouldn't.
-        public function selectFitnessRecordTimestampsToUpdate(int $limit) : array {
-            $sql = <<<SQL
-                SELECT x.start
-                FROM (
-                    SELECT s.seq AS start
-                    FROM (
-                        SELECT (
-                            SELECT MIN(start)
-                            FROM trip_event
-                        ) + ? * seq AS seq
-                        FROM seq_0_to_200000
-                    ) s
-                    JOIN (
-                        SELECT *
-                        FROM trip_event
-                        WHERE trip_id NOT IN (
-                            SELECT id
-                            FROM trip_identifier
-                            WHERE name = ?
-                        )
-                    ) t
-                    WHERE s.seq >= t.start
-                        AND s.seq <= t.end
-                        AND s.seq <= UNIX_TIMESTAMP() + ?
-                    UNION
-                    SELECT s.seq AS start
-                    FROM (
-                        SELECT (
-                            SELECT MIN(start) - 86400
-                            FROM place_event
-                        ) + ? * seq AS seq
-                        FROM seq_0_to_200000
-                    ) s
-                    JOIN (
-                        SELECT pe.* 
-                        FROM place_event pe 
-                        INNER JOIN trip_identifier ti
-                            ON pe.trip_id = ti.id
-                        WHERE ti.name = ?
-                            AND YEAR(FROM_UNIXTIME(pe.start)) = ti.year
-                        ) p
-                    WHERE s.seq >= p.start - (p.start % 86400)
-                        AND s.seq <= 86400 + p.end - (p.end % 86400)
-                        AND s.seq <= UNIX_TIMESTAMP() + ?
-                    ) x
-                LEFT JOIN fitness f
-                    ON x.start = f.timestamp                    
-                WHERE f.timestamp IS NULL
-                    AND x.start + ? <= UNIX_TIMESTAMP()
-                    OR (
-                        -- TODO: Find a better way of how to update fitness records multiple times when getting rid of this query.
-                        f.timestamp + (7 * 86400) > f.last_update
-                        AND f.last_update + 86400 < UNIX_TIMESTAMP()
-                    )
-                LIMIT {$limit}
+        public function selectValidFitnessRecordTimestamps() : array {
+            $sql = <<<'SQL'
+                SELECT timestamp
+                FROM fitness
+                WHERE timestamp + ? * 86400 < last_update 
+                    OR timestamp + ? * 86400 > UNIX_TIMESTAMP()
             SQL;
 
-            $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
             return $this->databaseProvider
                 ->statementBuilder($sql)
-                ->withParameters(CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS, 
-                    CommonConstants::FITNESS_RECORD_DURATION_SECONDS, $dayTripsTripName, CommonConstants::FITNESS_RECORD_DURATION_SECONDS,
-                    CommonConstants::FITNESS_RECORD_DURATION_SECONDS)
-                ->getResultSetForColumn("start");
+                ->withParameters(self::UPDATE_THRESHOLD_DAYS, self::UPDATE_THRESHOLD_DAYS)
+                ->getResultSetForColumn("timestamp");
         }
 
         // TODO: Switch to TimeBasedFitness.

@@ -11,7 +11,7 @@
 
     class MessagingClient {
 
-        private const HEARTBEAT_INTERVAL_SECONDS = 300;
+        private const HEARTBEAT_INTERVAL_SECONDS = 90;
 
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
