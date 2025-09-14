@@ -39,16 +39,6 @@
 
             curl_close($curl);
 
-            $parsedUrl = parse_url($url);
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
-            $name = $parsedUrl["path"];
-            if ($method === HttpMethod::GET) {
-                $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $payload);
-            }
-            else {
-                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $payload);
-            }
-
             if ($includeResponseHeaders && $isJsonResponse) {  
                 list($header, $body) = explode("\r\n\r\n", $response, 2);  
                 $result = json_decode($body, true);
@@ -56,7 +46,19 @@
                 return $result;
             }
 
-            return $isJsonResponse ? json_decode($response, true) : $response;
+            $result = $isJsonResponse ? json_decode($response, true) : $response;            
+
+            $parsedUrl = parse_url($url);
+            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
+            $name = ltrim($parsedUrl["path"], "/");
+            if ($method === HttpMethod::GET) {
+                $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $result);
+            }
+            else {
+                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $result);
+            }
+
+            return $result;
         }
 
         private function parseHeaders($rawHeaders) {

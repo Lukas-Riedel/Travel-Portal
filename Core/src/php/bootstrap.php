@@ -139,13 +139,13 @@
 
     // Statistics providers.
     $statisticsProviders = array(
-        new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService),
         new TripStatisticsProvider($tripService),
         new FlightStatisticsProvider($flightService),
         new StayStatisticsProvider($stayService),
         new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
         new PhotoStatisticsProvider($placeService),
-        new ExpenseStatisticsProvider($expenseService, $tripService)
+        new ExpenseStatisticsProvider($expenseService, $tripService),
+        new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService),
     );
     $statisticsService->setStatisticsProviders($statisticsProviders);
 

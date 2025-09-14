@@ -250,7 +250,7 @@
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
-                    AND replaced_photo_id IS NOT null
+                    AND replaced_photo_id IS NOT NULL
                     AND expiration > UNIX_TIMESTAMP()
             SQL;
             

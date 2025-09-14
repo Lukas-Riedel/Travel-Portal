@@ -77,11 +77,9 @@
                 });
         }
 
-        public function selectVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {
-            $temporaryTableName = self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME;
-            
+        public function selectVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {            
             $sql = <<<SQL
-                DROP TEMPORARY TABLE IF EXISTS {$temporaryTableName}
+                DROP TEMPORARY TABLE IF EXISTS {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME}
             SQL;
             
             $this->databaseProvider
@@ -89,9 +87,9 @@
                 ->execute();
 
             $sql = <<<SQL
-                CREATE TEMPORARY TABLE {$temporaryTableName} (
-                    category_id bigint(20) unsigned NOT null,
-                    place_id bigint(20) unsigned NOT null
+                CREATE TEMPORARY TABLE {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME} (
+                    category_id bigint(20) unsigned NOT NULL,
+                    place_id bigint(20) unsigned NOT NULL
                 )
             SQL;
             
@@ -102,7 +100,7 @@
             foreach ($this->categoryService->getCategoryIdsForCategory($category) as &$categoryId) {
                 foreach ($this->categoryService->getPlaceIdsForCategoryId($categoryId) as &$placeId) {                    
                     $sql = <<<SQL
-                        INSERT INTO {$temporaryTableName} (
+                        INSERT INTO {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME} (
                             category_id,
                             place_id
                         )
@@ -121,7 +119,7 @@
 
             $sql = <<<SQL
                 SELECT c.category_id, GROUP_CONCAT(DISTINCT c.place_id SEPARATOR ",") AS place_ids
-                FROM {$temporaryTableName} c
+                FROM {self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME} c
                 INNER JOIN (
                     SELECT place_id, start
                     FROM place_event
