@@ -90,7 +90,6 @@
             }
 
             $updatedStatisticsRecords = array();
-
             foreach (StatisticsKind::cases() as &$statisticsKind) {
                 foreach ($this->statisticsProviders as &$statisticsProvider) {
                     $fetchedStatisticsRecords = $statisticsProvider->fetchStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId, $entityId);

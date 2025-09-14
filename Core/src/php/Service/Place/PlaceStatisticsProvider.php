@@ -139,8 +139,7 @@
                         $statistics[] = new Statistics(self::FURTHEST_PLACES_STATISTICS_NAME, $furthestPlaces, StatisticsUnit::Kilometers);
 
                         $furthestCountries = array_map(fn($place) => new KeyValuePair($place->getCountry(),
-                            $distances[$place->getId()]),
-                            array_values(array_reduce($relevantPlaces, fn($carry, $place) => $carry + [$place->getCountry() => $place], array())));
+                            $distances[$place->getId()]), array_values(array_reduce($relevantPlaces, fn($carry, $place) => $carry + [$place->getCountry() => $place], array())));
                         $statistics[] = new Statistics(self::FURTHEST_COUNTRIES_STATISTICS_NAME, $furthestCountries, StatisticsUnit::Kilometers);
                     }
                                         

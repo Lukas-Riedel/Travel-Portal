@@ -78,7 +78,7 @@
         }
 
         public function selectVisitedCategoriesForInterval(int $start, int $end, ?CategoryCategory $category, VisitedCategoriesSortingStrategy $visitedCategoriesSortingStrategy) : array {            
-            $temporaryTableName = self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME;
+            $temporaryTableName = ($category?->value ?? "all") . "_" . self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME;
             
             $sql = <<<SQL
                 DROP TEMPORARY TABLE IF EXISTS {$temporaryTableName}
@@ -99,52 +99,62 @@
                 ->statementBuilder($sql)
                 ->execute();
 
+            $sql = <<<SQL
+                INSERT INTO {$temporaryTableName} (
+                    category_id,
+                    place_id
+                )
+                VALUES
+            SQL;
+
+            $values = array();
+            $parameters = array();
             foreach ($this->categoryService->getCategoryIdsForCategory($category) as &$categoryId) {
-                foreach ($this->categoryService->getPlaceIdsForCategoryId($categoryId) as &$placeId) {                    
-                    $sql = <<<SQL
-                        INSERT INTO {$temporaryTableName} (
-                            category_id,
-                            place_id
-                        )
-                        VALUES (
-                            ?,
-                            ?
-                        )
-                    SQL;
-                    
-                    $this->databaseProvider
-                        ->statementBuilder($sql)
-                        ->withParameters($categoryId, $placeId)
-                        ->execute();
+                foreach ($this->categoryService->getPlaceIdsForCategoryId($categoryId) as &$placeId) {  
+                    $values[] = "(?, ?)";
+                    $parameters[] = $categoryId;
+                    $parameters[] = $placeId;
                 }
-            }
+            }     
+            
+            $this->databaseProvider
+                ->statementBuilder($sql . " " . implode(", ", $values))
+                ->withParameters(...$parameters)
+                ->execute();
 
             $sql = <<<SQL
-                SELECT c.category_id, GROUP_CONCAT(DISTINCT c.place_id SEPARATOR ",") AS place_ids
+                SELECT c.category_id,
+                    GROUP_CONCAT(DISTINCT c.place_id SEPARATOR ",") AS place_ids
                 FROM {$temporaryTableName} c
                 INNER JOIN (
-                    SELECT place_id, start
+                    SELECT place_id, 
+                        start
                     FROM place_event
                     WHERE start >= ?
                         AND end <= ?
                     UNION ALL
-                    SELECT place_id, null AS start
+                    SELECT place_id, 
+                        null AS start
                     FROM place_permanent
                 ) p
                     ON c.place_id = p.place_id
                 GROUP BY c.category_id
                 {$visitedCategoriesSortingStrategy->getOrderByClause()}
             SQL;
-            
+
+            $placesCache = array();            
             return $this->databaseProvider
                 ->statementBuilder($sql)
                 ->withParameters($start, $end)
-                ->getMappedResultSet(function($categoryRow) use(&$start, &$end) {
+                ->getMappedResultSet(function($categoryRow) use(&$start, &$end, &$placesCache) {
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
-                        array_filter(array_map(function($placeId) use(&$start, &$end) {
-                            $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end,
-                                array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-                            return count($places) === 0 ? null : $places[0];
+                        array_filter(array_map(function($placeId) use(&$start, &$end, &$placesCache) {
+                            if (!isset($placesCache[$placeId])) {
+                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end,
+                                    array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                                $placesCache[$placeId] = count($places) === 0 ? null : $places[0];                                
+                            }
+                            return $placesCache[$placeId];
                         }, explode(",", $categoryRow["place_ids"])), fn($place) => $place !== null));
                 });
         }

@@ -50,7 +50,7 @@
 
             $parsedUrl = parse_url($url);
             $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
-            $name = ltrim($parsedUrl["path"], "/");
+            $name = str_replace(".", "", ltrim($parsedUrl["path"], "/"));
             if ($method === HttpMethod::GET) {
                 $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $result);
             }

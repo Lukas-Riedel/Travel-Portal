@@ -28,7 +28,6 @@
         private const FLIGHT_CODE_STATISTICS_FORMAT = "%s - %s (%s)";
         private const FLIGHT_DATE_STATISTICS_FORMAT = "%s - %s @ %s";
         private const AIRCRAFT_REGISTRATION_STATISTICS_FORMAT = "%s @ %s";
-        private const AIRPORT_STATISTICS_FORMAT = "%s (%s)";
 
         private readonly FlightService $flightService;
 
@@ -100,9 +99,7 @@
                         $statistics[] = new Statistics(self::MOST_USED_AIRLINES_STATISTICS_NAME, $mostUsedAirlines, StatisticsUnit::Flights);
                     }
                     
-                    $mostUsedAirports = $this->getStandingsStatistics($flights,
-                        fn($flight) => sprintf(self::AIRPORT_STATISTICS_FORMAT, $flight->getFrom()->getLongName(), $flight->getFrom()->getCode()),
-                        fn($flight) => sprintf(self::AIRPORT_STATISTICS_FORMAT, $flight->getTo()->getLongName(), $flight->getTo()->getCode()));
+                    $mostUsedAirports = $this->getStandingsStatistics($flights, fn($flight) => $flight->getFrom()->getLongName(), fn($flight) => $flight->getTo()->getLongName());
                     if (count($mostUsedAirports) > 0) {
                         $statistics[] = new Statistics(self::MOST_USED_AIRPORTS_STATISTICS_NAME, $mostUsedAirports, StatisticsUnit::Flights);
                     }
