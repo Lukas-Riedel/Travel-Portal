@@ -44,7 +44,8 @@
 
             $files = $apiResponse["files"];
 
-            return count($files) === 1 ? $files[0] : null;
+            // TODO: Log error if multiple files were found.
+            return count($files) > 0 ? $files[0] : null;
         }
 
         public function createFolder($name, $folderId) : ?string {

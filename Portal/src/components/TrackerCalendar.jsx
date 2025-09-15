@@ -333,7 +333,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
 
     const getDaySummaryStyle = daySummary => {
         if (daySummary) {
-            if (daySummary.isInTrip && (daySummary.actualWorkingHours > 0 || daySummary.expectedWorkingHours > 0)) {
+            if ((daySummary.isInTrip || daySummary.standardWorkingHours === 0) && (daySummary.actualWorkingHours > 0 || daySummary.expectedWorkingHours > 0)) {
                 return {
                     bgColorClass: "bg-cyan-600 text-white",
                     hoverClass: "hover:bg-cyan-700",

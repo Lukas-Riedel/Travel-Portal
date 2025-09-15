@@ -21,7 +21,7 @@
         }
 
         public function publishEvent(OpenLineageEvent $event) : void {
-            if (!$this->configurationService->getConfigurationEntry("openLineage")["ibmCloud"]["enabled"]) {
+            if (!$this->configurationService->getConfigurationEntry("openLineage")["producers"]["ibmCloud"]["enabled"]) {
                 return;
             }
 

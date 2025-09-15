@@ -55,7 +55,7 @@
                 $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $result);
             }
             else {
-                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $result);
+                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $payload);
             }
 
             return $result;

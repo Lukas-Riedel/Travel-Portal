@@ -17,7 +17,7 @@
         }
 
         public function publishEvent(OpenLineageEvent $event) : void {
-            if (!$this->configurationService->getConfigurationEntry("openLineage")["googleDrive"]["enabled"]) {
+            if (!$this->configurationService->getConfigurationEntry("openLineage")["producers"]["googleDrive"]["enabled"]) {
                 return;
             }
 

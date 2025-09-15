@@ -182,7 +182,7 @@
             SQL;
 
             return (new MySQLStatementBuilder($this->mysqli, $sql, $this->logger))
-                ->withParameters($this->host, $table)
+                ->withParameters($this->database, $table)
                 ->getResultSetForColumn("COLUMN_NAME");
         }
     }
