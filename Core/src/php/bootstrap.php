@@ -16,8 +16,8 @@
     use Monolog\Logger;
     use Core\Client\CacheClient;
     use Core\Client\CloudMessagingClient;
-use Core\Client\Database\MySQLDatabaseClient;
-use Core\Client\MessagingClient;
+    use Core\Client\Database\MySQLDatabaseClient;
+    use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
@@ -106,7 +106,7 @@ use Core\Client\MessagingClient;
     $googleApiClient = new GoogleApiClient();
     $chatClient = new ChatClient();
     $calendarClient = new CalendarClient();
-    $messagingClient = new MessagingClient($logger);
+    $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new CloudMessagingClient($logger);
     $cacheClient = new CacheClient();
 

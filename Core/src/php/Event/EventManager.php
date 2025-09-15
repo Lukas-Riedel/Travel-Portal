@@ -2,7 +2,7 @@
     namespace Core\Event;
 
     use Core\Client\Database\DatabaseClient;
-    use Core\Client\MessagingClient;
+    use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventPriority;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
@@ -16,7 +16,7 @@
         private const EVENT_HANDLER_METHOD_PREFIX = "on";
         private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
 
-        private readonly MessagingClient $messagingClient;
+        private readonly RabbitMQMessagingClient $messagingClient;
         private readonly DatabaseClient $databaseClient;
 
         private readonly Logger $logger;
@@ -24,7 +24,7 @@
 
         private readonly array $eventHandlers;
 
-        public function __construct(MessagingClient $messagingClient, DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
+        public function __construct(RabbitMQMessagingClient $messagingClient, DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
             $this->messagingClient = $messagingClient;
             $this->databaseClient = $databaseClient;
             $this->logger = $logger;

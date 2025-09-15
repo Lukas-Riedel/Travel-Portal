@@ -2,7 +2,7 @@
     namespace Core\Event;
 
     use Core\Client\CloudMessagingClient;
-    use Core\Client\MessagingClient;
+    use Core\Client\Messaging\MessagingClient;
     use Core\Service\Device\DeviceService;
 
     class EventPublisher {
