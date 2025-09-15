@@ -6,7 +6,7 @@
     
     class CacheClient {
         
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s:%s";
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rediss://%s:%s";
 
         private ?Client $redisClient = null;
         
@@ -97,7 +97,13 @@
         private function init() {
             if ($this->redisClient === null) {
                 // TODO: Propagate from constructor.
-                $this->redisClient = new Client(REDIS_URL);
+                $this->redisClient = new Client(array(
+                    "scheme" => "rediss",
+                    "host" => REDIS_HOST,
+                    "port" => REDIS_PORT,
+                    "password" => REDIS_PASSWORD,
+                    "database" => 0
+                ));
             }
         }
 
@@ -110,8 +116,7 @@
         }
 
         private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
-            $parsedUrl = parse_url(REDIS_URL);
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"], $parsedUrl["port"] ?? 6379);
+            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, REDIS_HOST, REDIS_PORT);
             $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
             $callable($namespace, $name, $value);
         }
