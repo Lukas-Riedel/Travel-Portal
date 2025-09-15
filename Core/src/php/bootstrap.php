@@ -163,8 +163,8 @@ use Core\Client\MessagingClient;
 
     // OpenLineage manager.
     $openLineageEventPublishers = array(
-        new IbmCloudOpenLineageEventPublisher($authenticationService, $httpClient),
-        new GoogleDriveOpenLineageEventPublisher($googleApiClient)
+        new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient),
+        new GoogleDriveOpenLineageEventPublisher($configurationService, $googleApiClient)
     );
     $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher);
     $messagingClient->setOpenLineageEventManager($openLineageEventManager);

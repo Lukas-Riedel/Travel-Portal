@@ -2,20 +2,29 @@
     namespace Core\OpenLineage;
 
     use Core\Service\Authentication\AuthenticationService;
+    use Core\Service\Configuration\ConfigurationService;
 
     class IbmCloudOpenLineageEventPublisher implements OpenLineageEventPublisher {
 
         private const IBM_CREATE_OPENLINEAGE_EVENT_URL = "https://api.dataplatform.dev.cloud.ibm.com/gov_lineage/v2/lineage_events/openlineage";
 
         private readonly AuthenticationService $authenticationService;
+
+        private readonly ConfigurationService $configurationService;
+
         private readonly \HttpClient $httpClient;
 
-        public function __construct(AuthenticationService $authenticationService, \HttpClient $httpClient) {
+        public function __construct(AuthenticationService $authenticationService, ConfigurationService $configurationService, \HttpClient $httpClient) {
             $this->authenticationService = $authenticationService;
+            $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
         }
 
         public function publishEvent(OpenLineageEvent $event) : void {
+            if (!$this->configurationService->getConfigurationEntry("openLineage")["ibmCloud"]["enabled"]) {
+                return;
+            }
+
             $this->httpClient->executeRequest(\HttpMethod::POST, self::IBM_CREATE_OPENLINEAGE_EVENT_URL, array("Content-Type: application/json", 
                 "Authorization: Bearer " . $this->authenticationService->getIbmCloudAccessToken()), json_encode($event)); 
         }
