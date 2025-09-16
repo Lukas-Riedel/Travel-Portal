@@ -6,7 +6,6 @@
     require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
     require_once(__DIR__ . "/Service/PlatformService.php");
     require_once(__DIR__ . "/Client/GoogleApiClient.php");
-    require_once(__DIR__ . "/Client/ChatClient.php");
     require_once(__DIR__ . "/Client/HttpClient.php");
     require_once(__DIR__ . "/Client/CalendarClient.php");
     require_once(__DIR__ . "/Event/Scheduler.php");
@@ -17,6 +16,7 @@
     use Monolog\Logger;
     use Core\Client\CloudMessagingClient;
     use Core\Client\Database\MySQLDatabaseClient;
+    use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
@@ -104,7 +104,7 @@
     $databaseClient = new MySQLDatabaseClient(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, $logger);
     $httpClient = new HttpClient();
     $googleApiClient = new GoogleApiClient();
-    $chatClient = new ChatClient();
+    $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
     $calendarClient = new CalendarClient();
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new CloudMessagingClient($logger);
@@ -133,7 +133,7 @@
     $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $highlightService, $statisticsService);
-    $placeService = new PlaceService($databaseClient, $chatClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
+    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseClient, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
 

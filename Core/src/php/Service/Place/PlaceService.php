@@ -16,6 +16,7 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\GenerativeContent\GenerativeContentClient;
 
     class PlaceService {
         
@@ -25,7 +26,7 @@
 
         private readonly PlaceMapper $placeMapper;
 
-        private readonly \ChatClient $chatClient;
+        private readonly GenerativeContentClient $generativeContentClient;
         private readonly \CalendarClient $calendarClient;
         private readonly \GoogleApiClient $googleApiClient;
 
@@ -40,13 +41,13 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, \ChatClient $chatClient, \CalendarClient $calendarClient,
+        public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, \CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
                 $photoService, $highlightService, $noteService);
-            $this->chatClient = $chatClient;
+            $this->generativeContentClient = $generativeContentClient;
             $this->calendarClient = $calendarClient;
             $this->googleApiClient = $googleApiClient;
             $this->configurationService = $configurationService;
@@ -332,7 +333,7 @@
 
         private function getSuggestedExcerpt(string $name, string $country) : ?string {
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeExcerpt"];
-            return $this->chatClient->getResponse($prompt, array("name" => $name, "country" => $country));
+            return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country));
         }
 
         private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) : int {
