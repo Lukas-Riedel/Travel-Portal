@@ -6,8 +6,6 @@ import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
 import cz.lriedel.bridgex.ui.CustomWebChromeClient
@@ -24,7 +22,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initFirebase()
         setupWebView()
         setupWindowInsets()
         permissionManager.requestAllPermissions()
@@ -33,19 +30,6 @@ class MainActivity : AppCompatActivity() {
 
         loadWebViewUrl(savedInstanceState, intent.getStringExtra("placeId"))
         deviceInitializer.initialize()
-    }
-
-    private fun initFirebase() {
-        if (FirebaseApp.getApps(this).isEmpty()) {
-            val options = FirebaseOptions.Builder()
-                .setApiKey(BuildConfig.FIREBASE_API_KEY)
-                .setApplicationId(BuildConfig.FIREBASE_APP_ID)
-                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                .setStorageBucket(BuildConfig.FIREBASE_STORAGE_BUCKET)
-                .setGcmSenderId(BuildConfig.FIREBASE_MESSAGING_SENDER_ID)
-                .build()
-            FirebaseApp.initializeApp(this, options)
-        }
     }
 
     private fun setupWebView() {
