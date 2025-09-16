@@ -163,7 +163,7 @@
 
     // OpenLineage manager.
     $openLineageEventPublishers = array(
-        new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient),
+        new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, $logger),
         new GoogleDriveOpenLineageEventPublisher($configurationService, $googleApiClient)
     );
     $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher);
