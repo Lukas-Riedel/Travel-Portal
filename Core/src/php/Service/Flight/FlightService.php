@@ -11,6 +11,7 @@
     use enshrined\svgSanitize\data\AllowedTags;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Calendar\CalendarClient;
 
     class FlightService {
 
@@ -28,7 +29,7 @@
 
         private readonly \HttpClient $httpClient;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
 
         private readonly \GoogleApiClient $googleApiClient;
 
@@ -37,7 +38,7 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
-            \HttpClient $httpClient, \CalendarClient $calendarClient,
+            \HttpClient $httpClient, CalendarClient $calendarClient,
             \GoogleApiClient $googleApiClient, EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
@@ -243,7 +244,7 @@
                 $this->flightMapper->createFlightEventTemporaryTable(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
             }
 
-            $flightEvents = $this->calendarClient->getEvents($flightType->getCalendar()->value);
+            $flightEvents = $this->calendarClient->getEvents($flightType->getCalendar());
             
             $this->transactionManager->executeAtomically(function() use(&$flightType, &$flightEvents, &$tripService) {
                 $this->flightMapper->deleteAllFlightEvents($flightType);

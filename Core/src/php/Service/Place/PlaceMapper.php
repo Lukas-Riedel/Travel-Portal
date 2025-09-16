@@ -41,7 +41,7 @@
             $this->noteService = $noteService;
         }
 
-        public function selectDatesForTripAndCountry(string $tripId, string $country) : array {
+        public function selectDatesForTripAndCountry(string $tripId, string $countryCategoryId) : array {
             $sql = <<<'SQL'
                 SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(pe.start), '%e.%c.%Y') AS date
                 FROM place_event pe
@@ -53,11 +53,11 @@
             
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $this->categoryService->getCategoryIdentifier($country)->getId())
+                ->withParameters($tripId, $countryCategoryId)
                 ->getResultSetForColumn("date");
         }
 
-        public function selectCountriesForTrip(string $tripId) : array {
+        public function selectCountryCategoriesForTrip(string $tripId) : array {
             $sql = <<<'SQL'
                 SELECT DISTINCT pi.country_category_id
                 FROM place_event pe
@@ -73,8 +73,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSetForColumn("country_category_id", function($categoryId) {
-                    // TODO: Return CategoryIdentifier instead of string.
-                    return $this->categoryService->getCategoryIdentifierById($categoryId)->getName();
+                    return $this->categoryService->getCategoryIdentifierById($categoryId);
                 });
         }
 
@@ -160,7 +159,7 @@
                 });
         }
 
-        public function selectCountriesForCandidateTrip(string $tripId) : array {
+        public function selectCountryCategoriesForCandidateTrip(string $tripId) : array {
             $sql = <<<'SQL'
                 SELECT DISTINCT pi.country_category_id
                 FROM place_candidate_event pce
@@ -173,7 +172,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSetForColumn("country_category_id", function($categoryId) {
-                    return $this->categoryService->getCategoryIdentifierById($categoryId)->getName();
+                    return $this->categoryService->getCategoryIdentifierById($categoryId);
                 });
         }
         

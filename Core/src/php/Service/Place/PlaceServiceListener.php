@@ -1,11 +1,13 @@
 <?php
     namespace Core\Service\Place;
 
+    use Core\Client\Calendar\Calendar;
     use Core\Common\CommonConstants;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Trip\TripService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Client\Calendar\CalendarClient;
 
     class PlaceServiceListener {
 
@@ -19,12 +21,12 @@
 
         private readonly TripService $tripService;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
 
         private readonly EventPublisher $eventPublisher;
 
         public function __construct(PlaceService $placeService, TripService $tripService,
-            \CalendarClient $calendarClient, EventPublisher $eventPublisher) {
+            CalendarClient $calendarClient, EventPublisher $eventPublisher) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->calendarClient = $calendarClient;
@@ -52,15 +54,15 @@
         }
 
         public function onCalendarInvalidated(mixed $message) : void {
-            if ($message["calendar"] === \Calendar::Places->value) {
+            if ($message["calendar"] === Calendar::Places->value) {
                 $this->placeService->refreshCalendar($this->tripService);
                 $this->tripService->updateAllDayTripsTripsDates();
             }
         }
 
         public function onCalendarWatchRenewing(mixed $message) : void {
-            if ($message["calendar"] === \Calendar::Places->value) {
-                $this->calendarClient->watchCalendar($message["calendar"]);
+            if ($message["calendar"] === Calendar::Places->value) {
+                $this->calendarClient->watchCalendar(Calendar::Places);
             }
         }
 

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Client\Calendar\Calendar;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Flight\FlightService;
@@ -13,6 +14,7 @@
     use Core\Event\Scheduler;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Calendar\CalendarClient;
 
     class TripServiceListener {
         
@@ -27,7 +29,7 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
 
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
@@ -35,7 +37,7 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, TripService $tripService, PlaceService $placeService, StayService $stayService,
-            FlightService $flightService, ConfigurationService $configurationService, \CalendarClient $calendarClient,
+            FlightService $flightService, ConfigurationService $configurationService, CalendarClient $calendarClient,
             EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
@@ -50,7 +52,7 @@
         
         public function onCalendarInvalidated(mixed $message) : void {
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
-            if ($message["calendar"] === \Calendar::Trips->value) {
+            if ($message["calendar"] === Calendar::Trips->value) {
                 $this->transactionManager->executeAtomically(function() {
                     $this->tripService->removeAllDayTripsTrips();
                     $this->tripService->refreshCalendar();
@@ -63,8 +65,8 @@
         }
         
         public function onCalendarWatchRenewing(mixed $message) : void {
-            if ($message["calendar"] === \Calendar::Trips->value) {
-                $this->calendarClient->watchCalendar(\Calendar::Trips->value);
+            if ($message["calendar"] === Calendar::Trips->value) {
+                $this->calendarClient->watchCalendar(Calendar::Trips);
             }
         }
 

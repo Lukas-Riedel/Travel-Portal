@@ -7,6 +7,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Client\Calendar\CalendarClient;
 
     class FlightServiceListener {
         
@@ -17,14 +18,14 @@
         
         private readonly TripService $tripService;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
 
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
         private readonly Logger $logger;
 
-        public function __construct(FlightService $flightService, TripService $tripService, \CalendarClient $calendarClient,
+        public function __construct(FlightService $flightService, TripService $tripService, CalendarClient $calendarClient,
             EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
             $this->flightService = $flightService;
             $this->tripService = $tripService;
@@ -46,7 +47,7 @@
         public function onCalendarWatchRenewing(mixed $message) : void {
             foreach (FlightType::cases() as &$flightType) {
                 if ($flightType->getCalendar()?->value === $message["calendar"]) {
-                    $this->calendarClient->watchCalendar($flightType->getCalendar()->value);
+                    $this->calendarClient->watchCalendar($flightType->getCalendar());
                 }
             }
         }

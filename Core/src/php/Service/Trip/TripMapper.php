@@ -12,12 +12,13 @@
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Stay\StayService;
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Calendar\CalendarClient;
 
     class TripMapper {
 
         private readonly DatabaseClient $databaseClient;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
 
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
@@ -30,7 +31,7 @@
 
         private readonly ConfigurationService $configurationService;
 
-        public function __construct(DatabaseClient $databaseClient, \CalendarClient $calendarClient,
+        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, ConfigurationService $configurationService) {
             $this->databaseClient = $databaseClient;
@@ -163,7 +164,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($tripIdentifierRow) use(&$includedEntities) {
-                    $countries = $this->placeService->getCountriesForCandidateTrip($tripIdentifierRow["id"]);
+                    $countryCategories = $this->placeService->getCountryCategoriesForCandidateTrip($tripIdentifierRow["id"]);
     
                     $notes = array();
                     if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
@@ -172,11 +173,12 @@
     
                     $publicHolidays = array();
                     if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
-                        $publicHolidays = $this->calendarClient->getPublicHolidaysForCountries($countries);
+                        $publicHolidays = $this->calendarClient->getPublicHolidaysForCategories($countryCategories);
                     }
         
                     return new Trip($tripIdentifierRow["id"], $tripIdentifierRow["name"], null, null, 
-                        null, null, $countries, array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
+                        null, null, array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories),
+                        array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
                 });
         }
 
@@ -261,7 +263,7 @@
                 ->getMappedResultSet(function($tripRow) use(&$includedEntities) {
                     $isDayTrip = $tripRow["name"] === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
 
-                    $countries = $this->placeService->getCountriesForTrip($tripRow["id"]);
+                    $countryCategories = $this->placeService->getCountryCategoriesForTrip($tripRow["id"]);
                     
                     $expenses = array();
                     if (in_array(TripIncludedEntity::Expenses->value, $includedEntities)) {
@@ -312,13 +314,14 @@
     
                     $publicHolidays = array();
                     if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
-                        $publicHolidays = $this->calendarClient->getPublicHolidaysForDatesInCountries(function($country) use(&$tripRow) {
-                            return $this->placeService->getDatesForTripAndCountry($tripRow["id"], $country);
-                        }, $countries);                               
+                        $publicHolidays = $this->calendarClient->getPublicHolidaysForDatesInCategories(function($countryCategory) use(&$tripRow) {
+                            return $this->placeService->getDatesForTripAndCountry($tripRow["id"], $countryCategory->getId());
+                        }, $countryCategories);                               
                     }
     
                     return new Trip($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->highlightService->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"],
-                        $tripRow["end"], $countries, $expenses, $stays, $flights, $watchedFlights, $fitness, $notes, $highlights, $statistics, $publicHolidays);
+                        $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $flights, $watchedFlights,
+                        $fitness, $notes, $highlights, $statistics, $publicHolidays);
                 });
         }
 

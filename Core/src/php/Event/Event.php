@@ -1,6 +1,7 @@
 <?php
     namespace Core\Event;
 
+    use Core\Client\Calendar\Calendar;
     use Core\Service\Device\DeviceType;
     use Core\Service\Highlight\HighlightType;
 
@@ -30,11 +31,11 @@
         }
 
         public static function CalendarWatchRenewing(string $calendar) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => \Calendar::from($calendar)->value));
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => Calendar::from($calendar)->value));
         }
 
         public static function CalendarInvalidated(string $calendar) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => \Calendar::from($calendar)->value));
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => Calendar::from($calendar)->value));
         }
 
         public static function HighlightCreated(string $highlightType, string $entityId, string $highlightId) : Event {

@@ -7,10 +7,10 @@
     require_once(__DIR__ . "/Service/PlatformService.php");
     require_once(__DIR__ . "/Client/GoogleApiClient.php");
     require_once(__DIR__ . "/Client/HttpClient.php");
-    require_once(__DIR__ . "/Client/CalendarClient.php");
     require_once(__DIR__ . "/Event/Scheduler.php");
 
     use Core\Client\Cache\RedisCacheClient;
+    use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
@@ -105,7 +105,7 @@
     $httpClient = new HttpClient();
     $googleApiClient = new GoogleApiClient();
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
-    $calendarClient = new CalendarClient();
+    $calendarClient = new CalendarClient($googleApiClient);
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
@@ -114,11 +114,17 @@
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);
     $scheduler = new Scheduler($databaseClient, $eventPublisher);
 
-    // Services.
-    $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
-    $platformService = new PlatformService();
+    // Authentication service.
     $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
+    $calendarClient->setAuthenticationService($authenticationService);
+
+    // Configuration service.
+    $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
+    $calendarClient->setConfigurationService($configurationService);
+
+    // Services.
+    $platformService = new PlatformService();
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);

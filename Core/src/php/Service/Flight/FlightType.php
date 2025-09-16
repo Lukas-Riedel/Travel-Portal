@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Flight;
-    
+
+    use Core\Client\Calendar\Calendar;
     use OpenApi\Attributes as OA;
     
     #[OA\Schema(
@@ -21,10 +22,10 @@
             };
         }
 
-        public function getCalendar() : ?\Calendar {
+        public function getCalendar() : ?Calendar {
             return match ($this) {
-                self::Scheduled => \Calendar::Flights,
-                self::Watched => \Calendar::WatchedFlights,
+                self::Scheduled => Calendar::Flights,
+                self::Watched => Calendar::WatchedFlights,
                 self::Logged => null
             };
         }

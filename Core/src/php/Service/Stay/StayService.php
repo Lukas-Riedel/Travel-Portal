@@ -1,11 +1,13 @@
 <?php
     namespace Core\Service\Stay;
 
+    use Core\Client\Calendar\Calendar;
     use Core\Service\Trip\TripService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Calendar\CalendarClient;
 
     class StayService {
 
@@ -13,13 +15,13 @@
 
         private readonly StayMapper $stayMapper;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
 
         private readonly EventPublisher $eventPublisher;
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, \CalendarClient $calendarClient, EventPublisher $eventPublisher) {
+        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, EventPublisher $eventPublisher) {
             $this->stayMapper = new StayMapper($databaseClient);
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
@@ -36,7 +38,7 @@
 
         public function refreshCalendar(TripService $tripService) : void {
             $this->stayMapper->createStayEventTemporaryTable(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
-            $stayEvents = $this->calendarClient->getEvents(\Calendar::Stays->value);
+            $stayEvents = $this->calendarClient->getEvents(Calendar::Stays);
 
             $this->transactionManager->executeAtomically(function() use(&$tripService, &$stayEvents) {
                 $this->stayMapper->deleteAllStayEvents();                

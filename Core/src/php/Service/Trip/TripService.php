@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Client\Calendar\Calendar;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
@@ -17,6 +18,7 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Calendar\CalendarClient;
 
     class TripService {
 
@@ -28,7 +30,7 @@
 
         private readonly TripMapper $tripMapper;
 
-        private readonly \CalendarClient $calendarClient;
+        private readonly CalendarClient $calendarClient;
         private readonly \GoogleApiClient $googleApiClient;
 
         private readonly ConfigurationService $configurationService;
@@ -41,7 +43,7 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, \CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
+        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, \GoogleApiClient $googleApiClient, ConfigurationService $configurationService,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
@@ -107,7 +109,7 @@
                 $wasUpdated &= $this->tripMapper->updateTripName($tripId, $name);
 
                 if ($wasUpdated) {
-                    $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(\Calendar::Trips->value, $this->getTripEventId($tripId), $name);
+                    $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(Calendar::Trips->value, $this->getTripEventId($tripId), $name);
                 }
 
                 if ($wasUpdated) {
@@ -125,7 +127,7 @@
 
             $offset = $start - $trip->getStart();
             $this->placeService->movePlaces($tripId, $offset);
-            $this->googleApiClient->updateCalendarEventDates(\Calendar::Trips->value, $this->getTripEventId($tripId), $start, $trip->getEnd() + $offset);
+            $this->googleApiClient->updateCalendarEventDates(Calendar::Trips->value, $this->getTripEventId($tripId), $start, $trip->getEnd() + $offset);
 
             return $trip->withOffset($offset);
         }
@@ -181,7 +183,7 @@
 
         public function refreshCalendar() : void {
             $this->tripMapper->createTripEventTemporaryTable(self::OLD_TRIP_EVENT_TEMPORARY_TABLE);
-            $tripEvents = $this->calendarClient->getEvents(\Calendar::Trips->value);
+            $tripEvents = $this->calendarClient->getEvents(Calendar::Trips);
             
             $this->transactionManager->executeAtomically(function() use(&$tripEvents) {
                 $this->tripMapper->deleteAllTripEvents();            
@@ -308,7 +310,7 @@
         }
         
         private function removeTripEvent(string $tripId) : bool {                
-            return $this->googleApiClient->deleteCalendarEvent(\Calendar::Trips->value, $this->getTripEventId($tripId));
+            return $this->googleApiClient->deleteCalendarEvent(Calendar::Trips->value, $this->getTripEventId($tripId));
         }
     }
 ?>

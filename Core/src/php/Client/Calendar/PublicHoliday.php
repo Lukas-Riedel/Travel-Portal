@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Client;
+    namespace Core\Client\Calendar;
 
     use OpenApi\Attributes as OA;
 
@@ -7,7 +7,7 @@
         schema: "PublicHoliday",
         type: "object",
         description: "A class representing a public holiday",
-        required: ["name", "country", "date"],
+        required: ["name", "category", "date"],
         properties: [
             new OA\Property(
                 property: "name",
@@ -16,8 +16,8 @@
                 example: "Independence Day"
             ),
             new OA\Property(
-                property: "country",
-                description: "The country of the public holiday",
+                property: "category",
+                description: "The category of the public holiday",
                 type: "string",
                 example: "United States"
             ),
@@ -31,12 +31,12 @@
     )]
     class PublicHoliday implements \JsonSerializable {
         private readonly string $name;
-        private readonly string $country;
+        private readonly string $category;
         private readonly string $date;
 
-        public function __construct(string $name, string $country, string $date) {
+        public function __construct(string $name, string $category, string $date) {
             $this->name = $name;
-            $this->country = $country;
+            $this->category = $category;
             $this->date = $date;
         }
 
@@ -44,8 +44,8 @@
             return $this->name;
         }
 
-        public function getCountry() : string {
-            return $this->country;
+        public function getCategory() : string {
+            return $this->category;
         }
 
         public function getDate() : string {
