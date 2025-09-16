@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Monitoring;
 
-    use Core\Client\CacheClient;
+    use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Event\Event;

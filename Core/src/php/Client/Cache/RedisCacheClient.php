@@ -1,20 +1,32 @@
 <?php
-    namespace Core\Client;
+    namespace Core\Client\Cache;
 
     use Core\OpenLineage\OpenLineageEventManager;
     use Predis\Client;
     
-    class CacheClient {
+    class RedisCacheClient implements CacheClient {
         
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rediss://%s:%s";
+
+        private readonly string $host;
+        private readonly int $port;
+        private readonly string $password;
 
         private ?Client $redisClient = null;
         
         // Decrease Redis calls as much as possible by caching in memory.
         // TODO: Remove after switching to VPS.
-        private array $cache = array();
+        private array $cache;
 
-        private ?OpenLineageEventManager $openLineageEventManager = null;
+        private ?OpenLineageEventManager $openLineageEventManager;
+
+        public function __construct(string $host, int $port, string $password) {
+            $this->host = $host;
+            $this->port = $port;
+            $this->password = $password;
+            $this->cache = array();
+            $this->openLineageEventManager = null;
+        }
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
             $this->openLineageEventManager = $openLineageEventManager;
@@ -23,12 +35,9 @@
         public function get(string $key, ?int $newTtl = null) : mixed {
             $this->init();
             
+            // TODO: Remove after switching to VPS.
             $value = $this->cache[$key] ?? null;
             if ($value !== null) {
-                if ($newTtl !== null) {
-                    $this->redisClient->expire($key, $newTtl);
-                }
-
                 $convertedValue = json_decode($value, true);
                 $this->addOpenLineageInputDataset($key, $value);
                 return $convertedValue;
@@ -65,6 +74,7 @@
                 $this->cache[$key] = json_encode($value);
                 $this->addOpenLineageOutputDataset($key, $value);
             }
+
             return $wasSet;
         }
 
@@ -90,18 +100,17 @@
         public function delete(string $key) : void {
             $this->init();
             
-            $this->redisClient->del($key);
             unset($this->cache[$key]);
+            $this->redisClient->del($key);
         }
 
         private function init() {
             if ($this->redisClient === null) {
-                // TODO: Propagate from constructor.
                 $this->redisClient = new Client(array(
                     "scheme" => "rediss",
-                    "host" => REDIS_HOST,
-                    "port" => REDIS_PORT,
-                    "password" => REDIS_PASSWORD,
+                    "host" => $this->host,
+                    "port" => $this->port,
+                    "password" => $this->password,
                     "database" => 0
                 ));
             }
@@ -116,7 +125,7 @@
         }
 
         private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, REDIS_HOST, REDIS_PORT);
+            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port);
             $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
             $callable($namespace, $name, $value);
         }

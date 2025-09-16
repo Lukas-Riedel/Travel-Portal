@@ -11,10 +11,10 @@
     require_once(__DIR__ . "/Client/CalendarClient.php");
     require_once(__DIR__ . "/Event/Scheduler.php");
 
+    use Core\Client\Cache\RedisCacheClient;
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
-    use Core\Client\CacheClient;
     use Core\Client\CloudMessagingClient;
     use Core\Client\Database\MySQLDatabaseClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
@@ -108,7 +108,7 @@
     $calendarClient = new CalendarClient();
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new CloudMessagingClient($logger);
-    $cacheClient = new CacheClient();
+    $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);

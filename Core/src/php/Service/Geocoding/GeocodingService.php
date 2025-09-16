@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Geocoding;
 
-    use Core\Client\CacheClient;
+    use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 

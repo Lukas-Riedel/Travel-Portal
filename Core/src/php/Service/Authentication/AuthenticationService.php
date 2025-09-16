@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Authentication;
 
-    use Core\Client\CacheClient;
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;

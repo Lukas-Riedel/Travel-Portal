@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Client;
+    namespace Core\Client\Cache;
 
     class DistributedLock {
 

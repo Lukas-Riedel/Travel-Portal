@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Photo;
 
-    use Core\Client\CacheClient;
+    use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Place\PlaceSortingStrategy;
