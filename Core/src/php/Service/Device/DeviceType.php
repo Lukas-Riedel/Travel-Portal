@@ -18,7 +18,7 @@
         }
         
         public static function fromName(string $name) : ?DeviceType {
-            foreach (DeviceType::cases() as $case) {
+            foreach (DeviceType::cases() as &$case) {
                 if ($case->name === $name) {
                     return $case;
                 }

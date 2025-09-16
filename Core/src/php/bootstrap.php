@@ -4,7 +4,6 @@
     
     require_once(__DIR__ . "/Model/TargetError.php");
     require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
-    require_once(__DIR__ . "/Service/PlatformService.php");
     require_once(__DIR__ . "/Client/GoogleApiClient.php");
     require_once(__DIR__ . "/Client/HttpClient.php");
     require_once(__DIR__ . "/Event/Scheduler.php");
@@ -25,7 +24,8 @@
     use Core\OpenLineage\IbmCloudOpenLineageEventPublisher;
     use Core\OpenLineage\OpenLineageEventManager;
     use Core\OpenLineage\OpenLineageEventManagerListener;
-    use Core\Service\Authentication\AuthenticationService;
+use Core\PlatformListener;
+use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CategoryServiceListener;
@@ -114,17 +114,16 @@
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);
     $scheduler = new Scheduler($databaseClient, $eventPublisher);
 
+    // Configuration service.
+    $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
+    $calendarClient->setConfigurationService($configurationService);
+
     // Authentication service.
     $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $calendarClient->setAuthenticationService($authenticationService);
 
-    // Configuration service.
-    $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
-    $calendarClient->setConfigurationService($configurationService);
-
     // Services.
-    $platformService = new PlatformService();
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
@@ -198,7 +197,7 @@
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
         new OpenLineageEventManagerListener($openLineageEventManager),
-        $platformService
+        new PlatformListener($databaseClient, $googleApiClient, $eventPublisher, $scheduler)
     );
     $eventManager = new EventManager($messagingClient, $databaseClient, $logger, $openLineageEventManager, $listeners);
     $eventPublisher->setDeviceService($deviceService);    
