@@ -1,7 +1,7 @@
 <?php
     namespace Core\Event;
 
-    use Core\Client\CloudMessagingClient;
+    use Core\Client\CloudMessaging\CloudMessagingClient;
     use Core\Client\Messaging\MessagingClient;
     use Core\Service\Device\DeviceService;
 

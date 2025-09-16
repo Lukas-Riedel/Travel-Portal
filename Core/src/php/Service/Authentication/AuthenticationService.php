@@ -5,10 +5,12 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
+    use Google\Auth\Credentials\ServiceAccountCredentials;
 
     class AuthenticationService {
         
         private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleApiAccessToken";
+        private const GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleFcmAccessToken";
         private const IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IbmCloudAccessToken";
 
         private const GOOGLE_API_IAM_URL = "https://oauth2.googleapis.com/token";
@@ -24,6 +26,20 @@
         private const ACCESS_TOKEN = "ACCESS_TOKEN";
         private const REFRESH_TOKEN = "REFRESH_TOKEN";
         
+        private const GOOGLE_FCM_ACCOUNT_TYPE = "service_account";
+        private const GOOGLE_FCM_AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
+        private const GOOGLE_FCM_TOKEN_URL = "https://oauth2.googleapis.com/token";
+        private const GOOGLE_FCM_AUTH_PROVIDER_X509_CERTIFICATE_URL = "https://www.googleapis.com/oauth2/v1/certs";
+        private const GOOGLE_FCM_CLIENT_X509_CERTIFICATE_URL = "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40travel-blog-free.iam.gserviceaccount.com";
+        private const GOOGLE_FCM_UNIVERSE_DOMAIN = "googleapis.com";
+
+        private const GOOGLE_API_REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
+        private const GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
+        private const GOOGLE_API_ACCESS_TYPE = "offline";
+
+        private const IBM_CLOUD_GRANT_TYPE = "urn:ibm:params:oauth:grant-type:apikey";
+        private const IBM_CLOUD_RESPONSE_TYPE = "cloud_iam";
+        
         private const GOOGLE_REFRESH_TOKEN_FILE_PATH = __DIR__ . "/../../../../config/google.txt";
 
         public const GOOGLE_API_AUTHORIZATION_SCOPES = array(
@@ -37,6 +53,11 @@
             "openid",
             "email",
             "profile"
+        );
+        
+        private const GOOGLE_FCM_AUTHORIZATION_SCOPES = array(
+            "https://www.googleapis.com/auth/firebase.messaging",
+            "https://www.googleapis.com/auth/cloud-platform",
         );
 
         private readonly AuthenticationMapper $authenticationMapper;
@@ -175,12 +196,42 @@
                 "client_secret" => GOOGLE_API_CLIENT_SECRET,
                 "redirect_uri" => IAM_BASE_URL,
                 "refresh_token" => $refreshToken,
-                "grant_type" => "refresh_token",
-                "access_type" => "offline"
+                "grant_type" => self::GOOGLE_API_REFRESH_TOKEN_GRANT_TYPE,
+                "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );     
 
             $response = $this->httpClient->executeRequest(\HttpMethod::POST, self::GOOGLE_API_IAM_URL, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+
+            if (!isset($response["access_token"])) {
+                throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
+            }
+            $this->cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
+
+            return $response["access_token"];
+        }
+
+        public function getGoogleFcmAccessToken() : string {
+            $cachedGoogleFcmAccessToken = $this->cacheClient->get(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY);
+            if ($cachedGoogleFcmAccessToken !== null) {
+                return $cachedGoogleFcmAccessToken;
+            }
+
+            $credentials = array(
+                "type" => self::GOOGLE_FCM_ACCOUNT_TYPE,
+                "project_id" => FCM_PROJECT_ID,
+                "private_key_id" => FCM_PRIVATE_KEY_ID,
+                "private_key" => FCM_PRIVATE_KEY,
+                "client_email" => FCM_CLIENT_EMAIL,
+                "client_id" => FCM_CLIENT_ID,
+                "auth_uri" => self::GOOGLE_FCM_AUTH_URL,
+                "token_uri" => self::GOOGLE_FCM_TOKEN_URL,
+                "auth_provider_x509_cert_url" => self::GOOGLE_FCM_AUTH_PROVIDER_X509_CERTIFICATE_URL,
+                "client_x509_cert_url" => self::GOOGLE_FCM_CLIENT_X509_CERTIFICATE_URL,
+                "universe_domain" => self::GOOGLE_FCM_UNIVERSE_DOMAIN,
+            );
+            
+            $response = (new ServiceAccountCredentials(self::GOOGLE_FCM_AUTHORIZATION_SCOPES, $credentials))->fetchAuthToken();
 
             if (!isset($response["access_token"])) {
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
@@ -198,8 +249,8 @@
 
             $payload = array(
                 "apikey" => IBM_CLOUD_API_KEY,
-                "response_type" => "cloud_iam",
-                "grant_type" => "urn:ibm:params:oauth:grant-type:apikey"
+                "response_type" => self::IBM_CLOUD_RESPONSE_TYPE,
+                "grant_type" => self::IBM_CLOUD_GRANT_TYPE
             );     
 
             $response = $this->httpClient->executeRequest(\HttpMethod::POST, self::IBM_CLOUD_IAM_URL, 
@@ -219,8 +270,8 @@
                 "client_id" => GOOGLE_API_CLIENT_ID,
                 "client_secret" => GOOGLE_API_CLIENT_SECRET,
                 "redirect_uri" => IAM_BASE_URL,
-                "grant_type" => "authorization_code",
-                "access_type" => "offline"
+                "grant_type" => self::GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE,
+                "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );
 
             $response = $this->httpClient->executeRequest(\HttpMethod::POST, "https://oauth2.googleapis.com/token",

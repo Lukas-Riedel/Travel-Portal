@@ -11,10 +11,10 @@
     require_once(__DIR__ . "/Event/Scheduler.php");
 
     use Core\Client\Cache\RedisCacheClient;
+    use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
-    use Core\Client\CloudMessagingClient;
     use Core\Client\Database\MySQLDatabaseClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
@@ -107,7 +107,7 @@
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
     $calendarClient = new CalendarClient();
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
-    $cloudMessagingClient = new CloudMessagingClient($logger);
+    $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
 
     // Event producers.
@@ -118,6 +118,7 @@
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
     $platformService = new PlatformService();
     $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
+    $cloudMessagingClient->setAuthenticationService($authenticationService);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);

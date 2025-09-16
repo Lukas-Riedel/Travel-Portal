@@ -268,7 +268,7 @@
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array("intervals" => $intervals));
         }
 
-        public static function BridgeXLogOnRequested() : Event {
+        public static function DeviceLogOnRequested() : Event {
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array());
         }
 

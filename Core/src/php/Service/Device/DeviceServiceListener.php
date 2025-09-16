@@ -5,16 +5,16 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-use Core\Service\Trip\TripService;
-use Core\Service\Trip\TripSortingStrategy;
+    use Core\Service\Trip\TripService;
+    use Core\Service\Trip\TripSortingStrategy;
 
     class DeviceServiceListener {
         
         private const UNREGISTER_INACTIVE_DEVICES_ACTION_NAME = "UNREGISTER_INACTIVE_DEVICES";
         private const UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
 
-        private const REQUEST_BRIDGEX_LOG_ON_ACTION_NAME = "REQUEST_BRIDGEX_LOG_ON";
-        private const REQUEST_BRIDGEX_LOG_ON_ACTION_INTERVAL = 15 * 60;
+        private const REQUEST_DEVICE_LOG_ON_ACTION_NAME = "REQUEST_DEVICE_LOG_ON";
+        private const REQUEST_DEVICE_LOG_ON_ACTION_INTERVAL = 15 * 60;
 
         private readonly DeviceService $deviceService;
 
@@ -39,11 +39,11 @@ use Core\Service\Trip\TripSortingStrategy;
                 $this->eventPublisher->publish(Event::InactiveDevicesInvalidated());
             }
 
-            if ($this->scheduler->requestExecution(self::REQUEST_BRIDGEX_LOG_ON_ACTION_NAME, self::REQUEST_BRIDGEX_LOG_ON_ACTION_INTERVAL)) {
+            if ($this->scheduler->requestExecution(self::REQUEST_DEVICE_LOG_ON_ACTION_NAME, self::REQUEST_DEVICE_LOG_ON_ACTION_INTERVAL)) {
                 $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestDescending);
                 foreach ($trips as $trip) {
                     if ($trip->isCurrent() && !$this->tripService->isDayTripsTrip($trip)) {
-                        $this->eventPublisher->publish(Event::BridgeXLogOnRequested());
+                        $this->eventPublisher->publish(Event::DeviceLogOnRequested());
                         break;
                     }
                 }

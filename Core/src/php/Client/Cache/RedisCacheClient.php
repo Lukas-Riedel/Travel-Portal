@@ -5,6 +5,8 @@
     use Predis\Client;
     
     class RedisCacheClient implements CacheClient {
+
+        private const REDIS_SCHEME = "rediss";
         
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rediss://%s:%s";
 
@@ -107,7 +109,7 @@
         private function init() {
             if ($this->redisClient === null) {
                 $this->redisClient = new Client(array(
-                    "scheme" => "rediss",
+                    "scheme" => self::REDIS_SCHEME,
                     "host" => $this->host,
                     "port" => $this->port,
                     "password" => $this->password,
