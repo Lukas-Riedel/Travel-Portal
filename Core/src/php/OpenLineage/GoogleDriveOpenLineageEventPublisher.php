@@ -2,6 +2,7 @@
     namespace Core\OpenLineage;
 
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Google\GoogleClient;
 
     class GoogleDriveOpenLineageEventPublisher implements OpenLineageEventPublisher {
 
@@ -9,11 +10,11 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
 
-        public function __construct(ConfigurationService $configurationService, \GoogleApiClient $googleApiClient) {
+        public function __construct(ConfigurationService $configurationService, GoogleClient $googleClient) {
             $this->configurationService = $configurationService;
-            $this->googleApiClient = $googleApiClient;
+            $this->googleClient = $googleClient;
         }
 
         public function publishEvent(OpenLineageEvent $event) : void {
@@ -21,10 +22,10 @@
                 return;
             }
 
-            $rootFolderId = $this->googleApiClient->getOrCreateFolderId(self::OPENLINEAGE_EVENTS_FOLDER_NAME, null);
-            $thisMonthFolderId = $this->googleApiClient->getOrCreateFolderId(date("m/Y"), $rootFolderId);
-            $todayFolderId = $this->googleApiClient->getOrCreateFolderId(date("d.m.Y"), $thisMonthFolderId);
-            $this->googleApiClient->createFile(time(), $todayFolderId, "application/json", json_encode($event, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            $rootFolderId = $this->googleClient->getOrCreateFolderId(self::OPENLINEAGE_EVENTS_FOLDER_NAME, null);
+            $thisMonthFolderId = $this->googleClient->getOrCreateFolderId(date("m/Y"), $rootFolderId);
+            $todayFolderId = $this->googleClient->getOrCreateFolderId(date("d.m.Y"), $thisMonthFolderId);
+            $this->googleClient->createFile(time(), $todayFolderId, "application/json", json_encode($event, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         }
     }
 ?>

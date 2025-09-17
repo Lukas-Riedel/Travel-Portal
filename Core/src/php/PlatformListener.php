@@ -7,6 +7,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Client\Google\GoogleClient;
 
     class PlatformListener {        
         
@@ -17,21 +18,21 @@
         private const BACKUP_FOLDER_NAME_DATE_FORMAT = "d.m.Y H:i:s";
 
         private readonly DatabaseClient $databaseClient;
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
 
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(DatabaseClient $databaseClient, \GoogleApiClient $googleApiClient, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->databaseClient = $databaseClient;
-            $this->googleApiClient = $googleApiClient;
+            $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
 
         public function onApplicationStarted(mixed $message) : void {
-            $rootBackupFolderId = $this->googleApiClient->getOrCreateFolderId(self::BACKUP_ROOT_FOLDER_NAME, null);
-            $backupFolderId = $this->googleApiClient->createFolder(date(self::BACKUP_FOLDER_NAME_DATE_FORMAT), $rootBackupFolderId);
+            $rootBackupFolderId = $this->googleClient->getOrCreateFolderId(self::BACKUP_ROOT_FOLDER_NAME, null);
+            $backupFolderId = $this->googleClient->createFolder(date(self::BACKUP_FOLDER_NAME_DATE_FORMAT), $rootBackupFolderId);
 
             foreach (explode(",", $message["tables"]) as &$table) {
                 $tableRows = $this->databaseClient
@@ -45,7 +46,7 @@
                     return "INSERT INTO {$table} (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");";
                 }, $tableRows);
 
-                $this->googleApiClient->createFile("{$table}.sql", $backupFolderId, "application/sql", implode("\n", $tableDump));
+                $this->googleClient->createFile("{$table}.sql", $backupFolderId, "application/sql", implode("\n", $tableDump));
             }
         }
 

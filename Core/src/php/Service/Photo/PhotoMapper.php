@@ -2,6 +2,7 @@
     namespace Core\Service\Photo;
     
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Google\GoogleClient;
 
     class PhotoMapper {
 
@@ -9,11 +10,11 @@
 
         private readonly DatabaseClient $databaseClient;
 
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
 
-        public function __construct(DatabaseClient $databaseClient, \GoogleApiClient $googleApiClient) {
+        public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient) {
             $this->databaseClient = $databaseClient;
-            $this->googleApiClient = $googleApiClient;
+            $this->googleClient = $googleClient;
         }
 
         public function selectReplacedPhotos() : array {
@@ -220,7 +221,7 @@
 
         public function selectPhoto(string $photoId) : ?Photo {
             $urlProvider = function() use(&$photoId) { 
-                return $this->googleApiClient->getMediaItem($this->selectPhotoExternalId($photoId))["baseUrl"];
+                return $this->googleClient->getPhoto($this->selectPhotoExternalId($photoId))["baseUrl"];
             };
             $urlProvider->bindTo($this);
             return $this->doSelectPhoto($photoId, $urlProvider);

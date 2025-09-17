@@ -9,6 +9,7 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Google\GoogleClient;
 
     class PhotoService {
 
@@ -23,7 +24,7 @@
 
         private readonly PhotoMapper $photoMapper;
 
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
         
         private readonly EventPublisher $eventPublisher;
         
@@ -31,10 +32,10 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, \GoogleApiClient $googleApiClient,
+        public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
             EventPublisher $eventPublisher, CacheClient $cacheClient) {
-            $this->photoMapper = new PhotoMapper($databaseClient, $googleApiClient);
-            $this->googleApiClient = $googleApiClient;
+            $this->photoMapper = new PhotoMapper($databaseClient, $googleClient);
+            $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cacheClient = $cacheClient;
             $this->transactionManager = $databaseClient;
@@ -66,7 +67,7 @@
 
         public function createAlbum(PlaceIdentifier $placeIdentifier, int $timestamp) : Album {
             $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);
-            $createdAlbumExternalId = $this->googleApiClient->createAlbum($albumName);
+            $createdAlbumExternalId = $this->googleClient->createAlbum($albumName);
             $albumId = $this->getOrCreateAlbumId($createdAlbumExternalId);
             $this->updateAlbum($albumId);
             return $this->getAlbum($albumId);
@@ -98,7 +99,7 @@
                     throw new \InvalidArgumentException("A photo with the identifier " . $photos[$mainPhotoPosition]->getId() . " does not exist.");
                 }
     
-                $this->googleApiClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
+                $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
             }
 
             $this->doUpdateAlbums($albumId, true);
@@ -166,13 +167,13 @@
 
         public function updateAlbumName(string $albumId, string $oldPlaceName, string $newPlaceName) : bool {
             $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
-            $wasUpdated = $this->googleApiClient->updateAlbumName($externalAlbumId, str_replace($oldPlaceName, $newPlaceName, $this->getAlbum($albumId)->getName()));
+            $wasUpdated = $this->googleClient->updateAlbumName($externalAlbumId, str_replace($oldPlaceName, $newPlaceName, $this->getAlbum($albumId)->getName()));
             $this->updateAlbum($albumId);
             return $wasUpdated;
         }
 
         public function uploadPhoto(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : PendingPhoto {
-            $uploadToken = $this->googleApiClient->uploadPhoto($data);
+            $uploadToken = $this->googleClient->uploadPhoto($data);
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, null, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
@@ -180,7 +181,7 @@
         }
 
         public function replacePhoto(string $fileName, string $albumId, string $replacedPhotoId, string $data) : PendingPhoto {        
-            $uploadToken = $this->googleApiClient->uploadPhoto($data);
+            $uploadToken = $this->googleClient->uploadPhoto($data);
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
@@ -321,7 +322,7 @@
 
                     $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhotoExternalId);                
                     if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
-                        $this->googleApiClient->updateAlbumMainPhoto($albumExternalId, $createdPhotoExternalId);
+                        $this->googleClient->updateAlbumMainPhoto($albumExternalId, $createdPhotoExternalId);
                     }
                     
                     $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true);
@@ -370,7 +371,7 @@
 
         private function getAlbumsResponse(?string $albumId, ?string $pageToken = null) : array {
             if ($albumId === null) {
-                return $this->googleApiClient->getAlbums($pageToken);
+                return $this->googleClient->getAlbums($pageToken);
             }
             else {
                 $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
@@ -378,7 +379,7 @@
                     throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
                 }
 
-                $album = $this->googleApiClient->getAlbum($externalAlbumId);
+                $album = $this->googleClient->getAlbum($externalAlbumId);
                 return array("albums" => array($album));
             }
         }
@@ -389,7 +390,7 @@
                 throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
             }
 
-            return $this->googleApiClient->getMediaItems($externalAlbumId, $pageToken);            
+            return $this->googleClient->getPhotos($externalAlbumId, $pageToken);            
         }
 
         private function createGooglePhotos(string $albumId, array $newPhotos, ?string $replacedPhotoId) : array {
@@ -406,7 +407,7 @@
                 }
             }  
             
-            $createdPhotos = $this->googleApiClient->createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId);
+            $createdPhotos = $this->googleClient->createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId);
 
             foreach ($createdPhotos as &$createdPhoto) {
                 if (isset($createdPhoto["status"]["message"]) && $createdPhoto["status"]["message"] !== "Success") {

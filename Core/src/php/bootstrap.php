@@ -1,10 +1,9 @@
 <?php
     require_once(__DIR__ . "/../../vendor/autoload.php");
     require_once(__DIR__ . "/../../config/secrets.php");
-    
+        
     require_once(__DIR__ . "/Model/TargetError.php");
     require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
-    require_once(__DIR__ . "/Client/GoogleApiClient.php");
     require_once(__DIR__ . "/Client/HttpClient.php");
     require_once(__DIR__ . "/Event/Scheduler.php");
 
@@ -16,6 +15,7 @@
     use Monolog\Logger;
     use Core\Client\Database\MySQLDatabaseClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
+    use Core\Client\Google\GoogleClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
@@ -24,8 +24,8 @@
     use Core\OpenLineage\IbmCloudOpenLineageEventPublisher;
     use Core\OpenLineage\OpenLineageEventManager;
     use Core\OpenLineage\OpenLineageEventManagerListener;
-use Core\PlatformListener;
-use Core\Service\Authentication\AuthenticationService;
+    use Core\PlatformListener;
+    use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CategoryServiceListener;
@@ -103,9 +103,9 @@ use Core\Service\Authentication\AuthenticationService;
     // Clients.
     $databaseClient = new MySQLDatabaseClient(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, $logger);
     $httpClient = new HttpClient();
-    $googleApiClient = new GoogleApiClient();
+    $googleClient = new GoogleClient($httpClient);
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
-    $calendarClient = new CalendarClient($googleApiClient);
+    $calendarClient = new CalendarClient($googleClient);
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
@@ -117,11 +117,13 @@ use Core\Service\Authentication\AuthenticationService;
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
     $calendarClient->setConfigurationService($configurationService);
+    $googleClient->setConfigurationService($configurationService);
 
     // Authentication service.
     $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $calendarClient->setAuthenticationService($authenticationService);
+    $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
     $deviceService = new DeviceService($databaseClient, $authenticationService);
@@ -130,17 +132,17 @@ use Core\Service\Authentication\AuthenticationService;
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
     $geocodingService = new GeocodingService($configurationService, $cacheClient, $httpClient);
-    $photoService = new PhotoService($databaseClient, $googleApiClient, $eventPublisher, $cacheClient);
+    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient);
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $httpClient, $configurationService, $eventPublisher, $cacheClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
-    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleApiClient, $eventPublisher);
+    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $highlightService, $statisticsService);
-    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleApiClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
-    $tripService = new TripService($databaseClient, $calendarClient, $googleApiClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
+    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
+    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
 
     // Statistics providers.
@@ -170,7 +172,7 @@ use Core\Service\Authentication\AuthenticationService;
     // OpenLineage manager.
     $openLineageEventPublishers = array(
         new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, $logger),
-        new GoogleDriveOpenLineageEventPublisher($configurationService, $googleApiClient)
+        new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
     );
     $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher);
     $messagingClient->setOpenLineageEventManager($openLineageEventManager);
@@ -197,7 +199,7 @@ use Core\Service\Authentication\AuthenticationService;
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
         new OpenLineageEventManagerListener($openLineageEventManager),
-        new PlatformListener($databaseClient, $googleApiClient, $eventPublisher, $scheduler)
+        new PlatformListener($databaseClient, $googleClient, $eventPublisher, $scheduler)
     );
     $eventManager = new EventManager($messagingClient, $databaseClient, $logger, $openLineageEventManager, $listeners);
     $eventPublisher->setDeviceService($deviceService);    

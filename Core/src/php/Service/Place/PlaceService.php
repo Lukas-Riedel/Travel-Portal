@@ -19,6 +19,7 @@
     use Core\Client\Database\TransactionManager;
     use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Google\GoogleClient;
 
     class PlaceService {
         
@@ -30,7 +31,7 @@
 
         private readonly GenerativeContentClient $generativeContentClient;
         private readonly CalendarClient $calendarClient;
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
 
         private readonly ConfigurationService $configurationService;
 
@@ -44,14 +45,14 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, CalendarClient $calendarClient,
-            \GoogleApiClient $googleApiClient, ConfigurationService $configurationService, CategoryService $categoryService,
+            GoogleClient $googleClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
                 $photoService, $highlightService, $noteService);
             $this->generativeContentClient = $generativeContentClient;
             $this->calendarClient = $calendarClient;
-            $this->googleApiClient = $googleApiClient;
+            $this->googleClient = $googleClient;
             $this->configurationService = $configurationService;
             $this->categoryService = $categoryService;
             $this->photoService = $photoService;
@@ -147,7 +148,7 @@
 
                         $eventId = $this->placeMapper->selectPlaceEventId($placeId, $date->getStart());
                         if ($eventId !== null) {  
-                            $wasUpdated &= $this->googleApiClient->updateCalendarEventSummary(Calendar::Places->value, $eventId, $name);
+                            $wasUpdated &= $this->googleClient->updateCalendarEventName(Calendar::Places, $eventId, $name);
                         }
                     }
                 }
@@ -178,7 +179,7 @@
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
-                    $this->googleApiClient->updateCalendarEventDates(Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()), $date->getStart() - $timezoneOffset + $offset, $date->getEnd() - $timezoneOffset + $offset);
+                    $this->googleClient->updateCalendarEventDates(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()), $date->getStart() - $timezoneOffset + $offset, $date->getEnd() - $timezoneOffset + $offset);
                 }
             }
 
@@ -188,17 +189,14 @@
         public function loadPlaces(string $candidateTripId, int $startOffset) : array {
             $places = $this->doGetCandidatePlacesForTrip(null, $candidateTripId, array());
 
-            $allCalendarEventsCreated = true;
             foreach ($places as &$place) {
                 $address = $this->geocodingService->getFormattedAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());
                 foreach ($place->getDates() as &$date) {
-                    $allCalendarEventsCreated &= $this->googleApiClient->createCalendarEvent(Calendar::Places->value, $place->getName(), $address, $startOffset + $date->getStart(), $startOffset + $date->getEnd());
+                    $this->googleClient->createCalendarEvent(Calendar::Places, $place->getName(), $address, $startOffset + $date->getStart(), $startOffset + $date->getEnd());
                 }
             }
 
-            if ($allCalendarEventsCreated) {
-                $this->removeCandidateEventsForCandidateTrip($candidateTripId);
-            }
+            $this->removeCandidateEventsForCandidateTrip($candidateTripId);
 
             return $places;
         }
@@ -211,7 +209,7 @@
                     foreach ($place->getDates() as &$date) {
                         $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
                         if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, false, null, null, null, $archivedTripIdentifier))))) {
-                            $this->googleApiClient->deleteCalendarEvent(Calendar::Places->value, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
+                            $this->googleClient->deleteCalendarEvent(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
                         }
                     }
                 }
@@ -267,7 +265,7 @@
                     // Update address to match a common format.
                     $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
                     if ($this->normalize($placeEvent->getLocation()) !== $this->normalize($newAddress)) {
-                        $this->googleApiClient->updateCalendarEventLocation(Calendar::Places->value, $placeEvent->getId(), $newAddress);
+                        $this->googleClient->updateCalendarEventLocation(Calendar::Places, $placeEvent->getId(), $newAddress);
                     }
                 }
                 

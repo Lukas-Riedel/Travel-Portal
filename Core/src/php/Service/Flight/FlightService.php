@@ -12,6 +12,7 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Google\GoogleClient;
 
     class FlightService {
 
@@ -31,7 +32,7 @@
 
         private readonly CalendarClient $calendarClient;
 
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
 
         private readonly EventPublisher $eventPublisher;
         
@@ -39,12 +40,12 @@
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
             \HttpClient $httpClient, CalendarClient $calendarClient,
-            \GoogleApiClient $googleApiClient, EventPublisher $eventPublisher) {
+            GoogleClient $googleClient, EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
             $this->httpClient = $httpClient;
             $this->calendarClient = $calendarClient;
-            $this->googleApiClient = $googleApiClient;
+            $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
         }
@@ -162,8 +163,7 @@
         }
 
         public function createFlight(FlightType $flightType, string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
-            $this->googleApiClient->createCalendarEvent($flightType->getCalendar()->value,
-                $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), null, $scheduledDeparture, $scheduledArrival);
+            $this->googleClient->createCalendarEvent($flightType->getCalendar(), $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), null, $scheduledDeparture, $scheduledArrival);
             
             $from = new Airport(null, $originAirportName, null, null, null, null, null, null);
             $to = new Airport(null, $destinationAirportName, null, null, null, null, null, null);

@@ -18,7 +18,7 @@
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
-        // TODO: Move to GoogleApiClient.
+        // TODO: Move to GoogleClient.
         // TODO: Make the language parameter configurable.
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_ADDRESS_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&latlng=%s,%s";

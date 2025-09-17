@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Calendar;
 
+    use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Service\Authentication\AuthenticationService;
@@ -16,14 +17,14 @@
 
         private const ATTRIBUTE_KEY_VALUE_DELIMITER = ":";
 
-        private readonly \GoogleApiClient $googleApiClient;
+        private readonly GoogleClient $googleClient;
 
         private ?AuthenticationService $authenticationService;
 
         private ?ConfigurationService $configurationService;
 
-        public function __construct(\GoogleApiClient $googleApiClient) {
-            $this->googleApiClient = $googleApiClient;
+        public function __construct(GoogleClient $googleClient) {
+            $this->googleClient = $googleClient;
             $this->authenticationService = null;
         }
 
@@ -39,7 +40,7 @@
             $authenticationResult = $this->authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
             $event = Event::CalendarInvalidated($calendar->value);
 
-            $this->googleApiClient->watchCalendar($calendar->value, $calendar->value . "_" . time(),
+            $this->googleClient->watchCalendar($calendar, $calendar->value . "_" . time(),
                 sprintf(self::WATCH_CALENDAR_CALLBACK_URL_FORMAT, BASE_URL, CommonConstants::ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY, base64_encode(json_encode($event))),
                 self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS, "Bearer " . $authenticationResult->getAccessToken());
         }
