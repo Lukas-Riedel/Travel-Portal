@@ -8,7 +8,7 @@
     use Core\Service\Configuration\ConfigurationService;
     use Core\Client\Http\HttpMethod;
 
-    // TODO: Make services using this client less dependent on Google services -> split to StorageClient, PhotoClient, and CalendarClient.
+    // TODO: Make services using this client less dependent on Google services -> split to StorageClient, PhotoClient, and CalendarClient, and make return values non-Google-specific.
     // TODO: Switch to Google SDK.
     class GoogleClient {
 

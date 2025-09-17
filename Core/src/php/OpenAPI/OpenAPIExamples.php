@@ -52,6 +52,6 @@
         ]
     )]
     class OpenAPIExamples {
-
+        // Intentionally empty.
     }
 ?>

@@ -1,9 +1,6 @@
 <?php
     require_once(__DIR__ . "/../../vendor/autoload.php");
     require_once(__DIR__ . "/../../config/secrets.php");
-        
-    require_once(__DIR__ . "/Model/TargetError.php");
-    require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
 
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;

@@ -8,6 +8,6 @@
         // TODO: Get rid of this method.
         public function whereClauseBuilder() : WhereClauseBuilder;
         public function getIsNullOrEqualTo(mixed $var) : string;
-        public function getLastInsertedId() : mixed;
+        public function getLastInsertedId() : int|string;
     }
 ?>

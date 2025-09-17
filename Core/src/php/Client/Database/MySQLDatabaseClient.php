@@ -87,7 +87,7 @@
             return $var == null ? "IS NULL" : ("= '" . $this->mysqli->real_escape_string($var) . "'");
         }
         
-        public function getLastInsertedId() : mixed {
+        public function getLastInsertedId() : int|string {
             return $this->mysqli->insert_id;
         }
 

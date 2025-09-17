@@ -6,6 +6,6 @@
         public function set(string $key, mixed $value, int $ttl) : void;
         public function trySet(string $key, mixed $value, int $ttl) : bool;
         public function tryLock(string $key, int $ttl) : ?DistributedLock;
-        public function unlock(string $key, string $value);
+        public function unlock(string $key, string $value) : void;
     }
 ?>

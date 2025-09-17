@@ -1,5 +1,7 @@
 <?php
-    use Core\Service\Authentication\AuthenticationService;
+
+use Core\Routing\RequestError;
+use Core\Service\Authentication\AuthenticationService;
 
     // TODO: Use explode(",", ALLOWED_REQUEST_ORIGINS) when switching to Slim. Needed for other planned functionality.
     header("Access-Control-Allow-Origin: *");
@@ -48,8 +50,7 @@
         echo json_encode($authenticationResult, JSON_HEX_QUOT | JSON_HEX_TAG);
     }
     catch (Throwable $e) {
-        // TODO: Switch to RequestError
-        $error = new TargetError(401, $e, $requestBody);
+        $error = new RequestError(401, "AuthenticationException", $e->getMessage(), $e->getTrace(), "/iam");
         http_response_code($error->getCode());
         echo json_encode($error, JSON_HEX_QUOT | JSON_HEX_TAG);
     }
