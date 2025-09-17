@@ -2,9 +2,11 @@
     namespace Core\Client\Google;
 
     use Core\Client\Calendar\Calendar;
+    use Core\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Http\HttpMethod;
 
     // TODO: Make services using this client less dependent on Google services -> split to StorageClient, PhotoClient, and CalendarClient.
     // TODO: Switch to Google SDK.
@@ -31,12 +33,12 @@
         private const EVENT_IDENTIFIER_SUFFIX = "@google.com";
         private const HEADER_FORMAT = "%s: %s";
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
 
         private ?ConfigurationService $configurationService;
         private ?AuthenticationService $authenticationService;
 
-        public function __construct(\HttpClient $httpClient) {
+        public function __construct(HttpClient $httpClient) {
             $this->httpClient = $httpClient;
             $this->configurationService = null;
             $this->authenticationService = null;
@@ -60,7 +62,7 @@
                 $payload["parents"] = array($folderId);
             }
 
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, self::CREATE_FILE_URL, array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, self::CREATE_FILE_URL, array(), $payload);
             
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The folder could not be created. Reason: " . $apiResponse["error"]["message"]);
@@ -84,7 +86,7 @@
                  . $content . "\n"
                  . "--" . self::MULTIPART_SEPARATOR . "--";
 
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, sprintf(self::UPLOAD_FILE_URL_FORMAT, "multipart"), array(),
+            $apiResponse = $this->executeRequest(HttpMethod::POST, sprintf(self::UPLOAD_FILE_URL_FORMAT, "multipart"), array(),
                 $payload, "multipart/related;boundary=" . self::MULTIPART_SEPARATOR);
             
             if (isset($apiResponse["error"])) {
@@ -115,7 +117,7 @@
                 $queryTokens[] = "'{$folderId}' in parents";
             }
 
-            $apiResponse = $this->executeRequest(\HttpMethod::GET, sprintf(self::GET_FILES_URL_FORMAT, 2, rawurlencode(implode(" and ", $queryTokens))));
+            $apiResponse = $this->executeRequest(HttpMethod::GET, sprintf(self::GET_FILES_URL_FORMAT, 2, rawurlencode(implode(" and ", $queryTokens))));
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("Files could not be obtained. Reason: " . $apiResponse["error"]["message"]);
@@ -147,7 +149,7 @@
                 $payload["location"] = $address;
             }
              
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, sprintf(self::CREATE_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar)), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, sprintf(self::CREATE_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar)), array(), $payload);
             
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The calendar event could not be created. Reason: " . $apiResponse["error"]["message"]);
@@ -157,7 +159,7 @@
         }
 
         public function deleteCalendarEvent(Calendar $calendar, string $eventId) : bool {
-            $apiResponse = $this->executeRequest(\HttpMethod::DELETE, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)));
+            $apiResponse = $this->executeRequest(HttpMethod::DELETE, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)));
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The calendar event could not be deleted. Reason: " . $apiResponse["error"]["message"]);
@@ -169,7 +171,7 @@
         public function updateCalendarEventName(Calendar $calendar, string $eventId, string $name) : bool {
             $payload = array("summary" => $name);
 
-            $apiResponse = $this->executeRequest(\HttpMethod::PATCH, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::PATCH, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The calendar event name could not be updated. Reason: " . $apiResponse["error"]["message"]);
@@ -181,7 +183,7 @@
         public function updateCalendarEventLocation(Calendar $calendar, string $eventId, string $location) : bool {
             $payload = array("location" => $location);
 
-            $apiResponse = $this->executeRequest(\HttpMethod::PATCH, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::PATCH, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The calendar event location could not be updated. Reason: " . $apiResponse["error"]["message"]);
@@ -191,7 +193,7 @@
         }
 
         public function updateCalendarEventDates(Calendar $calendar, string $eventId, int $start, int $end) : bool {
-            $payload = $this->executeRequest(\HttpMethod::GET, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)));
+            $payload = $this->executeRequest(HttpMethod::GET, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)));
 
             if (!array_key_exists("start", $payload) || !array_key_exists("end", $payload)) {
                 return false;
@@ -211,7 +213,7 @@
                 $payload["end"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $end);
             }
 
-            $apiResponse = $this->executeRequest(\HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The calendar event dates could not be updated. Reason: " . $apiResponse["error"]["message"]);
@@ -232,7 +234,7 @@
                 $payload["token"] = $token;
             }
 
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, sprintf(self::WATCH_CALENDAR_EVENTS_URL_FORMAT, $this->getCalendarIdentifier($calendar)), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, sprintf(self::WATCH_CALENDAR_EVENTS_URL_FORMAT, $this->getCalendarIdentifier($calendar)), array(), $payload);
             
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The calendar could not be watched. Reason: " . $apiResponse["error"]["message"]);
@@ -246,7 +248,7 @@
                 "album" => array("title" => $name)
             );
 
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, self::CREATE_ALBUM_URL, array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, self::CREATE_ALBUM_URL, array(), $payload);
 
             if (!isset($apiResponse["id"])) {
                 throw new \RuntimeException("The album could not be created. Reason: " . $apiResponse["message"]);
@@ -258,7 +260,7 @@
         public function updateAlbumName(string $externalAlbumId, string $name) : bool {
             $payload = array("title" => $name);
 
-            $apiResponse = $this->executeRequest(\HttpMethod::PATCH, sprintf(self::UPDATE_ALBUM_URL_FORMAT, $externalAlbumId, "title"), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::PATCH, sprintf(self::UPDATE_ALBUM_URL_FORMAT, $externalAlbumId, "title"), array(), $payload);
             
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The album name could not be updated. Reason: " . $apiResponse["error"]["message"]);
@@ -270,7 +272,7 @@
         public function updateAlbumMainPhoto(string $externalAlbumId, string $externalPhotoId) : bool {
             $payload = array("coverPhotoMediaItemId" => $externalPhotoId);
 
-            $apiResponse = $this->executeRequest(\HttpMethod::PATCH, sprintf(self::UPDATE_ALBUM_URL_FORMAT, $externalAlbumId, "coverPhotoMediaItemId"), array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::PATCH, sprintf(self::UPDATE_ALBUM_URL_FORMAT, $externalAlbumId, "coverPhotoMediaItemId"), array(), $payload);
             
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The album main photo could not be updated. Reason: " . $apiResponse["error"]["message"]);
@@ -286,7 +288,7 @@
                 $queryParameters .= "&pageToken=" . $pageToken;
             }
 
-            $apiResponse = $this->executeRequest(\HttpMethod::GET, self::GET_ALBUMS_URL . $queryParameters);
+            $apiResponse = $this->executeRequest(HttpMethod::GET, self::GET_ALBUMS_URL . $queryParameters);
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("Albums could not be obtained. Reason: " . $apiResponse["error"]["message"]);
@@ -296,7 +298,7 @@
         }
 
         public function getAlbum(string $externalAlbumId) : mixed {
-            $apiResponse = $this->executeRequest(\HttpMethod::GET, sprintf(self::GET_ALBUM_URL_FORMAT, $externalAlbumId));
+            $apiResponse = $this->executeRequest(HttpMethod::GET, sprintf(self::GET_ALBUM_URL_FORMAT, $externalAlbumId));
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The album could not be obtained. Reason: " . $apiResponse["error"]["message"]);
@@ -306,7 +308,7 @@
         }
 
         public function getPhoto(string $externalPhotoId) : mixed {
-            $apiResponse = $this->executeRequest(\HttpMethod::GET, sprintf(self::GET_MEDIA_ITEM_URL_FORMAT, $externalPhotoId));
+            $apiResponse = $this->executeRequest(HttpMethod::GET, sprintf(self::GET_MEDIA_ITEM_URL_FORMAT, $externalPhotoId));
                     
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("The photo could not be obtained. Reason: " . $apiResponse["error"]["message"]);
@@ -325,7 +327,7 @@
                 $payload["pageToken"] = $pageToken;
             }
 
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, self::GET_MEDIA_ITEMS_URL, array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, self::GET_MEDIA_ITEMS_URL, array(), $payload);
             
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("Photos could not be obtained. Reason: " . $apiResponse["error"]["message"]);
@@ -358,7 +360,7 @@
                 );
             }
             
-            $apiResponse = $this->executeRequest(\HttpMethod::POST, self::BATCH_CREATE_MEDIA_ITEMS_URL, array(), $payload);
+            $apiResponse = $this->executeRequest(HttpMethod::POST, self::BATCH_CREATE_MEDIA_ITEMS_URL, array(), $payload);
 
             if (isset($apiResponse["error"])) {
                 throw new \RuntimeException("Photos could not be created. Reason: " . $apiResponse["error"]["message"]);
@@ -373,7 +375,7 @@
                 "X-Goog-Upload-Protocol" => "raw"
             );
 
-            $uploadToken = $this->executeRequest(\HttpMethod::POST, self::UPLOAD_MEDIA_ITEM_URL, $headers, base64_decode($data), "application/octet-stream");
+            $uploadToken = $this->executeRequest(HttpMethod::POST, self::UPLOAD_MEDIA_ITEM_URL, $headers, base64_decode($data), "application/octet-stream");
                     
             if ($uploadToken === null) {
                 throw new \RuntimeException("The photo could not be uploaded.");
@@ -382,7 +384,7 @@
             return $uploadToken;
         }
 
-        private function executeRequest(\HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, ?string $contentType = null) : mixed {
+        private function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, ?string $contentType = null) : mixed {
             $convertedHeaders = array(sprintf(self::HEADER_FORMAT, "Authorization", "Bearer " . $this->authenticationService->getGoogleApiAccessToken()));
             if ($payload !== null) {
                 if ($contentType !== null) {

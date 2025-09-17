@@ -6,6 +6,8 @@
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Google\Auth\Credentials\ServiceAccountCredentials;
+    use Core\Client\Http\HttpMethod;
+    use Core\Client\Http\HttpClient;
 
     class AuthenticationService {
         
@@ -64,10 +66,10 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
         private readonly CacheClient $cacheClient;
 
-        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, \HttpClient $httpClient, CacheClient $cacheClient) {
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HttpClient $httpClient, CacheClient $cacheClient) {
             $this->authenticationMapper = new AuthenticationMapper($databaseClient);
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
@@ -200,7 +202,7 @@
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );     
 
-            $response = $this->httpClient->executeRequest(\HttpMethod::POST, self::GOOGLE_API_IAM_URL, 
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, self::GOOGLE_API_IAM_URL, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["access_token"])) {
@@ -253,7 +255,7 @@
                 "grant_type" => self::IBM_CLOUD_GRANT_TYPE
             );     
 
-            $response = $this->httpClient->executeRequest(\HttpMethod::POST, self::IBM_CLOUD_IAM_URL, 
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, self::IBM_CLOUD_IAM_URL, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["access_token"])) {
@@ -274,7 +276,7 @@
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );
 
-            $response = $this->httpClient->executeRequest(\HttpMethod::POST, "https://oauth2.googleapis.com/token",
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, "https://oauth2.googleapis.com/token",
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["refresh_token"])) {
@@ -285,7 +287,7 @@
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
                 
-            $userInfo = $this->httpClient->executeRequest(\HttpMethod::GET, "https://www.googleapis.com/oauth2/v3/userinfo", 
+            $userInfo = $this->httpClient->executeRequest(HttpMethod::GET, "https://www.googleapis.com/oauth2/v3/userinfo", 
                 array("Authorization: Bearer " . $response["access_token"]));
 
             if (!isset($userInfo["email"])) {

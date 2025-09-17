@@ -1,7 +1,9 @@
 <?php
     namespace Core\Client\GenerativeContent;
 
+    use Core\Client\Http\HttpMethod;
     use Monolog\Logger;
+    use Core\Client\Http\HttpClient;
 
     class GeminiGenerativeContentClient implements GenerativeContentClient {
         
@@ -9,11 +11,11 @@
 
         private const KEY_PLACEHOLDER_FORMAT = "{%s}";
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
 
         private readonly Logger $logger;
 
-        public function __construct(\HttpClient $httpClient, Logger $logger) {
+        public function __construct(HttpClient $httpClient, Logger $logger) {
             $this->httpClient = $httpClient;
             $this->logger = $logger;
         }
@@ -33,7 +35,7 @@
 
             $response = null;
             try {                
-                $response = $this->httpClient->executeRequest(\HttpMethod::POST, sprintf(self::GENERATE_CONTENT_URL_FORMAT, GOOGLE_GEMINI_API_KEY),
+                $response = $this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::GENERATE_CONTENT_URL_FORMAT, GOOGLE_GEMINI_API_KEY),
                     array("Content-Type: application/json"), json_encode($payload))["candidates"][0]["content"]["parts"][0]["text"];
             }
             catch (\Throwable $e) {

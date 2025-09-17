@@ -1,11 +1,13 @@
 <?php
     namespace Core\Client\CloudMessaging;
 
+    use Core\Client\Http\HttpMethod;
     use Core\Event\CloudMessagingEvent;
     use Core\Event\Event;
     use Core\OpenLineage\OpenLineageEventManager;
     use Core\Service\Authentication\AuthenticationService;
     use Monolog\Logger;
+    use Core\Client\Http\HttpClient;
 
     class FirebaseCloudMessagingClient implements CloudMessagingClient {
 
@@ -18,13 +20,13 @@
 
         private ?AuthenticationService $authenticationService;
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
 
         private readonly Logger $logger;
 
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $projectId, \HttpClient $httpClient, Logger $logger) {
+        public function __construct(string $projectId, HttpClient $httpClient, Logger $logger) {
             $this->projectId = $projectId;
             $this->httpClient = $httpClient;
             $this->logger = $logger;
@@ -68,7 +70,7 @@
                 
                 $this->logger->debug("Publishing the '" . $event->getName() . "' event to FCM...", $payload);
 
-                $this->httpClient->executeRequest(\HttpMethod::POST, sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId),
+                $this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId),
                     array("Authorization: Bearer " . $this->authenticationService->getGoogleFcmAccessToken(), "Content-Type: application/json"), json_encode($payload));
             }
         }

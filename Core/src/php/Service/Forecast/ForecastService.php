@@ -7,6 +7,8 @@
     use Core\Service\Place\PlaceIdentifier;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Http\HttpMethod;
+    use Core\Client\Http\HttpClient;
 
     class ForecastService {
 
@@ -16,13 +18,13 @@
 
         private readonly ForecastMapper $forecastMapper;
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
 
         private readonly ConfigurationService $configurationService;
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, \HttpClient $httpClient, ConfigurationService $configurationService) {
+        public function __construct(DatabaseClient $databaseClient, HttpClient $httpClient, ConfigurationService $configurationService) {
             $this->forecastMapper = new ForecastMapper($databaseClient);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
@@ -75,7 +77,7 @@
             $startDate = date(CommonConstants::YMD_DATE_FORMAT, $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
             $endDate = date(CommonConstants::YMD_DATE_FORMAT, $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
         
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $startDate, $endDate,
                 $this->configurationService->getConfigurationEntry("homeLocation")["timezone"]));
 
@@ -97,7 +99,7 @@
         }
 
         public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 round($placeIdentifier->getLatitude(), 4), round($placeIdentifier->getLongitude(), 4)),
                 array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), null, true);
 

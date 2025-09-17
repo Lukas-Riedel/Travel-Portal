@@ -8,6 +8,8 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Http\HttpMethod;
+    use Core\Client\Http\HttpClient;
 
     class ExpenseService {
 
@@ -18,7 +20,7 @@
 
         private readonly ExpenseMapper $expenseMapper;
         
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
         
         private readonly ConfigurationService $configurationService;
 
@@ -28,7 +30,7 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, \HttpClient $httpClient,
+        public function __construct(DatabaseClient $databaseClient, HttpClient $httpClient,
             ConfigurationService $configurationService, EventPublisher $eventPublisher, CacheClient $cacheClient) {
             $this->expenseMapper = new ExpenseMapper($databaseClient);
             $this->httpClient = $httpClient;
@@ -132,7 +134,7 @@
                 return $cachedExchangeRates[$currency] ?? 0;
             }    
     
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT,
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT,
                 EXCHANGE_RATE_API_KEY, $mainCurrency));         
             if ($apiResponse === null) {
                 // TODO: Log error.

@@ -4,6 +4,8 @@
     use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\Http\HttpMethod;
+    use Core\Client\Http\HttpClient;
 
     class GeocodingService {
 
@@ -28,9 +30,9 @@
 
         private readonly CacheClient $cacheClient;
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
 
-        public function __construct(ConfigurationService $configurationService, CacheClient $cacheClient, \HttpClient $httpClient) {
+        public function __construct(ConfigurationService $configurationService, CacheClient $cacheClient, HttpClient $httpClient) {
             $this->configurationService = $configurationService;
             $this->cacheClient = $cacheClient;
             $this->httpClient = $httpClient;
@@ -106,7 +108,7 @@
             $timezone = null;
 
             // Geocoding request.
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
 
             if ($apiResponse["status"] === "OK") {
                 if (count($apiResponse["results"]) > 0) {
@@ -136,7 +138,7 @@
 
             // Timezone request.
             if ($latitude !== null && $longitude !== null && $timezone === null) {    
-                $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+                $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
                 
                 if (array_key_exists("timeZoneId", $apiResponse)) {
                     $timezone = $apiResponse["timeZoneId"];
@@ -152,7 +154,7 @@
         private function createAddress(float $latitude, float $longitude) : Address {
             $address = null;
 
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
 
             if ($apiResponse["status"] === "OK") {
                 if (count($apiResponse["results"]) > 0) {

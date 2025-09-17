@@ -4,8 +4,6 @@
         
     require_once(__DIR__ . "/Model/TargetError.php");
     require_once(__DIR__ . "/Exception/EntityNotFoundException.php");
-    require_once(__DIR__ . "/Client/HttpClient.php");
-    require_once(__DIR__ . "/Event/Scheduler.php");
 
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
@@ -16,6 +14,7 @@
     use Core\Client\Database\MySQLDatabaseClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventManager;
     use Core\Event\EventPublisher;
@@ -102,7 +101,7 @@
 
     // Clients.
     $databaseClient = new MySQLDatabaseClient(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, $logger);
-    $httpClient = new HttpClient();
+    $httpClient = new HttpClient($logger);
     $googleClient = new GoogleClient($httpClient);
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
     $calendarClient = new CalendarClient($googleClient);

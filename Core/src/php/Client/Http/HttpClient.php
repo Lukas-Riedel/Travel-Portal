@@ -1,27 +1,37 @@
 <?php
+    namespace Core\Client\Http;
+
     use Core\OpenLineage\OpenLineageEventManager;
-    
-    // TODO: Use only within another client, never in the service code. Extract such usages to separate clients.
+    use Monolog\Logger;
+
     class HttpClient {
         
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s";
 
-        private ?OpenLineageEventManager $openLineageEventManager = null;
+        private const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+        private ?OpenLineageEventManager $openLineageEventManager;
+
+        private readonly Logger $logger;
+
+        public function __construct(Logger $logger) {
+            $this->logger = $logger;
+            $this->openLineageEventManager = null;
+        }
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
             $this->openLineageEventManager = $openLineageEventManager;
         }
 
-        public function executeRequest(HttpMethod $method, $url, $headers = array(), $payload = null, $includeResponseHeaders = false) {
-            global $logger;
-
-            $logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $payload));
+        // TODO: Replace cURL with Guzzle.
+        public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) {
+            $this->logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $payload));
 
             $curl = curl_init($url);
 
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
             curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
-            curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.1) Gecko/20061204 Firefox/2.0.0.1');
+            curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 300);
             curl_setopt($curl, CURLOPT_AUTOREFERER, true); 
@@ -29,24 +39,26 @@
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     
             if ($payload !== null) {
-                curl_setopt($curl, $method === HttpMethod::GET ? CURLOPT_GETFIELDS : CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
             }     
             
             $response = curl_exec($curl);
 
-            $returnType = explode(";", curl_getinfo($curl, CURLINFO_CONTENT_TYPE))[0];
-            $isJsonResponse = $returnType === "application/json";
+            $isJsonResponse = explode(";", curl_getinfo($curl, CURLINFO_CONTENT_TYPE))[0] === "application/json";
 
             curl_close($curl);
 
-            if ($includeResponseHeaders && $isJsonResponse) {  
-                list($header, $body) = explode("\r\n\r\n", $response, 2);  
-                $result = json_decode($body, true);
-                $result["__httpHeaders"] = $this->parseHeaders($header);
-                return $result;
+            $result = $response;
+            if ($isJsonResponse) {
+                if ($includeResponseHeaders) {
+                    list($header, $body) = explode("\r\n\r\n", $response, 2);  
+                    $result = json_decode($body, true);
+                    $result["__httpHeaders"] = $this->parseHeaders($header);
+                }
+                else {
+                    $result = json_decode($response, true);
+                }
             }
-
-            $result = $isJsonResponse ? json_decode($response, true) : $response;            
 
             $parsedUrl = parse_url($url);
             $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
@@ -93,14 +105,5 @@
     
             return $headers;
         }
-    }
-
-    enum HttpMethod : string {
-        case GET = "GET";
-        case POST = "POST";
-        case PATCH = "PATCH";
-        case PUT = "PUT";
-        case DELETE = "DELETE";
-        case HEAD = "HEAD";
     }
 ?>

@@ -13,6 +13,8 @@
     use Core\Client\Database\TransactionManager;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Client\Http\HttpMethod;
+    use Core\Client\Http\HttpClient;
 
     class FlightService {
 
@@ -28,7 +30,7 @@
 
         private readonly GeocodingService $geocodingService;
 
-        private readonly \HttpClient $httpClient;
+        private readonly HttpClient $httpClient;
 
         private readonly CalendarClient $calendarClient;
 
@@ -39,7 +41,7 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
-            \HttpClient $httpClient, CalendarClient $calendarClient,
+            HttpClient $httpClient, CalendarClient $calendarClient,
             GoogleClient $googleClient, EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
@@ -109,7 +111,7 @@
 
         public function fetchAndLogFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
             date_default_timezone_set(self::UTC_TIMEZONE);
-            $apiResponse = $this->httpClient->executeRequest(\HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
 
             $selectedFlight = null;
             foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
