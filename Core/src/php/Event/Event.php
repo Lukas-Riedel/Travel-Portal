@@ -239,8 +239,8 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("event" => $event));
         }
 
-        public static function PhotosUploadingTriggered(string $placeId, string $placeName, string $albumId, int $timestamp, string $path, ?int $mainPhotoPosition = null) : Event {
-            return new AgentEvent(Event::getEventName(), array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "timestamp" => $timestamp, "path" => $path, "mainPhotoPosition" => $mainPhotoPosition));
+        public static function PhotosUploadingTriggered(string $placeId, string $placeName, string $path, ?string $albumId = null, ?int $timestamp = null, ?int $mainPhotoPosition = null) : Event {
+            return new AgentEvent(Event::getEventName(), array("placeId" => $placeId, "placeName" => $placeName, "path" => $path, "albumId" => $albumId, "timestamp" => $timestamp, "mainPhotoPosition" => $mainPhotoPosition));
         }
 
         public static function PhotoReplacingTriggered(string $placeId, string $placeName, string $albumId, string $replacedPhotoId, string $path) : Event {
