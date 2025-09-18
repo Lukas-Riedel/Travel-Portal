@@ -238,7 +238,7 @@
             if (!isset($response["access_token"])) {
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
-            $this->cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
+            $this->cacheClient->set(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
 
             return $response["access_token"];
         }
