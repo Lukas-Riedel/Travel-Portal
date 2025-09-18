@@ -12,7 +12,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
             [
                 { label: "Název", value: airline.name, required: true },
                 { label: "Logo", value: airline.logo },
-                { label: "Kódy", value: airline.codes, multiple: true, required: true, type: "select", options: airline.codes.map(code => ({ id: code, name: code })) }
+                { label: "Kódy", value: airline.codes, multiple: true, required: false, type: "select", options: airline.codes.map(code => ({ id: code, name: code })) }
             ],
             "Aerolinka byla úspěšně aktualizována",
             "Nepodařilo se aktualizovat aerolinku",
