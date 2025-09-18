@@ -101,11 +101,11 @@
             return $folder !== null ? $folder : $this->createFolder($name, $folderId);
         }
 
-        public function getFolder(string $name, ?string $folderId) : string {
+        public function getFolder(string $name, ?string $folderId) : ?string {
             return $this->getFile($name, "application/vnd.google-apps.folder", $folderId);
         }
 
-        public function getFile(string $name, string $mimeType, ?string $folderId) : string {
+        public function getFile(string $name, string $mimeType, ?string $folderId) : ?string {
             $queryTokens = array("trashed = false");
             if ($name !== null) {
                 $queryTokens[] = "name = '{$name}'";

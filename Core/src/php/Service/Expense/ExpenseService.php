@@ -90,7 +90,7 @@
 
         public function updateExpenseValue(string $expenseId, float $value, string $tripId) : bool {   
             $wasUpdated = true; 
-            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$description, &$tripId) {
+            $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$expenseId, &$value, &$tripId) {
                 $wasUpdated &= $this->expenseMapper->updateExpenseValue($expenseId, $value);
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::ExpenseUpdated($expenseId, $tripId));

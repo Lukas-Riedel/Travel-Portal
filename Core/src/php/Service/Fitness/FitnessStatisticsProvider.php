@@ -120,6 +120,10 @@
         }
 
         private function getStandingsStatisticsForDayRecords(array &$placesCache, array $records, callable $valueSelector, ?string $categoryId, ?string $tripId) : array {
+            if (empty($records)) {
+                return array();
+            }
+            
             $timestamps = array_map(fn($record) => $record->getTimestamp(), $records);
             $minTimestamp = min($timestamps);
             $maxTimestamp = max($timestamps) + CommonConstants::ONE_DAY_SECONDS;
