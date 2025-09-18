@@ -173,25 +173,10 @@
                             )
                         ]
                     )
-                ),
-                new OA\Response(
-                    response: 403,
-                    description: "Forbidden. The user did not have access to the requested resource.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Forbidden",
-                                ref: "#/components/examples/Forbidden"
-                            )
-                        ]
-                    )
                 )
             ]
         )]
         public function listDevices(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
-
             $type = $this->validateQueryNullableParameter($request, "type");
 
             $mappedType = $type === null ? null : DeviceType::from($type);
