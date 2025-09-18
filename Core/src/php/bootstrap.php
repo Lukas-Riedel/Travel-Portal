@@ -122,12 +122,12 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $deviceService = new DeviceService($databaseClient, $authenticationService);
+    $geocodingService = new GeocodingService($configurationService, $cacheClient, $httpClient);
+    $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
-    $geocodingService = new GeocodingService($configurationService, $cacheClient, $httpClient);
     $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient);
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
