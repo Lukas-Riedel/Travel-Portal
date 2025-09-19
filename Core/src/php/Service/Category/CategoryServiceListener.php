@@ -40,7 +40,7 @@
         }
 
         public function onHighlightCreated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Category->name) {
+            if ($message["highlightType"] === HighlightType::Category->value) {
                 $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["entityId"]);
                 if ($categoryIdentifier !== null && $categoryIdentifier->getMainHighlight() === null) {
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);

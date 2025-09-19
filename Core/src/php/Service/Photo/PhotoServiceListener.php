@@ -47,8 +47,10 @@
         public function onProcessingFailed(mixed $message) : void {
             if ($message["name"] === self::PHOTOS_UPLOADING_TRIGGERED_EVENT_NAME
                 || $message["name"] === self::PHOTO_REPLACING_TRIGGERED_EVENT_NAME) {
-                // TODO: Improve by propagating Batch ID instead.
-                $this->photoService->removePendingPhotosForAlbum($message["args"]["albumId"]);
+                if (isset($message["args"]["albumId"])) {
+                    // TODO: Improve by propagating Batch ID instead.
+                    $this->photoService->removePendingPhotosForAlbum($message["args"]["albumId"]);
+                }
             }
         }
 

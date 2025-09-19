@@ -71,7 +71,7 @@
         }
 
         public function onHighlightCreated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Trip->name) {
+            if ($message["highlightType"] === HighlightType::Trip->value) {
                 $tripIdentifier = $this->tripService->getTripIdentifierById($message["entityId"]);
                 if ($tripIdentifier !== null && $tripIdentifier->getMainHighlight() === null) {
                     $this->tripService->updateTripMainHighlight($message["entityId"], $message["highlightId"]);

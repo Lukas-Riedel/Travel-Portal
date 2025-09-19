@@ -79,7 +79,7 @@
         }
 
         public function onHighlightCreated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Place->name) {
+            if ($message["highlightType"] === HighlightType::Place->value) {
                 $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["entityId"]);
                 if ($placeIdentifier !== null && $placeIdentifier->getMainHighlight() === null) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
@@ -89,13 +89,13 @@
         }
 
         public function onHighlightUpdated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Place->name) {
+            if ($message["highlightType"] === HighlightType::Place->value) {
                 $this->updatePlaceQuality($message["entityId"]);
             }
         }
 
         public function onHighlightRemoved(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Place->name) {
+            if ($message["highlightType"] === HighlightType::Place->value) {
                 $this->updatePlaceQuality($message["entityId"]);
             }
         }

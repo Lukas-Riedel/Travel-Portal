@@ -10,6 +10,7 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Google\GoogleClient;
+use Core\Service\Place\PlaceIncludedEntity;
 
     class PhotoService {
 
@@ -236,7 +237,7 @@
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.
                     if ($albumId !== null && isset($album["coverPhotoMediaItemId"])) {
-                        $places = $placeService->getRegularPlaces(null, null, null, null, $currentAlbumId, null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
+                        $places = $placeService->getRegularPlaces(null, null, null, null, $currentAlbumId, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                         foreach ($places as &$place) {
                             $highlightService->createPlaceHighlight($place->getId(), $mainPhotoId);
                             foreach ($place->getDates() as &$date) {

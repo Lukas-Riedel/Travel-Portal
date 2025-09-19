@@ -1,6 +1,7 @@
 package cz.lriedel.agent;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,12 +77,16 @@ public class MozJpegService {
             "-quality", String.valueOf(quality),
             "-progressive",
             "-optimize",
-            "-outfile", output.toAbsolutePath().toString(),
-            input.toAbsolutePath().toString()
+            "-outfile", output.toAbsolutePath().toString()
         );
-        pb.inheritIO();
+        pb.redirectErrorStream(true);
 
         Process process = pb.start();
+
+        try (OutputStream stdin = process.getOutputStream();
+            InputStream fis = Files.newInputStream(input)) {
+            fis.transferTo(stdin);
+        }
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {

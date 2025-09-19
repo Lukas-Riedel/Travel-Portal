@@ -179,7 +179,7 @@
             $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$wasRemoved) {
                 $wasRemoved &= $this->highlightMapper->deleteHighlight(HighlightType::Place, $placeId, $highlightId) > 0;
                 if ($wasRemoved) {
-                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Place, $placeId, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Place->value, $placeId, $highlightId));
                 }                    
             });  
 
@@ -194,7 +194,7 @@
             $this->transactionManager->executeAtomically(function() use(&$tripId, &$highlightId, &$wasRemoved) {            
                 $wasRemoved &= $this->highlightMapper->deleteHighlight(HighlightType::Trip, $tripId, $highlightId) > 0;
                 if ($wasRemoved) {
-                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Trip, $tripId, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Trip->value, $tripId, $highlightId));
                 }
             });  
 
@@ -209,7 +209,7 @@
             $this->transactionManager->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasRemoved) {
                 $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Category, $categoryId, $highlightId);
                 if ($wasRemoved) {
-                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category, $categoryId, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category->value, $categoryId, $highlightId));
                 }
             });
             return $wasRemoved;
@@ -220,7 +220,7 @@
             $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasRemoved) {
                 $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
                 if ($wasRemoved) {
-                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year, $year, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year->value, $year, $highlightId));
                 }
             });
             return $wasRemoved;

@@ -24,7 +24,7 @@
         }
 
         public function onHighlightCreated(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Year->name) {
+            if ($message["highlightType"] === HighlightType::Year->value) {
                 $yearIdentifier = $this->yearService->getYearIdentifier($message["entityId"]);
                 if ($yearIdentifier !== null && $yearIdentifier->getMainHighlight() === null) {
                     $this->yearService->updateYearMainHighlight($message["entityId"], $message["highlightId"]);

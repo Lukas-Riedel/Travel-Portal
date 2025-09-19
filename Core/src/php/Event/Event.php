@@ -199,8 +199,8 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("year" => $year));
         }
 
-        public static function HighlightRemoved(HighlightType $highlightType, string $entityId, string $highlightId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("highlightType" => $highlightType->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        public static function HighlightRemoved(string $highlightType, string $entityId, string $highlightId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
         public static function StayEventRemoved(string $tripId) : Event {
