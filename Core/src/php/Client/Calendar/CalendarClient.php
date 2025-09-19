@@ -46,7 +46,7 @@
         }
 
         public function getEvents(Calendar $calendar) : array {
-            return $this->fetchEvents($this->configurationService->getConfigurationEntry("calendars")[$calendar]);
+            return $this->fetchEvents($this->configurationService->getConfigurationEntry("calendars")[$calendar->value]);
         }
     
         public function getPublicHolidaysForCategories(array $categories) : array {

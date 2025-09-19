@@ -18,6 +18,8 @@
         private const GOOGLE_API_IAM_URL = "https://oauth2.googleapis.com/token";
         private const IBM_CLOUD_IAM_URL = "https://iam.test.cloud.ibm.com/identity/token";
 
+        private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
+
         private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 7 * 24;
         private const BEARER_TOKEN_VALIDITY = CommonConstants::ONE_HOUR_SECONDS;
         private const ADMIN_USER_ID = "999";
@@ -208,7 +210,7 @@
             if (!isset($response["access_token"])) {
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
-            $this->cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
+            $this->cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $this->getExternalAccessTokenExpiration($response["expires_in"]));
 
             return $response["access_token"];
         }
@@ -238,7 +240,7 @@
             if (!isset($response["access_token"])) {
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
-            $this->cacheClient->set(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
+            $this->cacheClient->set(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $this->getExternalAccessTokenExpiration($response["expires_in"]));
 
             return $response["access_token"];
         }
@@ -261,7 +263,7 @@
             if (!isset($response["access_token"])) {
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
-            $this->cacheClient->set(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $response["expires_in"]);
+            $this->cacheClient->set(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $this->getExternalAccessTokenExpiration($response["expires_in"]));
 
             return $response["access_token"];
         }
@@ -323,6 +325,10 @@
 
         private function getRefreshTokenPrivatekey() {
             return hash_hmac(self::HASH_ALGORITHM, self::REFRESH_TOKEN, PRIVATE_KEY);
+        }
+
+        private function getExternalAccessTokenExpiration(int $expiration) : int {
+            return round(self::EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER * $expiration);
         }
     }
 ?>
