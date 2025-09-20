@@ -8,34 +8,31 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-    use Core\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+    use Core\Client\ExchangeRate\ExchangeRateClient;
 
     class ExpenseService {
-
-        private const GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT = "https://v6.exchangerate-api.com/v6/%s/latest/%s";
         
         private const EXCHANGE_RATE_CACHE_KEY = "ExpenseService:ExchangeRates";
         private const EXCHANGE_RATE_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
         private readonly ExpenseMapper $expenseMapper;
         
-        private readonly HttpClient $httpClient;
-        
         private readonly ConfigurationService $configurationService;
 
         private readonly EventPublisher $eventPublisher;
+
+        private readonly ExchangeRateClient $exchangeRateClient;
 
         private readonly CacheClient $cacheClient;
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, HttpClient $httpClient,
-            ConfigurationService $configurationService, EventPublisher $eventPublisher, CacheClient $cacheClient) {
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
+            EventPublisher $eventPublisher, ExchangeRateClient $exchangeRateClient, CacheClient $cacheClient) {
             $this->expenseMapper = new ExpenseMapper($databaseClient);
-            $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
+            $this->exchangeRateClient = $exchangeRateClient;
             $this->cacheClient = $cacheClient;
             $this->transactionManager = $databaseClient;
         }
@@ -132,21 +129,9 @@
             $cachedExchangeRates = $this->cacheClient->get(self::EXCHANGE_RATE_CACHE_KEY);
             if ($cachedExchangeRates !== null) {
                 return $cachedExchangeRates[$currency] ?? 0;
-            }    
-    
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT,
-                EXCHANGE_RATE_API_KEY, $mainCurrency));         
-            if ($apiResponse === null) {
-                // TODO: Log error.
-                return 0;
-            }            
+            }        
 
-            $exchangeRates = array();
-            foreach ($apiResponse["conversion_rates"] as $rawCurrency => $rawExchangeRate) {
-                if ($rawCurrency !== $mainCurrency) {
-                    $exchangeRates[$rawCurrency] = 1 / doubleval($rawExchangeRate);
-                }
-            }
+            $exchangeRates = $this->exchangeRateClient->getExchangeRates($mainCurrency);
             $this->cacheClient->set(self::EXCHANGE_RATE_CACHE_KEY, $exchangeRates, self::EXCHANGE_RATE_CACHE_TTL);
 
             return $exchangeRates[$currency] ?? 0;

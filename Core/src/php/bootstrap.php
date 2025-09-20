@@ -9,6 +9,7 @@
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
     use Core\Client\Database\MySQLDatabaseClient;
+    use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\HttpClient;
@@ -105,6 +106,7 @@
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
+    $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);
@@ -131,7 +133,7 @@
     $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient);
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
-    $expenseService = new ExpenseService($databaseClient, $httpClient, $configurationService, $eventPublisher, $cacheClient);
+    $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService);
