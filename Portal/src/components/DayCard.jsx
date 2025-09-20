@@ -2,7 +2,7 @@ import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
 import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
@@ -53,6 +53,8 @@ const weatherIcons = {
     "snowshowers": Snowflake,
     "snowshowersandthunder": CloudLightning
 }
+
+const sunAltitudeThreshold = 20
 
 export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, onPhotosAdded }) {
     const { isAdmin } = useAuth()
@@ -116,6 +118,8 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             </span>
         )
     }
+
+    const requiresAttention = event => isAdmin && event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold)
 
     return (day && events) ? ((events.length > 0 || stay) && (
         <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
@@ -188,10 +192,10 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                             )}
                             {event.name && (
                                 <>
-                                    <span className="text-indigo-600">
+                                    <span className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}>
                                         <MapPin size={16} />
                                     </span>
-                                    <div className="font-medium text-indigo-600 relative group inline-block">
+                                    <div className={`font-medium ${requiresAttention(event) ? "text-red-600" : "text-indigo-600"} relative group inline-block`}>
                                         {formatTimestamp(event.start, event.timezone)}
                                         {event.sun?.altitude && (
                                             <Tooltip>
@@ -202,11 +206,16 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     </div>
                                     <Link
                                         to={`${(window.location.pathname.startsWith("/plan") ? "/plan" : "")}/place/${event.id}`}
-                                        className="text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
+                                        className={`${requiresAttention(event) ? "text-red-600" : "text-indigo-600"} hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-indigo-300"} transition-colors duration-200`}>
                                         {getPrettyName(event.name)}
                                     </Link>
+                                    {isAdmin && event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold) && (
+                                        <span className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}>
+                                            <OctagonAlert size={16} />
+                                        </span>
+                                    )}
                                     {onPhotosAdded && isAdmin && (
-                                        <button className="text-indigo-600"
+                                        <button className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}
                                             onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start)}>
                                             <ImagePlus size={16} />
                                         </button>
