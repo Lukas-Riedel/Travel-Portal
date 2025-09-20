@@ -1,32 +1,21 @@
 <?php
     namespace Core\Event;
 
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Messaging\RabbitMQMessagingClient;
-    use Core\Event\EventPriority;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
     use Monolog\Logger;
-    use PhpAmqpLib\Exception\AMQPTimeoutException;
 
-    class EventManager {
-
-        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 15;
+    abstract class AbstractEventListener {
 
         private const EVENT_HANDLER_METHOD_PREFIX = "on";
         private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
-
-        private readonly RabbitMQMessagingClient $messagingClient;
-        private readonly DatabaseClient $databaseClient;
 
         private readonly Logger $logger;
         private readonly OpenLineageEventManager $openLineageEventManager;
 
         private readonly array $eventHandlers;
-
-        public function __construct(RabbitMQMessagingClient $messagingClient, DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
-            $this->messagingClient = $messagingClient;
-            $this->databaseClient = $databaseClient;
+        
+        public function __construct(Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
             $this->logger = $logger;
             $this->openLineageEventManager = $openLineageEventManager;
             
@@ -43,26 +32,9 @@
             $this->eventHandlers = $eventHandlers;
         }
 
-        public function handleEvents() : void {
-            $channel = $this->messagingClient->getConsumerChannel();
-            $channel->queue_declare(WORKER_QUEUE_NAME, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
-            $channel->basic_consume(WORKER_QUEUE_NAME, "", false, false, false, false, function ($message) {
-                    $this->handleEvent(json_decode($message->getBody(), true));
-                    $message->ack();
-                }
-            );
+        public abstract function listen() : void;
 
-            while (true) {
-                try {
-                    $channel->wait(null, false, self::WAITING_FOR_MESSAGES_TIMEOUT_SECONDS);
-                }
-                catch (AMQPTimeoutException $e) {
-                    break;
-                }
-            }
-        }
-
-        private function handleEvent(mixed $event) : void {
+        protected function onEvent(mixed $event) : void {
             $start = microtime(true);
             $this->openLineageEventManager->initializeEvent(WORKER_QUEUE_NAME . "/" . $event["name"]);
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
@@ -78,6 +50,7 @@
             finally {
                 $this->logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
                 $this->flushLogger();
+
                 if ($event["name"] === self::OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME) {
                     $this->openLineageEventManager->publishCurrentEvent();
                 }

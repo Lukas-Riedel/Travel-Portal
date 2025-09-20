@@ -13,8 +13,8 @@
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
-    use Core\Event\EventManager;
     use Core\Event\EventPublisher;
+    use Core\Event\RabbitMQEventListener;
     use Core\Event\Scheduler;
     use Core\OpenLineage\GoogleDriveOpenLineageEventPublisher;
     use Core\OpenLineage\IbmCloudOpenLineageEventPublisher;
@@ -197,6 +197,6 @@
         new OpenLineageEventManagerListener($openLineageEventManager),
         new PlatformListener($databaseClient, $googleClient, $eventPublisher, $scheduler)
     );
-    $eventManager = new EventManager($messagingClient, $databaseClient, $logger, $openLineageEventManager, $listeners);
+    $eventListener = new RabbitMQEventListener($messagingClient, $logger, $openLineageEventManager, $listeners);
     $eventPublisher->setDeviceService($deviceService);    
 ?>

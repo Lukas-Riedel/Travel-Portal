@@ -21,7 +21,7 @@
             exit(0);
         }
 
-        $eventManager->handleEvents();
+        $eventListener->listen();
     }
     finally {
         if ($lock !== NULL) {
