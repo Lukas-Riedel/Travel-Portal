@@ -2,7 +2,7 @@ import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
 import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
@@ -56,7 +56,7 @@ const weatherIcons = {
 
 const sunAltitudeThreshold = 20
 
-export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, onPhotosAdded }) {
+export default function DayCard({ day, events, stay, fitness, notes, publicHoliday, timezone, onPhotosAdded }) {
     const { isAdmin } = useAuth()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
@@ -294,6 +294,20 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                     </li>
                 ))}
             </ul>
+            {isAdmin && notes?.length > 0 && (
+                <ul className="mt-3 text-xs text-gray-500 space-y-2 leading-5">
+                    {notes.map(note => (
+                        <li
+                            key={note.id}
+                            className="clear-left">
+                            <NotebookPen
+                                className="float-left w-4 h-4 mr-1 mt-0.5 shrink-0"
+                                size={12} />
+                            <span dangerouslySetInnerHTML={{ __html: note.content }} />
+                        </li>
+                    ))}
+                </ul>
+            )}
             {fitness?.steps > 0 && (
                 <>
                     <div className="mt-3 flex items-center text-green-600 space-x-1">

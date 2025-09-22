@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
+import { eachDayOfInterval, format, fromUnixTime, startOfDay } from "date-fns"
 import { getCachedCoordinates, getDateRangeString, getHaversineDistance, getTimeString } from "../utils/helpers"
 import DayCard from "./DayCard"
 import { Link } from "react-router-dom"
@@ -14,6 +14,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { formatKilometers, formatTimeAgo } from "../utils/formatters"
 import { useApi } from "../hooks/useApi"
+import { cs } from "date-fns/locale"
 
 export default function TripSummary({ tripId }) {
     const { getCoordinates } = useApi()
@@ -173,6 +174,8 @@ export default function TripSummary({ tripId }) {
                     events={tripPlaces && trip?.getEvents(day, tripPlaces, timezone)}
                     stay={trip?.getStay(day)}
                     fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
+                    // TODO: The note prefix must be aligned with what's in DayCard. And this is duplicated in TripCalendar.
+                    notes={trip?.notes?.filter(note => note.content.startsWith(format(day, "d.M.", { locale: cs })))?.map(note => ({ ...note, content: note.content.split(" ").slice(1).join(" ") }))}
                     publicHoliday={trip?.getPublicHoliday(day)}
                     timezone={timezone}
                     onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
