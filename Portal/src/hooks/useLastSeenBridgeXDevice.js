@@ -1,7 +1,7 @@
 import { useApi } from "./useApi"
 import { useEffect, useMemo, useState } from "react"
 import { useVisitedAirports } from "./useVisitedAirports"
-import { getEuclideanDistance } from "../utils/helpers"
+import { getCachedCoordinates, getEuclideanDistance } from "../utils/helpers"
 import { useDevices } from "./useDevices"
 
 const airportRadius = 3.0
@@ -14,18 +14,6 @@ export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
 
     const lastSeenDevice = useMemo(() => devices?.find(device => device.data?.address && device.data?.latitude && device.data?.longitude), [devices])
 
-    const getCachedCoordinates = async (address) => {
-        const cachedCoordinates = localStorage.getItem(address)
-
-        if (cachedCoordinates) {
-            return Promise.resolve(JSON.parse(cachedCoordinates))
-        }
-
-        return getCoordinates(address).then(coordinates => {
-            localStorage.setItem(address, JSON.stringify(coordinates))
-            return coordinates
-        })
-    }
 
     useEffect(() => {
         if (!lastSeenDevice) {
@@ -43,7 +31,7 @@ export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
             }
 
             for (const knownAddress of knownAddresses) {
-                const knownAddressLocation = await getCachedCoordinates(knownAddress.address)
+                const knownAddressLocation = await getCachedCoordinates(knownAddress.address, getCoordinates)
                 const distance = getEuclideanDistance(knownAddressLocation, lastSeenDevice.data)
 
                 if (knownAddress.radius && distance <= knownAddress.radius) {
@@ -62,6 +50,8 @@ export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
         ...currentAddress,
         battery: lastSeenDevice.data.battery,
         timezone: lastSeenDevice.data.timezone,
+        latitude: lastSeenDevice.data.latitude,
+        longitude: lastSeenDevice.data.longitude,
         lastSeen: lastSeenDevice.lastSeen
     }
 }

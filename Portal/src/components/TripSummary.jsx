@@ -1,20 +1,22 @@
 import { useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
-import { getDateRangeString, getTimeString } from "../utils/helpers"
+import { getCachedCoordinates, getDateRangeString, getHaversineDistance, getTimeString } from "../utils/helpers"
 import DayCard from "./DayCard"
 import { Link } from "react-router-dom"
 import { useTrip } from "../hooks/useTrip"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
-import { Battery, Clock, Earth, House, LocateFixedIcon, LocateOffIcon } from "lucide-react"
+import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon } from "lucide-react"
 import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
-import { formatTimeAgo } from "../utils/formatters"
+import { formatKilometers, formatTimeAgo } from "../utils/formatters"
+import { useApi } from "../hooks/useApi"
 
 export default function TripSummary({ tripId }) {
+    const { getCoordinates } = useApi()
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
@@ -58,6 +60,27 @@ export default function TripSummary({ tripId }) {
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
     const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
+
+    const [targetLocation, setTargetLocation] = useState(null)
+    useEffect(() => {
+        const targetAddress = trip?.getStay(startOfDay(new Date(new Date().getHours() < 12 ? Date.now() - (86400 * 1000) : Date.now())))?.address
+        if (!targetAddress) {
+            setTargetLocation(null)
+            return
+        }
+
+        let isMounted = true
+        getCachedCoordinates(targetAddress, getCoordinates).then(coordinates => {
+            if (isMounted) {
+                setTargetLocation(coordinates)
+            }
+        })
+
+        return () => {
+            isMounted = false
+        }
+    }, [trip])
+
 
     return trip ? (
         <div className="relative w-full grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] items-center gap-4 bg-white p-3 my-4 text-sm">
@@ -116,6 +139,24 @@ export default function TripSummary({ tripId }) {
                                         {Math.round(lastSeenBridgeXDevice.battery)}%
                                     </span>
                                 </div>
+                                {targetLocation && (
+                                    <>
+                                        <span>|</span>
+                                        <Bed className="w-3 h-3" />
+                                        <span>
+                                            {Math.round(getHaversineDistance(targetLocation, lastSeenBridgeXDevice))} km
+                                        </span>
+                                    </>
+                                )}
+                                {configuration?.homeLocation && (
+                                    <>
+                                        <span>|</span>
+                                        <House className="w-3 h-3" />
+                                        <span>
+                                            {Math.round(getHaversineDistance(configuration.homeLocation, lastSeenBridgeXDevice))} km
+                                        </span>
+                                    </>
+                                )}
                             </li>
                             <li className="text-center">
                                 Aktualizováno před {formatTimeAgo(lastSeenBridgeXDevice.lastSeen)}

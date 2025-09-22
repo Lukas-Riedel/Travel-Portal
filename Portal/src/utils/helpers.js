@@ -106,3 +106,29 @@ export function getOnlyElement(arr) {
 export function getEuclideanDistance(a, b) {
     return 111.0 * Math.hypot(a.latitude - b.latitude, a.longitude - b.longitude)
 }
+
+export function getHaversineDistance(a, b) {
+    const toRad = x => x * Math.PI / 180;
+
+    const x1 = a.latitude - b.latitude;
+    const x2 = a.longitude - b.longitude;
+    const ar = Math.sin(toRad(x1) / 2) * Math.sin(toRad(x1) / 2) + Math.cos(toRad(b.latitude))
+        * Math.cos(toRad(a.latitude)) * Math.sin(toRad(x2) / 2) * Math.sin(toRad(x2) / 2);
+    const c = 2 * Math.atan2(Math.sqrt(ar), Math.sqrt(1 - ar));
+
+    return 6378 * c;
+}
+
+// TODO: What to do with this?
+export async function getCachedCoordinates(address, getCoordinates) {
+    const cachedCoordinates = localStorage.getItem(address)
+
+    if (cachedCoordinates) {
+        return Promise.resolve(JSON.parse(cachedCoordinates))
+    }
+
+    return getCoordinates(address).then(coordinates => {
+        localStorage.setItem(address, JSON.stringify(coordinates))
+        return coordinates
+    })
+}

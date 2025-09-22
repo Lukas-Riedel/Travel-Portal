@@ -1,4 +1,5 @@
 import { fromUnixTime, isSameDay } from "date-fns";
+import { getEuclideanDistance, getHaversineDistance } from "../utils/helpers";
 
 export default class Place {
     constructor(place) {
@@ -19,19 +20,11 @@ export default class Place {
     }
 
     getEuclideanDistanceTo(place) {
-        return 111.0 * Math.hypot(this.latitude - place.latitude, this.longitude - place.longitude)
+        return getEuclideanDistance(place, this)
     }
 
     getHaversineDistanceTo(place) {
-        const toRad = x => x * Math.PI / 180;
-
-        const x1 = place.latitude - this.latitude;
-        const x2 = place.longitude - this.longitude;
-        const a = Math.sin(toRad(x1) / 2) * Math.sin(toRad(x1) / 2) + Math.cos(toRad(this.latitude))
-            * Math.cos(toRad(place.latitude)) * Math.sin(toRad(x2) / 2) * Math.sin(toRad(x2) / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return 6378 * c;
+        return getHaversineDistance(place, this)
     }
 
     getPastTrips() {
