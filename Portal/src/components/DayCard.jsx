@@ -301,7 +301,7 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                             key={note.id}
                             className="clear-left">
                             <NotebookPen
-                                className="float-left w-4 h-4 mr-1 mt-0.5 shrink-0"
+                                className="float-left w-4 h-4 mr-1 shrink-0"
                                 size={12} />
                             <span dangerouslySetInnerHTML={{ __html: note.content }} />
                         </li>

@@ -64,7 +64,7 @@ export default function TripSummary({ tripId }) {
 
     const [targetLocation, setTargetLocation] = useState(null)
     useEffect(() => {
-        const targetAddress = trip?.getStay(startOfDay(new Date(new Date().getHours() < 12 ? Date.now() - (86400 * 1000) : Date.now())))?.address
+        const targetAddress = trip?.getStay(startOfDay(new Date(new Date().getHours() < 10 ? Date.now() - (86400 * 1000) : Date.now())))?.address
         if (!targetAddress) {
             setTargetLocation(null)
             return
