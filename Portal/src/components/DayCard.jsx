@@ -87,38 +87,6 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
         )
     }
 
-    function RemainingUploadTime({ album }) {
-        const computedRemaining = useMemo(() => {
-            if (album.uploadingProgress > 0 && album.uploadingProgress < 100) {
-                const now = Date.now() / 1000
-                const elapsed = now - album.uploadingStart
-                return elapsed * 100 / album.uploadingProgress - elapsed
-            }
-            return null
-        }, [album.uploadingProgress, album.uploadingStart])
-
-        const [remaining, setRemaining] = useState(computedRemaining)
-
-        useEffect(() => {
-            setRemaining(computedRemaining)
-        }, [computedRemaining])
-
-        useEffect(() => {
-            const interval = setInterval(() => setRemaining(prev => !prev ? prev : Math.max(0, prev - 1)), 1000)
-            return () => clearInterval(interval)
-        }, [])
-
-        return remaining !== null ? (
-            <span>
-                Zbývá {formatDuration(Math.max(0, remaining), true)}
-            </span>
-        ) : (
-            <span>
-                Nahrávání bude brzy dokončeno
-            </span>
-        )
-    }
-
     const requiresAttention = event => isAdmin && event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold)
 
     return (day && events) ? ((events.length > 0 || stay) && (
@@ -271,26 +239,24 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                                 </div>
                             )
                         })()}
-                        {isAdmin && event.album?.uploadingStart && event.album?.uploadingProgress && (() => {
-                            return (
-                                <div className="relative group inline-block">
-                                    {renderDescriptionRow("text-yellow-500", [
-                                        (
-                                            <>
-                                                <div className="flex items-center space-x-1">
-                                                    <Upload className="w-4 h-4 mr-1 shrink-0" />
-                                                    <RemainingUploadTime album={event.album} />
-                                                </div>
-                                                <Tooltip>
-                                                    <Upload size={16} />
-                                                    Nahrávání probíhá... ({event.album.uploadingProgress} %)
-                                                </Tooltip>
-                                            </>
-                                        )
-                                    ])}
-                                </div>
-                            )
-                        })()}
+                        {isAdmin && event.album?.uploadingStart && event.album?.uploadingProgress && (
+                            <div className="relative group inline-block">
+                                {renderDescriptionRow("text-yellow-500", [
+                                    (
+                                        <>
+                                            <div className="flex items-center space-x-1">
+                                                <Upload className="w-4 h-4 mr-1 shrink-0" />
+                                                <RemainingUploadTime album={event.album} />
+                                            </div>
+                                            <Tooltip>
+                                                <Upload size={16} />
+                                                Nahrávání probíhá... ({event.album.uploadingProgress} %)
+                                            </Tooltip>
+                                        </>
+                                    )
+                                ])}
+                            </div>
+                        )}
                     </li>
                 ))}
             </ul>
@@ -299,9 +265,9 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                     {notes.map(note => (
                         <li
                             key={note.id}
-                            className="clear-left flex items-center">
+                            className="clear-left">
                             <NotebookPen
-                                className="float-left w-4 h-4 mr-1 shrink-0"
+                                className="float-left w-4 h-4 mr-1 my-[2px] shrink-0"
                                 size={12} />
                             <span dangerouslySetInnerHTML={{ __html: note.content }} />
                         </li>
@@ -362,5 +328,37 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                 height={30}
                 width={30} />
         </div>
+    )
+}
+
+function RemainingUploadTime({ album }) {
+    const computedRemaining = useMemo(() => {
+        if (album.uploadingProgress > 0 && album.uploadingProgress < 100) {
+            const now = Date.now() / 1000
+            const elapsed = now - album.uploadingStart
+            return elapsed * 100 / album.uploadingProgress - elapsed
+        }
+        return null
+    }, [album.uploadingProgress, album.uploadingStart])
+
+    const [remaining, setRemaining] = useState(computedRemaining)
+
+    useEffect(() => {
+        setRemaining(computedRemaining)
+    }, [computedRemaining])
+
+    useEffect(() => {
+        const interval = setInterval(() => setRemaining(prev => !prev ? prev : Math.max(0, prev - 1)), 1000)
+        return () => clearInterval(interval)
+    }, [])
+
+    return remaining !== null ? (
+        <span>
+            Zbývá {formatDuration(Math.max(0, remaining), true)}
+        </span>
+    ) : (
+        <span>
+            Nahrávání bude brzy dokončeno
+        </span>
     )
 }
