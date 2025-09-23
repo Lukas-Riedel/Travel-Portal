@@ -95,7 +95,7 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                 return elapsed * 100 / album.uploadingProgress - elapsed
             }
             return null
-        }, [album])
+        }, [album.uploadingProgress, album.uploadingStart])
 
         const [remaining, setRemaining] = useState(computedRemaining)
 
@@ -299,7 +299,7 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                     {notes.map(note => (
                         <li
                             key={note.id}
-                            className="clear-left">
+                            className="clear-left flex items-center">
                             <NotebookPen
                                 className="float-left w-4 h-4 mr-1 shrink-0"
                                 size={12} />

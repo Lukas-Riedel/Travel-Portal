@@ -1,6 +1,6 @@
 import { Trash2, Plus, Bold, Italic, Link, Underline } from "lucide-react"
 import showConfirmToast from "./ConfirmToast"
-import { useState, useRef } from "react"
+import { useRef } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
@@ -10,7 +10,6 @@ const loadingNotesCount = 3
 export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
     const { isAdmin } = useAuth()
 
-    const [newNoteContent, setNewNoteContent] = useState("")
     const textareaRef = useRef(null)
 
     const handleDelete = noteId => {
@@ -23,7 +22,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
     }
 
     const handleCreate = () => {
-        const content = newNoteContent.trim()
+        const content = textareaRef.current.value.trim()
         if (!content) {
             return
         }
@@ -32,7 +31,9 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
             "Opravdu chceš přidat novou poznámku?",
             "Poznámka byla úspěšně přidána",
             "Nepodařilo se přidat poznámku",
-            async () => onNoteCreated(content).then(() => setNewNoteContent(""))
+            async () => onNoteCreated(content).then(() => {
+                textareaRef.current.value = ""
+            })
         )
     }
 
@@ -43,13 +44,14 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
         }
 
         const { selectionStart, selectionEnd, value } = textarea
-        setNewNoteContent(value.slice(0, selectionStart) + before + value.slice(selectionStart, selectionEnd) + after + value.slice(selectionEnd))
+        const newValue = value.slice(0, selectionStart) + before + value.slice(selectionStart, selectionEnd) + after + value.slice(selectionEnd)
+
+        textarea.value = newValue
 
         const newCursorPosition = selectionStart + before.length
-        setTimeout(() => {
-            textarea.setSelectionRange(newCursorPosition, newCursorPosition)
-            textarea.focus()
-        }, 0)
+
+        textarea.setSelectionRange(newCursorPosition, newCursorPosition)
+        textarea.focus()
     }
 
     return (
@@ -64,7 +66,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     <span className="absolute bottom-4 left-4 text-sm text-gray-400">
                         {getDateTimeString(note.timestamp)}
                     </span>
-                    {onNoteRemoved &&isAdmin && (
+                    {onNoteRemoved && isAdmin && (
                         <div className="absolute bottom-2 right-2">
                             <button
                                 onClick={() => handleDelete(note.id)}
@@ -92,8 +94,7 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                         ref={textareaRef}
                         className="w-full resize-none border border-gray-300 rounded-md p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 flex-grow"
                         placeholder="Nová poznámka"
-                        value={newNoteContent}
-                        onChange={e => setNewNoteContent(e.target.value)} />
+                    />
                     <div className="mt-2 flex items-center">
                         <div className="flex space-x-1">
                             <button

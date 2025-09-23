@@ -12,7 +12,7 @@ import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
-import { formatKilometers, formatTimeAgo } from "../utils/formatters"
+import { formatTimeAgo } from "../utils/formatters"
 import { useApi } from "../hooks/useApi"
 import { cs } from "date-fns/locale"
 
@@ -137,7 +137,7 @@ export default function TripSummary({ tripId }) {
                                 <div className="flex items-center space-x-1">
                                     <Battery className="w-3 h-3" />
                                     <span>
-                                        {Math.round(lastSeenBridgeXDevice.battery)}%
+                                        {Math.round(lastSeenBridgeXDevice.battery)} %
                                     </span>
                                 </div>
                                 {targetLocation && (
