@@ -109,7 +109,8 @@
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
 
     // Event producers.
-    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient);
+    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient);
+    $calendarClient->setEventPublisher($eventPublisher);
     $scheduler = new Scheduler($databaseClient, $eventPublisher);
 
     // Configuration service.
@@ -120,7 +121,6 @@
     // Authentication service.
     $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
-    $calendarClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.

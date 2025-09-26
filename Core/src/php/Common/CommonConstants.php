@@ -3,7 +3,6 @@
 
     class CommonConstants {
         public const ACCESS_TOKEN_REQUEST_ATTRIBUTE_KEY = "accessToken";
-        public const ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY = "encodedRequestBody";
         public const FITNESS_RECORD_DURATION_SECONDS = 1800;
         public const ONE_HOUR_SECONDS = 3600;
         public const ONE_DAY_SECONDS = 24 * self::ONE_HOUR_SECONDS;

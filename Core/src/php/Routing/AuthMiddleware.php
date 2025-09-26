@@ -13,8 +13,9 @@
     class AuthMiddleware implements MiddlewareInterface {
 
         private const BEARER_TOKEN_PATTERN = "/Bearer\s+(.*)$/i";
-        private const GOOG_CHANNEL_TOKEN_HEADER = "X-Goog-Channel-Token";
         private const AUTHORIZATION_HEADER = "Authorization";
+
+        private const WHITELISTED_PATHS = array("/swagger", "/events/webhook");
 
         private readonly AuthenticationService $authenticationService;
         private readonly string $basePath;
@@ -26,14 +27,11 @@
 
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
             if ($request->getUri()->getPath() === ($this->basePath . "/") 
-                || str_starts_with($request->getUri()->getPath(), $this->basePath . "/swagger")) {
+                || count(array_filter(self::WHITELISTED_PATHS, fn($path) => str_starts_with($request->getUri()->getPath(), $this->basePath . $path))) > 0) {
                 return $handler->handle($request);
             }
 
             $accessToken = $this->tryExtractAccessToken($request, self::AUTHORIZATION_HEADER);
-            if ($accessToken === null) {                
-                $accessToken = $this->tryExtractAccessToken($request, self::GOOG_CHANNEL_TOKEN_HEADER);
-            }            
             if ($accessToken === null) {
                 throw new AuthenticationException("The access token was not provided.");
             }

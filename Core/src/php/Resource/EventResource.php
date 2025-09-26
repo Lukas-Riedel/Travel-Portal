@@ -1,7 +1,6 @@
 <?php
     namespace Core\Resource;
 
-    use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -22,6 +21,7 @@
 
             $app->group("/events", function($group) use($resource) {
                 $group->post("", [$resource, "createEvent"]);
+                $group->post("/webhook", [$resource, "createWebhookEvent"]);
             });
         }
 
@@ -104,18 +104,50 @@
             $name = $this->validateJsonBodyField($request, "name");
             $args = $this->validateJsonBodyNullableField($request, "args");
 
-            $method = new \ReflectionMethod(Event::class, $name);
+            $this->eventPublisher->publishRawEvent($name, $args);
 
-            $orderedArgs = array();
-            foreach ($method->getParameters() as $parameter) {
-                $parameterName = $parameter->getName();
-                if (!array_key_exists($parameterName, $args) && !$parameter->isDefaultValueAvailable()) {
-                    throw new \RuntimeException("The required argument '$parameterName' is missing for the '$name' event.");
-                }
-                $orderedArgs[] = $args[$parameterName] ?? $parameter->getDefaultValue();
-            }
+            return null;
+        }
+        
+        #[OA\Post(
+            path: "/events/webhook",
+            summary: "Create a webhook event",
+            operationId: "createWebhookEvent",
+            tags: ["Events"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "eventId",
+                    in: "query",
+                    required: true,
+                    description: "The identifier of the webhook event",
+                    example: "4b340550242239.64159797"
+                ),
+            ],
+            responses: [
+                new OA\Response(
+                    response: 204,
+                    description: "Success. The webhook event was created."
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function createWebhookEvent(Request $request, Response $response, array $routeArguments) : mixed {
+            $eventId = $this->validateQueryParameter($request, "eventId");
 
-            $this->eventPublisher->publish($method->invokeArgs(null, $orderedArgs));
+            $this->eventPublisher->publishStoredEvent($eventId);
 
             return null;
         }

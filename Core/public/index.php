@@ -8,7 +8,6 @@
     use Core\Routing\JsonInvocationStrategy;
     use Core\Routing\LoggingMiddleware;
     use Core\Routing\OpenLineageMiddleware;
-    use Core\Routing\PayloadDecodingMiddleware;
     use Core\Routing\RequestError;
     use Slim\Handlers\Strategies\RequestResponse;
 
@@ -22,7 +21,6 @@
 
     $app->add(new AuthMiddleware($authenticationService, $basePath));
     $app->addRoutingMiddleware();
-    $app->add(new PayloadDecodingMiddleware());
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new LoggingMiddleware($logger));

@@ -4,7 +4,7 @@
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
-    use Core\Service\Authentication\AuthenticationService;
+    use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Configuration\ConfigurationService;
     use ICal\ICal;
@@ -13,36 +13,36 @@
         
         private const GOOGLE_CALENDAR_WATCH_TTL_SECONDS = CommonConstants::ONE_DAY_SECONDS;
 
-        private const WATCH_CALENDAR_CALLBACK_URL_FORMAT = "%s/events?%s=%s";
+        private const WATCH_CALENDAR_CALLBACK_URL_FORMAT = "%s/events/webhook?eventId=%s";
 
         private const ATTRIBUTE_KEY_VALUE_DELIMITER = ":";
 
         private readonly GoogleClient $googleClient;
 
-        private ?AuthenticationService $authenticationService;
-
         private ?ConfigurationService $configurationService;
+
+        private ?EventPublisher $eventPublisher;
 
         public function __construct(GoogleClient $googleClient) {
             $this->googleClient = $googleClient;
-            $this->authenticationService = null;
-        }
-
-        public function setAuthenticationService(AuthenticationService $authenticationService) : void {
-            $this->authenticationService = $authenticationService;
+            $this->configurationService = null;
+            $this->eventPublisher = null;
         }
 
         public function setConfigurationService(ConfigurationService $configurationService) : void {
             $this->configurationService = $configurationService;
         }
+
+        public function setEventPublisher(EventPublisher $eventPublisher) : void {
+            $this->eventPublisher = $eventPublisher;
+        }
         
         public function watchCalendar(Calendar $calendar) : void {
-            $authenticationResult = $this->authenticationService->authenticateAsAdmin(self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
-            $event = Event::CalendarInvalidated($calendar->value);
+            $event = Event::CalendarInvalidating($calendar->value, self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
+            $eventId = $this->eventPublisher->publish($event);
 
             $this->googleClient->watchCalendar($calendar, $calendar->value . "_" . time(),
-                sprintf(self::WATCH_CALENDAR_CALLBACK_URL_FORMAT, BASE_URL, CommonConstants::ENCODED_REQUEST_BODY_QUERY_PARAMETER_KEY, base64_encode(json_encode($event))),
-                self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS, "Bearer " . $authenticationResult->getAccessToken());
+                sprintf(self::WATCH_CALENDAR_CALLBACK_URL_FORMAT, BASE_URL, $eventId), self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
         }
 
         public function getEvents(Calendar $calendar) : array {
