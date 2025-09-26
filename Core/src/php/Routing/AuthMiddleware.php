@@ -42,7 +42,13 @@
         private function tryExtractAccessToken(ServerRequestInterface $request, string $header) : ?AccessToken {
             $authHeader = $request->getHeaderLine($header);
             if (preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
-                return $this->authenticationService->getAccessToken($matches[1]);
+                try {                    
+                    return $this->authenticationService->authenticate($matches[1]);
+                }
+                catch (\Throwable $e) {
+                    // TODO: After removing this code, make sure what exceptions can be thrown by JWT validator, and rethrow accordingly.
+                    return $this->authenticationService->getAccessToken($matches[1]);
+                }
             }
             return null;
         }

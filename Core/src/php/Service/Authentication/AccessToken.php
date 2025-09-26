@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Authentication;
 
+    // TODO: Rename to UserInfo and remove expiration.
     class AccessToken implements \JsonSerializable {        
         private readonly string $userId;
         private readonly array $roles;

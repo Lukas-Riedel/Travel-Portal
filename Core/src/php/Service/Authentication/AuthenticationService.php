@@ -8,6 +8,8 @@
     use Google\Auth\Credentials\ServiceAccountCredentials;
     use Core\Client\Http\HttpMethod;
     use Core\Client\Http\HttpClient;
+    use Firebase\JWT\JWT;
+    use Firebase\JWT\Key;
 
     class AuthenticationService {
         
@@ -76,6 +78,11 @@
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->cacheClient = $cacheClient;
+        }
+
+        public function authenticate(string $accessToken) : AccessToken {
+            $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
+            return new AccessToken($decoded->sub, $decoded->realm_access->roles, 0);
         }
 
         public function getUser(string $userId) : ?User {
