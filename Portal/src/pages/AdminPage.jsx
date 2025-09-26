@@ -114,7 +114,7 @@ export default function AdminPage() {
                         onNoteCreated={createTripNote}
                         onNoteRemoved={removeTripNote} />
                     <ExpenseSummary
-                        expenses={upcomingOrCurrentTrip?.expenses}
+                        expenses={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.expenses ?? [])}
                         onExpenseCreated={createTripExpense}
                         onExpenseDescriptionUpdated={updateTripExpenseDescription}
                         onExpenseValueUpdated={updateTripExpenseValue}

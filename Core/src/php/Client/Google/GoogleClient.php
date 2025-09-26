@@ -97,6 +97,7 @@
         }
 
         public function getOrCreateFolderId(string $name, ?string $folderId) : string {
+            // TODO: Use a distributed lock.
             $folder = $this->getFolder($name, $folderId);
             return $folder !== null ? $folder : $this->createFolder($name, $folderId);
         }

@@ -124,15 +124,17 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 detailedView={detailedView} />
         ))
 
-    const expenseCandidateRows = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
-        expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), duplicatedExpense]
-        .map((expenseCandidate, index) => (
+    const filteredExpenseCandidates = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
+        expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), duplicatedExpense],
+        [expenseCandidates, expenses, duplicatedExpense])
+
+    const expenseCandidateRows = useMemo(() => filteredExpenseCandidates.map((expenseCandidate, index) => (
             <ExpenseCandidateRow
                 key={index}
                 lastAddedExpense={expenses?.at(-1)}
                 expenseCandidate={expenseCandidate}
                 onExpenseCreated={onExpenseCreated} />
-        )), [expenseCandidates, expenses, duplicatedExpense, onExpenseCreated])
+        )), [filteredExpenseCandidates, expenses, duplicatedExpense])
 
     const actualRows = useMemo(() => {
         if (!expenses) {

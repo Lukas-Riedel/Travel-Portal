@@ -63,8 +63,10 @@ export default function TripSummary({ tripId }) {
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
     const [targetLocation, setTargetLocation] = useState(null)
+
+    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(new Date().getHours() < 10 ? Date.now() - (86400 * 1000) : Date.now())))?.address, [trip?.stays])
+
     useEffect(() => {
-        const targetAddress = trip?.getStay(startOfDay(new Date(new Date().getHours() < 10 ? Date.now() - (86400 * 1000) : Date.now())))?.address
         if (!targetAddress) {
             setTargetLocation(null)
             return
@@ -80,7 +82,7 @@ export default function TripSummary({ tripId }) {
         return () => {
             isMounted = false
         }
-    }, [trip])
+    }, [targetAddress])
 
 
     return trip ? (

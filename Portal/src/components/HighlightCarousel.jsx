@@ -90,7 +90,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
             "Zadej nové atributy:",
             [
                 {
-                    label: "Kompozice", value: highlight.attributes.composition, required: true, type: "select", options: [
+                    label: "Kompozice", value: highlight.attributes?.composition, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 5, name: "Nedostatečná" },
                         { id: 60, name: "Průměrná" },
@@ -98,7 +98,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Obloha", value: highlight.attributes.sky, required: true, type: "select", options: [
+                    label: "Obloha", value: highlight.attributes?.sky, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 10, name: "Jednolitá šedá" },
                         { id: 30, name: "Zataženo s výraznou strukturou mraků" },
@@ -108,7 +108,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Stíny", value: highlight.attributes.shadows, required: true, type: "select", options: [
+                    label: "Stíny", value: highlight.attributes?.shadows, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 35, name: "Silné protisvětlo (špatná denní doba)" },
                         { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
@@ -117,7 +117,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Okolnosti", value: highlight.attributes.circumstances, required: true, type: "select", options: [
+                    label: "Okolnosti", value: highlight.attributes?.circumstances, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 20, name: "Výrazně rušivé (lešení, davy, nepořádek)" },
                         { id: 70, name: "Rušivé (něco narušuje celkový dojem)" },
@@ -126,7 +126,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Atmosféra", value: highlight.attributes.atmosphere, required: true, type: "select", options: [
+                    label: "Atmosféra", value: highlight.attributes?.atmosphere, required: true, type: "select", options: [
                         { id: null, name: "" },
                         { id: 30, name: "Znečištěný nebo zakalený vzduch (opar, smog, inverze)" },
                         { id: 80, name: "Mírný opar (snížená čirost, ale přijatelná)" },
