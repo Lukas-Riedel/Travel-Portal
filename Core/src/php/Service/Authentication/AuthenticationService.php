@@ -16,9 +16,16 @@
         private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleApiAccessToken";
         private const GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleFcmAccessToken";
         private const IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IbmCloudAccessToken";
+        private const IAM_SERVICE_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IamServiceAccessToken";
 
         private const GOOGLE_API_IAM_URL = "https://oauth2.googleapis.com/token";
         private const IBM_CLOUD_IAM_URL = "https://iam.test.cloud.ibm.com/identity/token";
+
+        private const IAM_ACCESS_TOKEN_API_ENDPOINT_PATH = "/protocol/openid-connect/token";
+        private const CLIENT_API_ENDPOINT_PATH_FORMAT = "/clients?clientId=%s";
+        private const USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT = "/clients/%s/roles/%s/users";
+
+        private const IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE = "client_credentials";
 
         private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
 
@@ -82,15 +89,33 @@
 
         public function authenticate(string $accessToken) : AccessToken {
             $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
-            return new AccessToken($decoded->sub, $decoded->realm_access->roles, 0);
+            return new AccessToken($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
         }
 
         public function getUser(string $userId) : ?User {
             return $this->authenticationMapper->selectUserById($userId);
         }
 
-        public function getUsersWithRole(string $role) : array {
-            return $this->authenticationMapper->selectUsersWithRole($role);
+        public function getUserIdsWithRole(string $role) : array {
+            $userIds = array();
+            
+            foreach ($this->authenticationMapper->selectUsersWithRole($role) as &$user) {
+                $userIds[] = $user->getId();
+            }
+
+            $appRealClientId = $this->getRealClientId(IAM_APP_CLIENT_ID);
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_KEYCLOAK_BASE_URL . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $appRealClientId, $role),
+                array("Authorization: Bearer " . $this->getServiceAccessToken()));
+                
+            if (!is_array($response)) {
+                throw new \RuntimeException("The response with users is not an array. Response: " . json_encode($response));
+            }
+
+            foreach ($response as &$user) {
+                $userIds[] = $user["id"];
+            }
+
+            return $userIds;
         }
 
         public function getAccessToken(string $accessToken) : AccessToken {
@@ -309,6 +334,41 @@
 
             // TODO: Encrypt the contents.
             file_put_contents($this::GOOGLE_REFRESH_TOKEN_FILE_PATH, $response["refresh_token"]);
+        }
+
+        private function getRealClientId(string $clientId) : string {
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_KEYCLOAK_BASE_URL . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, $clientId),
+                array("Authorization: Bearer " . $this->getServiceAccessToken()));
+
+            if (!is_array($response) || count($response) !== 1 || !isset($response[0]["id"])) {
+                throw new \RuntimeException("There must be exactly one client with the specified identifier. Response: " . json_encode($response));
+            }
+
+            return $response[0]["id"];
+        }
+
+        private function getServiceAccessToken() : string {
+            $cachedServiceAccessToken = $this->cacheClient->get(self::IAM_SERVICE_ACCESS_TOKEN_CACHE_KEY);
+            if ($cachedServiceAccessToken !== null) {
+                return $cachedServiceAccessToken;
+            }
+            
+            $payload = array(
+                "client_id" => IAM_BACKEND_CLIENT_ID,
+                "client_secret" => IAM_BACKEND_CLIENT_SECRET,
+                "grant_type" => self::IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE,
+            ); 
+
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_KEYCLOAK_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH, 
+                array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+                
+            if (!isset($response["access_token"])) {
+                throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
+            }
+
+            $this->cacheClient->set(self::IAM_SERVICE_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $this->getExternalAccessTokenExpiration($response["expires_in"]));
+
+            return $response["access_token"];
         }
 
         // TODO: Switch to JWT.

@@ -25,7 +25,7 @@
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($requiredRole !== null) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(user_id, ?)", implode(",", array_map(fn($user) => $user->getId(), $this->authenticationService->getUsersWithRole($requiredRole))));
+                $whereClauseBuilder->withClause("FIND_IN_SET(user_id, ?)", implode(",", $this->authenticationService->getUserIdsWithRole($requiredRole)));
             }
             if ($deviceType !== null) {
                 $whereClauseBuilder->withClause("type = ?", $deviceType->value);
