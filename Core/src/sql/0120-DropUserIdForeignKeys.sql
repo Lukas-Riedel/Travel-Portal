@@ -1,0 +1,2 @@
+ALTER TABLE device
+DROP FOREIGN KEY device_ibfk_1
