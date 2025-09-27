@@ -4,6 +4,7 @@ import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -29,16 +30,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class AgentApplicationConfiguration {
 
+    public static final String CORE_SERVICE_QUALIFIER = "core";
+    public static final String IAM_SERVICE_QUALIFIER = "iam";
+
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
 
     @Bean
-    public RestTemplate restTemplate(@Value("${service.url}") String serviceUrl) {
+    @Qualifier(CORE_SERVICE_QUALIFIER)
+    public RestTemplate coreRestTemplate(@Value("${service.core.url}") String serviceUrl) {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .build();
+    }
+
+    @Bean
+    @Qualifier(IAM_SERVICE_QUALIFIER)
+    public RestTemplate iamRestTemplate(@Value("${service.iam.url}") String serviceUrl) {
+        return new RestTemplateBuilder()
+            .rootUri(serviceUrl)
             .build();
     }
 

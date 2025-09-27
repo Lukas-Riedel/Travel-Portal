@@ -1,10 +1,13 @@
 package cz.lriedel.agent.client;
 
+import static cz.lriedel.agent.AgentApplicationConfiguration.CORE_SERVICE_QUALIFIER;
+
 import java.net.InetAddress;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -22,7 +25,7 @@ public final class ServiceClient {
     private final RetryTemplate retryTemplate;
     private final HttpEntityProvider httpEntityProvider;
 
-    ServiceClient(RestTemplate restTemplate, RetryTemplate retryTemplate, HttpEntityProvider httpEntityProvider) {
+    ServiceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate, HttpEntityProvider httpEntityProvider) {
         this.restTemplate = restTemplate;
         this.retryTemplate = retryTemplate;
         this.httpEntityProvider = httpEntityProvider;
