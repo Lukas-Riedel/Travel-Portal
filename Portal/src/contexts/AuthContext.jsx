@@ -13,10 +13,15 @@ export const AuthProvider = ({ children }) => {
 
     const isAdmin = useMemo(() => accessToken?.roles?.includes("ADMIN") || false, [accessToken])
 
+    // TODO: Remove API key authentication.
     const login = async ({ username, password, apiKey }) => {
         const token = apiKey
             ? await getAccessTokenForApiKey(apiKey)
             : await getAccessTokenForUser(username, password)
+
+        if (typeof Android !== "undefined" && Android.login) {
+            Android.login(username, password)
+        }
 
         token.expiration = Date.now() + token.validity * 1000
         localStorage.setItem("accessToken", JSON.stringify(token))
@@ -24,6 +29,10 @@ export const AuthProvider = ({ children }) => {
     }
 
     const logout = () => {
+        if (typeof Android !== "undefined" && Android.logout) {
+            Android.logout()
+        }
+
         localStorage.removeItem("accessToken")
         setAccessToken(null)
     }
@@ -48,10 +57,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (!accessToken) {
             return
-        }
-
-        if (typeof Android !== "undefined" && Android.setRefreshToken) {
-            Android.setRefreshToken(accessToken.refreshToken)
         }
 
         const refreshThreshold = 60 * 1000

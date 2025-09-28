@@ -23,6 +23,8 @@ final class AccessTokenProvider {
     private static final String TOKEN_ENDPOINT = "/protocol/openid-connect/token";
     private static final String PASSWORD_GRANT_TYPE = "password";
 
+    private static final double ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95;
+
     private final RestTemplate restTemplate;
     private final String clientId;
     private final String username;
@@ -44,7 +46,7 @@ final class AccessTokenProvider {
         if (this.expiration < System.currentTimeMillis()) {
             AccessToken response = Objects.requireNonNull(restTemplate.postForObject(TOKEN_ENDPOINT, getHttpEntity(), AccessToken.class));
             this.accessToken = response.accessToken();
-            this.expiration = System.currentTimeMillis() + response.expiresIn() * 1000 / 2;
+            this.expiration = System.currentTimeMillis() + (long) (ACCESS_TOKEN_VALIDITY_MULTIPLIER * response.expiresIn() * 1000);
         }
 
         return this.accessToken;

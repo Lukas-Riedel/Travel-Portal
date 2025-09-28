@@ -104,7 +104,7 @@
             }
 
             $appRealClientId = $this->getRealClientId(IAM_APP_CLIENT_ID);
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_KEYCLOAK_BASE_URL . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $appRealClientId, $role),
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_ADMIN_BASE_URL . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $appRealClientId, $role),
                 array("Authorization: Bearer " . $this->getServiceAccessToken()));
                 
             if (!is_array($response)) {
@@ -230,7 +230,7 @@
             $payload = array(
                 "client_id" => GOOGLE_API_CLIENT_ID,
                 "client_secret" => GOOGLE_API_CLIENT_SECRET,
-                "redirect_uri" => IAM_BASE_URL,
+                "redirect_uri" => BASE_URL,
                 "refresh_token" => $refreshToken,
                 "grant_type" => self::GOOGLE_API_REFRESH_TOKEN_GRANT_TYPE,
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
@@ -305,7 +305,7 @@
                 "code" => $code,
                 "client_id" => GOOGLE_API_CLIENT_ID,
                 "client_secret" => GOOGLE_API_CLIENT_SECRET,
-                "redirect_uri" => IAM_BASE_URL,
+                "redirect_uri" => BASE_URL,
                 "grant_type" => self::GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE,
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );
@@ -337,7 +337,7 @@
         }
 
         private function getRealClientId(string $clientId) : string {
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_KEYCLOAK_BASE_URL . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, $clientId),
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_ADMIN_BASE_URL . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, $clientId),
                 array("Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!is_array($response) || count($response) !== 1 || !isset($response[0]["id"])) {
@@ -359,7 +359,7 @@
                 "grant_type" => self::IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE,
             ); 
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_KEYCLOAK_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH, 
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
                 
             if (!isset($response["access_token"])) {

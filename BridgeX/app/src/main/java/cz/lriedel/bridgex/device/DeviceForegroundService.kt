@@ -57,8 +57,8 @@ class DeviceForegroundService : Service() {
         notificationManager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.title_current_location_update_started))
-            .setContentText(getString(R.string.message_current_location_update_started))
+            .setContentTitle(getString(R.string.title_device_logon_started))
+            .setContentText(getString(R.string.message_device_logon_started))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()

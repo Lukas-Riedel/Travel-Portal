@@ -27,7 +27,7 @@ use Core\Service\Authentication\AuthenticationService;
             else {       
                 header("Location: https://accounts.google.com/o/oauth2/v2/auth?client_id=" 
                     . GOOGLE_API_CLIENT_ID . "&prompt=consent&redirect_uri=" 
-                    . IAM_BASE_URL . "&response_type=code&access_type=offline&scope=" 
+                    . BASE_URL . "&response_type=code&access_type=offline&scope=" 
                     . implode(" ", AuthenticationService::GOOGLE_API_AUTHORIZATION_SCOPES));
             }
             exit;
