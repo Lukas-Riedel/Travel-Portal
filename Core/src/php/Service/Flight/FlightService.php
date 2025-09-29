@@ -260,24 +260,24 @@
 
                     $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());
                 }   
+            });      
 
-                if ($flightType === FlightType::Scheduled) {
-                    $affectedTripIds = $this->flightMapper->selectTripIdsForCreatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-                    foreach ($affectedTripIds as &$affectedTripId) {
-                        $this->eventPublisher->publish(Event::FlightEventCreated($affectedTripId));
-                    }
-                    
-                    $affectedTripIds = $this->flightMapper->selectTripIdsForUpdatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-                    foreach ($affectedTripIds as &$affectedTripId) {
-                        $this->eventPublisher->publish(Event::FlightEventUpdated($affectedTripId));
-                    }
-                    
-                    $affectedTripIds = $this->flightMapper->selectTripIdsForDeletedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
-                    foreach ($affectedTripIds as &$affectedTripId) {
-                        $this->eventPublisher->publish(Event::FlightEventRemoved($affectedTripId));
-                    }
-                }  
-            });            
+            if ($flightType === FlightType::Scheduled) {
+                $affectedTripIds = $this->flightMapper->selectTripIdsForCreatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publish(Event::FlightEventCreated($affectedTripId));
+                }
+                
+                $affectedTripIds = $this->flightMapper->selectTripIdsForUpdatedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publish(Event::FlightEventUpdated($affectedTripId));
+                }
+                
+                $affectedTripIds = $this->flightMapper->selectTripIdsForDeletedFlightEvents(self::OLD_FLIGHT_EVENT_TEMPORARY_TABLE);
+                foreach ($affectedTripIds as &$affectedTripId) {
+                    $this->eventPublisher->publish(Event::FlightEventRemoved($affectedTripId));
+                }
+            }        
         }
 
         private function getAirlineCodeForFlight(string $flight) : string {

@@ -268,25 +268,25 @@
                         $this->googleClient->updateCalendarEventLocation(Calendar::Places, $placeEvent->getId(), $newAddress);
                     }
                 }
-                
-                $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForCreatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-                foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                    $this->eventPublisher->publish(Event::PlaceCreated($affectedPlaceId));
-                    $this->eventPublisher->publish(Event::PlaceEventCreated($affectedPlaceId));
-                }
-                
-                $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForUpdatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-                foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                    $this->eventPublisher->publish(Event::PlaceUpdated($affectedPlaceId));
-                    $this->eventPublisher->publish(Event::PlaceEventUpdated($affectedPlaceId));
-                }
-                
-                $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
-                foreach ($affectedPlaceIds as &$affectedPlaceId) {
-                    $this->eventPublisher->publish(Event::PlaceRemoved($affectedPlaceId));
-                    $this->eventPublisher->publish(Event::PlaceEventRemoved($affectedPlaceId));
-                }
             });
+                
+            $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForCreatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                $this->eventPublisher->publish(Event::PlaceCreated($affectedPlaceId));
+                $this->eventPublisher->publish(Event::PlaceEventCreated($affectedPlaceId));
+            }
+            
+            $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForUpdatedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                $this->eventPublisher->publish(Event::PlaceUpdated($affectedPlaceId));
+                $this->eventPublisher->publish(Event::PlaceEventUpdated($affectedPlaceId));
+            }
+            
+            $affectedPlaceIds = $this->placeMapper->selectPlaceIdsForDeletedPlaceEvents(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedPlaceIds as &$affectedPlaceId) {
+                $this->eventPublisher->publish(Event::PlaceRemoved($affectedPlaceId));
+                $this->eventPublisher->publish(Event::PlaceEventRemoved($affectedPlaceId));
+            }
 
             $this->placeMapper->deleteStalePlaceIdentifiers();
             $this->placeMapper->deleteVisitedCandidatePlaces();

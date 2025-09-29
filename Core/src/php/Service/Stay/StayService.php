@@ -47,22 +47,22 @@
                     $stay = new Stay($stayEvent->getSummary(), $stayEvent->getLocation(), $stayEvent->getStart(), $stayEvent->getEnd());
                     $this->stayMapper->insertStayEvent($stay, $stayEvent->getId(), $resolvedTripIdentifier->getId());
                 }
-                
-                $affectedTripIds = $this->stayMapper->selectTripIdsForCreatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
-                foreach ($affectedTripIds as &$affectedTripId) {
-                    $this->eventPublisher->publish(Event::StayEventCreated($affectedTripId));
-                }
-                
-                $affectedTripIds = $this->stayMapper->selectTripIdsForUpdatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
-                foreach ($affectedTripIds as &$affectedTripId) {
-                    $this->eventPublisher->publish(Event::StayEventUpdated($affectedTripId));
-                }
-                
-                $affectedTripIds = $this->stayMapper->selectTripIdsForDeletedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
-                foreach ($affectedTripIds as &$affectedTripId) {
-                    $this->eventPublisher->publish(Event::StayEventRemoved($affectedTripId));
-                }
             });
+                
+            $affectedTripIds = $this->stayMapper->selectTripIdsForCreatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publish(Event::StayEventCreated($affectedTripId));
+            }
+            
+            $affectedTripIds = $this->stayMapper->selectTripIdsForUpdatedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publish(Event::StayEventUpdated($affectedTripId));
+            }
+            
+            $affectedTripIds = $this->stayMapper->selectTripIdsForDeletedStayEvents(self::OLD_STAY_EVENT_TEMPORARY_TABLE);
+            foreach ($affectedTripIds as &$affectedTripId) {
+                $this->eventPublisher->publish(Event::StayEventRemoved($affectedTripId));
+            }
         }
     }
 ?>
