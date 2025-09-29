@@ -25,7 +25,7 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                 null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
             $countryCategories = $this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array());
             $geographicalRegions = $this->categoryService->getAllGeographicalRegions();

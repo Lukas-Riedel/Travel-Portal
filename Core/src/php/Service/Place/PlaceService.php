@@ -78,12 +78,12 @@
         }
 
         public function getRegularPlace(string $placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, null, null, null, null, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
+            $regularPlaces = $this->doGetRegularPlaces($placeId, null, null, null, null, null, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : null;
         }
 
-        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $includedEntities, $placeSortingStrategy);
         }
 
         public function getCandidatePlace(string $placeId) : ?Place {
@@ -174,7 +174,7 @@
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -202,7 +202,7 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             
             $this->transactionManager->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
                 foreach ($places as &$place) {
@@ -361,8 +361,8 @@
                 $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array());
         }
 
-        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $includedEntities, $placeSortingStrategy);
+        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $includedEntities, $placeSortingStrategy);
         }
         
         private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, array $includedEntities) : array {

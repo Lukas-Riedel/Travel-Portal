@@ -29,7 +29,7 @@ use Core\Service\Year\YearService;
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
             
-            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null,
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null,
                 array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
             $placesWithHighlightsWithoutQualityAttributes = array_filter($relevantPlaces, fn($place) => $this->hasHighlightsWithNullQuality($place));
             foreach ($placesWithHighlightsWithoutQualityAttributes as &$placeWithHighlightsWithoutQualityAttributes) {

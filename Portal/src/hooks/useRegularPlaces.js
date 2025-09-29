@@ -5,7 +5,7 @@ import Place from "../model/place"
 import { useEvents } from "./useEvents"
 import { useEffect, useMemo } from "react"
 
-export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort } = {}) => {
+export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort } = {}) => {
     const { listRegularPlaces } = useApi()
     const { isAdmin } = useAuth()
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
@@ -19,8 +19,8 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
 
     const validity = 60 * 60 * 2
     const query = useQuery({
-        queryKey: ["listRegularPlaces", tripId, categoryId, labelId, year, albumId, photoId, minStart - (minStart % validity), maxEnd - (maxEnd % validity), include, sort],
-        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort }),
+        queryKey: ["listRegularPlaces", tripId, categoryId, labelId, year, albumId, photoId, minStart - (minStart % validity), maxEnd - (maxEnd % validity), limit, include, sort],
+        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }),
         staleTime: isAdmin ? 0 : 1000 * validity,
         refetchInterval: query => isAdmin && query.state.data?.flatMap(place => place.dates ?? [])?.some(date => (date.album?.uploadingStart && date.album?.uploadingProgress) || datesBeingUploaded.has(date.start)) && 10000
     })

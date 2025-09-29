@@ -26,7 +26,7 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                 null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() != $place->getCountry()
@@ -36,7 +36,7 @@
                     $placeWithoutAdministrativeCategory->getPlaceIdentifier(), time());
             }
             
-            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                 null, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
@@ -66,7 +66,7 @@
                 }
             }
                         
-            $relevantPlaces = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+            $relevantPlaces = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                 null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
                 $this->placeService->getCandidatePlaces(null, null, null, array(PlaceIncludedEntity::Dates->value)));
 

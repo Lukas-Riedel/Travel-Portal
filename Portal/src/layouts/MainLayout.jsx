@@ -6,6 +6,7 @@ import showConfirmToast from "../components/ConfirmToast"
 import { useState } from "react"
 
 const navigationItems = [
+    { label: "Nedávné", to: "/feed", isProtected: false, allowedPrefixes: ["/feed"] },
     { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
     { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },

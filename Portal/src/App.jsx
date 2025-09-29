@@ -1,5 +1,5 @@
 import MainLayout from "./layouts/MainLayout"
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useSearchParams } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom"
 import { useAuth } from "./contexts/AuthContext"
 import { useEffect } from "react"
 import { toast, Toaster } from "sonner"
@@ -20,6 +20,7 @@ import CandidateLabelPage from "./pages/CandidateLabelPage"
 import { useEvents } from "./hooks/useEvents"
 import AlbumPage from "./pages/AlbumPage"
 import AdminPage from "./pages/AdminPage"
+import RecentPlacesPage from "./pages/RecentPlacesPage"
 
 export default function App() {
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
@@ -88,7 +89,8 @@ function AppContent() {
 
     return (
         <Routes>
-            <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/trip"} replace />} />
+            <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/feed"} replace />} />
+            <Route path="/feed" element={<MainLayout><RecentPlacesPage /></MainLayout>} />
             <Route path="/trip" element={<MainLayout><YearsPage /></MainLayout>} />
             <Route path="/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />

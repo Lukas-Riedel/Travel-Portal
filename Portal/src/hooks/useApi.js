@@ -253,7 +253,7 @@ export function useApi() {
             .then(place => new Place(place))
     }
 
-    async function listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, include, sort } = {}) {
+    async function listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "regular",
@@ -265,19 +265,21 @@ export function useApi() {
                 photoId: photoId,
                 minStart: minStart,
                 maxEnd: maxEnd,
+                limit: limit,
                 include: include,
                 sort: sort
             })
             .then(places => places.map(place => new Place(place)))
     }
 
-    async function listCandidatePlaces({ tripId, categoryId, labelId, include, sort } = {}) {
+    async function listCandidatePlaces({ tripId, categoryId, labelId, limit, include, sort } = {}) {
         return sendRequest("GET", "/places", {},
             {
                 type: "candidate",
                 tripId: tripId,
                 categoryId: categoryId,
                 labelId: labelId,
+                limit: limit,
                 include: include,
                 sort: sort
             })

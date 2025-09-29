@@ -226,6 +226,12 @@
                     schema: new OA\Schema(ref: "#/components/schemas/PlaceType")                    
                 ),
                 new OA\Parameter(
+                    name: "limit",
+                    in: "query",
+                    description: "The limit of returned places",
+                    example: 50
+                ),
+                new OA\Parameter(
                     name: "include",
                     in: "query",
                     description: "The comma-separated list of included entities",
@@ -299,6 +305,7 @@
             $maxEnd = $this->validateQueryNullableParameter($request, "maxEnd");
             $maxQuality = $this->validateQueryNullableParameter($request, "maxQuality");
             $type = $this->validateQueryNullableParameter($request, "type") ?? PlaceType::Regular->value;
+            $limit = $this->validateQueryNullableParameter($request, "limit");
             $include = $this->validateQueryNullableParameter($request, "include") ?? "";
             $sort = $this->validateQueryNullableParameter($request, "sort") ?? PlaceSortingStrategy::OldestAscending->value;
 
@@ -309,7 +316,7 @@
             $mappedType = PlaceType::from($type);
             
             return match ($mappedType) {
-                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $mappedInclude, $mappedSort),
+                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $mappedInclude, $mappedSort),
                 PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $mappedInclude)
             };
         }

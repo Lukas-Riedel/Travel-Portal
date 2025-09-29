@@ -49,7 +49,7 @@
             $statistics = array();
 
             if ($statisticsKind === StatisticsKind::Fact) {        
-                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, 
+                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, 
                     null, null, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $visitedPlacesCount = count($relevantPlaces);
@@ -90,7 +90,7 @@
             
             if ($statisticsKind === StatisticsKind::Standings) {                      
                 $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");              
-                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, 
+                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null,
                     null, null, $start, $end, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $distances = array();
@@ -144,25 +144,25 @@
                     }
                                         
                     $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
-                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, array(), PlaceSortingStrategy::LatitudeDescending));
+                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, null, array(), PlaceSortingStrategy::LatitudeDescending));
                     if (count($northernmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::NORTHERNMOST_PLACES_STATISTICS_NAME, $northernmostPlaces, StatisticsUnit::Kilometers);
                     }
 
                     $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
-                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, array(), PlaceSortingStrategy::LatitudeAscending));
+                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, null, array(), PlaceSortingStrategy::LatitudeAscending));
                     if (count($southernmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::SOUTHERNMOST_PLACES_STATISTICS_NAME, $southernmostPlaces, StatisticsUnit::Kilometers);
                     }
 
                     $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
-                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, array(), PlaceSortingStrategy::LongitudeDescending));
+                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, null, array(), PlaceSortingStrategy::LongitudeDescending));
                     if (count($easternmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::EASTERNMOST_PLACES_STATISTICS_NAME, $easternmostPlaces, StatisticsUnit::Kilometers);
                     }
 
                     $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
-                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, array(), PlaceSortingStrategy::LongitudeAscending));
+                        $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, $start, $end, null, array(), PlaceSortingStrategy::LongitudeAscending));
                     if (count($westernmostPlaces) > 0) {
                         $statistics[] = new Statistics(self::WESTERNMOST_PLACES_STATISTICS_NAME, $westernmostPlaces, StatisticsUnit::Kilometers);
                     }

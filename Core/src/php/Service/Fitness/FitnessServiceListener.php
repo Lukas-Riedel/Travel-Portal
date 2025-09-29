@@ -88,7 +88,7 @@
             $allTimestamps = array();
             foreach ($trips as &$trip) {
                 if ($this->tripService->isDayTripsTrip($trip)) {
-                    $places = $this->placeService->getRegularPlaces(null, null, $trip->getId(), null, null, null, null, null, null,
+                    $places = $this->placeService->getRegularPlaces(null, null, $trip->getId(), null, null, null, null, null, null, null,
                         array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                     foreach ($places as &$place) {

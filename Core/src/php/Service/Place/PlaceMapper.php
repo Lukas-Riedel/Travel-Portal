@@ -150,7 +150,7 @@
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
                         array_filter(array_map(function($placeId) use(&$start, &$end, &$placesCache) {
                             if (!isset($placesCache[$placeId])) {
-                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end,
+                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end, PHP_INT_MAX,
                                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                                 $placesCache[$placeId] = count($places) === 0 ? null : $places[0];                                
                             }
@@ -176,7 +176,7 @@
                 });
         }
         
-        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -289,6 +289,10 @@
                 }
 
                 if (!isset($places[$placeRow["id"]])) {
+                    if ($limit !== null && count($places) >= $limit) {
+                        continue;
+                    }
+
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                         $categories = $this->categoryService->getCategoryIdentifiersForPlace($placeRow["id"]);
