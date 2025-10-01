@@ -10,6 +10,7 @@
     use Core\Resource\FlightResource;
     use Core\Resource\GeocodingResource;
     use Core\Resource\HighlightResource;
+    use Core\Resource\IamResource;
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
@@ -22,7 +23,7 @@
 
     return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
-        $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService,
+        $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService, $authenticationService,
         $photoService, $eventPublisher, $logger) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
@@ -42,6 +43,7 @@
         TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService, $logger);
         PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
         AirportResource::register($app, $flightService, $logger);
+        IamResource::register($app, $authenticationService);
         SwaggerResource::register($app);
     };
 ?>

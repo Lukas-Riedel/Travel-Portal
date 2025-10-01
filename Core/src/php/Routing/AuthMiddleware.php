@@ -15,7 +15,7 @@
         private const BEARER_TOKEN_PATTERN = "/Bearer\s+(.*)$/i";
         private const AUTHORIZATION_HEADER = "Authorization";
 
-        private const WHITELISTED_PATHS = array("/swagger", "/events/webhook");
+        private const WHITELISTED_PATHS = array("/swagger", "/events/webhook", "/iam");
 
         private readonly AuthenticationService $authenticationService;
         private readonly string $basePath;

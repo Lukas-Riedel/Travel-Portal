@@ -26,6 +26,8 @@
         private const USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT = "/clients/%s/roles/%s/users";
 
         private const IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE = "client_credentials";
+        private const IAM_SERVICE_REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
+        private const IAM_SERVICE_CREDENTIALS_GRANT_TYPE = "password";
 
         private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
 
@@ -90,6 +92,31 @@
         public function authenticate(string $accessToken) : AccessToken {
             $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
             return new AccessToken($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
+        }
+
+        public function getIamResponseWithCredentials(string $username, string $password) : IamResponse {
+            $payload = array(
+                "grant_type" => self::IAM_SERVICE_CREDENTIALS_GRANT_TYPE,
+                "client_id" => IAM_APP_CLIENT_ID,
+                "username" => $username,
+                "password" => $password
+            );
+
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
+                array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+            return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
+        }
+
+        public function getIamResponseWithRefresh(string $refreshToken) : IamResponse {
+            $payload = array(
+                "grant_type" => self::IAM_SERVICE_REFRESH_TOKEN_GRANT_TYPE,
+                "client_id" => IAM_APP_CLIENT_ID,
+                "refresh_token" => $refreshToken
+            );
+
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
+                array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+            return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
 
         public function getUser(string $userId) : ?User {

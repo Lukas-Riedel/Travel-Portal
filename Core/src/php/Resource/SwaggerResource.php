@@ -8,6 +8,7 @@
     use Slim\Handlers\Strategies\RequestResponse;
 
     class SwaggerResource extends AbstractResource {
+        
         public static function register(App $app) {
             $app->get("/swagger/swagger.json", function (ServerRequestInterface $request, ResponseInterface $response) {
                 $openapi = (new Generator())->generate(array(
