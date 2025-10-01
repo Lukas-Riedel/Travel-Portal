@@ -1,4 +1,4 @@
-import PlaceSummary from "../pages/PlaceSummary"
+import PlaceSummary from "./PlaceSummary"
 
 const loadingPlacesCount = 3
 

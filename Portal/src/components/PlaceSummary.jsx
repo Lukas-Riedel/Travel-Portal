@@ -16,7 +16,7 @@ export default function PlaceSummary({ place }) {
                             <img
                                 src={place.mainHighlight.url.full}
                                 alt={place.name}
-                                className="w-full aspect-[16/9] object-cover" />
+                                className="w-full aspect-[16/9] object-cover brightness-100 hover:brightness-50 transition duration-700 ease-in-out" />
                         </Link>
                     )}
                     <div className="p-4 flex flex-col items-center text-center">
