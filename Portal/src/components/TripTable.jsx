@@ -185,7 +185,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                             <tr key={index}>
                                 <td
                                     className="p-3"
-                                    colSpan={4}>
+                                    colSpan={includePlannedTimeOff && !isMobile ? 7 : 4}>
                                     <div className="flex justify-center items-center h-full w-full">
                                         <TailSpin
                                             color="black"
