@@ -94,6 +94,11 @@
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+
+            if (isset($response["error_description"])) {
+                throw new AuthenticationException($response["error_description"]);
+            }
+            
             return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
 
@@ -110,6 +115,11 @@
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
+
+            if (isset($response["error_description"])) {
+                throw new AuthenticationException($response["error_description"]);
+            }
+
             return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
 

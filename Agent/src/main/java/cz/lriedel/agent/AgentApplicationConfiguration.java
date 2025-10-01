@@ -52,6 +52,7 @@ public class AgentApplicationConfiguration {
     public RestTemplate iamRestTemplate(@Value("${service.iam.url}") String serviceUrl) {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     }
 

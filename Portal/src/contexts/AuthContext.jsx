@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
         const newIamResponse = {
             data: rawIamResponse,
             expiration: Date.now() + rawIamResponse.expiresIn * 1000,
-            refreshExpiration: Date.now() + rawIamResponse.refreshExpiresIn * 1000,
+            refreshExpiration: Date.now() + (rawIamResponse.refreshExpiresIn > 0 ? rawIamResponse.refreshExpiresIn * 1000 : Number.MAX_SAFE_INTEGER)
         }
 
         localStorage.setItem("iamResponse", JSON.stringify(newIamResponse))
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
             const newIamResponse = {
                 data: rawIamResponse,
                 expiration: Date.now() + rawIamResponse.expiresIn * 1000,
-                refreshExpiration: Date.now() + rawIamResponse.refreshExpiresIn * 1000,
+                refreshExpiration: Date.now() + (rawIamResponse.refreshExpiresIn > 0 ? rawIamResponse.refreshExpiresIn * 1000 : Number.MAX_SAFE_INTEGER)
             }
 
             localStorage.setItem("iamResponse", JSON.stringify(newIamResponse))

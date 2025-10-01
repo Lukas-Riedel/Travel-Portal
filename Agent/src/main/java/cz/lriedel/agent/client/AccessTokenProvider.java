@@ -20,8 +20,6 @@ import lombok.SneakyThrows;
 @Component
 final class AccessTokenProvider {
 
-    private static final String TOKEN_ENDPOINT = "/token";
-
     private static final double ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95;
 
     private final ObjectMapper objectMapper;
@@ -46,7 +44,7 @@ final class AccessTokenProvider {
     public String getAccessToken() {
         if (this.expiration < System.currentTimeMillis()) {
             TokenPrototype tokenPrototype = new TokenPrototype(username, password);
-            IamResponse response = Objects.requireNonNull(restTemplate.postForObject(TOKEN_ENDPOINT,
+            IamResponse response = Objects.requireNonNull(restTemplate.postForObject("/token",
                     new HttpEntity<>(objectMapper.writeValueAsString(tokenPrototype), new HttpHeaders()), IamResponse.class));
 
             this.accessToken = response.accessToken();
