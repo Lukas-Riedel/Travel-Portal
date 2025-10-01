@@ -28,7 +28,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                     </button>
                 ))}
                 <a
-                    href={import.meta.env.VITE_IAM_BASE_URL}
+                    href={import.meta.env.VITE_IAM_BASE_URL + "/google/auth"}
                     target="_blank"
                     className={"block w-full text-left px-3 py-2 rounded hover:bg-gray-200"}>
                     Google APIs
