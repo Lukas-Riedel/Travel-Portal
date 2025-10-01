@@ -25,7 +25,7 @@ class AuthenticationService(context: Context) {
 
     suspend fun login(username: String?, password: String?) {
         Log.d(AuthenticationService::class.java.simpleName, "Logging in as $username...")
-        val iamResponse = iamClient.createToken(TokenRequest(username, password, null))
+        val iamResponse = iamClient.createToken(TokenRequest(username, password, null, DEFAULT_TOKEN_SCOPE))
         setRefreshToken(iamResponse.refreshToken)
         cacheAccessToken(iamResponse)
     }
@@ -44,7 +44,7 @@ class AuthenticationService(context: Context) {
             val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return null
 
             return try {
-                val iamResponse = iamClient.createToken(TokenRequest(null, null, refreshToken))
+                val iamResponse = iamClient.createToken(TokenRequest(null, null, refreshToken, DEFAULT_TOKEN_SCOPE))
                 setRefreshToken(iamResponse.refreshToken)
                 cacheAccessToken(iamResponse)
                 iamResponse.accessToken
@@ -75,6 +75,7 @@ class AuthenticationService(context: Context) {
     companion object {
         private const val AUTHENTICATION_PREFERENCES_NAME = "AuthenticationPreferences"
         private const val REFRESH_TOKEN_KEY = "RefreshToken"
+        private const val DEFAULT_TOKEN_SCOPE = "openid offline_access"
         private const val ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95
     }
 }

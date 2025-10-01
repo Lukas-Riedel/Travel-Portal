@@ -27,15 +27,17 @@
         }
 
         public function createToken(Request $request, Response $response, array $routeArguments) : mixed {
+            $scope = $this->validateJsonBodyNullableField($request, "scope");
+
             $refreshToken = $this->validateJsonBodyNullableField($request, "refreshToken");
             if ($refreshToken !== null) {
-                return $this->authenticationService->getIamResponseWithRefresh($refreshToken);
+                return $this->authenticationService->getIamResponseWithRefresh($refreshToken, $scope);
             }
 
             $username = $this->validateJsonBodyField($request, "username");
             $password = $this->validateJsonBodyField($request, "password");
 
-            return $this->authenticationService->getIamResponseWithCredentials($username, $password);
+            return $this->authenticationService->getIamResponseWithCredentials($username, $password, $scope);
         }
 
         public function authenticateGoogle(Request $request, Response $response, array $routeArguments) : mixed {
