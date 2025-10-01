@@ -17,7 +17,7 @@ export function useApi() {
                 url,
                 data: Object.keys(data).length ? data : undefined,
                 headers: {
-                    "Authorization": `Bearer ${accessToken.accessToken}`,
+                    "Authorization": `Bearer ${accessToken}`,
                     "Content-Type": "application/json",
                 },
             })

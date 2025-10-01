@@ -5,7 +5,7 @@ export function useIam() {
         try {
             const response = await axios({
                 method: "POST",
-                url: import.meta.env.VITE_IAM_BASE_URL,
+                url: import.meta.env.VITE_IAM_BASE_URL + "/token",
                 data: data,
                 headers: {
                     "Content-Type": "application/json",
@@ -19,7 +19,7 @@ export function useIam() {
         }
     }
 
-    async function getAccessTokenForUser(username, password) {
+    async function getIamResponseWithCredentials(username, password) {
         return sendRequest(
             {
                 username: username,
@@ -27,14 +27,7 @@ export function useIam() {
             })
     }
 
-    async function getAccessTokenForApiKey(apiKey) {
-        return sendRequest(
-            {
-                apiKey: apiKey
-            })
-    }
-
-    async function getAccessTokenForRefreshToken(refreshToken) {
+    async function getIamResponseWithRefresh(refreshToken) {
         return sendRequest(
             {
                 refreshToken: refreshToken
@@ -42,8 +35,7 @@ export function useIam() {
     }
 
     return {
-        getAccessTokenForUser,
-        getAccessTokenForApiKey,
-        getAccessTokenForRefreshToken
+        getIamResponseWithCredentials,
+        getIamResponseWithRefresh
     }
 }
