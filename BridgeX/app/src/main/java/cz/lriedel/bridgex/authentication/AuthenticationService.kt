@@ -8,6 +8,8 @@ import android.util.Log
 import com.google.gson.GsonBuilder
 import cz.lriedel.bridgex.BuildConfig
 import retrofit2.Retrofit
+import cz.lriedel.bridgex.IamClient
+import cz.lriedel.bridgex.IamClient.Companion.create
 import retrofit2.converter.gson.GsonConverterFactory
 
 class AuthenticationService(context: Context) {
@@ -16,25 +18,21 @@ class AuthenticationService(context: Context) {
             context, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
 
-    private val authenticationClient: AuthenticationClient = Retrofit.Builder()
-        .baseUrl(BuildConfig.IAM_BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
-        .build()
-        .create(AuthenticationClient::class.java)
+    private val iamClient: IamClient = create()
 
     private var cachedAccessToken: String? = null
     private var cachedAccessTokenExpiration: Long = 0L
 
     suspend fun login(username: String?, password: String?) {
         Log.d(AuthenticationService::class.java.simpleName, "Logging in as $username...")
-        val accessToken = authenticationClient.createAccessToken(BuildConfig.IAM_BASE_URL, AccessTokenRequest(username, password, null))
-        setRefreshToken(accessToken.refreshToken)
-        setCachedAccessToken(accessToken)
+        val iamResponse = iamClient.createToken(TokenRequest(username, password, null))
+        setRefreshToken(iamResponse.refreshToken)
+        cacheAccessToken(iamResponse)
     }
 
     fun logout() {
         setRefreshToken(null)
-        setCachedAccessToken(null)
+        cacheAccessToken(null)
     }
 
     suspend fun getAccessToken(): String? {
@@ -46,10 +44,10 @@ class AuthenticationService(context: Context) {
             val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return null
 
             return try {
-                val accessToken = authenticationClient.createAccessToken(BuildConfig.IAM_BASE_URL, AccessTokenRequest(null, null, refreshToken))
-                setRefreshToken(accessToken.refreshToken)
-                setCachedAccessToken(accessToken)
-                accessToken.accessToken
+                val iamResponse = iamClient.createToken(TokenRequest(null, null, refreshToken))
+                setRefreshToken(iamResponse.refreshToken)
+                cacheAccessToken(iamResponse)
+                iamResponse.accessToken
             } catch (e: Exception) {
                 Log.e(AuthenticationService::class.java.simpleName, "An error occurred when obtaining an access token.", e)
                 null
@@ -64,13 +62,13 @@ class AuthenticationService(context: Context) {
         }
     }
 
-    private fun setCachedAccessToken(accessToken: AccessToken?) {
-        if (accessToken == null) {
+    private fun cacheAccessToken(iamResponse: IamResponse?) {
+        if (iamResponse == null) {
             cachedAccessToken = null
         }
         else {            
-            cachedAccessToken = accessToken.accessToken
-            cachedAccessTokenExpiration = System.currentTimeMillis() + (accessToken.validity * 1000 * ACCESS_TOKEN_VALIDITY_MULTIPLIER).toLong()
+            cachedAccessToken = iamResponse.accessToken
+            cachedAccessTokenExpiration = System.currentTimeMillis() + (iamResponse.expiresIn * 1000 * ACCESS_TOKEN_VALIDITY_MULTIPLIER).toLong()
         }
     }
 

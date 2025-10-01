@@ -1,8 +1,8 @@
 package cz.lriedel.bridgex.authentication
 
-// TODO: Rename to IamResponse.
-data class AccessToken(
+data class IamResponse(
     val accessToken: String,
+    val expiresIn: Long,
     val refreshToken: String,
-    val validity: Long
+    val refreshExpiresIn: Long
 )
