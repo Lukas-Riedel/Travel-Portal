@@ -42,14 +42,14 @@
             $code = $this->validateQueryNullableParameter($request, "code");
 
             if ($code !== null) {
-                $this->authenticationService->fetchGoogleApiRefreshToken($_GET["code"]);
+                $this->authenticationService->fetchGoogleApiRefreshToken($code);
                 return $response
                     ->withHeader("Location", BASE_URL)
                     ->withStatus(302);
             }
             else {       
                 return $response
-                    ->withHeader("Location", sprintf(self::OFFLINE_ACCESS_AUTHORIZATION_CODE_FLOW_URL_FORMAT, GOOGLE_API_CLIENT_ID, BASE_URL, implode(" ", AuthenticationService::GOOGLE_API_AUTHORIZATION_SCOPES)))
+                    ->withHeader("Location", sprintf(self::OFFLINE_ACCESS_AUTHORIZATION_CODE_FLOW_URL_FORMAT, GOOGLE_API_CLIENT_ID, IAM_BASE_URL . "/google/auth", implode(" ", AuthenticationService::GOOGLE_API_AUTHORIZATION_SCOPES)))
                     ->withStatus(302);
             }
         }

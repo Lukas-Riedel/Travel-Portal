@@ -10,6 +10,10 @@
         public function __invoke(callable $callable, ServerRequestInterface $request,
             ResponseInterface $response, array $routeArguments) : ResponseInterface {
             $result = $callable($request, $response, $routeArguments);
+            if ($result instanceof ResponseInterface && $result->getStatusCode() >= 300 && $result->getStatusCode() < 400) {
+                return $result;
+            }
+            
             if ($result === null) {
                 $response = $response->withStatus(204);
             }

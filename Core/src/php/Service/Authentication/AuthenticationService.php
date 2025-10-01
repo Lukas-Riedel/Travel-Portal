@@ -88,7 +88,7 @@
                 "password" => $password
             );
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
             return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
@@ -100,7 +100,7 @@
                 "refresh_token" => $refreshToken
             );
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
             return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
@@ -210,7 +210,7 @@
                 "code" => $code,
                 "client_id" => GOOGLE_API_CLIENT_ID,
                 "client_secret" => GOOGLE_API_CLIENT_SECRET,
-                "redirect_uri" => BASE_URL,
+                "redirect_uri" => IAM_BASE_URL . "/google/auth",
                 "grant_type" => self::GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE,
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );
@@ -264,7 +264,7 @@
                 "grant_type" => self::IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE,
             ); 
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH, 
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
                 
             if (!isset($response["access_token"])) {

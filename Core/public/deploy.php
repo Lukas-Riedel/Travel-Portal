@@ -61,20 +61,12 @@
             die("Could not apply " . $migrationScriptFileName . " migration script. It was already applied at " . date('d.m.Y H:i:s', $alreadyAppliedScripts[$migrationScriptFileName]["timestamp"]) . ". Expected: " . $alreadyAppliedScripts[$migrationScriptFileName]["hash"] . " Actual: " . $hash);
         }
     }
+    
+    $tablesToBackupRows = $databaseClient
+        ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
+    $tablesToBackup = $tablesToBackupRows[0]["tables"];
 
-    if (!$databaseClient->isDatabaseInitialized()) {
-        $databaseClient
-            ->query("INSERT INTO user (username, password, api_key, roles) VALUES ('guest', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER')");
-        $databaseClient
-            ->query("INSERT INTO user (username, password, api_key, roles) VALUES ('admin', NULL, '" . substr(bin2hex(random_bytes(128)), 0, 128) . "', 'USER,ADMIN')");
-    }    
-    else {
-        $tablesToBackupRows = $databaseClient
-            ->query("SELECT (SELECT GROUP_CONCAT(TABLE_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW' AND TABLE_SCHEMA = DATABASE() AND TABLE_NAME NOT IN (SELECT SUBSTRING(TABLE_NAME, 2) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'VIEW' AND TABLE_SCHEMA = DATABASE())) AS tables");
-        $tablesToBackup = $tablesToBackupRows[0]["tables"];
-
-        $eventPublisher->publish(Event::ApplicationStarted($tablesToBackup));
-    }
+    $eventPublisher->publish(Event::ApplicationStarted($tablesToBackup));
     
     http_response_code(200);
 ?>
