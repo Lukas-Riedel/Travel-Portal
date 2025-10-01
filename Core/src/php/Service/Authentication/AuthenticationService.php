@@ -3,7 +3,6 @@
 
     use Core\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
-    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Google\Auth\Credentials\ServiceAccountCredentials;
     use Core\Client\Http\HttpMethod;
@@ -30,16 +29,6 @@
         private const IAM_SERVICE_CREDENTIALS_GRANT_TYPE = "password";
 
         private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
-
-        private const REFRESH_TOKEN_VALIDITY_MULTIPLIER = 7 * 24;
-        private const BEARER_TOKEN_VALIDITY = CommonConstants::ONE_HOUR_SECONDS;
-        private const ADMIN_USER_ID = "999";
-
-        private const DELIMITER = "::";
-        private const HASH_ALGORITHM = "sha256";
-        private const CIPHER_ALGORITHM = "aes-256-cbc";
-        private const ACCESS_TOKEN = "ACCESS_TOKEN";
-        private const REFRESH_TOKEN = "REFRESH_TOKEN";
         
         private const GOOGLE_FCM_ACCOUNT_TYPE = "service_account";
         private const GOOGLE_FCM_AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
@@ -75,23 +64,20 @@
             "https://www.googleapis.com/auth/cloud-platform",
         );
 
-        private readonly AuthenticationMapper $authenticationMapper;
-
         private readonly ConfigurationService $configurationService;
 
         private readonly HttpClient $httpClient;
         private readonly CacheClient $cacheClient;
 
-        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HttpClient $httpClient, CacheClient $cacheClient) {
-            $this->authenticationMapper = new AuthenticationMapper($databaseClient);
+        public function __construct(ConfigurationService $configurationService, HttpClient $httpClient, CacheClient $cacheClient) {
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->cacheClient = $cacheClient;
         }
 
-        public function authenticate(string $accessToken) : AccessToken {
+        public function authenticate(string $accessToken) : UserInfo {
             $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
-            return new AccessToken($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
+            return new UserInfo($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
         }
 
         public function getIamResponseWithCredentials(string $username, string $password) : IamResponse {
@@ -119,17 +105,7 @@
             return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
 
-        public function getUser(string $userId) : ?User {
-            return $this->authenticationMapper->selectUserById($userId);
-        }
-
         public function getUserIdsWithRole(string $role) : array {
-            $userIds = array();
-            
-            foreach ($this->authenticationMapper->selectUsersWithRole($role) as &$user) {
-                $userIds[] = $user->getId();
-            }
-
             $appRealClientId = $this->getRealClientId(IAM_APP_CLIENT_ID);
             $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_ADMIN_BASE_URL . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $appRealClientId, $role),
                 array("Authorization: Bearer " . $this->getServiceAccessToken()));
@@ -138,105 +114,7 @@
                 throw new \RuntimeException("The response with users is not an array. Response: " . json_encode($response));
             }
 
-            foreach ($response as &$user) {
-                $userIds[] = $user["id"];
-            }
-
-            return $userIds;
-        }
-
-        public function getAccessToken(string $accessToken) : AccessToken {
-            $decoded = base64_decode($accessToken);
-            if ($decoded === false) {
-                throw new AuthenticationException("The access token could not be read.");
-            }
-    
-            $parts = explode(self::DELIMITER, $decoded, 2);
-            if (count($parts) !== 2) {
-                throw new AuthenticationException("The access token could not be read.");
-            }
-            
-            list($encryptedData, $iv) = $parts;
-            $decrypted = openssl_decrypt($encryptedData, self::CIPHER_ALGORITHM, $this->getAccessTokenPrivatekey(), 0, $iv);
-            if ($decrypted === false) {
-                throw new AuthenticationException("The access token could not be read.");
-            }
-            
-            $decodedAccessToken = json_decode($decrypted, true);
-            if ($decodedAccessToken === null) {
-                throw new AuthenticationException("The access token could not be read.");
-            }
-    
-            if ($decodedAccessToken["expiration"] < time()) {
-                throw new AuthenticationException("The access token expired at " . date(DATE_ATOM, $decodedAccessToken["expiration"]) . ".");
-            }
-
-            return new AccessToken($decodedAccessToken["userId"], $decodedAccessToken["roles"], $decodedAccessToken["expiration"]);
-        }
-
-        public function authenticateWithRefreshToken(string $refreshToken) : AuthenticationResult {
-            if ($refreshToken === null) {
-                throw new AuthenticationException("The refresh token was not provided.");
-            }
-
-            $decoded = base64_decode($refreshToken);
-            if ($decoded === false) {
-                throw new AuthenticationException("The refresh token could not be read.");
-            }
-    
-            $parts = explode(self::DELIMITER, $decoded, 2);
-            if (count($parts) !== 2) {
-                throw new AuthenticationException("The refresh token could not be read.");
-            }
-            
-            list($encryptedData, $iv) = $parts;
-            $decrypted = openssl_decrypt($encryptedData, self::CIPHER_ALGORITHM, $this->getRefreshTokenPrivatekey(), 0, $iv);
-            if ($decrypted === false) {
-                throw new AuthenticationException("The refresh token could not be read.");
-            }
-            
-            $decodedRefreshToken = json_decode($decrypted, true);
-            if ($decodedRefreshToken === null) {
-                throw new AuthenticationException("The refresh token could not be read.");
-            }
-    
-            if ($decodedRefreshToken["expiration"] < time()) {
-                throw new AuthenticationException("The refresh token expired at " . date(DATE_ATOM, $decodedRefreshToken["expiration"]) . ".");
-            }
-
-            return $this->generateAuthenticationResult($decodedRefreshToken["userId"], $decodedRefreshToken["roles"], self::BEARER_TOKEN_VALIDITY);
-        }
-
-        public function authenticateWithCredentials(string $username, string $password) : AuthenticationResult {
-            $user = $this->authenticationMapper->selectUserByUsername($username);
-            if ($user === null) {
-                throw new AuthenticationException("The user '" . $username . "' was not found.");
-            }
-
-            if ($user->getPassword() === null) {
-                // Set the password on the first call of the IAM endpoint for the specified user.
-                // Sufficient for now, create a separate service for users if needed.
-                $this->authenticationMapper->updateUserPassword($username, $password);
-            }
-            else if (!password_verify($password, $user->getPassword())) {
-                throw new AuthenticationException("Password for the user '" . $username . "' is invalid.");
-            }
-
-            return $this->generateAuthenticationResult($user->getId(), $user->getRoles(), self::BEARER_TOKEN_VALIDITY);
-        }
-
-        public function authenticateWithApiKey(string $apiKey) : AuthenticationResult {
-            $user = $this->authenticationMapper->selectUserByApiKey($apiKey);
-
-            if ($user === null) {
-                throw new AuthenticationException("No user for the provided API key was found.");
-            }
-
-            return $this->generateAuthenticationResult($user->getId(), $user->getRoles(), self::BEARER_TOKEN_VALIDITY);
-        }
-
-        public function authenticateAsAdmin(int $validity) : AuthenticationResult {
-            return $this->generateAuthenticationResult(self::ADMIN_USER_ID, array("ADMIN", "USER"), $validity);
+            return array_map(fn($user) => $user["id"], $response);
         }
 
         public function getGoogleApiAccessToken() : string {
@@ -396,29 +274,6 @@
             $this->cacheClient->set(self::IAM_SERVICE_ACCESS_TOKEN_CACHE_KEY, $response["access_token"], $this->getExternalAccessTokenExpiration($response["expires_in"]));
 
             return $response["access_token"];
-        }
-
-        // TODO: Switch to JWT.
-        private function generateAuthenticationResult(string $userId, array $roles, int $validity) : AuthenticationResult {
-            $rawAccessToken = new AccessToken($userId, $roles, time() + $validity);
-            $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length(self::CIPHER_ALGORITHM));
-            $encrypted = openssl_encrypt(json_encode($rawAccessToken), self::CIPHER_ALGORITHM, $this->getAccessTokenPrivatekey(), 0, $iv);
-            $accessToken = base64_encode($encrypted . self::DELIMITER . $iv);
-            
-            $rawRefreshToken = new AccessToken($userId, $roles, time() + self::REFRESH_TOKEN_VALIDITY_MULTIPLIER * $validity);
-            $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length(self::CIPHER_ALGORITHM));
-            $encrypted = openssl_encrypt(json_encode($rawRefreshToken), self::CIPHER_ALGORITHM, $this->getRefreshTokenPrivatekey(), 0, $iv);
-            $refreshToken = base64_encode($encrypted . self::DELIMITER . $iv);
-
-            return new AuthenticationResult($accessToken, $refreshToken, $roles, $validity);
-        }
-
-        private function getAccessTokenPrivatekey() {
-            return hash_hmac(self::HASH_ALGORITHM, self::ACCESS_TOKEN, PRIVATE_KEY);
-        }
-
-        private function getRefreshTokenPrivatekey() {
-            return hash_hmac(self::HASH_ALGORITHM, self::REFRESH_TOKEN, PRIVATE_KEY);
         }
 
         private function getExternalAccessTokenExpiration(int $expiration) : int {

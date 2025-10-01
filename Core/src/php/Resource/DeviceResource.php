@@ -118,7 +118,7 @@
             $deviceType = $this->validateJsonBodyField($request, "type");
             $deviceName = $this->validateJsonBodyField($request, "name");
             $deviceData = $this->validateJsonBodyNullableField($request, "data");
-            $userId = $this->getAccessToken($request)->getUserId();
+            $userId = $this->getUserInfo($request)->getUserId();
 
             $mappedType = DeviceType::from($deviceType);
             

@@ -84,8 +84,7 @@
             ]
         )]
         public function listConfiguration(Request $request, Response $response) : mixed {
-            $allowPrivate = $this->getAccessToken($request)->isAdmin();
-            return $this->configurationService->getAllConfigurationEntries($allowPrivate);
+            return $this->configurationService->getAllConfigurationEntries($this->isAdmin($request));
         }
 
         #[OA\Put(

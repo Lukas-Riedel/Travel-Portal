@@ -6,7 +6,4 @@ RewriteRule ^ - [L]
 
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-RewriteRule ^iam/?$ iam.php [L,QSA]
-RewriteRule ^iam/(.+)$ $1 [L,QSA]
-
 RewriteRule ^ index.php [QSA,L]

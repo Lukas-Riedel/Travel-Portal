@@ -1,16 +1,14 @@
 <?php
     namespace Core\Service\Authentication;
 
-    // TODO: Rename to UserInfo and remove expiration.
-    class AccessToken implements \JsonSerializable {        
+    // TODO: Swagger annotations
+    class UserInfo implements \JsonSerializable {        
         private readonly string $userId;
         private readonly array $roles;
-        private readonly int $expiration;
 
-        public function __construct(string $userId, array $roles, int $expiration) {
+        public function __construct(string $userId, array $roles) {
             $this->userId = $userId;
             $this->roles = $roles;
-            $this->expiration = $expiration;
         }
 
         public function getUserId() : string {
@@ -19,10 +17,6 @@
 
         public function getRoles() : array {
             return $this->roles;
-        }
-
-        public function getExpiration() : int {
-            return $this->expiration;
         }
 
         public function isAdmin() : bool {

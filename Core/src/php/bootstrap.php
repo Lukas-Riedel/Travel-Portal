@@ -119,7 +119,7 @@
     $googleClient->setConfigurationService($configurationService);
 
     // Authentication service.
-    $authenticationService = new AuthenticationService($databaseClient, $configurationService, $httpClient, $cacheClient);
+    $authenticationService = new AuthenticationService($configurationService, $httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
 

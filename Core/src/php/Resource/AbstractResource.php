@@ -1,28 +1,27 @@
 <?php
     namespace Core\Resource;
 
-use Core\Common\CommonConstants;
-use Core\Routing\AuthMiddleware;
+    use Core\Common\CommonConstants;
     use Core\Routing\AuthorizationException;
-    use Core\Service\Authentication\AccessToken;
+    use Core\Service\Authentication\UserInfo;
     use Slim\Psr7\Request;
 
     // TODO: Find better names for methods in this class.
     abstract class AbstractResource {
 
-        public function getAccessToken(Request $request) : AccessToken {
-            return $request->getAttribute(CommonConstants::ACCESS_TOKEN_REQUEST_ATTRIBUTE_KEY);
+        public function getUserInfo(Request $request) : UserInfo {
+            return $request->getAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY);
         }
 
         public function isAdmin(Request $request) : bool {
-            $accessToken = $this->getAccessToken($request);
+            $accessToken = $this->getUserInfo($request);
             return $accessToken->isAdmin();
         }
 
         public function validateAdminPermissions(Request $request) : void {          
-            $accessToken = $this->getAccessToken($request);
-            if (!$accessToken->isAdmin()) {
-                throw new AuthorizationException($accessToken);
+            $userInfo = $this->getUserInfo($request);
+            if (!$userInfo->isAdmin()) {
+                throw new AuthorizationException($userInfo);
             }
         }
 
