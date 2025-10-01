@@ -80,27 +80,33 @@
             return new UserInfo($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
         }
 
-        public function getIamResponseWithCredentials(string $username, string $password, string $scope) : IamResponse {
+        public function getIamResponseWithCredentials(string $username, string $password, ?string $scope) : IamResponse {
             $payload = array(
                 "grant_type" => self::IAM_SERVICE_CREDENTIALS_GRANT_TYPE,
                 "client_id" => IAM_APP_CLIENT_ID,
                 "username" => $username,
-                "password" => $password,
-                "scope" => $scope
+                "password" => $password
             );
+
+            if ($scope !== null) {
+                $payload["scope"] = $scope;
+            }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
             return new IamResponse($response["access_token"], $response["expires_in"], $response["refresh_token"], $response["refresh_expires_in"]);
         }
 
-        public function getIamResponseWithRefresh(string $refreshToken, string $scope) : IamResponse {
+        public function getIamResponseWithRefresh(string $refreshToken, ?string $scope) : IamResponse {
             $payload = array(
                 "grant_type" => self::IAM_SERVICE_REFRESH_TOKEN_GRANT_TYPE,
                 "client_id" => IAM_APP_CLIENT_ID,
-                "refresh_token" => $refreshToken,
-                "scope" => $scope
+                "refresh_token" => $refreshToken
             );
+
+            if ($scope !== null) {
+                $payload["scope"] = $scope;
+            }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_ACCESS_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
