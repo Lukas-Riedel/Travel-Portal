@@ -1,56 +1,62 @@
 package cz.lriedel.agent.client;
 
-import static cz.lriedel.agent.AgentApplicationConfiguration.IAM_SERVICE_QUALIFIER;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.REFRESH_TOKEN_CONFIGURATION_KEY;
 
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import cz.lriedel.agent.persistance.Configuration;
+import cz.lriedel.agent.persistance.ConfigurationRepository;
+import lombok.Synchronized;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.lriedel.agent.model.IamResponse;
-import cz.lriedel.agent.model.request.TokenPrototype;
-import lombok.SneakyThrows;
 
 @Component
-final class AccessTokenProvider {
+public final class AccessTokenProvider {
 
     private static final double ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95;
 
-    private final ObjectMapper objectMapper;
+    private final IamClient iamClient;
+    private final ConfigurationRepository configurationRepository;
 
-    private final RestTemplate restTemplate;
+    private String cachedAccessToken;
+    private long cachedAccessTokenExpiration;
 
-    private final String username;
-    private final String password;
-
-    private String accessToken;
-    private long expiration;
-
-    AccessTokenProvider(ObjectMapper objectMapper, @Qualifier(IAM_SERVICE_QUALIFIER) RestTemplate restTemplate,
-        @Value("${credentials.username}") String username, @Value("${credentials.password}") String password) {
-        this.objectMapper = objectMapper;
-        this.restTemplate = restTemplate;
-        this.username = username;
-        this.password = password;
+    AccessTokenProvider(IamClient iamClient, ConfigurationRepository configurationRepository) {
+        this.iamClient = iamClient;
+        this.configurationRepository = configurationRepository;
     }
 
-    @SneakyThrows
-    public String getAccessToken() {
-        if (this.expiration < System.currentTimeMillis()) {
-            TokenPrototype tokenPrototype = new TokenPrototype(username, password);
-            IamResponse response = Objects.requireNonNull(restTemplate.postForObject("/token",
-                    new HttpEntity<>(objectMapper.writeValueAsString(tokenPrototype), new HttpHeaders()), IamResponse.class));
+    public void login(String username, String password) {
+        extractIamResponse(iamClient.createToken(username, password));
+    }
 
-            this.accessToken = response.accessToken();
-            this.expiration = System.currentTimeMillis() + (long) (ACCESS_TOKEN_VALIDITY_MULTIPLIER * response.expiresIn() * 1000);
+    public String getAccessToken() {
+        if (cachedAccessToken != null && System.currentTimeMillis() < cachedAccessTokenExpiration) {
+            return cachedAccessToken;
         }
 
-        return this.accessToken;
+        return doGetAccessToken();
+    }
+
+    @Synchronized
+    private String doGetAccessToken() {
+        String refreshToken = configurationRepository.findById(REFRESH_TOKEN_CONFIGURATION_KEY)
+                .map(Configuration::getValue)
+                .orElseThrow(() -> new IllegalStateException("Refresh token is not set in session."));
+
+        extractIamResponse(iamClient.createToken(refreshToken));
+
+        return cachedAccessToken;
+    }
+
+    private void extractIamResponse(IamResponse iamResponse) {
+        try {
+            cachedAccessToken = iamResponse.accessToken();
+            cachedAccessTokenExpiration = System.currentTimeMillis() + (long) (ACCESS_TOKEN_VALIDITY_MULTIPLIER * iamResponse.expiresIn() * 1000);
+            configurationRepository.save(new Configuration(REFRESH_TOKEN_CONFIGURATION_KEY, iamResponse.refreshToken()));
+        }
+        catch (Exception e) {
+            configurationRepository.deleteById(REFRESH_TOKEN_CONFIGURATION_KEY);
+            throw e;
+        }
     }
 }

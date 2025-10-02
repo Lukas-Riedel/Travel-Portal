@@ -11,6 +11,8 @@ import retrofit2.Retrofit
 import cz.lriedel.bridgex.IamClient
 import cz.lriedel.bridgex.IamClient.Companion.create
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class AuthenticationService(context: Context) {
     private val sharedPreferences: SharedPreferences = EncryptedSharedPreferences.create(
@@ -20,33 +22,38 @@ class AuthenticationService(context: Context) {
 
     private val iamClient: IamClient = create()
 
+    private val tokenMutex = Mutex()
+
     private var cachedAccessToken: String? = null
     private var cachedAccessTokenExpiration: Long = 0L
 
     suspend fun login(username: String?, password: String?) {
         Log.d(AuthenticationService::class.java.simpleName, "Logging in as $username...")
         val iamResponse = iamClient.createToken(TokenRequest(username, password, null, DEFAULT_TOKEN_SCOPE))
-        setRefreshToken(iamResponse.refreshToken)
-        cacheAccessToken(iamResponse)
+        extractIamResponse(iamResponse)
     }
 
     fun logout() {
-        setRefreshToken(null)
-        cacheAccessToken(null)
+        extractIamResponse(null)
     }
 
     suspend fun getAccessToken(): String? {
         if (cachedAccessToken != null && System.currentTimeMillis() < cachedAccessTokenExpiration) {
             return cachedAccessToken
         }
-        else {
-            Log.d(AuthenticationService::class.java.simpleName, "Received a request to obtain an access token...")
-            val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return null
 
-            return try {
+        return tokenMutex.withLock {
+            if (cachedAccessToken != null && System.currentTimeMillis() < cachedAccessTokenExpiration) {
+                return@withLock cachedAccessToken
+            }
+
+            Log.d(AuthenticationService::class.java.simpleName, "Received a request to obtain an access token...")
+            
+            val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return@withLock null
+
+            return@withLock try {
                 val iamResponse = iamClient.createToken(TokenRequest(null, null, refreshToken, DEFAULT_TOKEN_SCOPE))
-                setRefreshToken(iamResponse.refreshToken)
-                cacheAccessToken(iamResponse)
+                extractIamResponse(iamResponse)
                 iamResponse.accessToken
             } catch (e: Exception) {
                 Log.e(AuthenticationService::class.java.simpleName, "An error occurred when obtaining an access token.", e)
@@ -55,20 +62,18 @@ class AuthenticationService(context: Context) {
         }
     }
 
-    private fun setRefreshToken(refreshToken: String?) {
-        with(sharedPreferences.edit()) {
-            refreshToken?.let { putString(REFRESH_TOKEN_KEY, it) } ?: remove(REFRESH_TOKEN_KEY)
-            apply()
-        }
-    }
-
-    private fun cacheAccessToken(iamResponse: IamResponse?) {
+    private fun extractIamResponse(iamResponse: IamResponse?) {
         if (iamResponse == null) {
             cachedAccessToken = null
         }
         else {            
             cachedAccessToken = iamResponse.accessToken
             cachedAccessTokenExpiration = System.currentTimeMillis() + (iamResponse.expiresIn * 1000 * ACCESS_TOKEN_VALIDITY_MULTIPLIER).toLong()
+            
+            with(sharedPreferences.edit()) {
+                iamResponse.refreshToken?.let { putString(REFRESH_TOKEN_KEY, it) } ?: remove(REFRESH_TOKEN_KEY)
+                apply()
+            }
         }
     }
 

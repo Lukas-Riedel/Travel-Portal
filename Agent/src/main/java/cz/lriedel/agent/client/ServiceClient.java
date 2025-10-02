@@ -72,8 +72,6 @@ public final class ServiceClient {
 
     public void createEvent(String name, Map<String, Object> args) {
         EventPrototype eventPrototype = new EventPrototype(name, args);
-        restTemplate.postForObject(
-                "/events",
-                httpEntityProvider.getHttpEntity(eventPrototype), Void.class);
+        restTemplate.postForObject("/events", httpEntityProvider.getHttpEntity(eventPrototype), Void.class);
     }
 }
