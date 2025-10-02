@@ -99,13 +99,13 @@
 
     // Clients.
     $databaseClient = new MySQLDatabaseClient(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, $logger);
+    $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
     $httpClient = new HttpClient($logger);
-    $googleClient = new GoogleClient($httpClient);
+    $googleClient = new GoogleClient($cacheClient, $httpClient);
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
     $calendarClient = new CalendarClient($googleClient);
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
-    $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
 
     // Event producers.

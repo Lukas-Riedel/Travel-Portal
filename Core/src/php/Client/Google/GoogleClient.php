@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Google;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Calendar\Calendar;
     use Core\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
@@ -32,13 +33,18 @@
         private const MULTIPART_SEPARATOR = "mpr_separator";
         private const EVENT_IDENTIFIER_SUFFIX = "@google.com";
         private const HEADER_FORMAT = "%s: %s";
+        
+        private const FOLDER_LOCK_FORMAT = "GoogleClient:Lock:Folder:%s";
+        private const FOLDER_LOCK_TTL = 10;
 
+        private readonly CacheClient $cacheClient;
         private readonly HttpClient $httpClient;
 
         private ?ConfigurationService $configurationService;
         private ?AuthenticationService $authenticationService;
 
-        public function __construct(HttpClient $httpClient) {
+        public function __construct(CacheClient $cacheClient, HttpClient $httpClient) {
+            $this->cacheClient = $cacheClient;
             $this->httpClient = $httpClient;
             $this->configurationService = null;
             $this->authenticationService = null;
@@ -97,9 +103,20 @@
         }
 
         public function getOrCreateFolderId(string $name, ?string $folderId) : string {
-            // TODO: Use a distributed lock.
             $folder = $this->getFolder($name, $folderId);
-            return $folder !== null ? $folder : $this->createFolder($name, $folderId);
+            if ($folder !== null) {
+                return $folder;
+            }
+
+            $this->cacheClient->lock(sprintf(self::FOLDER_LOCK_FORMAT, $name), self::FOLDER_LOCK_TTL, 
+                function() use(&$name, &$folderId, &$folder) {
+                    $folder = $this->getFolder($name, $folderId);
+                    if ($folder === null) {
+                        $folder = $this->createFolder($name, $folderId);
+                    }
+                });
+            
+            return $folder;
         }
 
         public function getFolder(string $name, ?string $folderId) : ?string {

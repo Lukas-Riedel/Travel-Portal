@@ -99,6 +99,25 @@
             $this->redisClient->eval($lua, 1, $key, json_encode($value));
         }
 
+        public function lock(string $key, int $ttl, callable $callable) : void {
+            $lock = null;
+
+            $interval = 1;
+            while (($lock = $this->tryLock($key, $ttl)) === null) {
+                sleep(min($interval, $ttl - 1));
+                $interval *= 2;
+            }
+
+            try {
+                $callable();
+            }
+            finally {
+                if ($lock !== null) {
+                    $lock->unlock();
+                }
+            }
+        }
+
         public function delete(string $key) : void {
             $this->init();
             
