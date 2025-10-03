@@ -1,11 +1,12 @@
 <?php
     namespace Core\Resource;
 
+    use Common\Resource\AbstractResource;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
-    use Core\Routing\NotFoundException;
+    use Common\Routing\NotFoundException;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Year\YearIncludedEntity;
     use Core\Service\Year\YearService;

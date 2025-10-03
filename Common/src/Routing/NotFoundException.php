@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Routing;
+    namespace Common\Routing;
 
     class NotFoundException extends \Exception {
 

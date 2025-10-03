@@ -1,11 +1,12 @@
 <?php
     namespace Core\Resource;
 
+    use Common\Resource\AbstractResource;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
-    use Core\Routing\NotFoundException;
+    use Common\Routing\NotFoundException;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Category\CategoryIncludedEntity;

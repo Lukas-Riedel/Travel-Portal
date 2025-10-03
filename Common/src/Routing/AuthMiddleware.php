@@ -1,33 +1,33 @@
 <?php
-    namespace Core\Routing;
+    namespace Common\Routing;
 
-    use Core\Common\CommonConstants;
+    use Common\CommonConstants;
+    use Common\Service\Authentication\AuthenticationException;
+    use Common\Service\Authentication\AuthenticationService;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Message\ResponseInterface;
-    use Core\Service\Authentication\AuthenticationException;
-    use Core\Service\Authentication\AuthenticationService;
-    use Core\Service\Authentication\UserInfo;
+    use Common\Service\Authentication\UserInfo;
 
     class AuthMiddleware implements MiddlewareInterface {
 
         private const BEARER_TOKEN_PATTERN = "/Bearer\s+(.*)$/i";
         private const AUTHORIZATION_HEADER = "Authorization";
 
-        private const WHITELISTED_PATHS = array("/swagger", "/events/webhook", "/iam");
-
         private readonly AuthenticationService $authenticationService;
         private readonly string $basePath;
+        private readonly array $whitelistedPaths;
 
-        public function __construct(AuthenticationService $authenticationService, string $basePath) {
+        public function __construct(AuthenticationService $authenticationService, string $basePath, array $whitelistedPaths) {
             $this->authenticationService = $authenticationService;
             $this->basePath = $basePath;
+            $this->whitelistedPaths = $whitelistedPaths;
         }
 
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
             if ($request->getUri()->getPath() === ($this->basePath . "/") 
-                || count(array_filter(self::WHITELISTED_PATHS, fn($path) => str_starts_with($request->getUri()->getPath(), $this->basePath . $path))) > 0) {
+                || count(array_filter($this->whitelistedPaths, fn($path) => str_starts_with($request->getUri()->getPath(), $this->basePath . $path))) > 0) {
                 return $handler->handle($request);
             }
 

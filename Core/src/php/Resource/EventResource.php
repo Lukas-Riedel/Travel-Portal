@@ -1,6 +1,7 @@
 <?php
     namespace Core\Resource;
 
+    use Common\Resource\AbstractResource;
     use Core\Event\EventPublisher;
     use Slim\App;
     use Slim\Psr7\Request;

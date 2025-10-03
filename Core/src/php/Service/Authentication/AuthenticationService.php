@@ -1,8 +1,10 @@
 <?php
     namespace Core\Service\Authentication;
 
+    use Common\Service\Authentication\AuthenticationException;
+    use Common\Service\Authentication\IamResponse;
+    use Common\Service\Authentication\UserInfo;
     use Core\Client\Cache\CacheClient;
-    use Core\Client\Database\DatabaseClient;
     use Core\Service\Configuration\ConfigurationService;
     use Google\Auth\Credentials\ServiceAccountCredentials;
     use Core\Client\Http\HttpMethod;
@@ -73,11 +75,6 @@
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->cacheClient = $cacheClient;
-        }
-
-        public function authenticate(string $accessToken) : UserInfo {
-            $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
-            return new UserInfo($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
         }
 
         public function getIamResponseWithCredentials(string $username, string $password, ?string $scope) : IamResponse {

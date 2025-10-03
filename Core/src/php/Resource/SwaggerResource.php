@@ -1,6 +1,7 @@
 <?php
     namespace Core\Resource;
 
+    use Common\Resource\AbstractResource;
     use OpenApi\Generator;
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
@@ -16,7 +17,10 @@
                     __DIR__ . "/../Client/", 
                     __DIR__ . "/../Service/", 
                     __DIR__ . "/../OpenAPI/", 
-                    __DIR__ . "/../Routing/"
+                    __DIR__ . "/../Routing/",
+                    __DIR__ . "/../../../vendor/lriedel/common/src/Resource/",
+                    __DIR__ . "/../../../vendor/lriedel/common/src/Service/",
+                    __DIR__ . "/../../../vendor/lriedel/common/src/Routing/"
                 ));
                 $response->getBody()->write($openapi->toJson());
                 return $response->withHeader("Content-Type", "application/json");

@@ -1,14 +1,14 @@
 <?php
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
-    use Core\Routing\AuthMiddleware;
-    use Core\Routing\CorsMiddleware;
+    use Common\Routing\AuthMiddleware;
+    use Common\Routing\CorsMiddleware;
     use Slim\Factory\AppFactory;
-    use Core\Routing\ErrorHandlingMiddleware;
-    use Core\Routing\JsonInvocationStrategy;
-    use Core\Routing\LoggingMiddleware;
+    use Common\Routing\ErrorHandlingMiddleware;
+    use Common\Routing\JsonInvocationStrategy;
+    use Common\Routing\LoggingMiddleware;
     use Core\Routing\OpenLineageMiddleware;
-    use Core\Routing\RequestError;
+    use Common\Routing\RequestError;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/src/php/bootstrap.php");
@@ -19,7 +19,7 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthMiddleware($authenticationService, $basePath));
+    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook", "/iam")));
     $app->addRoutingMiddleware();
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));

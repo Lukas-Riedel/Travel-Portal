@@ -1,8 +1,9 @@
 <?php
     namespace Core\Resource;
 
-use Core\Routing\NotFoundException;
-use Slim\App;
+    use Common\Resource\AbstractResource;
+    use Common\Routing\NotFoundException;
+    use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;

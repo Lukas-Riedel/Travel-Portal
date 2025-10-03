@@ -1,14 +1,13 @@
 <?php
-    namespace Core\Routing;
+    namespace Common\Routing;
 
-    use Monolog\Logger;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Message\ResponseInterface;
-    use Core\Routing\NotFoundException;
     use Slim\Psr7\Response;
-    use Core\Service\Authentication\AuthenticationException;
+    use Common\Service\Authentication\AuthenticationException;
+    use Monolog\Logger;
 
     class ErrorHandlingMiddleware implements MiddlewareInterface {
 

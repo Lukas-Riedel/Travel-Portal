@@ -1,9 +1,9 @@
 <?php
-    namespace Core\Resource;
+    namespace Common\Resource;
 
-    use Core\Common\CommonConstants;
-    use Core\Routing\AuthorizationException;
-    use Core\Service\Authentication\UserInfo;
+    use Common\Service\Authentication\UserInfo;
+    use Common\CommonConstants;
+    use Common\Routing\AuthorizationException;
     use Slim\Psr7\Request;
 
     // TODO: Find better names for methods in this class.
@@ -64,7 +64,7 @@
                 throw new \InvalidArgumentException("The required request body field '$field' is missing.");
             }
             if ($body[$field] === null || $body[$field] === "" || $body[$field] === array()) {
-                throw new \InvalidArgumentException("The required request body field '$field' IS NULL or empty.");
+                throw new \InvalidArgumentException("The required request body field '$field' IS null or empty.");
             }
             return $body[$field];
         }

@@ -19,6 +19,7 @@ jobs:
           filters: |
             core:
               - 'Core/**'
+              - 'Common/**'
             portal:
               - 'Portal/**'
             agent:

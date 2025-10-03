@@ -1,7 +1,8 @@
 <?php
     namespace Core\Resource;
 
-    use Core\Routing\NotFoundException;
+    use Common\Resource\AbstractResource;
+    use Common\Routing\NotFoundException;
     use Core\Service\Highlight\HighlightService;
     use Monolog\Logger;
     use Slim\App;

@@ -1,7 +1,8 @@
 <?php
     namespace Core\Resource;
 
-    use Core\Routing\NotFoundException;
+    use Common\Resource\AbstractResource;
+    use Common\Routing\NotFoundException;
     use Core\Service\TimeTracking\TimeTrackingService;
     use Slim\App;
     use Slim\Psr7\Request;

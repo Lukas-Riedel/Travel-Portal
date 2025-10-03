@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Service\Authentication;
+    namespace Common\Service\Authentication;
 
     class AuthenticationException extends \Exception {
 

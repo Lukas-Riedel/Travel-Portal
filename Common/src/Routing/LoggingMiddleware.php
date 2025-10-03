@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Routing;
+    namespace Common\Routing;
 
     use Monolog\Logger;
     use Psr\Http\Message\ServerRequestInterface;

@@ -1,12 +1,13 @@
 <?php
     namespace Core\Resource;
 
+    use Common\Resource\AbstractResource;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
-    use Core\Routing\NotFoundException;
-    use Core\Routing\NotUpdatedException;
+    use Common\Routing\NotFoundException;
+    use Common\Routing\NotUpdatedException;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseType;
     use Core\Service\Highlight\HighlightService;

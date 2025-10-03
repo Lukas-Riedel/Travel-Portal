@@ -22,7 +22,7 @@
                 value: [
                     "code" => 403,
                     "type" => "AuthorizationException",
-                    "message" => "The user '89754ffa-c9bb-478c-afbd-8122742815f7' to access this resource.",
+                    "message" => "The user '89754ffa-c9bb-478c-afbd-8122742815f7' is not authorized to access this resource.",
                     "trace" => [],
                     "path" => "/inconsistencies"
                 ]

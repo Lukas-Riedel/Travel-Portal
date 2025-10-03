@@ -2,6 +2,7 @@
     require_once(__DIR__ . "/../../vendor/autoload.php");
     require_once(__DIR__ . "/../../config/secrets.php");
 
+    use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
@@ -119,6 +120,7 @@
     $googleClient->setConfigurationService($configurationService);
 
     // Authentication service.
+    $commonAuthenticationService = new CommonAuthenticationService();
     $authenticationService = new AuthenticationService($configurationService, $httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);

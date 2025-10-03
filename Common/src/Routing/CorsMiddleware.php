@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Routing;
+    namespace Common\Routing;
 
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
