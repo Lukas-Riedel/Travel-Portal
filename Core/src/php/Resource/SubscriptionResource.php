@@ -114,12 +114,12 @@
             ]
         )]
         public function createSubscription(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $description = $this->validateJsonBodyField($request, "description");
-            $value = $this->validateJsonBodyField($request, "value");
-            $currency = $this->validateJsonBodyField($request, "currency");
-            $expiration = $this->validateJsonBodyField($request, "expiration");
+            $description = $this->requireJsonBodyField($request, "description");
+            $value = $this->requireJsonBodyField($request, "value");
+            $currency = $this->requireJsonBodyField($request, "currency");
+            $expiration = $this->requireJsonBodyField($request, "expiration");
 
             return $this->expenseService->createSubscription($value, $currency, $description, $expiration);
         }

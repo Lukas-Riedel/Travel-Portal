@@ -110,10 +110,10 @@
             ]
         )]
         public function createAirline(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $name = $this->validateJsonBodyField($request, "name");
-            $logo = $this->validateJsonBodyNullableField($request, "logo");
+            $name = $this->requireJsonBodyField($request, "name");
+            $logo = $this->getJsonBodyField($request, "logo");
             
             return $this->flightService->createAirline($name, $logo);
         }
@@ -255,7 +255,7 @@
             ]
         )]
         public function getAirline(Request $request, Response $response, array $routeArguments) : mixed {    
-            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
+            $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
             
             $airline = $this->flightService->getAirline($airlineId);
             if ($airline === null) {
@@ -362,17 +362,17 @@
             ]
         )]
         public function updateAirline(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
+            $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
 
-            $newName = $this->validateJsonBodyNullableField($request, "name");
+            $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->flightService->updateAirlineName($airlineId, $newName);
             }
 
-            $newLogo = $this->validateJsonBodyNullableField($request, "logo");
+            $newLogo = $this->getJsonBodyField($request, "logo");
             if ($newLogo !== null) {
                 $wasUpdated |= $this->flightService->updateAirlineLogo($airlineId, $newLogo);
             }
@@ -465,9 +465,9 @@
             ]
         )]
         public function removeAirline(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
+            $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
             
             $wasRemoved = $this->flightService->removeAirline($airlineId);
             if (!$wasRemoved) {
@@ -556,10 +556,10 @@
             ]
         )]
         public function createAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
-            $airlineCode = $this->validateJsonBodyField($request, "code");
+            $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
+            $airlineCode = $this->requireJsonBodyField($request, "code");
             
             $airline = $this->flightService->getAirline($airlineId);
             if ($airline === null) {
@@ -645,10 +645,10 @@
             ]
         )]
         public function removeAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $airlineId = $this->validatePathArgument($routeArguments, "airlineId");
-            $airlineCode = $this->validatePathArgument($routeArguments, "airlineCode");
+            $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
+            $airlineCode = $this->requirePathArgument($routeArguments, "airlineCode");
             
             $airline = $this->flightService->getAirline($airlineId);
             if ($airline === null) {

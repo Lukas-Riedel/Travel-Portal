@@ -1,7 +1,7 @@
 <?php
     namespace Core\Client\GenerativeContent;
 
-    use Core\Client\Http\HttpMethod;
+    use Common\Client\Http\HttpMethod;
     use Monolog\Logger;
     use Core\Client\Http\HttpClient;
 

@@ -19,11 +19,11 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook", "/iam")));
+    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook")));
     $app->addRoutingMiddleware();
+    $app->add(new LoggingMiddleware($logger));
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));
-    $app->add(new LoggingMiddleware($logger));
     $app->add(new OpenLineageMiddleware($openLineageEventManager));
     $app->add(new CorsMiddleware(explode(",", ALLOWED_REQUEST_ORIGINS)));
 

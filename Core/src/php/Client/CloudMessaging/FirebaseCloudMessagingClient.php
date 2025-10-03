@@ -1,7 +1,7 @@
 <?php
     namespace Core\Client\CloudMessaging;
 
-    use Core\Client\Http\HttpMethod;
+    use Common\Client\Http\HttpMethod;
     use Core\Event\CloudMessagingEvent;
     use Core\Event\Event;
     use Core\OpenLineage\OpenLineageEventManager;

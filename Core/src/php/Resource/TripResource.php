@@ -138,10 +138,10 @@
             ]
         )]
         public function listTrips(Request $request, Response $response, array $routeArguments) : mixed {    
-            $year = $this->validateQueryNullableParameter($request, "year");
-            $type = $this->validateQueryNullableParameter($request, "type") ?? TripType::Regular->value;
-            $include = $this->validateQueryNullableParameter($request, "include") ?? "";
-            $sort = $this->validateQueryNullableParameter($request, "sort") ?? TripSortingStrategy::OldestAscending->value;
+            $year = $this->getQueryParameter($request, "year");
+            $type = $this->getQueryParameter($request, "type") ?? TripType::Regular->value;
+            $include = $this->getQueryParameter($request, "include") ?? "";
+            $sort = $this->getQueryParameter($request, "sort") ?? TripSortingStrategy::OldestAscending->value;
 
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedInclude = array_map(fn($entity) => TripIncludedEntity::from($entity)->value, 
@@ -232,7 +232,7 @@
             ]
         )]
         public function getTrip(Request $request, Response $response, array $routeArguments) : mixed {    
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
 
             return $this->doGetTrip($tripId);
         }
@@ -329,10 +329,10 @@
             ]
         )]
         public function replaceTrip(Request $request, Response $response, array $routeArguments) : mixed {    
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $candidateTripId = $this->validateJsonBodyField($request, "id");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $candidateTripId = $this->requireJsonBodyField($request, "id");
 
             $trip = $this->tripService->loadTrip($candidateTripId, $tripId);
             if ($trip === null) {
@@ -454,22 +454,22 @@
             ]
         )]
         public function updateTrip(Request $request, Response $response, array $routeArguments) : mixed {           
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
 
-            $newName = $this->validateJsonBodyNullableField($request, "name");
+            $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->tripService->updateTripName($tripId, $newName);
             }
 
-            $newStart = $this->validateJsonBodyNullableField($request, "start");
+            $newStart = $this->getJsonBodyField($request, "start");
             if ($newName !== null) {
                 $wasUpdated |= $this->tripService->moveTrip($tripId, $newStart) !== null;
             }
             
-            $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
+            $newMainHighlight = $this->getJsonBodyField($request, "mainHighlight");
             if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
                 $wasUpdated |= $this->tripService->updateTripMainHighlight($tripId, $newMainHighlight["id"]);
             }        
@@ -557,9 +557,9 @@
             ]
         )]
         public function removeTrip(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
 
             $trip = $this->doGetTrip($tripId);
             if ($trip->getYear() == null) {
@@ -704,14 +704,14 @@
             ]
         )]
         public function createTripExpense(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $description = $this->validateJsonBodyField($request, "description");
-            $value = $this->validateJsonBodyField($request, "value");
-            $currency = $this->validateJsonBodyField($request, "currency");
-            $type = $this->validateJsonBodyField($request, "type");
-            $subscription = $this->validateJsonBodyNullableField($request, "subscription");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $description = $this->requireJsonBodyField($request, "description");
+            $value = $this->requireJsonBodyField($request, "value");
+            $currency = $this->requireJsonBodyField($request, "currency");
+            $type = $this->requireJsonBodyField($request, "type");
+            $subscription = $this->getJsonBodyField($request, "subscription");
 
             $subscriptionId = null;
             if (is_array($subscription) && isset($subscription["id"])) {
@@ -836,23 +836,23 @@
             ]
         )]
         public function updateTripExpense(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $expenseId = $this->validatePathArgument($routeArguments, "expenseId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $expenseId = $this->requirePathArgument($routeArguments, "expenseId");
             
-            $newDescription = $this->validateJsonBodyNullableField($request, "description");
+            $newDescription = $this->getJsonBodyField($request, "description");
             if ($newDescription !== null) {
                 $wasUpdated |= $this->expenseService->updateExpenseDescription($expenseId, $newDescription, $tripId); 
             }
             
-            $newValue = $this->validateJsonBodyNullableField($request, "value");
+            $newValue = $this->getJsonBodyField($request, "value");
             if ($newValue !== null) {
                 $wasUpdated |= $this->expenseService->updateExpenseValue($expenseId, $newValue, $tripId);
             }
             
-            $newCurrency = $this->validateJsonBodyNullableField($request, "currency");
+            $newCurrency = $this->getJsonBodyField($request, "currency");
             if ($newCurrency !== null) {
                 $wasUpdated |= $this->expenseService->updateExpenseCurrency($expenseId, $newCurrency, $tripId);
             }
@@ -953,10 +953,10 @@
             ]
         )]
         public function removeTripExpense(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $expenseId = $this->validatePathArgument($routeArguments, "expenseId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $expenseId = $this->requirePathArgument($routeArguments, "expenseId");
 
             $wasRemoved = $this->expenseService->removeExpense($expenseId, $tripId);
             if (!$wasRemoved) {
@@ -1058,10 +1058,10 @@
             ]
         )]
         public function createTripNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $content = $this->validateJsonBodyField($request, "content");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $content = $this->requireJsonBodyField($request, "content");
 
             return $this->noteService->createTripNote($tripId, $content);
         }
@@ -1150,10 +1150,10 @@
             ]
         )]
         public function removeTripNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $noteId = $this->validatePathArgument($routeArguments, "noteId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $noteId = $this->requirePathArgument($routeArguments, "noteId");
 
             $wasRemoved = $this->noteService->removeTripNote($tripId, $noteId);
             if (!$wasRemoved) {
@@ -1263,10 +1263,10 @@
             ]
         )]
         public function createTripHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $photo = $this->validateJsonBodyField($request, "photo");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $photo = $this->requireJsonBodyField($request, "photo");
             if (!is_array($photo) || !isset($photo["id"])) {
                 throw new \InvalidArgumentException("The required request body field 'photo.id' is missing.");
             }
@@ -1358,10 +1358,10 @@
             ]
         )]
         public function removeTripHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $tripId = $this->validatePathArgument($routeArguments, "tripId");
-            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
 
             $wasRemoved = $this->highlightService->removeTripHighlight($tripId, $highlightId);
             if (!$wasRemoved) {

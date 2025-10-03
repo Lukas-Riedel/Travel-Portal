@@ -7,7 +7,7 @@
         schema: "IamResponse",
         type: "object",
         description: "A class representing an IAM response",
-        required: ["accessToken", "expiresIn", "refreshToken", "refreshExpiresIn"],
+        required: ["accessToken", "expiresIn"],
         properties: [
             new OA\Property(
                 property: "accessToken",
@@ -39,10 +39,10 @@
         
         private readonly string $accessToken;
         private readonly int $expiresIn;
-        private readonly string $refreshToken;
-        private readonly int $refreshExpiresIn;
+        private readonly ?string $refreshToken;
+        private readonly ?int $refreshExpiresIn;
 
-        public function __construct(string $accessToken, int $expiresIn, string $refreshToken, int $refreshExpiresIn) {
+        public function __construct(string $accessToken, int $expiresIn, ?string $refreshToken, ?int $refreshExpiresIn) {
             $this->accessToken = $accessToken;
             $this->expiresIn = $expiresIn;
             $this->refreshToken = $refreshToken;
@@ -57,11 +57,11 @@
             return $this->expiresIn;
         }
 
-        public function getRefreshToken() : string {
+        public function getRefreshToken() : ?string {
             return $this->refreshToken;
         }
 
-        public function getRefreshExpiresIn() : int {
+        public function getRefreshExpiresIn() : ?int {
             return $this->refreshExpiresIn;
         }
 

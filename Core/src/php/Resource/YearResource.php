@@ -102,7 +102,7 @@
             ]
         )]
         public function listYears(Request $request, Response $response, array $routeArguments) : mixed { 
-            $include = $this->validateQueryNullableParameter($request, "include") ?? "";
+            $include = $this->getQueryParameter($request, "include") ?? "";
             
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedInclude = array_map(fn($entity) => YearIncludedEntity::from($entity)->value, 
@@ -188,7 +188,7 @@
             ]
         )]
         public function getYear(Request $request, Response $response, array $routeArguments) : mixed {    
-            $yearId = $this->validatePathArgument($routeArguments, "year");
+            $yearId = $this->requirePathArgument($routeArguments, "year");
             
             $year = $this->yearService->getYear($yearId);
             if ($year === null) {
@@ -297,12 +297,12 @@
             ]
         )]
         public function updateYear(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $yearId = $this->validatePathArgument($routeArguments, "year");
+            $yearId = $this->requirePathArgument($routeArguments, "year");
             
-            $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
+            $newMainHighlight = $this->getJsonBodyField($request, "mainHighlight");
             if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
                 $wasUpdated |= $this->yearService->updateYearMainHighlight($yearId, $newMainHighlight["id"]);
             }
@@ -419,10 +419,10 @@
             ]
         )]
         public function createYearHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $yearId = $this->validatePathArgument($routeArguments, "year");
-            $photo = $this->validateJsonBodyField($request, "photo");
+            $yearId = $this->requirePathArgument($routeArguments, "year");
+            $photo = $this->requireJsonBodyField($request, "photo");
             if (!is_array($photo) || !isset($photo["id"])) {
                 throw new \InvalidArgumentException("The required request body field 'photo.id' is missing.");
             }
@@ -514,10 +514,10 @@
             ]
         )]
         public function removeYearHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $yearId = $this->validatePathArgument($routeArguments, "year");
-            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+            $yearId = $this->requirePathArgument($routeArguments, "year");
+            $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
 
             $wasRemoved = $this->highlightService->removeYearHighlight($yearId, $highlightId);
             if (!$wasRemoved) {

@@ -13,7 +13,7 @@
     use Core\Client\Database\TransactionManager;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
-    use Core\Client\Http\HttpMethod;
+    use Common\Client\Http\HttpMethod;
     use Core\Client\Http\HttpClient;
 
     class FlightService {

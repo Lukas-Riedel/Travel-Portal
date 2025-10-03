@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
         setupWebView()
         setupWindowInsets()
+        
         permissionManager.requestAllPermissions()
 
         webView.addJavascriptInterface(AndroidBridge(authenticationService, deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)

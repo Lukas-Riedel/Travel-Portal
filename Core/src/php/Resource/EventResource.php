@@ -25,10 +25,10 @@
         }
 
         public function createEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $name = $this->validateJsonBodyField($request, "name");
-            $args = $this->validateJsonBodyNullableField($request, "args");
+            $name = $this->requireJsonBodyField($request, "name");
+            $args = $this->getJsonBodyField($request, "args");
 
             $this->eventPublisher->publishRawEvent($name, $args);
 
@@ -36,7 +36,7 @@
         }
         
         public function createWebhookEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $eventId = $this->validateQueryParameter($request, "eventId");
+            $eventId = $this->requireQueryParameter($request, "eventId");
 
             $this->eventPublisher->publishStoredEvent($eventId);
 

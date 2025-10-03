@@ -6,6 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       core: ${{ steps.filter.outputs.core }}
+      iam: ${{ steps.filter.outputs.iam }}
       portal: ${{ steps.filter.outputs.portal }}
       agent: ${{ steps.filter.outputs.agent }}
       bridgex: ${{ steps.filter.outputs.bridgex }}
@@ -20,16 +21,19 @@ jobs:
             core:
               - 'Core/**'
               - 'Common/**'
+            iam:
+              - 'Iam/**'
+              - 'Common/**'
             portal:
               - 'Portal/**'
             agent:
               - 'Agent/**'
             bridgex:
               - 'BridgeX/**'
-  deploy-core-and-portal:
-    name: Deploy Core and Portal
+  deploy-iam-core-and-portal:
+    name: Deploy IAM, Core and Portal
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.portal == 'true' }}
+    if: ${{ needs.detect-changes.outputs.iam == 'true' || needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.portal == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -44,9 +48,13 @@ jobs:
       uses: actions/setup-node@v3
       with:
           node-version: '18'
-    - name: Install Composer Dependencies
+    - name: Install Core Composer Dependencies
       run: |
         cd Core
+        composer install --no-dev --optimize-autoloader
+    - name: Install IAM Composer Dependencies
+      run: |
+        cd Iam
         composer install --no-dev --optimize-autoloader
     - name: Install NPM Dependencies
       run: |
@@ -75,10 +83,13 @@ jobs:
       run: |
         mkdir target
         mkdir target/api
+        mkdir target/iam
         shopt -s dotglob
         cp -r ./Core/* target/api/
+        cp -r ./Iam/* target/iam/
         rm -rf target/api/public
         cp -r ./Core/public/* target/api/
+        cp -r ./Iam/public/* target/iam/
         cp -r ./Portal/dist/* target/
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5

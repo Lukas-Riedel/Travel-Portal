@@ -171,11 +171,11 @@
             ]
         )]
         public function createCategory(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $name = $this->validateJsonBodyField($request, "name");
-            $category = CategoryCategory::from($this->validateJsonBodyField($request, "category"));        
-            $regionType = RegionType::from($this->validateQueryParameter($request, "type"));
+            $name = $this->requireJsonBodyField($request, "name");
+            $category = CategoryCategory::from($this->requireJsonBodyField($request, "category"));        
+            $regionType = RegionType::from($this->requireQueryParameter($request, "type"));
 
             return match ($regionType) {
                 RegionType::Geographical => $this->handleCreateGeographicalRegion($request, $name, $category),
@@ -261,9 +261,9 @@
             ]
         )]
         public function listCategories(Request $request, Response $response, array $routeArguments) : mixed {    
-            $country = $this->validateQueryNullableParameter($request, "country");
-            $categories = $this->validateQueryNullableParameter($request, "categories") ?? "";
-            $include = $this->validateQueryNullableParameter($request, "include") ?? "";
+            $country = $this->getQueryParameter($request, "country");
+            $categories = $this->getQueryParameter($request, "categories") ?? "";
+            $include = $this->getQueryParameter($request, "include") ?? "";
 
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedCategories = array_map(fn($category) => CategoryCategory::from($category)->value, 
@@ -352,7 +352,7 @@
             ]
         )]
         public function getCategory(Request $request, Response $response, array $routeArguments) : mixed {    
-            $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
+            $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
             
             $category = $this->categoryService->getCategory($categoryId);
             if ($category === null) {
@@ -492,22 +492,22 @@
             ]
         )]
         public function updateCategory(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
+            $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
 
-            $newName = $this->validateJsonBodyNullableField($request, "name");
+            $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->categoryService->updateCategoryName($categoryId, $newName);
             }
             
-            $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
+            $newMainHighlight = $this->getJsonBodyField($request, "mainHighlight");
             if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
                 $wasUpdated |= $this->categoryService->updateCategoryMainHighlight($categoryId, $newMainHighlight["id"]);
             }
             
-            $newMetadata = $this->validateJsonBodyNullableField($request, "metadata");
+            $newMetadata = $this->getJsonBodyField($request, "metadata");
             if ($newMetadata !== null) {
                 if (isset($newMetadata["color"])) {
                     $wasUpdated |= $this->categoryService->updateCategoryColor($categoryId, $newMetadata["color"]);
@@ -634,10 +634,10 @@
             ]
         )]
         public function createCategoryHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
-            $photo = $this->validateJsonBodyField($request, "photo");
+            $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
+            $photo = $this->requireJsonBodyField($request, "photo");
             if (!is_array($photo) || !isset($photo["id"])) {
                 throw new \InvalidArgumentException("The required request body field 'photo.id' is missing.");
             }
@@ -729,10 +729,10 @@
             ]
         )]
         public function removeCategoryHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $categoryId = $this->validatePathArgument($routeArguments, "categoryId");
-            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+            $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
+            $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
 
             $wasRemoved = $this->highlightService->removeCategoryHighlight($categoryId, $highlightId);
             if (!$wasRemoved) {
@@ -743,24 +743,24 @@
         }
 
         private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {
-            $country = $this->validateJsonBodyNullableField($request, "country");
-            $radius = $this->validateJsonBodyField($request, "radius");
-            $geoJson = $this->validateJsonBodyField($request, "geoJson");
+            $country = $this->getJsonBodyField($request, "country");
+            $radius = $this->requireJsonBodyField($request, "radius");
+            $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
             return $this->categoryService->createGeographicalRegion($name, $country, $category->value, $radius, $geoJson);
         }
 
         private function handleCreateGeographicalExtensionRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {
-            $country = $this->validateJsonBodyNullableField($request, "country");
-            $latitude = $this->validateJsonBodyField($request, "latitude");
-            $longitude = $this->validateJsonBodyField($request, "longitude");
+            $country = $this->getJsonBodyField($request, "country");
+            $latitude = $this->requireJsonBodyField($request, "latitude");
+            $longitude = $this->requireJsonBodyField($request, "longitude");
             
             return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $latitude, $longitude);
         }
 
         private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {
-            $includedRegions = $this->validateJsonBodyField($request, "includedRegions");
-            $excludedRegions = $this->validateJsonBodyField($request, "excludedRegions");
+            $includedRegions = $this->requireJsonBodyField($request, "includedRegions");
+            $excludedRegions = $this->requireJsonBodyField($request, "excludedRegions");
             
             return $this->categoryService->createCompositeRegion($name, $category->value, $includedRegions, $excludedRegions);
         }

@@ -82,7 +82,7 @@
             ]
         )]
         public function listInconsistencies(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             
             return $this->monitoringService->getDataConsistencyIssues();
         }

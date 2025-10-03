@@ -2,7 +2,7 @@
     namespace Core\Client\ExchangeRate;
 
     use Core\Client\Http\HttpClient;
-    use Core\Client\Http\HttpMethod;
+    use Common\Client\Http\HttpMethod;
     use Monolog\Logger;
 
     class ExchangeRateApiExchangeRateClient implements ExchangeRateClient {

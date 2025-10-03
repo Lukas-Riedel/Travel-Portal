@@ -145,11 +145,11 @@
             ]
         )]
         public function createPlace(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $name = $this->validateJsonBodyField($request, "name");
-            $address = $this->validateQueryParameter($request, "address");
-            $type = $this->validateQueryParameter($request, "type");
+            $name = $this->requireJsonBodyField($request, "name");
+            $address = $this->requireQueryParameter($request, "address");
+            $type = $this->requireQueryParameter($request, "type");
 
             $mappedType = SpecialPlaceType::from($type);
             
@@ -296,19 +296,19 @@
             ]
         )]
         public function listPlaces(Request $request, Response $response, array $routeArguments) : mixed {
-            $year = $this->validateQueryNullableParameter($request, "year");
-            $tripId = $this->validateQueryNullableParameter($request, "tripId");
-            $categoryId = $this->validateQueryNullableParameter($request, "categoryId");
-            $labelId = $this->validateQueryNullableParameter($request, "labelId");
-            $albumId = $this->validateQueryNullableParameter($request, "albumId");
-            $photoId = $this->validateQueryNullableParameter($request, "photoId");
-            $minStart = $this->validateQueryNullableParameter($request, "minStart");
-            $maxEnd = $this->validateQueryNullableParameter($request, "maxEnd");
-            $maxQuality = $this->validateQueryNullableParameter($request, "maxQuality");
-            $type = $this->validateQueryNullableParameter($request, "type") ?? PlaceType::Regular->value;
-            $limit = $this->validateQueryNullableParameter($request, "limit");
-            $include = $this->validateQueryNullableParameter($request, "include") ?? "";
-            $sort = $this->validateQueryNullableParameter($request, "sort") ?? PlaceSortingStrategy::OldestAscending->value;
+            $year = $this->getQueryParameter($request, "year");
+            $tripId = $this->getQueryParameter($request, "tripId");
+            $categoryId = $this->getQueryParameter($request, "categoryId");
+            $labelId = $this->getQueryParameter($request, "labelId");
+            $albumId = $this->getQueryParameter($request, "albumId");
+            $photoId = $this->getQueryParameter($request, "photoId");
+            $minStart = $this->getQueryParameter($request, "minStart");
+            $maxEnd = $this->getQueryParameter($request, "maxEnd");
+            $maxQuality = $this->getQueryParameter($request, "maxQuality");
+            $type = $this->getQueryParameter($request, "type") ?? PlaceType::Regular->value;
+            $limit = $this->getQueryParameter($request, "limit");
+            $include = $this->getQueryParameter($request, "include") ?? "";
+            $sort = $this->getQueryParameter($request, "sort") ?? PlaceSortingStrategy::OldestAscending->value;
 
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedInclude = array_map(fn($entity) => PlaceIncludedEntity::from($entity)->value, 
@@ -399,7 +399,7 @@
             ]
         )]
         public function getPlace(Request $request, Response $response, array $routeArguments) : mixed {    
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
 
             return $this->doGetPlace($placeId);
         }
@@ -530,28 +530,28 @@
             ]
         )]
         public function updatePlace(Request $request, Response $response, array $routeArguments) : mixed {           
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
 
-            $newName = $this->validateJsonBodyNullableField($request, "name");
+            $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->placeService->updatePlaceName($placeId, $newName);
             }
 
-            $newLatitude = $this->validateJsonBodyNullableField($request, "latitude");
-            $newLongitude = $this->validateJsonBodyNullableField($request, "longitude");
+            $newLatitude = $this->getJsonBodyField($request, "latitude");
+            $newLongitude = $this->getJsonBodyField($request, "longitude");
             if ($newLatitude !== null && $newLatitude !== null) {
                 $wasUpdated |= $this->placeService->updatePlaceLocation($placeId, $newLatitude, $newLongitude);
             }
 
-            if ($this->validateJsonBodyFieldExistence($request, "excerpt")) {
-                $newExcerpt = $this->validateJsonBodyNullableField($request, "newExcerpt");
+            if ($this->existsJsonBodyField($request, "excerpt")) {
+                $newExcerpt = $this->getJsonBodyField($request, "newExcerpt");
                 $wasUpdated |= $this->placeService->updatePlaceExcerpt($placeId, $newExcerpt);
             }                 
             
-            $newMainHighlight = $this->validateJsonBodyNullableField($request, "mainHighlight");
+            $newMainHighlight = $this->getJsonBodyField($request, "mainHighlight");
             if ($newMainHighlight !== null && isset($newMainHighlight["id"])) {
                 $wasUpdated |= $this->placeService->updatePlaceMainHighlight($placeId, $newMainHighlight["id"]);
             }      
@@ -646,10 +646,10 @@
             ]
         )]
         public function removePlace(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $type = $this->validateQueryParameter($request, "type");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $type = $this->requireQueryParameter($request, "type");
                         
             $mappedType = SpecialPlaceType::from($type);
 
@@ -757,10 +757,10 @@
             ]
         )]
         public function createPlaceNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $content = $this->validateJsonBodyField($request, "content");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $content = $this->requireJsonBodyField($request, "content");
 
             return $this->noteService->createPlaceNote($placeId, $content);
         }
@@ -849,10 +849,10 @@
             ]
         )]
         public function removePlaceNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $noteId = $this->validatePathArgument($routeArguments, "noteId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $noteId = $this->requirePathArgument($routeArguments, "noteId");
 
             $wasRemoved = $this->noteService->removePlaceNote($placeId, $noteId);
             if (!$wasRemoved) {
@@ -962,10 +962,10 @@
             ]
         )]
         public function createPlaceHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $photo = $this->validateJsonBodyField($request, "photo");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $photo = $this->requireJsonBodyField($request, "photo");
             if (!is_array($photo) || !isset($photo["id"])) {
                 throw new \InvalidArgumentException("The required request body field 'photo.id' is missing.");
             }
@@ -1057,10 +1057,10 @@
             ]
         )]
         public function removePlaceHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
 
             $wasRemoved = $this->highlightService->removePlaceHighlight($placeId, $highlightId);
             if (!$wasRemoved) {
@@ -1162,10 +1162,10 @@
             ]
         )]
         public function createPlaceLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $name = $this->validateJsonBodyField($request, "name");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $name = $this->requireJsonBodyField($request, "name");
 
             return $this->labelService->createLabel($placeId, $name);
         }
@@ -1254,10 +1254,10 @@
             ]
         )]
         public function removePlaceLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $labelId = $this->validatePathArgument($routeArguments, "labelId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $labelId = $this->requirePathArgument($routeArguments, "labelId");
 
             $wasRemoved = $this->labelService->removeLabelForPlace($placeId, $labelId);
             if (!$wasRemoved) {
@@ -1352,10 +1352,10 @@
             ]
         )]
         public function createPlaceAlbum(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $timestamp = $this->validateQueryParameter($request, "timestamp");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $timestamp = $this->requireQueryParameter($request, "timestamp");
 
             $place = $this->doGetPlace($placeId);
 
@@ -1454,11 +1454,11 @@
             ]
         )]
         public function refreshPlaceAlbum(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $albumId = $this->validatePathArgument($routeArguments, "albumId");
-            $mainPhotoPosition = $this->validateQueryNullableParameter($request, "mainPhotoPosition");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $albumId = $this->requirePathArgument($routeArguments, "albumId");
+            $mainPhotoPosition = $this->getQueryParameter($request, "mainPhotoPosition");
 
             $place = $this->doGetPlace($placeId);
             $album = $place->findAlbum($albumId);
@@ -1603,17 +1603,17 @@
             ]
         )]
         public function createPlaceAlbumPhoto(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $albumId = $this->validatePathArgument($routeArguments, "albumId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $albumId = $this->requirePathArgument($routeArguments, "albumId");
 
-            $fileName = $this->validateJsonBodyField($request, "fileName");
-            $data = $this->validateJsonBodyField($request, "data");
-            $batchId = $this->validateJsonBodyNullableField($request, "batchId");
-            $expectedBatchSize = $this->validateJsonBodyNullableField($request, "expectedBatchSize");
-            $batchPosition = $this->validateJsonBodyNullableField($request, "batchPosition");
-            $replacedPhotoId = $this->validateJsonBodyNullableField($request, "replacedPhotoId");
+            $fileName = $this->requireJsonBodyField($request, "fileName");
+            $data = $this->requireJsonBodyField($request, "data");
+            $batchId = $this->getJsonBodyField($request, "batchId");
+            $expectedBatchSize = $this->getJsonBodyField($request, "expectedBatchSize");
+            $batchPosition = $this->getJsonBodyField($request, "batchPosition");
+            $replacedPhotoId = $this->getJsonBodyField($request, "replacedPhotoId");
             
             $place = $this->doGetPlace($placeId);
             $album = $place->findAlbum($albumId);
@@ -1717,8 +1717,8 @@
             ]
         )]
         public function listPlaceAlbumPhotos(Request $request, Response $response, array $routeArguments) : mixed {
-            $placeId = $this->validatePathArgument($routeArguments, "placeId");
-            $albumId = $this->validatePathArgument($routeArguments, "albumId");
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $albumId = $this->requirePathArgument($routeArguments, "albumId");
             
             $place = $this->doGetPlace($placeId);
             $album = $place->findAlbum($albumId);

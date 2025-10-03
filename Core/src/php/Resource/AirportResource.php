@@ -168,7 +168,7 @@
             ]
         )]
         public function getAirport(Request $request, Response $response, array $routeArguments) : mixed {    
-            $airportId = $this->validatePathArgument($routeArguments, "airportId");
+            $airportId = $this->requirePathArgument($routeArguments, "airportId");
             
             $airport = $this->flightService->getAirport($airportId);
             if ($airport === null) {
@@ -269,12 +269,12 @@
             ]
         )]
         public function updateAirport(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $airportId = $this->validatePathArgument($routeArguments, "airportId");
+            $airportId = $this->requirePathArgument($routeArguments, "airportId");
             
-            $newLongName = $this->validateJsonBodyNullableField($request, "longName");
+            $newLongName = $this->getJsonBodyField($request, "longName");
             if ($newLongName !== null) {
                 $wasUpdated |= $this->flightService->updateAirportName($airportId, $newLongName);
             }

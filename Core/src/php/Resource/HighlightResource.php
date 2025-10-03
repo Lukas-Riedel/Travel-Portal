@@ -107,7 +107,7 @@
             ]
         )]
         public function getHighlight(Request $request, Response $response, array $routeArguments) : mixed {    
-            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+            $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
             
             $highlight = $this->highlightService->getHighlight($highlightId);
             if ($highlight === null) {
@@ -244,12 +244,12 @@
             ]
         )]
         public function updateHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
             $wasUpdated = false;
 
-            $highlightId = $this->validatePathArgument($routeArguments, "highlightId");
+            $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
             
-            $newAttributes = $this->validateJsonBodyNullableField($request, "attributes");
+            $newAttributes = $this->getJsonBodyField($request, "attributes");
             if ($newAttributes !== null) {
                 if (isset($newAttributes["composition"])) {
                     $wasUpdated |= $this->highlightService->updateHighlightComposition($highlightId, $newAttributes["composition"]);

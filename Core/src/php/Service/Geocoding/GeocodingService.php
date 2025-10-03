@@ -4,7 +4,7 @@
     use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Client\Http\HttpMethod;
+    use Common\Client\Http\HttpMethod;
     use Core\Client\Http\HttpClient;
 
     class GeocodingService {

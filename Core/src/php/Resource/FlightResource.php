@@ -156,19 +156,19 @@
             ]
         )]
         public function createFlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $flight = $this->validateJsonBodyField($request, "flight");
-            $from = $this->validateJsonBodyField($request, "from");
+            $flight = $this->requireJsonBodyField($request, "flight");
+            $from = $this->requireJsonBodyField($request, "from");
             if (!is_array($from) || !isset($from["name"])) {
                 throw new \InvalidArgumentException("The required request body field 'from.name' is missing.");
             }
-            $to = $this->validateJsonBodyField($request, "to");
+            $to = $this->requireJsonBodyField($request, "to");
             if (!is_array($to) || !isset($to["name"])) {
                 throw new \InvalidArgumentException("The required request body field 'to.name' is missing.");
             }
-            $scheduledDeparture = $this->validateJsonBodyField($request, "scheduledDeparture");            
-            $flightType = FlightType::from($this->validateQueryParameter($request, "type"));
+            $scheduledDeparture = $this->requireJsonBodyField($request, "scheduledDeparture");            
+            $flightType = FlightType::from($this->requireQueryParameter($request, "type"));
 
             return match ($flightType) {
                 FlightType::Logged => $this->handleCreateLoggedFlight($request, $flight, $from, $to, $scheduledDeparture),                    
@@ -178,11 +178,11 @@
         }
 
         private function handleCreateLoggedFlight(Request $request, string $flight, mixed $from, mixed $to, int $scheduledDeparture) : Flight {
-            $aircraft = $this->validateJsonBodyNullableField($request, "aircraft");
-            $registration = $this->validateJsonBodyNullableField($request, "registration");
-            $actualDeparture = $this->validateJsonBodyNullableField($request, "actualDeparture");
-            $scheduledArrival = $this->validateJsonBodyNullableField($request, "scheduledArrival");
-            $actualArrival = $this->validateJsonBodyNullableField($request, "actualArrival");
+            $aircraft = $this->getJsonBodyField($request, "aircraft");
+            $registration = $this->getJsonBodyField($request, "registration");
+            $actualDeparture = $this->getJsonBodyField($request, "actualDeparture");
+            $scheduledArrival = $this->getJsonBodyField($request, "scheduledArrival");
+            $actualArrival = $this->getJsonBodyField($request, "actualArrival");
 
             if ($aircraft !== null && $registration !== null && $actualDeparture !== null
                 && $scheduledArrival !== null && $actualArrival !== null && isset($from["code"]) && isset($to["code"])
@@ -196,7 +196,7 @@
 
         private function handleCreateScheduledOrWatchedFlight(Request $request, FlightType $flightType, string $flight,
             mixed $from, mixed $to, int $scheduledDeparture) : Flight {
-            $scheduledArrival = $this->validateJsonBodyField($request, "scheduledArrival");  
+            $scheduledArrival = $this->requireJsonBodyField($request, "scheduledArrival");  
             return $this->flightService->createFlight($flightType, $flight, $from["name"], $to["name"],
                 $scheduledDeparture, $scheduledArrival);
         }

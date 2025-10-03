@@ -7,8 +7,14 @@
     class AuthenticationService {
         
         public function authenticate(string $accessToken) : UserInfo {
-            $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
-            return new UserInfo($decoded->sub, $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles, 0);
+            try {                
+                $decoded = JWT::decode($accessToken, new Key(JWKS_PUBLIC_KEY, "RS256"));
+                return new UserInfo($decoded->sub, $decoded->azp, isset($decoded->resource_access->{IAM_APP_CLIENT_ID}->roles) 
+                    ? $decoded->resource_access->{IAM_APP_CLIENT_ID}->roles : array());
+            }
+            catch (\Throwable $e) {
+                throw new AuthenticationException("An error occurred when decoding JWT token. " . $e->getMessage() . ".");
+            }
         }
     }
 ?>

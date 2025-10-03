@@ -2,8 +2,10 @@ import { useState } from "react"
 import ReactJson from "react-json-view"
 import { TailSpin } from "react-loader-spinner"
 import showConfirmToast from "./ConfirmToast"
+import { useAuth } from "../contexts/AuthContext"
 
 export default function ConfigurationEditor({ configuration, onConfigurationUpdated }) {
+    const { accessToken } = useAuth()
     const [selectedKey, setSelectedKey] = useState(null)
 
     const formatConfigurationKeyName = key => key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase()).trim()
@@ -27,12 +29,21 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                         {formatConfigurationKeyName(key)}
                     </button>
                 ))}
-                <a
-                    href={import.meta.env.VITE_IAM_BASE_URL + "/google/auth"}
+                <form
+                    action={import.meta.env.VITE_IAM_BASE_URL + "/google/auth"}
+                    method="post"
                     target="_blank"
-                    className={"block w-full text-left px-3 py-2 rounded hover:bg-gray-200"}>
-                    Google APIs
-                </a>
+                    className="block w-full text-left px-3 py-2 rounded hover:bg-gray-200">
+                    <input
+                        type="hidden"
+                        name="token"
+                        value={accessToken} />
+                    <button
+                        type="submit"
+                        className="w-full text-left bg-transparent border-none p-0 m-0">
+                        Google APIs
+                    </button>
+                </form>
             </div>
             <div className="flex-1 p-3 overflow-auto">
                 {selectedKey && (

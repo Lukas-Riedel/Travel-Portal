@@ -115,12 +115,12 @@
             ]
         )]
         public function createTimeTrackingEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $type = $this->validateJsonBodyField($request, "type");
-            $hours = $this->validateJsonBodyField($request, "hours");
-            $description = $this->validateJsonBodyField($request, "description");
-            $timestamp = $this->validateJsonBodyField($request, "timestamp");
+            $type = $this->requireJsonBodyField($request, "type");
+            $hours = $this->requireJsonBodyField($request, "hours");
+            $description = $this->requireJsonBodyField($request, "description");
+            $timestamp = $this->requireJsonBodyField($request, "timestamp");
 
             return $this->timeTrackingService->createTimeTrackingEvent($type, $hours, $description, $timestamp);
         }
@@ -190,7 +190,7 @@
             ]
         )]
         public function listTimeTrackingEvents(Request $request, Response $response, array $routeArguments) : mixed {    
-            $type = $this->validateQueryNullableParameter($request, "type");
+            $type = $this->getQueryParameter($request, "type");
 
             return $this->timeTrackingService->getTimeTrackingEvents($type);
         }
@@ -271,9 +271,9 @@
             ]
         )]
         public function removeTimeTrackingEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $timeTrackingEventId = $this->validatePathArgument($routeArguments, "timeTrackingEventId");
+            $timeTrackingEventId = $this->requirePathArgument($routeArguments, "timeTrackingEventId");
             
             $wasRemoved = $this->timeTrackingService->removeTimeTrackingEvent($timeTrackingEventId);
             if (!$wasRemoved) {

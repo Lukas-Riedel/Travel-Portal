@@ -178,10 +178,10 @@
             ]
         )]
         public function replaceConfiguration(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $configurationKey = $this->validatePathArgument($routeArguments, "configurationKey");
-            $newValue = $this->validateJsonBody($request);
+            $configurationKey = $this->requirePathArgument($routeArguments, "configurationKey");
+            $newValue = $this->requireJsonBody($request);
             
             $wasUpdated = $this->configurationService->updateConfigurationEntry($configurationKey, $newValue);
             if (!$wasUpdated) {

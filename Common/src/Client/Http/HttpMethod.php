@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Client\Http;
+    namespace Common\Client\Http;
     
     enum HttpMethod : string {
         case GET = "GET";

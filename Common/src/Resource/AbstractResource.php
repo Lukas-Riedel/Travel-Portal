@@ -5,8 +5,7 @@
     use Common\CommonConstants;
     use Common\Routing\AuthorizationException;
     use Slim\Psr7\Request;
-
-    // TODO: Find better names for methods in this class.
+    
     abstract class AbstractResource {
 
         public function getUserInfo(Request $request) : UserInfo {
@@ -18,14 +17,24 @@
             return $accessToken->isAdmin();
         }
 
-        public function validateAdminPermissions(Request $request) : void {          
-            $userInfo = $this->getUserInfo($request);
-            if (!$userInfo->isAdmin()) {
-                throw new AuthorizationException($userInfo);
+        public function isServiceAccount(Request $request) : bool {
+            $accessToken = $this->getUserInfo($request);
+            return $accessToken->getClient() === IAM_BACKEND_CLIENT_ID;
+        }
+
+        public function requireAdmin(Request $request) : void {          
+            if (!$this->isAdmin($request)) {
+                throw new AuthorizationException($this->getUserInfo($request));
             }
         }
 
-        public function validateQueryParameter(Request $request, string $key) : mixed {
+        public function requireServiceAccount(Request $request) : void {          
+            if (!$this->isServiceAccount($request)) {
+                throw new AuthorizationException($this->getUserInfo($request));
+            }
+        }
+
+        public function requireQueryParameter(Request $request, string $key) : mixed {
             $args = $request->getQueryParams();
             if (!isset($args[$key])) {
                 throw new \InvalidArgumentException("The required query parameter '$key' is missing.");
@@ -36,11 +45,11 @@
             return $args[$key];
         }
 
-        public function validateQueryNullableParameter(Request $request, string $key) : ?string {
+        public function getQueryParameter(Request $request, string $key) : ?string {
             return $request->getQueryParams()[$key] ?? null;
         }
 
-        public function validatePathArgument(array $args, string $key) : mixed {
+        public function requirePathArgument(array $args, string $key) : mixed {
             if (!isset($args[$key])) {
                 throw new \InvalidArgumentException("The required path argument '$key' is missing.");
             }
@@ -50,7 +59,7 @@
             return $args[$key];
         }
 
-        public function validateJsonBody(Request $request) : mixed {
+        public function requireJsonBody(Request $request) : mixed {
             $parsedBody = $request->getParsedBody();
             if ($parsedBody === null) {
                 throw new \InvalidArgumentException("The request body must be a valid JSON object.");
@@ -58,8 +67,8 @@
             return $parsedBody;
         }
 
-        public function validateJsonBodyField(Request $request, string $field) : mixed {
-            $body = $this->validateJsonBody($request);
+        public function requireJsonBodyField(Request $request, string $field) : mixed {
+            $body = $this->requireJsonBody($request);
             if (!isset($body[$field])) {
                 throw new \InvalidArgumentException("The required request body field '$field' is missing.");
             }
@@ -69,12 +78,12 @@
             return $body[$field];
         }
         
-        public function validateJsonBodyNullableField(Request $request, string $field) : mixed {
-            return $this->validateJsonBody($request)[$field] ?? null;
+        public function getJsonBodyField(Request $request, string $field) : mixed {
+            return $this->requireJsonBody($request)[$field] ?? null;
         }
 
-        public function validateJsonBodyFieldExistence(Request $request, string $field) : bool {
-            $body = $this->validateJsonBody($request);
+        public function existsJsonBodyField(Request $request, string $field) : bool {
+            $body = $this->requireJsonBody($request);
             return array_key_exists($field, $body);
         }
     }

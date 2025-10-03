@@ -121,7 +121,7 @@
 
     // Authentication service.
     $commonAuthenticationService = new CommonAuthenticationService();
-    $authenticationService = new AuthenticationService($configurationService, $httpClient, $cacheClient);
+    $authenticationService = new AuthenticationService($httpClient, $cacheClient);
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
 

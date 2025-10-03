@@ -2,7 +2,6 @@
     namespace Core\Common;
 
     class CommonConstants {
-        public const USER_INFO_ATTRIBUTE_KEY = "userInfo";
         public const FITNESS_RECORD_DURATION_SECONDS = 1800;
         public const ONE_HOUR_SECONDS = 3600;
         public const ONE_DAY_SECONDS = 24 * self::ONE_HOUR_SECONDS;

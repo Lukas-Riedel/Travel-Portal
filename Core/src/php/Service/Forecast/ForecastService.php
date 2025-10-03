@@ -7,7 +7,7 @@
     use Core\Service\Place\PlaceIdentifier;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-    use Core\Client\Http\HttpMethod;
+    use Common\Client\Http\HttpMethod;
     use Core\Client\Http\HttpClient;
 
     class ForecastService {

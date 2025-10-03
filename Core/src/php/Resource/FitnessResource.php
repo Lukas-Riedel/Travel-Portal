@@ -100,20 +100,20 @@
             ]
         )]
         public function replaceFitness(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->validateAdminPermissions($request);
+            $this->requireAdmin($request);
 
-            $timestamp = $this->validatePathArgument($routeArguments, "timestamp");
-            $steps = $this->validateJsonBodyField($request, "steps");
-            $distance = $this->validateJsonBodyField($request, "distance");
-            $seconds = $this->validateJsonBodyField($request, "seconds");
-            $forceOverwrite = filter_var($this->validateQueryNullableParameter($request, "forceOverwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
+            $timestamp = $this->requirePathArgument($routeArguments, "timestamp");
+            $steps = $this->requireJsonBodyField($request, "steps");
+            $distance = $this->requireJsonBodyField($request, "distance");
+            $seconds = $this->requireJsonBodyField($request, "seconds");
+            $forceOverwrite = filter_var($this->getQueryParameter($request, "forceOverwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
 
             $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $distance, $forceOverwrite);
             if (!$wasReplaced) {
                 throw new NotUpdatedException($timestamp);
             }
 
-            return $this->validateJsonBody($request);
+            return $this->requireJsonBody($request);
         }
     }
 ?>

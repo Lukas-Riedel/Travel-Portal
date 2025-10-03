@@ -115,10 +115,10 @@
             ]
         )]
         public function createDevice(Request $request, Response $response, array $routeArguments) : mixed {
-            $deviceId = $this->validateJsonBodyField($request, "id");
-            $deviceType = $this->validateJsonBodyField($request, "type");
-            $deviceName = $this->validateJsonBodyField($request, "name");
-            $deviceData = $this->validateJsonBodyNullableField($request, "data");
+            $deviceId = $this->requireJsonBodyField($request, "id");
+            $deviceType = $this->requireJsonBodyField($request, "type");
+            $deviceName = $this->requireJsonBodyField($request, "name");
+            $deviceData = $this->getJsonBodyField($request, "data");
             $userId = $this->getUserInfo($request)->getUserId();
 
             $mappedType = DeviceType::from($deviceType);
@@ -178,7 +178,7 @@
             ]
         )]
         public function listDevices(Request $request, Response $response, array $routeArguments) : mixed {
-            $type = $this->validateQueryNullableParameter($request, "type");
+            $type = $this->getQueryParameter($request, "type");
 
             $mappedType = $type === null ? null : DeviceType::from($type);
             

@@ -16,6 +16,12 @@
                 example: "ebd5572e-9d35-4ffe-8469-e436c6fba72f"
             ),
             new OA\Property(
+                property: "client",
+                type: "string",
+                description: "The client of the user",
+                example: "travel-portal-app"
+            ),
+            new OA\Property(
                 property: "roles",
                 type: "array",
                 description: "The roles of the user",
@@ -26,15 +32,21 @@
     )]
     class UserInfo implements \JsonSerializable {        
         private readonly string $userId;
+        private readonly string $client;
         private readonly array $roles;
 
-        public function __construct(string $userId, array $roles) {
+        public function __construct(string $userId, string $client, array $roles) {
             $this->userId = $userId;
+            $this->client = $client;
             $this->roles = $roles;
         }
 
         public function getUserId() : string {
             return $this->userId;
+        }
+
+        public function getClient() : string {
+            return $this->client;
         }
 
         public function getRoles() : array {

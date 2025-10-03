@@ -42,12 +42,7 @@
         private function tryExtractUserInfo(ServerRequestInterface $request, string $header) : ?UserInfo {
             $authHeader = $request->getHeaderLine($header);
             if (preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
-                try {
-                    return $this->authenticationService->authenticate($matches[1]);
-                }
-                catch (\Throwable $e) {
-                    throw new AuthenticationException($e->getMessage());
-                }
+                return $this->authenticationService->authenticate($matches[1]);
             }
             return null;
         }

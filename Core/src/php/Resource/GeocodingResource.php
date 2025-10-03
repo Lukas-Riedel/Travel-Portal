@@ -106,7 +106,7 @@
             ]
         )]
         public function getCoordinates(Request $request, Response $response, array $routeArguments) : mixed {
-            $address = $this->validateQueryParameter($request, "address");
+            $address = $this->requireQueryParameter($request, "address");
             
             $location = $this->geocodingService->getLocation($address, $this->isAdmin($request));
             if ($location === null) {
@@ -198,8 +198,8 @@
             ]
         )]
         public function getAddress(Request $request, Response $response, array $routeArguments) : mixed {       
-            $latitude = $this->validateQueryParameter($request, "latitude");
-            $longitude = $this->validateQueryParameter($request, "longitude");
+            $latitude = $this->requireQueryParameter($request, "latitude");
+            $longitude = $this->requireQueryParameter($request, "longitude");
 
             $address = $this->geocodingService->getAddress($latitude, $longitude, $this->isAdmin($request));
             if ($address === null) {
