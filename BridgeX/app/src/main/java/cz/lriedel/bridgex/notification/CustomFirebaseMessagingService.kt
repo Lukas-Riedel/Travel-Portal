@@ -31,7 +31,8 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             ProcessingEndedNotificationFactory(this),
             ProcessingFailedNotificationFactory(this),
             FitnessActivityDetectedNotificationFactory(this),
-            DeviceLogOnRequestedNotificationFactory(this)
+            DeviceLogOnRequestedNotificationFactory(this),
+            NewDataConsistencyIssuesDetectedNotificationFactory(this)
         ).associateBy { factory ->
             factory.javaClass.simpleName.replace(NotificationFactory::class.java.simpleName, "")
         }
@@ -83,7 +84,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             .setContentTitle(notification.title)
             .setContentText(notification.body)
             .setContentIntent(pendingIntent)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
 
         manager.notify(System.currentTimeMillis().toInt(), builder.build())

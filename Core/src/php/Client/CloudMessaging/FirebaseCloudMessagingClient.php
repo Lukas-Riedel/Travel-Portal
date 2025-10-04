@@ -7,7 +7,7 @@
     use Core\OpenLineage\OpenLineageEventManager;
     use Core\Service\Authentication\AuthenticationService;
     use Monolog\Logger;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
 
     class FirebaseCloudMessagingClient implements CloudMessagingClient {
 

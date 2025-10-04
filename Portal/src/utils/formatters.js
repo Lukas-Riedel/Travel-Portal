@@ -22,6 +22,10 @@ export function formatPhotos(value) {
     return format(value, ["fotka", "fotky", "fotek"])
 }
 
+export function formatNewProblems(value) {
+    return format(value, ["nový problém", "nové problémy", "nových problémů"])
+}
+
 export function formatCountries(value) {
     return format(value, ["stát", "státy", "států"])
 }

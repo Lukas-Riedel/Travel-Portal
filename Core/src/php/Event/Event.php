@@ -251,6 +251,10 @@
             return new AgentEvent(Event::getEventName(), array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "replacedPhotoId" => $replacedPhotoId, "path" => $path));
         }
 
+        public static function NewDataConsistencyIssuesDetected(int $count) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
+        }
+
         public static function ProcessingStarted(string $name, mixed $args) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }

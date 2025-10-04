@@ -10,7 +10,7 @@ class ProcessingEndedNotificationFactory(
         val name = args["name"] as? String ?: return null
         val innerArgs = args["args"] as? Map<*, *> ?: return null
         val placeName = innerArgs["placeName"] as? String ?: return null
-        val placeId = innerArgs["placeId"] ?: return null
+        val placeId = innerArgs["placeId"] as? String ?: return null
 
         return when (name) {
             PHOTOS_UPLOADING_TRIGGERED_EVENT_NAME -> Notification(

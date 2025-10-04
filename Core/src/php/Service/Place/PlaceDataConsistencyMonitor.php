@@ -27,7 +27,7 @@
             $dataConsistencyIssues = array();
 
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
-                null, time(), array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
+                time(), null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() != $place->getCountry()
                 && count(array_filter($place->getCategories(), fn($category) => $category->getCategory() === CategoryCategory::Administrative)) === 0);

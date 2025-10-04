@@ -21,8 +21,18 @@ import { useEvents } from "./hooks/useEvents"
 import AlbumPage from "./pages/AlbumPage"
 import AdminPage from "./pages/AdminPage"
 import RecentPlacesPage from "./pages/RecentPlacesPage"
+import { formatNewProblems } from "./utils/formatters"
 
 export default function App() {
+    const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
+    useEffect(() => {
+        newDataConsistencyIssuesDetectedEvents.forEach(event => {
+            event.markAsRead()
+
+            toast.success(`Hlášeno ${formatNewProblems(event.count)}`)
+        })
+    }, [newDataConsistencyIssuesDetectedEvents])
+
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {
         processingStartedEvents.forEach(event => {

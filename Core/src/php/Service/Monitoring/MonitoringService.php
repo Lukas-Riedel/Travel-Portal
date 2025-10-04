@@ -51,6 +51,17 @@
                     $dataConsistencyIssues[] = $dataConsistencyIssue;
                 }
             }
+
+            $previousRawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
+            if ($previousRawIssues !== null) {
+                $currentIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue->getName() . json_encode($dataConsistencyIssue->getContext()), $dataConsistencyIssues);
+                $previousIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue["name"] . json_encode($dataConsistencyIssue["context"]), $previousRawIssues);
+
+                $count = count(array_diff($currentIssues, $previousIssues));
+                if ($count > 0) {
+                    $this->eventPublisher->publish(Event::NewDataConsistencyIssuesDetected($count));
+                }
+            }
             
             $this->cacheClient->set(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY, $dataConsistencyIssues, self::DATA_CONSISTENCY_ISSUES_CACHE_TTL);
         }

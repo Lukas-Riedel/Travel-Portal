@@ -30,20 +30,28 @@ const messaging = getMessaging(app)
 onBackgroundMessage(messaging, payload => {
     console.log("[firebase-messaging-sw.js] Received background message", payload)
 
+    if (payload.data.event === "NewDataConsistencyIssuesDetected") {
+        self.registration.showNotification("Vyskytly se nové problémy", {
+            body: "Hlášeno " + JSON.parse(payload.data.args).count + " nových problémů",
+            icon: "icon-192.png",
+            data: "/admin"
+        })
+    }
+
     if (payload.data.event === "ProcessingEnded") {
         const wrappedEvent = JSON.parse(payload.data.args)
         if (wrappedEvent.name === "PhotosUploadingTriggered") {
             self.registration.showNotification("Fotky byly nahrány", {
                 body: "Místo " + wrappedEvent.args.placeName + " má nové fotky",
                 icon: "icon-192.png",
-                data: wrappedEvent
+                data: "/place/" + wrappedEvent.args.placeId
             })
         }
         else if (wrappedEvent.name === "PhotoReplacingTriggered") {
             self.registration.showNotification("Fotka byla nahrazena", {
                 body: "Místo " + wrappedEvent.args.placeName + " má novou fotku",
                 icon: "icon-192.png",
-                data: wrappedEvent
+                data: "/place/" + wrappedEvent.args.placeId
             })
         }
     }
@@ -54,30 +62,20 @@ onBackgroundMessage(messaging, payload => {
             self.registration.showNotification("Fotky nebyly nahrány", {
                 body: "Nahrávání fotek pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
                 icon: "icon-192.png",
-                data: wrappedEvent
+                data: "/place/" + wrappedEvent.args.placeId
             })
         }
         else if (wrappedEvent.name === "PhotoReplacingTriggered") {
             self.registration.showNotification("Fotka nebyla nahrazena", {
                 body: "Nahrazování fotky pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
                 icon: "icon-192.png",
-                data: wrappedEvent
+                data: "/place/" + wrappedEvent.args.placeId
             })
         }
     }
 })
 
 self.addEventListener("notificationclick", function(event) {
-    if (event.notification.data.name === "PhotosUploadingTriggered") {
-        event.notification.close()
-        event.waitUntil(
-            clients.openWindow(portalBaseUrl + "/place/" + event.notification.data.args.placeId)
-        )
-    }
-    else if (event.notification.data.name === "PhotoReplacingTriggered") {
-        event.notification.close()
-        event.waitUntil(
-            clients.openWindow(portalBaseUrl + "/place/" + event.notification.data.args.placeId)
-        )
-    }
+    event.notification.close()
+    event.waitUntil(clients.openWindow(portalBaseUrl + event.notification.data))
 })

@@ -2,8 +2,9 @@
     namespace Core\Event;
 
     class CloudMessagingEvent extends Event {
+
         private readonly array $requiredRoles;
-        private readonly array $supportedDeviceTypes;
+        private readonly array $supportedDeviceTypes;       
 
         public function __construct(string $name, array $requiredRoles, array $supportedDeviceTypes, array $args) {
             parent::__construct($name, $args);
