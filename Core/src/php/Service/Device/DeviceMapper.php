@@ -40,6 +40,26 @@
                 });
         }
 
+        public function selectDevice(string $deviceId) : ?Device {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM device
+                WHERE id = ?
+            SQL;
+
+            $deviceRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($deviceId)
+                ->getSingleRow();
+
+            if ($deviceRow === null) {
+                return null;
+            }
+
+            return new Device($deviceRow["id"], DeviceType::from($deviceRow["type"]), $deviceRow["name"],
+                json_decode($deviceRow["data"], true), $deviceRow["user_id"], $deviceRow["last_seen"]);
+        }
+
         public function insertDevice(Device $device) : bool {
             $sql = <<<'SQL'
                 INSERT INTO device (

@@ -32,8 +32,8 @@ public final class ServiceClient {
     }
 
     @SneakyThrows
-    public void registerDevice(String deviceId) {
-        DevicePrototype devicePrototype = new DevicePrototype(deviceId, "agent", InetAddress.getLocalHost().getHostName(), null);
+    public void registerDevice(String deviceId, Map<String, String> data) {
+        DevicePrototype devicePrototype = new DevicePrototype(deviceId, "agent", InetAddress.getLocalHost().getHostName(), data);
         retryTemplate.execute(context -> restTemplate.postForObject(
             "/devices", httpEntityProvider.getHttpEntity(devicePrototype), Void.class));
     }

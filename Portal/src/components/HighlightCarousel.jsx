@@ -10,17 +10,19 @@ import { toZonedTime } from "date-fns-tz"
 import { getOnlyElement, isDaylightSavingTime } from "../utils/helpers"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
-import showInputToast from "./InputToast"
+import { useDevices } from "../hooks/useDevices"
 
-const INVALID_PHOTO_ID = "INVALID_PHOTO_ID"
+const invalidPhotoId = "INVALID_PHOTO_ID"
+const agentOnlineStatusThresholdSeconds = 60
 
 export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
+    const agents = useDevices({ type: "agent" })
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
-    const currentHighlightPlaces = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? INVALID_PHOTO_ID, include: "dates" })
+    const currentHighlightPlaces = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? invalidPhotoId, include: "dates" })
     const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
         ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const [isPaused, setIsPaused] = useState(isAdmin)
@@ -49,11 +51,15 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }, [shuffledHighlights, isPaused])
 
     const handlePhotoReplaced = () => {
-        showInputToast("Zadej cestu k nové fotce:",
-            "",
+        showFormToast(
+            "Zadej cestu k nové fotce:",
+            [
+                { label: "Cesta", required: true },
+                { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
+            ],
             "Nahrazování fotky bude brzy zahájeno",
             "Při nahrazování fotky došlo k chybě",
-            async (path) => onPhotoReplaced(place.id, currentHighlightAlbumId, place.name,shuffledHighlights[currentHighlightIndex].photo.id, path)
+            async (path, agentId) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path)
                 .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
         )
     }

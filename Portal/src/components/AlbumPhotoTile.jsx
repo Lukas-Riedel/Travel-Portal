@@ -2,13 +2,16 @@ import { Edit2, Plus, SendToBack, Star, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import PhotoTile from "./PhotoTile"
 import showConfirmToast from "./ConfirmToast"
-import showInputToast from "./InputToast"
 import showFormToast from "./FormToast"
 import { useMemo, useState } from "react"
 import { getDateString } from "../utils/helpers"
+import { useDevices } from "../hooks/useDevices"
+
+const agentOnlineStatusThresholdSeconds = 60
 
 export default function AlbumPhotoTile({ place, trip, album, photo, photoPosition, onPlaceHighlightCreated, onTripHighlightCreated, onPhotoReplaced, onMainPhotoUpdated }) {
     const { isAdmin } = useAuth()
+    const agents = useDevices({ type: "agent" })
 
     const [overlayType, setOverlayType] = useState(0)
 
@@ -43,11 +46,15 @@ export default function AlbumPhotoTile({ place, trip, album, photo, photoPositio
     }
 
     const handlePhotoReplaced = () => {
-        showInputToast("Zadej cestu k nové fotce:",
-            "",
+        showFormToast(
+            "Zadej cestu k nové fotce:",
+            [
+                { label: "Cesta", required: true },
+                { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
+            ],
             "Nahrazování fotky bude brzy zahájeno",
             "Při nahrazování fotky došlo k chybě",
-            async (path) => onPhotoReplaced(place.id, album.id, place.name, photo.id, path)
+            async (path, agentId) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path)
                 .then(() => window.open(photo.permalink, "_blank"))
         )
     }

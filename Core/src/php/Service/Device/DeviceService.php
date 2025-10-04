@@ -29,6 +29,10 @@
             return $this->deviceMapper->selectDevices($deviceType, $requiredRole);
         }
 
+        public function getDevice(string $deviceId) : ?Device {
+            return $this->deviceMapper->selectDevice($deviceId);
+        }
+
         public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {
             if (isset($data["latitude"]) && isset($data["longitude"]) && !isset($data["address"])) {
                 $data["address"] = $this->geocodingService->getAddress($data["latitude"], $data["longitude"])?->getAddress();

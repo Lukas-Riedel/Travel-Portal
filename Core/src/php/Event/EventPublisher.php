@@ -58,7 +58,17 @@
             }
 
             if ($event instanceof AgentEvent) {
-                $this->messagingClient->publish(AGENT_QUEUE_NAME, $event);
+                $device = $this->deviceService->getDevice($event->getAgentId());
+                if ($device === null) {
+                    throw new \InvalidArgumentException("The Agent with the identifier '" . $event->getAgentId() . "' does not exist.");
+                }
+
+                $data = $device->getData();
+                if ($data === null || !isset($data["queueName"])) {
+                    throw new \InvalidArgumentException("The Agent with the identifier '" . $event->getAgentId() . "' doesn't declare any queue.");
+                }
+
+                $this->messagingClient->publish($data["queueName"], $event);
                 return null;
             }
 
@@ -76,7 +86,7 @@
                                 $deviceTokens[] = $data["fcmToken"];
                             }
                         }
-                        }
+                    }
                 }
 
                 $this->cloudMessagingClient->publish($event, $deviceTokens);

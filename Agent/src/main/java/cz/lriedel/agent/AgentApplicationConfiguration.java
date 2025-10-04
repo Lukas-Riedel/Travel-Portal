@@ -1,5 +1,7 @@
 package cz.lriedel.agent;
 
+import cz.lriedel.agent.persistance.Configuration;
+import cz.lriedel.agent.persistance.ConfigurationRepository;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
@@ -9,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,12 +23,16 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.UUID;
+
+import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
+
 @EnableRabbit
 @EnableRetry
 @EnableAspectJAutoProxy
 @EnableScheduling
 @ComponentScan
-@Configuration
+@org.springframework.context.annotation.Configuration
 public class AgentApplicationConfiguration {
 
     public static final String CORE_SERVICE_QUALIFIER = "core";
@@ -57,8 +62,8 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public Queue agentQueue(@Value("${queue.agent.name}") String agentQueueName) {
-        return QueueBuilder.durable(agentQueueName).build();
+    public Queue agentQueue(String agentQueueName) {
+        return QueueBuilder.nonDurable(agentQueueName).autoDelete().build();
     }
 
     @Bean
@@ -76,6 +81,19 @@ public class AgentApplicationConfiguration {
         retryTemplate.setBackOffPolicy(backOffPolicy);
 
         return retryTemplate;
+    }
+
+    @Bean
+    public String agentQueueName(@Value("${queue.agent.prefix}") String agentQueuePrefix, String agentIdentifier) {
+        return agentQueuePrefix + "_" + agentIdentifier;
+    }
+
+    @Bean
+    public String agentIdentifier(ConfigurationRepository configurationRepository) {
+        if (!configurationRepository.existsById(DEVICE_ID_CONFIGURATION_KEY)) {
+            configurationRepository.save(new Configuration(DEVICE_ID_CONFIGURATION_KEY, UUID.randomUUID().toString()));
+        }
+        return configurationRepository.findById(DEVICE_ID_CONFIGURATION_KEY).map(Configuration::getValue).orElseThrow();
     }
 
     @Bean

@@ -10,6 +10,7 @@ import { TailSpin } from "react-loader-spinner"
 import Tooltip from "./Tooltip"
 import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
+import { useDevices } from "../hooks/useDevices"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -55,9 +56,11 @@ const weatherIcons = {
 }
 
 const sunAltitudeThreshold = 20
+const agentOnlineStatusThresholdSeconds = 60
 
 export default function DayCard({ day, events, stay, fitness, notes, publicHoliday, timezone, onPhotosAdded }) {
     const { isAdmin } = useAuth()
+    const agents = useDevices({ type: "agent" })
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
 
@@ -79,11 +82,12 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
             "Zadej cestu k fotkám k nahrání:",
             [
                 { label: "Cesta", required: true },
-                { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 }
+                { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 },
+                { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
             ],
             "Nahrávání fotek bude brzy zahájeno",
             "Při nahrávání fotek došlo k chybě",
-            async (path, mainPhotoPosition) => onPhotosAdded(placeId, placeName, albumId, timestamp, path, mainPhotoPosition)
+            async (path, mainPhotoPosition, agentId) => onPhotosAdded(agentId, placeId, placeName, albumId, timestamp, path, mainPhotoPosition)
         )
     }
 

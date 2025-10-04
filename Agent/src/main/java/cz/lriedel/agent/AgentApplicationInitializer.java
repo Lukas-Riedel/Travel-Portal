@@ -1,7 +1,7 @@
 package cz.lriedel.agent;
 
 import java.io.Console;
-import java.util.UUID;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cz.lriedel.agent.client.AccessTokenProvider;
@@ -20,27 +20,33 @@ import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CON
 @Component
 public class AgentApplicationInitializer implements CommandLineRunner {
 
+    private static final String QUEUE_NAME_CONFIGURATION_KEY = "queueName";
+
     private final ConfigurationRepository configurationRepository;
     private final AccessTokenProvider accessTokenProvider;
     private final ServiceClient serviceClient;
 
-    public AgentApplicationInitializer(ConfigurationRepository configurationRepository, ServiceClient serviceClient, AccessTokenProvider accessTokenProvider) {
+    private final String agentQueueName;
+
+    public AgentApplicationInitializer(ConfigurationRepository configurationRepository, ServiceClient serviceClient,
+                                       AccessTokenProvider accessTokenProvider, String agentQueueName) {
         this.configurationRepository = configurationRepository;
         this.serviceClient = serviceClient;
         this.accessTokenProvider = accessTokenProvider;
+        this.agentQueueName = agentQueueName;
     }
 
     @Scheduled(fixedDelayString = "${device.registration.interval}", timeUnit = TimeUnit.SECONDS)
     public void registerDevice() {
-        configurationRepository.findById(DEVICE_ID_CONFIGURATION_KEY).map(Configuration::getValue).ifPresent(serviceClient::registerDevice);
+        configurationRepository.findById(DEVICE_ID_CONFIGURATION_KEY).map(Configuration::getValue).ifPresent(this::registerDevice);
+    }
+
+    private void registerDevice(String agentId) {
+        serviceClient.registerDevice(agentId, Map.of(QUEUE_NAME_CONFIGURATION_KEY, agentQueueName));
     }
 
     @Override
     public void run(String... args) {
-        if (!isInitialized()) {
-            configurationRepository.save(new Configuration(DEVICE_ID_CONFIGURATION_KEY, UUID.randomUUID().toString()));
-        }
-
         if (!isAuthenticated()) {
             Console console = System.console();
 
@@ -51,10 +57,6 @@ public class AgentApplicationInitializer implements CommandLineRunner {
 
             log.info("Login was successful!");
         }
-    }
-
-    private boolean isInitialized() {
-        return configurationRepository.existsById(DEVICE_ID_CONFIGURATION_KEY);
     }
 
     private boolean isAuthenticated() {

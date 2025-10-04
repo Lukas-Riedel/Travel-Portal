@@ -18,10 +18,10 @@ export const useEvents = eventName => {
 
     return {
         events,
-        publishPhotosUploadingTriggeredEvent: (placeId, placeName, albumId, timestamp, path, mainPhotoPosition) =>
-            createEvent("PhotosUploadingTriggered", { placeId, placeName, albumId, timestamp, path, mainPhotoPosition }),
-        publishPhotoReplacingTriggeredEvent: (placeId, albumId, placeName, replacedPhotoId, path) =>
-            createEvent("PhotoReplacingTriggered", { placeId, placeName, albumId, replacedPhotoId, path }),
+        publishPhotosUploadingTriggeredEvent: (agentId, placeId, placeName, albumId, timestamp, path, mainPhotoPosition) =>
+            createEvent("PhotosUploadingTriggered", { agentId, placeId, placeName, albumId, timestamp, path, mainPhotoPosition }),
+        publishPhotoReplacingTriggeredEvent: (agentId, placeId, albumId, placeName, replacedPhotoId, path) =>
+            createEvent("PhotoReplacingTriggered", { agentId, placeId, placeName, albumId, replacedPhotoId, path }),
         publishAllAlbumsInvalidatedEvent: () => createEvent("AllAlbumsInvalidated", null)
     }
 }
