@@ -61,6 +61,20 @@
                 type: "integer",
                 description: "The epoch timestamp of the photo",
                 example: 1708540024
+            ),
+            new OA\Property(
+                property: "sunAltitude",
+                type: "number",
+                format: "float",
+                description: "The altitude of the sun in degress at the time the photo was taken",
+                example: 34.3
+            ),
+            new OA\Property(
+                property: "sunAzimuth",
+                type: "number",
+                format: "float",
+                description: "The azimuth of the sun in degress at the time the photo was taken",
+                example: 63.2
             )
         ]
     )]
@@ -73,9 +87,11 @@
         private readonly ?float $shutterSpeed;
         private readonly ?int $iso;
         private readonly ?int $timestamp;
+        private readonly ?float $sunAltitude;
+        private readonly ?float $sunAzimuth;
 
         public function __construct(string $id, callable $urlProvider, ?string $permalink, ?float $focalLength,
-            ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $timestamp) {
+            ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $timestamp, ?float $sunAltitude, ?float $sunAzimuth) {
             $this->id = $id;
             $this->urlProvider = $urlProvider;
             $this->permalink = $permalink;
@@ -84,6 +100,8 @@
             $this->shutterSpeed = $shutterSpeed;
             $this->iso = $iso;
             $this->timestamp = $timestamp;
+            $this->sunAltitude = $sunAltitude;
+            $this->sunAzimuth = $sunAzimuth;
         }
 
         public function getId() : string {
@@ -118,9 +136,18 @@
         public function getTimestamp() : ?int {
             return $this->timestamp;
         }
+
+        public function getSunAltitude() : ?float {
+            return $this->sunAltitude;
+        }
+
+        public function getSunAzimuth() : ?float {
+            return $this->sunAzimuth;
+        }
     
         public function withReplacedId(string $newId) : Photo {
-            return new Photo($newId, $this->urlProvider, $this->permalink, $this->focalLength, $this->aperture, $this->shutterSpeed, $this->iso, $this->timestamp);
+            return new Photo($newId, $this->urlProvider, $this->permalink, $this->focalLength,
+                $this->aperture, $this->shutterSpeed, $this->iso, $this->timestamp, $this->sunAltitude, $this->sunAzimuth);
         }
 
         #[\ReturnTypeWillChange]

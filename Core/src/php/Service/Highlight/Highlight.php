@@ -41,11 +41,11 @@
 
         public function __construct(string $id, ?string $thumbnailUrl, ?string $fullUrl, string $photoId, ?string $photoPermalink,
             ?float $focalLength, ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $composition, ?int $sky,
-            ?int $shadows, ?int $circumstances, ?int $atmosphere, ?int $timestamp) {
+            ?int $shadows, ?int $circumstances, ?int $atmosphere, ?int $timestamp, ?float $sunAltitude, ?float $sunAzimuth) {
             $this->id = $id;
             $this->url = new HighlightUrl($thumbnailUrl, $fullUrl);
             $this->photo = new Photo($photoId, fn() => $fullUrl, $photoPermalink === null ? $fullUrl : $photoPermalink,
-                $focalLength, $aperture, $shutterSpeed, $iso, $timestamp);
+                $focalLength, $aperture, $shutterSpeed, $iso, $timestamp, $sunAltitude, $sunAzimuth);
             $this->attributes = new HighlightAttributes($composition, $sky, $shadows, $circumstances, $atmosphere);
         }
 

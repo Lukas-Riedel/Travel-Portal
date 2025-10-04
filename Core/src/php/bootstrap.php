@@ -188,7 +188,7 @@
         new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler),
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
-        new PhotoServiceListener($photoService, $eventPublisher, $scheduler),
+        new PhotoServiceListener($photoService, $placeService, $eventPublisher, $scheduler),
         new PlaceServiceListener($placeService, $tripService, $calendarClient, $eventPublisher),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),

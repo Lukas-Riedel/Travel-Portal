@@ -7,7 +7,6 @@ import { TailSpin } from "react-loader-spinner"
 import showFormToast from "./FormToast"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import SunCalc from "suncalc"
 import { getOnlyElement, isDaylightSavingTime } from "../utils/helpers"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
@@ -50,7 +49,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }, [shuffledHighlights, isPaused])
 
     const handlePhotoReplaced = () => {
-        console.log(place.id, currentHighlightAlbumId, shuffledHighlights[currentHighlightIndex].photo.id)
         showInputToast("Zadej cestu k nové fotce:",
             "",
             "Nahrazování fotky bude brzy zahájeno",
@@ -135,7 +133,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 place && { label: "Čas pořízení:", value: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
-                place && { label: "Výška slunce:", value: ((SunCalc.getPosition(fromUnixTime(timestamp), place.latitude, place.longitude).altitude * 180) / Math.PI).toFixed(1) + "°", required: true, disabled: true }
+                highlight.photo.sunAltitude && { label: "Výška slunce:", value: highlight.photo.sunAltitude.toFixed(1) + "°", required: true, disabled: true }
             ],
             "Atributy highlightu byly úspěšně aktualizovány",
             "Nepodařilo se aktualizovat atributy highlightu",

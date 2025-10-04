@@ -264,13 +264,13 @@
             if ($photo === null) {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
                     null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
-                    $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], null);
+                    $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], null, null, null);
             }
             else {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
                     $photo->getPermalink(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
                     $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
-                    $highlightRow["atmosphere"], $photo->getTimestamp());
+                    $highlightRow["atmosphere"], $photo->getTimestamp(), $photo->getSunAltitude(), $photo->getSunAzimuth());
             }
         }
     }

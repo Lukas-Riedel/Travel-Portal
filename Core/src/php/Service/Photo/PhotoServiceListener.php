@@ -5,6 +5,8 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class PhotoServiceListener {
 
@@ -15,12 +17,15 @@
         private const FETCH_ALBUMS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly PhotoService $photoService;
+
+        private readonly PlaceService $placeService;
         
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(PhotoService $photoService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(PhotoService $photoService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->photoService = $photoService;
+            $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -36,7 +41,17 @@
         public function onAlbumUpdated(mixed $message) : void {
             $album = $this->photoService->getAlbum($message["albumId"]);
             if ($album !== null) {
-                $photos = $this->photoService->getPhotos($album->getId(), true);
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, $message["albumId"], null, null,
+                    null, null, null, array(), PlaceSortingStrategy::OldestAscending);
+
+                $latitude = null;
+                $longitude = null;
+                if (count($places) === 1) {
+                    $latitude = $places[0]->getLatitude();
+                    $longitude = $places[0]->getLongitude();
+                }
+
+                $photos = $this->photoService->getPhotos($album->getId(), $latitude, $longitude, true);
     
                 if (count($photos) !== $album->getImagesCount()) {
                     $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Photo;
 
+    use AurorasLive\SunCalc;
     use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;
@@ -10,7 +11,7 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Google\GoogleClient;
-use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceIncludedEntity;
 
     class PhotoService {
 
@@ -70,7 +71,7 @@ use Core\Service\Place\PlaceIncludedEntity;
             $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);
             $createdAlbumExternalId = $this->googleClient->createAlbum($albumName);
             $albumId = $this->getOrCreateAlbumId($createdAlbumExternalId);
-            $this->updateAlbum($albumId);
+            $this->updateAlbum($albumId, $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             return $this->getAlbum($albumId);
         }
 
@@ -79,25 +80,29 @@ use Core\Service\Place\PlaceIncludedEntity;
             $this->prunePhysicalCache($filePaths);
         }
 
-        public function updateAlbum(string $albumId, ?int $mainPhotoPosition = null) : void {            
+        public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, ?int $mainPhotoPosition = null) : void {            
             $this->createPendingPhotos($albumId);
 
             if ($mainPhotoPosition !== null) {
-                $photos = $this->getPhotos($albumId, true);
+                if ($latitude === null || $longitude === null) {
+                    throw new \InvalidArgumentException("Latitude and longitude must be provided when setting main photo.");
+                }
+
+                $photos = $this->getPhotos($albumId, $latitude, $longitude, true);
 
                 $mainPhotoPosition = $mainPhotoPosition - 1;
                 if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
-                    throw new \RuntimeException("Cannot set main photo because there are only " . count($photos) . " photos in the album.");
+                    throw new \InvalidArgumentException("Cannot set main photo because there are only " . count($photos) . " photos in the album.");
                 }
 
                 $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);       
                 if ($externalAlbumId === null) {
-                    throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
+                    throw new \InvalidArgumentException("An album with the identifier '$albumId' does not exist.");
                 }
     
                 $externalPhotoId = $this->photoMapper->selectPhotoExternalId($photos[$mainPhotoPosition]->getId());
                 if ($externalPhotoId === null) {
-                    throw new \InvalidArgumentException("A photo with the identifier " . $photos[$mainPhotoPosition]->getId() . " does not exist.");
+                    throw new \InvalidArgumentException("A photo with the identifier '" . $photos[$mainPhotoPosition]->getId() . "' does not exist.");
                 }
     
                 $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
@@ -110,7 +115,7 @@ use Core\Service\Place\PlaceIncludedEntity;
             return $this->photoMapper->selectPhoto($photoId);
         }
 
-        public function getPhotos(string $albumId, bool $forceRefetch = false) : array {
+        public function getPhotos(string $albumId, float $latitude, float $longitude, bool $forceRefetch = false) : array {
             $fetchedAlbumKey = sprintf(self::ALBUM_PHOTOS_CACHE_KEY_FORMAT, $albumId);
             if ($forceRefetch) {
                 $this->cacheClient->delete($fetchedAlbumKey);
@@ -127,6 +132,16 @@ use Core\Service\Place\PlaceIncludedEntity;
             $response = $this->getPhotosResponse($albumId);
             while (isset($response["mediaItems"] )) {
                 foreach ($response["mediaItems"] as &$mediaItem) {
+                    $timestamp = strtotime($mediaItem["mediaMetadata"]["creationTime"]);
+
+                    $dateTime = new \DateTime();
+                    $dateTime->setTimestamp($timestamp);
+                    $suncalc = new SunCalc($dateTime, $latitude, $longitude);
+                    $sunPosition = $suncalc->getSunPosition($dateTime);
+
+                    $sunAltitude = $sunPosition->altitude * 180 / M_PI;
+                    $sunAzimuth = $sunPosition->azimuth * 180 / M_PI;
+
                     $photos[] = new Photo(
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
                         fn() => $mediaItem["baseUrl"],
@@ -135,7 +150,9 @@ use Core\Service\Place\PlaceIncludedEntity;
                         $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] ?? null,
                         isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : null,
                         $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] ?? null,
-                        strtotime($mediaItem["mediaMetadata"]["creationTime"])
+                        $timestamp,
+                        $sunAltitude,
+                        $sunAzimuth
                     );
                 }
                 
@@ -231,7 +248,7 @@ use Core\Service\Place\PlaceIncludedEntity;
 
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
                     $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === null ? null : new Photo($mainPhotoId,
-                        fn() => $album["coverPhotoBaseUrl"], null, null, null, null, null, null), $mainImageUrl, $album["productUrl"],
+                        fn() => $album["coverPhotoBaseUrl"], null, null, null, null, null, null, null, null), $mainImageUrl, $album["productUrl"],
                         $imagesCount, 0, null, null);
 
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
