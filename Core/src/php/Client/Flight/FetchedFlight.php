@@ -7,21 +7,25 @@
         private readonly string $aircraft;
         private readonly string $fromCode;
         private readonly string $toCode;
-        private readonly string $scheduledDeparture;
-        private readonly string $actualDeparture;
-        private readonly string $scheduledArrival;
-        private readonly string $actualArrival;
+        private readonly int $scheduledDeparture;
+        private readonly ?int $estimatedDeparture;
+        private readonly ?int $actualDeparture;
+        private readonly int $scheduledArrival;
+        private readonly ?int $estimatedArrival;
+        private readonly ?int $actualArrival;
 
         public function __construct(string $flight, string $registration, string $aircraft, string $fromCode, string $toCode,
-            string $scheduledDeparture, string $actualDeparture, string $scheduledArrival, string $actualArrival) {
+            int $scheduledDeparture, ?int $estimatedDeparture, ?int $actualDeparture, int $scheduledArrival, ?int $estimatedArrival, ?int $actualArrival) {
             $this->flight = $flight;
             $this->registration = $registration;
             $this->aircraft = $aircraft;
             $this->fromCode = $fromCode;
             $this->toCode = $toCode;
             $this->scheduledDeparture = $scheduledDeparture;
+            $this->estimatedDeparture = $estimatedDeparture;
             $this->actualDeparture = $actualDeparture;
             $this->scheduledArrival = $scheduledArrival;
+            $this->estimatedArrival = $estimatedArrival;
             $this->actualArrival = $actualArrival;
         }
 
@@ -45,19 +49,27 @@
             return $this->toCode;
         }
 
-        public function getScheduledDeparture() : string {
+        public function getScheduledDeparture() : int {
             return $this->scheduledDeparture;
         }
 
-        public function getActualDeparture() : string {
+        public function getEstimatedDeparture() : ?int {
+            return $this->estimatedDeparture;
+        }
+
+        public function getActualDeparture() : ?int {
             return $this->actualDeparture;
         }
 
-        public function getScheduledArrival() : string {
+        public function getScheduledArrival() : int {
             return $this->scheduledArrival;
         }
 
-        public function getActualArrival() : string {
+        public function getEstimatedArrival() : ?int {
+            return $this->estimatedArrival;
+        }
+
+        public function getActualArrival() : ?int {
             return $this->actualArrival;
         }
 

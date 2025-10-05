@@ -8,7 +8,6 @@
     class FlightRadar24FlightClient implements FlightClient {
         
         private const UTC_TIMEZONE = "UTC";
-        private const EXPECTED_FLIGHT_STATUS = "Landed";
 
         private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
 
@@ -34,15 +33,11 @@
             if ($selectedFlight === null) {
                 throw new \RuntimeException("Cannot fetch the flight $flight departing at $scheduledDeparture. Is the departure time correct?");
             }
-            
-            if (!str_starts_with($selectedFlight["status"]["text"], self::EXPECTED_FLIGHT_STATUS)) {
-                throw new \RuntimeException("Cannot fetch the flight $flight because its status is \"" . $selectedFlight["status"]["text"] . "\" (shall be \"" . self::EXPECTED_FLIGHT_STATUS . "\").");
-            }
 
             return new FetchedFlight($flight, $selectedFlight["aircraft"]["registration"], $selectedFlight["aircraft"]["model"]["code"],
                 $selectedFlight["airport"]["origin"]["code"]["iata"], $selectedFlight["airport"]["destination"]["code"]["iata"],
-                $selectedFlight["time"]["scheduled"]["departure"], $selectedFlight["time"]["real"]["departure"],
-                $selectedFlight["time"]["scheduled"]["arrival"], $selectedFlight["time"]["real"]["arrival"]);
+                $selectedFlight["time"]["scheduled"]["departure"], $selectedFlight["time"]["estimated"]["departure"], $selectedFlight["time"]["real"]["departure"],
+                $selectedFlight["time"]["scheduled"]["arrival"], $selectedFlight["time"]["estimated"]["arrival"], $selectedFlight["time"]["real"]["arrival"]);
         }
     }
 ?>

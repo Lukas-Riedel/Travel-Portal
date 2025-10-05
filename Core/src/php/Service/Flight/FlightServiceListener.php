@@ -13,6 +13,7 @@
         
         private const LOG_FLIGHTS_ACTION_NAME = "LOG_FLIGHTS";
         private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 4 * CommonConstants::ONE_HOUR_SECONDS;
+        private const ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS = 5 * 60;
 
         private readonly FlightService $flightService;
         
@@ -70,9 +71,20 @@
                 return;
             }
 
-            $intervalSelector = fn($lastTriggered) => $firstNonLoggedFlight->getEnd() < $lastTriggered
-                ? self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL // The flight was already tried to be logged but unsuccessfully. Try again with some delay.
-                : time() - $lastTriggered + $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - time();
+            $intervalSelector = function($lastTriggered) use(&$firstNonLoggedFlight) {
+                if ($firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() > $lastTriggered) {
+                    return $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - $lastTriggered;
+                }
+
+                // There was already an attempt to log the flight, but the flight has not landed yet.
+                $estimatedArrival = $this->flightService->getEstimatedArrivalTime($firstNonLoggedFlight->getFlight());
+                if ($estimatedArrival !== null && $estimatedArrival + self::ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS > $lastTriggered) {
+                    return $estimatedArrival + self::ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS - $lastTriggered;
+                }
+
+                // Estimated arrival time of the flight is unknown.
+                return self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL;
+            };
 
             if ($this->scheduler->requestDynamicExecution(self::LOG_FLIGHTS_ACTION_NAME, $intervalSelector)) {
                 $this->eventPublisher->publish(Event::FlightArrived($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getShortName(),

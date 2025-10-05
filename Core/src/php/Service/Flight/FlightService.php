@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Flight;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryService;
@@ -13,6 +14,7 @@
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Flight\FlightClient;
+    use Core\Common\CommonConstants;
 
     class FlightService {
 
@@ -20,6 +22,7 @@
         private const FLIGHT_EVENT_NAME_FORMAT = "%s - %s (%s %s)";
         private const FLIGHT_EVENT_NAME_PATTERN = "{(.+) - (.+) \((.+)\)}";
         private const OLD_FLIGHT_EVENT_TEMPORARY_TABLE = "old_flight_event";
+        private const FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT = "FlightService:%s:EstimatedArrivalTime";
 
         private readonly FlightMapper $flightMapper;
 
@@ -31,20 +34,28 @@
 
         private readonly GoogleClient $googleClient;
 
+        private readonly CacheClient $cacheClient;
+
         private readonly EventPublisher $eventPublisher;
         
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
-            FlightClient $flightClient, CalendarClient $calendarClient, GoogleClient $googleClient, EventPublisher $eventPublisher) {
+            FlightClient $flightClient, CalendarClient $calendarClient, GoogleClient $googleClient, CacheClient $cacheClient, EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
             $this->flightClient = $flightClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
+            $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
         }
+
+        public function getEstimatedArrivalTime(string $flight) : ?int {
+            return $this->cacheClient->get(sprintf(self::FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT, $flight));
+        }
+
         public function getLoggedFlightsWithoutEvent() : array {
             return $this->flightMapper->selectLoggedFlightsWithoutEvent();
         }
@@ -105,6 +116,16 @@
 
         public function fetchAndLogFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
             $fetchedFlight = $this->flightClient->fetchFlight($flight, $scheduledDeparture);
+            if ($fetchedFlight->getActualArrival() === null) {
+                $estimatedArrival = $fetchedFlight->getEstimatedArrival();
+                if ($estimatedArrival !== null) {
+                    $this->cacheClient->set(sprintf(self::FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT, $flight), $estimatedArrival,
+                        $estimatedArrival - time() + CommonConstants::ONE_HOUR_SECONDS);
+                }
+
+                throw new \RuntimeException("Cannot log the flight $flight because it has not arrived yet. Estimated arrival time is at $estimatedArrival.");
+            }
+
             return $this->logFlight($fetchedFlight->getFlight(), $originAirportName, $fetchedFlight->getFromCode(),
                 $destinationAirportName, $fetchedFlight->getToCode(), $fetchedFlight->getScheduledDeparture(),
                 $fetchedFlight->getActualDeparture(), $fetchedFlight->getScheduledArrival(), $fetchedFlight->getActualArrival(),

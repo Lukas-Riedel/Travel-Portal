@@ -424,9 +424,14 @@
 
         public function selectAverageFlightDelay() : int {
             $sql = <<<'SQL'
-                SELECT AVG(actual_arrival - scheduled_arrival) AS average_delay
-                FROM flight_log 
-                WHERE actual_arrival - scheduled_arrival > 0
+                SELECT AVG(delay) AS average_delay
+                FROM (
+                    SELECT actual_arrival - scheduled_arrival AS delay,
+                        ROW_NUMBER() OVER (ORDER BY actual_arrival - scheduled_arrival) AS row_number,
+                        COUNT(*) OVER () AS total_count
+                    FROM flight_log
+                ) x
+                WHERE row_number IN (FLOOR((total_count + 1) / 2), CEIL((total_count + 1) / 2))
             SQL;
 
             return intval($this->databaseClient
