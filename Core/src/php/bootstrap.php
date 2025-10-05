@@ -11,6 +11,7 @@
     use Monolog\Logger;
     use Core\Client\Database\MySQLDatabaseClient;
     use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
+    use Core\Client\Flight\FlightRadar24FlightClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\HttpClient;
@@ -108,6 +109,7 @@
     $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
+    $flightClient = new FlightRadar24FlightClient($httpClient);
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient);
@@ -137,7 +139,7 @@
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
-    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $httpClient, $calendarClient, $googleClient, $eventPublisher);
+    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $highlightService, $statisticsService);

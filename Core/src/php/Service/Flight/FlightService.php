@@ -1,7 +1,6 @@
 <?php
     namespace Core\Service\Flight;
 
-    use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryService;
@@ -13,15 +12,11 @@
     use Core\Client\Database\TransactionManager;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
-    use Common\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+    use Core\Client\Flight\FlightClient;
 
     class FlightService {
 
-        private const UTC_TIMEZONE = "UTC";
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
-        private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
-        private const EXPECTED_FLIGHT_STATUS = "Landed";
         private const FLIGHT_EVENT_NAME_FORMAT = "%s - %s (%s %s)";
         private const FLIGHT_EVENT_NAME_PATTERN = "{(.+) - (.+) \((.+)\)}";
         private const OLD_FLIGHT_EVENT_TEMPORARY_TABLE = "old_flight_event";
@@ -30,7 +25,7 @@
 
         private readonly GeocodingService $geocodingService;
 
-        private readonly HttpClient $httpClient;
+        private readonly FlightClient $flightClient;
 
         private readonly CalendarClient $calendarClient;
 
@@ -41,11 +36,10 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
-            HttpClient $httpClient, CalendarClient $calendarClient,
-            GoogleClient $googleClient, EventPublisher $eventPublisher) {
+            FlightClient $flightClient, CalendarClient $calendarClient, GoogleClient $googleClient, EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
-            $this->httpClient = $httpClient;
+            $this->flightClient = $flightClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
@@ -110,28 +104,11 @@
         }
 
         public function fetchAndLogFlight(string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture) : Flight {
-            date_default_timezone_set(self::UTC_TIMEZONE);
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
-
-            $selectedFlight = null;
-            foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
-                if (($fetchedFlight["time"]["scheduled"]["departure"] - CommonConstants::ONE_HOUR_SECONDS <= $scheduledDeparture) && ($fetchedFlight["time"]["scheduled"]["departure"] + CommonConstants::ONE_HOUR_SECONDS >= $scheduledDeparture)) {
-                    $selectedFlight = $fetchedFlight;
-                    break;
-                }
-            }
-
-            if ($selectedFlight === null) {
-                throw new \RuntimeException("Cannot log the flight " . $flight . " departing at " . $scheduledDeparture . ". Is the departure time correct?");
-            }
-            
-            if (!str_starts_with($selectedFlight["status"]["text"], self::EXPECTED_FLIGHT_STATUS)) {
-                throw new \RuntimeException("Cannot log the flight " . $flight . " because its status is \"" . $selectedFlight["status"]["text"] . "\" (shall be \"" . self::EXPECTED_FLIGHT_STATUS . "\").");
-            }
-
-            return $this->logFlight($flight, $originAirportName, $selectedFlight["airport"]["origin"]["code"]["iata"], $destinationAirportName,
-                $selectedFlight["airport"]["destination"]["code"]["iata"], intval($selectedFlight["time"]["scheduled"]["departure"]), intval($selectedFlight["time"]["real"]["departure"]),
-                intval($selectedFlight["time"]["scheduled"]["arrival"]), intval($selectedFlight["time"]["real"]["arrival"]), $selectedFlight["aircraft"]["registration"], $selectedFlight["aircraft"]["model"]["code"]);
+            $fetchedFlight = $this->flightClient->fetchFlight($flight, $scheduledDeparture);
+            return $this->logFlight($fetchedFlight->getFlight(), $originAirportName, $fetchedFlight->getFromCode(),
+                $destinationAirportName, $fetchedFlight->getToCode(), $fetchedFlight->getScheduledDeparture(),
+                $fetchedFlight->getActualDeparture(), $fetchedFlight->getScheduledArrival(), $fetchedFlight->getActualArrival(),
+                $fetchedFlight->getRegistration(), $fetchedFlight->getAircraft());
         }
 
         public function logFlight(string $flight, string $originAirportName, string $originAirportCode, string $destinationAirportName, string $destinationAirportCode,
