@@ -14,6 +14,7 @@
     use Core\Client\Flight\FlightRadar24FlightClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Client\HistoricalForecast\OpenMeteoHistoricalForecastClient;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventPublisher;
@@ -110,6 +111,7 @@
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
     $flightClient = new FlightRadar24FlightClient($httpClient);
+    $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient);
@@ -120,6 +122,7 @@
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
     $calendarClient->setConfigurationService($configurationService);
     $googleClient->setConfigurationService($configurationService);
+    $historicalForecastClient->setConfigurationService($configurationService);
 
     // Authentication service.
     $commonAuthenticationService = new CommonAuthenticationService();
@@ -140,7 +143,7 @@
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $cacheClient, $eventPublisher);
-    $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService);
+    $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);

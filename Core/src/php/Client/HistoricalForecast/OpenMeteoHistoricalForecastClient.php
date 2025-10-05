@@ -1,0 +1,48 @@
+<?php
+    namespace Core\Client\HistoricalForecast;
+
+    use Common\Client\Http\HttpMethod;
+    use Core\Client\Http\HttpClient;
+    use Core\Common\CommonConstants;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Forecast\Weather;
+
+    class OpenMeteoHistoricalForecastClient implements HistoricalForecastClient {
+        
+        private const GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://archive-api.open-meteo.com/v1/archive?latitude=%s&longitude=%s&start_date=%s&end_date=%s&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=%s&windspeed_unit=ms&timeformat=unixtime";
+
+        private readonly HttpClient $httpClient;
+
+        private ?ConfigurationService $configurationService;
+
+        public function __construct(HttpClient $httpClient) {
+            $this->httpClient = $httpClient;
+        }
+
+        public function setConfigurationService(ConfigurationService $configurationService) : void {
+            $this->configurationService = $configurationService;
+        }
+
+        public function fetchForecast(float $latitude, float $longitude, int $start, int $end) : Weather {
+            $startDate = date(CommonConstants::YMD_DATE_FORMAT, $start);
+            $endDate = date(CommonConstants::YMD_DATE_FORMAT, $end);
+        
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
+                $latitude, $longitude, $startDate, $endDate, $this->configurationService->getConfigurationEntry("homeLocation")["timezone"]));
+
+            if (!isset($apiResponse["daily"])) {
+                throw new \RuntimeException("Unable to fetch historical forecast. Response: " . json_encode($apiResponse));
+            }
+
+            $temperature = $this->getAverage($apiResponse["daily"]["temperature_2m_max"]);
+            $windspeed = $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]);
+            $precipitation = $this->getAverage($apiResponse["daily"]["precipitation_sum"]) / 24;
+
+            return new Weather($temperature, null, $windspeed, $precipitation, null, time());
+        }
+    
+        private function getAverage(array $values) : ?float {
+            return count($values) === 0 ? null : (array_sum($values) / count($values));
+        }
+    }
+?>

@@ -8,11 +8,11 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Common\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+use Core\Client\HistoricalForecast\HistoricalForecastClient;
+use Core\Client\Http\HttpClient;
 
     class ForecastService {
 
-        private const GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://archive-api.open-meteo.com/v1/archive?latitude=%s&longitude=%s&start_date=%s&end_date=%s&daily=temperature_2m_max,precipitation_sum,windspeed_10m_max&timezone=%s&windspeed_unit=ms&timeformat=unixtime";
         private const GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s";
         private const HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER = 2;
 
@@ -22,12 +22,16 @@
 
         private readonly ConfigurationService $configurationService;
 
+        private readonly HistoricalForecastClient $historicalForecastClient;
+
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, HttpClient $httpClient, ConfigurationService $configurationService) {
+        public function __construct(DatabaseClient $databaseClient, HttpClient $httpClient, ConfigurationService $configurationService,
+            HistoricalForecastClient $historicalForecastClient) {
             $this->forecastMapper = new ForecastMapper($databaseClient);
             $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
+            $this->historicalForecastClient = $historicalForecastClient;
             $this->transactionManager = $databaseClient;
         }
 
@@ -72,24 +76,11 @@
             $oneYearAgoTimestamp = $timestamp;
             while ($oneYearAgoTimestamp > time() - (1 + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER) * CommonConstants::ONE_DAY_SECONDS) {
                 $oneYearAgoTimestamp -= CommonConstants::ONE_YEAR_SECONDS;
-            } 
-    
-            $startDate = date(CommonConstants::YMD_DATE_FORMAT, $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
-            $endDate = date(CommonConstants::YMD_DATE_FORMAT, $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
-        
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
-                $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $startDate, $endDate,
-                $this->configurationService->getConfigurationEntry("homeLocation")["timezone"]));
-
-            if (!isset($apiResponse["daily"])) {
-                throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));
             }
 
-            $temperature = $this->getAverage($apiResponse["daily"]["temperature_2m_max"]);
-            $windspeed = $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]);
-            $precipitation = $this->getAverage($apiResponse["daily"]["precipitation_sum"]) / 24;
-
-            $historicalForecast = new Weather($temperature, null, $windspeed, $precipitation, null, time());
+            $historicalForecast = $this->historicalForecastClient->fetchForecast($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
+                $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS,
+                $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
     
             $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$historicalForecast, &$timestamp) {
                 $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
@@ -164,10 +155,6 @@
             });
 
             $this->forecastMapper->deleteStaleActualWeatherForecast();
-        }
-    
-        private function getAverage(array $values) : ?float {
-            return count($values) === 0 ? null : (array_sum($values) / count($values));
         }
     }
 ?>
