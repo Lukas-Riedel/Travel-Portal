@@ -11,7 +11,7 @@
     use Common\Routing\RequestError;
     use Slim\Handlers\Strategies\RequestResponse;
 
-    require_once(__DIR__ . "/src/bootstrap.php");
+    require_once(__DIR__ . "/src/bootstrap.php");    
 
     $basePath = parse_url(BASE_URL)["path"] ?? "";
 

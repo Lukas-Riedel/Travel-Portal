@@ -75,6 +75,12 @@
     use Core\Service\Trip\TripStatisticsProvider;
     use Core\Service\Year\YearService;
     use Core\Service\Year\YearServiceListener;
+    
+    
+    $onError = function($level, $message, $file, $line) {
+        throw new \ErrorException($message);
+    };
+    set_error_handler($onError);
 
     $transactionId = uniqid();
 
