@@ -11,7 +11,7 @@
     use Common\Routing\RequestError;
     use Slim\Handlers\Strategies\RequestResponse;
 
-    require_once(__DIR__ . "/src/php/bootstrap.php");
+    require_once(__DIR__ . "/src/bootstrap.php");
 
     $basePath = parse_url(BASE_URL)["path"] ?? "";
 
@@ -27,7 +27,7 @@
     $app->add(new OpenLineageMiddleware($openLineageEventManager));
     $app->add(new CorsMiddleware(explode(",", ALLOWED_REQUEST_ORIGINS)));
 
-    (require_once(__DIR__ . "/src/php/routes.php"))($app);
+    (require_once(__DIR__ . "/src/routes.php"))($app);
 
     $app->any("/{path:.*}", function (ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
         $acceptHeader = $request->getHeaderLine("Accept");

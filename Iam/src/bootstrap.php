@@ -1,7 +1,6 @@
 <?php
     require_once(__DIR__ . "/../vendor/autoload.php");
-    // TODO: Do not user secrets from Core.
-    require_once(__DIR__ . "/../../api/config/secrets.php");
+    require_once(__DIR__ . "/../../secrets.php");
 
     use Common\Service\Authentication\AuthenticationService;
     use Common\Client\Http\HttpClient;

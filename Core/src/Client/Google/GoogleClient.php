@@ -93,7 +93,7 @@
             return null;
         }
 
-        public function createFolder(string $name, string $folderId) : string {
+        public function createFolder(string $name, ?string $folderId) : string {
             $payload = array(
                 "name" => $name,
                 "mimeType" => "application/vnd.google-apps.folder"

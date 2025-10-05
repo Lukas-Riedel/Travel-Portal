@@ -1,6 +1,6 @@
 <?php
-    require_once(__DIR__ . "/../../vendor/autoload.php");
-    require_once(__DIR__ . "/../../config/secrets.php");
+    require_once(__DIR__ . "/../vendor/autoload.php");
+    require_once(__DIR__ . "/../../secrets.php");
 
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Core\Client\Cache\RedisCacheClient;

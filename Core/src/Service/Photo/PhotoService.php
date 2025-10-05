@@ -352,7 +352,7 @@
         }
 
         private function getPhysicalCachePath() : string {
-            return __DIR__ . "/../../../../" . self::ALBUM_THUMBNAIL_CACHE_PATH;
+            return __DIR__ . "/../../../" . self::ALBUM_THUMBNAIL_CACHE_PATH;
         }
 
         private function prunePhysicalCache(array $usedFilePaths) : void {

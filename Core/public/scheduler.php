@@ -1,5 +1,5 @@
 <?php
-    require_once(__DIR__ . "/src/php/bootstrap.php");
+    require_once(__DIR__ . "/src/bootstrap.php");
 
     $scheduler->schedule();
 ?>

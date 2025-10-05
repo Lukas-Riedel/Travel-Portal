@@ -18,9 +18,9 @@
                     __DIR__ . "/../Service/", 
                     __DIR__ . "/../OpenAPI/", 
                     __DIR__ . "/../Routing/",
-                    __DIR__ . "/../../../vendor/lriedel/common/src/Resource/",
-                    __DIR__ . "/../../../vendor/lriedel/common/src/Service/",
-                    __DIR__ . "/../../../vendor/lriedel/common/src/Routing/"
+                    __DIR__ . "/../../vendor/lriedel/common/src/Resource/",
+                    __DIR__ . "/../../vendor/lriedel/common/src/Service/",
+                    __DIR__ . "/../../vendor/lriedel/common/src/Routing/"
                 ));
                 $response->getBody()->write($openapi->toJson());
                 return $response->withHeader("Content-Type", "application/json");

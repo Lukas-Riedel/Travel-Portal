@@ -1,13 +1,13 @@
 <?php
     use Core\Event\Event;
 
-    require_once(__DIR__ . "/src/php/bootstrap.php");
+    require_once(__DIR__ . "/src/bootstrap.php");
     
     $onError = function($level, $message, $file, $line) {
         throw new RuntimeException($message);
     };
 
-    $migrationScriptsBasePath = __DIR__ . "/src/sql/";
+    $migrationScriptsBasePath = __DIR__ . "/db/";
     $migrationScriptFileNames = array_map(function($path) { 
         $tokens = explode("/", $path);
         return $tokens[count($tokens) - 1];
