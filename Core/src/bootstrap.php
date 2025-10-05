@@ -75,7 +75,7 @@
     use Core\Service\Trip\TripStatisticsProvider;
     use Core\Service\Year\YearService;
     use Core\Service\Year\YearServiceListener;
-    
+    use function Secrets\getenv;
     
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message);
@@ -88,7 +88,7 @@
     $logger = new Logger("core");
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
-            "entrypoint" => GRAFANA_LOKI_ENTRYPOINT,
+            "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
             "context" => array(
                 "transactionId" => $transactionId
             ),
@@ -96,11 +96,11 @@
                 "service" => "core",
                 "transactionId" => $transactionId
             ),
-            "client_name" => GRAFANA_LOKI_CLIENT_NAME,
+            "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
             "auth" => array(
                 "basic" => array(
-                    GRAFANA_LOKI_USER,
-                    GRAFANA_LOKI_PASSWORD
+                    getenv("GRAFANA_LOKI_USER"),
+                    getenv("GRAFANA_LOKI_PASSWORD")
                 )
             )
         ))
