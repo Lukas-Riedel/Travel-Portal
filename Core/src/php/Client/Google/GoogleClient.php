@@ -9,8 +9,8 @@
     use Core\Service\Configuration\ConfigurationService;
     use Common\Client\Http\HttpMethod;
 
-    // TODO: Make services using this client less dependent on Google services -> split to StorageClient, PhotoClient, and CalendarClient, and make return values non-Google-specific.
     // TODO: Switch to Google SDK.
+    // TODO: Split to StorageClient, PhotoClient, and CalendarClient, and make return values non-Google-specific.
     class GoogleClient {
 
         private const CREATE_ALBUM_URL = "https://photoslibrary.googleapis.com/v1/albums";

@@ -7,7 +7,7 @@
         schema: "Weather",
         type: "object",
         description: "A class representing a weather forecast",
-        required: ["temperature", "wind", "precipitation", "lastUpdate"],
+        required: ["temperature", "wind", "precipitation", "lastUpdate", "validity"],
         properties: [
             new OA\Property(
                 property: "temperature",
@@ -49,6 +49,13 @@
                 type: "integer",
                 format: "int64",
                 example: 1689786000
+            ),
+            new OA\Property(
+                property: "validity",
+                description: "The validity time of the weather forecast in epoch seconds",
+                type: "integer",
+                format: "int64",
+                example: 1689786000
             )
         ]
     )]
@@ -59,15 +66,17 @@
         private readonly float $precipitation;
         private readonly ?string $symbol;
         private readonly int $lastUpdate;
+        private readonly int $validity;
 
         public function __construct(float $temperature, ?float $clouds, float $wind,
-            float $precipitation, ?string $symbol, int $lastUpdate) {
+            float $precipitation, ?string $symbol, int $lastUpdate, int $validity) {
             $this->temperature = $temperature;
             $this->clouds = $clouds;
             $this->wind = $wind;
             $this->precipitation = $precipitation;
             $this->symbol = $symbol;
             $this->lastUpdate = $lastUpdate;
+            $this->validity = $validity;
         }
 
         public function getTemperature() : float {
@@ -92,6 +101,10 @@
 
         public function getLastUpdate() : int {
             return $this->lastUpdate;
+        }
+
+        public function getValidity() : int {
+            return $this->validity;
         }
 
         #[\ReturnTypeWillChange]

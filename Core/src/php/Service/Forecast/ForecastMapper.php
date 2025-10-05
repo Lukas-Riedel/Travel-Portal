@@ -2,6 +2,7 @@
     namespace Core\Service\Forecast;
     
     use Core\Client\Database\DatabaseClient;
+    use Core\Common\CommonConstants;
 
     class ForecastMapper {
 
@@ -25,7 +26,7 @@
                 ->getSingleRow();
 
             return $forecastRow === null ? null : new Weather($forecastRow["temperature"], $forecastRow["clouds"], $forecastRow["wind"],
-                $forecastRow["precipitation"], $forecastRow["symbol"], $forecastRow["last_update"]);
+                $forecastRow["precipitation"], $forecastRow["symbol"], $forecastRow["last_update"], $forecastRow["expiration"]);
         }
 
         public function selectHistoricalWeatherForecast(string $placeId, int $timestamp) : ?Weather {
@@ -42,7 +43,7 @@
                 ->getSingleRow();
 
             return $forecastRow === null ? null : new Weather($forecastRow["temperature"], null, $forecastRow["wind"],
-                $forecastRow["precipitation"], null, time());
+                $forecastRow["precipitation"], null, time(), $timestamp + CommonConstants::ONE_YEAR_SECONDS);
         }
 
         public function selectDaylightForecast(string $placeId, int $timestamp) : ?Sun {
@@ -131,7 +132,7 @@
                 ->execute() === 1;
         }
 
-        public function insertActualWeatherForecast(Weather $weather, string $placeId, int $timestamp, int $expiration) : bool {
+        public function insertActualWeatherForecast(Weather $weather, string $placeId, int $timestamp) : bool {
             $sql = <<<'SQL'
                 INSERT INTO forecast_actual (
                     place_id, 
@@ -160,7 +161,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation(),
-                    $weather->getClouds(), $weather->getSymbol(), $weather->getLastUpdate(), $expiration)
+                    $weather->getClouds(), $weather->getSymbol(), $weather->getLastUpdate(), $weather->getValidity())
                 ->execute() === 1;
         }
 

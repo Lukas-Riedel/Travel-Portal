@@ -14,7 +14,8 @@
     use Core\Client\Flight\FlightRadar24FlightClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
-    use Core\Client\HistoricalForecast\OpenMeteoHistoricalForecastClient;
+    use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
+    use Core\Client\Forecast\YrNoActualForecastClient;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventPublisher;
@@ -111,17 +112,20 @@
     $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
     $flightClient = new FlightRadar24FlightClient($httpClient);
+    $actualForecastClient = new YrNoActualForecastClient($httpClient);
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient);
     $calendarClient->setEventPublisher($eventPublisher);
+
     $scheduler = new Scheduler($databaseClient, $eventPublisher);
 
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
     $calendarClient->setConfigurationService($configurationService);
     $googleClient->setConfigurationService($configurationService);
+    $actualForecastClient->setConfigurationService($configurationService);
     $historicalForecastClient->setConfigurationService($configurationService);
 
     // Authentication service.
@@ -143,7 +147,7 @@
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $cacheClient, $eventPublisher);
-    $forecastService = new ForecastService($databaseClient, $httpClient, $configurationService, $historicalForecastClient);
+    $forecastService = new ForecastService($databaseClient, $configurationService, $actualForecastClient, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);

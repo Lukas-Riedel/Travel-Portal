@@ -8,29 +8,26 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Common\Client\Http\HttpMethod;
-use Core\Client\HistoricalForecast\HistoricalForecastClient;
-use Core\Client\Http\HttpClient;
+    use Core\Client\Forecast\ForecastClient;
 
     class ForecastService {
 
-        private const GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s";
         private const HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER = 2;
 
         private readonly ForecastMapper $forecastMapper;
 
-        private readonly HttpClient $httpClient;
-
         private readonly ConfigurationService $configurationService;
 
-        private readonly HistoricalForecastClient $historicalForecastClient;
+        private readonly ForecastClient $actualForecastClient;
+        private readonly ForecastClient $historicalForecastClient;
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, HttpClient $httpClient, ConfigurationService $configurationService,
-            HistoricalForecastClient $historicalForecastClient) {
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
+            ForecastClient $actualForecastClient, ForecastClient $historicalForecastClient) {
             $this->forecastMapper = new ForecastMapper($databaseClient);
-            $this->httpClient = $httpClient;
             $this->configurationService = $configurationService;
+            $this->actualForecastClient = $actualForecastClient;
             $this->historicalForecastClient = $historicalForecastClient;
             $this->transactionManager = $databaseClient;
         }
@@ -81,6 +78,9 @@ use Core\Client\Http\HttpClient;
             $historicalForecast = $this->historicalForecastClient->fetchForecast($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
                 $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS,
                 $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
+            if ($historicalForecast === null) {
+                return;
+            }
     
             $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$historicalForecast, &$timestamp) {
                 $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
@@ -89,69 +89,16 @@ use Core\Client\Http\HttpClient;
             $this->forecastMapper->deleteStaleHistoricalWeatherForecast();
         }
 
-        public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {        
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
-                round($placeIdentifier->getLatitude(), 4), round($placeIdentifier->getLongitude(), 4)),
-                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), null, true);
-
-            if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == null) {
-                throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));
-            }
-
-            $bestForecast = null;
-            foreach ($apiResponse["properties"]["timeseries"] as &$forecast) {
-                $forecastTime = strtotime($forecast["time"]);
-                if ($forecastTime > $timestamp) {
-                    break;
-                }
-                $bestForecast = $forecast;
-            }         
-
-            if ($bestForecast === null || strtotime($bestForecast["time"]) + 6 * CommonConstants::ONE_HOUR_SECONDS < $timestamp) {
+        public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {    
+            $actualForecast = $this->actualForecastClient->fetchForecast($placeIdentifier->getLatitude(), 
+                $placeIdentifier->getLongitude(), $timestamp, $timestamp);
+            if ($actualForecast === null) {
                 return;
             }
 
-            $convertedForecast = array(
-                "temperature" => $bestForecast["data"]["instant"]["details"]["air_temperature"],
-                "clouds" => $bestForecast["data"]["instant"]["details"]["cloud_area_fraction"],
-                "wind" => $bestForecast["data"]["instant"]["details"]["wind_speed"],
-                "symbol" => null,
-                "precipitation" => 0,
-                "updatedAt" => strtotime($apiResponse["properties"]["meta"]["updated_at"]));
-            
-            if (array_key_exists("next_1_hours", $bestForecast["data"])) {
-                if (array_key_exists("summary", $bestForecast["data"]["next_1_hours"])) {
-                    if (array_key_exists("symbol_code", $bestForecast["data"]["next_1_hours"]["summary"])) {
-                        $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_1_hours"]["summary"]["symbol_code"])[0];
-                    }
-                }
-                if (array_key_exists("details", $bestForecast["data"]["next_1_hours"])) {
-                    if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_1_hours"]["details"])) {
-                        $convertedForecast["precipitation"] = $bestForecast["data"]["next_1_hours"]["details"]["precipitation_amount"];
-                    }
-                }
-            }                        
-            else if (array_key_exists("next_6_hours", $bestForecast["data"])) {
-                if (array_key_exists("summary", $bestForecast["data"]["next_6_hours"])) {
-                    if (array_key_exists("symbol_code", $bestForecast["data"]["next_6_hours"]["summary"])) {
-                        $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_6_hours"]["summary"]["symbol_code"])[0];
-                    }
-                }
-                if (array_key_exists("details", $bestForecast["data"]["next_6_hours"])) {
-                    if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_6_hours"]["details"])) {
-                        $convertedForecast["precipitation"] = $bestForecast["data"]["next_6_hours"]["details"]["precipitation_amount"] / 6;
-                    }
-                }
-            }
-
-            $actualForecast = new Weather($convertedForecast["temperature"], $convertedForecast["clouds"], $convertedForecast["wind"],
-                $convertedForecast["precipitation"], $convertedForecast["symbol"], $convertedForecast["updatedAt"]);
-            $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) 
-                ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : (time() + CommonConstants::ONE_HOUR_SECONDS);
-
-            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$actualForecast, &$timestamp, &$expiration) {
+            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$actualForecast, &$timestamp) {
                 $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
-                $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp, $expiration);
+                $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp);
             });
 
             $this->forecastMapper->deleteStaleActualWeatherForecast();
