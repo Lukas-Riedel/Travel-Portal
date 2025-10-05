@@ -23,6 +23,8 @@ class PermissionManager(
     private val healthPermissionLauncher = mainActivity.registerForActivityResult(
         PermissionController.createRequestPermissionResultContract()) {}
 
+    // TODO: Make sure permissions are requested only once.
+    // TODO: Make sure the application can operate even when missing some of the permissions.
     fun requestAllPermissions() {
         if (!requestNotificationPermission()) {
             return
