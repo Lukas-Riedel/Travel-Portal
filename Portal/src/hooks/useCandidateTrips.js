@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
+import { listCandidateTrips, removeTrip } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
 
 export const useCandidateTrips = ({ include } = {}) => {
-    const { listCandidateTrips, removeTrip } = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({

@@ -1,16 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { getToken, onMessage } from "firebase/messaging"
 import { messaging } from "../lib/firebase"
-import { useApi } from "../hooks/useApi"
 import { useAuth } from "./AuthContext"
 import { useConfiguration } from "./ConfigContext"
+import { createDevice } from "../clients/coreClient"
 
 const NotificationContext = createContext()
 
 export const NotificationProvider = ({ children }) => {
     const { accessToken } = useAuth()
     const { deviceId } = useConfiguration()
-    const { createDevice } = useApi()
 
     const [messages, setMessages] = useState([])
     const [fcmToken, setFcmToken] = useState(null)

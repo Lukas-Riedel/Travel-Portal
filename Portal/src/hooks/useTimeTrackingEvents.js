@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
+import { listTimeTrackingEvents, removeTimeTrackingEvent, createTimeTrackingEvent } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 import { useMemo } from "react"
 
 export const useTimeTrackingEvents = allowedTypes => {
-    const { listTimeTrackingEvents, removeTimeTrackingEvent, createTimeTrackingEvent } = useApi()
     const { isAdmin } = useAuth()
 
     const queries = allowedTypes.map(type =>

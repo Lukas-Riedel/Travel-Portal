@@ -1,13 +1,12 @@
-import { useApi } from "./useApi"
 import { useEffect, useMemo, useState } from "react"
 import { useVisitedAirports } from "./useVisitedAirports"
 import { getCachedCoordinates, getEuclideanDistance } from "../utils/helpers"
 import { useDevices } from "./useDevices"
+import { getCoordinates } from "../clients/coreClient"
 
 const airportRadius = 3.0
 
 export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
-    const { getCoordinates } = useApi()
     const [currentAddress, setCurrentAddress] = useState(null)
     const visitedAirports = useVisitedAirports()
     const devices = useDevices({ type: "bridgex" })

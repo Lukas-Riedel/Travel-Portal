@@ -1,9 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
+import { getAirline, removeAirline, updateAirlineName, updateAirlineLogo } from "../clients/coreClient"
 
 export const useAirline = airlineId => {
-    const { getAirline, removeAirline, updateAirlineName, updateAirlineLogo } = useApi()
     const { isAdmin } = useAuth()
 
     const queryClient = useQueryClient()

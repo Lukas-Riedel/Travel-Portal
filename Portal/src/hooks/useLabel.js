@@ -1,9 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useApi } from "./useApi"
+import { getLabel, updateLabelName } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useLabel = labelId => {
-    const { getLabel, updateLabelName } = useApi()
     const { isAdmin } = useAuth()
 
     const queryClient = useQueryClient()

@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
+import { listAirports, updateAirportLongName } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useAirports = () => {
-    const { listAirports, updateAirportName } = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({
@@ -17,6 +16,6 @@ export const useAirports = () => {
     return {
         // TODO: Map to Airport object
         airports: query.data,
-        updateAirportName: (airportId, longName) => updateAirportName(airportId, longName).then(refetchAirports)
+        updateAirportLongName: (airportId, longName) => updateAirportLongName(airportId, longName).then(refetchAirports)
     }
 }

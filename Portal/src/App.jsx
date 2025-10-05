@@ -89,7 +89,6 @@ function AppContent() {
     useEffect(() => {
         if (!accessToken) {
             login({ username: "guest", password: "guest" })
-
         }
     }, [accessToken, login])
 

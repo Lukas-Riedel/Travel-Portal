@@ -1,9 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useApi } from "./useApi"
+import { getAirport, updateAirportLongName } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 
 export const useAirport = airportId => {
-    const { getAirport, updateAirportName } = useApi()
     const { isAdmin } = useAuth()
 
     const queryClient = useQueryClient()
@@ -20,6 +19,6 @@ export const useAirport = airportId => {
     return {
         // TODO: Map to Airport object
         airport: query.data,
-        updateAirportName: name => updateAirportName(airportId, name).then(setAirport)
+        updateAirportLongName: name => updateAirportLongName(airportId, name).then(setAirport)
     }
 }

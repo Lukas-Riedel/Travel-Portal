@@ -4,18 +4,16 @@ import LoadingCard from "./LoadingCard"
 import showFormToast from "./FormToast"
 import showConfirmToast from "./ConfirmToast"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
-import { useApi } from "../hooks/useApi"
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
 import showInputToast from "./InputToast"
+import { listCategories } from "../clients/coreClient"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened, onCategoryMetadataChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
-
-    const { listCategories } = useApi()
 
     const handleRefreshAllAlbums = () => {
         showConfirmToast("Pokud bylo album odstraněno, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",

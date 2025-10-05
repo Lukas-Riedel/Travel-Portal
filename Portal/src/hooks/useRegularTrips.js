@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
+import { listRegularTrips } from "../clients/coreClient"
 
 export const useRegularTrips = ({ year, include } = {}) => {
-    const { listRegularTrips } = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({

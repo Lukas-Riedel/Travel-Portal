@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from "react"
 import { useNotifications } from "../contexts/NotificationContext"
-import { useApi } from "./useApi"
+import { createEvent } from "../clients/coreClient"
 
 export const useEvents = eventName => {
-    const { createEvent } = useApi()
     const { messages } = useNotifications()
 
     const [readMessageIds, setReadMessageIds] = useState(() => new Set())

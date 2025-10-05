@@ -12,7 +12,7 @@ export default function AirportPage() {
 
     const trips = useRegularTrips({ include: "flights" })
     const countryCategories = useCategories({ categories: "country" })
-    const { airport, updateAirportName } = useAirport(airportId)
+    const { airport, updateAirportLongName } = useAirport(airportId)
 
     const flights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)
@@ -29,7 +29,7 @@ export default function AirportPage() {
             <PageHeader
                 name={airport && (airport.longName ?? airport.code)}
                 categories={airport ? [countryCategoriesMap.get(airport.country)] : []}
-                onNameChanged={updateAirportName} />
+                onNameChanged={updateAirportLongName} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <FlightMap
                     flights={flights}

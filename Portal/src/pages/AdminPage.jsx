@@ -8,7 +8,6 @@ import ExpenseSummary from "../components/ExpenseSummary"
 import { Plus } from "lucide-react"
 import showFormToast from "../components/FormToast"
 import FloatingButton from "../components/FloatingButton"
-import { useApi } from "../hooks/useApi"
 import { useDataConsistencyIssues } from "../hooks/useDataConsistencyIssues"
 import { fromZonedTime } from "date-fns-tz"
 import { useRegularTrips } from "../hooks/useRegularTrips"
@@ -23,20 +22,22 @@ import { useDevices } from "../hooks/useDevices"
 import AirlineCardGrid from "../components/AirlineCardGrid"
 import showInputToast from "../components/InputToast"
 import { useAirports } from "../hooks/useAirports"
+import {
+    createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum, updateCategoryMetadata,
+    listRegularPlaces, createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness
+} from "../clients/coreClient"
 
 // TODO: Make it dynamic - if the sub-page has nothing to show, hide the label.
 const labels = ["Aktuální výlet", "Sledované lety", "Aerolinky", "Hlášené problémy", "Konfigurace", "Zařízení"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
-    const { createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum, updateCategoryMetadata,
-        listRegularPlaces, createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness } = useApi()
     const { publishAllAlbumsInvalidatedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
-    const { updateAirportName } = useAirports()
+    const { updateAirportLongName } = useAirports()
     const devices = useDevices({ type: "agent" })
     const trips = useRegularTrips({ include: "watchedFlights" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
@@ -149,7 +150,7 @@ export default function AdminPage() {
                     onAirlineCodeAssigned={createAirlineCode}
                     onFitnessReplaced={replaceFitness}
                     onAirlineLogoChanged={updateAirlineLogo}
-                    onAirportNameChanged={updateAirportName}
+                    onAirportNameChanged={updateAirportLongName}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
                     onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "dates" })
                         .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}

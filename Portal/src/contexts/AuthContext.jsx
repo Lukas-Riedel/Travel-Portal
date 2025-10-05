@@ -1,122 +1,45 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react"
-import { useIam } from "../hooks/useIam"
-import { jwtDecode } from "jwt-decode"
+import { createContext, useContext, useEffect } from "react"
+import { logout, setIamResponse, useAuthStore } from "../hooks/useAuthStore"
+import { refreshAccessToken } from "../clients/coreClient"
+import { getIamResponseWithCredentials } from "../clients/iamClient"
 
 const AuthContext = createContext()
+const accessTokenRefreshThreshold = 60 * 1000
 
 export const AuthProvider = ({ children }) => {
-    const { getIamResponseWithCredentials, getIamResponseWithRefresh } = useIam()
-    const [iamResponse, setIamResponse] = useState(() => {
-        const storedIamResponse = localStorage.getItem("iamResponse")
-        if (!storedIamResponse) {
-            return null
-        }
-
-        const parsedIamResponse = JSON.parse(storedIamResponse)
-        if (parsedIamResponse.refreshExpiration < Date.now()) {
-            return null
-        }
-
-        return parsedIamResponse
-    })
-
-    const isAdmin = useMemo(() => {
-        if (!iamResponse?.data?.accessToken) {
-            return false
-        }
-
-        try {
-            const decodedAccessToken = jwtDecode(iamResponse.data.accessToken)
-            return decodedAccessToken?.resource_access?.[import.meta.env.VITE_IAM_CLIENT_ID]?.roles?.includes("ADMIN") || false
-        }
-        catch (e) {
-            return false
-        }
-    }, [iamResponse])
+    const accessToken = useAuthStore(state => state.getAccessToken())
+    const iamResponse = useAuthStore(state => state.iamResponse)
+    const isAdmin = useAuthStore(state => state.isAdmin())
 
     const login = async ({ username, password }) => {
         if (typeof Android !== "undefined" && Android.login) {
             Android.login(username, password)
         }
 
-        const rawIamResponse = await getIamResponseWithCredentials(username, password)
-        const newIamResponse = {
-            data: rawIamResponse,
-            expiration: Date.now() + rawIamResponse.expiresIn * 1000,
-            refreshExpiration: Date.now() + (rawIamResponse.refreshExpiresIn > 0 ? rawIamResponse.refreshExpiresIn * 1000 : Number.MAX_SAFE_INTEGER)
-        }
-
-        localStorage.setItem("iamResponse", JSON.stringify(newIamResponse))
-        setIamResponse(newIamResponse)
+        getIamResponseWithCredentials(username, password).then(setIamResponse)
     }
-
-    const logout = () => {
-        if (typeof Android !== "undefined" && Android.logout) {
-            Android.logout()
-        }
-
-        localStorage.removeItem("iamResponse")
-        setIamResponse(null)
-    }
-
-    const refreshAccessToken = useCallback(async () => {
-        if (!iamResponse?.data?.refreshToken) {
-            logout()
-            return
-        }
-
-        try {
-            const rawIamResponse = await getIamResponseWithRefresh(iamResponse.data.refreshToken)
-            const newIamResponse = {
-                data: rawIamResponse,
-                expiration: Date.now() + rawIamResponse.expiresIn * 1000,
-                refreshExpiration: Date.now() + (rawIamResponse.refreshExpiresIn > 0 ? rawIamResponse.refreshExpiresIn * 1000 : Number.MAX_SAFE_INTEGER)
-            }
-
-            localStorage.setItem("iamResponse", JSON.stringify(newIamResponse))
-            setIamResponse(newIamResponse)
-        } catch {
-            logout()
-        }
-    }, [iamResponse])
 
     useEffect(() => {
         if (!iamResponse) {
             return
         }
 
-        const refreshThreshold = 60 * 1000
-        const delay = iamResponse.expiration - Date.now() - refreshThreshold
-
+        const delay = iamResponse.expiration - Date.now() - accessTokenRefreshThreshold
         if (delay <= 0) {
             refreshAccessToken()
             return
         }
 
-        const timeout = setTimeout(refreshAccessToken, delay)
+        const timeout = setTimeout(() => {
+            refreshAccessToken()
+        }, delay)
 
         return () => clearTimeout(timeout)
-    }, [iamResponse])
-
-    useEffect(() => {
-        if (!iamResponse) {
-            return
-        }
-
-        const init = async () => {
-            try {
-                await refreshAccessToken()
-            } catch {
-                logout()
-            }
-        }
-
-        init()
-    }, [])
+    })
 
     return (
         <AuthContext.Provider value={{
-            accessToken: iamResponse?.data?.accessToken,
+            accessToken,
             login,
             logout,
             isAdmin

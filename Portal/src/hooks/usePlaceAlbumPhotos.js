@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
+import { listPlaceAlbumPhotos } from "../clients/coreClient"
 
 export const usePlaceAlbumPhotos = (placeId, albumId) => {
-    const { listPlaceAlbumPhotos } = useApi()
     const { isAdmin } = useAuth()
 
     const query = useQuery({

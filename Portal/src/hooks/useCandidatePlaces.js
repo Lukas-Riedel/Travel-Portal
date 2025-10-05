@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 import Place from "../model/place"
 import { useEffect, useMemo, useState } from "react"
 import { useLocation } from "../contexts/LocationContext"
+import { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } from "../clients/coreClient"
 
 export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort } = {}) => {
-    const { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } = useApi()
     const resolvedLocation = useLocation()
     const { isAdmin } = useAuth()
 

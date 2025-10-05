@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react"
-import { useApi } from "../hooks/useApi"
 import { useQuery } from "@tanstack/react-query"
 import { v4 as uuidv4 } from "uuid"
+import { listConfigurationEntries, replaceConfigurationEntry } from "../clients/coreClient"
 
 const ConfigContext = createContext()
 
@@ -15,8 +15,6 @@ const deviceId = (() => {
 })()
 
 export function ConfigurationProvider({ children }) {
-    const { listConfigurationEntries, replaceConfigurationEntry } = useApi()
-
     const query = useQuery({
         queryKey: ["listConfigurationEntries", "public"],
         queryFn: () => listConfigurationEntries("public"),

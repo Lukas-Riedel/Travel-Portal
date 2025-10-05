@@ -13,11 +13,10 @@ import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { formatTimeAgo } from "../utils/formatters"
-import { useApi } from "../hooks/useApi"
 import { cs } from "date-fns/locale"
+import { getCoordinates } from "../clients/coreClient"
 
 export default function TripSummary({ tripId }) {
-    const { getCoordinates } = useApi()
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()

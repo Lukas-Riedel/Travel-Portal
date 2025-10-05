@@ -1,14 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useApi } from "./useApi"
+import {
+    getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
+    updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
+    updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote
+} from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 import Place from "../model/place"
 import { useEffect, useMemo } from "react"
 import { useEvents } from "./useEvents"
 
 export const usePlace = placeId => {
-    const { getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
-        updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
-        updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote } = useApi()
     const { isAdmin } = useAuth()
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     const { events: processingEndedEvents } = useEvents("ProcessingEnded")

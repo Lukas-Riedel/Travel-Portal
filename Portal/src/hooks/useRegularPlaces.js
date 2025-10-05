@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApi } from "./useApi"
 import { useAuth } from "../contexts/AuthContext"
 import Place from "../model/place"
 import { useEvents } from "./useEvents"
 import { useEffect, useMemo } from "react"
+import { listRegularPlaces } from "../clients/coreClient"
 
 export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort } = {}) => {
-    const { listRegularPlaces } = useApi()
     const { isAdmin } = useAuth()
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     const { events: processingEndedEvents } = useEvents("ProcessingEnded")
