@@ -23,7 +23,7 @@
             $this->configurationService = $configurationService;
         }
         
-        public function fetchForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather {
+        public function getForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather {
             $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 round($latitude, 4), round($longitude, 4)),
                 array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), null, true);

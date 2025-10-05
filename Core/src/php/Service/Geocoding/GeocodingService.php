@@ -4,8 +4,7 @@
     use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
-    use Common\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+    use Core\Client\Google\GoogleClient;
 
     class GeocodingService {
 
@@ -19,22 +18,17 @@
         
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
-
-        // TODO: Move to GoogleClient.
-        private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
-        private const GET_ADDRESS_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&latlng=%s,%s";
-        private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
         
         private readonly ConfigurationService $configurationService;
 
         private readonly CacheClient $cacheClient;
 
-        private readonly HttpClient $httpClient;
+        private readonly GoogleClient $googleClient;
 
-        public function __construct(ConfigurationService $configurationService, CacheClient $cacheClient, HttpClient $httpClient) {
+        public function __construct(ConfigurationService $configurationService, CacheClient $cacheClient, GoogleClient $googleClient) {
             $this->configurationService = $configurationService;
             $this->cacheClient = $cacheClient;
-            $this->httpClient = $httpClient;
+            $this->googleClient = $googleClient;
         }
 
         public function getAddress(float $latitude, float $longitude,  bool $apiFetchEnabled = true) : ?Address {
@@ -107,41 +101,32 @@
             $timezone = null;
 
             // Geocoding request.
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
-
-            if ($apiResponse["status"] === "OK") {
-                if (count($apiResponse["results"]) > 0) {
-                    $resolvedLocation = $apiResponse["results"][0];
-
-                    $latitude = $resolvedLocation["geometry"]["location"]["lat"];
-                    $longitude = $resolvedLocation["geometry"]["location"]["lng"];
-                    
-                    foreach ($resolvedLocation["address_components"] as &$addressComponent) {
-                        if (in_array("country", $addressComponent["types"])) {
-                            $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
-                            if ($addressComponent["long_name"] === null) {
-                                // TODO: Remove the UNKNOWN country, use null instead.
-                                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
-                            }
-                            else if (in_array($addressComponent["long_name"], array_map(fn($c) => $c["country"], $countryNames))) {
-                                $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $addressComponent["long_name"]))[0]["name"];
-                            }
-                            else {
-                                throw new \RuntimeException("Unknown country '" . $addressComponent["long_name"] . "' encountered.");
-                            }
-                            break;
+            $resolvedLocation = $this->googleClient->getLocation($address);
+            if ($resolvedLocation !== null) {
+                $latitude = $resolvedLocation["geometry"]["location"]["lat"];
+                $longitude = $resolvedLocation["geometry"]["location"]["lng"];
+                
+                foreach ($resolvedLocation["address_components"] as &$addressComponent) {
+                    if (in_array("country", $addressComponent["types"])) {
+                        $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
+                        if ($addressComponent["long_name"] === null) {
+                            // TODO: Remove the UNKNOWN country, use null instead.
+                            $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
                         }
+                        else if (in_array($addressComponent["long_name"], array_map(fn($c) => $c["country"], $countryNames))) {
+                            $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $addressComponent["long_name"]))[0]["name"];
+                        }
+                        else {
+                            throw new \RuntimeException("Unknown country '" . $addressComponent["long_name"] . "' encountered.");
+                        }
+                        break;
                     }
                 }
             }
 
             // Timezone request.
-            if ($latitude !== null && $longitude !== null && $timezone === null) {    
-                $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
-                
-                if (array_key_exists("timeZoneId", $apiResponse)) {
-                    $timezone = $apiResponse["timeZoneId"];
-                }
+            if ($latitude !== null && $longitude !== null && $timezone === null) {
+                $timezone = $this->googleClient->getTimezone($latitude, $longitude);
             }
 
             $convertedLocation = new Location($country, $latitude, $longitude, $timezone);
@@ -151,17 +136,7 @@
         }
 
         private function createAddress(float $latitude, float $longitude) : Address {
-            $address = null;
-
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
-
-            if ($apiResponse["status"] === "OK") {
-                if (count($apiResponse["results"]) > 0) {
-                    if (isset($apiResponse["results"][0]["formatted_address"])) {
-                        $address = $apiResponse["results"][0]["formatted_address"];
-                    }
-                }
-            }
+            $address = $this->googleClient->getAddress($latitude, $longitude);
 
             $convertedAddress = new Address($address);
             $this->cacheClient->set($this->getLocationCacheKey($latitude, $longitude), $convertedAddress, self::LOCATION_CACHE_TTL);

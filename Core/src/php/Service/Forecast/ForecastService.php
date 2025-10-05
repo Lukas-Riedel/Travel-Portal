@@ -75,7 +75,7 @@
                 $oneYearAgoTimestamp -= CommonConstants::ONE_YEAR_SECONDS;
             }
 
-            $historicalForecast = $this->historicalForecastClient->fetchForecast($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
+            $historicalForecast = $this->historicalForecastClient->getForecast($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
                 $oneYearAgoTimestamp - self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS,
                 $oneYearAgoTimestamp + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER * CommonConstants::ONE_DAY_SECONDS);
             if ($historicalForecast === null) {
@@ -90,7 +90,7 @@
         }
 
         public function updateActualWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {    
-            $actualForecast = $this->actualForecastClient->fetchForecast($placeIdentifier->getLatitude(), 
+            $actualForecast = $this->actualForecastClient->getForecast($placeIdentifier->getLatitude(), 
                 $placeIdentifier->getLongitude(), $timestamp, $timestamp);
             if ($actualForecast === null) {
                 return;

@@ -23,7 +23,7 @@
             $this->configurationService = $configurationService;
         }
 
-        public function fetchForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather {
+        public function getForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather {
             $startDate = date(CommonConstants::YMD_DATE_FORMAT, $start);
             $endDate = date(CommonConstants::YMD_DATE_FORMAT, $end);
         

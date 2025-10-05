@@ -10,7 +10,7 @@
     use Common\Client\Http\HttpMethod;
 
     // TODO: Switch to Google SDK.
-    // TODO: Split to StorageClient, PhotoClient, and CalendarClient, and make return values non-Google-specific.
+    // TODO: Split to StorageClient, PhotoClient, GeocodingClient and CalendarClient, and make return values non-Google-specific.
     class GoogleClient {
 
         private const CREATE_ALBUM_URL = "https://photoslibrary.googleapis.com/v1/albums";
@@ -29,6 +29,10 @@
         private const CREATE_CALENDAR_EVENT_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events";
         private const ACCESS_CALENDAR_EVENT_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events/%s";
         private const WATCH_CALENDAR_EVENTS_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events/watch";
+        
+        private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
+        private const GET_ADDRESS_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&latlng=%s,%s";
+        private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
 
         private const MULTIPART_SEPARATOR = "mpr_separator";
         private const EVENT_IDENTIFIER_SUFFIX = "@google.com";
@@ -56,6 +60,37 @@
 
         public function setAuthenticationService(AuthenticationService $authenticationService) : void {
             $this->authenticationService = $authenticationService;
+        }
+
+        public function getLocation(string $address) : mixed {
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
+
+            if ($apiResponse["status"] === "OK") {
+                if (count($apiResponse["results"]) > 0) {
+                    return $apiResponse["results"][0];
+                }
+            }
+
+            return null;
+        }
+
+        public function getTimezone(float $latitude, float $longitude) : ?string {
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+            return array_key_exists("timeZoneId", $apiResponse) ? $apiResponse["timeZoneId"] : null;           
+        }
+
+        public function getAddress(float $latitude, float $longitude) : ?string {
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+
+            if ($apiResponse["status"] === "OK") {
+                if (count($apiResponse["results"]) > 0) {
+                    if (isset($apiResponse["results"][0]["formatted_address"])) {
+                        return $apiResponse["results"][0]["formatted_address"];
+                    }
+                }
+            } 
+            
+            return null;
         }
 
         public function createFolder(string $name, string $folderId) : string {

@@ -4,6 +4,6 @@
     use Core\Service\Forecast\Weather;
 
     interface ForecastClient {
-        public function fetchForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather;
+        public function getForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather;
     }
 ?>

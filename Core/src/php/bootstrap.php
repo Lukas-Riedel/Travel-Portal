@@ -135,7 +135,7 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $geocodingService = new GeocodingService($configurationService, $cacheClient, $httpClient);
+    $geocodingService = new GeocodingService($configurationService, $cacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
