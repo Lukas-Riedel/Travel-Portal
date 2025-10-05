@@ -37,7 +37,7 @@
             }
             
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
-                null, time(), array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                time(), null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
                 fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % CommonConstants::ONE_DAY_SECONDS === 0)), $relevantPlaces);
