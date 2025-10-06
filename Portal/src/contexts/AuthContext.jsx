@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
 
         const delay = iamResponse.expiration - Date.now() - accessTokenRefreshThreshold
         if (delay <= 0) {
-            refreshAccessToken()
             return
         }
 
@@ -35,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         }, delay)
 
         return () => clearTimeout(timeout)
-    })
+    }, [iamResponse])
 
     return (
         <AuthContext.Provider value={{
