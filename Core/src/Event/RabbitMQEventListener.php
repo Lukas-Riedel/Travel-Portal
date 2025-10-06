@@ -13,15 +13,18 @@
 
         private readonly RabbitMQMessagingClient $messagingClient;
 
-        public function __construct(RabbitMQMessagingClient $messagingClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
-            parent::__construct($logger, $openLineageEventManager, $listeners);
+        private readonly string $workerQueueName;
+
+        public function __construct(RabbitMQMessagingClient $messagingClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+            parent::__construct($logger, $openLineageEventManager, $listeners, $workerQueueName);
             $this->messagingClient = $messagingClient;
+            $this->workerQueueName = $workerQueueName;
         }
 
         public function listen() : void {
             $channel = $this->messagingClient->getConsumerChannel();
-            $channel->queue_declare(WORKER_QUEUE_NAME, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
-            $channel->basic_consume(WORKER_QUEUE_NAME, "", false, false, false, false, function ($message) {
+            $channel->queue_declare($this->workerQueueName, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
+            $channel->basic_consume($this->workerQueueName, "", false, false, false, false, function ($message) {
                     $this->onEvent(json_decode($message->getBody(), true));
                     $message->ack();
                 }

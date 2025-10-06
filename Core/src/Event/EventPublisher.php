@@ -16,10 +16,13 @@
         private readonly CloudMessagingClient $cloudMessagingClient;
         private readonly CacheClient $cacheClient;
 
-        public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient, CacheClient $cacheClient) {
+        private readonly string $workerQueueName;
+
+        public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient, CacheClient $cacheClient, string $workerQueueName) {
             $this->messagingClient = $messagingClient;
             $this->cloudMessagingClient = $cloudMessagingClient;
             $this->cacheClient = $cacheClient;
+            $this->workerQueueName = $workerQueueName;
         }
 
         public function setDeviceService(DeviceService $deviceService) : void {
@@ -53,7 +56,7 @@
         // TODO: Go through all events and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
         public function publish(Event $event) : ?string {
             if ($event instanceof WorkerEvent) {
-                $this->messagingClient->publish(WORKER_QUEUE_NAME, $event, $event->getPriority());
+                $this->messagingClient->publish($this->workerQueueName, $event, $event->getPriority());
                 return null;
             }
 

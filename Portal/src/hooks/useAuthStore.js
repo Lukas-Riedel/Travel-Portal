@@ -55,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
 
         try {
             const decodedAccessToken = jwtDecode(accessToken)
-            return decodedAccessToken?.resource_access?.[import.meta.env.VITE_IAM_CLIENT_ID]?.roles?.includes("ADMIN") || false
+            return decodedAccessToken?.resource_access?.[import.meta.env.VITE_IAM_APP_CLIENT_ID]?.roles?.includes("ADMIN") || false
         }
         catch (e) {
             return false

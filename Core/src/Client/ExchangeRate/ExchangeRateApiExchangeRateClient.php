@@ -12,15 +12,18 @@
         private readonly HttpClient $httpClient;
 
         private readonly Logger $logger;
+
+        private readonly string $exchangeRateApiKey;
     
-        public function __construct(HttpClient $httpClient, Logger $logger) {
+        public function __construct(HttpClient $httpClient, Logger $logger, string $exchangeRateApiKey) {
             $this->httpClient = $httpClient;
             $this->logger = $logger;
+            $this->exchangeRateApiKey = $exchangeRateApiKey;
         }
         
         public function getExchangeRates(string $currency) : array {
             $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT,
-                EXCHANGE_RATE_API_KEY, $currency));         
+                $this->exchangeRateApiKey, $currency));         
 
             if (isset($apiResponse["error"])) {
                 $this->logger->error("An unknown error occurred when fetching exchange rates.", array("error" => $apiResponse));

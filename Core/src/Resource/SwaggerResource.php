@@ -9,9 +9,9 @@
     use Slim\Handlers\Strategies\RequestResponse;
 
     class SwaggerResource extends AbstractResource {
-        
-        public static function register(App $app) {
-            $app->get("/swagger/swagger.json", function (ServerRequestInterface $request, ResponseInterface $response) {
+
+        public static function register(App $app, string $coreBaseUrl) {
+            $app->get("/swagger/swagger.json", function (ServerRequestInterface $request, ResponseInterface $response) use(&$coreBaseUrl) {
                 $openapi = (new Generator())->generate(array(
                     __DIR__ . "/../Resource/", 
                     __DIR__ . "/../Client/", 
@@ -22,6 +22,7 @@
                     __DIR__ . "/../../vendor/lriedel/common/src/Service/",
                     __DIR__ . "/../../vendor/lriedel/common/src/Routing/"
                 ));
+                $openapi->servers = array("url" => $coreBaseUrl);
                 $response->getBody()->write($openapi->toJson());
                 return $response->withHeader("Content-Type", "application/json");
             })->setInvocationStrategy(new RequestResponse());

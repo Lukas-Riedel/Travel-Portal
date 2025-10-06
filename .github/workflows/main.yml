@@ -69,7 +69,7 @@ jobs:
         VITE_PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
         VITE_CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
         VITE_IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
-        VITE_IAM_CLIENT_ID: ${{ vars.IAM_CLIENT_ID }}
+        VITE_IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
         VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
         VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
@@ -91,6 +91,88 @@ jobs:
         cp -r ./Core/public/* target/api/
         cp -r ./Iam/public/* target/iam/
         cp -r ./Portal/dist/* target/
+    - name: Generate secrets.php
+      run: |
+        cat > generate_secrets.php <<'PHP'
+        <?php
+        $keys = [
+          "MAX_WORKERS_COUNT","DB_NAME","DB_USER","DB_PASSWORD","DB_HOST",
+          "ENCRYPTION_PRIVATE_KEY","CORE_BASE_URL","IAM_BASE_URL","INTERNAL_IAM_BASE_URL",
+          "INTERNAL_ADMIN_IAM_BASE_URL","IAM_APP_CLIENT_ID","IAM_BACKEND_CLIENT_ID",
+          "IAM_BACKEND_CLIENT_SECRET","GOOGLE_MAPS_API_KEY","IBM_CLOUD_API_KEY",
+          "GOOGLE_API_CLIENT_ID","GOOGLE_API_CLIENT_SECRET","GOOGLE_GEMINI_API_KEY",
+          "EXCHANGE_RATE_API_KEY","GRAFANA_LOKI_ENTRYPOINT","GRAFANA_LOKI_CLIENT_NAME",
+          "GRAFANA_LOKI_USER","GRAFANA_LOKI_PASSWORD","RMQ_HOST","RMQ_PORT","RMQ_USER",
+          "RMQ_PASSWORD","RMQ_VHOST","WORKER_QUEUE_NAME","REDIS_HOST","REDIS_PORT",
+          "REDIS_PASSWORD","ALLOWED_REQUEST_ORIGINS","FCM_PROJECT_ID","FCM_PRIVATE_KEY_ID",
+          "FCM_CLIENT_X509_CERTIFICATE_URL","FCM_PRIVATE_KEY","FCM_CLIENT_EMAIL",
+          "FCM_CLIENT_ID","JWKS_PUBLIC_KEY"
+        ];
+
+        $header = <<<'HEADER'
+        <?php
+        namespace Secrets;
+
+        function getenv(string $key) : array|string|false {
+          if (\defined($key)) {
+            return \constant($key);
+          }
+          return \getenv($key);
+        }
+        HEADER;
+
+        $out = $header . "\n";
+        foreach ($keys as $k) {
+          $out .= "define(\"" . $k . "\", \"" . getenv($k) . "\");\n";
+        }
+
+        $out .= "?>\n";
+        file_put_contents("target/secrets.php", $out);
+        PHP
+
+        php generate_secrets.php
+        rm -f generate_secrets.php
+      env:
+        MAX_WORKERS_COUNT: ${{ vars.MAX_WORKERS_COUNT }}
+        DB_NAME: ${{ vars.DB_NAME }}
+        DB_USER: ${{ vars.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_HOST: ${{ vars.DB_HOST }}
+        ENCRYPTION_PRIVATE_KEY: ${{ secrets.ENCRYPTION_PRIVATE_KEY }}
+        CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
+        IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
+        INTERNAL_IAM_BASE_URL: ${{ vars.INTERNAL_IAM_BASE_URL }}
+        INTERNAL_ADMIN_IAM_BASE_URL: ${{ vars.INTERNAL_ADMIN_IAM_BASE_URL }}
+        IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
+        IAM_BACKEND_CLIENT_ID: ${{ vars.IAM_BACKEND_CLIENT_ID }}
+        IAM_BACKEND_CLIENT_SECRET: ${{ secrets.IAM_BACKEND_CLIENT_SECRET }}
+        GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+        GOOGLE_API_CLIENT_ID: ${{ vars.GOOGLE_API_CLIENT_ID }}
+        GOOGLE_API_CLIENT_SECRET: ${{ secrets.GOOGLE_API_CLIENT_SECRET }}
+        GOOGLE_GEMINI_API_KEY: ${{ secrets.GOOGLE_GEMINI_API_KEY }}
+        EXCHANGE_RATE_API_KEY: ${{ secrets.EXCHANGE_RATE_API_KEY }}
+        GRAFANA_LOKI_ENTRYPOINT: ${{ vars.GRAFANA_LOKI_ENTRYPOINT }}
+        GRAFANA_LOKI_CLIENT_NAME: ${{ vars.GRAFANA_LOKI_CLIENT_NAME }}
+        GRAFANA_LOKI_USER: ${{ vars.GRAFANA_LOKI_USER }}
+        GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
+        RMQ_HOST: ${{ vars.RMQ_HOST }}
+        RMQ_PORT: ${{ vars.RMQ_PORT }}
+        RMQ_USER: ${{ vars.RMQ_USER }}
+        RMQ_PASSWORD: ${{ secrets.RMQ_PASSWORD }}
+        RMQ_VHOST: ${{ vars.RMQ_VHOST }}
+        WORKER_QUEUE_NAME: ${{ vars.WORKER_QUEUE_NAME }}
+        REDIS_HOST: ${{ vars.REDIS_HOST }}
+        REDIS_PORT: ${{ vars.REDIS_PORT }}
+        REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        ALLOWED_REQUEST_ORIGINS: ${{ vars.ALLOWED_REQUEST_ORIGINS }}
+        FCM_PROJECT_ID: ${{ vars.FCM_PROJECT_ID }}
+        FCM_PRIVATE_KEY_ID: ${{ secrets.FCM_PRIVATE_KEY_ID }}
+        FCM_CLIENT_X509_CERTIFICATE_URL: ${{ vars.FCM_CLIENT_X509_CERTIFICATE_URL }}
+        FCM_PRIVATE_KEY: ${{ secrets.FCM_PRIVATE_KEY }}
+        FCM_CLIENT_EMAIL: ${{ vars.FCM_CLIENT_EMAIL }}
+        FCM_CLIENT_ID: ${{ vars.FCM_CLIENT_ID }}
+        JWKS_PUBLIC_KEY: ${{ vars.JWKS_PUBLIC_KEY }}
     - name: Upload Files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:

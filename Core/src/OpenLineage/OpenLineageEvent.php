@@ -10,11 +10,14 @@
         private array $inputs;
         private array $outputs;
 
-        public function __construct(string $eventTime, string $jobName, array $inputs, array $outputs) {
+        private readonly string $coreBaseUrl;
+
+        public function __construct(string $eventTime, string $jobName, array $inputs, array $outputs, string $coreBaseUrl) {
             $this->eventTime = $eventTime;
             $this->jobName = $jobName;
             $this->inputs = $inputs;
             $this->outputs = $outputs;
+            $this->coreBaseUrl = $coreBaseUrl;
         }
 
         public function addInput(string $namespace, string $name, mixed $data) : void {
@@ -42,12 +45,12 @@
                     "runId" => self::uuid()
                 ),
                 "job" => array(
-                    "namespace" => BASE_URL,
+                    "namespace" => $this->coreBaseUrl,
                     "name" => $this->jobName
                 ),
                 "inputs" => $this->inputs,
                 "outputs" => $this->outputs,
-                "producer" => BASE_URL . "/openlineage",
+                "producer" => $this->coreBaseUrl . "/openlineage",
                 "schemaURL" => "https://openlineage.io/spec/1-0-2/OpenLineage.json"
             );
         }

@@ -18,14 +18,19 @@
         
         private readonly EncryptionClient $encryptionClient;
 
-        public function __construct(AuthenticationService $authenticationService, GoogleService $googleService, EncryptionClient $encryptionClient) {
+        private readonly string $googleApiClientId;
+        private readonly string $iamBaseUrl;
+
+        public function __construct(AuthenticationService $authenticationService, GoogleService $googleService, EncryptionClient $encryptionClient, string $googleApiClientId, string $iamBaseUrl) {
             $this->authenticationService = $authenticationService;
             $this->googleService = $googleService;
             $this->encryptionClient = $encryptionClient;
+            $this->googleApiClientId = $googleApiClientId;
+            $this->iamBaseUrl = $iamBaseUrl;
         }
 
-        public static function register(App $app, AuthenticationService $authenticationService, GoogleService $googleService, EncryptionClient $encryptionClient) : void {
-            $resource = new self($authenticationService, $googleService, $encryptionClient);
+        public static function register(App $app, AuthenticationService $authenticationService, GoogleService $googleService, EncryptionClient $encryptionClient, string $googleApiClientId, string $iamBaseUrl) : void {
+            $resource = new self($authenticationService, $googleService, $encryptionClient, $googleApiClientId, $iamBaseUrl);
 
             $app->group("/google", function($group) use($resource) {
                 $group->post("/token/api", [$resource, "createApiToken"]);
@@ -55,7 +60,7 @@
             $this->googleService->fetchGoogleApiRefreshToken($code, $userId);
 
             return $response
-                ->withHeader("Location", IAM_BASE_URL)
+                ->withHeader("Location", $this->iamBaseUrl)
                 ->withStatus(302);
         }
 
@@ -63,8 +68,8 @@
             $token = $this->requireJsonBodyField($request, "token");
 
             return $response
-                ->withHeader("Location", sprintf(self::OFFLINE_ACCESS_AUTHORIZATION_CODE_FLOW_URL_FORMAT, GOOGLE_API_CLIENT_ID, 
-                    IAM_BASE_URL . GoogleService::GOOGLE_AUTH_CALLBACK_API_ENDPOINT_PATH, 
+                ->withHeader("Location", sprintf(self::OFFLINE_ACCESS_AUTHORIZATION_CODE_FLOW_URL_FORMAT, $this->googleApiClientId, 
+                    $this->iamBaseUrl . GoogleService::GOOGLE_AUTH_CALLBACK_API_ENDPOINT_PATH, 
                     rawurlencode($this->encryptionClient->encrypt($this->authenticationService->authenticate($token)->getUserId())),
                     rawurlencode(implode(" ", GoogleService::GOOGLE_API_AUTHORIZATION_SCOPES))))
                 ->withStatus(302);

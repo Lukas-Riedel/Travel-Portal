@@ -14,8 +14,10 @@
         private readonly OpenLineageEventManager $openLineageEventManager;
 
         private readonly array $eventHandlers;
+
+        private readonly string $workerQueueName;
         
-        public function __construct(Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners) {
+        public function __construct(Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
             $this->logger = $logger;
             $this->openLineageEventManager = $openLineageEventManager;
             
@@ -30,13 +32,14 @@
                 }
             }
             $this->eventHandlers = $eventHandlers;
+            $this->workerQueueName = $workerQueueName;
         }
 
         public abstract function listen() : void;
 
         protected function onEvent(mixed $event) : void {
             $start = microtime(true);
-            $this->openLineageEventManager->initializeEvent(WORKER_QUEUE_NAME . "/" . $event["name"]);
+            $this->openLineageEventManager->initializeEvent($this->workerQueueName . "/" . $event["name"]);
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
             try {
                 $handlerMethod = self::EVENT_HANDLER_METHOD_PREFIX . $event["name"];

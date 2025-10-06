@@ -15,9 +15,12 @@
 
         private readonly Logger $logger;
 
-        public function __construct(HttpClient $httpClient, Logger $logger) {
+        private readonly string $googleGeminiApiKey;
+
+        public function __construct(HttpClient $httpClient, Logger $logger, string $googleGeminiApiKey) {
             $this->httpClient = $httpClient;
             $this->logger = $logger;
+            $this->googleGeminiApiKey = $googleGeminiApiKey;
         }
 
         public function getResponse(string $query, array $context) : ?string {
@@ -35,7 +38,7 @@
 
             $response = null;
             try {                
-                $response = $this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::GENERATE_CONTENT_URL_FORMAT, GOOGLE_GEMINI_API_KEY),
+                $response = $this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::GENERATE_CONTENT_URL_FORMAT, $this->googleGeminiApiKey),
                     array("Content-Type: application/json"), json_encode($payload))["candidates"][0]["content"]["parts"][0]["text"];
             }
             catch (\Throwable $e) {

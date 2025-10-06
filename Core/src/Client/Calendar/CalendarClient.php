@@ -18,13 +18,16 @@
         private const ATTRIBUTE_KEY_VALUE_DELIMITER = ":";
 
         private readonly GoogleClient $googleClient;
+        
+        private readonly string $coreBaseUrl;
 
         private ?ConfigurationService $configurationService;
 
         private ?EventPublisher $eventPublisher;
 
-        public function __construct(GoogleClient $googleClient) {
+        public function __construct(GoogleClient $googleClient, string $coreBaseUrl) {
             $this->googleClient = $googleClient;
+            $this->coreBaseUrl = $coreBaseUrl;
             $this->configurationService = null;
             $this->eventPublisher = null;
         }
@@ -42,7 +45,7 @@
             $eventId = $this->eventPublisher->publish($event);
 
             $this->googleClient->watchCalendar($calendar, $calendar->value . "_" . time(),
-                sprintf(self::WATCH_CALENDAR_CALLBACK_URL_FORMAT, BASE_URL, $eventId), self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
+                sprintf(self::WATCH_CALENDAR_CALLBACK_URL_FORMAT, $this->coreBaseUrl, $eventId), self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
         }
 
         public function getEvents(Calendar $calendar) : array {

@@ -14,22 +14,31 @@
 
         private readonly HttpClient $httpClient;
 
-        public function __construct(TokenService $tokenService, HttpClient $httpClient) {
+        private readonly string $iamAppClientId;
+        private readonly string $iamBackendClientId;
+        private readonly string $iamBackendClientSecret;
+        private readonly string $internalAdminIamBaseUrl;
+
+        public function __construct(TokenService $tokenService, HttpClient $httpClient, string $iamAppClientId, string $iamBackendClientId, string $iamBackendClientSecret, string $internalAdminIamBaseUrl) {
             $this->tokenService = $tokenService;
             $this->httpClient = $httpClient;
+            $this->iamAppClientId = $iamAppClientId;
+            $this->iamBackendClientId = $iamBackendClientId;
+            $this->iamBackendClientSecret = $iamBackendClientSecret;
+            $this->internalAdminIamBaseUrl = $internalAdminIamBaseUrl;
         }
 
         public function getUserIdsWithRole(string $role) : array {
-            $accessToken = $this->tokenService->getIamResponseWithClientCredentials(IAM_BACKEND_CLIENT_ID, IAM_BACKEND_CLIENT_SECRET)->getAccessToken();
+            $accessToken = $this->tokenService->getIamResponseWithClientCredentials($this->iamBackendClientId, $this->iamBackendClientSecret)->getAccessToken();
 
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_ADMIN_BASE_URL . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, IAM_APP_CLIENT_ID),
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, $this->iamAppClientId),
                 array("Authorization: Bearer " . $accessToken));
 
             if (!is_array($response) || count($response) !== 1 || !isset($response[0]["id"])) {
                 throw new \RuntimeException("There must be exactly one client with the specified identifier. Response: " . json_encode($response));
             }
 
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_ADMIN_BASE_URL . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $response[0]["id"], $role),
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $response[0]["id"], $role),
                 array("Authorization: Bearer " . $accessToken));
                 
             if (!is_array($response)) {

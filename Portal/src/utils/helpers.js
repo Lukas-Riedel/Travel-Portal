@@ -35,7 +35,7 @@ export function getDateRangeString(start, end, includeYear = true) {
 }
 
 export function getMaxEndTimestamp(isAdmin) {
-    return isAdmin ? Number.MAX_SAFE_INTEGER : Math.floor(Date.now() / 1000)
+    return isAdmin ? Number.MAX_SAFE_INTEGER : Math.round(Date.now() / 1000)
 }
 
 export function decapitalize(str) {

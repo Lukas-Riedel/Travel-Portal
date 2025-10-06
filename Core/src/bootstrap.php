@@ -75,7 +75,7 @@
     use Core\Service\Trip\TripStatisticsProvider;
     use Core\Service\Year\YearService;
     use Core\Service\Year\YearServiceListener;
-    use function Secrets\getenv;
+    use function Secrets\getenv; // TODO: Delete when switching to k8s.
     
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message);
@@ -105,24 +105,24 @@
             )
         ))
     ));
-    $logger->pushHandler($handler);
+    $logger->pushHandler($handler); 
 
     // Clients.
-    $databaseClient = new MySQLDatabaseClient(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, $logger);
-    $cacheClient = new RedisCacheClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD);
+    $databaseClient = new MySQLDatabaseClient(getenv("DB_HOST"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $logger);
+    $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $httpClient = new HttpClient($logger);
-    $googleClient = new GoogleClient($cacheClient, $httpClient);
-    $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger);
-    $calendarClient = new CalendarClient($googleClient);
-    $messagingClient = new RabbitMQMessagingClient(RMQ_HOST, RMQ_PORT, RMQ_VHOST, RMQ_USER, RMQ_PASSWORD, $logger);
-    $cloudMessagingClient = new FirebaseCloudMessagingClient(FCM_PROJECT_ID, $httpClient, $logger);
-    $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger);
+    $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("GOOGLE_MAPS_API_KEY"));
+    $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
+    $calendarClient = new CalendarClient($googleClient, getenv("CORE_BASE_URL"));
+    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), $logger);
+    $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $logger);
+    $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);
-    $actualForecastClient = new YrNoActualForecastClient($httpClient);
+    $actualForecastClient = new YrNoActualForecastClient($httpClient, getenv("CORE_BASE_URL"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
 
     // Event producers.
-    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient);
+    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"));
     $calendarClient->setEventPublisher($eventPublisher);
 
     $scheduler = new Scheduler($databaseClient, $eventPublisher);
@@ -135,8 +135,8 @@
     $historicalForecastClient->setConfigurationService($configurationService);
 
     // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService();
-    $authenticationService = new AuthenticationService($httpClient, $cacheClient);
+    $commonAuthenticationService = new CommonAuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY"));
+    $authenticationService = new AuthenticationService($httpClient, $cacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_BASE_URL"));
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
 
@@ -147,8 +147,8 @@
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient);
-    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher);
+    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient, getenv("CORE_BASE_URL"));
+    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, getenv("CORE_BASE_URL"));
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
@@ -189,7 +189,7 @@
         new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, $logger),
         new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
     );
-    $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher);
+    $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
     $messagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cacheClient->setOpenLineageEventManager($openLineageEventManager);
@@ -213,9 +213,9 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
-        new OpenLineageEventManagerListener($openLineageEventManager),
+        new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($databaseClient, $googleClient, $eventPublisher, $scheduler)
     );
-    $eventListener = new RabbitMQEventListener($messagingClient, $logger, $openLineageEventManager, $listeners);
+    $eventListener = new RabbitMQEventListener($messagingClient, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
     $eventPublisher->setDeviceService($deviceService);    
 ?>

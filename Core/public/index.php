@@ -10,10 +10,11 @@
     use Core\Routing\OpenLineageMiddleware;
     use Common\Routing\RequestError;
     use Slim\Handlers\Strategies\RequestResponse;
+    use function Secrets\getenv; // TODO: Delete when switching to k8s.
 
     require_once(__DIR__ . "/src/bootstrap.php");    
 
-    $basePath = parse_url(BASE_URL)["path"] ?? "";
+    $basePath = parse_url(getenv("CORE_BASE_URL"))["path"] ?? "";
 
     $app = AppFactory::create();
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
@@ -25,9 +26,9 @@
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new OpenLineageMiddleware($openLineageEventManager));
-    $app->add(new CorsMiddleware(explode(",", ALLOWED_REQUEST_ORIGINS)));
+    $app->add(new CorsMiddleware(explode(",", getenv("ALLOWED_REQUEST_ORIGINS"))));
 
-    (require_once(__DIR__ . "/src/routes.php"))($app);
+    (require_once(__DIR__ . "/src/routes.php"))($app, getenv("CORE_BASE_URL"));
 
     $app->any("/{path:.*}", function (ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
         $acceptHeader = $request->getHeaderLine("Accept");

@@ -14,15 +14,18 @@
 
         private readonly HttpClient $httpClient;
 
-        public function __construct(HttpClient $httpClient) {
+        private readonly string $ibmCloudApiKey;
+
+        public function __construct(HttpClient $httpClient, string $ibmCloudApiKey) {
             $this->httpClient = $httpClient;
+            $this->ibmCloudApiKey = $ibmCloudApiKey;
         }
 
         public function getIbmCloudAccessToken() : IamResponse {
             $payload = array(
                 "grant_type" => self::IBM_CLOUD_GRANT_TYPE,
                 "response_type" => self::IBM_CLOUD_RESPONSE_TYPE,
-                "apikey" => IBM_CLOUD_API_KEY
+                "apikey" => $this->ibmCloudApiKey
             );     
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, self::IBM_CLOUD_IAM_TOKEN_URL, 

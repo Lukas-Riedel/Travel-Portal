@@ -20,7 +20,7 @@
     use Core\Resource\YearResource;
     use Slim\App;
 
-    return function (App $app) use ($configurationService, $deviceService, $flightService, $categoryService,
+    return function (App $app, string $coreBaseUrl) use ($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
         $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService,
         $photoService, $eventPublisher, $logger) {
@@ -42,6 +42,6 @@
         TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService, $logger);
         PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
         AirportResource::register($app, $flightService, $logger);
-        SwaggerResource::register($app);
+        SwaggerResource::register($app, $coreBaseUrl);
     };
 ?>

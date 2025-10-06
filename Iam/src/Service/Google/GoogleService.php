@@ -47,10 +47,33 @@
         private readonly HttpClient $httpClient;
         private readonly EncryptionClient $encryptionClient;
 
-        public function __construct(UserService $userService, HttpClient $httpClient, EncryptionClient $encryptionClient) {
+        private readonly string $fcmProjectId;
+        private readonly string $fcmPrivateKeyId;
+        private readonly string $fcmPrivateKey;
+        private readonly string $fcmClientEmail;
+        private readonly string $fcmClientId;
+        private readonly string $fcmClientX509CertificateUrl;
+
+        private readonly string $googleApiClientId;
+        private readonly string $googleApiClientSecret;
+
+        private readonly string $iamBaseUrl;
+
+        public function __construct(UserService $userService, HttpClient $httpClient, EncryptionClient $encryptionClient, string $fcmProjectId,
+            string $fcmPrivateKeyId, string $fcmPrivateKey, string $fcmClientEmail, string $fcmClientId, string $googleApiClientId,
+            string $fcmClientX509CertificateUrl, string $googleApiClientSecret, string $iamBaseUrl) {
             $this->userService = $userService;
             $this->httpClient = $httpClient;
             $this->encryptionClient = $encryptionClient;
+            $this->fcmProjectId = $fcmProjectId;
+            $this->fcmPrivateKeyId = $fcmPrivateKeyId;
+            $this->fcmPrivateKey = $fcmPrivateKey;
+            $this->fcmClientEmail = $fcmClientEmail;
+            $this->fcmClientId = $fcmClientId;
+            $this->googleApiClientId = $googleApiClientId;
+            $this->fcmClientX509CertificateUrl = $fcmClientX509CertificateUrl;
+            $this->googleApiClientSecret = $googleApiClientSecret;
+            $this->iamBaseUrl = $iamBaseUrl;
         }
 
         public function getGoogleApiAccessToken() : IamResponse {
@@ -62,9 +85,9 @@
 
             $payload = array(
                 "grant_type" => self::GOOGLE_API_REFRESH_TOKEN_GRANT_TYPE,
-                "client_id" => GOOGLE_API_CLIENT_ID,
-                "client_secret" => GOOGLE_API_CLIENT_SECRET,
-                "redirect_uri" => BASE_URL,
+                "client_id" => $this->googleApiClientId,
+                "client_secret" => $this->googleApiClientSecret,
+                "redirect_uri" => $this->iamBaseUrl,
                 "refresh_token" => $refreshToken,
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );     
@@ -82,15 +105,15 @@
         public function getGoogleFcmAccessToken() : IamResponse {
             $credentials = array(
                 "type" => self::GOOGLE_FCM_ACCOUNT_TYPE,
-                "project_id" => FCM_PROJECT_ID,
-                "private_key_id" => FCM_PRIVATE_KEY_ID,
-                "private_key" => FCM_PRIVATE_KEY,
-                "client_email" => FCM_CLIENT_EMAIL,
-                "client_id" => FCM_CLIENT_ID,
+                "project_id" => $this->fcmProjectId,
+                "private_key_id" => $this->fcmPrivateKeyId,
+                "private_key" => $this->fcmPrivateKey,
+                "client_email" => $this->fcmClientEmail,
+                "client_id" => $this->fcmClientId,
                 "auth_uri" => self::GOOGLE_FCM_AUTH_URL,
                 "token_uri" => self::GOOGLE_API_IAM_TOKEN_URL,
                 "auth_provider_x509_cert_url" => self::GOOGLE_FCM_AUTH_PROVIDER_X509_CERTIFICATE_URL,
-                "client_x509_cert_url" => FCM_CLIENT_X509_CERTIFICATE_URL,
+                "client_x509_cert_url" => $this->fcmClientX509CertificateUrl,
                 "universe_domain" => self::GOOGLE_FCM_UNIVERSE_DOMAIN,
             );
             
@@ -106,9 +129,9 @@
         public function fetchGoogleApiRefreshToken(string $code, string $userId) : void {
             $payload = array(
                 "code" => $code,
-                "client_id" => GOOGLE_API_CLIENT_ID,
-                "client_secret" => GOOGLE_API_CLIENT_SECRET,
-                "redirect_uri" => IAM_BASE_URL . self::GOOGLE_AUTH_CALLBACK_API_ENDPOINT_PATH,
+                "client_id" => $this->googleApiClientId,
+                "client_secret" => $this->googleApiClientSecret,
+                "redirect_uri" => $this->iamBaseUrl . self::GOOGLE_AUTH_CALLBACK_API_ENDPOINT_PATH,
                 "grant_type" => self::GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE,
                 "access_type" => self::GOOGLE_API_ACCESS_TYPE
             );

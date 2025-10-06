@@ -13,10 +13,13 @@
         
         private readonly HttpClient $httpClient;
 
+        private readonly string $coreBaseUrl;
+
         private ?ConfigurationService $configurationService;
 
-        public function __construct(HttpClient $httpClient) {
+        public function __construct(HttpClient $httpClient, string $coreBaseUrl) {
             $this->httpClient = $httpClient;
+            $this->coreBaseUrl = $coreBaseUrl;
         }
 
         public function setConfigurationService(ConfigurationService $configurationService) : void {
@@ -26,7 +29,7 @@
         public function getForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather {
             $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
                 round($latitude, 4), round($longitude, 4)),
-                array("User-Agent: " . BASE_URL . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), null, true);
+                array("User-Agent: " . $this->coreBaseUrl . " " . $this->configurationService->getConfigurationEntry("contactDetails")["email"]), null, true);
 
             if (!isset($apiResponse["properties"]) || !isset($apiResponse["properties"]["timeseries"]) || $apiResponse["properties"]["timeseries"] == null) {
                 throw new \RuntimeException("Unable to fetch the forecast. Response: " . json_encode($apiResponse));

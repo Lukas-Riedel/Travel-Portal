@@ -5,6 +5,7 @@
     use Common\CommonConstants;
     use Common\Routing\AuthorizationException;
     use Slim\Psr7\Request;
+    use function Secrets\getenv; // TODO: Delete when switching to k8s.
     
     abstract class AbstractResource {
 
@@ -19,7 +20,8 @@
 
         public function isServiceAccount(Request $request) : bool {
             $accessToken = $this->getUserInfo($request);
-            return $accessToken->getClient() === IAM_BACKEND_CLIENT_ID;
+            // TODO: Propagate Client ID to a field and use here.
+            return $accessToken->getClient() === getenv("IAM_BACKEND_CLIENT_ID");
         }
 
         public function requireAdmin(Request $request) : void {          

@@ -34,13 +34,16 @@
 
         private readonly TransactionManager $transactionManager;
 
+        private readonly string $coreBaseUrl;
+
         public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
-            EventPublisher $eventPublisher, CacheClient $cacheClient) {
+            EventPublisher $eventPublisher, CacheClient $cacheClient, string $coreBaseUrl) {
             $this->photoMapper = new PhotoMapper($databaseClient, $googleClient);
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cacheClient = $cacheClient;
             $this->transactionManager = $databaseClient;
+            $this->coreBaseUrl = $coreBaseUrl;
         }
 
         public function getAllAlbums() : array {
@@ -234,7 +237,7 @@
                         }
             
                         $filePaths[] = $filePath;
-                        $mainImageUrl = BASE_URL
+                        $mainImageUrl = $this->coreBaseUrl
                             . "/" . self::ALBUM_THUMBNAIL_CACHE_PATH
                             . "/" . $fileName;
                         

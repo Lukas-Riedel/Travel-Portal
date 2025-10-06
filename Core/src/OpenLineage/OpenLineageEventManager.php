@@ -12,14 +12,17 @@
 
         private readonly EventPublisher $eventPublisher;
 
-        public function __construct(array $openLineageEventPublishers, EventPublisher $eventPublisher) {
+        private readonly string $coreBaseUrl;
+
+        public function __construct(array $openLineageEventPublishers, EventPublisher $eventPublisher, string $coreBaseUrl) {
             $this->event = null;
             $this->openLineageEventPublishers = $openLineageEventPublishers;
             $this->eventPublisher = $eventPublisher;
+            $this->coreBaseUrl = $coreBaseUrl;
         }
 
         public function initializeEvent(string $jobName) : void {
-            $this->event = new OpenLineageEvent((new \DateTime("now", new \DateTimeZone("UTC")))->format("Y-m-d\TH:i:s\Z"), $jobName, array(), array());
+            $this->event = new OpenLineageEvent((new \DateTime("now", new \DateTimeZone("UTC")))->format("Y-m-d\TH:i:s\Z"), $jobName, array(), array(), $this->coreBaseUrl);
         }
 
         public function getCurrentEvent() : ?OpenLineageEvent {

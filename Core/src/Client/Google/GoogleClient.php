@@ -44,12 +44,15 @@
         private readonly CacheClient $cacheClient;
         private readonly HttpClient $httpClient;
 
+        private readonly string $googleMapsApiKey;
+
         private ?ConfigurationService $configurationService;
         private ?AuthenticationService $authenticationService;
 
-        public function __construct(CacheClient $cacheClient, HttpClient $httpClient) {
+        public function __construct(CacheClient $cacheClient, HttpClient $httpClient, string $googleMapsApiKey) {
             $this->cacheClient = $cacheClient;
             $this->httpClient = $httpClient;
+            $this->googleMapsApiKey = $googleMapsApiKey;
             $this->configurationService = null;
             $this->authenticationService = null;
         }
@@ -63,7 +66,7 @@
         }
 
         public function getLocation(string $address) : mixed {
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, urlencode($address)));
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_LOCATION_ENDPOINT_FORMAT, $this->googleMapsApiKey, urlencode($address)));
 
             if ($apiResponse["status"] === "OK") {
                 if (count($apiResponse["results"]) > 0) {
@@ -75,12 +78,12 @@
         }
 
         public function getTimezone(float $latitude, float $longitude) : ?string {
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, $this->googleMapsApiKey, $latitude, $longitude));
             return array_key_exists("timeZoneId", $apiResponse) ? $apiResponse["timeZoneId"] : null;           
         }
 
         public function getAddress(float $latitude, float $longitude) : ?string {
-            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, GOOGLE_MAPS_API_KEY, $latitude, $longitude));
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ADDRESS_ENDPOINT_FORMAT, $this->googleMapsApiKey, $latitude, $longitude));
 
             if ($apiResponse["status"] === "OK") {
                 if (count($apiResponse["results"]) > 0) {

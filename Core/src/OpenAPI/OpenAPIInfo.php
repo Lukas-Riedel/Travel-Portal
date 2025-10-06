@@ -13,7 +13,6 @@
         scheme: "bearer",
         bearerFormat: "JWT"
     )]
-    #[OA\Server(url: BASE_URL)]
     class OpenAPIInfo {
         // Intentionally empty.
     }

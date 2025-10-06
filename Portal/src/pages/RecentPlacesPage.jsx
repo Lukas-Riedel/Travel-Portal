@@ -20,7 +20,7 @@ export default function RecentPlacesPage() {
     const isFetching = useRef(false)
 
     // TODO: Add support for skipping and just append new places.
-    const places = useRegularPlaces({ include: "categories,dates,excerpt", limit: currentLimit, maxEnd: Date.now() / 1000, sort: "-oldest" })
+    const places = useRegularPlaces({ include: "categories,dates,excerpt", limit: currentLimit, maxEnd: Math.round(Date.now() / 1000), sort: "-oldest" })
     const countryCategories = useCategories({ categories: "country" })
     const statistics = useStatistics()
 

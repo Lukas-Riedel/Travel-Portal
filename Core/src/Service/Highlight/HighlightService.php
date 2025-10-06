@@ -23,11 +23,14 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher) {
+        private readonly string $coreBaseUrl;
+
+        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher, string $coreBaseUrl) {
             $this->highlightMapper = new HighlightMapper($databaseClient, $photoService);
             $this->photoService = $photoService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
+            $this->coreBaseUrl = $coreBaseUrl;
         }
 
         public function getHighlight(?string $highlightId) : ?Highlight {
@@ -364,7 +367,7 @@
                 }
     
                 $filePaths[] = $filePath;
-                $imageUrl = BASE_URL
+                $imageUrl = $this->coreBaseUrl
                     . "/" . $highlightSize->getCachePath()
                     . "/" . $fileName;
 

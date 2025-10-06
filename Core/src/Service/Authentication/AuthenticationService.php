@@ -25,13 +25,20 @@
         private readonly HttpClient $httpClient;
         private readonly CacheClient $cacheClient;
 
-        public function __construct(HttpClient $httpClient, CacheClient $cacheClient) {
+        private readonly string $iamBackendClientId;
+        private readonly string $iamBackendClientSecret;
+        private readonly string $iamBaseUrl;
+
+        public function __construct(HttpClient $httpClient, CacheClient $cacheClient, string $iamBackendClientId, string $iamBackendClientSecret, string $iamBaseUrl) {
             $this->httpClient = $httpClient;
             $this->cacheClient = $cacheClient;
+            $this->iamBackendClientId = $iamBackendClientId;
+            $this->iamBackendClientSecret = $iamBackendClientSecret;
+            $this->iamBaseUrl = $iamBaseUrl;
         }
 
         public function getUserIdsWithRole(string $role) : array {
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, IAM_BASE_URL . sprintf(self::USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT, $role),
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->iamBaseUrl . sprintf(self::USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT, $role),
                 array("Authorization: Bearer " . $this->getServiceAccessToken()));
                 
             if (!is_array($response)) {
@@ -47,7 +54,7 @@
                 return $cachedGoogleApiAccessToken;
             }
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::GOOGLE_API_TOKEN_API_ENDPOINT_PATH,
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::GOOGLE_API_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Length: 0", "Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!isset($response["accessToken"])) {
@@ -64,7 +71,7 @@
                 return $cachedGoogleFcmAccessToken;
             }
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::GOOGLE_FCM_TOKEN_API_ENDPOINT_PATH,
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::GOOGLE_FCM_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Length: 0", "Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!isset($response["accessToken"])) {
@@ -81,7 +88,7 @@
                 return $cachedIbmCloudAccessToken;
             }
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::IBM_CLOUD_TOKEN_API_ENDPOINT_PATH,
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::IBM_CLOUD_TOKEN_API_ENDPOINT_PATH,
                 array("Content-Length: 0", "Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!isset($response["accessToken"])) {
@@ -99,11 +106,11 @@
             }
 
             $payload = array(
-                "clientId" => IAM_BACKEND_CLIENT_ID,
-                "clientSecret" => IAM_BACKEND_CLIENT_SECRET
+                "clientId" => $this->iamBackendClientId,
+                "clientSecret" => $this->iamBackendClientSecret
             );
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, IAM_BASE_URL . self::TOKEN_API_ENDPOINT_PATH, array(), $payload);
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::TOKEN_API_ENDPOINT_PATH, array(), $payload);
 
             if (!isset($response["accessToken"])) {
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));

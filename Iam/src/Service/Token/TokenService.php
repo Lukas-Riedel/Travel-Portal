@@ -15,14 +15,19 @@
 
         private readonly HttpClient $httpClient;
 
-        public function __construct(HttpClient $httpClient) {
+        private readonly string $iamAppClientId;
+        private readonly string $internalIamServiceUrl;
+
+        public function __construct(HttpClient $httpClient, string $iamAppClientId, string $internalIamServiceUrl) {
             $this->httpClient = $httpClient;
+            $this->iamAppClientId = $iamAppClientId;
+            $this->internalIamServiceUrl = $internalIamServiceUrl;
         }
 
         public function getIamResponseWithCredentials(string $username, string $password, ?string $scope) : IamResponse {
             $payload = array(
                 "grant_type" => self::IAM_SERVICE_CREDENTIALS_GRANT_TYPE,
-                "client_id" => IAM_APP_CLIENT_ID,
+                "client_id" => $this->iamAppClientId,
                 "username" => $username,
                 "password" => $password
             );
@@ -37,7 +42,7 @@
         public function getIamResponseWithRefresh(string $refreshToken, ?string $scope) : IamResponse {
             $payload = array(
                 "grant_type" => self::IAM_SERVICE_REFRESH_TOKEN_GRANT_TYPE,
-                "client_id" => IAM_APP_CLIENT_ID,
+                "client_id" => $this->iamAppClientId,
                 "refresh_token" => $refreshToken
             );
 
@@ -63,7 +68,7 @@
         }
 
         private function getIamResponse(mixed $payload) : IamResponse {
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, INTERNAL_IAM_BASE_URL . self::IAM_SERVICE_ACCESS_TOKEN_API_ENDPOINT_PATH, 
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->internalIamServiceUrl . self::IAM_SERVICE_ACCESS_TOKEN_API_ENDPOINT_PATH, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
                 
             if (isset($response["error_description"])) {
