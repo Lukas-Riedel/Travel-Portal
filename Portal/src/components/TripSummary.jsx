@@ -61,7 +61,9 @@ export default function TripSummary({ trip }) {
 
     const [targetLocation, setTargetLocation] = useState(null)
 
-    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(new Date().getHours() < 10 ? Date.now() - (86400 * 1000) : Date.now())))?.address, [trip?.stays])
+    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (toZonedTime(new Date(), lastSeenBridgeXDevice?.timezone || "UTC").getHours() < 10 ? 86400 : 0))))?.address,
+        [trip, lastSeenBridgeXDevice?.timezone])
+
 
     useEffect(() => {
         if (!targetAddress) {

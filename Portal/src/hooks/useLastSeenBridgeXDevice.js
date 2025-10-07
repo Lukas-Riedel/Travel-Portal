@@ -13,7 +13,6 @@ export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
 
     const lastSeenDevice = useMemo(() => devices?.find(device => device.data?.address && device.data?.latitude && device.data?.longitude), [devices])
 
-
     useEffect(() => {
         if (!lastSeenDevice) {
             return
