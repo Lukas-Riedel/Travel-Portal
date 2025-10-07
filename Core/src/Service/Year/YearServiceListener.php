@@ -32,6 +32,20 @@
             }
         }
 
+        public function onHighlightRemoved(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Year->value) {
+                $year = $this->yearService->getYear($message["entityId"]);
+                if ($year != null && ($year->getMainHighlight() === null || $year->getMainHighlight()->getId() === $message["highlightId"])) {
+                    if (count($year->getHighlights()) > 0) {
+                        $this->yearService->updateYearMainHighlight($year->getId(), $year->getHighlights()[0]->getId());
+                    } 
+                    else {
+                        $this->yearService->updateYearMainHighlight($year->getId(), null);
+                    }
+                }
+            }
+        }
+
         public function onSchedulerTriggered(mixed $message) : void {  
             if ($this->scheduler->requestExecution(self::UPDATE_YEAR_STATISTICS_ACTION_NAME, self::UPDATE_YEAR_STATISTICS_ACTION_INTERVAL)) {                
                 $years = $this->yearService->getYears(array());

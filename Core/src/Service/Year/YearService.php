@@ -38,7 +38,7 @@
             return $yearIdentifier;
         }
 
-        public function updateYearMainHighlight(int $year, string $highlightIdentifier) : bool {
+        public function updateYearMainHighlight(int $year, ?string $highlightIdentifier) : bool {
             return $this->yearMapper->updateYearMainHighlight($year, $highlightIdentifier);
         }
     }

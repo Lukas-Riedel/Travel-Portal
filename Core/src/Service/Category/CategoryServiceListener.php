@@ -48,6 +48,20 @@
             }
         }
 
+        public function onHighlightRemoved(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Category->value) {
+                $category = $this->categoryService->getCategory($message["entityId"]);
+                if ($category != null && ($category->getMainHighlight() === null || $category->getMainHighlight()->getId() === $message["highlightId"])) {
+                    if (count($category->getHighlights()) > 0) {
+                        $this->categoryService->updateCategoryMainHighlight($category->getId(), $category->getHighlights()[0]->getId());
+                    } 
+                    else {
+                        $this->categoryService->updateCategoryMainHighlight($category->getId(), null);
+                    }
+                }
+            }
+        }
+
         public function onConfigurationEntryUpdated(mixed $message) : void {
             if ($message["key"] === "countryNames") {
                 $this->categoryService->removeStaleCategoryIdentifiers();

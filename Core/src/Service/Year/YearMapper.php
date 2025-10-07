@@ -90,7 +90,7 @@
             return $wasInserted;
         }
 
-        public function updateYearMainHighlight(int $year, string $highlightIdentifier) : bool {
+        public function updateYearMainHighlight(int $year, ?string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE year_identifier
                 SET main_highlight_id = ?

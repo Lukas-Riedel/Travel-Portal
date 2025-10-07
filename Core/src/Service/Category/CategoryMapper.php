@@ -379,7 +379,7 @@
             return $wasInserted;
         }
 
-        public function updateCategoryMainHighlight(string $categoryId, string $highlightIdentifier) : bool {
+        public function updateCategoryMainHighlight(string $categoryId, ?string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE category_identifier
                 SET main_highlight_id = ?

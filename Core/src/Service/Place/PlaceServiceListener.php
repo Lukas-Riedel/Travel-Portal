@@ -97,6 +97,11 @@
         public function onHighlightRemoved(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Place->value) {
                 $this->updatePlaceQuality($message["entityId"]);
+
+                $place = $this->placeService->getRegularPlace($message["entityId"]);
+                if ($place != null && $place->getMainHighlight() === null && count($place->getHighlights()) > 0) {
+                    $this->placeService->updatePlaceMainHighlight($place->getId(), $place->getHighlights()[0]->getId());
+                }
             }
         }
 

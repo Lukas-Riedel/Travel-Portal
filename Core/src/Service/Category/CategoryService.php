@@ -140,7 +140,7 @@
             return $this->categoryMapper->selectAllGeographicalRegions();
         }
 
-        public function updateCategoryMainHighlight(string $categoryId, string $highlightIdentifier) : bool {
+        public function updateCategoryMainHighlight(string $categoryId, ?string $highlightIdentifier) : bool {
             return $this->categoryMapper->updateCategoryMainHighlight($categoryId, $highlightIdentifier);
         }
 

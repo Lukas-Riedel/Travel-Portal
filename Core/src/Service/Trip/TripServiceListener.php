@@ -77,6 +77,15 @@
                     $this->tripService->updateTripMainHighlight($message["entityId"], $message["highlightId"]);
                 }
             }
+        }        
+
+        public function onHighlightRemoved(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Trip->value) {
+                $trip = $this->tripService->getRegularTrip($message["entityId"]);
+                if ($trip != null && $trip->getMainHighlight() === null && count($trip->getHighlights()) > 0) {
+                    $this->tripService->updateTripMainHighlight($trip->getId(), $trip->getHighlights()[0]->getId());
+                }
+            }
         }
 
         public function onSchedulerTriggered(mixed $message) : void {   
