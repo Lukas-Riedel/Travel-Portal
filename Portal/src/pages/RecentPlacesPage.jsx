@@ -24,7 +24,7 @@ export default function RecentPlacesPage() {
     const countryCategories = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
-    const { trip: upcomingOrCurrentTrip } = useUpcomingOrCurrentTrip()
+    const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()
 
     useEffect(() => {
         if (places?.length) {
@@ -68,7 +68,10 @@ export default function RecentPlacesPage() {
             </div>
             <StatisticsPanel statistics={statistics} />
             {(isAdmin || upcomingOrCurrentTrip?.isCurrent()) && (
-                <TripSummary trip={upcomingOrCurrentTrip} />
+                <TripSummary
+                    trip={upcomingOrCurrentTrip}
+                    onNoteAdded={createTripNote}
+                    onNoteRemoved={removeTripNote} />
             )}
             <PlaceSummaryList places={displayedPlaces} />
             {displayedPlaces && isFetching.current && (

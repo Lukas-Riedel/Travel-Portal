@@ -60,6 +60,8 @@ export default function TripPage() {
                 places={tripPlaces}
                 tripCandidates={candidateTrips}
                 onPhotosAdded={!trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
+                onNoteAdded={createTripNote}
+                onNoteRemoved={removeTripNote}
                 onTripMoved={moveTrip}
                 onTripLoaded={loadTrip} />
             <PlaceTileGrid

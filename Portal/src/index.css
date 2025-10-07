@@ -26,7 +26,7 @@ body {
 }
 
 .btn-icon-hover {
-    @apply rounded-full hover:bg-gray-200 transition-colors
+    @apply rounded-full hover:bg-gray-200 transition-colors p-[2px]
 }
 
 .prose a {

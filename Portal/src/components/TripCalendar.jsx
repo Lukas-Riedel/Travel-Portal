@@ -7,9 +7,8 @@ import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
 import { toZonedTime } from "date-fns-tz"
-import { cs } from "date-fns/locale"
 
-export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded }) {
+export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
     const { isAdmin } = useAuth()
 
@@ -56,11 +55,12 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                         day={day}
                         events={places && trip.getEvents(day, places, timezone)}
                         stay={trip.getStay(day)}
-                        // TODO: The note prefix must be aligned with what's in DayCard. And this is duplicated in TripSummary.
-                        notes={trip?.notes?.filter(note => note.content.startsWith(format(day, "d.M.", { locale: cs })))?.map(note => ({ ...note, content: note.content.split(" ").slice(1).join(" ") }))}
+                        noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
                         fitness={trip.fitness && trip.fitness[index]}
                         publicHoliday={trip.getPublicHoliday(day)}
                         timezone={timezone}
+                        onNoteAdded={onNoteAdded}
+                        onNoteRemoved={onNoteRemoved}
                         onPhotosAdded={onPhotosAdded} />
                 ))}
             </CardGrid>

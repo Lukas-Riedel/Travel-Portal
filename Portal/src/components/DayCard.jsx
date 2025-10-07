@@ -2,7 +2,7 @@ import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
 import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash, Trash2, Plus } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
@@ -11,6 +11,8 @@ import Tooltip from "./Tooltip"
 import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import { useDevices } from "../hooks/useDevices"
+import showConfirmToast from "./ConfirmToast"
+import showInputToast from "./InputToast"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -58,11 +60,33 @@ const weatherIcons = {
 const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
 
-export default function DayCard({ day, events, stay, fitness, notes, publicHoliday, timezone, onPhotosAdded }) {
+export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
+
+    const notePrefix = useMemo(() => format(day, "d.M.", { locale: cs }) + " ", [day])
+    const notes = useMemo(() => noteSelector && noteSelector(notePrefix), [noteSelector, notePrefix])
+
+    const handleNoteRemoved = noteId => {
+        showConfirmToast(
+            "Opravdu chceš odstranit vybranou poznámku?",
+            "Poznámka byla úspěšně odstraněna",
+            "Nepodařilo se odstranit poznámku",
+            async () => onNoteRemoved(noteId)
+        )
+    }
+
+    const handleNoteCreated = () => {
+        showInputToast(
+            "Zadej obsah poznámky:",
+            "",
+            "Poznámka byla úspěšně přidána",
+            "Nepodařilo se přidat poznámku",
+            async description => onNoteAdded(notePrefix + description)
+        )
+    }
 
     const renderDescriptionRow = (color, items) => items?.length > 0 && (
         <div className={`flex items-center text-xs ${color} space-x-1`}>
@@ -97,7 +121,9 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
         <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
             <div className="mb-4">
                 <div className="flex justify-between items-start">
-                    <span className="font-bold whitespace-nowrap leading-none">
+                    <span
+                        className={`font-bold whitespace-nowrap leading-none ${isAdmin && onNoteAdded ? "hover:underline hover:text-gray-600 hover:cursor-pointer transition-colors duration-200" : ""}"`}
+                        onClick={isAdmin && onNoteAdded && handleNoteCreated}>
                         {day?.getFullYear() > 1970 ? format(day, "EEE d.M.", { locale: cs }) : `Den ${Math.floor(day.getTime() / (1000 * 60 * 60 * 24)) + 2}`}
                     </span>
                     {stay && (
@@ -187,7 +213,7 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                                         </span>
                                     )}
                                     {onPhotosAdded && isAdmin && (
-                                        <button className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}
+                                        <button className={requiresAttention(event) ? "btn-icon-hover text-red-600" : "btn-icon-hover text-indigo-600"}
                                             onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start)}>
                                             <ImagePlus size={16} />
                                         </button>
@@ -269,11 +295,24 @@ export default function DayCard({ day, events, stay, fitness, notes, publicHolid
                     {notes.map(note => (
                         <li
                             key={note.id}
-                            className="clear-left">
-                            <NotebookPen
-                                className="float-left w-4 h-4 mr-1 my-[2px] shrink-0"
-                                size={12} />
-                            <span dangerouslySetInnerHTML={{ __html: note.content }} />
+                            className="clear-left flex items-center space-x-2">
+                            <NotebookPen className="w-4 h-4 shrink-0" />
+                            <div className="relative group inline-block flex-1 min-w-0">
+                                <span
+                                    className="truncate block"
+                                    dangerouslySetInnerHTML={{ __html: note.content }} />
+                                <Tooltip>
+                                    <NotebookPen size={16} />
+                                    <span dangerouslySetInnerHTML={{ __html: note.content }} />
+                                </Tooltip>
+                            </div>
+                            {onNoteRemoved && (
+                                <button
+                                    className="btn-icon-hover"
+                                    onClick={() => handleNoteRemoved(note.id)}>
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                         </li>
                     ))}
                 </ul>

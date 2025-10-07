@@ -12,10 +12,9 @@ import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { formatTimeAgo } from "../utils/formatters"
-import { cs } from "date-fns/locale"
 import { getCoordinates } from "../clients/coreClient"
 
-export default function TripSummary({ trip }) {
+export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
@@ -175,10 +174,11 @@ export default function TripSummary({ trip }) {
                     events={tripPlaces && trip?.getEvents(day, tripPlaces, timezone)}
                     stay={trip?.getStay(day)}
                     fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
-                    // TODO: The note prefix must be aligned with what's in DayCard. And this is duplicated in TripCalendar.
-                    notes={trip?.notes?.filter(note => note.content.startsWith(format(day, "d.M.", { locale: cs })))?.map(note => ({ ...note, content: note.content.split(" ").slice(1).join(" ") }))}
+                    noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
                     publicHoliday={trip?.getPublicHoliday(day)}
                     timezone={timezone}
+                    onNoteAdded={onNoteAdded}
+                    onNoteRemoved={onNoteRemoved}
                     onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
             ))?.filter(Boolean)?.slice(0, count)}
             <button
