@@ -150,7 +150,7 @@ export default function Map({ points, lines, onRightClick }) {
     }, [points?.length, lines?.length])
 
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey: import.meta.env.VITE_FRONTEND_GOOGLE_MAPS_API_KEY,
         language: "cs",
         region: "CZ"
     })

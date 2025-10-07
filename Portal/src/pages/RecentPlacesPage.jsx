@@ -68,7 +68,7 @@ export default function RecentPlacesPage() {
             </div>
             <StatisticsPanel statistics={statistics} />
             {(isAdmin || upcomingOrCurrentTrip?.isCurrent()) && (
-                <TripSummary tripId={upcomingOrCurrentTrip?.id} />
+                <TripSummary trip={upcomingOrCurrentTrip} />
             )}
             <PlaceSummaryList places={displayedPlaces} />
             {displayedPlaces && isFetching.current && (

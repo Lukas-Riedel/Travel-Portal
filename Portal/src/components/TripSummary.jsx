@@ -3,7 +3,6 @@ import { eachDayOfInterval, format, fromUnixTime, startOfDay } from "date-fns"
 import { getCachedCoordinates, getDateRangeString, getHaversineDistance, getTimeString } from "../utils/helpers"
 import DayCard from "./DayCard"
 import { Link } from "react-router-dom"
-import { useTrip } from "../hooks/useTrip"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
@@ -16,13 +15,12 @@ import { formatTimeAgo } from "../utils/formatters"
 import { cs } from "date-fns/locale"
 import { getCoordinates } from "../clients/coreClient"
 
-export default function TripSummary({ tripId }) {
+export default function TripSummary({ trip }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
-    const { trip } = useTrip(tripId)
-    const tripPlaces = useRegularPlaces({ tripId, include: "categories,dates" })
+    const tripPlaces = useRegularPlaces({ tripId: trip?.id, include: "categories,dates" })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
         ...(trip?.stays.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
         ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),

@@ -109,7 +109,7 @@ export default function AdminPage() {
                 setActiveTab={setActiveTab} />
             {activeTab === 0 && (
                 <>
-                    <TripSummary tripId={upcomingOrCurrentTrip?.id} />
+                    <TripSummary trip={upcomingOrCurrentTrip} />
                     <NoteBar
                         notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
                         onNoteCreated={createTripNote}
