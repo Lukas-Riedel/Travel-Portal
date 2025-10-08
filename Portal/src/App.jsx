@@ -22,6 +22,10 @@ import AlbumPage from "./pages/AlbumPage"
 import AdminPage from "./pages/AdminPage"
 import RecentPlacesPage from "./pages/RecentPlacesPage"
 import { formatNewProblems } from "./utils/formatters"
+import PlaceHighlightsPage from "./pages/PlaceHighlightsPage"
+import TripHighlightsPage from "./pages/TripHighlightsPage"
+import CategoryHighlightsPage from "./pages/CategoryHighlightsPage"
+import YearHighlightsPage from "./pages/YearHighlightsPage"
 
 export default function App() {
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
@@ -102,11 +106,15 @@ function AppContent() {
             <Route path="/feed" element={<MainLayout><RecentPlacesPage /></MainLayout>} />
             <Route path="/trip" element={<MainLayout><YearsPage /></MainLayout>} />
             <Route path="/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
+            <Route path="/trip/:tripId/highlight" element={<MainLayout><TripHighlightsPage /></MainLayout>} />
             <Route path="/year/:year" element={<MainLayout><YearPage /></MainLayout>} />
+            <Route path="/year/:year/highlight" element={<MainLayout><YearHighlightsPage /></MainLayout>} />
             <Route path="/place" element={<MainLayout><CountriesPage /></MainLayout>} />
             <Route path="/place/:placeId" element={<MainLayout><PlacePage /></MainLayout>} />
             <Route path="/place/:placeId/album/:albumId" element={<MainLayout><AlbumPage /></MainLayout>} />
+            <Route path="/place/:placeId/highlight" element={<MainLayout><PlaceHighlightsPage /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><CategoryPage /></MainLayout>} />
+            <Route path="/category/:categoryId/highlight" element={<MainLayout><CategoryHighlightsPage /></MainLayout>} />
             <Route path="/label/:labelId" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
             <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />

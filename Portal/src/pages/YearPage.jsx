@@ -31,7 +31,8 @@ export default function YearPage() {
         <>
             <PageHeader
                 name={year?.id}
-                categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
+                categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
+                showHighlightsButton={true} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={year}
                 places={yearPlaces}

@@ -58,6 +58,7 @@ export default function CategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={{ "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / categoryPlaces.length)}%`, "Celkové skóre": totalScore }}
+                showHighlightsButton={true}
                 onNameChanged={updateCategoryName} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}

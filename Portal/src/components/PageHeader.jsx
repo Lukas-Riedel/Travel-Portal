@@ -1,11 +1,12 @@
-import { SquarePen, Trash2 } from "lucide-react"
+import { Images, SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
 import showConfirmToast from "./ConfirmToast"
 import React, { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 
-export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved }) {
+export default function PageHeader({ name, categories, internalAttributes, showHighlightsButton, onNameChanged, onRemoved }) {
     const { isAdmin } = useAuth()
 
     const [isMobile, setIsMobile] = useState(false)
@@ -41,13 +42,22 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                     onClick={handleNameChanged}
                     className="btn-chip-gray">
                     <SquarePen size={16} />
-                </button>)}
+                </button>
+            )}
             {onRemoved && (
                 <button
                     onClick={handleRemoved}
                     className="btn-chip-gray">
                     <Trash2 size={16} />
-                </button>)}
+                </button>
+            )}
+            {isAdmin && showHighlightsButton && (
+                <Link
+                    to={`${location.pathname}/highlight`}
+                    className="btn-chip-gray">
+                    <Images size={16} />
+                </Link>
+            )}
         </>
     )
 

@@ -153,7 +153,7 @@
 
             $wasCreated = true;
             $this->transactionManager->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasCreated) {
-                $wasCreated &= $this->highlightMapper->deleteHighlight(highlightType::Category, $categoryId, $highlightId) > 0;
+                $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Category, $categoryId, $highlightId) > 0;
                 if ($wasCreated) {
                     $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId));
                 }                   
@@ -169,7 +169,7 @@
 
             $wasCreated = true;
             $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasCreated) {
-                $wasCreated &= $this->highlightMapper->deleteHighlight(highlightType::Year, $year, $highlightId) > 0;
+                $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Year, $year, $highlightId) > 0;
                 if ($wasCreated) {
                     $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $year, $highlightId));
                 }                  

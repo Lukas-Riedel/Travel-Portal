@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata } from "../clients/coreClient"
+import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata, createCategoryHighlight } from "../clients/coreClient"
 
 export const useCategory = categoryId => {
     const { isAdmin } = useAuth()
@@ -22,6 +22,7 @@ export const useCategory = categoryId => {
         category: query.data,
         updateCategoryName: name => updateCategoryName(categoryId, name).then(setCategory),
         updateCategoryMetadata: metadata => updateCategoryMetadata(categoryId, metadata).then(setCategory),
+        createCategoryHighlight: photoId => createCategoryHighlight(categoryId, photoId).then(refetchCategory),
         removeCategoryHighlight: highlightId => removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),
         updateCategoryMainHighlight: highlightId => updateCategoryMainHighlight(categoryId, highlightId).then(setCategory),
         updateCategoryHighlightQualityAttributes: (highlightId, composition, sky, shadows, circumstances, atmosphere) =>

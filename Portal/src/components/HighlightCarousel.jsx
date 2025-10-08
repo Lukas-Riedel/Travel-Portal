@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Pause, Play, Trash2, Star, SlidersVertical, Grid3x3, Edit2 } from "lucide-react"
+import { Pause, Play, Trash2, Star, SlidersVertical, Grid3x3, Edit2, Plus } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
 import { TailSpin } from "react-loader-spinner"
@@ -15,7 +15,7 @@ import { useDevices } from "../hooks/useDevices"
 const invalidPhotoId = "INVALID_PHOTO_ID"
 const agentOnlineStatusThresholdSeconds = 60
 
-export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
+export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const agents = useDevices({ type: "agent" })
@@ -27,17 +27,13 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const [isPaused, setIsPaused] = useState(isAdmin)
     const [showGrid, setShowGrid] = useState(false)
-    const didShuffleRef = useRef(false)
 
     useEffect(() => {
-        if (!highlights?.length) {
-            didShuffleRef.current = false
-            setShuffledHighlights([])
-        }
-        else if (!didShuffleRef.current) {
+        if (!isAdmin) {
             setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
-            setCurrentHighlightIndex(0)
-            didShuffleRef.current = true
+        }
+        else {
+            setShuffledHighlights(highlights ?? [])
         }
     }, [highlights])
 
@@ -49,6 +45,21 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % shuffledHighlights.length), 7000)
         return () => clearInterval(interval)
     }, [shuffledHighlights, isPaused])
+
+    const handleHighlightCreated = () => {
+        const highlight = shuffledHighlights[currentHighlightIndex]
+        showConfirmToast("Opravdu chceš přidat tento highlight?",
+            "Highlight byl úspěšně přidán",
+            "Nepodařilo se přidat highlight",
+            async () => {
+                return onHighlightCreated(highlight.photo.id).then(_ => {
+                    const newHighlights = [...shuffledHighlights]
+                    newHighlights.splice(currentHighlightIndex, 1)
+                    setShuffledHighlights(newHighlights)
+                    setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
+                })
+            })
+    }
 
     const handlePhotoReplaced = () => {
         showFormToast(
@@ -186,6 +197,13 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 </div>
             )}
             <div className="absolute top-3 right-3 flex space-x-2">
+                {onHighlightCreated && isAdmin && (
+                    <button
+                        onClick={handleHighlightCreated}
+                        className="btn-chip-gray">
+                        {<Plus size={16} />}
+                    </button>
+                )}
                 {isAdmin && (
                     <button
                         onClick={() => setShowGrid(prev => !prev)}
