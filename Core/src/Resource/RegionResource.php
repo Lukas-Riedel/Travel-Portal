@@ -7,8 +7,9 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Service\Category\CategoryCategory;
-    use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Category\CategoryService;
+    use Core\Service\Category\CompositeRegion;
+    use Core\Service\Category\GeographicalRegion;
     use Core\Service\Category\RegionType;
 
     #[OA\Tag(name: "Regions")]
@@ -114,7 +115,12 @@
                 new OA\Response(
                     response: 201,
                     description: "Success. The region was created.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/CategoryIdentifier")
+                    content: new OA\JsonContent(
+                        oneOf: [
+                            new OA\Schema(ref: "#/components/schemas/GeographicalRegion"),
+                            new OA\Schema(ref: "#/components/schemas/CompositeRegion"),
+                        ]
+                    )
                 ),
                 new OA\Response(
                     response: 400,
@@ -171,7 +177,7 @@
             };
         }
 
-        private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {
+        private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
             $country = $this->getJsonBodyField($request, "country");
             $radius = $this->requireJsonBodyField($request, "radius");
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
@@ -179,7 +185,7 @@
             return $this->categoryService->createGeographicalRegion($name, $country, $category->value, $radius, $geoJson);
         }
 
-        private function handleCreateGeographicalExtensionRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {
+        private function handleCreateGeographicalExtensionRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
             $country = $this->getJsonBodyField($request, "country");
             $latitude = $this->requireJsonBodyField($request, "latitude");
             $longitude = $this->requireJsonBodyField($request, "longitude");
@@ -187,7 +193,7 @@
             return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $latitude, $longitude);
         }
 
-        private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category) : CategoryIdentifier {
+        private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category) : CompositeRegion {
             $includedRegions = $this->requireJsonBodyField($request, "includedRegions");
             $excludedRegions = $this->requireJsonBodyField($request, "excludedRegions");
             
