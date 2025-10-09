@@ -19,11 +19,11 @@ export default function YearPage() {
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
-    const yearPlaces = useTimeFilteredRegularPlaces({ year: yearParameter, include: "categories" })
+    const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: "categories" })
     const yearTrips = useRegularTrips({ year: yearParameter, include: "expenses" })
 
-    const countryCategoriesMap = useMemo(() => new Map(yearPlaces?.map(place => place.getCategory("country"))
-        ?.filter(Boolean)?.map(category => [category.name, category])), [yearPlaces])
+    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
+        ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)
 
@@ -35,7 +35,7 @@ export default function YearPage() {
                 showHighlightsButton={true} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={year}
-                places={yearPlaces}
+                places={places}
                 placeMainCategorySelector={getPlaceCategory}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removeYearHighlight}

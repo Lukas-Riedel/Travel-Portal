@@ -19,7 +19,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
-    const tripPlaces = useRegularPlaces({ tripId: trip?.id, include: "categories,dates" })
+    const { places } = useRegularPlaces({ tripId: trip?.id, include: "categories,dates" })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
         ...(trip?.stays.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
         ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
@@ -54,7 +54,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
         start: startOfDay(toZonedTime(fromUnixTime(Math.max(trip?.start, Date.now() / 1000)), timezone)),
         end: startOfDay(toZonedTime(fromUnixTime(trip?.end - 1), timezone))
     }), [timezone, trip])
-    const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
+    const tripPlacesWithoutLayover = useMemo(() => trip && places?.filter(place => !place.dates?.some(date => date?.layover)), [places])
     const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
@@ -171,7 +171,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                 <DayCard
                     key={index}
                     day={day}
-                    events={tripPlaces && trip?.getEvents(day, tripPlaces, timezone)}
+                    events={places && trip?.getEvents(day, places, timezone)}
                     stay={trip?.getStay(day)}
                     fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}

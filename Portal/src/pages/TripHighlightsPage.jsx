@@ -11,7 +11,7 @@ export default function TripHighlightsPage() {
     const { tripId } = useParams()
 
     const { trip, createTripHighlight } = useTrip(tripId)
-    const places = useRegularPlaces({ tripId, include: "categories,dates" })
+    const { places } = useRegularPlaces({ tripId, include: "categories,dates" })
 
     const [highlightCandidates, setHighlightCandidates] = useState(null)
     const [currentHighlights, setCurrentHighlights] = useState(null)

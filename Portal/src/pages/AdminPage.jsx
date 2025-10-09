@@ -26,9 +26,12 @@ import {
     createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum, updateCategoryMetadata,
     listRegularPlaces, createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness
 } from "../clients/coreClient"
+import PlaceCardGrid from "../components/PlaceCardGrid"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import showConfirmToast from "../components/ConfirmToast"
 
 // TODO: Make it dynamic - if the sub-page has nothing to show, hide the label.
-const labels = ["Aktuální výlet", "Sledované lety", "Aerolinky", "Hlášené problémy", "Konfigurace", "Zařízení"]
+const labels = ["Aktuální výlet", "Sledované lety", "Aerolinky", "Hlášené problémy", "Konfigurace", "Zařízení", "Trvalá místa"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
@@ -42,6 +45,7 @@ export default function AdminPage() {
     const trips = useRegularTrips({ include: "watchedFlights" })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
+    const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
 
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
     const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
@@ -98,6 +102,19 @@ export default function AdminPage() {
             "Aerolinka byla úspěšně přidána",
             "Při přidávání aerolinky došlo k chybě",
             createAirline
+        )
+    }
+
+    const handlePermanentPlaceCreated = () => {
+        showFormToast(
+            "Zadej údaje o místě k přidání:",
+            [
+                { label: "Jméno", required: true },
+                { label: "Adresa", required: false }
+            ],
+            "Místo bylo úspěšně přidáno",
+            "Při přidávání místa došlo k chybě",
+            async (name, address) => createPermanentPlace(name, address || name)
         )
     }
 
@@ -170,11 +187,16 @@ export default function AdminPage() {
                     onConfigurationUpdated={updateConfigurationEntry} />
             )}
             {activeTab === 5 && (
+                <DeviceCardGrid devices={devices} />
+            )}
+            {activeTab === 6 && (
                 <>
-                    <DeviceCardGrid devices={devices} />
+                    <PlaceCardGrid
+                        places={permanentPlaces}
+                        onPlaceRemoved={removePermanentPlace} />
                     <FloatingButton
                         icon={Plus}
-                        onClick={handleFlightCreated} />
+                        onClick={handlePermanentPlaceCreated} />
                 </>
             )}
         </>

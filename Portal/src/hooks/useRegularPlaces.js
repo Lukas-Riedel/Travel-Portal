@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext"
 import Place from "../model/place"
 import { useEvents } from "./useEvents"
 import { useEffect, useMemo } from "react"
-import { listRegularPlaces } from "../clients/coreClient"
+import { createPermanentPlace, listRegularPlaces, removePermanentPlace } from "../clients/coreClient"
 
 export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort } = {}) => {
     const { isAdmin } = useAuth()
@@ -29,6 +29,12 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
             query.refetch()
         }
     }, [processingStartedEvents])
+    
+    const refetchPermanentPlaces = _ => query.refetch()
 
-    return query.data && query.data.map(place => new Place(place))
+    return {
+        places: query.data && query.data.map(place => new Place(place)),
+        createPermanentPlace: (name, address) => createPermanentPlace(name, address).then(refetchPermanentPlaces),
+        removePermanentPlace: placeId => removePermanentPlace(placeId).then(refetchPermanentPlaces)
+    }
 }

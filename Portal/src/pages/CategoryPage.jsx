@@ -18,15 +18,15 @@ export default function CategoryPage() {
     const { isAdmin } = useAuth()
 
     const { category, updateCategoryName, updateCategoryMetadata, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
-    const categoryPlaces = useTimeFilteredRegularPlaces({ categoryId, include: "categories", sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ categoryId, include: "categories", sort: "-score" })
 
-    const countryCategoriesMap = useMemo(() => new Map(categoryPlaces?.map(place => place.getCategory("country"))
-        ?.filter(Boolean)?.map(category => [category.name, category])), [categoryPlaces])
+    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
+        ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
-    const totalScore = useMemo(() => categoryPlaces?.map(place => place.score).filter(Boolean)
-        .reduce((acc, score) => acc + score, 0), [categoryPlaces])
-    const totalQuality = useMemo(() => categoryPlaces?.map(place => place.quality).filter(Boolean)
-        .reduce((acc, quality) => acc + quality, 0), [categoryPlaces])
+    const totalScore = useMemo(() => places?.map(place => place.score).filter(Boolean)
+        .reduce((acc, score) => acc + score, 0), [places])
+    const totalQuality = useMemo(() => places?.map(place => place.quality).filter(Boolean)
+        .reduce((acc, quality) => acc + quality, 0), [places])
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
@@ -57,12 +57,12 @@ export default function CategoryPage() {
             <PageHeader
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={{ "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / categoryPlaces.length)}%`, "Celkové skóre": totalScore }}
+                internalAttributes={{ "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / places.length)}%`, "Celkové skóre": totalScore }}
                 showHighlightsButton={true}
                 onNameChanged={updateCategoryName} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}
-                places={categoryPlaces}
+                places={places}
                 placeMainCategorySelector={getPlaceCategory}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
                 onHighlightRemoved={removeCategoryHighlight}
@@ -70,7 +70,7 @@ export default function CategoryPage() {
                 onHighlightQualityAttributesUpdated={updateCategoryHighlightQualityAttributes} />
             <StatisticsPanel statistics={category && (category.statistics ?? [])} />
             <PlaceTileGrid
-                places={categoryPlaces}
+                places={places}
                 placeMainCategorySelector={getPlaceCategory} />
             {isAdmin && (
                 <div className="flex justify-end">

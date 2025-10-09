@@ -7,7 +7,7 @@ import { useStatistics } from "../hooks/useStatistics.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
 export default function CountriesPage() {
-    const places = useTimeFilteredRegularPlaces({ include: "categories", sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ include: "categories", sort: "-score" })
     const countryCategories = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
@@ -28,7 +28,7 @@ export default function CountriesPage() {
             acc[place.country] = (acc[place.country] || 0) + place.score
             return acc
         }, {})
-        
+
         return Object.entries(scoreByCountry)
             .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
             .map(([country]) => countryCategoriesMap.get(country))

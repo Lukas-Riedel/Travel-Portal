@@ -21,7 +21,7 @@ export default function PlansPage() {
     const { isAdmin } = useAuth()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: "categories" })
-    const visitedPlaces = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
+    const { places: visitedPlaces } = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
     const { candidateTrips, removeCandidateTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: "country" })
 

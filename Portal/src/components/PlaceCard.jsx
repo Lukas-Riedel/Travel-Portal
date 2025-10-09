@@ -24,10 +24,12 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
     return place ? (
         <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full space-y-1">
             <div className="flex justify-start items-center">
-                <img
-                    src={`/img/flags/${mostSpecificCategory.metadata.unicode}.svg`}
-                    alt={mostSpecificCategory.name}
-                    className="w-7 h-auto flex-shrink-0" />
+                {mostSpecificCategory && (
+                    <img
+                        src={`/img/flags/${mostSpecificCategory.metadata.unicode}.svg`}
+                        alt={mostSpecificCategory.name}
+                        className="w-7 h-auto flex-shrink-0" />
+                )}
                 <Link
                     to={`/plan/place/${place.id}`}
                     title={getPrettyName(place.name)}

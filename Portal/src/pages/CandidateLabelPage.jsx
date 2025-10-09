@@ -6,7 +6,7 @@ import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useLabel } from "../hooks/useLabel"
 
-export default function LabelPage() {
+export default function CandidateLabelPage() {
     const { labelId } = useParams()
 
     const { label, updateLabelName } = useLabel(labelId)

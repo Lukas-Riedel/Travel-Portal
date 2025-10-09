@@ -22,7 +22,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
-    const currentHighlightPlaces = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? invalidPhotoId, include: "dates" })
+    const { places: currentHighlightPlaces } = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? invalidPhotoId, include: "dates" })
     const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
         ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const [isPaused, setIsPaused] = useState(isAdmin)
