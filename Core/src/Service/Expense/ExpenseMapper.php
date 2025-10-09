@@ -61,7 +61,12 @@
 
         public function selectSubscription(string $subscriptionId) : ?Subscription {
             $sql = <<<'SQL'
-                SELECT *
+                SELECT *,
+                    (
+                        SELECT COUNT(*) 
+                        FROM expense 
+                        WHERE subscription_id = expense_subscription.id
+                    ) AS occurrences
                 FROM expense_subscription
                 WHERE id = ?
             SQL;
@@ -76,12 +81,17 @@
             }
 
             return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
-                    $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"]);
+                    $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
         }
 
         public function selectActiveSubscriptions() : array {
             $sql = <<<'SQL'
-                SELECT *
+                SELECT *,
+                    (
+                        SELECT COUNT(*) 
+                        FROM expense 
+                        WHERE subscription_id = expense_subscription.id
+                    ) AS occurrences
                 FROM expense_subscription
                 WHERE expiration > UNIX_TIMESTAMP()
             SQL;
@@ -90,7 +100,7 @@
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($subscriptionRow) {
                     return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
-                        $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"]);
+                        $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
                 });
         }
 
@@ -212,6 +222,20 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($expenseId)
+                ->execute();
+        }
+
+        public function deleteActiveSubscription(string $subscriptionId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM expense_subscription
+                WHERE id = ?
+                    AND expiration > UNIX_TIMESTAMP()
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($subscriptionId)
                 ->execute();
         }
 

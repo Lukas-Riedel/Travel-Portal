@@ -30,11 +30,11 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
         }
     }, [processingStartedEvents])
     
-    const refetchPermanentPlaces = _ => query.refetch()
+    const refetchPlaces = _ => query.refetch()
 
     return {
         places: query.data && query.data.map(place => new Place(place)),
-        createPermanentPlace: (name, address) => createPermanentPlace(name, address).then(refetchPermanentPlaces),
-        removePermanentPlace: placeId => removePermanentPlace(placeId).then(refetchPermanentPlaces)
+        createPermanentPlace: (name, address) => createPermanentPlace(name, address).then(refetchPlaces),
+        removePermanentPlace: placeId => removePermanentPlace(placeId).then(refetchPlaces)
     }
 }

@@ -335,6 +335,12 @@ export const createSubscription = async (description, value, currency, expiratio
 export const listSubscriptions = async () =>
     coreClient.get("subscriptions").then(extractData)
 
+export const getSubscription = async (subscriptionId) =>
+    coreClient.get(`subscriptions/${subscriptionId}`).then(extractData)
+
+export const removeSubscription = async (subscriptionId) =>
+    coreClient.delete(`subscriptions/${subscriptionId}`)
+
 export const createTimeTrackingEvent = async (type, hours, description, timestamp) =>
     coreClient.post("tracker",
         {

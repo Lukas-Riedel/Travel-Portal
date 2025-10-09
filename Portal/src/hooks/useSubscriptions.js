@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import { listSubscriptions } from "../clients/coreClient"
+import { createSubscription, listSubscriptions, removeSubscription } from "../clients/coreClient"
 
 export const useSubscriptions = () => {
     const { isAdmin } = useAuth()
@@ -11,6 +11,12 @@ export const useSubscriptions = () => {
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 12
     })
 
-    // TODO: Map to Statistics objects
-    return query.data
+    const refetchSubscriptions = _ => query.refetch()
+
+    return {
+        // TODO: Map to Statistics objects
+        subscriptions: query.data,
+        createSubscription: (description, value, currency, expiration) => createSubscription(description, value, currency, expiration).then(refetchSubscriptions),
+        removeSubscription: subscriptionId => removeSubscription(subscriptionId).then(refetchSubscriptions)
+    }
 }

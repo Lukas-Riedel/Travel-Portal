@@ -129,12 +129,12 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
         [expenseCandidates, expenses, duplicatedExpense])
 
     const expenseCandidateRows = useMemo(() => filteredExpenseCandidates.map((expenseCandidate, index) => (
-            <ExpenseCandidateRow
-                key={index}
-                lastAddedExpense={expenses?.at(-1)}
-                expenseCandidate={expenseCandidate}
-                onExpenseCreated={onExpenseCreated} />
-        )), [filteredExpenseCandidates, expenses, duplicatedExpense])
+        <ExpenseCandidateRow
+            key={index}
+            lastAddedExpense={expenses?.at(-1)}
+            expenseCandidate={expenseCandidate}
+            onExpenseCreated={onExpenseCreated} />
+    )), [filteredExpenseCandidates, expenses, duplicatedExpense])
 
     const actualRows = useMemo(() => {
         if (!expenses) {
@@ -380,7 +380,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
 function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }) {
     const { configuration } = useConfiguration()
 
-    const subscriptions = useSubscriptions()
+    const { subscriptions } = useSubscriptions()
 
     const [wasEdited, setWasEdited] = useState(false)
 

@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Routing\NotFoundException;
     use Core\Service\Expense\ExpenseService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -23,6 +24,8 @@
             $app->group("/subscriptions", function($group) use($resource) {
                 $group->post("", [$resource, "createSubscription"]);
                 $group->get("", [$resource, "listSubscriptions"]);
+                $group->get("/{subscriptionId}", [$resource, "getSubscription"]);
+                $group->delete("/{subscriptionId}", [$resource, "removeSubscription"]);
             });
         }
         
@@ -183,5 +186,180 @@
         public function listSubscriptions(Request $request, Response $response, array $routeArguments) : mixed {            
             return $this->expenseService->getActiveSubscriptions();
         }  
+
+        #[OA\Get(
+            path: "/subscriptions/{subscriptionId}",
+            summary: "Retrieve a subscription with the specified identifier",
+            operationId: "getSubscription",
+            tags: ["Subscriptions"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "subscriptionId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the subscription",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Retrieved a subscription with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Subscription")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function getSubscription(Request $request, Response $response, array $routeArguments) : mixed {    
+            $subscriptionId = $this->requirePathArgument($routeArguments, "subscriptionId");
+            
+            $subscription = $this->expenseService->getActiveSubscription($subscriptionId);
+            if ($subscription === null) {
+                throw new NotFoundException($subscriptionId);
+            }
+
+            return $subscription;
+        }
+
+        #[OA\Delete(
+            path: "/subscriptions/{subscriptionId}",
+            summary: "Remove a subscription with the specified identifier",
+            operationId: "removeSubscription",
+            tags: ["Subscriptions"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "subscriptionId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the subscription",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 204,
+                    description: "Success. Removed a subscription with the specified identifier."
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function removeSubscription(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireAdmin($request);
+
+            $subscriptionId = $this->requirePathArgument($routeArguments, "subscriptionId");
+            
+            $wasRemoved = $this->expenseService->removeActiveSubscription($subscriptionId);
+            if (!$wasRemoved) {
+                throw new NotFoundException($subscriptionId);
+            }
+
+            return null;
+        }
     }
 ?>

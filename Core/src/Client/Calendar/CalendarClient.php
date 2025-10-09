@@ -77,7 +77,7 @@
 
                 foreach ($categoryDatesProvider($category) as &$categoryDate) {
                     if (array_key_exists($categoryDate, $categoryHolidays)) {
-                        $holidays[] = new PublicHoliday($categoryHolidays[$categoryDate]->getName(), $category, $categoryDate);
+                        $holidays[] = new PublicHoliday($categoryHolidays[$categoryDate]->getName(), $category->getName(), $categoryDate);
                     }
                 }
             }

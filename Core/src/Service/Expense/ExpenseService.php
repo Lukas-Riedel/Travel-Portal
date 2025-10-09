@@ -50,7 +50,7 @@
             $exchangeRate = $this->getExchangeRate($currency);
 
             // TODO: This is inacurrate, the subscription share is not included in the main currency value.
-            $expense = new Expense(null, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value,
+            $expense = new Expense(null, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value, 
                 $subscriptionId === null ? null : $this->expenseMapper->selectSubscription($subscriptionId));
             $this->transactionManager->executeAtomically(function() use(&$expense, &$tripId, &$subscriptionId) {
                 $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
@@ -64,10 +64,15 @@
         public function createSubscription(float $value, string $currency, string $description, int $expiration) : Subscription {                        
             $exchangeRate = $this->getExchangeRate($currency);
 
-            $subscription = new Subscription(null, $description, $value, $currency, $exchangeRate, $expiration);
+            $subscription = new Subscription(null, $description, $value, $currency, $exchangeRate, $expiration, 0);
             $this->expenseMapper->insertSubscription($subscription);
 
             return $subscription;
+        }
+
+        public function getActiveSubscription(string $subscriptionId) : ?Subscription {
+            $subscription = $this->expenseMapper->selectSubscription($subscriptionId);
+            return $subscription === null || $subscription->isExpired() ? null : $subscription;
         }
 
         public function getActiveSubscriptions() : array {
@@ -118,6 +123,10 @@
                 }
             });
             return $wasRemoved;
+        }
+
+        public function removeActiveSubscription(string $subscriptionId) : bool {
+            return $this->expenseMapper->deleteActiveSubscription($subscriptionId) > 0;
         }
 
         private function getExchangeRate(string $currency) : float {       

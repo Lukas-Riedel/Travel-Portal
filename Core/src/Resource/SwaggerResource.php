@@ -22,7 +22,7 @@
                     __DIR__ . "/../../vendor/lriedel/common/src/Service/",
                     __DIR__ . "/../../vendor/lriedel/common/src/Routing/"
                 ));
-                $openapi->servers = array("url" => $coreBaseUrl);
+                $openapi->servers = array(array("url" => $coreBaseUrl));
                 $response->getBody()->write($openapi->toJson());
                 return $response->withHeader("Content-Type", "application/json");
             })->setInvocationStrategy(new RequestResponse());

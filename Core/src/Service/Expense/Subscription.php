@@ -53,7 +53,13 @@
                 type: "number",
                 format: "float",
                 example: 1462.18
-            )
+            ),
+            new OA\Property(
+                property: "occurrences",
+                type: "integer",
+                description: "The occurrences of the subscription in expenses",
+                example: 4
+            ),
         ]
     )]
     class Subscription implements \JsonSerializable {        
@@ -63,14 +69,16 @@
         private readonly string $currency;
         private readonly float $exchangeRate;
         private readonly int $expiration;
+        private readonly int $occurrences;
 
-        public function __construct(?string $id, string $description, float $value, string $currency, float $exchangeRate, int $expiration) {
+        public function __construct(?string $id, string $description, float $value, string $currency, float $exchangeRate, int $expiration, int $occurrences) {
             $this->id = $id;
             $this->description = $description;
             $this->value = $value;
             $this->currency = $currency;
             $this->exchangeRate = $exchangeRate;
             $this->expiration = $expiration;
+            $this->occurrences = $occurrences;
         }
 
         public function getId() : string {
@@ -103,6 +111,14 @@
 
         public function getExpiration() : int {
             return $this->expiration;
+        }
+
+        public function getOccurrences() : int {
+            return $this->occurrences;
+        }
+
+        public function isExpired() : bool {
+            return $this->expiration < time();
         }
 
         #[\ReturnTypeWillChange]
