@@ -63,8 +63,8 @@ export const updateHighlightQualityAttributes = async (highlightId, composition,
         }
     ).then(extractData)
 
-export const createGeographicalCategory = async (name, country, category, radius, geoJson) =>
-    coreClient.post("categories?type=geographical",
+export const createGeographicalRegion = async (name, country, category, radius, geoJson) =>
+    coreClient.post("regions?type=geographical",
         {
             name,
             country,
@@ -74,8 +74,8 @@ export const createGeographicalCategory = async (name, country, category, radius
         }
     ).then(extractData)
 
-export const createGeographicalExtensionCategory = async (name, country, category, latitude, longitude) =>
-    coreClient.post("categories?type=geographicalExtension",
+export const createGeographicalExtensionRegion = async (name, country, category, latitude, longitude) =>
+    coreClient.post("regions?type=geographicalExtension",
         {
             name,
             country,
@@ -85,8 +85,8 @@ export const createGeographicalExtensionCategory = async (name, country, categor
         }
     ).then(extractData)
 
-export const createCompositeCategory = async (name, category, includedRegions, excludedRegions) =>
-    coreClient.post("categories?type=composite",
+export const createCompositeRegion = async (name, category, includedRegions, excludedRegions) =>
+    coreClient.post("regions?type=composite",
         {
             name,
             category,

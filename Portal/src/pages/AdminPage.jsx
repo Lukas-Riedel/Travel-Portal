@@ -24,7 +24,7 @@ import showInputToast from "../components/InputToast"
 import { useAirports } from "../hooks/useAirports"
 import {
     createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum, updateCategoryMetadata,
-    listRegularPlaces, createGeographicalExtensionCategory, removeCandidatePlace, logFlight, replaceFitness
+    listRegularPlaces, createGeographicalExtensionRegion, removeCandidatePlace, logFlight, replaceFitness
 } from "../clients/coreClient"
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
@@ -235,7 +235,7 @@ export default function AdminPage() {
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
                     onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "dates" })
                         .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}
-                    onGeographicalExtensionCategoryAdded={createGeographicalExtensionCategory}
+                    onGeographicalExtensionCategoryAdded={createGeographicalExtensionRegion}
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}
                     onCategoryMetadataChanged={updateCategoryMetadata}

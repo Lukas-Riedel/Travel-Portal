@@ -13,6 +13,7 @@
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
+    use Core\Resource\RegionResource;
     use Core\Resource\StatisticsResource;
     use Core\Resource\TrackerResource;
     use Core\Resource\SubscriptionResource;
@@ -29,6 +30,7 @@
         AirlineResource::register($app, $flightService, $logger);
         FlightResource::register($app, $flightService); 
         CategoryResource::register($app, $categoryService, $highlightService, $logger);
+        RegionResource::register($app, $categoryService);
         FitnessResource::register($app, $fitnessService);
         GeocodingResource::register($app, $geocodingService);
         MonitoringResource::register($app, $monitoringService);
