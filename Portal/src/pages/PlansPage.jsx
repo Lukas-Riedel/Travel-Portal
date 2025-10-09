@@ -15,8 +15,6 @@ import TabMenu from "../components/TabMenu"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { endOfDay } from "date-fns"
 
-const labels = ["Zvažovaná místa", "Navštívená místa", "Návrhy výletů"]
-
 export default function PlansPage() {
     const { isAdmin } = useAuth()
 
@@ -62,6 +60,21 @@ export default function PlansPage() {
         return acc
     }, {}), [filteredVisitedPlaces])
 
+    const labels = [
+        {
+            name: "Zvažovaná místa",
+            enabled: true
+        },
+        {
+            name: "Navštívená místa",
+            enabled: isAdmin
+        },
+        {
+            name: "Návrhy výletů",
+            enabled: isAdmin
+        }
+    ]
+
     const handleCandidatePlaceCreated = () => {
         showFormToast(
             "Zadej údaje o místě k přidání:",
@@ -77,12 +90,10 @@ export default function PlansPage() {
 
     return (
         <>
-            {isAdmin && (
-                <TabMenu
-                    labels={labels}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab} />
-            )}
+            <TabMenu
+                labels={labels}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab} />
             {activeTab === 0 && (
                 <>
                     <div className="h-[400px] md:h-[700px] my-4">

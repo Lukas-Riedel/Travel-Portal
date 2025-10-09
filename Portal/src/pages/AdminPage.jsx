@@ -28,10 +28,6 @@ import {
 } from "../clients/coreClient"
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
-import showConfirmToast from "../components/ConfirmToast"
-
-// TODO: Make it dynamic - if the sub-page has nothing to show, hide the label.
-const labels = ["Aktuální výlet", "Sledované lety", "Aerolinky", "Hlášené problémy", "Konfigurace", "Zařízení", "Trvalá místa"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
@@ -63,6 +59,38 @@ export default function AdminPage() {
         const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? []);
         return filteredFlights && [...filteredFlights].sort((a, b) => a.start - b.start)
     }, [trips])
+
+
+    const labels = [
+        {
+            name: "Aktuální výlet",
+            enabled: upcomingOrCurrentTrip !== null
+        },
+        {
+            name: "Sledované lety",
+            enabled: watchedFlights && watchedFlights.length > 0
+        },
+        {
+            name: "Aerolinky",
+            enabled: airlines && airlines.length > 0
+        },
+        {
+            name: "Hlášené problémy",
+            enabled: dataConsistencyIssues && dataConsistencyIssues.length > 0
+        },
+        {
+            name: "Konfigurace",
+            enabled: configuration !== null
+        },
+        {
+            name: "Zařízení",
+            enabled: devices && devices.length > 0
+        },
+        {
+            name: "Trvalá místa",
+            enabled: permanentPlaces && permanentPlaces.length > 0
+        }
+    ]
 
     const handleFlightCreated = () => {
         showFormToast(
