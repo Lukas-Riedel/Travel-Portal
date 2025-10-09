@@ -28,6 +28,11 @@ import {
 } from "../clients/coreClient"
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useSubscriptions } from "../hooks/useSubscriptions"
+import SubscriptionCardGrid from "../components/SubscriptionCardGrid"
+
+// TODO: Duplicated in ExpenseSummary.
+const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
@@ -42,6 +47,7 @@ export default function AdminPage() {
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
+    const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
 
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
     const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
@@ -89,6 +95,10 @@ export default function AdminPage() {
         {
             name: "Trvalá místa",
             enabled: permanentPlaces && permanentPlaces.length > 0
+        },
+        {
+            name: "Aktivní předplatná",
+            enabled: subscriptions && subscriptions.length > 0
         }
     ]
 
@@ -130,6 +140,28 @@ export default function AdminPage() {
             "Aerolinka byla úspěšně přidána",
             "Při přidávání aerolinky došlo k chybě",
             createAirline
+        )
+    }
+
+    const handleSubscriptionCreated = () => {
+        showFormToast(
+            "Zadej údaje o předplatném k přidání:",
+            [
+                { label: "Popis", required: true },
+                { label: "Hodnota", required: true, type: "number", min: 0 },
+                { label: "Měna", required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) },
+                { label: "Expirace", required: true, type: "datetime-local" }
+            ],
+            "Předplatné bylo úspěšně přidáno",
+            "Při přidávání předplatného došlo k chybě",
+            async (description, value, Currency, expiration) => {
+                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
+                if (convertedExpiration < Date.now() / 1000) {
+                    return Promise.reject("Expiration must be in the future.")
+                }
+
+                return createSubscription(description, value, Currency, convertedExpiration)
+            }
         )
     }
 
@@ -225,6 +257,16 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handlePermanentPlaceCreated} />
+                </>
+            )}
+            {activeTab === 7 && (
+                <>
+                    <SubscriptionCardGrid
+                        subscriptions={subscriptions}
+                        onSubscriptionRemoved={removeSubscription} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleSubscriptionCreated} />
                 </>
             )}
         </>
