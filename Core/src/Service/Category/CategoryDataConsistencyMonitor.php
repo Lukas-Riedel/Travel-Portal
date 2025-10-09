@@ -36,14 +36,14 @@
                 fn($category) => in_array($category->getName(), $visitedCountryNames)));
             $visitedCountryCategoryIdsWithoutGeographicalRegions = array_filter($visitedCountryCategoryIds,
                 fn($countryCategoryId) => count(array_filter($geographicalRegions, 
-                    fn($geographicalRegion) => $geographicalRegion->getCountryCategoryId() == $countryCategoryId)) === 0);
+                    fn($geographicalRegion) => $geographicalRegion->getCountryCategory()?->getId() == $countryCategoryId)) === 0);
             foreach ($visitedCountryCategoryIdsWithoutGeographicalRegions as &$visitedCountryCategoryIdWithoutGeographicalRegions) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION_ISSUE_NAME, 
                     $this->categoryService->getCategoryIdentifierById($visitedCountryCategoryIdWithoutGeographicalRegions), time());
             }
 
             $allNonTrivialGeographicalRegions = $this->categoryService->getAllNonTrivialGeographicalRegions();
-            $duplicatedCategoryIds = array_keys(array_filter(array_count_values(array_map(fn($region) => $region->getCategoryId(),
+            $duplicatedCategoryIds = array_keys(array_filter(array_count_values(array_map(fn($region) => $region->getCategory()->getId(),
                 $allNonTrivialGeographicalRegions)), fn($count) => $count > 1));
             foreach ($duplicatedCategoryIds as &$duplicatedCategoryId) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::GEOGRAPHICAL_REGIONS_WITH_SAME_NAME_ISSUE_NAME,

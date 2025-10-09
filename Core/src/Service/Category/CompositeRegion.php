@@ -7,52 +7,48 @@
         schema: "CompositeRegion",
         type: "object",
         description: "An object representing a composite region",
-        required: ["categoryId", "includedCategoryIds", "excludedCategoryIds"],
+        required: ["category", "includedCategories", "excludedCategories"],
         properties: [
             new OA\Property(
-                property: "categoryId",
-                type: "string",
-                description: "The identifier of the category representing the composite region",
-                example: "60dcf2bc-f871-4601-86ce-7775ef2931f2"
+                property: "category",
+                description: "The category representing the composite region",
+                ref: "#/components/schemas/CategoryIdentifier"
             ),
             new OA\Property(
-                property: "includedCategoryIds",
+                property: "includedCategories",
                 type: "array",
                 description: "The list of category identifiers included in the composite region",
-                items: new OA\Items(type: "string"),
-                example: ["c72c9d35-82dd-48d8-be5b-63cf9a967d54", "8b1fa657-0055-492c-a571-8225bb89abfa"]
+                items: new OA\Items(ref: "#/components/schemas/CategoryIdentifier")
             ),
             new OA\Property(
-                property: "excludedCategoryIds",
+                property: "excludedCategories",
                 type: "array",
                 description: "The list of category identifiers excluded from the composite region",
-                items: new OA\Items(type: "string"),
-                example: ["45b6ad4d-9d8a-4015-b45a-3109284c4f70"]
+                items: new OA\Items(ref: "#/components/schemas/CategoryIdentifier")
             )
         ]
     )]
-    // TODO: Replace strings with CategoryIdentifiers.
     class CompositeRegion implements \JsonSerializable {        
-        private readonly string $categoryId;
-        private readonly array $includedCategoryIds;
-        private readonly array $excludedCategoryIds;
+        private readonly CategoryIdentifier $category;
+        private readonly array $includedCategories;
+        private readonly array $excludedCategories;
 
-        public function __construct(string $categoryId, array $includedCategoryIds, array $excludedCategoryIds) {
-            $this->categoryId = $categoryId;
-            $this->includedCategoryIds = $includedCategoryIds;
-            $this->excludedCategoryIds = $excludedCategoryIds;
+        public function __construct(CategoryIdentifier $category, array $includedCategories, array $excludedCategories) {
+            $this->category = $category;
+            $this->includedCategories = $includedCategories;
+            $this->excludedCategories = $excludedCategories;
         }
 
-        public function getCategoryId() : string {
-            return $this->categoryId;
+        public function getCategory() : CategoryIdentifier {
+            return $this->category;
         }
 
-        public function getIncludedCategoryIds() : array {
-            return $this->includedCategoryIds;
+        public function getIncludedCategories() : array {
+            return $this->includedCategories;
         }
 
-        public function getExcludedCategoryIds() : array {
-            return $this->excludedCategoryIds;
+        public function getExcludedCategories() : array {
+            return $this->excludedCategories;
         }
 
         #[\ReturnTypeWillChange]

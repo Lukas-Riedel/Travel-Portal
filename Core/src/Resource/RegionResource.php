@@ -49,24 +49,39 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["name", "region"],
+                    required: ["category"],
                     properties: [
                         new OA\Property(
-                            property: "name",
-                            description: "The name of the region",
-                            type: "string",
-                            example: "Europe"
-                        ),
-                        new OA\Property(
-                            property: "region",
+                            property: "category",
                             description: "The category of the region",
-                            ref: "#/components/schemas/CategoryCategory"
+                            type: "object",
+                            required: ["name", "category"],
+                            properties: [
+                                new OA\Property(
+                                    property: "name",
+                                    description: "The name of the category",
+                                    type: "string",
+                                    example: "Europe"
+                                ),
+                                new OA\Property(
+                                    property: "category",
+                                    description: "The category of the category",
+                                    ref: "#/components/schemas/CategoryCategory"
+                                )
+                            ]
                         ),
                         new OA\Property(
-                            property: "country",
-                            description: "The country of the region (required for geographical regions)",
-                            type: "string",
-                            example: "United States"
+                            property: "countryCategory",
+                            description: "The country category of the region",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "name",
+                                    description: "The name of the country category",
+                                    type: "string",
+                                    example: "Europe"
+                                )
+                            ]
                         ),
                         new OA\Property(
                             property: "latitude",
@@ -95,18 +110,26 @@
                             example: '{"type":"Polygon","coordinates":[[[14.4,50.0],[14.5,50.0],[14.5,50.1],[14.4,50.1],[14.4,50.0]]]}'
                         ),
                         new OA\Property(
-                            property: "includedRegions",
+                            property: "includedCategories",
                             type: "array",
-                            items: new OA\Items(type: "string"),
-                            description: "The list of included regions (required for composite regions)",
-                            example: '["Eastern Europe"]'
+                            items: new OA\Items(
+                                type: "object",
+                                properties: [
+                                    new OA\Property(property: "name", type: "string", example: "Eastern Europe")
+                                ]
+                            ),
+                            description: "The list of included categories (required for composite regions)",
                         ),
                         new OA\Property(
-                            property: "excludedRegions",
+                            property: "excludedCategories",
                             type: "array",
-                            items: new OA\Items(type: "string"),
-                            description: "The list of excluded regions (required for composite regions)",
-                            example: '["Czech Republic", "Slovakia", "Poland", "Hungary"]'
+                            items: new OA\Items(
+                                type: "object",
+                                properties: [
+                                    new OA\Property(property: "name", type: "string", example: "Czech Republic")
+                                ]
+                            ),
+                            description: "The list of excluded categories (required for composite regions)",
                         )
                     ]
                 )
@@ -166,19 +189,31 @@
         public function createRegion(Request $request, Response $response, array $routeArguments) : mixed {
             $this->requireAdmin($request);
 
-            $name = $this->requireJsonBodyField($request, "name");
-            $category = CategoryCategory::from($this->requireJsonBodyField($request, "category"));        
+            $category = $this->requireJsonBodyField($request, "category");
+            
+            if (!isset($category["name"])) {
+                throw new \InvalidArgumentException("The required request body field 'category.name' is missing.");
+            }
+            $name = $category["name"];
+
+            if (!isset($category["category"])) {
+                throw new \InvalidArgumentException("The required request body field 'category.category' is missing.");
+            }
+            $categoryCategory = CategoryCategory::from($category["category"]);        
+            
             $regionType = RegionType::from($this->requireQueryParameter($request, "type"));
 
             return match ($regionType) {
-                RegionType::Geographical => $this->handleCreateGeographicalRegion($request, $name, $category),
-                RegionType::GeographicalExtension => $this->handleCreateGeographicalExtensionRegion($request, $name, $category),
-                RegionType::Composie => $this->handleCreateCompositeRegion($request, $name, $category)
+                RegionType::Geographical => $this->handleCreateGeographicalRegion($request, $name, $categoryCategory),
+                RegionType::GeographicalExtension => $this->handleCreateGeographicalExtensionRegion($request, $name, $categoryCategory),
+                RegionType::Composite => $this->handleCreateCompositeRegion($request, $name, $categoryCategory)
             };
         }
 
         private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
-            $country = $this->getJsonBodyField($request, "country");
+            $countryCategory = $this->getJsonBodyField($request, "countryCategory");
+            $country = is_array($countryCategory) ? ($countryCategory["name"] ?? null) : null;
+
             $radius = $this->requireJsonBodyField($request, "radius");
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
@@ -186,7 +221,9 @@
         }
 
         private function handleCreateGeographicalExtensionRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
-            $country = $this->getJsonBodyField($request, "country");
+            $countryCategory = $this->getJsonBodyField($request, "countryCategory");
+            $country = is_array($countryCategory) ? ($countryCategory["name"] ?? null) : null;
+
             $latitude = $this->requireJsonBodyField($request, "latitude");
             $longitude = $this->requireJsonBodyField($request, "longitude");
             
@@ -194,10 +231,21 @@
         }
 
         private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category) : CompositeRegion {
-            $includedRegions = $this->requireJsonBodyField($request, "includedRegions");
-            $excludedRegions = $this->requireJsonBodyField($request, "excludedRegions");
+            $includedCategories = array_map(function($category) {
+                if (!isset($category["name"])) {
+                    throw new \InvalidArgumentException("The required request body field 'includedCategories.name' is missing.");
+                }
+                return $category["name"];
+            }, $this->requireJsonBodyField($request, "includedCategories"));
             
-            return $this->categoryService->createCompositeRegion($name, $category->value, $includedRegions, $excludedRegions);
+            $excludedCategories = array_map(function($category) {
+                if (!isset($category["name"])) {
+                    throw new \InvalidArgumentException("The required request body field 'excludedCategories.name' is missing.");
+                }
+                return $category["name"];
+            }, $this->requireJsonBodyField($request, "excludedCategories"));
+            
+            return $this->categoryService->createCompositeRegion($name, $category->value, $includedCategories, $excludedCategories);
         }
     }
 ?>

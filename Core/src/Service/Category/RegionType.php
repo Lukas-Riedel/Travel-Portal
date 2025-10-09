@@ -11,6 +11,6 @@
     enum RegionType : string {
         case Geographical = "geographical";
         case GeographicalExtension = "geographicalExtension";
-        case Composie = "composite";
+        case Composite = "composite";
     }
 ?>

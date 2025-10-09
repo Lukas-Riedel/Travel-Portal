@@ -66,8 +66,13 @@ export const updateHighlightQualityAttributes = async (highlightId, composition,
 export const createGeographicalRegion = async (name, country, category, radius, geoJson) =>
     coreClient.post("regions?type=geographical",
         {
-            name,
-            country,
+            category: {
+                name,
+                category
+            },
+            countryCategory: {
+                name: country
+            },
             category,
             radius,
             geoJson
@@ -77,9 +82,13 @@ export const createGeographicalRegion = async (name, country, category, radius, 
 export const createGeographicalExtensionRegion = async (name, country, category, latitude, longitude) =>
     coreClient.post("regions?type=geographicalExtension",
         {
-            name,
-            country,
-            category,
+            category: {
+                name,
+                category
+            },
+            countryCategory: {
+                name: country
+            },
             latitude,
             longitude
         }
@@ -88,10 +97,12 @@ export const createGeographicalExtensionRegion = async (name, country, category,
 export const createCompositeRegion = async (name, category, includedRegions, excludedRegions) =>
     coreClient.post("regions?type=composite",
         {
-            name,
-            category,
-            includedRegions,
-            excludedRegions
+            category: {
+                name,
+                category
+            },
+            includedRegions: includedRegions.map(includedRegion => ({ name: includedRegion })),
+            excludedRegions: excludedRegions.map(excludedRegion => ({ name: excludedRegion }))
         }
     ).then(extractData)
 

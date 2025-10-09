@@ -7,19 +7,17 @@
         schema: "GeographicalRegion",
         type: "object",
         description: "An object representing a geographical region",
-        required: ["categoryId", "radius", "geoJson"],
+        required: ["category", "radius", "geoJson"],
         properties: [
             new OA\Property(
-                property: "categoryId",
-                type: "string",
-                description: "The identifier of the category representing the geographical region",
-                example: "bee9f1e9-8f28-40ed-b09e-9dfad1d4f199"
+                property: "category",
+                description: "The category representing the geographical region",
+                ref: "#/components/schemas/CategoryIdentifier"
             ),
             new OA\Property(
-                property: "countryCategoryId",
-                type: "string",
-                description: "The identifier of the country category related to the region",
-                example: "6e5b634c-d091-49ef-a418-6b925331f41d"
+                property: "countryCategory",
+                description: "The country category related to the region",
+                ref: "#/components/schemas/CategoryIdentifier"
             ),
             new OA\Property(
                 property: "radius",
@@ -34,27 +32,26 @@
                 example: '{"type":"Polygon","coordinates":[[[14.4,50.0],[14.5,50.0],[14.5,50.1],[14.4,50.1],[14.4,50.0]]]}'
             )
         ]
-    )]    
-    // TODO: Replace strings with CategoryIdentifiers.
+    )]
     class GeographicalRegion implements \JsonSerializable {        
-        private readonly string $categoryId;
-        private readonly ?string $countryCategoryId;
+        private readonly CategoryIdentifier $category;
+        private readonly ?CategoryIdentifier $countryCategory;
         private readonly int $radius;
         private readonly mixed $geoJson;
 
-        public function __construct(string $categoryId, ?string $countryCategoryId, int $radius, mixed $geoJson) {
-            $this->categoryId = $categoryId;
-            $this->countryCategoryId = $countryCategoryId;
+        public function __construct(CategoryIdentifier $category, ?CategoryIdentifier $countryCategory, int $radius, mixed $geoJson) {
+            $this->category = $category;
+            $this->countryCategory = $countryCategory;
             $this->radius = $radius;
             $this->geoJson = $geoJson;
         }
 
-        public function getCategoryId() : string {
-            return $this->categoryId;
+        public function getCategory() : CategoryIdentifier {
+            return $this->category;
         }
 
-        public function getCountryCategoryId() : ?string {
-            return $this->countryCategoryId;
+        public function getCountryCategory() : ?CategoryIdentifier {
+            return $this->countryCategory;
         }
 
         public function getRadius() : int {

@@ -127,7 +127,8 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($geographicalRegionRow) {
-                    return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country_category_id"],
+                    return new GeographicalRegion($this->selectCategoryIdentifierById($geographicalRegionRow["category_id"]), 
+                        $geographicalRegionRow["country_category_id"] === null ? null : $this->selectCategoryIdentifierById($geographicalRegionRow["country_category_id"]),
                         intval($geographicalRegionRow["radius"]), \geoPHP::load($geographicalRegionRow["json"], "json"));
                 });
         }
@@ -142,7 +143,8 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($geographicalRegionRow) {
-                    return new GeographicalRegion($geographicalRegionRow["category_id"], $geographicalRegionRow["country_category_id"],
+                    return new GeographicalRegion($this->selectCategoryIdentifierById($geographicalRegionRow["category_id"]), 
+                        $geographicalRegionRow["country_category_id"] === null ? null : $this->selectCategoryIdentifierById($geographicalRegionRow["country_category_id"]),
                         intval($geographicalRegionRow["radius"]), \geoPHP::load($geographicalRegionRow["json"], "json"));
                 });
         }
@@ -157,37 +159,52 @@
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($compositeRegionRow) {
                     return new CompositeRegion($compositeRegionRow["category_id"],
-                        $this->selectIncludedCategoryIds($compositeRegionRow["category_id"]),
-                        $this->selectExcludedCategoryIds($compositeRegionRow["category_id"]));
+                        $this->selectIncludedCategoryIdentifiers($compositeRegionRow["category_id"]),
+                        $this->selectExcludedCategoryIdentifiers($compositeRegionRow["category_id"]));
                 });
         }
 
-        private function selectIncludedCategoryIds(string $compositeRegionCategoryId) : array {        
+        private function selectIncludedCategoryIdentifiers(string $compositeRegionCategoryId) : array {        
             $sql = <<<'SQL'
-                SELECT subject_category_id
-                FROM region_composite
-                WHERE category_id = ?
-                    AND included = 1
+                SELECT ci.*
+                FROM region_composite re
+                INNER JOIN category_identifier ci
+                    ON re.subject_category_id = ci.id
+                WHERE re.category_id = ?
+                    AND re.included = 1
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($compositeRegionCategoryId)
-                ->getResultSetForColumn("subject_category_id");
+                ->getMappedResultSet(function($categoryIdentifierRow) {                    
+                    $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
+                        ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+                    return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
+                        $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+                });
         }
 
-        private function selectExcludedCategoryIds(string $compositeRegionCategoryId) : array {        
+        // TODO: This is a copy-paste of selectIncludedCategoryIdentifiers, just with a different value in the WHERE clause.
+        private function selectExcludedCategoryIdentifiers(string $compositeRegionCategoryId) : array {        
             $sql = <<<'SQL'
-                SELECT subject_category_id
-                FROM region_composite
-                WHERE category_id = ?
-                    AND included = 0
+                SELECT ci.*
+                FROM region_composite re
+                INNER JOIN category_identifier ci
+                    ON re.subject_category_id = ci.id
+                WHERE re.category_id = ?
+                    AND re.included = 0
             SQL;
-    
+
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($compositeRegionCategoryId)
-                ->getResultSetForColumn("subject_category_id");
+                ->getMappedResultSet(function($categoryIdentifierRow) {                    
+                    $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
+                        ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+                    return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
+                        $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+                });
         }
 
         public function selectCategoryIdsForPlace(string $placeId) : array {            
@@ -310,7 +327,7 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($geographicalRegion->getCategoryId(), $geographicalRegion->getCountryCategoryId(),
+                ->withParameters($geographicalRegion->getCategory()->getId(), $geographicalRegion->getCountryCategory()?->getId(),
                     $geographicalRegion->getRadius(), $geographicalRegion->getGeoJson())
                 ->execute() === 1;
         }

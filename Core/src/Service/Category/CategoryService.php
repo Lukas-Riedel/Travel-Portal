@@ -43,17 +43,17 @@
             // Include geographical region categories.
             $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
             foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
-                if ($geographicalRegion->getCountryCategoryId() === null
+                if ($geographicalRegion->getCountryCategory()?->getId() === null
                     // TODO: '==' must be here because '===' doesn't work, find out why.
-                    || $geographicalRegion->getCountryCategoryId() == $countryCategoryIdentifier->getId()) {
+                    || $geographicalRegion->getCountryCategory()->getId() == $countryCategoryIdentifier->getId()) {
                     if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $point)) {
-                        $categoryIds[] = $geographicalRegion->getCategoryId();
+                        $categoryIds[] = $geographicalRegion->getCategory()->getId();
                     }
                     else if ($geographicalRegion->getRadius() > 0) {
                         foreach ($this->getWktPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
                             $geographicalRegion->getRadius(), self::CIRCLE_APPROXIMATION_POINTS_COUNT) as &$pointOnCircle) {
                             if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $pointOnCircle)) {
-                                $categoryIds[] = $geographicalRegion->getCategoryId();
+                                $categoryIds[] = $geographicalRegion->getCategory()->getId();
                                 break;
                             }
                         }
@@ -63,11 +63,11 @@
 
             // Include composite region categories.
             foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
-                if ($this->arrayAny($compositeRegion->getIncludedCategoryIds(), function($includedCategoryId)
-                        use(&$categoryIds) { return in_array($includedCategoryId, $categoryIds); })
-                    && $this->arrayEvery($compositeRegion->getExcludedCategoryIds(), function($excludedCategoryId)
-                        use(&$categoryIds) { return !in_array($excludedCategoryId, $categoryIds); })) {
-                    $categoryIds[] = $compositeRegion->getCategoryId();
+                if ($this->arrayAny($compositeRegion->getIncludedCategories(), function($includedCategory)
+                        use(&$categoryIds) { return in_array($includedCategory->getId(), $categoryIds); })
+                    && $this->arrayEvery($compositeRegion->getExcludedCategories(), function($excludedCategory)
+                        use(&$categoryIds) { return !in_array($excludedCategory->getId(), $categoryIds); })) {
+                    $categoryIds[] = $compositeRegion->getCategory()->getId();
                 }
             }
 
@@ -168,7 +168,7 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createCompositeRegion(string $name, string $category, array $includedRegions, array $excludedRegions) : CompositeRegion {
+        public function createCompositeRegion(string $name, string $category, array $includedCategories, array $excludedCategories) : CompositeRegion {
             foreach ($this->configurationService->getConfigurationEntry("countryNames") as $country) {
                 $this->getOrCreateCountryCategoryIdentifier($country["name"]);
             }
@@ -176,62 +176,61 @@
             // Verify that all referenced regions exist.
             $referencableRegionNames = $this->categoryMapper->selectAllCategoryNames();
 
-            foreach ($includedRegions as &$includedRegion) {
-                if (!in_array($includedRegion, $referencableRegionNames)) {
-                    throw new \InvalidArgumentException("The included region '" . $includedRegion . "' does not exist.");
+            foreach ($includedCategories as &$includedCategory) {
+                if (!in_array($includedCategory, $referencableRegionNames)) {
+                    throw new \InvalidArgumentException("The included category '" . $includedCategory . "' does not exist.");
                 }
             }
 
-            foreach ($excludedRegions as &$excludedRegion) {
-                if (!in_array($excludedRegion, $referencableRegionNames)) {
-                    throw new \InvalidArgumentException("The excluded region '" . $excludedRegion . "' does not exist.");
+            foreach ($excludedCategories as &$excludedCategory) {
+                if (!in_array($excludedCategory, $referencableRegionNames)) {
+                    throw new \InvalidArgumentException("The excluded category '" . $excludedCategory . "' does not exist.");
                 }
             }
 
             // Create the region.
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
 
-            // TODO: Switch to CategoryIdentifiers.
-            $includedCategoryIds = array();
-            $excludedCategoryIds = array();
+            $includedCategoryIdentifiers = array();
+            $excludedCategoryIdentifiers = array();
 
-            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$includedRegions, &$excludedRegions, &$includedCategoryIds, &$excludedCategoryIds) {
+            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$includedCategories, &$excludedCategories, &$includedCategoryIdentifiers, &$excludedCategoryIdentifiers) {
                 $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
 
-                foreach ($includedRegions as &$includedRegion) {
-                    $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedRegion);
-                    $includedCategoryIds[] = $subjectCategoryIdentifier->getId();
+                foreach ($includedCategories as &$includedCategory) {
+                    $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedCategory);
+                    $includedCategoryIdentifiers[] = $subjectCategoryIdentifier;
                     $this->categoryMapper->insertCompositeRegionInclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
                     $this->eventPublisher->publish(Event::CategoryInvalidated($subjectCategoryIdentifier->getId()));
                 }
 
-                foreach ($excludedRegions as &$excludedRegion) {
-                    $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedRegion);
-                    $excludedCategoryIds[] = $subjectCategoryIdentifier->getId();
+                foreach ($excludedCategories as &$excludedCategory) {
+                    $subjectCategoryIdentifier = $this->getCategoryIdentifier($excludedCategory);
+                    $excludedCategoryIdentifiers[] = $subjectCategoryIdentifier;
                     $this->categoryMapper->insertCompositeRegionExclusion($categoryIdentifier->getId(), $subjectCategoryIdentifier->getId());
                 }
                 
                 $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));
             });
             
-            return new CompositeRegion($categoryIdentifier->getId(), $includedCategoryIds, $excludedCategoryIds);
+            return new CompositeRegion($categoryIdentifier, $includedCategoryIdentifiers, $excludedCategoryIdentifiers);
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : GeographicalRegion {  
-            $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();                                  
+            $countryCategoryIdentifier = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country);                                  
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
 
-            if ($countryCategoryId === null) {
+            if ($countryCategoryIdentifier === null) {
                 foreach ($this->getCategories(null, array(CategoryCategory::Country->value), array()) as &$invalidatedCategory) {
                     $this->eventPublisher->publish(Event::CategoryInvalidated($invalidatedCategory->getId()));
                 }
             }
             else {
-                $this->eventPublisher->publish(Event::CategoryInvalidated($countryCategoryId));
+                $this->eventPublisher->publish(Event::CategoryInvalidated($countryCategoryIdentifier->getId()));
             }
             
-            $geographicalRegion = new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, $radius, $geoJson);
+            $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
             $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion) {
                 $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);    
@@ -252,10 +251,10 @@
                         floatval($longitude), 
                         floatval($latitude)))), true);
             
-            $countryCategoryId = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country)->getId();   
+            $countryCategoryIdentifier = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country);
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
 
-            $geographicalRegion = new GeographicalRegion($categoryIdentifier->getId(), $countryCategoryId, 0, $geoJson);
+            $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, 0, $geoJson);
             $this->transactionManager->executeAtomically(function() use(&$geographicalRegion, &$country) {
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);
 
@@ -279,16 +278,14 @@
             // Include geographical region.
             foreach ($this->categoryMapper->selectAllNonTrivialGeographicalRegions() as &$geographicalRegion) {
                 $area = $geographicalRegion->getGeoJson()->getArea();
-                $regionAreas[$geographicalRegion->getCategoryId()] = $area;
+                $regionAreas[$geographicalRegion->getCategory()->getId()] = $area;
 
                 // Include country regions.
-                if ($geographicalRegion->getCountryCategoryId() !== null) {
-                    if ($geographicalRegion->getCountryCategoryId() !== null) {
-                        if (!array_key_exists($geographicalRegion->getCountryCategoryId(), $regionAreas)) {
-                            $regionAreas[$geographicalRegion->getCountryCategoryId()] = 0;
-                        }
-                        $regionAreas[$geographicalRegion->getCountryCategoryId()] += $area;
+                if ($geographicalRegion->getCountryCategory()?->getId() !== null) {
+                    if (!array_key_exists($geographicalRegion->getCountryCategory()->getId(), $regionAreas)) {
+                        $regionAreas[$geographicalRegion->getCountryCategory()->getId()] = 0;
                     }
+                    $regionAreas[$geographicalRegion->getCountryCategory()?->getId()] += $area;
                 }
             }
 
@@ -296,19 +293,19 @@
             foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
                 $compositeRegionArea = 0;
 
-                foreach ($compositeRegion->getIncludedCategoryIds() as &$includedCategoryId) {
-                    if (array_key_exists($includedCategoryId, $regionAreas)) {
-                        $compositeRegionArea += $regionAreas[$includedCategoryId];
+                foreach ($compositeRegion->getIncludedCategories() as &$includedCategory) {
+                    if (array_key_exists($includedCategory->getId(), $regionAreas)) {
+                        $compositeRegionArea += $regionAreas[$includedCategory->getId()];
                     }
                 }
 
-                foreach ($compositeRegion->getExcludedCategoryIds() as &$excludedCategoryId) {
-                    if (array_key_exists($excludedCategoryId, $regionAreas)) {
-                        $compositeRegionArea -= $regionAreas[$excludedCategoryId];
+                foreach ($compositeRegion->getExcludedCategories() as &$excludedCategory) {
+                    if (array_key_exists($excludedCategory->getId(), $regionAreas)) {
+                        $compositeRegionArea -= $regionAreas[$excludedCategory->getId()];
                     }
                 }
 
-                $regionAreas[$compositeRegion->getCategoryId()] = $compositeRegionArea;
+                $regionAreas[$compositeRegion->getCategory()->getId()] = $compositeRegionArea;
             }
 
             // Persist the region areas.
