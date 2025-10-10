@@ -42,7 +42,7 @@
         
             // Include geographical region categories.
             $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
-            foreach ($this->categoryMapper->selectAllGeographicalRegions() as &$geographicalRegion) {
+            foreach ($this->categoryMapper->selectGeographicalRegions(null) as &$geographicalRegion) {
                 if ($geographicalRegion->getCountryCategory()?->getId() === null
                     // TODO: '==' must be here because '===' doesn't work, find out why.
                     || $geographicalRegion->getCountryCategory()->getId() == $countryCategoryIdentifier->getId()) {
@@ -62,7 +62,7 @@
             }
 
             // Include composite region categories.
-            foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
+            foreach ($this->categoryMapper->selectCompositeRegions(null) as &$compositeRegion) {
                 if ($this->arrayAny($compositeRegion->getIncludedCategories(), function($includedCategory)
                         use(&$categoryIds) { return in_array($includedCategory->getId(), $categoryIds); })
                     && $this->arrayEvery($compositeRegion->getExcludedCategories(), function($excludedCategory)
@@ -136,8 +136,13 @@
             return $this->categoryMapper->selectCategories(null, $countryCategoryId, $categoryCategories, $includedEntities);
         }
 
+        public function getRegions(?string $name) : array {
+            return array_merge($this->categoryMapper->selectGeographicalRegions($name),
+                $this->categoryMapper->selectCompositeRegions($name));
+        }
+
         public function getAllGeographicalRegions() : array {
-            return $this->categoryMapper->selectAllGeographicalRegions();
+            return $this->categoryMapper->selectGeographicalRegions(null);
         }
 
         public function updateCategoryMainHighlight(string $categoryId, ?string $highlightIdentifier) : bool {
@@ -282,7 +287,7 @@
             }
 
             // Include composite regions.
-            foreach ($this->categoryMapper->selectAllCompositeRegions() as &$compositeRegion) {
+            foreach ($this->categoryMapper->selectCompositeRegions(null) as &$compositeRegion) {
                 $compositeRegionArea = 0;
 
                 foreach ($compositeRegion->getIncludedCategories() as &$includedCategory) {

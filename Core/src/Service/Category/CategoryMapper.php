@@ -118,14 +118,23 @@
                 });
         }
 
-        public function selectAllGeographicalRegions() : array {            
+        public function selectGeographicalRegions(?string $name) : array {            
             $sql = <<<'SQL'
-                SELECT *
-                FROM region_geographical
+                SELECT rg.*
+                FROM region_geographical rg
+                INNER JOIN category_identifier ci
+                    ON rg.category_id = ci.id
+                WHERE :CONDITIONS
             SQL;
 
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            if ($name !== null) {
+                $whereClauseBuilder->withClause("ci.name = ?", $name);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
             return $this->databaseClient
-                ->statementBuilder($sql)
+                ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($geographicalRegionRow) {
                     return new GeographicalRegion($this->selectCategoryIdentifierById($geographicalRegionRow["category_id"]), 
                         $geographicalRegionRow["country_category_id"] === null ? null : $this->selectCategoryIdentifierById($geographicalRegionRow["country_category_id"]),
@@ -149,16 +158,25 @@
                 });
         }
 
-        public function selectAllCompositeRegions() : array {            
+        public function selectCompositeRegions(?string $name) : array {            
             $sql = <<<'SQL'
-                SELECT DISTINCT category_id
-                FROM region_composite
+                SELECT DISTINCT rc.category_id
+                FROM region_composite rc
+                INNER JOIN category_identifier ci
+                    ON rc.category_id = ci.id
+                WHERE :CONDITIONS
             SQL;
+            
+            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            if ($name !== null) {
+                $whereClauseBuilder->withClause("ci.name = ?", $name);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
 
             return $this->databaseClient
-                ->statementBuilder($sql)
+                ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($compositeRegionRow) {
-                    return new CompositeRegion($compositeRegionRow["category_id"],
+                    return new CompositeRegion($this->selectCategoryIdentifierById($compositeRegionRow["category_id"]),
                         $this->selectIncludedCategoryIdentifiers($compositeRegionRow["category_id"]),
                         $this->selectExcludedCategoryIdentifiers($compositeRegionRow["category_id"]));
                 });

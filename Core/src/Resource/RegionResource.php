@@ -26,6 +26,7 @@
 
             $app->group("/regions", function($group) use($resource) {
                 $group->post("", [$resource, "createRegion"]);
+                $group->get("", [$resource, "listRegions"]);
             });
         }
         
@@ -194,6 +195,79 @@
                 RegionType::GeographicalExtension => $this->handleCreateGeographicalExtensionRegion($request, $name, $categoryCategory),
                 RegionType::Composite => $this->handleCreateCompositeRegion($request, $name, $categoryCategory)
             };
+        }
+
+        #[OA\Get(
+            path: "/regions",
+            summary: "Retrieve a collection of regions",
+            operationId: "listRegions",
+            tags: ["Regions"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "name",
+                    in: "query",
+                    description: "The name of the region",
+                    example: "Czechia"
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Retrieved a collection of regions.",
+                    content: new OA\JsonContent(
+                        type: "array",
+                        items: new OA\Items(oneOf: [
+                            new OA\Schema(ref: "#/components/schemas/GeographicalRegion"),
+                            new OA\Schema(ref: "#/components/schemas/CompositeRegion"),
+                        ])
+                    )
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function listRegions(Request $request, Response $response, array $routeArguments) : mixed {    
+            $name = $this->getQueryParameter($request, "name");
+            
+            return $this->categoryService->getRegions($name);
         }
 
         private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
