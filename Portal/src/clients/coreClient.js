@@ -89,8 +89,14 @@ export const createGeographicalExtensionRegion = async (name, country, category,
             countryCategory: {
                 name: country
             },
-            latitude,
-            longitude
+            radius: 0,
+            geoJson: {
+                type: "Feature",
+                geometry: {
+                    type: "Point",
+                    coordinates: [longitude, latitude]
+                }
+            }
         }
     ).then(extractData)
 

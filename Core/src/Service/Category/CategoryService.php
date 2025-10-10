@@ -242,19 +242,11 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegionExtensionRegion(string $name, ?string $country, string $category, float $latitude, float $longitude) : GeographicalRegion {
-            $geoJson = json_encode(array(
-                "type" => "Feature", 
-                "geometry" => array(
-                    "type" => "Point", 
-                    "coordinates" => array(
-                        floatval($longitude), 
-                        floatval($latitude)))), true);
-            
+        public function createGeographicalRegionExtensionRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : GeographicalRegion {            
             $countryCategoryIdentifier = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country);
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
 
-            $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, 0, $geoJson);
+            $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
             $this->transactionManager->executeAtomically(function() use(&$geographicalRegion, &$country) {
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);
 

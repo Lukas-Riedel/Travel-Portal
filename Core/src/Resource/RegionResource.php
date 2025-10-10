@@ -84,29 +84,15 @@
                             ]
                         ),
                         new OA\Property(
-                            property: "latitude",
-                            description: "The latitude coordinate of the point region (required for geographical extension regions)",
-                            type: "number",
-                            format: "float",
-                            example: 50.100833
-                        ),
-                        new OA\Property(
-                            property: "longitude",
-                            description: "The longitude coordinate of the point region (required for geographical extension regions)",
-                            type: "number",
-                            format: "float",
-                            example: 14.26
-                        ),
-                        new OA\Property(
                             property: "radius",
                             type: "integer",
-                            description: "The radius of the geographical region in kilometers (required for geographical regions)",
+                            description: "The radius of the geographical region in kilometers (required for geographical regions and geographical extension regions)",
                             example: 5
                         ),
                         new OA\Property(
                             property: "geoJson",
                             type: "object",
-                            description: "The GeoJSON object defining the shape of the geographical region (required for geographical regions)",
+                            description: "The GeoJSON object defining the shape of the geographical region (required for geographical regions and geographical extension regions)",
                             example: '{"type":"Polygon","coordinates":[[[14.4,50.0],[14.5,50.0],[14.5,50.1],[14.4,50.1],[14.4,50.0]]]}'
                         ),
                         new OA\Property(
