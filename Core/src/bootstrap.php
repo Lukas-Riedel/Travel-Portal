@@ -186,7 +186,7 @@
 
     // OpenLineage manager.
     $openLineageEventPublishers = array(
-        new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, $logger),
+        new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
         new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
     );
     $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));

@@ -7,7 +7,7 @@
 
     class IbmCloudService {
 
-        private const IBM_CLOUD_IAM_TOKEN_URL = "https://iam.test.cloud.ibm.com/identity/token";
+        private const IBM_CLOUD_IAM_TOKEN_URL = "https://iam.cloud.ibm.com/identity/token";
 
         private const IBM_CLOUD_GRANT_TYPE = "urn:ibm:params:oauth:grant-type:apikey";
         private const IBM_CLOUD_RESPONSE_TYPE = "cloud_iam";

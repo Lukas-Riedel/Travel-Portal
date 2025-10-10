@@ -9,7 +9,7 @@
 
     class IbmCloudOpenLineageEventPublisher implements OpenLineageEventPublisher {
 
-        private const IBM_CREATE_OPENLINEAGE_EVENT_URL = "https://api.dataplatform.dev.cloud.ibm.com/gov_lineage/v2/lineage_events/openlineage";
+        private const CREATE_OPENLINEAGE_EVENT_API_ENDPOINT_PATH = "/gov_lineage/v2/lineage_events/openlineage";
 
         private readonly AuthenticationService $authenticationService;
 
@@ -17,13 +17,16 @@
 
         private readonly HttpClient $httpClient;
 
+        private readonly string $ibmDataplatformBaseUrl;
+
         private readonly Logger $logger;
 
         public function __construct(AuthenticationService $authenticationService, ConfigurationService $configurationService, 
-            HttpClient $httpClient, Logger $logger) {
+            HttpClient $httpClient, string $ibmDataplatformBaseUrl, Logger $logger) {
             $this->authenticationService = $authenticationService;
             $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
+            $this->ibmDataplatformBaseUrl = $ibmDataplatformBaseUrl;
             $this->logger = $logger;
         }
 
@@ -32,8 +35,8 @@
                 return;
             }
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, self::IBM_CREATE_OPENLINEAGE_EVENT_URL, array("Content-Type: application/json", 
-                "Authorization: Bearer " . $this->authenticationService->getIbmCloudAccessToken()), json_encode($event));
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->ibmDataplatformBaseUrl . self::CREATE_OPENLINEAGE_EVENT_API_ENDPOINT_PATH,
+                array("Content-Type: application/json", "Authorization: Bearer " . $this->authenticationService->getIbmCloudAccessToken()), json_encode($event));
 
             if (isset($response["errors"]) && is_array($response["errors"])) {
                 foreach ($response["errors"] as &$error) {
