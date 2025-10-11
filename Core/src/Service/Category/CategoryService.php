@@ -159,6 +159,9 @@
             });
             return $wasUpdated;
         }
+        public function updateCategoryCategory(string $categoryId, CategoryCategory $category) : bool {
+            return $this->categoryMapper->updateCategoryCategory($categoryId, $category);
+        }
 
         public function updateCategoryColor(string $categoryId, string $color) : bool {            
             return $this->categoryMapper->updateCategoryColor($categoryId, $color);

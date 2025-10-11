@@ -148,6 +148,13 @@ export const updateCategoryName = async (categoryId, name) =>
         }
     ).then(extractData)
 
+export const updateCategoryCategory = async (categoryId, category) =>
+    coreClient.patch(`categories/${categoryId}`,
+        {
+            category
+        }
+    ).then(extractData)
+
 export const updateCategoryMetadata = async (categoryId, { unicode, color, publicHolidaysCalendar } = {}) =>
     coreClient.patch(`categories/${categoryId}`,
         {

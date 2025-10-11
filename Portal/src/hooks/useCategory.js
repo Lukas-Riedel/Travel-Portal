@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata, createCategoryHighlight } from "../clients/coreClient"
+import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata, createCategoryHighlight, updateCategoryCategory } from "../clients/coreClient"
 
 export const useCategory = categoryId => {
     const { isAdmin } = useAuth()
@@ -21,6 +21,7 @@ export const useCategory = categoryId => {
         // TODO: Map to Category object
         category: query.data,
         updateCategoryName: name => updateCategoryName(categoryId, name).then(setCategory),
+        updateCategoryCategory: category => updateCategoryCategory(categoryId, category).then(setCategory),
         updateCategoryMetadata: metadata => updateCategoryMetadata(categoryId, metadata).then(setCategory),
         createCategoryHighlight: photoId => createCategoryHighlight(categoryId, photoId).then(refetchCategory),
         removeCategoryHighlight: highlightId => removeCategoryHighlight(categoryId, highlightId).then(refetchCategory),

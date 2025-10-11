@@ -11,13 +11,24 @@ import { useAuth } from "../contexts/AuthContext"
 import { Edit2 } from "lucide-react"
 import showFormToast from "../components/FormToast"
 
+const categoryCategories = {
+    continent: "Kontinent",
+    country: "Stát",
+    administrative: "Administrativní oblast",
+    ocean: "Oceán",
+    sea: "Moře",
+    bay: "Záliv",
+    island: "Ostrov",
+    region: "Geografický region"
+}
+
 export default function CategoryPage() {
     const { categoryId } = useParams()
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { isAdmin } = useAuth()
 
-    const { category, updateCategoryName, updateCategoryMetadata, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
+    const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const { places } = useTimeFilteredRegularPlaces({ categoryId, include: "categories", sort: "-score" })
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
@@ -27,6 +38,12 @@ export default function CategoryPage() {
         .reduce((acc, score) => acc + score, 0), [places])
     const totalQuality = useMemo(() => places?.map(place => place.quality).filter(Boolean)
         .reduce((acc, quality) => acc + quality, 0), [places])
+
+    const attributes = {
+        "Kategorie": categoryCategories[category?.category] ?? category?.category,
+        "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / places.length)}%`,
+        "Celkové skóre": totalScore
+    }
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
@@ -42,13 +59,15 @@ export default function CategoryPage() {
         showFormToast(
             "Zadej metadata kategorie:",
             [
+                { label: "Kategorie", required: true, value: category.category, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
                 { label: "Barva", required: false, value: category.metadata?.color },
                 { label: "Unicode", required: false, value: category.metadata?.unicode },
                 { label: "Kalendář", required: false, value: category.metadata?.publicHolidaysCalendar }
             ],
-            "Metadata byla úspěšně aktualizována",
-            "Při aktualizování metadat došlo k chybě",
-            async (color, unicode, publicHolidaysCalendar) => updateCategoryMetadata({ color, unicode, publicHolidaysCalendar })
+            "Kategorie byla úspěšně aktualizována",
+            "Při aktualizování kategorie došlo k chybě",
+            async (category, color, unicode, publicHolidaysCalendar) =>
+                updateCategoryCategory(category).then(() => updateCategoryMetadata({ color, unicode, publicHolidaysCalendar }))
         )
     }
 
@@ -57,7 +76,7 @@ export default function CategoryPage() {
             <PageHeader
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={{ "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / places.length)}%`, "Celkové skóre": totalScore }}
+                internalAttributes={attributes}
                 showHighlightsButton={true}
                 onNameChanged={updateCategoryName} />
             <HighlightCarouselAndPlaceMapToggle

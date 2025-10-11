@@ -427,6 +427,19 @@
                 ->execute() === 1;
         }
 
+        public function updateCategoryCategory(string $categoryId, CategoryCategory $category) : bool {
+            $sql = <<<'SQL'
+                UPDATE category_identifier
+                SET category = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($category->value, $categoryId)
+                ->execute() === 1;
+        }
+
         public function updateCategoryName(string $categoryId, string $name) : bool {
             $sql = <<<'SQL'
                 UPDATE category_identifier

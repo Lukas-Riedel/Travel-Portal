@@ -234,6 +234,10 @@
                             example: "Czech Republic"
                         ),
                         new OA\Property(
+                            property: "category",
+                            ref: "#/components/schemas/CategoryCategory"
+                        ),
+                        new OA\Property(
                             property: "mainHighlight",
                             description: "The main highlight of the category",
                             type: "object",
@@ -354,6 +358,11 @@
             $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->categoryService->updateCategoryName($categoryId, $newName);
+            }
+
+            $newCategory = $this->getJsonBodyField($request, "category");
+            if ($newCategory !== null) {
+                $wasUpdated |= $this->categoryService->updateCategoryCategory($categoryId, CategoryCategory::from($newCategory));
             }
             
             $newMainHighlight = $this->getJsonBodyField($request, "mainHighlight");
