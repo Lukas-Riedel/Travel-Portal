@@ -1,6 +1,7 @@
 import LoadingCard from "./LoadingCard"
 import { formatKilometers } from "../utils/formatters"
-import { MapIcon } from "lucide-react"
+import { CopyIcon, MapIcon } from "lucide-react"
+import showConfirmToast from "./ConfirmToast.jsx"
 
 export default function RegionCard({ region, onCategorySelected, onRegionVisualized }) {
     const regionProperties = region && {
@@ -8,6 +9,7 @@ export default function RegionCard({ region, onCategorySelected, onRegionVisuali
         "Rádius": region.radius > 0 && formatKilometers(region.radius),
         "Stát": region.countryCategory && region.countryCategory.name,
         "Podtyp": region.geoJson?.geometry?.type && (region.geoJson?.geometry?.type === "Point" ? "Bod" : "Oblast"),
+        "Souřadnice": region.geoJson?.geometry?.coordinates?.length === 2 ? `${region.geoJson.geometry.coordinates[1].toFixed(4)}, ${region.geoJson.geometry.coordinates[0].toFixed(4)}` : undefined,
         "Zahrnuté regiony": region.includedCategories && (
             <ul className="space-y-0.5 list-inside list-disc">
                 {region.includedCategories.map(category => (
@@ -34,6 +36,15 @@ export default function RegionCard({ region, onCategorySelected, onRegionVisuali
         )
     }
 
+    const handleCopyGeoJsonToClipboard = () => {
+        showConfirmToast(
+            "GeoJSON reprezentace regionu bude vložena do schránky. Přeješ si pokračovat?",
+            "GeoJSON reprezentace regionu byla úspěšně vložena do schránky",
+            "Nepodařilo se vložit GeoJSON reprezentaci regionu do schránky",
+            async () => navigator.clipboard.writeText(JSON.stringify(region.geoJson))
+        )
+    }
+
     return region ? (
         <div className="relative bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full">
             <ul className="space-y-0.5 mt-2">
@@ -56,6 +67,13 @@ export default function RegionCard({ region, onCategorySelected, onRegionVisuali
                     onClick={() => onRegionVisualized(region)}
                     className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
                     <MapIcon size={16} />
+                </button>
+            )}
+            {region.geoJson && region.geoJson?.geometry?.type !== "Point" && (
+                <button
+                    onClick={handleCopyGeoJsonToClipboard}
+                    className="absolute bottom-2 right-8 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                    <CopyIcon size={16} />
                 </button>
             )}
         </div>
