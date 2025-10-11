@@ -138,7 +138,7 @@
                 ->getMappedResultSet(function($geographicalRegionRow) {
                     return new GeographicalRegion($this->selectCategoryIdentifierById($geographicalRegionRow["category_id"]), 
                         $geographicalRegionRow["country_category_id"] === null ? null : $this->selectCategoryIdentifierById($geographicalRegionRow["country_category_id"]),
-                        intval($geographicalRegionRow["radius"]), \geoPHP::load($geographicalRegionRow["json"], "json"));
+                        intval($geographicalRegionRow["radius"]), json_decode($geographicalRegionRow["json"], true));
                 });
         }
 
@@ -154,7 +154,7 @@
                 ->getMappedResultSet(function($geographicalRegionRow) {
                     return new GeographicalRegion($this->selectCategoryIdentifierById($geographicalRegionRow["category_id"]), 
                         $geographicalRegionRow["country_category_id"] === null ? null : $this->selectCategoryIdentifierById($geographicalRegionRow["country_category_id"]),
-                        intval($geographicalRegionRow["radius"]), \geoPHP::load($geographicalRegionRow["json"], "json"));
+                        intval($geographicalRegionRow["radius"]), json_decode($geographicalRegionRow["json"], true));
                 });
         }
 

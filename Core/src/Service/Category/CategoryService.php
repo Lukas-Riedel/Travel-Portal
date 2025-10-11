@@ -274,7 +274,7 @@
 
             // Include geographical region.
             foreach ($this->categoryMapper->selectAllNonTrivialGeographicalRegions() as &$geographicalRegion) {
-                $area = $geographicalRegion->getGeoJson()->getArea();
+                $area = $this->getGeometry($geographicalRegion->getGeoJson())->getArea();
                 $regionAreas[$geographicalRegion->getCategory()->getId()] = $area;
 
                 // Include country regions.
@@ -372,14 +372,20 @@
             return \geoPHP::load("POINT (" . $longitude . " " . $latitude . ")", "wkt");
         }
 
+        private function getGeometry(mixed $geoJson) : mixed {
+            return \geoPHP::load(json_encode($geoJson), "json");
+        }
+
         private function isPointInPolygon(mixed $geoJson, mixed $point) : bool {
-            if (method_exists($geoJson, "pointInPolygon")) {
-                return $geoJson->pointInPolygon($point);
+            $geometry = $this->getGeometry($geoJson);
+
+            if (method_exists($geometry, "pointInPolygon")) {
+                return $geometry->pointInPolygon($point);
             }
 
-            if (method_exists($geoJson, "getComponents")) {
+            if (method_exists($geometry, "getComponents")) {
                 $pointInPolygon = false;
-                foreach ($geoJson->getComponents() as &$component) {
+                foreach ($geometry->getComponents() as &$component) {
                     if ($component->pointInPolygon($point, $pointInPolygon)) {
                         $pointInPolygon = true;
                     }
@@ -387,7 +393,7 @@
                 return $pointInPolygon;
             }
 
-            return $geoJson->equals($point);
+            return $geometry->equals($point);
         }
 
         private function arrayAny(array $array, mixed $fn) : bool {
