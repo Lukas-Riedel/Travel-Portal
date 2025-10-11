@@ -344,7 +344,7 @@
             return $this->highlightMapper->selectHighlightId($photoId);
         }
 
-        private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $forceOverwrite) : array {
+        private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $overwrite) : array {
             $filePaths = array();
 
             $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
@@ -352,7 +352,7 @@
                 $fileName = $highlight->getId() . CommonConstants::JPG_FILE_EXTENSION;
                 $filePath = $this->getPhysicalCachePath($highlightSize) . "/" . $fileName;
     
-                if ($forceOverwrite || !file_exists($filePath)) {
+                if ($overwrite || !file_exists($filePath)) {
                     $photoId = $this->highlightMapper->selectPhotoId($highlight->getId());
 
                     if ($photoId !== null) {

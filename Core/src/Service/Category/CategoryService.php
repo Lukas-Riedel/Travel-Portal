@@ -173,7 +173,7 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createCompositeRegion(string $name, string $category, array $includedCategories, array $excludedCategories) : CompositeRegion {
+        public function createCompositeRegion(string $name, string $category, array $includedCategories, array $excludedCategories, bool $overwrite) : CompositeRegion {
             foreach ($this->configurationService->getConfigurationEntry("countryNames") as $country) {
                 $this->getOrCreateCountryCategoryIdentifier($country["name"]);
             }
@@ -199,8 +199,13 @@
             $includedCategoryIdentifiers = array();
             $excludedCategoryIdentifiers = array();
 
-            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$includedCategories, &$excludedCategories, &$includedCategoryIdentifiers, &$excludedCategoryIdentifiers) {
-                $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());
+            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$includedCategories, &$excludedCategories,
+                &$includedCategoryIdentifiers, &$excludedCategoryIdentifiers, &$overwrite) {
+                if ($overwrite) {
+                    $this->categoryMapper->deleteCompositeRegion($categoryIdentifier->getId());                        
+                }
+                
+                // TODO: Block the insertion if the composite region already exists.
 
                 foreach ($includedCategories as &$includedCategory) {
                     $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedCategory);
@@ -222,7 +227,7 @@
         }
 
         // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : GeographicalRegion {  
+        public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson, bool $overwrite) : GeographicalRegion {  
             $countryCategoryIdentifier = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country);                                  
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
 
@@ -236,8 +241,11 @@
             }
             
             $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
-            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion) {
-                $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
+            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion, &$overwrite) {
+                if ($overwrite) {
+                    $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
+                }
+                // TODO: Block the insertion if the geographical region already exists. There is no unique constraint because of extensions.
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);    
                 
                 $this->eventPublisher->publish(Event::CategoryCreated($categoryIdentifier->getId()));

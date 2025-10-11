@@ -213,7 +213,7 @@
             $this->photoMapper->deletePendingPhotosForAlbum($albumId);
         }
         
-        private function doUpdateAlbums(?string $albumId, bool $forceOverwrite) : array {
+        private function doUpdateAlbums(?string $albumId, bool $overwrite) : array {
             global $highlightService, $placeService;
         
             $filePaths = array();
@@ -230,7 +230,7 @@
                         $fileName = $album["coverPhotoMediaItemId"] . CommonConstants::JPG_FILE_EXTENSION;
                         $filePath = $this->getPhysicalCachePath() . "/" . $fileName;
             
-                        if ($forceOverwrite || !file_exists($filePath)) {
+                        if ($overwrite || !file_exists($filePath)) {
                             file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] 
                                 . "=w" . self::ALBUM_THUMBNAIL_WIDTH
                                 . "-h" . self::ALBUM_THUMBNAIL_HEIGHT));

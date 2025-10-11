@@ -46,9 +46,9 @@
                     example: "1754252500",
                 ),
                 new OA\Parameter(
-                    name: "forceOverwrite",
+                    name: "overwrite",
                     in: "query",
-                    description: "Whether the fitness record should be forcibly overwritten or not",
+                    description: "Whether the fitness record should be overwritten (if exists) or not",
                     schema: new OA\Schema(type: "boolean")
                 )
             ],
@@ -106,9 +106,9 @@
             $steps = $this->requireJsonBodyField($request, "steps");
             $distance = $this->requireJsonBodyField($request, "distance");
             $seconds = $this->requireJsonBodyField($request, "seconds");
-            $forceOverwrite = filter_var($this->getQueryParameter($request, "forceOverwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
+            $overwrite = filter_var($this->getQueryParameter($request, "overwrite") ?? "false", FILTER_VALIDATE_BOOLEAN);
 
-            $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $distance, $forceOverwrite);
+            $wasReplaced = $this->fitnessService->updateFitnessRecord($timestamp, $steps, $seconds, $distance, $overwrite);
             if (!$wasReplaced) {
                 throw new NotUpdatedException($timestamp);
             }

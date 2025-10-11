@@ -27,7 +27,7 @@ export default function RegionEditor({ categories }) {
                 )}
                 {!selectedCategory && (
                     <div className="flex items-center justify-center text-gray-500 h-full w-full">
-                        Vyber region pro úpravu
+                        Vyber region k editaci
                     </div>
                 )}
             </div>

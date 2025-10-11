@@ -43,7 +43,13 @@
                     required: true,
                     description: "The type of the region",
                     schema: new OA\Schema(ref: "#/components/schemas/RegionType"),
-                    example: "geographical",
+                    example: "geographical"
+                ),
+                new OA\Parameter(
+                    name: "overwrite",
+                    in: "query",
+                    description: "Whether the region should be overwritten (if exists) or not",
+                    schema: new OA\Schema(type: "boolean")
                 )
             ],
             requestBody: new OA\RequestBody(
@@ -188,12 +194,13 @@
             }
             $categoryCategory = CategoryCategory::from($category["category"]);        
             
+            $overwrite = $this->getQueryParameter($request, "overwrite") ?? false;
             $regionType = RegionType::from($this->requireQueryParameter($request, "type"));
 
             return match ($regionType) {
-                RegionType::Geographical => $this->handleCreateGeographicalRegion($request, $name, $categoryCategory),
+                RegionType::Geographical => $this->handleCreateGeographicalRegion($request, $name, $categoryCategory, $overwrite),
                 RegionType::GeographicalExtension => $this->handleCreateGeographicalExtensionRegion($request, $name, $categoryCategory),
-                RegionType::Composite => $this->handleCreateCompositeRegion($request, $name, $categoryCategory)
+                RegionType::Composite => $this->handleCreateCompositeRegion($request, $name, $categoryCategory, $overwrite)
             };
         }
 
@@ -270,14 +277,14 @@
             return $this->categoryService->getRegions($name);
         }
 
-        private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
+        private function handleCreateGeographicalRegion(Request $request, string $name, CategoryCategory $category, bool $overwrite) : GeographicalRegion {
             $countryCategory = $this->getJsonBodyField($request, "countryCategory");
             $country = is_array($countryCategory) ? ($countryCategory["name"] ?? null) : null;
 
             $radius = $this->requireJsonBodyField($request, "radius");
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
-            return $this->categoryService->createGeographicalRegion($name, $country, $category->value, $radius, $geoJson);
+            return $this->categoryService->createGeographicalRegion($name, $country, $category->value, $radius, $geoJson, $overwrite);
         }
 
         private function handleCreateGeographicalExtensionRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
@@ -290,7 +297,7 @@
             return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $latitude, $longitude);
         }
 
-        private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category) : CompositeRegion {
+        private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category, bool $overwrite) : CompositeRegion {
             $includedCategories = array_map(function($category) {
                 if (!isset($category["name"])) {
                     throw new \InvalidArgumentException("The required request body field 'includedCategories.name' is missing.");
@@ -305,7 +312,7 @@
                 return $category["name"];
             }, $this->requireJsonBodyField($request, "excludedCategories"));
             
-            return $this->categoryService->createCompositeRegion($name, $category->value, $includedCategories, $excludedCategories);
+            return $this->categoryService->createCompositeRegion($name, $category->value, $includedCategories, $excludedCategories, $overwrite);
         }
     }
 ?>

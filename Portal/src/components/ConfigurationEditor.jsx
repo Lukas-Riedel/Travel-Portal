@@ -68,7 +68,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                 )}
                 {!selectedKey && (
                     <div className="flex items-center justify-center text-gray-500 h-full w-full">
-                        Vyber konfigurační klíč pro úpravu
+                        Vyber konfigurační klíč k editaci
                     </div>
                 )}
             </div>

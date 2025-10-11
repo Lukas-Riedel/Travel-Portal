@@ -63,8 +63,13 @@ export const updateHighlightQualityAttributes = async (highlightId, composition,
         }
     ).then(extractData)
 
-export const createGeographicalRegion = async (name, country, category, radius, geoJson) =>
-    coreClient.post("regions?type=geographical",
+export const createGeographicalRegion = async (name, country, category, radius, geoJson, overwrite = false) =>
+    coreClient.post(createQueryPath("regions",
+        {
+            type: "geographical",
+            overwrite
+        }
+    ),
         {
             category: {
                 name,
@@ -100,8 +105,13 @@ export const createGeographicalExtensionRegion = async (name, country, category,
         }
     ).then(extractData)
 
-export const createCompositeRegion = async (name, category, includedRegions, excludedRegions) =>
-    coreClient.post("regions?type=composite",
+export const createCompositeRegion = async (name, category, includedRegions, excludedRegions, overwrite = false) =>
+    coreClient.post(createQueryPath("regions",
+        {
+            type: "composite",
+            overwrite
+        }
+    ),
         {
             category: {
                 name,
@@ -176,10 +186,10 @@ export const listConfigurationEntries = async () =>
 export const replaceConfigurationEntry = async (key, value) =>
     coreClient.put(`configuration/${key}`, value).then(extractData)
 
-export const replaceFitness = async (timestamp, steps, seconds, distance, forceOverwrite = false) =>
+export const replaceFitness = async (timestamp, steps, seconds, distance, overwrite = false) =>
     coreClient.put(createQueryPath(`fitness/${timestamp}`,
         {
-            forceOverwrite
+            overwrite
         }
     ),
         {
