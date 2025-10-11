@@ -8,7 +8,7 @@ import FlightCardGrid from "../components/FlightCardGrid"
 
 export default function FlightsPage() {
     const trips = useRegularTrips({ include: "flights" })
-    const countryCategories = useCategories({ categories: "country" })
+    const { categories: countryCategories } = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
     const flights = useMemo(() => {

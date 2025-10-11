@@ -49,7 +49,7 @@ export default function TripCard({ trip, onTripRemoved }) {
                         ))}
                     </div>)}
                 <Link
-                    to={`/plan/trip/${trip.id}`}
+                    to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/trip/${trip.id}`}
                     title={trip.name}
                     className="ml-2 hover:underline text-lg font-semibold truncate">
                     {trip.name}
@@ -81,7 +81,7 @@ export default function TripCard({ trip, onTripRemoved }) {
                                     index > 0 && <span key={`sep-${index}`}>, </span>,
                                     <Link
                                         key={index}
-                                        to={`/plan/place/${place.id}`}
+                                        to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/place/${place.id}`}
                                         title={getPrettyName(place.name)}
                                         className="hover:underline hover:text-indigo-300 transition-colors duration-200">
                                         {getPrettyName(place.name)}

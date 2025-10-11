@@ -36,7 +36,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                     alt={category.name}
                     className="w-7 h-auto flex-shrink-0" />
                 <Link
-                    to={`/plan/category/${category.id}`}
+                    to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/category/${category.id}`}
                     className="hover:underline text-lg font-semibold truncate">
                     {getPrettyName(category.name)}
                 </Link>
@@ -59,7 +59,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 </span>
                             )}
                             <Link
-                                to={`/plan/place/${place.id}`}
+                                to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/place/${place.id}`}
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
                                 {getPrettyName(place.name)}
                                 {place.quality && place.quality >= 0 && ` (${Math.round(place.quality)} %)`}
@@ -95,7 +95,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                 {remainingCount > 0 && (
                     <li className="my-2">
                         <Link
-                            to={`/plan/category/${category.id}`}
+                            to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/category/${category.id}`}
                             className="text-gray-500 text-sm hover:underline">
                             Zobrazit {formatNextPlaces(remainingCount)}
                         </Link>

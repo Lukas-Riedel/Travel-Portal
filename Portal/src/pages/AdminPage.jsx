@@ -29,7 +29,9 @@ import {
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useSubscriptions } from "../hooks/useSubscriptions"
+import { useCategories } from "../hooks/useCategories"
 import SubscriptionCardGrid from "../components/SubscriptionCardGrid"
+import RegionEditor from "../components/RegionEditor"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -48,6 +50,9 @@ export default function AdminPage() {
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
     const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
+    const { categories, createGeographicalRegion, createCompositeRegion } = useCategories()
+
+    const categoriesWithRegions = useMemo(() => categories?.filter(category => category.category !== "country"), [categories])
 
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
     const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
@@ -65,7 +70,6 @@ export default function AdminPage() {
         const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? []);
         return filteredFlights && [...filteredFlights].sort((a, b) => a.start - b.start)
     }, [trips])
-
 
     const labels = [
         {
@@ -99,6 +103,10 @@ export default function AdminPage() {
         {
             name: "Aktivní předplatná",
             enabled: subscriptions && subscriptions.length > 0
+        },
+        {
+            name: "Správa regionů",
+            enabled: categoriesWithRegions && categories.length > 0
         }
     ]
 
@@ -239,7 +247,7 @@ export default function AdminPage() {
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}
                     onCategoryMetadataChanged={updateCategoryMetadata}
-                    onRegionManagementOpened={() => { /** TODO: Set active tab to the region management. */ }} />
+                    onRegionManagementOpened={() => setActiveTab(8)} />
             )}
             {activeTab === 4 && (
                 <ConfigurationEditor
@@ -267,6 +275,12 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handleSubscriptionCreated} />
+                </>
+            )}
+            {activeTab === 8 && (
+                <>
+                    <RegionEditor
+                        categories={categoriesWithRegions} />
                 </>
             )}
         </>

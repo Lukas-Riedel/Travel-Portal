@@ -21,7 +21,7 @@ export default function PlansPage() {
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: "categories" })
     const { places: visitedPlaces } = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
     const { candidateTrips, removeCandidateTrip } = useCandidateTrips()
-    const countryCategories = useCategories({ categories: "country" })
+    const { categories: countryCategories } = useCategories({ categories: "country" })
 
     const [maxDistance, setMaxDistance] = useState(250)
     const [maxQuality, setMaxQuality] = useState(80)

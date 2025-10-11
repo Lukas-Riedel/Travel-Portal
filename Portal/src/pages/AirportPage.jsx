@@ -11,7 +11,7 @@ export default function AirportPage() {
     const { airportId } = useParams()
 
     const trips = useRegularTrips({ include: "flights" })
-    const countryCategories = useCategories({ categories: "country" })
+    const { categories: countryCategories } = useCategories({ categories: "country" })
     const { airport, updateAirportLongName } = useAirport(airportId)
 
     const flights = useMemo(() => {

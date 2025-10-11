@@ -31,7 +31,7 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
                         className="w-7 h-auto flex-shrink-0" />
                 )}
                 <Link
-                    to={`/plan/place/${place.id}`}
+                    to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/place/${place.id}`}
                     title={getPrettyName(place.name)}
                     className="ml-2 hover:underline text-lg font-semibold truncate">
                     {getPrettyName(place.name)}
@@ -58,7 +58,7 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
                             <Earth size={16} />
                         </span>
                         <Link
-                            to={`/plan/category/${category.id}`}
+                            to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/category/${category.id}`}
                             className="text-gray-600 hover:underline hover:text-gray-300 transition-colors duration-200">
                             {getPrettyName(category.name)}
                         </Link>

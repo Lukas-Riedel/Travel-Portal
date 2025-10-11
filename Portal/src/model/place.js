@@ -32,7 +32,7 @@ export default class Place {
             (this.dates ?? [])
                 .filter(date => date.start < Date.now() / 1000)
                 .map(date => date.trip)
-                .filter(trip => trip !== null)
+                .filter(Boolean)
                 .map(trip => [trip.id, trip]))
             .values()]
     }
@@ -41,7 +41,7 @@ export default class Place {
         return [...new globalThis.Map(
             (this.dates ?? [])
                 .map(date => date.trip)
-                .filter(trip => trip !== null)
+                .filter(Boolean)
                 .map(trip => [trip.id, trip]))
             .values()]
     }

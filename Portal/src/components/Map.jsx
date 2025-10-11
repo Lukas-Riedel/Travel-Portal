@@ -93,8 +93,14 @@ const mapStyles = [
         ]
     }
 ]
+const geoJsonPolygonStyle = {
+    fillColor: "#4285F4",
+    fillOpacity: 0.3,
+    strokeColor: "#4285F4",
+    strokeWeight: 1
+}
 
-export default function Map({ points, lines, onRightClick }) {
+export default function Map({ points, lines, geoJson, onRightClick }) {
     const markersRef = useRef([])
     const mapRef = useRef(null)
 
@@ -130,24 +136,41 @@ export default function Map({ points, lines, onRightClick }) {
         mapRef.current.fitBounds(bounds)
     }
 
-    const onMapLoad = map => {
-        mapRef.current = map
+    const initMap = map => {
+        map.data.forEach(f => map.data.remove(f))
 
-        if (points.length == 1) {
-            mapRef.current.setCenter({
+        if (geoJson) {
+            map.data.addGeoJson(geoJson)
+            map.data.setStyle(geoJsonPolygonStyle)
+
+            const bounds = new google.maps.LatLngBounds()
+            map.data.forEach(feature => {
+                feature.getGeometry().forEachLatLng(latlng => bounds.extend(latlng))
+            })
+            map.fitBounds(bounds)
+        }
+        else if (points?.length == 1) {
+            map.setCenter({
                 lat: points[0]?.latitude ?? 0,
                 lng: points[0]?.longitude ?? 0
             })
-            mapRef.current.setZoom(defaultMapZoom)
-            return
+            map.setZoom(defaultMapZoom)
         }
+        else {
+            fitBounds()
+        }
+    }
 
-        fitBounds()
+    const onMapLoad = map => {
+        mapRef.current = map
+        initMap(map)
     }
 
     useEffect(() => {
-        fitBounds()
-    }, [points?.length, lines?.length])
+        if (mapRef.current) {
+            initMap(mapRef.current)
+        }
+    }, [points?.length, lines?.length, geoJson])
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_FRONTEND_GOOGLE_MAPS_API_KEY,
@@ -155,7 +178,7 @@ export default function Map({ points, lines, onRightClick }) {
         region: "CZ"
     })
 
-    return points ? (
+    return (points || geoJson) ? (
         <>
             {isLoaded && (
                 <div className="w-full h-full overflow-hidden rounded-lg shadow">

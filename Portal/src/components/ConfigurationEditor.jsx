@@ -20,7 +20,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
 
     return configuration ? (
         <div className="flex h-[600px] border rounded-xl overflow-hidden">
-            <div className="w-1/3 border-r p-3 overflow-y-auto bg-gray-100">
+            <div className="w-1/4 border-r p-3 overflow-y-auto bg-gray-100">
                 {Object.keys(configuration).map(key => (
                     <button
                         key={key}

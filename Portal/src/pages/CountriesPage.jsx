@@ -8,7 +8,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 
 export default function CountriesPage() {
     const { places } = useTimeFilteredRegularPlaces({ include: "categories", sort: "-score" })
-    const countryCategories = useCategories({ categories: "country" })
+    const { categories: countryCategories } = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
     const countryCategoriesMap = useMemo(() => {

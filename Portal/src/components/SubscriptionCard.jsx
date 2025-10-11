@@ -17,6 +17,12 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
         )
     }
 
+    const subscriptionProperties = {
+        "Hodnota": `${subscription.value} ${subscription.currency}`,
+        "Expirace": getDateString(subscription.expiration),
+        "Počet použití": subscription.occurrences
+    }
+
     return subscription ? (
         <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full space-y-1">
             <div className="flex justify-start items-center">
@@ -32,35 +38,18 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
                 )}
             </div>
             <ul className="space-y-0.5 mt-2">
-                <li className="text-gray-700 truncate">
-                    <span className="font-semibold">
-                        Hodnota:
-                    </span>
-                    {" "}
-                    <span>
-                        {`${subscription.value} ${subscription.currency}`}
-                    </span>
-                </li>
-                <li className="text-gray-700 truncate">
-                    <span className="font-semibold">
-                        Expirace:
-                    </span>
-                    {" "}
-                    <span>
-                        {getDateString(subscription.expiration)}
-                    </span>
-                </li>
-                <li className="text-gray-700 truncate">
-                    <span className="font-semibold">
-                        Počet použití:
-                    </span>
-                    {" "}
-                    <span>
-                        {subscription.occurrences}
-                    </span>
-                </li>
+                {Object.entries(subscriptionProperties).filter(([key]) => subscriptionProperties[key]).map(([key, value]) => (
+                    <li
+                        key={key}
+                        className="text-gray-700">
+                        <span className="font-semibold">
+                            {key}:
+                        </span>
+                        {" "}
+                        <span dangerouslySetInnerHTML={{ __html: value }} />
+                    </li>
+                ))}
             </ul>
-
         </div>
     ) : (
         <LoadingCard />

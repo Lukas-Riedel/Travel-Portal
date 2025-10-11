@@ -332,7 +332,11 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                             <li
                                 key={key}
                                 className="text-gray-700 truncate">
-                                <span className="font-semibold">{key}:</span> <span dangerouslySetInnerHTML={{ __html: value }} />
+                                <span className="font-semibold">
+                                    {key}:
+                                </span>
+                                {" "}
+                                <span dangerouslySetInnerHTML={{ __html: value }} />
                             </li>
                         ))}
                     </ul>

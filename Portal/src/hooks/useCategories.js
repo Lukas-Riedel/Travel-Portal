@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import { listCategories } from "../clients/coreClient"
+import { createCompositeRegion, createGeographicalRegion, listCategories } from "../clients/coreClient"
 
 export const useCategories = ({ categories, include } = {}) => {
     const { isAdmin } = useAuth()
@@ -11,6 +11,12 @@ export const useCategories = ({ categories, include } = {}) => {
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 24
     })
 
-    // TODO: Map to Category objects
-    return query.data
+    const refetchCategories = _ => query.refetch()
+
+    return {
+        // TODO: Map to Category objects
+        categories: query.data,
+        createGeographicalRegion: (name, country, category, radius, geoJson) => createGeographicalRegion(name, country, category, radius, geoJson).then(refetchCategories),
+        createCompositeRegion: (name, category, includedRegions, excludedRegions) => createCompositeRegion(name, category, includedRegions, excludedRegions).then(refetchCategories)
+    }
 }

@@ -112,6 +112,13 @@ export const createCompositeRegion = async (name, category, includedRegions, exc
         }
     ).then(extractData)
 
+export const listRegions = async ({ name } = {}) =>
+    coreClient.get(createQueryPath("regions",
+        {
+            name
+        }
+    )).then(extractData)
+
 export const listCategories = async ({ country, categories, include } = {}) =>
     coreClient.get(createQueryPath("categories",
         {

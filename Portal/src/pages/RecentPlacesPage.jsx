@@ -21,7 +21,7 @@ export default function RecentPlacesPage() {
 
     // TODO: Add support for skipping and just append new places.
     const { places } = useRegularPlaces({ include: "categories,dates,excerpt", limit: currentLimit, maxEnd: Math.round(Date.now() / 1000), sort: "-oldest" })
-    const countryCategories = useCategories({ categories: "country" })
+    const { categories: countryCategories } = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()

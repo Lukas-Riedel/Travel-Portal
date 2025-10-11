@@ -16,7 +16,7 @@ export default function YearsPage() {
     const years = useYears()
     const { places } = useTimeFilteredRegularPlaces({ include: "categories" })
     const trips = useRegularTrips()
-    const countryCategories = useCategories({ categories: "country" })
+    const { categories: countryCategories } = useCategories({ categories: "country" })
     const statistics = useStatistics()
 
     const countryCategoriesMap = useMemo(() => {
