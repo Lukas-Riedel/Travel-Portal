@@ -43,7 +43,7 @@ export default function RegionEditor({ categories }) {
 }
 
 function EditedRegionContent({ category, onCategorySelected }) {
-    const regions = useRegions({ name: category.name })
+    const { regions, createOrUpdateGeographicalRegion } = useRegions({ name: category.name })
 
     const [activeRegion, setActiveRegion] = useState(null)
 
@@ -54,6 +54,7 @@ function EditedRegionContent({ category, onCategorySelected }) {
             <RegionCardGrid
                 regions={regions}
                 onCategorySelected={onCategorySelected}
+                onGeographicalRegionUpdated={createOrUpdateGeographicalRegion}
                 onRegionVisualized={setActiveRegion} />
             {activeRegion && (
                 <RegionMap region={activeRegion} />

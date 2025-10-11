@@ -107,6 +107,30 @@ export function getEuclideanDistance(a, b) {
     return 111.0 * Math.hypot(a.latitude - b.latitude, a.longitude - b.longitude)
 }
 
+export function getGeoFeatures(geoJson) {
+    if (geoJson.type === "FeatureCollection") {
+        return geoJson.features
+    }
+    if (geoJson.type === "Feature") {
+        return geoJson
+    }
+    if (geoJson.type === "GeometryCollection" && geoJson.geometries.length === 1) {
+        return {
+            type: "Feature",
+            properties: {},
+            geometry: geoJson.geometries[0]
+        }
+    }
+    return []
+}
+
+export function getGeoJson(geometry) {
+    return {
+        type: "Feature",
+        geometry
+    }
+}
+
 export function getHaversineDistance(a, b) {
     const toRad = x => x * Math.PI / 180;
 

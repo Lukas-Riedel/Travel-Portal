@@ -78,7 +78,6 @@ export const createGeographicalRegion = async (name, country, category, radius, 
             countryCategory: {
                 name: country
             },
-            category,
             radius,
             geoJson
         }

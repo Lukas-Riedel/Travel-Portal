@@ -346,7 +346,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($geographicalRegion->getCategory()->getId(), $geographicalRegion->getCountryCategory()?->getId(),
-                    $geographicalRegion->getRadius(), $geographicalRegion->getGeoJson())
+                    $geographicalRegion->getRadius(), json_encode($geographicalRegion->getGeoJson()))
                 ->execute() === 1;
         }
 

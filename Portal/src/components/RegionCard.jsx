@@ -1,9 +1,11 @@
 import LoadingCard from "./LoadingCard"
 import { formatKilometers } from "../utils/formatters"
-import { CopyIcon, MapIcon } from "lucide-react"
+import { Copy, Map, Wrench } from "lucide-react"
 import showConfirmToast from "./ConfirmToast.jsx"
+import showFormToast from "./FormToast.jsx"
+import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 
-export default function RegionCard({ region, onCategorySelected, onRegionVisualized }) {
+export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onRegionVisualized }) {
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
         "Rádius": region.radius > 0 && formatKilometers(region.radius),
@@ -45,6 +47,26 @@ export default function RegionCard({ region, onCategorySelected, onRegionVisuali
         )
     }
 
+    const handleOverwriteGeographicalRegion = () => {
+        showFormToast(
+            "Zadej novou reprezentaci geografického regionu (existující geografické body budou odstraněny):",
+            [
+                { label: "Rádius", value: region.radius, required: true, type: "number", min: 0 },
+                { label: "GeoJSON", value: JSON.stringify(region.geoJson), required: true }
+            ],
+            "Geografický region byl úspěšně aktualizován",
+            "Nepodařilo se aktualizovat geografický region",
+            async (radius, geoJson) => {
+                const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
+                if (geoFeatures.length !== 1) {
+                    return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
+                }
+
+                return onGeographicalRegionUpdated(region.category.name, region.countryCategory?.name, region.category.category, radius, getGeoJson(geoFeatures[0].geometry))
+            }
+        )
+    }
+
     return region ? (
         <div className="relative bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full">
             <ul className="space-y-0.5 mt-2">
@@ -66,15 +88,22 @@ export default function RegionCard({ region, onCategorySelected, onRegionVisuali
                 <button
                     onClick={() => onRegionVisualized(region)}
                     className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
-                    <MapIcon size={16} />
+                    <Map size={16} />
                 </button>
             )}
             {region.geoJson && region.geoJson?.geometry?.type !== "Point" && (
-                <button
-                    onClick={handleCopyGeoJsonToClipboard}
-                    className="absolute bottom-2 right-8 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
-                    <CopyIcon size={16} />
-                </button>
+                <>
+                    <button
+                        onClick={handleCopyGeoJsonToClipboard}
+                        className="absolute bottom-2 right-8 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                        <Copy size={16} />
+                    </button>
+                    <button
+                        onClick={handleOverwriteGeographicalRegion}
+                        className="absolute bottom-2 right-14 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                        <Wrench size={16} />
+                    </button>
+                </>
             )}
         </div>
     ) : (

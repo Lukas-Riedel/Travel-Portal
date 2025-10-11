@@ -1,7 +1,7 @@
 import CardGrid from "./CardGrid"
 import RegionCard from "./RegionCard"
 
-export default function RegionCardGrid({ regions, onCategorySelected, onRegionVisualized }) {
+export default function RegionCardGrid({ regions, onCategorySelected, onGeographicalRegionUpdated, onRegionVisualized }) {
     return (
         <CardGrid cardsPerRowCount={3}>
             {regions?.map((region, index) => (
@@ -9,6 +9,7 @@ export default function RegionCardGrid({ regions, onCategorySelected, onRegionVi
                     key={index}
                     region={region}
                     onCategorySelected={onCategorySelected}
+                    onGeographicalRegionUpdated={onGeographicalRegionUpdated}
                     onRegionVisualized={onRegionVisualized} />
             ))}
         </CardGrid>
