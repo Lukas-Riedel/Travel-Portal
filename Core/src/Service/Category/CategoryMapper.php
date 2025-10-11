@@ -518,12 +518,24 @@
                 ->execute();
         }
 
-        public function deleteGeographicalRegion(string $categoryId, ?string $countryCategoryId) : int {
+        public function deleteCompositeRegionReferences(string $categoryId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM region_composite
+                WHERE subject_category_id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($categoryId)
+                ->execute();
+        }
+
+        public function deleteGeographicalRegion(string $categoryId) : int {
             $sql = <<<SQL
                 DELETE
                 FROM region_geographical
                 WHERE category_id = ?
-                    AND country_category_id {$this->databaseClient->getIsNullOrEqualTo($countryCategoryId)}
             SQL;
 
             return $this->databaseClient

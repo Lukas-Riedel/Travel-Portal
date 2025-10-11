@@ -166,6 +166,9 @@ export const updateCategoryMetadata = async (categoryId, { unicode, color, publi
         }
     ).then(extractData)
 
+export const removeCategory = async (categoryId) =>
+    coreClient.delete(`categories/${categoryId}`)
+
 export const updateCategoryMainHighlight = async (categoryId, mainHighlightId) =>
     coreClient.patch(`categories/${categoryId}`,
         {

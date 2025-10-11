@@ -37,6 +37,13 @@ export default function PageHeader({ name, categories, internalAttributes, showH
 
     const renderButtons = () => (
         <>
+            {isAdmin && showHighlightsButton && (
+                <Link
+                    to={`${location.pathname}/highlight`}
+                    className="btn-chip-gray">
+                    <Images size={16} />
+                </Link>
+            )}
             {onNameChanged && (
                 <button
                     onClick={handleNameChanged}
@@ -50,13 +57,6 @@ export default function PageHeader({ name, categories, internalAttributes, showH
                     className="btn-chip-gray">
                     <Trash2 size={16} />
                 </button>
-            )}
-            {isAdmin && showHighlightsButton && (
-                <Link
-                    to={`${location.pathname}/highlight`}
-                    className="btn-chip-gray">
-                    <Images size={16} />
-                </Link>
             )}
         </>
     )

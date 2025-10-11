@@ -246,7 +246,7 @@
             $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
             $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion, &$overwrite) {
                 if ($overwrite) {
-                    $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId(), $countryCategoryId);
+                    $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId());
                 }
                 // TODO: Block the insertion if the geographical region already exists. There is no unique constraint because of extensions.
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);    
@@ -338,6 +338,15 @@
         }
 
         public function removeStaleCategoryIdentifiers() : void {
+            $this->categoryMapper->deleteStaleCategoryIdentifiers();
+        }
+
+        public function removeCategory(string $categoryId) : void {
+            $this->categoryMapper->deleteGeographicalRegion($categoryId);
+            $this->categoryMapper->deleteCompositeRegion($categoryId);
+            $this->categoryMapper->deleteCompositeRegionReferences($categoryId);
+
+            // The category became stale, and will be removed.
             $this->categoryMapper->deleteStaleCategoryIdentifiers();
         }
 

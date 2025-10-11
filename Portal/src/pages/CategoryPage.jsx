@@ -28,7 +28,8 @@ export default function CategoryPage() {
 
     const { isAdmin } = useAuth()
 
-    const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
+    const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategory,
+        removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const { places } = useTimeFilteredRegularPlaces({ categoryId, include: "categories", sort: "-score" })
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
@@ -78,7 +79,8 @@ export default function CategoryPage() {
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={attributes}
                 showHighlightsButton={true}
-                onNameChanged={updateCategoryName} />
+                onNameChanged={updateCategoryName}
+                onRemoved={removeCategory} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}
                 places={places}
