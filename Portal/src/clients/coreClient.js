@@ -116,8 +116,8 @@ export const createCompositeRegion = async (name, category, includedRegions, exc
                 name,
                 category
             },
-            includedRegions: includedRegions.map(includedRegion => ({ name: includedRegion })),
-            excludedRegions: excludedRegions.map(excludedRegion => ({ name: excludedRegion }))
+            includedCategories: includedRegions.map(includedRegion => ({ name: includedRegion })),
+            excludedCategories: excludedRegions.map(excludedRegion => ({ name: excludedRegion }))
         }
     ).then(extractData)
 

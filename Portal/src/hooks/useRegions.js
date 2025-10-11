@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import { createGeographicalRegion, listRegions } from "../clients/coreClient"
+import { createCompositeRegion, createGeographicalRegion, listRegions } from "../clients/coreClient"
 
 export const useRegions = ({ name } = {}) => {
     const { isAdmin } = useAuth()
@@ -16,6 +16,7 @@ export const useRegions = ({ name } = {}) => {
     return {
         // TODO: Map to Region objects
         regions: query.data,
-        createOrUpdateGeographicalRegion: (name, country, category, radius, geoJson) => createGeographicalRegion(name, country, category, radius, geoJson, true).then(refetchRegions)
+        createOrUpdateGeographicalRegion: (name, country, category, radius, geoJson) => createGeographicalRegion(name, country, category, radius, geoJson, true).then(refetchRegions),
+        createOrUpdateCompositeRegion: (name, category, includedRegions, excludedRegions) => createCompositeRegion(name, category, includedRegions, excludedRegions, true).then(refetchRegions)
     }
 }
