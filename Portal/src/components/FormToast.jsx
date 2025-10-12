@@ -33,12 +33,16 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                             return undefined
                         }))
                         toast.dismiss(loadingId)
-                        toast.success(success)
+                        if (success) {
+                            toast.success(success)
+                        }
                     }
                     catch (e) {
                         console.error(e)
                         toast.dismiss(loadingId)
-                        toast.error(error)
+                        if (error) {
+                            toast.error(error)
+                        }
                     }
                 }
 

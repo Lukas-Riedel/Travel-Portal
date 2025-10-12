@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
     const { isAdmin } = useAuth()
-console.log(region)
+    console.log(region)
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
         "Rádius": region.radius > 0 && formatKilometers(region.radius),
@@ -80,7 +80,7 @@ console.log(region)
             "Kompozitní region byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat kompozitní region",
             async (includedCategories, excludedCategories) => onCompositeRegionUpdated(region.category.name, region.category.category,
-                includedCategories.split(",").map(name => name.trim()), excludedCategories.split(",").map(name => name.trim()))
+                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim()))
         )
     }
 
@@ -101,44 +101,53 @@ console.log(region)
                     </li>
                 ))}
             </ul>
-            {region.geoJson ? (
-                // TODO: Rewrite to <ul> to avoid absolute positioning.
-                <>
-                    {onRegionVisualized && (
-                        <button
-                            onClick={() => onRegionVisualized(region)}
-                            className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
-                            <Map size={16} />
-                        </button>
-                    )}
-                    {isAdmin && region.geoJson?.geometry?.type !== "Point" && (
-                        <>
-                            <button
-                                onClick={handleCopyGeoJsonToClipboard}
-                                className="absolute bottom-2 right-8 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
-                                <Copy size={16} />
-                            </button>
-                            {onGeographicalRegionUpdated && (
+            <ul className="flex justify-end gap-1 mt-3">
+                {region.geoJson ? (
+                    <>
+                        {onRegionVisualized && (
+                            <li>
                                 <button
-                                    onClick={handleOverwriteGeographicalRegion}
-                                    className="absolute bottom-2 right-14 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                    onClick={() => onRegionVisualized(region)}
+                                    className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                    <Map size={16} />
+                                </button>
+                            </li>
+                        )}
+                        {isAdmin && region.geoJson?.geometry?.type !== "Point" && (
+                            <>
+                                <li>
+                                    <button
+                                        onClick={handleCopyGeoJsonToClipboard}
+                                        className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                        <Copy size={16} />
+                                    </button>
+                                </li>
+                                {onGeographicalRegionUpdated && (
+                                    <li>
+                                        <button
+                                            onClick={handleOverwriteGeographicalRegion}
+                                            className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                            <Wrench size={16} />
+                                        </button>
+                                    </li>
+                                )}
+                            </>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {isAdmin && onCompositeRegionUpdated && (
+                            <li>
+                                <button
+                                    onClick={handleOverwriteCompositeRegion}
+                                    className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
                                     <Wrench size={16} />
                                 </button>
-                            )}
-                        </>
-                    )}
-                </>
-            ) : (
-                <>
-                    {isAdmin && onCompositeRegionUpdated && (
-                        <button
-                            onClick={handleOverwriteCompositeRegion}
-                            className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
-                            <Wrench size={16} />
-                        </button>
-                    )}
-                </>
-            )}
+                            </li>
+                        )}
+                    </>
+                )}
+            </ul>
         </div>
     ) : (
         <LoadingCard />

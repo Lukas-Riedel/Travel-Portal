@@ -310,7 +310,7 @@
                     throw new \InvalidArgumentException("The required request body field 'excludedCategories.name' is missing.");
                 }
                 return $category["name"];
-            }, $this->requireJsonBodyField($request, "excludedCategories"));
+            }, $this->getJsonBodyField($request, "excludedCategories") ?? array());
             
             return $this->categoryService->createCompositeRegion($name, $category->value, $includedCategories, $excludedCategories, $overwrite);
         }

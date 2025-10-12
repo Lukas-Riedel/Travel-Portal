@@ -32,9 +32,23 @@ import { useSubscriptions } from "../hooks/useSubscriptions"
 import { useCategories } from "../hooks/useCategories"
 import SubscriptionCardGrid from "../components/SubscriptionCardGrid"
 import RegionEditor from "../components/RegionEditor"
+import showBranchingToast from "../components/BranchingToast"
+import { getGeoFeatures, getGeoJson } from "../utils/helpers"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
+
+// TODO: Duplicated in CategoryPage.
+const categoryCategories = {
+    continent: "Kontinent",
+    // country: "Stát", Except this.
+    administrative: "Administrativní oblast",
+    ocean: "Oceán",
+    sea: "Moře",
+    bay: "Záliv",
+    island: "Ostrov",
+    region: "Geografický region"
+}
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
@@ -51,6 +65,7 @@ export default function AdminPage() {
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
     const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
     const { categories, createGeographicalRegion, createCompositeRegion } = useCategories()
+    const { categories: countryCategories } = useCategories({ categories: "country" })
 
     const categoriesWithRegions = useMemo(() => categories?.filter(category => category.category !== "country"), [categories])
 
@@ -186,6 +201,80 @@ export default function AdminPage() {
         )
     }
 
+    const handleRegionCreated = () => {
+        showBranchingToast(
+            "Vyber typ regionu k přidání:",
+            {
+                geographical: {
+                    name: "Geografický",
+                    handle: () => showFormToast(
+                        "Zadej reprezentaci geografického regionu:",
+                        [
+                            { label: "Název", required: true },
+                            { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
+                            { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
+                            { label: "Rádius", value: 0, required: true, type: "number", min: 0 },
+                            { label: "GeoJSON", required: true }
+                        ],
+                        "Geografický region byl úspěšně přidán",
+                        "Nepodařilo se přidat geografický region",
+                        async (name, country, category, radius, geoJson) => {
+                            const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
+                            if (geoFeatures.length !== 1) {
+                                return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
+                            }
+
+                            return createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeatures[0].geometry))
+                        }
+                    )
+                },
+                composite: {
+                    name: "Kompozitní",
+                    handle: () =>
+                        showFormToast(
+                            "Zadej reprezentaci kompozitního regionu:",
+                            [
+                                { label: "Název", required: true },
+                                { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
+                                { label: "Zahrnuté regiony", required: true },
+                                { label: "Vyloučené regiony", required: false }
+                            ],
+                            "Kompozitní region byl úspěšně přidán",
+                            "Nepodařilo se přidat kompozitní region",
+                            async (name, category, includedCategories, excludedCategories) => createCompositeRegion(name, category,
+                                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim()))
+                        )
+                },
+                multipleGeographical: {
+                    name: "Multiregion",
+                    handle: () => {
+                        showInputToast(
+                            "Zadej reprezentaci geografických regionů",
+                            "",
+                            undefined,
+                            undefined,
+                            async geoJson => {
+                                const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
+                                geoFeatures.forEach(geoFeature => showFormToast(
+                                    "Zadej reprezentaci geografického regionu:",
+                                    [
+                                        { label: "Název", value: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
+                                        { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
+                                        { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
+                                        { label: "Rádius", value: 0, required: true, type: "number", min: 0 }
+                                    ],
+                                    "Geografický region byl úspěšně přidán",
+                                    "Nepodařilo se přidat geografický region",
+                                    async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry))
+                                ))
+                            }
+                        )
+                    }
+                }
+            }
+        )
+    }
+
     return isAdmin && (
         <>
             <TabMenu
@@ -281,6 +370,9 @@ export default function AdminPage() {
                 <>
                     <RegionEditor
                         categories={categoriesWithRegions} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleRegionCreated} />
                 </>
             )}
         </>
