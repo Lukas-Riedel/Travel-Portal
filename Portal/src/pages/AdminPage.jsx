@@ -298,6 +298,9 @@ export default function AdminPage() {
                         onExpenseDescriptionUpdated={updateTripExpenseDescription}
                         onExpenseValueUpdated={updateTripExpenseValue}
                         onExpenseRemoved={removeTripExpense} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleFlightCreated} />
                 </>
             )}
             {activeTab === 1 && (
