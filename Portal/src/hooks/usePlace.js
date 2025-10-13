@@ -2,7 +2,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
     getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
     updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
-    updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote
+    updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote,
+    updatePlaceAlbumReviewed
 } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 import Place from "../model/place"
@@ -53,6 +54,7 @@ export const usePlace = placeId => {
         updatePlaceExcerpt: excerpt => updatePlaceExcerpt(placeId, excerpt).then(setPlace),
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId, null).then(setPlace),
         updatePlaceLocation: (latitude, longitude) => updatePlaceLocation(placeId, latitude, longitude).then(setPlace),
+        updatePlaceAlbumReviewed: () => Promise.all(query.data.dates?.map(date => date.album)?.filter(Boolean)?.filter(album => !album.reviewed)?.map(album => updatePlaceAlbumReviewed(placeId, album.id))).then(refetchPlace),
         refreshPlaceAlbum: (albumId, mainPhotoPosition) => refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition }).then(refetchPlace),
         createPlaceNote: name => createPlaceNote(placeId, name).then(refetchPlace),
         removePlaceNote: noteId => removePlaceNote(placeId, noteId).then(refetchPlace)

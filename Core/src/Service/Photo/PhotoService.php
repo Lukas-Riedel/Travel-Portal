@@ -186,6 +186,10 @@
             return $photos;
         }
 
+        public function updateAlbumReviewed(string $albumId) : bool {
+            return $this->photoMapper->updateAlbumReviewed($albumId);
+        }
+
         public function updateAlbumName(string $albumId, string $oldPlaceName, string $newPlaceName) : bool {
             $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);
             $wasUpdated = $this->googleClient->updateAlbumName($externalAlbumId, str_replace($oldPlaceName, $newPlaceName, $this->getAlbum($albumId)->getName()));
@@ -252,7 +256,7 @@
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
                     $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === null ? null : new Photo($mainPhotoId,
                         fn() => $album["coverPhotoBaseUrl"], null, null, null, null, null, null, null, null), $mainImageUrl, $album["productUrl"],
-                        $imagesCount, 0, null, null);
+                        $imagesCount, 0, false, null, null);
 
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.

@@ -54,6 +54,7 @@
                 $group->post("/{placeId}/highlights", [$resource, "createPlaceHighlight"]);
                 $group->delete("/{placeId}/highlights/{highlightId}", [$resource, "removePlaceHighlight"]);
                 $group->post("/{placeId}/albums", [$resource, "createPlaceAlbum"]);
+                $group->patch("/{placeId}/albums/{albumId}", [$resource, "updatePlaceAlbum"]);
                 $group->post("/{placeId}/albums/{albumId}/refresh", [$resource, "refreshPlaceAlbum"]);
                 $group->post("/{placeId}/albums/{albumId}/photos", [$resource, "createPlaceAlbumPhoto"]);
                 $group->get("/{placeId}/albums/{albumId}/photos", [$resource, "listPlaceAlbumPhotos"]);
@@ -1360,6 +1361,137 @@
             $place = $this->doGetPlace($placeId);
 
             return $this->photoService->createAlbum($place->getPlaceIdentifier(), $timestamp);
+        }
+
+        #[OA\Patch(
+            path: "/places/{placeId}/albums/{albumId}",
+            summary: "Update an album for a place with the specified identifier",
+            operationId: "updatePlaceAlbum",
+            tags: ["Places"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "reviewed",
+                            type: "boolean",
+                            description: "Whether the album has been reviewed or not",
+                            example: true
+                        )
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "placeId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the place",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                ),
+                new OA\Parameter(
+                    name: "albumId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the album",
+                    schema: new OA\Schema(type: "string"),
+                    example: "95d623f3-5891-4de6-ba8b-fe3d8ba45e8d",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Updated an album for a place with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Album")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function updatePlaceAlbum(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireAdmin($request);
+            $wasUpdated = false;
+
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $albumId = $this->requirePathArgument($routeArguments, "albumId");
+            
+            $place = $this->doGetPlace($placeId);
+            $album = $place->findAlbum($albumId);
+
+            if ($album === null) {
+                throw new NotFoundException($albumId);
+            }
+
+            $reviewed = $this->getJsonBodyField($request, "reviewed");
+            if ($reviewed !== null) {
+                if (boolval($reviewed) === true) {
+                    $wasUpdated |= $this->photoService->updateAlbumReviewed($albumId);
+                }
+                else {
+                    throw new \InvalidArgumentException("The request body field 'reviewed' cannot be 'false'.");
+                }
+            }
+            
+            if (!$wasUpdated) {
+                $this->logger->warning("The album with the identifier '{$albumId}' was not updated.");
+            }
+            
+            
+            $place = $this->doGetPlace($placeId);
+            return $place->findAlbum($albumId);
         }
 
         #[OA\Post(

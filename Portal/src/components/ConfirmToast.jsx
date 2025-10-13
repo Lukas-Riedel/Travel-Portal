@@ -11,12 +11,16 @@ export default function showConfirmToast(question, success, error, onConfirmed) 
                 try {
                     await onConfirmed()
                     toast.dismiss(loadingId)
-                    toast.success(success)
+                    if (success) {
+                        toast.success(success)
+                    }
                 }
                 catch (e) {
                     console.error(e)
                     toast.dismiss(loadingId)
-                    toast.error(error)
+                    if (error) {
+                        toast.error(error)
+                    }
                 }
             }
         },

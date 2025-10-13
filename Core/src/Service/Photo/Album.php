@@ -53,6 +53,12 @@
                 example: 15
             ),
             new OA\Property(
+                property: "reviewed",
+                type: "boolean",
+                description: "Whether the album has been reviewed or not",
+                example: true
+            ),            
+            new OA\Property(
                 property: "uploadingStart",
                 type: "integer",
                 description: "The epoch timestamp when the uploading started",
@@ -77,11 +83,12 @@
         private readonly string $permalink;
         private readonly int $imagesCount;
         private readonly int $indoorImagesCount;
+        private readonly bool $reviewed;
         private readonly ?int $uploadingStart;
         private readonly ?float $uploadingProgress;
 
         public function __construct(string $id, string $name, ?Photo $mainPhoto, ?string $mainImageUrl,
-            string $permalink, int $imagesCount, int $indoorImagesCount, ?int $uploadingStart, ?float $uploadingProgress) {
+            string $permalink, int $imagesCount, int $indoorImagesCount, bool $reviewed, ?int $uploadingStart, ?float $uploadingProgress) {
             $this->id = $id;
             $this->name = $name;
             $this->mainPhoto = $mainPhoto;
@@ -89,6 +96,7 @@
             $this->permalink = $permalink;
             $this->imagesCount = $imagesCount;
             $this->indoorImagesCount = $indoorImagesCount;
+            $this->reviewed = $reviewed;
             $this->uploadingStart = $uploadingStart;
             $this->uploadingProgress = $uploadingProgress;
         }
@@ -119,6 +127,10 @@
 
         public function getIndoorImagesCount() : int {
             return $this->indoorImagesCount;
+        }
+
+        public function isReviewed() : bool {
+            return $this->reviewed;
         }
         
         public function getUploadingStart() : ?int {

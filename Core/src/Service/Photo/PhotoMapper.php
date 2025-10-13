@@ -36,7 +36,8 @@
                 SELECT
                     a.*, 
                     pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
+                    ps.non_reviewed_count = 0 AS reviewed
                 FROM album a
                 LEFT JOIN (
                     SELECT 
@@ -56,6 +57,15 @@
                     GROUP BY album_id
                 ) pp 
                     ON a.id = pp.album_id
+                LEFT JOIN (
+                    SELECT p.album_id,
+                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
+                    FROM photo p
+                    INNER JOIN photo_identifier pi
+                        ON p.id = pi.id
+                    GROUP BY p.album_id
+                ) ps
+                    ON a.id = ps.album_id
             SQL;
 
             return $this->databaseClient
@@ -63,8 +73,8 @@
                 ->getMappedResultSet(function($albumRow) {
                     return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                         ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
-                        $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                        $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                        $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
+                        boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                         $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
                 });
         }
@@ -74,7 +84,8 @@
                 SELECT
                     a.*, 
                     pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
+                    ps.non_reviewed_count = 0 AS reviewed
                 FROM album a
                 LEFT JOIN (
                     SELECT 
@@ -94,6 +105,15 @@
                     GROUP BY album_id
                 ) pp 
                     ON a.id = pp.album_id
+                LEFT JOIN (
+                    SELECT p.album_id,
+                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
+                    FROM photo p
+                    INNER JOIN photo_identifier pi
+                        ON p.id = pi.id
+                    GROUP BY p.album_id
+                ) ps
+                    ON a.id = ps.album_id
                 WHERE a.name LIKE CONCAT(?, ' _._.____')
                     OR a.name LIKE CONCAT(?, ' __._.____')
                     OR a.name LIKE CONCAT(?, ' _.__.____')
@@ -106,8 +126,8 @@
                 ->getMappedResultSet(function($albumRow) {
                     return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                         ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
-                        $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                        $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                        $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
+                        boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                         $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
                 });
         }
@@ -117,7 +137,8 @@
                 SELECT
                     a.*, 
                     pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
+                    ps.non_reviewed_count = 0 AS reviewed
                 FROM album a
                 LEFT JOIN (
                     SELECT 
@@ -135,8 +156,17 @@
                         GROUP BY album_id, batch_id
                     ) x
                     GROUP BY album_id
-                ) pp 
+                ) pp
                     ON a.id = pp.album_id
+                LEFT JOIN (
+                    SELECT p.album_id,
+                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
+                    FROM photo p
+                    INNER JOIN photo_identifier pi
+                        ON p.id = pi.id
+                    GROUP BY p.album_id
+                ) ps
+                    ON a.id = ps.album_id
                 WHERE id = ?
             SQL;
 
@@ -151,8 +181,8 @@
 
             return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                 ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
-                $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
+                boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                 $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
         }
 
@@ -161,7 +191,8 @@
                 SELECT
                     a.*, 
                     pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
+                    ps.non_reviewed_count = 0 AS reviewed
                 FROM album a
                 LEFT JOIN (
                     SELECT 
@@ -181,6 +212,15 @@
                     GROUP BY album_id
                 ) pp 
                     ON a.id = pp.album_id
+                LEFT JOIN (
+                    SELECT p.album_id,
+                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
+                    FROM photo p
+                    INNER JOIN photo_identifier pi
+                        ON p.id = pi.id
+                    GROUP BY p.album_id
+                ) ps
+                    ON a.id = ps.album_id
                 WHERE name = ?
             SQL;
 
@@ -195,8 +235,8 @@
 
             return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                 ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
-                $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]), 
-                $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
+                boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                 $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
         }
 
@@ -456,15 +496,32 @@
                 ->execute() === 1;
         }
 
+        public function updateAlbumReviewed(string $albumId) : bool {
+            $sql = <<<'SQL'
+                UPDATE photo_identifier pi
+                INNER JOIN photo p
+                    ON pi.id = p.id
+                SET pi.reviewed = UNIX_TIMESTAMP()
+                WHERE p.album_id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->execute() > 0;
+        }
+
         public function insertPhotoId(string $externalId, bool $replaced) : bool {    
             $sql = <<<'SQL'
                 INSERT INTO photo_identifier (
                     external_id,
-                    replaced
+                    replaced,
+                    reviewed
                 )
                 VALUES (
                     ?,
-                    ?
+                    ?,
+                    NULL
                 )
             SQL;
 

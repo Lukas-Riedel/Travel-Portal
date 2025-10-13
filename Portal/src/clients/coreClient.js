@@ -336,6 +336,13 @@ export const refreshPlaceAlbum = async (placeId, albumId, { mainPhotoPosition } 
         }
     )).then(extractData)
 
+export const updatePlaceAlbumReviewed = async (placeId, albumId) =>
+    coreClient.patch(`places/${placeId}/albums/${albumId}`,
+        {
+            reviewed: true
+        }
+    ).then(extractData)
+
 export const createPlaceAlbumPhoto = async (placeId, albumId, fileName, data) =>
     coreClient.post(`places/${placeId}/albums/${albumId}/photos`,
         {
