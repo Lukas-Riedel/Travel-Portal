@@ -11,7 +11,7 @@ import showInputToast from "./InputToast"
 import { listCategories } from "../clients/coreClient"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
-    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onRegionManagementOpened, onCategoryMetadataChanged }) {
+    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
 
@@ -157,7 +157,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Název": category.name
                 }
             ),
-            resolve: onRegionManagementOpened
+            resolve: category => navigate(`/admin?tab=${encodeURIComponent("Správa regionů")}&key=${encodeURIComponent(category.name)}`)
         },
         "PLACE_WITHOUT_ADMINISTRATIVE_CATEGORY": {
             name: "Místo bez administrativní kategorie",
@@ -316,7 +316,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Název": category.name
                 }
             ),
-            resolve: onRegionManagementOpened
+            resolve: category => navigate(`/admin?tab=${encodeURIComponent("Správa regionů")}&key=${encodeURIComponent(category.name)}`)
         }
     }
 

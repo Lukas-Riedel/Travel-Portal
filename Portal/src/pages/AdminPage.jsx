@@ -72,14 +72,7 @@ export default function AdminPage() {
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
     const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
 
-    const [activeTab, setActiveTab] = useState(() => {
-        const saved = sessionStorage.getItem("adminPageActiveTab")
-        return saved !== null ? Number(saved) : 0
-    })
-
-    useEffect(() => {
-        sessionStorage.setItem("adminPageActiveTab", activeTab)
-    }, [activeTab])
+    const [activeTab, setActiveTab] = useState(0)
 
     const watchedFlights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? []);
@@ -279,8 +272,7 @@ export default function AdminPage() {
         <>
             <TabMenu
                 labels={labels}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab} />
+                onActiveTabChanged={setActiveTab} />
             {activeTab === 0 && (
                 <>
                     <TripSummary
@@ -338,8 +330,7 @@ export default function AdminPage() {
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionRegion}
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}
-                    onCategoryMetadataChanged={updateCategoryMetadata}
-                    onRegionManagementOpened={() => setActiveTab(8)} />
+                    onCategoryMetadataChanged={updateCategoryMetadata} />
             )}
             {activeTab === 4 && (
                 <ConfigurationEditor

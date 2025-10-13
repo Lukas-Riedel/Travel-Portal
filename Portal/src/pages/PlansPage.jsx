@@ -25,14 +25,7 @@ export default function PlansPage() {
 
     const [maxDistance, setMaxDistance] = useState(250)
     const [maxQuality, setMaxQuality] = useState(80)
-    const [activeTab, setActiveTab] = useState(() => {
-        const saved = sessionStorage.getItem("plansPageActiveTab")
-        return saved !== null ? Number(saved) : 0
-    })
-
-    useEffect(() => {
-        sessionStorage.setItem("plansPageActiveTab", activeTab)
-    }, [activeTab])
+    const [activeTab, setActiveTab] = useState(0)
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
@@ -92,8 +85,7 @@ export default function PlansPage() {
         <>
             <TabMenu
                 labels={labels}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab} />
+                onActiveTabChanged={setActiveTab} />
             {activeTab === 0 && (
                 <>
                     <div className="h-[400px] md:h-[700px] my-4">
