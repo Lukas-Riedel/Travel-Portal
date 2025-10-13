@@ -1,42 +1,43 @@
-import { useMemo, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useMemo, useEffect, useCallback } from "react"
+import { useSearchParams } from "react-router-dom"
 
-const tabUrlQueryParamName = "tab";
+const tabUrlQueryParamName = "tab"
 
 export default function TabMenu({ labels, onActiveTabChanged }) {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams()
 
-    const labelNames = useMemo(() => labels.map(label => label.name), [labels]);
+    const labelNames = useMemo(() => labels.map(label => label.name), [labels])
 
     const activeTabName = useMemo(() => {
-        const tabNameFromUrl = searchParams.get(tabUrlQueryParamName);
+        const tabNameFromUrl = searchParams.get(tabUrlQueryParamName)
 
         if (tabNameFromUrl && labelNames.includes(tabNameFromUrl)) {
-            return tabNameFromUrl;
+            return tabNameFromUrl
         }
-        return labelNames[0];
-    }, [labelNames, searchParams]);
+        return labelNames[0]
+    }, [labelNames, searchParams])
 
-    const activeTabIndex = useMemo(() => labelNames.indexOf(activeTabName), [labelNames, activeTabName]);
+    const activeTabIndex = useMemo(() => labelNames.indexOf(activeTabName), [labelNames, activeTabName])
 
     const setActiveTab = useCallback(index => {
-        const newSearchParams = new URLSearchParams(searchParams);
-        const newTabName = labelNames[index];
+        const newSearchParams = new URLSearchParams(searchParams)
+        const newTabName = labelNames[index]
 
         if (index === 0) {
-            newSearchParams.delete(tabUrlQueryParamName);
-        } else {
-            newSearchParams.set(tabUrlQueryParamName, newTabName);
+            newSearchParams.delete(tabUrlQueryParamName)
+        }
+        else {
+            newSearchParams.set(tabUrlQueryParamName, newTabName)
         }
 
-        setSearchParams(newSearchParams);
-    }, [labelNames, searchParams, setSearchParams]);
+        setSearchParams(newSearchParams)
+    }, [labelNames, searchParams, setSearchParams])
 
     useEffect(() => {
         if (onActiveTabChanged) {
-            onActiveTabChanged(activeTabIndex);
+            onActiveTabChanged(activeTabIndex)
         }
-    }, [activeTabIndex, onActiveTabChanged]);
+    }, [activeTabIndex, onActiveTabChanged])
 
 
     return (
@@ -53,5 +54,5 @@ export default function TabMenu({ labels, onActiveTabChanged }) {
                 </button>
             ))}
         </nav>
-    );
+    )
 }
