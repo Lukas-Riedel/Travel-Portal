@@ -13,6 +13,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useEvents } from "../hooks/useEvents.js"
 import NoteBar from "../components/NoteBar.jsx"
+import { useMemo } from "react"
 
 export default function PlacePage() {
     const { isAdmin } = useAuth()
@@ -25,11 +26,13 @@ export default function PlacePage() {
         createPlaceNote, removePlaceNote } = usePlace(placeId)
     const { places } = useTimeFilteredRegularPlaces({ include: "categories", sort: "-score" })
 
+    const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
+
     return (
         <>
             <PageHeader
                 name={place?.name}
-                categories={place && [place.getCategory("mostSpecificWithMetadata")]}
+                categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score }}
                 showHighlightsButton={true}
                 onNameChanged={updatePlaceName} />
