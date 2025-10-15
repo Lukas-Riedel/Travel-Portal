@@ -30,7 +30,7 @@
 
     (require_once(__DIR__ . "/src/routes.php"))($app, getenv("CORE_BASE_URL"));
 
-    $app->any("/{path:.*}", function (ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
+    $app->any("/{path:.*}", function(ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
         $acceptHeader = $request->getHeaderLine("Accept");
         if (str_contains($acceptHeader, "text/html")) {
             return $response

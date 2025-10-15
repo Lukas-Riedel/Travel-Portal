@@ -21,7 +21,7 @@
     use Core\Resource\YearResource;
     use Slim\App;
 
-    return function (App $app, string $coreBaseUrl) use ($configurationService, $deviceService, $flightService, $categoryService,
+    return function(App $app, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
         $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService,
         $photoService, $eventPublisher, $logger) {

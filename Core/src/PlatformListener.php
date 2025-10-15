@@ -39,7 +39,7 @@
                     ->statementBuilder("SELECT * FROM {$table}")
                     ->getResultSet();
 
-                $tableDump = array_map(function($row) use (&$table) {
+                $tableDump = array_map(function($row) use(&$table) {
                     $columns = array_map(fn($k) => "`$k`", array_keys($row));
                     $values  = array_map(fn($v) => $v === null ? "null" : "'" . str_replace("'", "''", $v) . "'", array_values($row));
 

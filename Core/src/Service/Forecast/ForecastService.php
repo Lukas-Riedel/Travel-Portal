@@ -61,7 +61,7 @@
                 $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI,
                 $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI);
             
-            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$daylightForecast, &$start) {
+            $this->transactionManager->executeAtomically(function() use(&$placeIdentifier, &$daylightForecast, &$start) {
                 $this->forecastMapper->deleteDaylightForecast($placeIdentifier->getId(), $start);
                 $this->forecastMapper->insertDaylightForecast($daylightForecast, $placeIdentifier->getId(), $start);
             });
@@ -82,7 +82,7 @@
                 return;
             }
     
-            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$historicalForecast, &$timestamp) {
+            $this->transactionManager->executeAtomically(function() use(&$placeIdentifier, &$historicalForecast, &$timestamp) {
                 $this->forecastMapper->deleteHistoricalWeatherForecast($placeIdentifier->getId(), $timestamp);
                 $this->forecastMapper->insertHistoricalWeatherForecast($historicalForecast, $placeIdentifier->getId(), $timestamp);                
             });
@@ -96,7 +96,7 @@
                 return;
             }
 
-            $this->transactionManager->executeAtomically(function() use (&$placeIdentifier, &$actualForecast, &$timestamp) {
+            $this->transactionManager->executeAtomically(function() use(&$placeIdentifier, &$actualForecast, &$timestamp) {
                 $this->forecastMapper->deleteActualWeatherForecast($placeIdentifier->getId(), $timestamp);
                 $this->forecastMapper->insertActualWeatherForecast($actualForecast, $placeIdentifier->getId(), $timestamp);
             });

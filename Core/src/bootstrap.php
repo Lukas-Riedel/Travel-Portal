@@ -114,7 +114,7 @@
     $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $calendarClient = new CalendarClient($googleClient, getenv("CORE_BASE_URL"));
-    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), $logger);
+    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), $databaseClient, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);

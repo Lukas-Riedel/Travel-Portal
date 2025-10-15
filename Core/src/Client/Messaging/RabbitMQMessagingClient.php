@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Messaging;
 
+    use Core\Client\Database\TransactionManager;
     use Core\Event\Event;
     use Core\Event\EventPriority;
     use Core\OpenLineage\OpenLineageEventManager;
@@ -23,6 +24,8 @@
         private readonly string $user;
         private readonly string $password;
 
+        private readonly TransactionManager $transactionManager;
+
         private ?AMQPSSLConnection $connection = null;
         private ?AMQPChannel $producerChannel = null;
         private ?AMQPChannel $consumerChannel = null;
@@ -30,13 +33,14 @@
         private readonly Logger $logger;
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $host, string $port, string $vhost, string $user, string $password, Logger $logger) {
+        public function __construct(string $host, string $port, string $vhost, string $user, string $password, TransactionManager $transactionManager, Logger $logger) {
             $this->host = $host;
             $this->port = $port;
             $this->vhost = $vhost;
             $this->user = $user;
             $this->password = $password;
             $this->logger = $logger;
+            $this->transactionManager = $transactionManager;
             $this->openLineageEventManager = null;
         }
 
@@ -57,6 +61,19 @@
         }
 
         public function publish(string $queueName, Event $event, ?EventPriority $eventPriority = null) : void {
+            $atomicExecution = $this->transactionManager->getCurentAtomicExecution();
+            if ($atomicExecution !== null) {
+                // Delay publishing to the end of the transaction.
+                $atomicExecution->addAfterCommitCallback(function() use(&$queueName, &$event, &$eventPriority) { 
+                    $this->doPublish($queueName, $event, $eventPriority); 
+                });
+            }
+            else {
+                $this->doPublish($queueName, $event, $eventPriority);
+            }
+        }
+
+        private function doPublish(string $queueName, Event $event, ?EventPriority $eventPriority = null) : void {
             $this->init();
 
             $json = json_encode($event, JSON_UNESCAPED_UNICODE);

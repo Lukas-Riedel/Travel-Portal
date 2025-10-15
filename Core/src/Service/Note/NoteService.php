@@ -45,7 +45,7 @@
 
         private function createNote(NoteType $noteType, string $entityId, string $content) : Note {
             $note = new Note(null, $content, time());
-            $this->transactionManager->executeAtomically(function() use (&$noteType, &$entityId, &$note) {
+            $this->transactionManager->executeAtomically(function() use(&$noteType, &$entityId, &$note) {
                 $this->noteMapper->insertNoteIdentifier($note);
                 $this->noteMapper->insertNote($noteType, $entityId, $note->getId());                
             });

@@ -39,7 +39,7 @@
             }
 
             $device = new Device($id, $deviceType, $name, $data, $userId, time());
-            $this->transactionManager->executeAtomically(function() use ($device) {
+            $this->transactionManager->executeAtomically(function() use($device) {
                 $this->deviceMapper->deleteDevice($device);
                 $this->deviceMapper->insertDevice($device);
             });

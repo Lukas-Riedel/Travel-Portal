@@ -24,7 +24,7 @@
         public function listen() : void {
             $channel = $this->messagingClient->getConsumerChannel();
             $channel->queue_declare($this->workerQueueName, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
-            $channel->basic_consume($this->workerQueueName, "", false, false, false, false, function ($message) {
+            $channel->basic_consume($this->workerQueueName, "", false, false, false, false, function($message) {
                     $this->onEvent(json_decode($message->getBody(), true));
                     $message->ack();
                 }

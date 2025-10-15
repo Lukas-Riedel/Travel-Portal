@@ -91,7 +91,7 @@
             $fromAirports = array_map(fn($flight) => $flight->getFrom(), $allFlights);
             $toAirports = array_map(fn($flight) => $flight->getTo(), $allFlights);
             $allAirports = array_merge($fromAirports, $toAirports);
-            return array_values(array_reduce($allAirports, function ($carry, $airport) {
+            return array_values(array_reduce($allAirports, function($carry, $airport) {
                 $carry[$airport->getId()] ??= $airport;
                 return $carry;
             }, array()));
@@ -146,7 +146,7 @@
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
             
             $result = new Flight($flight, $registration, $aircraft, null, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
-            $this->transactionManager->executeAtomically(function() use (&$result, &$airlineCodeId, &$scheduledDeparture, &$scheduledArrival) {
+            $this->transactionManager->executeAtomically(function() use(&$result, &$airlineCodeId, &$scheduledDeparture, &$scheduledArrival) {
                 $this->flightMapper->deleteLoggedFlight($result->getFlight(), $result->getStart(), $result->getEnd());
                 $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 

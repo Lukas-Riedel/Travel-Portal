@@ -21,7 +21,7 @@
 
         private readonly Logger $logger;
         
-        private bool $isInAtomicExecution;
+        private ?AtomicExecution $currentAtomicExecution;
 
         public function __construct(string $host, string $user, string $password, string $database, Logger $logger) {
             $this->mysqli = new \mysqli($host, $user, $password, $database);
@@ -30,7 +30,7 @@
             $this->database = $database;
             $this->openLineageEventManager = null;
             $this->logger = $logger;
-            $this->isInAtomicExecution = false;
+            $this->currentAtomicExecution = null;
         }
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
@@ -91,23 +91,28 @@
             return $this->mysqli->insert_id;
         }
 
+        public function getCurentAtomicExecution() : ?AtomicExecution {
+            return $this->currentAtomicExecution;
+        }
+
         public function executeAtomically(callable $callable) : void {
-            if ($this->isInAtomicExecution) {
+            if ($this->currentAtomicExecution !== null) {
                 $callable();
             }
             else {
-                $this->isInAtomicExecution = true;
+                $this->currentAtomicExecution = new AtomicExecution();
                 $this->mysqli->begin_transaction();
                 try {
                     $callable();
                     $this->mysqli->commit();
+                    $this->currentAtomicExecution->commit();
                 }
                 catch (\Throwable $e) {
                     $this->mysqli->rollback();
                     throw $e;
                 }   
                 finally {
-                    $this->isInAtomicExecution = false;
+                    $this->currentAtomicExecution = null;
                 } 
             }        
         }
@@ -119,7 +124,7 @@
             $inputTables = array();
             $outputTables = array();
 
-            $collectTables = function($parsedPart) use (&$inputTables, &$collectTables) {
+            $collectTables = function($parsedPart) use(&$inputTables, &$collectTables) {
                 if (empty($parsedPart)) {
                     return;
                 }
