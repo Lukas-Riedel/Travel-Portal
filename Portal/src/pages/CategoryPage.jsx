@@ -78,9 +78,9 @@ export default function CategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={attributes}
-                showHighlightsButton={true}
+                showHighlightsButton={totalScore > 0}
                 onNameChanged={updateCategoryName}
-                onRemoved={removeCategory} />
+                onRemoved={category?.category !== "country" && removeCategory} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}
                 places={places}

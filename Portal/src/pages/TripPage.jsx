@@ -44,7 +44,7 @@ export default function TripPage() {
             <PageHeader
                 name={trip && trip.getFullName()}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                showHighlightsButton={true}
+                showHighlightsButton={places?.some(place => place.dates?.some(date => date.album))}
                 onNameChanged={updateTripName}
                 onRemoved={removeTrip} />
             <HighlightCarouselAndPlaceMapToggle

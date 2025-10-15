@@ -1,4 +1,4 @@
-import { Images, SquarePen, Trash2 } from "lucide-react"
+import { Images, Share2, SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
@@ -35,9 +35,28 @@ export default function PageHeader({ name, categories, internalAttributes, showH
         )
     }
 
+    const handleShared = async () => {
+        if (typeof Android !== "undefined" && Android.share) {
+            Android.share(name, location.href)
+        }
+        else {
+            await navigator.share({
+                title: name,
+                url: location.href
+            })
+        }
+    }
+
     const renderButtons = () => (
         <>
-            {isAdmin && showHighlightsButton && (
+            {((typeof Android !== "undefined" && Android.share) || navigator.share) && (
+                <button
+                    onClick={handleShared}
+                    className="btn-chip-gray">
+                    <Share2 size={16} />
+                </button>
+            )}
+            {showHighlightsButton && (
                 <Link
                     to={`${location.pathname}/highlight`}
                     className="btn-chip-gray">

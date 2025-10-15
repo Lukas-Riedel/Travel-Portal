@@ -34,7 +34,7 @@ export default function PlacePage() {
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score }}
-                showHighlightsButton={true}
+                showHighlightsButton={place?.dates?.some(date => date.album)}
                 onNameChanged={updatePlaceName} />
             <HighlightCarousel
                 place={place}
