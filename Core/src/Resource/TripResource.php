@@ -465,7 +465,7 @@
             }
 
             $newStart = $this->getJsonBodyField($request, "start");
-            if ($newName !== null) {
+            if ($newStart !== null) {
                 $wasUpdated |= $this->tripService->moveTrip($tripId, $newStart) !== null;
             }
             
