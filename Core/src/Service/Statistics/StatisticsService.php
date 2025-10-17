@@ -16,7 +16,7 @@
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
-        private const STATISTICS_VALIDITY_SECONDS = 900;
+        private const STATISTICS_VALIDITY_SECONDS = 3600;
 
         private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
         private const STATISTICS_COLLECTION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
