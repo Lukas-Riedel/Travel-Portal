@@ -22,7 +22,7 @@
                     ? $decoded->resource_access->{$this->iamAppClientId}->roles : array());
             }
             catch (\Throwable $e) {
-                throw new AuthenticationException("An error occurred when decoding JWT token. " . $e->getMessage() . ".");
+                throw new AuthenticationException("An error occurred when decoding JWT token '" . $accessToken . "'. " . $e->getMessage() . ".");
             }
         }
     }
