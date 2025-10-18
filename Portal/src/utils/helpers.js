@@ -154,5 +154,5 @@ export async function getCachedCoordinates(address, getCoordinates) {
     return getCoordinates(address).then(coordinates => {
         localStorage.setItem(address, JSON.stringify(coordinates))
         return coordinates
-    })
+    }).catch(() => undefined)
 }

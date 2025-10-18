@@ -99,7 +99,9 @@
                         $statistics[] = new Statistics(self::MOST_USED_AIRLINES_STATISTICS_NAME, $mostUsedAirlines, StatisticsUnit::Flights);
                     }
                     
-                    $mostUsedAirports = $this->getStandingsStatistics($flights, fn($flight) => $flight->getFrom()->getLongName(), fn($flight) => $flight->getTo()->getLongName());
+                    $mostUsedAirports = $this->getStandingsStatistics($flights,
+                        fn($flight) => $flight->getFrom()->getLongName() !== null ? $flight->getFrom()->getLongName() : $flight->getFrom()->getShortName(), 
+                        fn($flight) => $flight->getTo()->getLongName() !== null ? $flight->getTo()->getLongName() : $flight->getTo()->getShortName());
                     if (count($mostUsedAirports) > 0) {
                         $statistics[] = new Statistics(self::MOST_USED_AIRPORTS_STATISTICS_NAME, $mostUsedAirports, StatisticsUnit::Flights);
                     }

@@ -30,11 +30,14 @@ export const useLastSeenBridgeXDevice = (knownAddresses = []) => {
 
             for (const knownAddress of knownAddresses) {
                 const knownAddressLocation = await getCachedCoordinates(knownAddress.address, getCoordinates)
-                const distance = getEuclideanDistance(knownAddressLocation, lastSeenDevice.data)
 
-                if (knownAddress.radius && distance <= knownAddress.radius) {
-                    setCurrentAddress(knownAddress)
-                    return
+                if (knownAddressLocation) {
+                    const distance = getEuclideanDistance(knownAddressLocation, lastSeenDevice.data)
+
+                    if (knownAddress.radius && distance <= knownAddress.radius) {
+                        setCurrentAddress(knownAddress)
+                        return
+                    }
                 }
             }
 

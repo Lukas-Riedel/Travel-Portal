@@ -24,7 +24,7 @@
             $this->internalIamServiceUrl = $internalIamServiceUrl;
         }
 
-        public function getIamResponseWithCredentials(string $username, string $password, ?string $scope) : IamResponse {
+        public function getIamResponseWithCredentials(string $username, string $password, ?string $scope = null) : IamResponse {
             $payload = array(
                 "grant_type" => self::IAM_SERVICE_CREDENTIALS_GRANT_TYPE,
                 "client_id" => $this->iamAppClientId,
@@ -39,7 +39,7 @@
             return $this->getIamResponse($payload);
         }
 
-        public function getIamResponseWithRefresh(string $refreshToken, ?string $scope) : IamResponse {
+        public function getIamResponseWithRefresh(string $refreshToken, ?string $scope = null) : IamResponse {
             $payload = array(
                 "grant_type" => self::IAM_SERVICE_REFRESH_TOKEN_GRANT_TYPE,
                 "client_id" => $this->iamAppClientId,
