@@ -189,7 +189,7 @@
         new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
         new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
     );
-    $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
+    $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $configurationService, $eventPublisher, getenv("CORE_BASE_URL"));
     $messagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
     $cacheClient->setOpenLineageEventManager($openLineageEventManager);
