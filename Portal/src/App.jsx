@@ -26,6 +26,8 @@ import PlaceHighlightsPage from "./pages/PlaceHighlightsPage"
 import TripHighlightsPage from "./pages/TripHighlightsPage"
 import CategoryHighlightsPage from "./pages/CategoryHighlightsPage"
 import YearHighlightsPage from "./pages/YearHighlightsPage"
+import { format, fromUnixTime } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 
 export default function App() {
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
@@ -36,6 +38,15 @@ export default function App() {
             toast.success(`Hlášeno ${formatNewProblems(event.count)}`)
         })
     }, [newDataConsistencyIssuesDetectedEvents])
+    
+    const { events: flightLoggedEvents } = useEvents("FlightLogged")
+    useEffect(() => {
+        flightLoggedEvents.forEach(event => {
+            event.markAsRead()
+
+            toast.success(`Let ${event.flight} přistál na letišti ${event.to} v ${format(toZonedTime(fromUnixTime(event.actualArrival), event.timezone), "HH:mm")} místního času`)
+        })
+    }, [flightLoggedEvents])
 
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {

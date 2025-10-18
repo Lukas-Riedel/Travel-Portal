@@ -114,9 +114,16 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("placeId" => $placeId));
         }
 
-        public static function FlightLogged(string $flight, string $from, string $to, int $scheduledDeparture, int $scheduledArrival) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("flight" => $flight, "from" => $from,
-                "to" => $to, "scheduledDeparture" => $scheduledDeparture, "scheduledArrival" => $scheduledArrival));
+        public static function FlightLogged(string $flight, string $from, string $to, int $scheduledDeparture,
+            int $scheduledArrival, int $actualArrival, string $timezone) : Event {            
+            $eventName = Event::getEventName();
+            $eventArgs = array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture,
+                "scheduledArrival" => $scheduledArrival, "actualArrival" => $actualArrival, "timezone" => $timezone);
+
+            return new CompositeEvent($eventName, $eventArgs, array(
+                new CloudMessagingEvent($eventName, array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), $eventArgs),
+                new WorkerEvent($eventName, EventPriority::Medium, $eventArgs)
+            ));
         }
 
         public static function CategoryInvalidated(string $categoryId) : Event {

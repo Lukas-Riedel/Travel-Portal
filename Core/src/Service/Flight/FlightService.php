@@ -150,7 +150,8 @@
                 $this->flightMapper->deleteLoggedFlight($result->getFlight(), $result->getStart(), $result->getEnd());
                 $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 
-                $this->eventPublisher->publish(Event::FlightLogged($result->getFlight(), $result->getFrom()->getShortName(), $result->getTo()->getShortName(), $scheduledDeparture, $scheduledArrival));  
+                $this->eventPublisher->publish(Event::FlightLogged($result->getFlight(), $result->getFrom()->getShortName(), $result->getTo()->getShortName(), $scheduledDeparture, $scheduledArrival, 
+                    $result->getEnd(), $result->getTo()->getTimezone()));  
             });
 
             return $result;

@@ -7,6 +7,7 @@
     <string name="title_photos_not_uploaded">Fotky nebyly nahrány</string>
     <string name="title_photo_not_replaced">Fotka nebyla nahrazena</string>
     <string name="title_issues_detected">Vyskytly se nové problémy</string>
+    <string name="title_flight_landed">Let přistál</string>
     <string name="message_synchronization_started">Bude synchronizováno %1$d záznamů</string>
     <string name="message_device_logon_started"></string>
     <string name="message_photos_uploaded">Místo %1$s má nové fotky</string>
@@ -14,4 +15,5 @@
     <string name="message_photos_not_uploaded">Nahrávání fotek pro místo %1$s se nezdařilo</string>
     <string name="message_photo_not_replaced">Nahrazování fotky pro místo %1$s se nezdařilo</string>
     <string name="message_issues_detected">Hlášeno %1$d nových problémů</string>
+    <string name="message_flight_landed">Let %1$s přistál na letišti %2$s v %3$s místního času</string>
 </resources>

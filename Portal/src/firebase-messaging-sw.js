@@ -31,15 +31,34 @@ onBackgroundMessage(messaging, payload => {
     console.log("[firebase-messaging-sw.js] Received background message", payload)
 
     if (payload.data.event === "NewDataConsistencyIssuesDetected") {
+        const args = JSON.parse(payload.data.args)
+
         self.registration.showNotification("Vyskytly se nové problémy", {
-            body: "Hlášeno " + JSON.parse(payload.data.args).count + " nových problémů",
+            body: "Hlášeno " + args.count + " nových problémů",
             icon: "icon-192.png",
             data: "/admin"
         })
     }
 
+    if (payload.data.event === "FlightLogged") {
+        const args = JSON.parse(payload.data.args)
+        const formattedActualArrival = new Intl.DateTimeFormat(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: args.timezone
+        }).format(new Date(args.actualArrival * 1000))
+
+
+        self.registration.showNotification("Let přistál", {
+            body: "Let " + args.flight + " přistál na letišti " + args.to + " v " + formattedActualArrival + " místního času",
+            icon: "icon-192.png"
+        })
+    }
+
     if (payload.data.event === "ProcessingEnded") {
         const wrappedEvent = JSON.parse(payload.data.args)
+
         if (wrappedEvent.name === "PhotosUploadingTriggered") {
             self.registration.showNotification("Fotky byly nahrány", {
                 body: "Místo " + wrappedEvent.args.placeName + " má nové fotky",
@@ -75,7 +94,7 @@ onBackgroundMessage(messaging, payload => {
     }
 })
 
-self.addEventListener("notificationclick", function(event) {
+self.addEventListener("notificationclick", function (event) {
     event.notification.close()
     event.waitUntil(clients.openWindow(portalBaseUrl + event.notification.data))
 })
