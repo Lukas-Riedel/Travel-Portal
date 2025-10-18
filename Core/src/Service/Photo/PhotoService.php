@@ -343,7 +343,7 @@
 
                 $this->transactionManager->executeAtomically(function() use(&$albumId, &$albumExternalId, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
                     $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
-                    $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())[0]["mediaItem"]["id"];
+                    $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())["newMediaItemResults"][0]["mediaItem"]["id"];
 
                     $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhotoExternalId);                
                     if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
