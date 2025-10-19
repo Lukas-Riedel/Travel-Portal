@@ -291,10 +291,10 @@
             $countryCategory = $this->getJsonBodyField($request, "countryCategory");
             $country = is_array($countryCategory) ? ($countryCategory["name"] ?? null) : null;
 
-            $latitude = $this->requireJsonBodyField($request, "latitude");
-            $longitude = $this->requireJsonBodyField($request, "longitude");
+            $radius = $this->requireJsonBodyField($request, "radius");
+            $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
-            return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $latitude, $longitude);
+            return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $radius, $geoJson);
         }
 
         private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category, bool $overwrite) : CompositeRegion {
