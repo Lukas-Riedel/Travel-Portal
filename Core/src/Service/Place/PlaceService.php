@@ -134,6 +134,9 @@
 
         public function updatePlaceName(string $placeId, string $name) : bool {
             $place = $this->getRegularPlace($placeId);
+            if ($place === null) {
+                $place = $this->getCandidatePlace($placeId);
+            }
 
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$placeId, &$name, &$place, &$wasUpdated) {
@@ -151,6 +154,9 @@
                             $wasUpdated &= $this->googleClient->updateCalendarEventName(Calendar::Places, $eventId, $name);
                         }
                     }
+                }
+                else {
+                    $wasUpdated = false;
                 }
             });
 
