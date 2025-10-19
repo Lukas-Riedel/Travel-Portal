@@ -248,18 +248,29 @@ export default function AdminPage() {
                             undefined,
                             async geoJson => {
                                 const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
-                                geoFeatures.forEach(geoFeature => showFormToast(
-                                    "Zadej reprezentaci geografického regionu:",
-                                    [
-                                        { label: "Název", value: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
-                                        { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
-                                        { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                                        { label: "Rádius", value: 0, required: true, type: "number", min: 0 }
-                                    ],
-                                    "Geografický region byl úspěšně přidán",
-                                    "Nepodařilo se přidat geografický region",
-                                    async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry))
-                                ))
+                                for (const geoFeature of geoFeatures) {
+                                    try {
+                                        await showFormToast(
+                                            "Zadej reprezentaci geografického regionu:",
+                                            [
+                                                { label: "Název", value: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
+                                                // TODO: Use the value from the previous toast as a default.
+                                                { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
+                                                // TODO: Use the value from the previous toast as a default.
+                                                { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
+                                                // TODO: Use the value from the previous toast as a default.
+                                                { label: "Rádius", value: 0, required: true, type: "number", min: 0 }
+                                            ],
+                                            "Geografický region byl úspěšně přidán",
+                                            "Nepodařilo se přidat geografický region",
+                                            async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry))
+                                        )
+
+                                    }
+                                    catch (error) {
+                                        continue
+                                    }
+                                }
                             }
                         )
                     }
