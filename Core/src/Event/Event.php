@@ -258,6 +258,10 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "replacedPhotoId" => $replacedPhotoId, "path" => $path));
         }
 
+        public static function FolderSynchronizationRequested(string $agentId, string $path, int $expiration) : Event {
+            return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
+        }
+
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
         }

@@ -52,7 +52,7 @@ const categoryCategories = {
 
 export default function AdminPage() {
     const { isAdmin } = useAuth()
-    const { publishAllAlbumsInvalidatedEvent } = useEvents()
+    const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
@@ -170,13 +170,13 @@ export default function AdminPage() {
             ],
             "Předplatné bylo úspěšně přidáno",
             "Při přidávání předplatného došlo k chybě",
-            async (description, value, Currency, expiration) => {
+            async (description, value, currency, expiration) => {
                 const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
                 if (convertedExpiration < Date.now() / 1000) {
                     return Promise.reject("Expiration must be in the future.")
                 }
 
-                return createSubscription(description, value, Currency, convertedExpiration)
+                return createSubscription(description, value, currency, convertedExpiration)
             }
         )
     }
@@ -279,6 +279,26 @@ export default function AdminPage() {
         )
     }
 
+    const handleFolderSynchronizationRequested = agentId => {
+        showFormToast(
+            "Zadej cestu ke složce k automatické synchronizaci:",
+            [
+                { label: "Cesta", required: true },
+                { label: "Konec synchronizace", required: true, type: "datetime-local" },
+            ],
+            "Automatická synchronizace složky bude brzy zahájena",
+            "Při nastavování automatické synchronizace složky došlo k chybě",
+            async (path, expiration) => {
+                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
+                if (convertedExpiration < Date.now() / 1000) {
+                    return Promise.reject("Expiration must be in the future.")
+                }
+
+                return publishFolderSynchronizationRequestedEvent(agentId, path, convertedExpiration)
+            }
+        )
+    }
+
     return isAdmin && (
         <>
             <TabMenu
@@ -349,7 +369,9 @@ export default function AdminPage() {
                     onConfigurationUpdated={updateConfigurationEntry} />
             )}
             {activeTab === 5 && (
-                <DeviceCardGrid devices={devices} />
+                <DeviceCardGrid
+                    devices={devices}
+                    onFolderSynchronizationRequested={handleFolderSynchronizationRequested} />
             )}
             {activeTab === 6 && (
                 <>

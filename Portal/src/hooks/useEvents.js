@@ -21,6 +21,7 @@ export const useEvents = eventName => {
             createEvent("PhotosUploadingTriggered", { agentId, placeId, placeName, albumId, timestamp, path, mainPhotoPosition }),
         publishPhotoReplacingTriggeredEvent: (agentId, placeId, albumId, placeName, replacedPhotoId, path) =>
             createEvent("PhotoReplacingTriggered", { agentId, placeId, placeName, albumId, replacedPhotoId, path }),
-        publishAllAlbumsInvalidatedEvent: () => createEvent("AllAlbumsInvalidated", null)
+        publishAllAlbumsInvalidatedEvent: () => createEvent("AllAlbumsInvalidated", null),
+        publishFolderSynchronizationRequestedEvent: (agentId, path, expiration) => createEvent("FolderSynchronizationRequested", { agentId, path, expiration })
     }
 }

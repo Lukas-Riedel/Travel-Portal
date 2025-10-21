@@ -1,11 +1,16 @@
 import LoadingCard from "./LoadingCard"
 import { getDateTimeString } from "../utils/helpers"
 import { useMemo } from "react"
+import { useAuth } from "../contexts/AuthContext"
+import { FolderSync } from "lucide-react"
 
 const onlineStatusThresholdSeconds = 60
 
-export default function DeviceCard({ device }) {
+export default function DeviceCard({ device, onFolderSynchronizationRequested }) {
+    const { isAdmin } = useAuth()
+
     const isOnline = useMemo(() => device.lastSeen + onlineStatusThresholdSeconds > Date.now() / 1000, [device])
+
     return device ? (
         <div className="relative bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full">
             <div className="text-lg font-semibold">
@@ -30,6 +35,13 @@ export default function DeviceCard({ device }) {
                     )}
                 </ul>
             </div>
+            {onFolderSynchronizationRequested && isOnline && isAdmin && (
+                <button
+                    onClick={() => onFolderSynchronizationRequested(device.id)}
+                    className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                    <FolderSync size={16} />
+                </button>
+            )}
         </div>
     ) : (
         <LoadingCard />
