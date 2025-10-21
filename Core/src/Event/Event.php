@@ -121,7 +121,7 @@
                 "scheduledArrival" => $scheduledArrival, "actualArrival" => $actualArrival, "timezone" => $timezone);
 
             return new CompositeEvent($eventName, $eventArgs, array(
-                new CloudMessagingEvent($eventName, array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), $eventArgs),
+                new CloudMessagingEvent($eventName, array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX), $eventArgs),
                 new WorkerEvent($eventName, EventPriority::Medium, $eventArgs)
             ));
         }
