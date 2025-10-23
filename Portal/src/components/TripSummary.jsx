@@ -6,13 +6,14 @@ import { Link } from "react-router-dom"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
-import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon } from "lucide-react"
+import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon, Sun, Moon, SunMoon } from "lucide-react"
 import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { formatTimeAgo } from "../utils/formatters"
 import { getCoordinates } from "../clients/coreClient"
+import SunCalc from "suncalc"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { isAdmin } = useAuth()
@@ -25,6 +26,9 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
         ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
         ...(trip?.flights.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, radius: 3.0 })) ?? [])
     ])
+
+    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice && Math.round((SunCalc.getPosition(new Date(), lastSeenBridgeXDevice.latitude, lastSeenBridgeXDevice.longitude).altitude * 180) / Math.PI), [lastSeenBridgeXDevice])
+    const SunAltitudeIcon = useMemo(() => currentSunAltitude > 10 ? SunIcon : currentSunAltitude < -10 ? Moon : SunMoon, [currentSunAltitude])
 
     const [timezone, setTimezone] = useState(undefined)
     useEffect(() => {
@@ -126,17 +130,28 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                             </div>
                         )}
                         <ul className="text-[10px] text-gray-500 mt-2 space-y-0.5">
-                            <li className="flex justify-center items-center space-x-2">
+                            <li className="flex justify-center items-center space-x-1.5">
                                 <div className="flex items-center space-x-1">
                                     <Clock className="w-3 h-3" />
-                                    <span>
+                                    <span className="whitespace-nowrap">
                                         {getTimeString(toZonedTime(new Date(), lastSeenBridgeXDevice.timezone).getTime() / 1000)}
                                     </span>
                                 </div>
+                                {currentSunAltitude != null && (
+                                    <>
+                                        <span>|</span>
+                                        <div className="flex items-center space-x-1">
+                                            <SunAltitudeIcon className="w-3 h-3" />
+                                            <span className="whitespace-nowrap">
+                                                {currentSunAltitude} °
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
                                 <span>|</span>
                                 <div className="flex items-center space-x-1">
                                     <Battery className="w-3 h-3" />
-                                    <span>
+                                    <span className="whitespace-nowrap">
                                         {Math.round(lastSeenBridgeXDevice.battery)} %
                                     </span>
                                 </div>
@@ -144,7 +159,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                     <>
                                         <span>|</span>
                                         <Bed className="w-3 h-3" />
-                                        <span>
+                                        <span className="whitespace-nowrap">
                                             {Math.round(getHaversineDistance(targetLocation, lastSeenBridgeXDevice))} km
                                         </span>
                                     </>
@@ -153,7 +168,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                     <>
                                         <span>|</span>
                                         <House className="w-3 h-3" />
-                                        <span>
+                                        <span className="whitespace-nowrap">
                                             {Math.round(getHaversineDistance(configuration.homeLocation, lastSeenBridgeXDevice))} km
                                         </span>
                                     </>
