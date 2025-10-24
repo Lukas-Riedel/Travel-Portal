@@ -28,7 +28,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     ])
 
     const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice && Math.round((SunCalc.getPosition(new Date(), lastSeenBridgeXDevice.latitude, lastSeenBridgeXDevice.longitude).altitude * 180) / Math.PI), [lastSeenBridgeXDevice])
-    const SunAltitudeIcon = useMemo(() => currentSunAltitude > 10 ? SunIcon : currentSunAltitude < -10 ? Moon : SunMoon, [currentSunAltitude])
+    const SunAltitudeIcon = useMemo(() => currentSunAltitude > 10 ? Sun : currentSunAltitude < -10 ? Moon : SunMoon, [currentSunAltitude])
 
     const [timezone, setTimezone] = useState(undefined)
     useEffect(() => {
