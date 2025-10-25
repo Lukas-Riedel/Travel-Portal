@@ -28,10 +28,22 @@ export default function DeviceCard({ device, onFolderSynchronizationRequested })
                             <span className="text-red-600">Offline</span>
                         )}
                     </li>
+                    {device.data?.synchronizedFolders && (
+                        <li>
+                            <span className="font-semibold">Synchronizované složky:</span>
+                            <ul className="list-disc list-inside">
+                                {device.data.synchronizedFolders.map(folder => (
+                                    <li className="break-all whitespace-normal font-mono">
+                                        {getDateTimeString(folder.expiration)} - {decodeURIComponent(folder.path)}
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    )}
                     {!isOnline && (
-                        <>
+                        <li>
                             <span className="font-semibold">Naposledy spatřeno:</span> {getDateTimeString(device.lastSeen, false)}
-                        </>
+                        </li>
                     )}
                 </ul>
             </div>

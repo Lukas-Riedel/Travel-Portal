@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import cz.lriedel.agent.model.Album;
+import cz.lriedel.agent.model.Place;
 import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
@@ -31,8 +33,13 @@ public final class ServiceClient {
         this.httpEntityProvider = httpEntityProvider;
     }
 
+    public Place[] getPlaces() {
+        return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.exchange("/places?include=dates",
+            HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Place[].class).getBody()));
+    }
+
     @SneakyThrows
-    public void registerDevice(String deviceId, Map<String, String> data) {
+    public void registerDevice(String deviceId, Map<String, Object> data) {
         DevicePrototype devicePrototype = new DevicePrototype(deviceId, "agent", InetAddress.getLocalHost().getHostName(), data);
         retryTemplate.execute(context -> restTemplate.postForObject(
             "/devices", httpEntityProvider.getHttpEntity(devicePrototype), Void.class));

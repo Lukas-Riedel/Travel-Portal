@@ -1,7 +1,9 @@
 package cz.lriedel.agent;
 
-import cz.lriedel.agent.persistance.Configuration;
-import cz.lriedel.agent.persistance.ConfigurationRepository;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
+
+import java.util.UUID;
+
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
@@ -19,13 +21,14 @@ import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.util.UUID;
-
-import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
+import cz.lriedel.agent.persistance.Configuration;
+import cz.lriedel.agent.persistance.ConfigurationRepository;
 
 @EnableRabbit
 @EnableRetry
@@ -40,7 +43,7 @@ public class AgentApplicationConfiguration {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        return new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     @Bean
@@ -59,6 +62,14 @@ public class AgentApplicationConfiguration {
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler(@Value("${scheduler.thread.count:4}") int threadCount) {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(threadCount);
+        scheduler.initialize();
+        return scheduler;
     }
 
     @Bean

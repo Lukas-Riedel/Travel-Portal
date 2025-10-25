@@ -38,7 +38,7 @@ public class MozJpegService {
     @PostConstruct
     public void installMozJpeg() {
         if (getCJpegExeFilePath().toFile().exists()) {
-            log.info("MozJPEG is already installed, skipping the installation part...");
+            log.info("MozJPEG is already installed, skipping the installation...");
             return;
         }
 

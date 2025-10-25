@@ -1,20 +1,22 @@
 package cz.lriedel.agent;
 
+import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
+
 import java.io.Console;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import cz.lriedel.agent.client.AccessTokenProvider;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import cz.lriedel.agent.client.AccessTokenProvider;
 import cz.lriedel.agent.client.ServiceClient;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
-
-import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -25,14 +27,16 @@ public class AgentApplicationInitializer implements CommandLineRunner {
     private final ConfigurationRepository configurationRepository;
     private final AccessTokenProvider accessTokenProvider;
     private final ServiceClient serviceClient;
+    private final List<AgentContextDataProvider> agentContextDataProviders;
 
     private final String agentQueueName;
 
     public AgentApplicationInitializer(ConfigurationRepository configurationRepository, ServiceClient serviceClient,
-                                       AccessTokenProvider accessTokenProvider, String agentQueueName) {
+        AccessTokenProvider accessTokenProvider, List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName) {
         this.configurationRepository = configurationRepository;
         this.serviceClient = serviceClient;
         this.accessTokenProvider = accessTokenProvider;
+        this.agentContextDataProviders = agentContextDataProviders;
         this.agentQueueName = agentQueueName;
     }
 
@@ -42,7 +46,13 @@ public class AgentApplicationInitializer implements CommandLineRunner {
     }
 
     private void registerDevice(String agentId) {
-        serviceClient.registerDevice(agentId, Map.of(QUEUE_NAME_CONFIGURATION_KEY, agentQueueName));
+        Map<String, Object> data = new HashMap<>();
+        data.put(QUEUE_NAME_CONFIGURATION_KEY, agentQueueName);
+        for (AgentContextDataProvider agentContextDataProvider : agentContextDataProviders) {
+            data.putAll(agentContextDataProvider.getContextData());
+        }
+
+        serviceClient.registerDevice(agentId, data);
     }
 
     @Override
