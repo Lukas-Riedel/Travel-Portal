@@ -73,7 +73,7 @@
                     }
 
                     $mostPhotosPerDay = $this->getStandingsStatistics(fn($place, $date) => array(sprintf(self::PHOTOS_DATE_STATISTICS_FORMAT, implode(", ",
-                        array_map(fn($place) => $place->getName(), $placesByDay[date(CommonConstants::DMY_DATE_FORMAT, $date->getStart())])),
+                        array_unique(array_map(fn($place) => $place->getName(), $placesByDay[date(CommonConstants::DMY_DATE_FORMAT, $date->getStart())]))),
                         date(CommonConstants::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {
                         $statistics[] = new Statistics(self::MOST_PHOTOS_PER_DAY_STATISTICS_NAME, $mostPhotosPerDay, StatisticsUnit::Photos);
