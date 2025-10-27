@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 public final class PhotoService implements AgentContextDataProvider {
 
     private static final int AVAILABLE_WORKERS = 16;
-    private static final int MIN_PHOTO_AGE_SECONDS = 30;
+    private static final int MIN_PHOTO_AGE_SECONDS = 10;
     private static final String JPG_SUFFIX = ".jpg";
     
     private final ServiceClient serviceClient;
@@ -80,7 +80,6 @@ public final class PhotoService implements AgentContextDataProvider {
 
     @Scheduled(fixedDelayString = "${folder.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
     public void synchronizeFolders() {
-        log.info("start");
         List<SynchronizedFolder> synchronizedFolders = getAndUpdateNonExpiredSynchronizedFolders();
 
         if (!synchronizedFolders.isEmpty()) {
@@ -113,7 +112,6 @@ public final class PhotoService implements AgentContextDataProvider {
         }
 
         uploadedPhotoRepository.deleteByUploadedBefore(getOldestSynchronizedFolderCreation(synchronizedFolders));
-        log.info("end");
     }
 
     @Synchronized

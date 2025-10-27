@@ -32,40 +32,12 @@
         }
 
         public function selectAllAlbums() : array {
-            $sql = <<<'SQL'
-                SELECT
-                    a.*, 
-                    pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
-                    ps.non_reviewed_count = 0 AS reviewed
-                FROM album a
-                LEFT JOIN (
-                    SELECT 
-                        album_id, 
-                        MIN(created) AS uploading_start, 
-                        SUM(uploaded_photos) AS uploaded_photos, 
-                        SUM(batch_size) AS batch_size
-                    FROM (
-                        SELECT 
-                        album_id, 
-                        MIN(created) AS created, 
-                        COUNT(*) AS uploaded_photos, 
-                        MAX(expected_batch_size) AS batch_size
-                        FROM photo_pending
-                        GROUP BY album_id, batch_id
-                    ) x
-                    GROUP BY album_id
-                ) pp 
-                    ON a.id = pp.album_id
-                LEFT JOIN (
-                    SELECT p.album_id,
-                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
-                    FROM photo p
-                    INNER JOIN photo_identifier pi
-                        ON p.id = pi.id
-                    GROUP BY p.album_id
-                ) ps
-                    ON a.id = ps.album_id
+            $sql = <<<SQL
+                WITH target_album AS (
+                    SELECT *
+                    FROM album
+                )
+                {$this->getSelectAlbumsQuery("target_album")}
             SQL;
 
             return $this->databaseClient
@@ -80,44 +52,16 @@
         }
 
         public function selectAlbumsForPlaceName(string $placeName) : array {
-            $sql = <<<'SQL'
-                SELECT
-                    a.*, 
-                    pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
-                    ps.non_reviewed_count = 0 AS reviewed
-                FROM album a
-                LEFT JOIN (
-                    SELECT 
-                        album_id, 
-                        MIN(created) AS uploading_start, 
-                        SUM(uploaded_photos) AS uploaded_photos, 
-                        SUM(batch_size) AS batch_size
-                    FROM (
-                        SELECT 
-                        album_id, 
-                        MIN(created) AS created, 
-                        COUNT(*) AS uploaded_photos, 
-                        MAX(expected_batch_size) AS batch_size
-                        FROM photo_pending
-                        GROUP BY album_id, batch_id
-                    ) x
-                    GROUP BY album_id
-                ) pp 
-                    ON a.id = pp.album_id
-                LEFT JOIN (
-                    SELECT p.album_id,
-                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
-                    FROM photo p
-                    INNER JOIN photo_identifier pi
-                        ON p.id = pi.id
-                    GROUP BY p.album_id
-                ) ps
-                    ON a.id = ps.album_id
-                WHERE a.name LIKE CONCAT(?, ' _._.____')
-                    OR a.name LIKE CONCAT(?, ' __._.____')
-                    OR a.name LIKE CONCAT(?, ' _.__.____')
-                    OR a.name LIKE CONCAT(?, ' __.__.____')
+            $sql = <<<SQL
+                WITH target_album AS (
+                    SELECT *
+                    FROM album
+                    WHERE name LIKE CONCAT(?, ' _._.____')
+                        OR name LIKE CONCAT(?, ' __._.____')
+                        OR name LIKE CONCAT(?, ' _.__.____')
+                        OR name LIKE CONCAT(?, ' __.__.____')
+                )
+                {$this->getSelectAlbumsQuery("target_album")}
             SQL;
 
             return $this->databaseClient
@@ -133,41 +77,13 @@
         }
 
         public function selectAlbum(string $albumId) : ?Album {
-            $sql = <<<'SQL'
-                SELECT
-                    a.*, 
-                    pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
-                    ps.non_reviewed_count = 0 AS reviewed
-                FROM album a
-                LEFT JOIN (
-                    SELECT 
-                        album_id, 
-                        MIN(created) AS uploading_start, 
-                        SUM(uploaded_photos) AS uploaded_photos, 
-                        SUM(batch_size) AS batch_size
-                    FROM (
-                        SELECT 
-                        album_id, 
-                        MIN(created) AS created, 
-                        COUNT(*) AS uploaded_photos, 
-                        MAX(expected_batch_size) AS batch_size
-                        FROM photo_pending
-                        GROUP BY album_id, batch_id
-                    ) x
-                    GROUP BY album_id
-                ) pp
-                    ON a.id = pp.album_id
-                LEFT JOIN (
-                    SELECT p.album_id,
-                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
-                    FROM photo p
-                    INNER JOIN photo_identifier pi
-                        ON p.id = pi.id
-                    GROUP BY p.album_id
-                ) ps
-                    ON a.id = ps.album_id
-                WHERE id = ?
+            $sql = <<<SQL
+                WITH target_album AS (
+                    SELECT *
+                    FROM album
+                    WHERE id = ?
+                )
+                {$this->getSelectAlbumsQuery("target_album")}
             SQL;
 
             $albumRow = $this->databaseClient
@@ -187,41 +103,13 @@
         }
 
         public function selectAlbumByName(string $albumName) : ?Album {
-            $sql = <<<'SQL'
-                SELECT
-                    a.*, 
-                    pp.uploading_start, 
-                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
-                    ps.non_reviewed_count = 0 AS reviewed
-                FROM album a
-                LEFT JOIN (
-                    SELECT 
-                        album_id, 
-                        MIN(created) AS uploading_start, 
-                        SUM(uploaded_photos) AS uploaded_photos, 
-                        SUM(batch_size) AS batch_size
-                    FROM (
-                        SELECT 
-                        album_id, 
-                        MIN(created) AS created, 
-                        COUNT(*) AS uploaded_photos, 
-                        MAX(expected_batch_size) AS batch_size
-                        FROM photo_pending
-                        GROUP BY album_id, batch_id
-                    ) x
-                    GROUP BY album_id
-                ) pp 
-                    ON a.id = pp.album_id
-                LEFT JOIN (
-                    SELECT p.album_id,
-                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
-                    FROM photo p
-                    INNER JOIN photo_identifier pi
-                        ON p.id = pi.id
-                    GROUP BY p.album_id
-                ) ps
-                    ON a.id = ps.album_id
-                WHERE name = ?
+            $sql = <<<SQL
+                WITH target_album AS (
+                    SELECT *
+                    FROM album
+                    WHERE name = ?
+                )
+                {$this->getSelectAlbumsQuery("target_album")}
             SQL;
 
             $albumRow = $this->databaseClient
@@ -675,6 +563,46 @@
 
             return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
                 $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"], $photoRow["sun_altitude"], $photoRow["sun_azimuth"]);
+        }
+
+        private function getSelectAlbumsQuery(string $cteName) : string {
+            return <<<SQL
+                SELECT
+                    a.*, 
+                    pp.uploading_start, 
+                    ROUND(100 * pp.uploaded_photos / pp.batch_size) AS uploading_progress,
+                    ps.non_reviewed_count = 0 AS reviewed
+                FROM {$cteName} a
+                LEFT JOIN (
+                    SELECT 
+                        album_id, 
+                        MIN(created) AS uploading_start, 
+                        SUM(uploaded_photos) AS uploaded_photos, 
+                        SUM(batch_size) AS batch_size
+                    FROM (
+                        SELECT 
+                        album_id, 
+                        MIN(created) AS created, 
+                        COUNT(*) AS uploaded_photos, 
+                        MAX(expected_batch_size) AS batch_size
+                        FROM photo_pending
+                        WHERE album_id IN (SELECT id FROM {$cteName})
+                        GROUP BY album_id, batch_id
+                    ) x
+                    GROUP BY album_id
+                ) pp 
+                    ON a.id = pp.album_id
+                LEFT JOIN (
+                    SELECT p.album_id,
+                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
+                    FROM photo p
+                    INNER JOIN photo_identifier pi
+                        ON p.id = pi.id
+                    WHERE album_id IN (SELECT id FROM {$cteName})
+                    GROUP BY p.album_id
+                ) ps
+                    ON a.id = ps.album_id
+            SQL;
         }
     }
 ?>
