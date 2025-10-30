@@ -4,6 +4,7 @@ import { useRef } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
+import ReactMarkdown from "react-markdown"
 
 const loadingNotesCount = 3
 
@@ -60,9 +61,9 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                 <div
                     key={note.id}
                     className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col justify-between">
-                    <div
-                        className="prose prose-sm max-w-none text-gray-800 mb-6"
-                        dangerouslySetInnerHTML={{ __html: note.content }} />
+                    <div className="prose prose-sm max-w-none text-gray-800 mb-6">
+                        <ReactMarkdown>{note.content}</ReactMarkdown>
+                    </div>
                     <span className="absolute bottom-4 left-4 text-sm text-gray-400">
                         {getDateTimeString(note.timestamp)}
                     </span>
@@ -99,25 +100,19 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                         <div className="flex space-x-1">
                             <button
                                 className="p-1 rounded hover:bg-gray-100"
-                                onClick={() => insertAtCursor("<strong>", "</strong>")}
+                                onClick={() => insertAtCursor("**", "**")}
                                 title="Tučně">
                                 <Bold size={16} />
                             </button>
                             <button
                                 className="p-1 rounded hover:bg-gray-100"
-                                onClick={() => insertAtCursor("<em>", "</em>")}
+                                onClick={() => insertAtCursor("*", "*")}
                                 title="Kurzíva">
                                 <Italic size={16} />
                             </button>
                             <button
                                 className="p-1 rounded hover:bg-gray-100"
-                                onClick={() => insertAtCursor("<u>", "</u>")}
-                                title="Podtržení">
-                                <Underline size={16} />
-                            </button>
-                            <button
-                                className="p-1 rounded hover:bg-gray-100"
-                                onClick={() => insertAtCursor('<a href="">', "</a>")}
+                                onClick={() => insertAtCursor('[Odkaz](', ")")}
                                 title="Odkaz">
                                 <Link size={16} />
                             </button>
