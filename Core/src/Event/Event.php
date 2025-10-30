@@ -115,15 +115,11 @@
         }
 
         public static function FlightLogged(string $flight, string $from, string $to, int $scheduledDeparture,
-            int $scheduledArrival, int $actualArrival, string $timezone) : Event {            
-            $eventName = Event::getEventName();
-            $eventArgs = array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture,
-                "scheduledArrival" => $scheduledArrival, "actualArrival" => $actualArrival, "timezone" => $timezone);
-
-            return new CompositeEvent($eventName, $eventArgs, array(
-                new CloudMessagingEvent($eventName, array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX), $eventArgs),
-                new WorkerEvent($eventName, EventPriority::Medium, $eventArgs)
-            ));
+            int $scheduledArrival, int $actualArrival, string $timezone) : Event {
+            return (new CompositeEvent(Event::getEventName(), array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture, 
+                "scheduledArrival" => $scheduledArrival, "actualArrival" => $actualArrival, "timezone" => $timezone)))
+                ->addCloudMessagingEvent(array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addWorkerEvent(EventPriority::Medium);
         }
 
         public static function CategoryInvalidated(string $categoryId) : Event {
@@ -275,13 +271,9 @@
         }
 
         public static function ProcessingFailed(string $name, mixed $args) : Event {
-            $eventName = Event::getEventName();
-            $eventArgs = array("name" => $name, "args" => $args);
-
-            return new CompositeEvent($eventName, $eventArgs, array(
-                new CloudMessagingEvent($eventName, array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), $eventArgs),
-                new WorkerEvent($eventName, EventPriority::Highest, $eventArgs)
-            ));
+            return (new CompositeEvent(Event::getEventName(), array("name" => $name, "args" => $args)))
+                ->addCloudMessagingEvent(array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addWorkerEvent(EventPriority::Highest);
         }
 
         public static function FitnessActivityDetected(array $intervals) : Event {
