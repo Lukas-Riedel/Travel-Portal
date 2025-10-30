@@ -1,11 +1,8 @@
 package cz.lriedel.agent;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.lriedel.agent.model.args.EventArgs;
+import lombok.SneakyThrows;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -13,10 +10,11 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import cz.lriedel.agent.model.args.EventArgs;
-import lombok.SneakyThrows;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Component
 final class EventMessageConverter extends Jackson2JsonMessageConverter {

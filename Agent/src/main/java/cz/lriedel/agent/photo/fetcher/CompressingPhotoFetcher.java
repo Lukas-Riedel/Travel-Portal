@@ -1,10 +1,8 @@
 package cz.lriedel.agent.photo.fetcher;
 
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
-
+import cz.lriedel.agent.MozJpegService;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
@@ -13,9 +11,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
-import cz.lriedel.agent.MozJpegService;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -28,7 +27,7 @@ final class CompressingPhotoFetcher implements PhotoFetcher {
     private final ExifRewriter exifRewriter;
     private final float outputQuality;
 
-    CompressingPhotoFetcher(MozJpegService mozJpegService, ExifRewriter exifRewriter, @Value("${output.quality}") float outputQuality) {
+    CompressingPhotoFetcher(MozJpegService mozJpegService, ExifRewriter exifRewriter, @Value("${agent.photo.compression.rate}") float outputQuality) {
         this.mozJpegService = mozJpegService;
         this.exifRewriter = exifRewriter;
         this.outputQuality = outputQuality;

@@ -128,7 +128,7 @@
     $scheduler = new Scheduler($databaseClient, $eventPublisher);
 
     // Configuration service.
-    $configurationService = new ConfigurationService($databaseClient, $eventPublisher);
+    $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
     $calendarClient->setConfigurationService($configurationService);
     $googleClient->setConfigurationService($configurationService);
     $actualForecastClient->setConfigurationService($configurationService);

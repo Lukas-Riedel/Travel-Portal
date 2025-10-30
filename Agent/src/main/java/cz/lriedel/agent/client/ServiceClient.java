@@ -1,24 +1,25 @@
 package cz.lriedel.agent.client;
 
-import static cz.lriedel.agent.AgentApplicationConfiguration.CORE_SERVICE_QUALIFIER;
-
-import java.net.InetAddress;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpMethod;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
 import cz.lriedel.agent.model.Album;
 import cz.lriedel.agent.model.Place;
 import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.InetAddress;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static cz.lriedel.agent.AgentApplicationConfiguration.CORE_SERVICE_QUALIFIER;
 
 @Component
 public final class ServiceClient {
@@ -27,15 +28,16 @@ public final class ServiceClient {
     private final RetryTemplate retryTemplate;
     private final HttpEntityProvider httpEntityProvider;
 
-    ServiceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate, HttpEntityProvider httpEntityProvider) {
+    public ServiceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate,
+                         HttpEntityProvider httpEntityProvider) {
         this.restTemplate = restTemplate;
         this.retryTemplate = retryTemplate;
         this.httpEntityProvider = httpEntityProvider;
     }
 
-    public Place[] getPlaces() {
+    public List<Place> getPlaces() {
         return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.exchange("/places?include=dates",
-            HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), Place[].class).getBody()));
+            HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), new ParameterizedTypeReference<List<Place>>() {}).getBody()));
     }
 
     @SneakyThrows
@@ -80,5 +82,10 @@ public final class ServiceClient {
     public void createEvent(String name, Map<String, Object> args) {
         EventPrototype eventPrototype = new EventPrototype(name, args);
         restTemplate.postForObject("/events", httpEntityProvider.getHttpEntity(eventPrototype), Void.class);
+    }
+
+    public Map<String, Object> getConfiguration() {
+        return retryTemplate.execute(context -> Objects.requireNonNull(restTemplate.exchange("/configuration",
+                HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), new ParameterizedTypeReference<Map<String, Object>>() {}).getBody()));
     }
 }

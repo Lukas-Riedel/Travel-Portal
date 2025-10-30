@@ -68,24 +68,13 @@
                             )
                         ]
                     )
-                ),
-                new OA\Response(
-                    response: 403,
-                    description: "Forbidden. The user did not have access to the requested resource.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Forbidden",
-                                ref: "#/components/examples/Forbidden"
-                            )
-                        ]
-                    )
                 )
             ]
         )]
         public function listConfiguration(Request $request, Response $response) : mixed {
-            return $this->configurationService->getAllConfigurationEntries($this->isAdmin($request));
+            return $this->isAgentServiceAccount($request)
+                ? $this->configurationService->getAgentConfigurationEntries()
+                : $this->configurationService->getAllConfigurationEntries($this->isAdmin($request));
         }
 
         #[OA\Put(

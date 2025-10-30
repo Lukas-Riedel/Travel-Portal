@@ -1,22 +1,22 @@
 package cz.lriedel.agent.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.SneakyThrows;
+import java.util.function.Supplier;
 
 @Component
-final class HttpEntityProvider {
+public final class HttpEntityProvider {
 
     private final ObjectMapper objectMapper;
-    private final AccessTokenProvider accessTokenProvider;
+    private final Supplier<String> tokenSupplier;
 
-    HttpEntityProvider(ObjectMapper objectMapper, AccessTokenProvider accessTokenProvider) {
+    public HttpEntityProvider(ObjectMapper objectMapper, Supplier<String> tokenSupplier) {
         this.objectMapper = objectMapper;
-        this.accessTokenProvider = accessTokenProvider;
+        this.tokenSupplier = tokenSupplier;
     }
 
     public HttpEntity<Void> getEmptyHttpEntity() {
@@ -30,7 +30,7 @@ final class HttpEntityProvider {
 
     private HttpHeaders getHttpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth(accessTokenProvider.getAccessToken());
+        httpHeaders.setBearerAuth(tokenSupplier.get());
         return httpHeaders;
     }
 }

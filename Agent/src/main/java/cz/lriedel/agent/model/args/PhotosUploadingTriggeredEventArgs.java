@@ -1,10 +1,9 @@
 package cz.lriedel.agent.model.args;
 
-import java.nio.file.Path;
-import java.util.Objects;
-
 import org.apache.commons.lang3.Validate;
 import org.springframework.lang.Nullable;
+
+import java.nio.file.Path;
 
 public record PhotosUploadingTriggeredEventArgs(String placeId, String placeName, @Nullable Long timestamp, @Nullable String albumId,
                                                 @Nullable Integer mainPhotoPosition, Path path) implements EventArgs {

@@ -18,10 +18,16 @@
             return $accessToken->isAdmin();
         }
 
-        public function isServiceAccount(Request $request) : bool {
+        public function isBackendServiceAccount(Request $request) : bool {
             $accessToken = $this->getUserInfo($request);
             // TODO: Propagate Client ID to a field and use here.
             return $accessToken->getClient() === getenv("IAM_BACKEND_CLIENT_ID");
+        }
+
+        public function isAgentServiceAccount(Request $request) : bool {
+            $accessToken = $this->getUserInfo($request);
+            // TODO: Propagate Client ID to a field and use here.
+            return $accessToken->getClient() === getenv("IAM_AGENT_CLIENT_ID");
         }
 
         public function requireAdmin(Request $request) : void {          
@@ -31,7 +37,7 @@
         }
 
         public function requireServiceAccount(Request $request) : void {          
-            if (!$this->isServiceAccount($request)) {
+            if (!$this->isBackendServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }

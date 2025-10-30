@@ -1,18 +1,17 @@
 package cz.lriedel.agent;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
-import java.util.Map;
-
+import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.model.args.EventArgs;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import cz.lriedel.agent.client.ServiceClient;
-import cz.lriedel.agent.model.args.EventArgs;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Slf4j
 @Aspect

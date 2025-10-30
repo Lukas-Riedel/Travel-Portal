@@ -1,8 +1,8 @@
 package cz.lriedel.agent.model.args;
 
-import java.nio.file.Path;
-
 import org.apache.commons.lang3.Validate;
+
+import java.nio.file.Path;
 
 public record PhotoReplacingTriggeredEventArgs(String placeId, String placeName, String albumId, String replacedPhotoId, Path path) implements EventArgs {
 

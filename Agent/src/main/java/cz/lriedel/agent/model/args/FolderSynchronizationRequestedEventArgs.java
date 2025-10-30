@@ -1,9 +1,9 @@
 package cz.lriedel.agent.model.args;
 
+import org.apache.commons.lang3.Validate;
+
 import java.nio.file.Path;
 import java.time.Instant;
-
-import org.apache.commons.lang3.Validate;
 
 public record FolderSynchronizationRequestedEventArgs(Path path, Instant expiration) implements EventArgs {
 

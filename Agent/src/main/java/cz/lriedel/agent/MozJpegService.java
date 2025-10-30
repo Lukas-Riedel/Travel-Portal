@@ -1,5 +1,12 @@
 package cz.lriedel.agent;
 
+import jakarta.annotation.PostConstruct;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -9,14 +16,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -30,7 +29,7 @@ public class MozJpegService {
 
     private final Path mozjpegDirectory;
 
-    public MozJpegService(@Value("${data.directory}") Path dataDirectory) {
+    public MozJpegService(@Value("${agent.core.data.directory}") Path dataDirectory) {
         this.mozjpegDirectory = dataDirectory.resolve(MOJZPEG_DIRECTORY_NAME);
     }
 

@@ -1,46 +1,11 @@
 package cz.lriedel.agent.photo;
 
-import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
-
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.Validate;
-import org.springframework.lang.Nullable;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.lriedel.agent.AgentContextDataProvider;
 import cz.lriedel.agent.client.ServiceClient;
 import cz.lriedel.agent.model.Album;
@@ -53,6 +18,31 @@ import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
+import org.springframework.lang.Nullable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
@@ -68,9 +58,8 @@ public final class PhotoService implements AgentContextDataProvider {
     private final UploadedPhotoRepository uploadedPhotoRepository;
     private final ObjectMapper objectMapper;
     
-    public PhotoService(ServiceClient serviceClient, PhotoFetcher photoFetcher,
-        ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository,
-        ObjectMapper objectMapper) {
+    public PhotoService(ServiceClient serviceClient, PhotoFetcher photoFetcher, ConfigurationRepository configurationRepository,
+                        UploadedPhotoRepository uploadedPhotoRepository, ObjectMapper objectMapper) {
         this.serviceClient = serviceClient;
         this.photoFetcher = photoFetcher;
         this.configurationRepository = configurationRepository;
@@ -78,7 +67,7 @@ public final class PhotoService implements AgentContextDataProvider {
         this.objectMapper = objectMapper;
     }
 
-    @Scheduled(fixedDelayString = "${folder.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${agent.photo.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
     public void synchronizeFolders() {
         List<SynchronizedFolder> synchronizedFolders = getAndUpdateNonExpiredSynchronizedFolders();
 

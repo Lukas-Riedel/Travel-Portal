@@ -1,9 +1,12 @@
 package cz.lriedel.agent;
 
-import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
-
-import java.util.UUID;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import cz.lriedel.agent.client.HttpEntityProvider;
+import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.client.UserTokenSupplier;
+import cz.lriedel.agent.persistance.Configuration;
+import cz.lriedel.agent.persistance.ConfigurationRepository;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
@@ -24,11 +27,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.util.UUID;
 
-import cz.lriedel.agent.persistance.Configuration;
-import cz.lriedel.agent.persistance.ConfigurationRepository;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
 
 @EnableRabbit
 @EnableRetry
@@ -65,7 +66,13 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler(@Value("${scheduler.thread.count:4}") int threadCount) {
+    public ServiceClient serviceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate,
+                                       HttpEntityProvider httpEntityProvider) {
+        return new ServiceClient(restTemplate, retryTemplate, httpEntityProvider);
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler(@Value("${agent.core.scheduler.thread.count:4}") int threadCount) {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(threadCount);
         scheduler.initialize();
@@ -78,9 +85,9 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public RetryTemplate retryTemplate(@Value("${retry.maxAttempts:5}") int maxAttempts,
-        @Value("${retry.initialInterval:2000}") long initialInterval,
-        @Value("${retry.backoffMultiplier:2}") int backoffMultiplier) {
+    public RetryTemplate retryTemplate(@Value("${agent.core.retry.attempts:5}") int maxAttempts,
+        @Value("${agent.core.retry.interval:2000}") long initialInterval,
+        @Value("${agent.core.retry.multiplier:2}") int backoffMultiplier) {
         RetryTemplate retryTemplate = new RetryTemplate();
 
         SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(maxAttempts);
@@ -95,7 +102,7 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public String agentQueueName(@Value("${queue.agent.prefix}") String agentQueuePrefix, String agentIdentifier) {
+    public String agentQueueName(@Value("${agent.core.queue.name}") String agentQueuePrefix, String agentIdentifier) {
         return agentQueuePrefix + "_" + agentIdentifier;
     }
 

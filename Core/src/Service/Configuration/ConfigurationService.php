@@ -14,10 +14,22 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher) {
+        private readonly string $rabbitMqHost;
+        private readonly string $rabbitMqPort;
+        private readonly string $rabbitMqVhost;
+        private readonly string $rabbitMqUser;
+        private readonly string $rabbitMqPassword;
+
+        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher,
+            string $rabbitMqHost, string $rabbitMqPort, string $rabbitMqVhost, string $rabbitMqUser, string $rabbitMqPassword) {
             $this->configurationMapper = new ConfigurationMapper($databaseClient);
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
+            $this->rabbitMqHost = $rabbitMqHost;
+            $this->rabbitMqPort = $rabbitMqPort;
+            $this->rabbitMqVhost = $rabbitMqVhost;
+            $this->rabbitMqUser = $rabbitMqUser;
+            $this->rabbitMqPassword = $rabbitMqPassword;
         }
         
         public function getAllConfigurationEntries(bool $allowPrivate) : mixed {
@@ -26,6 +38,16 @@
         
         public function getConfigurationEntry(string $key) : mixed {
             return $this->configurationMapper->selectConfigurationEntry($key);
+        }
+
+        public function getAgentConfigurationEntries() : mixed {
+            return array(
+                "spring.rabbitmq.host" => $this->rabbitMqHost,
+                "spring.rabbitmq.port" => $this->rabbitMqPort,
+                "spring.rabbitmq.virtual-host" => $this->rabbitMqVhost,
+                "spring.rabbitmq.username" => $this->rabbitMqUser,
+                "spring.rabbitmq.password" => $this->rabbitMqPassword
+            );
         }
 
         public function updateConfigurationEntry(string $key, mixed $value) : bool {
