@@ -3,67 +3,66 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
-    use Core\Service\Expense\ExpenseService;
+    use Core\Service\Document\DocumentService;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
 
-    #[OA\Tag(name: "Subscriptions")]
-    class SubscriptionResource extends AbstractResource {
+    #[OA\Tag(name: "Documents")]
+    class DocumentResource extends AbstractResource {
         
-        private readonly ExpenseService $expenseService;
+        private readonly DocumentService $documentService;
 
-        public function __construct(ExpenseService $expenseService) {
-            $this->expenseService = $expenseService;
+        public function __construct(DocumentService $documentService) {
+            $this->documentService = $documentService;
         }
 
-        public static function register(App $app, ExpenseService $expenseService) : void {
-            $resource = new self($expenseService);
+        public static function register(App $app, DocumentService $documentService) : void {
+            $resource = new self($documentService);
 
-            $app->group("/subscriptions", function($group) use($resource) {
-                $group->post("", [$resource, "createSubscription"]);
-                $group->get("", [$resource, "listSubscriptions"]);
-                $group->get("/{subscriptionId}", [$resource, "getSubscription"]);
-                $group->delete("/{subscriptionId}", [$resource, "removeSubscription"]);
+            $app->group("/documents", function($group) use($resource) {
+                $group->post("", [$resource, "createDocument"]);
+                $group->get("", [$resource, "listDocuments"]);
+                $group->get("/{documentId}", [$resource, "getDocument"]);
+                $group->delete("/{documentId}", [$resource, "removeDocument"]);
             });
         }
         
         #[OA\Post(
-            path: "/subscriptions",
-            summary: "Create a subscription",
-            operationId: "createSubscription",
-            tags: ["Subscriptions"],
+            path: "/documents",
+            summary: "Create a document",
+            operationId: "createDocument",
+            tags: ["Documents"],
             security: [ ["bearerAuth" => []] ],
             requestBody: new OA\RequestBody(
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: [ "description", "value", "currency", "expiration" ],
+                    required: [ "name", "documentId", "issuer", "expiration" ],
                     properties: [
                         new OA\Property(
-                            property: "description",
+                            property: "name",
                             type: "string",
-                            description: "The description of the subscription",
-                            example: "Deutschland Ticket"
+                            description: "The name of the document",
+                            example: "EEA ID Card"
                         ),
                         new OA\Property(
-                            property: "value",
-                            description: "The value of the subscription in the specified currency",
-                            type: "number",
-                            format: "float",
-                            example: 58
+                            property: "documentId",
+                            type: "string",
+                            description: "The identifier of the document",
+                            example: "203432977"
                         ),
                         new OA\Property(
-                            property: "currency",
+                            property: "issuer",
                             type: "string",
-                            description: "The currency of the subscription",
-                            example: "EUR"
+                            description: "The issuer of the document",
+                            example: "Prague 4"
                         ),
                         new OA\Property(
                             property: "expiration",
                             type: "integer",
-                            description: "The expiration of the subscription in epoch seconds",
+                            description: "The expiration of the document in epoch seconds",
                             example: 1753912800
                         )
                     ]
@@ -72,8 +71,8 @@
             responses: [
                 new OA\Response(
                     response: 201,
-                    description: "Success. The subscription was created.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/Subscription")
+                    description: "Success. The document was created.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Document")
                 ),
                 new OA\Response(
                     response: 400,
@@ -116,30 +115,30 @@
                 )
             ]
         )]
-        public function createSubscription(Request $request, Response $response, array $routeArguments) : mixed {
+        public function createDocument(Request $request, Response $response, array $routeArguments) : mixed {
             $this->requireAdmin($request);
 
-            $description = $this->requireJsonBodyField($request, "description");
-            $value = $this->requireJsonBodyField($request, "value");
-            $currency = $this->requireJsonBodyField($request, "currency");
+            $name = $this->requireJsonBodyField($request, "name");
+            $documentId = $this->requireJsonBodyField($request, "documentId");
+            $issuer = $this->requireJsonBodyField($request, "issuer");
             $expiration = $this->requireJsonBodyField($request, "expiration");
 
-            return $this->expenseService->createSubscription($value, $currency, $description, $expiration);
+            return $this->documentService->createDocument($name, $documentId, $issuer, $expiration);
         }
 
         #[OA\Get(
-            path: "/subscriptions",
-            summary: "Retrieve a collection of subscriptions",
-            operationId: "listSubscriptions",
-            tags: ["Subscriptions"],
+            path: "/documents",
+            summary: "Retrieve a collection of documents",
+            operationId: "listDocuments",
+            tags: ["Documents"],
             security: [ ["bearerAuth" => []] ],
             responses: [
                 new OA\Response(
                     response: 200,
-                    description: "Success. Retrieved a collection of subscriptions.",
+                    description: "Success. Retrieved a collection of documents.",
                     content: new OA\JsonContent(
                         type: "array",
-                        items: new OA\Items(ref: "#/components/schemas/Subscription")
+                        items: new OA\Items(ref: "#/components/schemas/Document")
                     )
                 ),
                 new OA\Response(
@@ -183,22 +182,24 @@
                 )
             ]
         )]
-        public function listSubscriptions(Request $request, Response $response, array $routeArguments) : mixed {            
-            return $this->expenseService->getActiveSubscriptions();
+        public function listDocuments(Request $request, Response $response, array $routeArguments) : mixed {         
+            $this->requireAdmin($request);
+
+            return $this->documentService->getAllDocuments();
         }  
 
         #[OA\Get(
-            path: "/subscriptions/{subscriptionId}",
-            summary: "Retrieve a subscription with the specified identifier",
-            operationId: "getSubscription",
-            tags: ["Subscriptions"],
+            path: "/documents/{documentId}",
+            summary: "Retrieve a document with the specified identifier",
+            operationId: "getDocument",
+            tags: ["Documents"],
             security: [ ["bearerAuth" => []] ],
             parameters: [
                 new OA\Parameter(
-                    name: "subscriptionId",
+                    name: "documentId",
                     in: "path",
                     required: true,
-                    description: "The identifier of the subscription",
+                    description: "The identifier of the document",
                     schema: new OA\Schema(type: "string"),
                     example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
                 )
@@ -206,8 +207,8 @@
             responses: [
                 new OA\Response(
                     response: 200,
-                    description: "Success. Retrieved a subscription with the specified identifier.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/Subscription")
+                    description: "Success. Retrieved a document with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Document")
                 ),
                 new OA\Response(
                     response: 400,
@@ -263,29 +264,31 @@
                 )
             ]
         )]
-        public function getSubscription(Request $request, Response $response, array $routeArguments) : mixed {    
-            $subscriptionId = $this->requirePathArgument($routeArguments, "subscriptionId");
+        public function getDocument(Request $request, Response $response, array $routeArguments) : mixed {  
+            $this->requireAdmin($request);
+
+            $documentId = $this->requirePathArgument($routeArguments, "documentId");
             
-            $subscription = $this->expenseService->getActiveSubscription($subscriptionId);
-            if ($subscription === null) {
-                throw new NotFoundException($subscriptionId);
+            $document = $this->documentService->getDocument($documentId);
+            if ($document === null) {
+                throw new NotFoundException($documentId);
             }
 
-            return $subscription;
+            return $document;
         }
 
         #[OA\Delete(
-            path: "/subscriptions/{subscriptionId}",
-            summary: "Remove a subscription with the specified identifier",
-            operationId: "removeSubscription",
-            tags: ["Subscriptions"],
+            path: "/documents/{documentId}",
+            summary: "Remove a document with the specified identifier",
+            operationId: "removeDocument",
+            tags: ["Documents"],
             security: [ ["bearerAuth" => []] ],
             parameters: [
                 new OA\Parameter(
-                    name: "subscriptionId",
+                    name: "documentId",
                     in: "path",
                     required: true,
-                    description: "The identifier of the subscription",
+                    description: "The identifier of the document",
                     schema: new OA\Schema(type: "string"),
                     example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
                 )
@@ -293,7 +296,7 @@
             responses: [
                 new OA\Response(
                     response: 204,
-                    description: "Success. Removed a subscription with the specified identifier."
+                    description: "Success. Removed a document with the specified identifier."
                 ),
                 new OA\Response(
                     response: 400,
@@ -349,14 +352,14 @@
                 )
             ]
         )]
-        public function removeSubscription(Request $request, Response $response, array $routeArguments) : mixed {
+        public function removeDocument(Request $request, Response $response, array $routeArguments) : mixed {
             $this->requireAdmin($request);
 
-            $subscriptionId = $this->requirePathArgument($routeArguments, "subscriptionId");
+            $documentId = $this->requirePathArgument($routeArguments, "documentId");
             
-            $wasRemoved = $this->expenseService->removeActiveSubscription($subscriptionId);
+            $wasRemoved = $this->documentService->removeDocument($documentId);
             if (!$wasRemoved) {
-                throw new NotFoundException($subscriptionId);
+                throw new NotFoundException($documentId);
             }
 
             return null;

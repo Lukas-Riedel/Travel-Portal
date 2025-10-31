@@ -59,7 +59,7 @@
                 type: "integer",
                 description: "The occurrences of the subscription in expenses",
                 example: 4
-            ),
+            )
         ]
     )]
     class Subscription implements \JsonSerializable {        

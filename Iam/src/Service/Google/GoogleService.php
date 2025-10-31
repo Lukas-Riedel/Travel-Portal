@@ -5,7 +5,7 @@
     use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
     use Common\Service\Authentication\IamResponse;
-    use Iam\Client\Encryption\EncryptionClient;
+    use Common\Client\Encryption\EncryptionClient;
     use Iam\Service\User\UserService;
 
     class GoogleService {

@@ -1,5 +1,5 @@
 <?php
-    namespace Iam\Client\Encryption;
+    namespace Common\Client\Encryption;
 
     class EncryptionClient {
         

@@ -2,6 +2,7 @@
     require_once(__DIR__ . "/../vendor/autoload.php");
     require_once(__DIR__ . "/../../secrets.php");
 
+    use Common\Client\Encryption\EncryptionClient;
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
@@ -33,6 +34,7 @@
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
+    use Core\Service\Document\DocumentService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseStatisticsProvider;
     use Core\Service\Fitness\FitnessDataConsistencyMonitor;
@@ -120,6 +122,7 @@
     $flightClient = new FlightRadar24FlightClient($httpClient);
     $actualForecastClient = new YrNoActualForecastClient($httpClient, getenv("CORE_BASE_URL"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
+    $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"));
@@ -159,6 +162,7 @@
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
+    $documentService = new DocumentService($databaseClient, $encryptionClient);
 
     // Statistics providers.
     $statisticsProviders = array(

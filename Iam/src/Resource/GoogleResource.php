@@ -3,7 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\AuthenticationService;
-    use Iam\Client\Encryption\EncryptionClient;
+    use Common\Client\Encryption\EncryptionClient;
     use Iam\Service\Google\GoogleService;
     use Slim\App;
     use Slim\Psr7\Request;

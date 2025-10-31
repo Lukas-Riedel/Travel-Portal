@@ -4,7 +4,7 @@
 
     use Common\Service\Authentication\AuthenticationService;
     use Common\Client\Http\HttpClient;
-    use Iam\Client\Encryption\EncryptionClient;
+    use Common\Client\Encryption\EncryptionClient;
     use Iam\Service\Google\GoogleService;
     use Iam\Service\IbmCloud\IbmCloudService;
     use Iam\Service\Token\TokenService;

@@ -4,6 +4,7 @@
     use Core\Resource\CategoryResource;
     use Core\Resource\ConfigurationResource;
     use Core\Resource\DeviceResource;
+    use Core\Resource\DocumentResource;
     use Core\Resource\EventResource;
     use Core\Resource\FitnessResource;
     use Core\Resource\SwaggerResource;
@@ -23,7 +24,7 @@
 
     return function(App $app, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
-        $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService,
+        $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService, $documentService,
         $photoService, $eventPublisher, $logger) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
@@ -44,6 +45,7 @@
         TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService, $logger);
         PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
         AirportResource::register($app, $flightService, $logger);
+        DocumentResource::register($app, $documentService);
         SwaggerResource::register($app, $coreBaseUrl);
     };
 ?>
