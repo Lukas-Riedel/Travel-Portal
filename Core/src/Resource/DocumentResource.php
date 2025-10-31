@@ -39,7 +39,7 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: [ "name", "documentId", "issuer", "expiration" ],
+                    required: [ "name", "documentId", "issuer" ],
                     properties: [
                         new OA\Property(
                             property: "name",
@@ -121,7 +121,7 @@
             $name = $this->requireJsonBodyField($request, "name");
             $documentId = $this->requireJsonBodyField($request, "documentId");
             $issuer = $this->requireJsonBodyField($request, "issuer");
-            $expiration = $this->requireJsonBodyField($request, "expiration");
+            $expiration = $this->getJsonBodyField($request, "expiration");
 
             return $this->documentService->createDocument($name, $documentId, $issuer, $expiration);
         }

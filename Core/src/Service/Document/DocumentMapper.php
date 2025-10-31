@@ -95,7 +95,8 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM document
-                WHERE expiration < UNIX_TIMESTAMP()
+                WHERE expiration IS NOT NULL
+                    AND expiration < UNIX_TIMESTAMP()
             SQL;
 
             return $this->databaseClient

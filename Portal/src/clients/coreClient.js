@@ -4,6 +4,25 @@ import { getAccessToken, getRefreshToken, logout, setIamResponse } from "../hook
 import { getIamResponseWithRefresh } from "./iamClient"
 import Place from "../model/place"
 
+export const createDocument = async (name, documentId, issuer, expiration) =>
+    coreClient.post("documents",
+        {
+            name,
+            documentId,
+            issuer,
+            expiration
+        }
+    ).then(extractData)
+
+export const listDocuments = async () =>
+    coreClient.get("documents").then(extractData)
+
+export const getDocument = async (documentId) =>
+    coreClient.get(`documents/${documentId}`).then(extractData)
+
+export const removeDocument = async (documentId) =>
+    coreClient.delete(`documents/${documentId}`)
+
 export const createDevice = async (deviceId, data) =>
     coreClient.post("devices",
         {

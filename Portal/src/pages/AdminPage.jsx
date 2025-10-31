@@ -34,6 +34,8 @@ import SubscriptionCardGrid from "../components/SubscriptionCardGrid"
 import RegionEditor from "../components/RegionEditor"
 import showBranchingToast from "../components/BranchingToast"
 import { getGeoFeatures, getGeoJson } from "../utils/helpers"
+import { useDocuments } from "../hooks/useDocuments"
+import DocumentCardGrid from "../components/DocumentCardGrid"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -64,6 +66,7 @@ export default function AdminPage() {
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
     const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
+    const { documents, createDocument, removeDocument } = useDocuments()
     const { categories, createGeographicalRegion, createCompositeRegion } = useCategories()
     const { categories: countryCategories } = useCategories({ categories: "country" })
 
@@ -113,9 +116,13 @@ export default function AdminPage() {
             enabled: subscriptions && subscriptions.length > 0
         },
         {
-            name: "Správa regionů",
+            name: "Regiony",
             enabled: categoriesWithRegions && categories.length > 0
-        }
+        },
+        {
+            name: "Dokumenty",
+            enabled: documents && documents.length > 0
+        },
     ]
 
     const handleFlightCreated = () => {
@@ -177,6 +184,28 @@ export default function AdminPage() {
                 }
 
                 return createSubscription(description, value, currency, convertedExpiration)
+            }
+        )
+    }
+
+    const handleDocumentCreated = () => {
+        showFormToast(
+            "Zadej údaje o dokumentu k přidání:",
+            [
+                { label: "Název", required: true },
+                { label: "Identifikátor", required: true },
+                { label: "Vydavatel", required: true },
+                { label: "Expirace", type: "date" }
+            ],
+            "Dokument byl úspěšně přidán",
+            "Při přidávání dokumentu došlo k chybě",
+            async (name, documentId, issuer, expiration) => {
+                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
+                if (convertedExpiration < Date.now() / 1000) {
+                    return Promise.reject("Expiration must be in the future.")
+                }
+
+                return createDocument(name, documentId, issuer, convertedExpiration)
             }
         )
     }
@@ -400,6 +429,16 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handleRegionCreated} />
+                </>
+            )}
+            {activeTab === 9 && (
+                <>
+                    <DocumentCardGrid
+                        documents={documents}
+                        onDocumentRemoved={removeDocument} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleDocumentCreated} />
                 </>
             )}
         </>

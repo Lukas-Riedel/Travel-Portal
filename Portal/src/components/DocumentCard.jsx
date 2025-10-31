@@ -5,40 +5,40 @@ import showConfirmToast from "./ConfirmToast"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 
-export default function SubscriptionCard({ subscription, onSubscriptionRemoved }) {
+export default function DocumentCard({ document, onDocumentRemoved }) {
     const { isAdmin } = useAuth()
 
     const handleDelete = () => {
         showConfirmToast(
-            "Opravdu chceš odstranit předplatné '" + subscription.description + "'?",
-            "Předplatné bylo úspěšně odstraněno",
-            "Nepodařilo se odstranit předplatné",
-            async () => onSubscriptionRemoved(subscription.id)
+            "Opravdu chceš odstranit dokument '" + document.name + "'?",
+            "Dokument byl úspěšně odstraněn",
+            "Nepodařilo se odstranit dokument",
+            async () => onDocumentRemoved(document.id)
         )
     }
 
-    const subscriptionProperties = {
-        "Hodnota": `${subscription.value} ${subscription.currency}`,
-        "Expirace": getDateString(subscription.expiration),
-        "Počet použití": subscription.occurrences
+    const documentProperties = {
+        "Identifikátor": document.documentId,
+        "Vydavatel": document.issuer,
+        "Expirace": getDateString(document.expiration)
     }
 
-    return subscription ? (
+    return document ? (
         <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full space-y-1">
             <div className="flex justify-start items-center">
                 <span className="text-lg font-semibold">
-                    {subscription.description}
+                    {document.name}
                 </span>
-                {isAdmin && onSubscriptionRemoved && (
+                {isAdmin && onDocumentRemoved && (
                     <button
-                        onClick={() => handleDelete(subscription)}
+                        onClick={() => handleDelete(document)}
                         className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
                         <Trash2 size={16} />
                     </button>
                 )}
             </div>
             <ul className="space-y-0.5 mt-2">
-                {Object.entries(subscriptionProperties).filter(([key]) => subscriptionProperties[key]).map(([key, value]) => (
+                {Object.entries(documentProperties).filter(([key]) => documentProperties[key]).map(([key, value]) => (
                     <li
                         key={key}
                         className="text-gray-700">

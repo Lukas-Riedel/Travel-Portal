@@ -8,7 +8,7 @@
         schema: "Document",
         type: "object",
         description: "An object representing a document",
-        required: ["id", "name", "documentId", "issuer", "expiration"],
+        required: ["id", "name", "documentId", "issuer"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -47,9 +47,9 @@
         private readonly string $name;
         private readonly string $documentId;
         private readonly string $issuer;
-        private readonly int $expiration;
+        private readonly ?int $expiration;
 
-        public function __construct(?string $id, string $name, string $documentId, string $issuer, int $expiration) {
+        public function __construct(?string $id, string $name, string $documentId, string $issuer, ?int $expiration) {
             $this->id = $id;
             $this->name = $name;
             $this->documentId = $documentId;
@@ -77,7 +77,7 @@
             return $this->issuer;
         }
 
-        public function getExpiration() : int {
+        public function getExpiration() : ?int {
             return $this->expiration;
         }
 
