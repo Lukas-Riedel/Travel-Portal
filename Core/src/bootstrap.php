@@ -178,8 +178,8 @@
         new PhotoDataConsistencyMonitor($photoService, $placeService),
         new FlightDataConsistencyMonitor($flightService),
         new CategoryDataConsistencyMonitor($categoryService, $placeService),
-        new PlaceDataConsistencyMonitor($placeService),
         new TripDataConsistencyMonitor($tripService, $configurationService),
+        new PlaceDataConsistencyMonitor($placeService),
         new HighlightDataConsistencyMonitor($placeService, $tripService)
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);

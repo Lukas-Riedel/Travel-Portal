@@ -16,6 +16,7 @@
         private const DATE_WITH_INCORRECT_TIME_ISSUE_NAME = "DATE_WITH_INCORRECT_TIME";
         private const DATE_WITH_INCORRECT_DURATION_ISSUE_NAME = "DATE_WITH_INCORRECT_DURATION";
         private const DUPLICATED_PLACE_ISSUE_NAME = "DUPLICATED_PLACE";
+        private const NON_REVIEWED_PLACE_ISSUE_NAME = "NON_REVIEWED_PLACE";
 
         private readonly PlaceService $placeService;
 
@@ -83,6 +84,12 @@
                 }, array())), fn($group) => count($group) > 1);
             foreach ($duplicatedPlacesGroups as &$duplicatedPlacesGroup) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::DUPLICATED_PLACE_ISSUE_NAME, $duplicatedPlacesGroup, time());                    
+            }
+
+            $nonReviewedPlaces = array_filter($relevantPlaces, fn($place) => count(array_filter($place->getDates(),
+                fn($date) => $date->getAlbum() && !$date->getAlbum()->isReviewed())) > 0);
+            foreach ($nonReviewedPlaces as &$nonReviewedPlace) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::NON_REVIEWED_PLACE_ISSUE_NAME, $nonReviewedPlace, time());                    
             }
 
             return $dataConsistencyIssues;

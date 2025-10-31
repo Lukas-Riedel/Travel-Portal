@@ -180,6 +180,16 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 )
             }
         },
+        "NON_REVIEWED_PLACE": {
+            name: "Nezrevidované místo",
+            getProperties: place => (
+                {
+                    "Název": place.name,
+                    "Stát": place.country
+                }
+            ),
+            resolve: place => navigate(`/place/${place.id}`)
+        },
         "DATE_WITHOUT_TIME": {
             name: "Událost bez specifikovaného času",
             getProperties: place => (
