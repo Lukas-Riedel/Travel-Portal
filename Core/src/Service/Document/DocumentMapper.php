@@ -24,7 +24,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($documentRow) {
-                    return new Document($documentRow["id"], $documentRow["name"], $this->encryptionClient->decrypt($documentRow["document_id"]),
+                    return new Document($documentRow["id"], $documentRow["name"], $this->encryptionClient->decrypt($documentRow["code"]),
                         $documentRow["issuer"], $documentRow["expiration"]);
                 });
         }
@@ -45,7 +45,7 @@
                 return null;
             }
 
-            return new Document($documentRow["id"], $documentRow["name"], $this->encryptionClient->decrypt($documentRow["document_id"]),
+            return new Document($documentRow["id"], $documentRow["name"], $this->encryptionClient->decrypt($documentRow["code"]),
                 $documentRow["issuer"], $documentRow["expiration"]);
         }
 
@@ -53,7 +53,7 @@
             $sql = <<<'SQL'
                 INSERT INTO document (
                     name,
-                    document_id,
+                    code,
                     issuer,
                     expiration
                 )
@@ -67,7 +67,7 @@
 
             $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($document->getName(), $this->encryptionClient->encrypt($document->getDocumentId()),
+                ->withParameters($document->getName(), $this->encryptionClient->encrypt($document->getCode()),
                     $document->getIssuer(), $document->getExpiration())
                 ->execute() === 1;
 

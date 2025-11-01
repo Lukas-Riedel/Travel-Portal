@@ -4,11 +4,11 @@ import { getAccessToken, getRefreshToken, logout, setIamResponse } from "../hook
 import { getIamResponseWithRefresh } from "./iamClient"
 import Place from "../model/place"
 
-export const createDocument = async (name, documentId, issuer, expiration) =>
+export const createDocument = async (name, code, issuer, expiration) =>
     coreClient.post("documents",
         {
             name,
-            documentId,
+            code,
             issuer,
             expiration
         }

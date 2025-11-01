@@ -11,6 +11,40 @@
             $this->databaseClient = $databaseClient;
         }
 
+        public function selectAllVouchers() : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM expense_voucher
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->getMappedResultSet(function($voucherRow) {
+                    return new Voucher($voucherRow["id"], $voucherRow["code"], $voucherRow["issuer"],
+                        $voucherRow["value"], $voucherRow["currency"], $voucherRow["expiration"]);
+                });
+        }
+
+        public function selectVoucher(string $voucherId) : ?Voucher {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM expense_voucher
+                WHERE id = ?
+            SQL;
+
+            $voucherRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($voucherId)
+                ->getSingleRow();
+
+            if ($voucherRow === null) {
+                return null;
+            }
+
+            return new Voucher($voucherRow["id"], $voucherRow["code"], $voucherRow["issuer"],
+                $voucherRow["value"], $voucherRow["currency"], $voucherRow["expiration"]);
+        }
+
         public function selectExpensesForTrip(string $tripId) : array { 
             $sql = <<<'SQL'
                 SELECT *
@@ -172,6 +206,36 @@
             return $wasInserted;
         }
 
+        public function insertVoucher(Voucher $voucher) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO expense_voucher (
+                    code,
+                    issuer,
+                    value,
+                    currency,
+                    expiration
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
+            SQL;
+
+            $wasInserted = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($voucher->getCode(), $voucher->getIssuer(), $voucher->getValue(), $voucher->getCurrency(), $voucher->getExpiration())
+                ->execute() === 1;
+
+            if ($wasInserted) {
+                $voucher->setId($this->databaseClient->getLastInsertedId());
+            }
+
+            return $wasInserted;
+        }
+
         public function updateExpenseDescription(string $expenseId, string $description) : bool {
             $sql = <<<'SQL'
                 UPDATE expense
@@ -212,6 +276,19 @@
                 ->execute() === 1;
         }
 
+        public function updateVoucherValue(string $voucherId, float $value) : bool {
+            $sql = <<<'SQL'
+                UPDATE expense_voucher
+                SET value = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($value, $voucherId)
+                ->execute() === 1;
+        }
+
         public function deleteExpense(string $expenseId) : int {
             $sql = <<<'SQL'
                 DELETE
@@ -236,6 +313,32 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($subscriptionId)
+                ->execute();
+        }
+
+        public function deleteVoucher(string $voucherId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM expense_voucher
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($voucherId)
+                ->execute();
+        }
+
+        public function deleteExpiredVouchers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM expense_voucher
+                WHERE expiration IS NOT NULL
+                    AND expiration < UNIX_TIMESTAMP()
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
                 ->execute();
         }
 

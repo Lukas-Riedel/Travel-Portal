@@ -199,13 +199,13 @@ export default function AdminPage() {
             ],
             "Dokument byl úspěšně přidán",
             "Při přidávání dokumentu došlo k chybě",
-            async (name, documentId, issuer, expiration) => {
+            async (name, code, issuer, expiration) => {
                 const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
                 if (convertedExpiration < Date.now() / 1000) {
                     return Promise.reject("Expiration must be in the future.")
                 }
 
-                return createDocument(name, documentId, issuer, convertedExpiration)
+                return createDocument(name, code, issuer, convertedExpiration)
             }
         )
     }

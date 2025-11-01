@@ -16,7 +16,7 @@ export const useDocuments = () => {
     return {
         // TODO: Map to Statistics objects
         documents: query.data,
-        createDocument: (name, documentId, issuer, expiration) => createDocument(name, documentId, issuer, expiration).then(refetchDocuments),
+        createDocument: (name, code, issuer, expiration) => createDocument(name, code, issuer, expiration).then(refetchDocuments),
         removeDocument: documentId => removeDocument(documentId).then(refetchDocuments)
     }
 }

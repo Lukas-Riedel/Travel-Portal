@@ -19,6 +19,7 @@
     use Core\Resource\TrackerResource;
     use Core\Resource\SubscriptionResource;
     use Core\Resource\TripResource;
+    use Core\Resource\VoucherResource;
     use Core\Resource\YearResource;
     use Slim\App;
 
@@ -46,6 +47,7 @@
         PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
         AirportResource::register($app, $flightService, $logger);
         DocumentResource::register($app, $documentService);
+        VoucherResource::register($app, $expenseService);
         SwaggerResource::register($app, $coreBaseUrl);
     };
 ?>

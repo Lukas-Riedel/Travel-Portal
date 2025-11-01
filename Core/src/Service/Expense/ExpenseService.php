@@ -37,14 +37,6 @@
             $this->transactionManager = $databaseClient;
         }
 
-        public function getExpensesForTrip(string $tripId) : array {
-            return $this->expenseMapper->selectExpensesForTrip($tripId);
-        }
-
-        public function getExpense(string $expenseId) : ?Expense {
-            return $this->expenseMapper->selectExpense($expenseId);
-        }
-
         // TODO: Replace string $type by ExpenseType $type.
         public function createExpense(string $tripId, float $value, string $currency, string $type, string $description, ?string $subscriptionId) : Expense {                      
             $exchangeRate = $this->getExchangeRate($currency);
@@ -61,6 +53,13 @@
             return $expense;
         }
 
+        public function createVoucher(string $code, string $issuer, float $value, string $currency, ?int $expiration) : Voucher {
+            $voucher = new Voucher(null, $code, $issuer, $value, $currency, $expiration);
+            $this->expenseMapper->insertVoucher($voucher);
+
+            return $voucher;
+        }
+
         public function createSubscription(float $value, string $currency, string $description, int $expiration) : Subscription {                        
             $exchangeRate = $this->getExchangeRate($currency);
 
@@ -68,6 +67,24 @@
             $this->expenseMapper->insertSubscription($subscription);
 
             return $subscription;
+        }
+
+        public function getAllVouchers() : array {
+            $this->expenseMapper->deleteExpiredVouchers();
+            return $this->expenseMapper->selectAllVouchers();
+        }
+
+        public function getVoucher(string $voucherId) : ?Voucher {
+            $this->expenseMapper->deleteExpiredVouchers();
+            return $this->expenseMapper->selectVoucher($voucherId);
+        }
+
+        public function getExpensesForTrip(string $tripId) : array {
+            return $this->expenseMapper->selectExpensesForTrip($tripId);
+        }
+
+        public function getExpense(string $expenseId) : ?Expense {
+            return $this->expenseMapper->selectExpense($expenseId);
         }
 
         public function getActiveSubscription(string $subscriptionId) : ?Subscription {
@@ -88,6 +105,13 @@
                 }
             });
             return $wasUpdated;
+        }
+
+        public function updateVoucherValue(string $voucherId, float $value) : bool {
+            if ($value <= 0) {
+                throw new \InvalidArgumentException("Unable to update the voucher value to $value.");
+            }
+            return $this->expenseMapper->updateVoucherValue($voucherId, $value);
         }
 
         public function updateExpenseValue(string $expenseId, float $value, string $tripId) : bool {   
@@ -123,6 +147,10 @@
                 }
             });
             return $wasRemoved;
+        }
+
+        public function removeVoucher(string $voucherId) : bool {
+            return $this->expenseMapper->deleteVoucher($voucherId) > 0;
         }
 
         public function removeActiveSubscription(string $subscriptionId) : bool {

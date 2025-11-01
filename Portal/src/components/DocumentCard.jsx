@@ -18,7 +18,7 @@ export default function DocumentCard({ document, onDocumentRemoved }) {
     }
 
     const documentProperties = {
-        "Identifikátor": document.documentId,
+        "Identifikátor": document.code,
         "Vydavatel": document.issuer,
         "Expirace": getDateString(document.expiration)
     }

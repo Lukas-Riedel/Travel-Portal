@@ -22,8 +22,8 @@
             return $this->documentMapper->selectDocument($documentId);
         }
 
-        public function createDocument(string $name, string $documentId, string $issuer, ?int $expiration) : Document {
-            $document = new Document(null, $name, $documentId, $issuer, $expiration);
+        public function createDocument(string $name, string $code, string $issuer, ?int $expiration) : Document {
+            $document = new Document(null, $name, $code, $issuer, $expiration);
             $this->documentMapper->insertDocument($document);
 
             return $document;
