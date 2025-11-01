@@ -15,6 +15,7 @@
             $sql = <<<'SQL'
                 SELECT *
                 FROM expense_voucher
+                ORDER BY issuer
             SQL;
 
             return $this->databaseClient

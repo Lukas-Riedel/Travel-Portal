@@ -4,6 +4,33 @@ import { getAccessToken, getRefreshToken, logout, setIamResponse } from "../hook
 import { getIamResponseWithRefresh } from "./iamClient"
 import Place from "../model/place"
 
+export const createVoucher = async (code, issuer, value, currency, expiration) =>
+    coreClient.post("vouchers",
+        {
+            name,
+            code,
+            issuer,
+            expiration
+        }
+    ).then(extractData)
+
+export const listVouchers = async () =>
+    coreClient.get("vouchers").then(extractData)
+
+export const getVoucher = async (voucherId) =>
+    coreClient.get(`vouchers/${voucherId}`).then(extractData)
+
+export const updateVoucherValue = async (voucherId, value) =>
+    coreClient.patch(`vouchers/${voucherId}`,
+        {
+            value
+        }
+    ).then(extractData)
+
+export const removeVoucher = async (voucherId) =>
+    coreClient.delete(`vouchers/${voucherId}`)
+
+
 export const createDocument = async (name, code, issuer, expiration) =>
     coreClient.post("documents",
         {

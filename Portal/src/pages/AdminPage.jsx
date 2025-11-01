@@ -36,6 +36,8 @@ import showBranchingToast from "../components/BranchingToast"
 import { getGeoFeatures, getGeoJson } from "../utils/helpers"
 import { useDocuments } from "../hooks/useDocuments"
 import DocumentCardGrid from "../components/DocumentCardGrid"
+import { useVouchers } from "../hooks/useVouchers"
+import VoucherCardGrid from "../components/VoucherCardGrid"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -67,6 +69,7 @@ export default function AdminPage() {
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
     const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
     const { documents, createDocument, removeDocument } = useDocuments()
+    const { vouchers, createVoucher, updateVoucherValue, removeVoucher } = useVouchers()
     const { categories, createGeographicalRegion, createCompositeRegion } = useCategories()
     const { categories: countryCategories } = useCategories({ categories: "country" })
 
@@ -89,11 +92,11 @@ export default function AdminPage() {
         },
         {
             name: "Sledované lety",
-            enabled: watchedFlights && watchedFlights.length > 0
+            enabled: true
         },
         {
             name: "Aerolinky",
-            enabled: airlines && airlines.length > 0
+            enabled: true
         },
         {
             name: "Hlášené problémy",
@@ -109,20 +112,24 @@ export default function AdminPage() {
         },
         {
             name: "Trvalá místa",
-            enabled: permanentPlaces && permanentPlaces.length > 0
+            enabled: true
         },
         {
             name: "Aktivní předplatná",
-            enabled: subscriptions && subscriptions.length > 0
+            enabled: true
         },
         {
             name: "Regiony",
-            enabled: categoriesWithRegions && categories.length > 0
+            enabled: true
         },
         {
             name: "Dokumenty",
-            enabled: documents && documents.length > 0
+            enabled: true
         },
+        {
+            name: "Poukazy",
+            enabled: true
+        }
     ]
 
     const handleFlightCreated = () => {
@@ -206,6 +213,29 @@ export default function AdminPage() {
                 }
 
                 return createDocument(name, code, issuer, convertedExpiration)
+            }
+        )
+    }
+
+    const handleVoucherCreated = () => {
+        showFormToast(
+            "Zadej údaje o poukazu k přidání:",
+            [
+                { label: "Identifikátor", required: true },
+                { label: "Vydavatel", required: true },
+                { label: "Hodnota", required: true, type: "number", min: 0 },
+                { label: "Měna", required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) },
+                { label: "Expirace", type: "date" }
+            ],
+            "Poukaz byl úspěšně přidán",
+            "Při přidávání poukazu došlo k chybě",
+            async (code, issuer, value, currency, expiration) => {
+                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
+                if (convertedExpiration < Date.now() / 1000) {
+                    return Promise.reject("Expiration must be in the future.")
+                }
+
+                return createVoucher(code, issuer, value, currency, expiration)
             }
         )
     }
@@ -350,9 +380,6 @@ export default function AdminPage() {
                         onExpenseDescriptionUpdated={updateTripExpenseDescription}
                         onExpenseValueUpdated={updateTripExpenseValue}
                         onExpenseRemoved={removeTripExpense} />
-                    <FloatingButton
-                        icon={Plus}
-                        onClick={handleFlightCreated} />
                 </>
             )}
             {activeTab === 1 && (
@@ -439,6 +466,16 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handleDocumentCreated} />
+                </>
+            )}
+            {activeTab === 10 && (
+                <>
+                    <VoucherCardGrid
+                        vouchers={vouchers}
+                        onVoucherRemoved={removeVoucher} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleVoucherCreated} />
                 </>
             )}
         </>
