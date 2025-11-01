@@ -1,11 +1,12 @@
 
-import { Trash2 } from "lucide-react"
+import { Diff, Minus, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
+import showFormToast from "./FormToast"
 
-export default function VoucherCard({ voucher, onVoucherRemoved }) {
+export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherRemoved }) {
     const { isAdmin } = useAuth()
 
     const handleDelete = () => {
@@ -14,6 +15,18 @@ export default function VoucherCard({ voucher, onVoucherRemoved }) {
             "Poukaz byl úspěšně odstraněn",
             "Nepodařilo se odstranit poukaz",
             async () => onVoucherRemoved(voucher.id)
+        )
+    }
+
+    const handleValueSubtraction = () => {
+        showFormToast(
+            "Zadej, o kolik se má snížit hodnota poukazu:",
+            [
+                { value: 0, required: true, type: "number", min: 0 }
+            ],
+            "Hodnota poukazu byla úspěšně aktualizována",
+            "Nepodařilo se aktualizovat hodnotu poukazu",
+            async (value) => onVoucherValueUpdated(voucher.id, voucher.value - value)
         )
     }
 
@@ -29,12 +42,27 @@ export default function VoucherCard({ voucher, onVoucherRemoved }) {
                 <span className="text-lg font-semibold">
                     {voucher.issuer}
                 </span>
-                {isAdmin && onVoucherRemoved && (
-                    <button
-                        onClick={() => handleDelete(voucher)}
-                        className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
-                        <Trash2 size={16} />
-                    </button>
+                {isAdmin && (
+                    <ul className="flex justify-end gap-1 ml-auto">
+                        {onVoucherValueUpdated && (
+                            <li>
+                                <button
+                                    onClick={handleValueSubtraction}
+                                    className="p-1 rounded text-orange-600 hover:bg-gray-100 transition-colors">
+                                    <Diff size={16} />
+                                </button>
+                            </li>
+                        )}
+                        {onVoucherRemoved && (
+                            <li>
+                                <button
+                                    onClick={handleDelete}
+                                    className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors">
+                                    <Trash2 size={16} />
+                                </button>
+                            </li>
+                        )}
+                    </ul>
                 )}
             </div>
             <ul className="space-y-0.5 mt-2">

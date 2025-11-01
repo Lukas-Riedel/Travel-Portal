@@ -472,6 +472,7 @@ export default function AdminPage() {
                 <>
                     <VoucherCardGrid
                         vouchers={vouchers}
+                        onVoucherValueUpdated={updateVoucherValue}
                         onVoucherRemoved={removeVoucher} />
                     <FloatingButton
                         icon={Plus}
