@@ -34,10 +34,8 @@
         }
         
         public function onAlbumUpdated(mixed $message) : void {            
-            $places = $this->placeService->getRegularPlaces(null, null, null, null, $message["albumId"], null, null, null, null,
-                null, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value,
-                    PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
-            foreach ($places as &$place) {
+            $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
+            if ($place !== null) {
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
                     if ($trip !== null) {

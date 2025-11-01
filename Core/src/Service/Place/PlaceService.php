@@ -86,6 +86,11 @@
             return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $includedEntities, $placeSortingStrategy);
         }
 
+        public function getRegularPlaceForAlbum(string $albumId) : ?Place {
+            $regularPlaces = $this->doGetRegularPlaces(null, null, null, null, null, $albumId, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
+            return count($regularPlaces) === 1 ? $regularPlaces[0] : null;            
+        }
+
         public function getCandidatePlace(string $placeId) : ?Place {
             $candidatePlaces = $this->doGetCandidatePlaces($placeId, null, null, PlaceIncludedEntity::values());
             return count($candidatePlaces) === 1 ? $candidatePlaces[0] : null;
