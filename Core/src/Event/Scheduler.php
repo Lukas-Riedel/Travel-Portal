@@ -1,22 +1,31 @@
 <?php
     namespace Core\Event;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
+    use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
 
     class Scheduler {
 
         private readonly DatabaseClient $databaseClient;
+        private readonly CacheClient $cacheClient;
         private readonly EventPublisher $eventPublisher;
 
-        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher) {
+        public function __construct(DatabaseClient $databaseClient, CacheClient $cacheClient, EventPublisher $eventPublisher) {
             $this->databaseClient = $databaseClient;
+            $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
         }
 
         public function schedule() {
             $this->eventPublisher->publish(Event::SchedulerTriggered());
+
+            $rawEvents = $this->cacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->remove(0, time());
+            foreach ($rawEvents as &$rawEvent) {
+                $this->eventPublisher->publishRawEvent($rawEvent["name"], $rawEvent["args"]);
+            }
         }
 
         public function requestExecution(string $action, int $interval) : bool {

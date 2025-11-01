@@ -9,5 +9,8 @@
         public function unlock(string $key, string $value) : void;
         public function lock(string $key, int $ttl, callable $callable) : void;
         public function delete(string $key) : void;
+        public function getSortedSet(string $key) : SortedSet;
+        public function addToSortedSet(string $key, mixed $value, int $score) : void;
+        public function removeFromSortedSet(string $key, int $minScore, int $maxScore) : array;
     }
 ?>

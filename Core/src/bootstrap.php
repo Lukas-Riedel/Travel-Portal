@@ -128,7 +128,7 @@
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"));
     $calendarClient->setEventPublisher($eventPublisher);
 
-    $scheduler = new Scheduler($databaseClient, $eventPublisher);
+    $scheduler = new Scheduler($databaseClient, $cacheClient, $eventPublisher);
 
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));

@@ -83,8 +83,8 @@
 
                 // Do not compute the same statistics within a short interval to avoid flooding worker processes.
                 if ($secondsSinceLastUpdate < self::STATISTICS_VALIDITY_SECONDS) {
-                    // TODO: Extend the Scheduler functionality with an event replay option.
                     $this->logger->debug("The statistics for the entity '{$statisticsType->name}{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...");
+                    $this->eventPublisher->publish($this->createStatisticsInvalidatedEvent($statisticsType, $entityId), $cachedStatisticsCollection["timestamp"] + self::STATISTICS_VALIDITY_SECONDS);
                     return;
                 }
             }
@@ -127,23 +127,24 @@
             }
 
             $this->logger->warning("The statistics for the entity '{$statisticsType->name}{$entityId}' are not available, scheduling an update...");
-
-            switch ($statisticsType) {
-                case StatisticsType::Overall:
-                    $this->eventPublisher->publish(Event::OverallStatisticsInvalidated());
-                    break;
-                case StatisticsType::Trip:
-                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($entityId));
-                    break;
-                case StatisticsType::Category:
-                    $this->eventPublisher->publish(Event::CategoryStatisticsInvalidated($entityId));
-                    break;
-                case StatisticsType::Year:
-                    $this->eventPublisher->publish(Event::YearStatisticsInvalidated($entityId));
-                    break;
-            }
+            $this->eventPublisher->publish($this->createStatisticsInvalidatedEvent($statisticsType, $entityId));
 
             return array();
+        }
+
+        private function createStatisticsInvalidatedEvent(StatisticsType $statisticsType, ?string $entityId) : Event {
+            switch ($statisticsType) {
+                case StatisticsType::Overall:
+                    return Event::OverallStatisticsInvalidated();
+                case StatisticsType::Trip:
+                    return Event::TripStatisticsInvalidated($entityId);
+                case StatisticsType::Category:
+                    return Event::CategoryStatisticsInvalidated($entityId);
+                case StatisticsType::Year:
+                    return Event::YearStatisticsInvalidated($entityId);
+            }
+
+            throw new \InvalidArgumentException("The statistics type '$statisticsType' is not supported.");
         }
 
         private function getStatisticsCollectionCacheKey(StatisticsType $statisticsType, ?string $entityId) : string {

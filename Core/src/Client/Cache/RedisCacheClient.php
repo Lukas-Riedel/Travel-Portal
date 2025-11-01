@@ -125,6 +125,33 @@
             $this->redisClient->del($key);
         }
 
+        public function getSortedSet(string $key) : SortedSet {
+            return new SortedSet($this, $key);
+        }
+
+        public function addToSortedSet(string $key, mixed $value, int $score) : void {
+            $this->init();
+
+            $this->redisClient->zadd($key, "GT", $score, json_encode($value));
+        }
+
+        public function removeFromSortedSet(string $key, int $minScore, int $maxScore) : array {
+            $this->init();
+
+            $lua = <<<'LUA'
+                local members = redis.call('ZRANGEBYSCORE', KEYS[1], ARGV[1], ARGV[2])
+                
+                if #members > 0 then
+                    redis.call('ZREM', KEYS[1], unpack(members))
+                end
+                
+                return members
+            LUA;
+
+            $result = $this->redisClient->eval($lua, 1, $key, $minScore, $maxScore);
+            return is_array($result) ? array_map(fn($value) => json_decode($value, true), $result) : array();
+        }
+
         private function init() {
             if ($this->redisClient === null) {
                 $this->redisClient = new Client(array(

@@ -4,6 +4,7 @@
     use Core\Client\Cache\CacheClient;
     use Core\Client\CloudMessaging\CloudMessagingClient;
     use Core\Client\Messaging\MessagingClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Device\DeviceService;
 
     class EventPublisher {
@@ -54,7 +55,12 @@
         }
 
         // TODO: Go through all events and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
-        public function publish(Event $event) : ?string {
+        public function publish(Event $event, ?int $publishTimestamp = null) : ?string {
+            if ($publishTimestamp !== null) {
+                $this->cacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->add($event, $publishTimestamp);
+                return null;
+            }
+
             if ($event instanceof WorkerEvent) {
                 $this->messagingClient->publish($this->workerQueueName, $event, $event->getPriority());
                 return null;
