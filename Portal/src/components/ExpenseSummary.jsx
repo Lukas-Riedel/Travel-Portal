@@ -12,6 +12,7 @@ import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
 import showInputToast from "./InputToast"
 import { getDateString } from "../utils/helpers"
+import { useVouchers } from "../hooks/useVouchers"
 
 const expenseTypes = {
     attraction: {
@@ -154,8 +155,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                         onExpenseRemoved ? (
                             <>
                                 <col className="w-[14%]" />
-                                <col className="w-[28%]" />
-                                <col className="w-[18%]" />
+                                <col className="w-[46%]" />
                                 <col className="w-[16%]" />
                                 <col className="min-w-[16%] hidden sm:table-column" />
                                 {detailedView && <col className="w-[8%]" />}
@@ -163,8 +163,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                         ) : (
                             <>
                                 <col className="w-[16%]" />
-                                <col className="w-[30%]" />
-                                <col className="w-[20%]" />
+                                <col className="w-[50%]" />
                                 <col className="min-w-[18%]" />
                                 <col className="w-[16%] hidden sm:table-column" />
                             </>
@@ -172,8 +171,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                     ) : (
                         <>
                             <col className="w-[11%]" />
-                            <col className="min-w-[30%]" />
-                            <col className="min-w-[10%]" />
+                            <col className="min-w-[40%]" />
                             <col className="w-[30%]" />
                             <col className="w-[18%] hidden sm:table-column" />
                         </>
@@ -194,8 +192,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                         </th>
                         <th
                             key="description"
-                            className="p-3 text-center"
-                            colSpan={2}>
+                            className="p-3 text-center">
                             Položka
                         </th>
                         <th
@@ -220,7 +217,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                     <tr>
                         {detailedView ? (
                             <>
-                                <td colSpan={4} />
+                                <td colSpan={3} />
                                 <td className="p-3 text-center font-semibold hidden sm:table-cell">
                                     {`${totalCost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                                 </td>
@@ -228,7 +225,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                             </>
                         ) : (
                             <>
-                                <td colSpan={3} />
+                                <td colSpan={2} />
                                 <td className="p-3 text-center font-semibold">
                                     {`${totalCost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                                 </td>
@@ -250,14 +247,10 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
         <tr
             key={type}
             className="hover:bg-gray-100">
-            <td className="p-3 text-center">
-                <div className={`flex justify-center items-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                </div>
+            <td className={`align-middle text-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
+                <Icon className="inline-block w-5 h-5" />
             </td>
-            <td
-                className={`p-3 text-center truncate ${expenseTypes[type]?.color || expenseTypes.other.color}`}
-                colSpan={2}>
+            <td className={`p-3 text-center truncate ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
                 {expenseTypes[type]?.label || expenseTypes.other.label}
             </td>
             <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
@@ -315,22 +308,16 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
         <tr
             key={expense.id}
             className="hover:bg-gray-100">
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
-                {onExpenseDuplicated ? (
-                    <button
-                        className="flex justify-center items-center"
-                        onClick={() => onExpenseDuplicated(expense)}>
-                        <Icon className="w-5 h-5 flex-shrink-0" />
+            <td className={`align-middle text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+                {isAdmin && onExpenseDuplicated ? (
+                    <button onClick={() => onExpenseDuplicated(expense)}>
+                        <Icon className="w-5 h-5" />
                     </button>
                 ) : (
-                    <div className="flex justify-center items-center">
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                    </div>
+                    <Icon className="inline-block w-5 h-5" />
                 )}
             </td>
-            <td
-                className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}
-                colSpan={2}>
+            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span className="truncate">
                         {expense.description}
@@ -373,7 +360,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     </td>
                 )
             }
-        </tr >
+        </tr>
     )
 }
 
@@ -381,6 +368,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const { configuration } = useConfiguration()
 
     const { subscriptions } = useSubscriptions()
+    const { vouchers, updateVoucherValue, removeVoucher } = useVouchers()
 
     const [wasEdited, setWasEdited] = useState(false)
 
@@ -388,7 +376,6 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const [newDescription, setNewDescription] = useState("")
     const [newValue, setNewValue] = useState(0)
     const [newCurrency, setNewCurrency] = useState(undefined)
-    const [newSubscriptionId, setNewSubscriptionId] = useState(undefined)
 
     useEffect(() => {
         if (!wasEdited) {
@@ -396,15 +383,33 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
             setNewDescription(expenseCandidate?.description || "")
             setNewValue(expenseCandidate?.value || 0)
             setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || "")
-            setNewSubscriptionId(expenseCandidate?.subscriptionId)
         }
     }, [expenseCandidate])
 
     const handleExpenseCreated = () => {
-        showConfirmToast("Opravdu chceš přidat nový výdaj?",
+        showFormToast(
+            "Opravdu chceš přidat nový výdaj?",
+            [
+                { label: "Předplatné", value: expenseCandidate?.subscriptionId, required: false, type: "select", options: [{ id: null, name: "" }, ...subscriptions.map(subscription => ({ id: subscription.id, name: `${subscription.description} (do ${format(fromUnixTime(subscription.expiration), "dd.MM.yyyy")})` }))] },
+                { label: "Poukaz", required: false, type: "select", options: [{ id: null, name: "" }, ...vouchers.filter(voucher => voucher.currency === newCurrency).map(voucher => ({ id: voucher.id, name: `${voucher.issuer} ${voucher.value} ${voucher.currency}` + (voucher.expiration ? " (do " + format(fromUnixTime(voucher.expiration), "dd.MM.yyyy") + ")" : "") }))] }
+            ],
             "Nový výdaj byl úspěšně přidán",
             "Nepodařilo se přidat nový výdaj",
-            async () => onExpenseCreated(newType, newDescription, newValue, newCurrency, newSubscriptionId))
+            async (subscriptionId, voucherId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId)
+                .then(async expense => {
+                    if (voucherId) {
+                        const voucher = vouchers.find(v => v.id === voucherId)
+                        if (voucher.value <= newValue) {
+                            await removeVoucher(voucherId)
+                        }
+                        else {
+                            await updateVoucherValue(voucherId, voucher.value - newValue)
+                        }
+                    }
+
+                    return Promise.resolve(expense)
+                })
+        )
     }
 
     return (
@@ -440,28 +445,9 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     placeholder="Popis"
                     disabled={expenseCandidate?.description} />
             </td>
-            <td className="p-3 text-center hidden sm:table-cell">
-                <select
-                    className="border rounded p-1 w-full"
-                    value={newSubscriptionId}
-                    onChange={e => {
-                        setWasEdited(true)
-                        setNewSubscriptionId(e.target.value || undefined)
-                    }}>
-                    <option value="" />
-                    {subscriptions?.map(subscription => (
-                        <option
-                            className="text-center"
-                            key={subscription.id}
-                            value={subscription.id}>
-                            {`${subscription?.description} (do ${format(fromUnixTime(subscription?.expiration), "dd.MM.yyyy")})`}
-                        </option>
-                    ))}
-                </select>
-            </td>
-            <td className="p-3 text-center">
+            <td className="flex flex-col md:flex-row p-3 text-center md:space-x-0.5 space-y-0.5">
                 <input
-                    className="border rounded p-1 w-full text-center"
+                    className="border rounded p-1 min-w-8 text-center shrink"
                     type="number"
                     min={0}
                     value={newValue}
@@ -470,10 +456,8 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                         setNewValue(e.target.value)
                     }}
                     placeholder="Cena" />
-            </td>
-            <td className="p-3 text-center">
                 <select
-                    className="border rounded p-1 w-full"
+                    className="border rounded p-1 flex-1 shrink"
                     value={newCurrency}
                     onChange={e => {
                         setWasEdited(true)
@@ -489,6 +473,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     ))}
                 </select>
             </td>
+            <td className="hidden sm:table-cell" />
             <td className="text-center">
                 <button
                     className="p-1 hover:bg-gray-200 rounded"
@@ -505,12 +490,12 @@ function LoadingExpenseRow({ detailedView }) {
 
     return (
         <tr>
-            <td className="p-3 sm:hidden" colSpan={isAdmin && detailedView ? 5 : 4}>
+            <td className="p-3 sm:hidden" colSpan={isAdmin && detailedView ? 4 : 3}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>
             </td>
-            <td className="p-3 hidden sm:table-cell" colSpan={isAdmin && detailedView ? 6 : 5}>
+            <td className="p-3 hidden sm:table-cell" colSpan={isAdmin && detailedView ? 5 : 4}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>

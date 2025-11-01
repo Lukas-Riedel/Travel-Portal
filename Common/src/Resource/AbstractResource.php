@@ -81,7 +81,7 @@
                 throw new \InvalidArgumentException("The required request body field '$field' is missing.");
             }
             if ($body[$field] === null || $body[$field] === "" || $body[$field] === array()) {
-                throw new \InvalidArgumentException("The required request body field '$field' IS null or empty.");
+                throw new \InvalidArgumentException("The required request body field '$field' is null or empty.");
             }
             return $body[$field];
         }

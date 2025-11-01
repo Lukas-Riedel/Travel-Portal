@@ -78,6 +78,7 @@ export default function showFormToast(title, fields, success, error, onSubmitted
                                                 defaultValue={field.value ?? ""}
                                                 multiple={field.multiple}
                                                 disabled={field.disabled}>
+                                                {/* TODO: If field.required is false, add { id: null, name: "" } and remove from callers. */}
                                                 {field.options?.map((option, index) => (
                                                     <option
                                                         key={index}
