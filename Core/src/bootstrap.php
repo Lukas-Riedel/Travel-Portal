@@ -153,7 +153,7 @@
     $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient, getenv("CORE_BASE_URL"));
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, getenv("CORE_BASE_URL"));
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
-    $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient);
+    $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $cacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $configurationService, $actualForecastClient, $historicalForecastClient);

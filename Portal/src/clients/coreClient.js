@@ -7,9 +7,10 @@ import Place from "../model/place"
 export const createVoucher = async (code, issuer, value, currency, expiration) =>
     coreClient.post("vouchers",
         {
-            name,
             code,
             issuer,
+            value,
+            currency,
             expiration
         }
     ).then(extractData)

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Expense;
 
+    use Common\Client\Encryption\EncryptionClient;
     use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
@@ -28,8 +29,9 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
-            EventPublisher $eventPublisher, ExchangeRateClient $exchangeRateClient, CacheClient $cacheClient) {
-            $this->expenseMapper = new ExpenseMapper($databaseClient);
+            EventPublisher $eventPublisher, ExchangeRateClient $exchangeRateClient, CacheClient $cacheClient,
+            EncryptionClient $encryptionClient) {
+            $this->expenseMapper = new ExpenseMapper($databaseClient, $encryptionClient);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->exchangeRateClient = $exchangeRateClient;

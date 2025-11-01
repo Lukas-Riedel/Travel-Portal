@@ -235,7 +235,7 @@ export default function AdminPage() {
                     return Promise.reject("Expiration must be in the future.")
                 }
 
-                return createVoucher(code, issuer, value, currency, expiration)
+                return createVoucher(code, issuer, value, currency, convertedExpiration)
             }
         )
     }

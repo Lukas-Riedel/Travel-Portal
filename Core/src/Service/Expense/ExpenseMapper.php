@@ -1,27 +1,31 @@
 <?php
     namespace Core\Service\Expense;
-    
+
+    use Common\Client\Encryption\EncryptionClient;
     use Core\Client\Database\DatabaseClient;
 
     class ExpenseMapper {
 
         private readonly DatabaseClient $databaseClient;
 
-        public function __construct(DatabaseClient $databaseClient) {
+        private readonly EncryptionClient $encryptionClient;
+
+        public function __construct(DatabaseClient $databaseClient, EncryptionClient $encryptionClient) {
             $this->databaseClient = $databaseClient;
+            $this->encryptionClient = $encryptionClient;
         }
 
         public function selectAllVouchers() : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM expense_voucher
-                ORDER BY issuer
+                ORDER BY issuer, expiration
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($voucherRow) {
-                    return new Voucher($voucherRow["id"], $voucherRow["code"], $voucherRow["issuer"],
+                    return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
                         $voucherRow["value"], $voucherRow["currency"], $voucherRow["expiration"]);
                 });
         }
@@ -42,7 +46,7 @@
                 return null;
             }
 
-            return new Voucher($voucherRow["id"], $voucherRow["code"], $voucherRow["issuer"],
+            return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
                 $voucherRow["value"], $voucherRow["currency"], $voucherRow["expiration"]);
         }
 
@@ -227,7 +231,8 @@
 
             $wasInserted = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($voucher->getCode(), $voucher->getIssuer(), $voucher->getValue(), $voucher->getCurrency(), $voucher->getExpiration())
+                ->withParameters($this->encryptionClient->encrypt($voucher->getCode()), $voucher->getIssuer(),
+                    $voucher->getValue(), $voucher->getCurrency(), $voucher->getExpiration())
                 ->execute() === 1;
 
             if ($wasInserted) {
