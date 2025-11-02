@@ -45,6 +45,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         const fetchAndSetPhotoUrl = async photoId => {
             if (place?.id && currentHighlightAlbumId) {
                 const photos = await listPlaceAlbumPhotos(place.id, currentHighlightAlbumId)
+                // TODO: Introduce a new endpoint for obtaining a photo based on its identifier
                 const photo = photos.find(photo => photo.id === photoId)
                 setCurrentHighlightReferencePhotoUrl(photo?.url + "=d")
             }

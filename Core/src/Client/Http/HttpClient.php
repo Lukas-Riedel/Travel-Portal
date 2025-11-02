@@ -9,6 +9,7 @@
     class HttpClient extends CommonHttpClient {
         
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s";
+        private const UNKNOWN_PATH = "UNKNOWN";
 
         private ?OpenLineageEventManager $openLineageEventManager;
 
@@ -25,7 +26,7 @@
 
             $parsedUrl = parse_url($url);
             $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
-            $name = str_replace(".", "", ltrim($parsedUrl["path"], "/"));
+            $name = str_replace(".", "", isset($parsedUrl["path"]) ? ltrim($parsedUrl["path"], "/") : self::UNKNOWN_PATH);
             if ($method === HttpMethod::GET) {
                 $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $result);
             }

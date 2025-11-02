@@ -147,7 +147,7 @@
 
                     $photos[] = new Photo(
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
-                        fn() => $mediaItem["baseUrl"],
+                        fn() => $this->getGooglePhotoProxyUrl($mediaItem["baseUrl"]),
                         $mediaItem["productUrl"],
                         $mediaItem["mediaMetadata"]["photo"]["focalLength"] ?? null,
                         $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] ?? null,
@@ -255,8 +255,8 @@
 
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
                     $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === null ? null : new Photo($mainPhotoId,
-                        fn() => $album["coverPhotoBaseUrl"], null, null, null, null, null, null, null, null), $mainImageUrl, $album["productUrl"],
-                        $imagesCount, 0, false, null, null);
+                        fn() => $this->getGooglePhotoProxyUrl($album["coverPhotoBaseUrl"]), null, null, null, null, null, null, null, null),
+                        $mainImageUrl, $album["productUrl"], $imagesCount, 0, false, null, null);
 
                     // TODO: This is temporary until there is proper support for highlights (Q3/2025).
                     // Remove global variables when removing this code.
@@ -441,6 +441,10 @@
             } 
 
             return $createdPhotos;
+        }
+
+        private function getGooglePhotoProxyUrl(string $url) : string {
+            return str_replace(CommonConstants::GOOGLE_USER_CONTENT_BASE_URL, $this->coreBaseUrl . CommonConstants::GOOGLE_USER_CONTENT_PROXY_BASE_URL, $url);
         }
     }
 ?>

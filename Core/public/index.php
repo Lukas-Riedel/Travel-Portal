@@ -20,7 +20,7 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook")));
+    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook", "/proxy")));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($logger));
     $app->addBodyParsingMiddleware();

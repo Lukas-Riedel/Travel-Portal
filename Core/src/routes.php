@@ -14,6 +14,7 @@
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
+    use Core\Resource\ProxyResource;
     use Core\Resource\RegionResource;
     use Core\Resource\StatisticsResource;
     use Core\Resource\TrackerResource;
@@ -26,7 +27,7 @@
     return function(App $app, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
         $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService, $documentService,
-        $photoService, $eventPublisher, $logger) {
+        $photoService, $eventPublisher, $httpClient, $logger) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService, $logger);
@@ -49,5 +50,6 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         SwaggerResource::register($app, $coreBaseUrl);
+        ProxyResource::register($app, $coreBaseUrl, $httpClient);
     };
 ?>
