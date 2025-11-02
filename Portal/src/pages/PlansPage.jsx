@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { useCategories } from "../hooks/useCategories"
 import PlaceMap from "../components/PlaceMap"
@@ -15,6 +15,9 @@ import TabMenu from "../components/TabMenu"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { endOfDay } from "date-fns"
 
+const defaultMaxDistance = 250
+const defaultMaxQuality = 80
+
 export default function PlansPage() {
     const { isAdmin } = useAuth()
 
@@ -23,8 +26,8 @@ export default function PlansPage() {
     const { candidateTrips, removeCandidateTrip } = useCandidateTrips()
     const { categories: countryCategories } = useCategories({ categories: "country" })
 
-    const [maxDistance, setMaxDistance] = useState(250)
-    const [maxQuality, setMaxQuality] = useState(80)
+    const [maxDistance, setMaxDistance] = useState(defaultMaxDistance)
+    const [maxQuality, setMaxQuality] = useState(defaultMaxQuality)
     const [activeTab, setActiveTab] = useState(0)
 
     const countryCategoriesMap = useMemo(() => {
@@ -98,6 +101,7 @@ export default function PlansPage() {
                             name="Maximální vzdálenost"
                             valueFormatter={formatKilometers}
                             value={maxDistance}
+                            defaultValue={defaultMaxDistance}
                             minValue={1}
                             maxValue={furthestPlace?.distance}
                             onValueChanged={setMaxDistance} />
@@ -121,6 +125,7 @@ export default function PlansPage() {
                         name="Maximální kvalita"
                         valueFormatter={value => `${value}%`}
                         value={maxQuality}
+                        defaultValue={defaultMaxQuality}
                         minValue={Math.ceil(lowestQualityPlace?.quality ?? 0)}
                         maxValue={100}
                         onValueChanged={setMaxQuality} />

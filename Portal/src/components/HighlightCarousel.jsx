@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Pause, Play, Trash2, Star, SlidersVertical, Grid3x3, Edit2, Plus } from "lucide-react"
+import { Pause, Play, Trash2, Star, SlidersVertical, Edit2, Plus, Upload, Check } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "./ConfirmToast"
 import { TailSpin } from "react-loader-spinner"
@@ -11,9 +11,17 @@ import { getOnlyElement, isDaylightSavingTime } from "../utils/helpers"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useDevices } from "../hooks/useDevices"
+import Cropper from "react-easy-crop"
+import Slider from "../components/Slider"
+import { listPlaceAlbumPhotos } from "../clients/coreClient"
 
 const invalidPhotoId = "INVALID_PHOTO_ID"
 const agentOnlineStatusThresholdSeconds = 60
+
+const defaultRotation = 0
+const defaultZoom = 1
+const defaultXPosition = 0
+const defaultYPosition = 0
 
 export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
     const { isAdmin } = useAuth()
@@ -26,7 +34,29 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
         ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const [isPaused, setIsPaused] = useState(isAdmin)
-    const [showGrid, setShowGrid] = useState(false)
+    const [showEditor, setShowEditor] = useState(false)
+    const [crop, setCrop] = useState({ x: defaultXPosition, y: defaultYPosition })
+    const [zoom, setZoom] = useState(defaultZoom)
+    const [rotation, setRotation] = useState(defaultRotation)
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
+    const [currentHighlightReferencePhotoUrl, setCurrentHighlightReferencePhotoUrl] = useState(null)
+
+    useEffect(() => {
+        const fetchAndSetPhotoUrl = async photoId => {
+            if (place?.id && currentHighlightAlbumId) {
+                const photos = await listPlaceAlbumPhotos(place.id, currentHighlightAlbumId)
+                const photo = photos.find(photo => photo.id === photoId)
+                setCurrentHighlightReferencePhotoUrl(photo?.url + "=d")
+            }
+        }
+
+        setCurrentHighlightReferencePhotoUrl(null)
+        fetchAndSetPhotoUrl(shuffledHighlights[currentHighlightIndex]?.photo?.id)
+    }, [place?.id, currentHighlightAlbumId, shuffledHighlights, currentHighlightIndex])
+
+    const onCropComplete = useCallback((_, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels)
+    }, [])
 
     useEffect(() => {
         if (!isAdmin) {
@@ -73,6 +103,18 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
             async (path, agentId) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path)
                 .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
         )
+    }
+
+    const handlePhotoAdjusted = () => {
+        showConfirmToast("Opravdu chceš upravit tento highlight?",
+            "Highlight byl úspěšně upraven",
+            "Nepodařilo se upravit highlight",
+            async () => {
+                const base64Url = await getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
+                // TODO: Implement
+                console.log(base64Url)
+            })
+
     }
 
     const handleHighlightRemoved = () => {
@@ -165,25 +207,72 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     return shuffledHighlights.length > 0 ? (
         <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg my-4">
-            <AnimatePresence mode="sync">
-                <motion.img
-                    key={currentHighlightIndex}
-                    src={shuffledHighlights[currentHighlightIndex]?.url?.full ?? shuffledHighlights[currentHighlightIndex]?.url?.thumbnail}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
-                    className="absolute inset-0 h-full w-full object-cover object-center" />
-            </AnimatePresence>
-            {showGrid && (
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute inset-y-0 left-1/3 w-px bg-white/50" />
-                    <div className="absolute inset-y-0 left-2/3 w-px bg-white/50" />
-                    <div className="absolute inset-x-0 top-1/3 h-px bg-white/50" />
-                    <div className="absolute inset-x-0 top-2/3 h-px bg-white/50" />
-                    <div className="absolute inset-y-0 left-1/2 w-1 bg-white/75 -translate-x-1/2" />
-                    <div className="absolute inset-x-0 top-1/2 h-1 bg-white/75 -translate-y-1/2" />
-                </div>
+            {showEditor ? (
+                <Cropper
+                    image={currentHighlightReferencePhotoUrl}
+                    crop={crop}
+                    zoom={zoom}
+                    rotation={rotation}
+                    aspect={3 / 2}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onRotationChange={setRotation}
+                    onCropComplete={onCropComplete} />
+            ) : (
+                <AnimatePresence mode="sync">
+                    <motion.img
+                        key={currentHighlightIndex}
+                        src={shuffledHighlights[currentHighlightIndex]?.url?.full ?? shuffledHighlights[currentHighlightIndex]?.url?.thumbnail}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0 h-full w-full object-cover object-center" />
+                </AnimatePresence>
+            )}
+            {showEditor && (
+                <>
+                    <div className="absolute z-50 top-0 left-0 flex space-x-2 bg-white/10 backdrop-blur-md rounded-br-xl shadow-md p-3">
+                        <Slider
+                            name="Rotace"
+                            value={rotation}
+                            defaultValue={defaultRotation}
+                            valueFormatter={value => value + "°"}
+                            step={0.05}
+                            minValue={-15}
+                            maxValue={15}
+                            onValueChanged={setRotation} />
+                        <Slider
+                            name="Zoom"
+                            value={zoom}
+                            defaultValue={defaultZoom}
+                            valueFormatter={value => Math.round(100 * value) + "%"}
+                            step={0.01}
+                            minValue={1}
+                            maxValue={3}
+                            onValueChanged={setZoom} />
+                        <Slider
+                            name="Osa X"
+                            value={crop.x}
+                            defaultValue={defaultXPosition}
+                            valueFormatter={value => Math.round(value)}
+                            minValue={-720}
+                            maxValue={720}
+                            onValueChanged={x => setCrop({ x: x, y: crop.y })} />
+                        <Slider
+                            name="Osa Y"
+                            value={crop.y}
+                            defaultValue={defaultYPosition}
+                            valueFormatter={value => Math.round(value)}
+                            minValue={-480}
+                            maxValue={480}
+                            onValueChanged={y => setCrop({ x: crop.x, y: y })} />
+                    </div>
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute inset-y-0 left-1/2 w-1 bg-white/75 -translate-x-1/2" />
+                        <div className="absolute inset-x-0 top-1/2 h-1 bg-white/75 -translate-y-1/2" />
+                    </div>
+                </>
             )}
             {shuffledHighlights.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
@@ -191,8 +280,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                         <button
                             key={index}
                             onClick={() => setCurrentHighlightIndex(index)}
-                            className={`w-3 h-3 rounded-full ${index === currentHighlightIndex ? "bg-white" : "bg-white/50"}`}
-                        ></button>
+                            className={`w-3 h-3 rounded-full ${index === currentHighlightIndex ? "bg-white" : "bg-white/50"}`} />
                     ))}
                 </div>
             )}
@@ -201,28 +289,35 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     <button
                         onClick={handleHighlightCreated}
                         className="btn-chip-gray">
-                        {<Plus size={16} />}
+                        <Plus size={16} />
                     </button>
                 )}
-                {isAdmin && (
+                {isAdmin && showEditor && (rotation !== defaultRotation || zoom !== defaultZoom || crop.x !== defaultXPosition || crop.y !== defaultYPosition) && (
                     <button
-                        onClick={() => setShowGrid(prev => !prev)}
+                        onClick={handlePhotoAdjusted}
                         className="btn-chip-gray">
-                        {<Grid3x3 size={16} />}
+                        <Check size={16} />
+                    </button>
+                )}
+                {isAdmin && currentHighlightReferencePhotoUrl && (
+                    <button
+                        onClick={() => setShowEditor(prev => !prev)}
+                        className="btn-chip-gray">
+                        <Edit2 size={16} />
                     </button>
                 )}
                 {onHighlightQualityAttributesUpdated && isAdmin && (
                     <button
                         onClick={handleHighlightQualityAttributesUpdated}
                         className="btn-chip-gray">
-                        {<SlidersVertical size={16} />}
+                        <SlidersVertical size={16} />
                     </button>
                 )}
                 {onPhotoReplaced && place && currentHighlightAlbumId && isAdmin && (
                     <button
                         onClick={handlePhotoReplaced}
                         className="btn-chip-gray">
-                        <Edit2 size={16} />
+                        <Upload size={16} />
                     </button>
                 )}
                 {shuffledHighlights.length > 1 && (
@@ -258,4 +353,49 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 width={80} />
         </div>
     )
+}
+
+const createImage = url =>
+    new Promise((resolve, reject) => {
+        const image = new Image()
+        image.addEventListener("load", () => resolve(image))
+        image.addEventListener("error", error => reject(error))
+        image.setAttribute("crossOrigin", "anonymous")
+        image.src = url
+    })
+
+const getCroppedImg = async (imageSrc, pixelCrop, rotation) => {
+    const image = await createImage(imageSrc)
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+
+    const safeArea = Math.max(image.naturalWidth, image.naturalHeight) * 2
+
+    canvas.width = safeArea
+    canvas.height = safeArea
+
+    ctx.translate(safeArea / 2, safeArea / 2)
+    ctx.rotate(rotation * Math.PI / 180)
+    ctx.translate(-safeArea / 2, -safeArea / 2)
+
+    ctx.drawImage(
+        image,
+        safeArea / 2 - image.naturalWidth / 2,
+        safeArea / 2 - image.naturalHeight / 2
+    )
+
+    const data = ctx.getImageData(
+        safeArea / 2 - image.naturalWidth / 2 + pixelCrop.x,
+        safeArea / 2 - image.naturalHeight / 2 + pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height
+    )
+
+    canvas.width = pixelCrop.width
+    canvas.height = pixelCrop.height
+
+    ctx.clearRect(0, 0, pixelCrop.width, pixelCrop.height)
+    ctx.putImageData(data, 0, 0)
+
+    return canvas.toDataURL("image/jpeg", 1)
 }
