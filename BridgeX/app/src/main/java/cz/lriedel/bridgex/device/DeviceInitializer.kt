@@ -4,12 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.location.Location
 import android.os.BatteryManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.messaging.FirebaseMessaging
 import cz.lriedel.bridgex.CoreClient
 import cz.lriedel.bridgex.CoreClient.Companion.create
@@ -43,7 +47,7 @@ class DeviceInitializer(
                     val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                     val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
 
-                    val location = fusedLocationClient.lastLocation.await()
+                    val location = getLocation()
 
                     coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName,
                         DeviceData(fcmToken, location?.latitude, location?.longitude,
@@ -68,6 +72,27 @@ class DeviceInitializer(
             }
     }
 
+    private suspend fun getLocation(): Location? {
+        val lastLocation = fusedLocationClient.lastLocation.await()
+        if (lastLocation != null && System.currentTimeMillis() - lastLocation.time <= MAX_LOCATION_AGE_MILLISECONDS) {
+            return lastLocation
+        }
+
+        val currentLocationRequest = CurrentLocationRequest.Builder()
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .setDurationMillis(LOCATION_FETCH_TIMEOUT_MILLISECONDS)
+            .setMaxUpdateAgeMillis(0)
+            .build()
+
+        val cancellationToken = CancellationTokenSource().token
+        val newLocation = fusedLocationClient.getCurrentLocation(currentLocationRequest, cancellationToken).await()
+        if (newLocation != null) {
+            return newLocation
+        }
+
+        return lastLocation
+    }
+
     private fun getOrCreateDeviceId(): String {
         var deviceId = sharedPreferences.getString(DEVICE_ID_KEY, null)
         if (deviceId == null) {
@@ -81,6 +106,8 @@ class DeviceInitializer(
         private const val DEVICE_PREFERENCES_NAME = "DevicePreferences"
         private const val DEVICE_ID_KEY = "deviceId"
         private const val DEVICE_NAME_KEY = "device_name"
+        private const val MAX_LOCATION_AGE_MILLISECONDS = 30 * 60 * 1000L
+        private const val LOCATION_FETCH_TIMEOUT_MILLISECONDS = 30 * 1000L
 
         private fun getPrettyDeviceName(context: Context): String {
             val deviceNameSetting = Settings.Global.getString(context.contentResolver, DEVICE_NAME_KEY)
