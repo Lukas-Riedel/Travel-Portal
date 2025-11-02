@@ -15,8 +15,7 @@ class MainActivity : AppCompatActivity() {
 
     private val webView: WebView by lazy { findViewById(R.id.webview) }
     private val permissionManager: PermissionManager by lazy { PermissionManager(this) }
-    private val authenticationService: AuthenticationService by lazy { AuthenticationService(this) }
-    private val deviceInitializer: DeviceInitializer by lazy { DeviceInitializer(this, authenticationService) }
+    private val deviceInitializer: DeviceInitializer by lazy { DeviceInitializer(this, AuthenticationService.getOrCreate(this)) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         
         permissionManager.requestAllPermissions()
 
-        webView.addJavascriptInterface(AndroidBridge(authenticationService, deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
+        webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
         loadWebViewUrl(savedInstanceState, intent.getStringExtra("placeId"))
         deviceInitializer.initialize()

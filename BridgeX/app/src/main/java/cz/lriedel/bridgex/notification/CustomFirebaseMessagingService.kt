@@ -24,8 +24,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
     private val gson = Gson()
     private val mapGsonType: Type = object : TypeToken<Map<String?, Any?>?>() {}.type
 
-    private val authenticationService by lazy { AuthenticationService(applicationContext) }
-    private val deviceInitializer by lazy { DeviceInitializer(applicationContext, authenticationService) }
+    private val deviceInitializer by lazy { DeviceInitializer(applicationContext, AuthenticationService.getOrCreate(applicationContext)) }
     private val notificationFactories: Map<String, NotificationFactory> by lazy {
         listOf(
             ProcessingEndedNotificationFactory(this),

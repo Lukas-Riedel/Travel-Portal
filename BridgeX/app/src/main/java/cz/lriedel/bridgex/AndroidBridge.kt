@@ -3,12 +3,11 @@ package cz.lriedel.bridgex
 import android.content.Intent
 import android.util.Log
 import android.webkit.JavascriptInterface
+import androidx.lifecycle.lifecycleScope
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.lifecycle.lifecycleScope
 
 class AndroidBridge(
     private val authenticationService: AuthenticationService,

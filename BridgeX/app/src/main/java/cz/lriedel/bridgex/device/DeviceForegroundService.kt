@@ -18,8 +18,7 @@ import kotlinx.coroutines.launch
 
 class DeviceForegroundService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val authenticationService by lazy { AuthenticationService(this) }
-    private val deviceInitializer by lazy { DeviceInitializer(this, authenticationService) }
+    private val deviceInitializer by lazy { DeviceInitializer(this, AuthenticationService.getOrCreate(this)) }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIFICATION_ID, createNotification())

@@ -2,10 +2,10 @@ package cz.lriedel.bridgex.notification
 
 import android.content.Context
 import cz.lriedel.bridgex.R
-import java.util.Locale
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class FlightLoggedNotificationFactory(
     private val context: Context

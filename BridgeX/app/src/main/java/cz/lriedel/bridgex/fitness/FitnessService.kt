@@ -11,17 +11,17 @@ import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
-import cz.lriedel.bridgex.CoreClient.Companion.create
+import cz.lriedel.bridgex.CoreClient
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import kotlinx.coroutines.delay
 import java.time.Instant
 
-class FitnessService(
+class FitnessService private constructor(
     context: Context,
     authenticationService: AuthenticationService
 ) {
     private val healthClient = HealthConnectClient.getOrCreate(context)
-    private val coreClient = create(authenticationService)
+    private val coreClient = CoreClient.getOrCreate(authenticationService)
 
     suspend fun updateFitness(start: Long, end: Long) {
         Log.i(FitnessService::class.java.simpleName, "Updating fitness for an interval ($start-$end)...")
@@ -71,5 +71,16 @@ class FitnessService(
         private const val MAX_RETRIES = 3
         private const val BACK_OFF_MULTIPLIER = 2
         private const val WAIT_TIME_MILLISECONDS = 500
+
+        @Volatile
+        private var INSTANCE: FitnessService? = null
+
+        fun getOrCreate(context: Context, authenticationService: AuthenticationService): FitnessService {
+            return INSTANCE ?: synchronized(this) {
+                val instance = INSTANCE ?: FitnessService(context.applicationContext, authenticationService)
+                INSTANCE = instance
+                instance
+            }
+        }
     }
 }

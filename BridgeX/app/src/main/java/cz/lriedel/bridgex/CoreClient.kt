@@ -12,7 +12,6 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface CoreClient {
     @POST("devices")
@@ -27,8 +26,18 @@ interface CoreClient {
     )
 
     companion object {
-        @JvmStatic
-        fun create(authenticationService: AuthenticationService): CoreClient {
+        @Volatile
+        private var INSTANCE: CoreClient? = null
+
+        fun getOrCreate(authenticationService: AuthenticationService): CoreClient {
+            return INSTANCE ?: synchronized(this) {
+                val instance = INSTANCE ?: create(authenticationService)
+                INSTANCE = instance
+                instance
+            }
+        }
+
+        private fun create(authenticationService: AuthenticationService): CoreClient {
             val client = OkHttpClient.Builder()
                 .addInterceptor { chain: Interceptor.Chain ->
                     val accessToken = kotlinx.coroutines.runBlocking {

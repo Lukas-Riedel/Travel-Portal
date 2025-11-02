@@ -2,25 +2,20 @@ package cz.lriedel.bridgex.authentication
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import android.util.Log
-import com.google.gson.GsonBuilder
-import cz.lriedel.bridgex.BuildConfig
-import retrofit2.Retrofit
 import cz.lriedel.bridgex.IamClient
-import cz.lriedel.bridgex.IamClient.Companion.create
-import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class AuthenticationService(context: Context) {
+class AuthenticationService private constructor(context: Context) {
     private val sharedPreferences: SharedPreferences = EncryptedSharedPreferences.create(
             AUTHENTICATION_PREFERENCES_NAME, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
-            context, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            context.applicationContext, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
 
-    private val iamClient: IamClient = create()
+    private val iamClient: IamClient = IamClient.getOrCreate()
 
     private val tokenMutex = Mutex()
 
@@ -82,5 +77,16 @@ class AuthenticationService(context: Context) {
         private const val REFRESH_TOKEN_KEY = "RefreshToken"
         private const val DEFAULT_TOKEN_SCOPE = "openid offline_access"
         private const val ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95
+
+        @Volatile
+        private var INSTANCE: AuthenticationService? = null
+
+        fun getOrCreate(context: Context): AuthenticationService {
+            return INSTANCE ?: synchronized(this) {
+                val instance = INSTANCE ?: AuthenticationService(context.applicationContext)
+                INSTANCE = instance
+                instance
+            }
+        }
     }
 }

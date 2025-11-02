@@ -16,7 +16,6 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.messaging.FirebaseMessaging
 import cz.lriedel.bridgex.CoreClient
-import cz.lriedel.bridgex.CoreClient.Companion.create
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +30,7 @@ class DeviceInitializer(
         context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
     private val deviceName: String = getPrettyDeviceName(context)
     private val deviceId: String = getOrCreateDeviceId()
-    private val coreClient: CoreClient = create(authenticationService)
+    private val coreClient: CoreClient = CoreClient.getOrCreate(authenticationService)
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(context) }
 
     fun initialize(fcmToken: String) {

@@ -1,8 +1,8 @@
 package cz.lriedel.bridgex.notification
 
+import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import android.content.Context
 import cz.lriedel.bridgex.device.DeviceForegroundService
 
 class DeviceLogOnRequestedNotificationFactory(

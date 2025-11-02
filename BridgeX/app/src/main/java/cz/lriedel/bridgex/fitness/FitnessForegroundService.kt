@@ -18,8 +18,7 @@ import kotlinx.coroutines.launch
 
 class FitnessForegroundService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val authenticationService by lazy { AuthenticationService(this) }
-    private val fitnessService by lazy { FitnessService(this, authenticationService) }
+    private val fitnessService by lazy { FitnessService.getOrCreate(this, AuthenticationService.getOrCreate(this)) }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val intervals = intent?.getParcelableArrayListExtra("intervals", FitnessInterval::class.java) ?: emptyList()
