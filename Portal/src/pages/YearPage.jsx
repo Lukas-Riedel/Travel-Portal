@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { replace, useParams } from "react-router-dom"
 import PageHeader from "../components/PageHeader"
 import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
 import StatisticsPanel from "../components/StatisticsPanel"
@@ -12,6 +12,7 @@ import { useAuth } from "../contexts/AuthContext"
 import ExpenseSummary from "../components/ExpenseSummary"
 import { getSortedTrips } from "../utils/helpers"
 import { useEvents } from "../hooks/useEvents"
+import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 
 export default function YearPage() {
     const { isAdmin } = useAuth()
@@ -27,6 +28,8 @@ export default function YearPage() {
 
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)
 
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
+
     return (
         <>
             <PageHeader
@@ -38,6 +41,7 @@ export default function YearPage() {
                 places={places}
                 placeMainCategorySelector={getPlaceCategory}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={handlePhotoCorrected}
                 onHighlightRemoved={removeYearHighlight}
                 onMainHighlightUpdated={updateYearMainHighlight}
                 onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />

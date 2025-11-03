@@ -10,6 +10,7 @@ import { useEvents } from "../hooks/useEvents"
 import { useAuth } from "../contexts/AuthContext"
 import { Edit2 } from "lucide-react"
 import showFormToast from "../components/FormToast"
+import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 
 const categoryCategories = {
     continent: "Kontinent",
@@ -45,6 +46,8 @@ export default function CategoryPage() {
         "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / places.length)}%`,
         "Celkové skóre": totalScore
     }
+
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
@@ -86,6 +89,7 @@ export default function CategoryPage() {
                 places={places}
                 placeMainCategorySelector={getPlaceCategory}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={handlePhotoCorrected}
                 onHighlightRemoved={removeCategoryHighlight}
                 onMainHighlightUpdated={updateCategoryMainHighlight}
                 onHighlightQualityAttributesUpdated={updateCategoryHighlightQualityAttributes} />

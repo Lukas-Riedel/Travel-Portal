@@ -390,11 +390,12 @@ export const updatePlaceAlbumReviewed = async (placeId, albumId) =>
         }
     ).then(extractData)
 
-export const createPlaceAlbumPhoto = async (placeId, albumId, fileName, data) =>
+export const createPlaceAlbumPhoto = async (placeId, albumId, fileName, data, replacedPhotoId = undefined) =>
     coreClient.post(`places/${placeId}/albums/${albumId}/photos`,
         {
             fileName,
-            data
+            data,
+            replacedPhotoId
         }
     ).then(extractData)
 

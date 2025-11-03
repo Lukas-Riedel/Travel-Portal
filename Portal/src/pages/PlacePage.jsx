@@ -14,6 +14,7 @@ import { useAuth } from "../contexts/AuthContext.jsx"
 import { useEvents } from "../hooks/useEvents.js"
 import NoteBar from "../components/NoteBar.jsx"
 import { useMemo } from "react"
+import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 
 export default function PlacePage() {
     const { isAdmin } = useAuth()
@@ -28,6 +29,8 @@ export default function PlacePage() {
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
 
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(albumId))
+
     return (
         <>
             <PageHeader
@@ -40,6 +43,7 @@ export default function PlacePage() {
                 place={place}
                 highlights={place && (place.highlights ?? [])}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={handlePhotoCorrected}
                 onHighlightRemoved={removePlaceHighlight}
                 onMainHighlightUpdated={updatePlaceMainHighlight}
                 onHighlightQualityAttributesUpdated={updatePlaceHighlightQualityAttributes} />

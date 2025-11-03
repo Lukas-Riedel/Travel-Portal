@@ -434,7 +434,7 @@
             
             $createdPhotos = $this->googleClient->createPhotos($externalAlbumId, $newPhotos, $externalReplacedPhotoId);
 
-            foreach ($createdPhotos as &$createdPhoto) {
+            foreach ($createdPhotos["newMediaItemResults"] as &$createdPhoto) {
                 if (isset($createdPhoto["status"]["message"]) && $createdPhoto["status"]["message"] !== "Success") {
                     throw new \RuntimeException($createdPhoto["status"]["message"]);
                 }

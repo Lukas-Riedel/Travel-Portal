@@ -14,6 +14,8 @@ import { useDevices } from "../hooks/useDevices"
 import Cropper from "react-easy-crop"
 import Slider from "../components/Slider"
 import { listPlaceAlbumPhotos } from "../clients/coreClient"
+import piexif from "piexifjs"
+import { v4 as uuidv4 } from "uuid"
 
 const invalidPhotoId = "INVALID_PHOTO_ID"
 const agentOnlineStatusThresholdSeconds = 60
@@ -23,7 +25,7 @@ const defaultZoom = 1
 const defaultXPosition = 0
 const defaultYPosition = 0
 
-export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
+export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const agents = useDevices({ type: "agent" })
@@ -106,16 +108,14 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         )
     }
 
-    const handlePhotoAdjusted = () => {
+    const handlePhotoCorrected = () => {
         showConfirmToast("Opravdu chceš upravit tento highlight?",
             "Highlight byl úspěšně upraven",
             "Nepodařilo se upravit highlight",
-            async () => {
-                const base64Url = await getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
-                // TODO: Implement
-                console.log(base64Url)
-            })
-
+            async () => getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
+                .then(base64Data => onPhotoCorrected(place.id, currentHighlightAlbumId, uuidv4() + ".jpg", base64Data, shuffledHighlights[currentHighlightIndex].photo.id))
+                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
+        )
     }
 
     const handleHighlightRemoved = () => {
@@ -238,7 +238,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                             name="Rotace"
                             value={rotation}
                             defaultValue={defaultRotation}
-                            valueFormatter={value => value + "°"}
+                            valueFormatter={value => (Math.round(10 * value) / 10) + "°"}
                             step={0.05}
                             minValue={-15}
                             maxValue={15}
@@ -295,12 +295,12 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 )}
                 {isAdmin && showEditor && (rotation !== defaultRotation || zoom !== defaultZoom || crop.x !== defaultXPosition || crop.y !== defaultYPosition) && (
                     <button
-                        onClick={handlePhotoAdjusted}
+                        onClick={handlePhotoCorrected}
                         className="btn-chip-gray">
                         <Check size={16} />
                     </button>
                 )}
-                {isAdmin && currentHighlightReferencePhotoUrl && (
+                {onPhotoCorrected && isAdmin && currentHighlightReferencePhotoUrl && (
                     <button
                         onClick={() => setShowEditor(prev => !prev)}
                         className="btn-chip-gray">
@@ -366,12 +366,24 @@ const createImage = url =>
     })
 
 const getCroppedImg = async (imageSrc, pixelCrop, rotation) => {
+    const response = await fetch(imageSrc)
+    const arrayBuffer = await response.arrayBuffer()
+    const bytes = new Uint8Array(arrayBuffer)
+    let binary = ""
+    const chunkSize = 0x8000
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize)
+        binary += String.fromCharCode(...chunk)
+    }
+    const base64 = btoa(binary)
+
+    const exifObj = piexif.load("data:image/jpeg;base64," + base64)
+
     const image = await createImage(imageSrc)
     const canvas = document.createElement("canvas")
     const ctx = canvas.getContext("2d")
 
     const safeArea = Math.max(image.naturalWidth, image.naturalHeight) * 2
-
     canvas.width = safeArea
     canvas.height = safeArea
 
@@ -394,9 +406,12 @@ const getCroppedImg = async (imageSrc, pixelCrop, rotation) => {
 
     canvas.width = pixelCrop.width
     canvas.height = pixelCrop.height
-
-    ctx.clearRect(0, 0, pixelCrop.width, pixelCrop.height)
     ctx.putImageData(data, 0, 0)
 
-    return canvas.toDataURL("image/jpeg", 1)
+    let croppedBase64 = canvas.toDataURL("image/jpeg", 0.5)
+
+    const exifBytes = piexif.dump(exifObj)
+    const finalBase64 = piexif.insert(exifBytes, croppedBase64)
+
+    return finalBase64.split(",")[1]
 }

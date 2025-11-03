@@ -14,6 +14,7 @@ import NoteBar from "../components/NoteBar"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useEvents } from "../hooks/useEvents"
+import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 
 export default function TripPage() {
     const { isAdmin } = useAuth()
@@ -39,6 +40,8 @@ export default function TripPage() {
         return place?.getCategory("mostSpecificWithMetadata")
     }
 
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
+
     return (
         <>
             <PageHeader
@@ -52,6 +55,7 @@ export default function TripPage() {
                 places={tripPlacesWithoutLayover}
                 placeMainCategorySelector={getPlaceCategory}
                 onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={handlePhotoCorrected}
                 onHighlightRemoved={removeTripHighlight}
                 onMainHighlightUpdated={updateTripMainHighlight}
                 onHighlightQualityAttributesUpdated={updateTripHighlightQualityAttributes} />

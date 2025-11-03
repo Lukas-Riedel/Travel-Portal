@@ -55,7 +55,7 @@ export const usePlace = placeId => {
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId, null).then(setPlace),
         updatePlaceLocation: (latitude, longitude) => updatePlaceLocation(placeId, latitude, longitude).then(setPlace),
         updatePlaceAlbumReviewed: () => Promise.all(query.data.dates?.map(date => date.album)?.filter(Boolean)?.filter(album => !album.reviewed)?.map(album => updatePlaceAlbumReviewed(placeId, album.id))).then(refetchPlace),
-        refreshPlaceAlbum: (albumId, mainPhotoPosition) => refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition }).then(refetchPlace),
+        refreshPlaceAlbum: (albumId, mainPhotoPosition = undefined) => refreshPlaceAlbum(placeId, albumId, mainPhotoPosition ? { mainPhotoPosition } : {}).then(refetchPlace),
         createPlaceNote: name => createPlaceNote(placeId, name).then(refetchPlace),
         removePlaceNote: noteId => removePlaceNote(placeId, noteId).then(refetchPlace)
     }
