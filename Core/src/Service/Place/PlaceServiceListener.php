@@ -103,6 +103,16 @@
             }
         }
 
+        public function onPlaceEventCreated(mixed $message) : void {
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if (count($place->getDates()) > 0) {
+                $firstDate = $place->getDates()[0];
+                if ($firstDate->getStart() > time()) {
+                    $this->placeService->getOrCreateCandidatePlace($place->getPlaceIdentifier());
+                }
+            }
+        }
+
         public function onPlaceUpdated(mixed $message) : void {
             $this->updatePlaceQuality($message["placeId"]);
         }

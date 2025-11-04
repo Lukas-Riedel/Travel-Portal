@@ -245,6 +245,10 @@
             return $this->createSpecialPlace(SpecialPlaceType::Candidate, $name, $address);
         }
 
+        public function getOrCreateCandidatePlace(PlaceIdentifier $placeIdentifier) : Place {
+            return $this->getOrCreateSpecialPlace(SpecialPlaceType::Candidate, $placeIdentifier);
+        }
+
         public function removePermanentPlace(string $placeId) : bool {
            return $this->removeSpecialPlace(SpecialPlaceType::Permanent, $placeId);
         }
@@ -371,6 +375,18 @@
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
                 $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array());
         }
+        
+
+        private function getOrCreateSpecialPlace(SpecialPlaceType $specialPlaceType, PlaceIdentifier $placeIdentifier) : Place {
+            $this->transactionManager->executeAtomically(function() use(&$specialPlaceType, &$placeIdentifier) {
+                $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeIdentifier->getId());
+                $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
+            });
+
+            return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
+                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
+                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array());
+        }
 
         private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $includedEntities, $placeSortingStrategy);
@@ -382,19 +398,6 @@
 
         private function doGetCandidatePlacesForTrip(?string $categoryId, string $tripId, array $includedEntities) : array {            
             return $this->placeMapper->selectCandidatePlacesForTrip($categoryId, $tripId, $includedEntities);
-        }
-
-        public function onPlaceEventCreated(mixed $message) : void {
-            $place = $this->getRegularPlace($message["placeId"]);
-            if (count($place->getDates()) > 0) {
-                $firstDate = $place->getDates()[0];
-                if ($firstDate->getStart() > time()) {
-                    $this->transactionManager->executeAtomically(function() use(&$place) {
-                        $this->placeMapper->deleteSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
-                        $this->placeMapper->insertSpecialPlace(SpecialPlaceType::Candidate, $place->getId());
-                    });
-                }
-            }
         }
     }
 ?>
