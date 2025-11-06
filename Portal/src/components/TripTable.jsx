@@ -36,9 +36,8 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
     })
 
     const tripBalances = useMemo(() => {
-        const tripBalances = {}
+        const tripBalances = {}    
 
-        const getPlannedWork = day => getEvents(day, plannedWorkEvents, _ => true, timezone)
         if (includePlannedTimeOff) {
             let timeOffHoursNeededForCurrentTrip = 0
             let currentTimeOffHoursBalance = (vacationEvents?.[0]?.balance ?? 0) + (selfcareEvents?.[0]?.balance ?? 0) + (tenureEvents?.[0]?.balance ?? 0)
@@ -53,11 +52,15 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                     }
                 }
 
-                currentOvertimeHoursBalance += sumEventHours(getPlannedWork(days[i]))
+                currentOvertimeHoursBalance += sumEventHours(getEvents(days[i], plannedWorkEvents, _ => true, timezone))
+                const submittedTimeOffHours = (-1) * (sumEventHours(getEvents(days[i], vacationEvents, _ => true, timezone))
+                    + sumEventHours(getEvents(days[i], selfcareEvents, _ => true, timezone))
+                    + sumEventHours(getEvents(days[i], tenureEvents, _ => true, timezone))
+                    + sumEventHours(getEvents(days[i], overtimeEvents, hours => hours < 0, timezone)))
 
                 if (!isFreeDay(days[i])) {
                     if (isInTrip(trips, days[i])) {
-                        currentOvertimeHoursBalance -= standardWorkingHoursPerWorkingDay
+                        currentOvertimeHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                     }
                     else {
                         currentOvertimeHoursBalance += expectedOvertimeHoursPerDay
@@ -67,9 +70,9 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                 currentOvertimeHoursBalance = Math.round(currentOvertimeHoursBalance * 10) / 10
 
                 if (currentOvertimeHoursBalance < 0) {
-                    currentOvertimeHoursBalance += standardWorkingHoursPerWorkingDay
-                    timeOffHoursNeededForCurrentTrip += standardWorkingHoursPerWorkingDay
-                    currentTimeOffHoursBalance -= standardWorkingHoursPerWorkingDay
+                    currentOvertimeHoursBalance += standardWorkingHoursPerWorkingDay - submittedTimeOffHours
+                    timeOffHoursNeededForCurrentTrip += standardWorkingHoursPerWorkingDay - submittedTimeOffHours
+                    currentTimeOffHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                 }
 
                 const endingTrip = trips?.find(trip => startOfDay(trip.end * 1000).getTime() === days[i].getTime())
@@ -83,7 +86,9 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
         }
 
         return tripBalances
-    }, [overtimeEvents, plannedWorkEvents, days, standardWorkingHoursPerWorkingDay, trips, expectedOvertimeHoursPerDay])
+    }, [overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, days, standardWorkingHoursPerWorkingDay, trips, expectedOvertimeHoursPerDay])
+
+    console.log(tripBalances)
 
     return (!trips || trips.length > 0) && (
         <div className="w-full rounded-xl my-4">
