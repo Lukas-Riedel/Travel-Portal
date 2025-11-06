@@ -24,7 +24,7 @@ export const useTrip = tripId => {
         trip: query.data && new Trip(query.data),
         removeTrip: _ => removeTrip(tripId),
         loadTrip: candidateTripId => replaceTrip(tripId, candidateTripId).then(setTrip),
-        moveTrip: days => updateTripStart(tripId, query.data.start + days * 86400).then(setTrip),
+        moveTrip: start => updateTripStart(tripId, start).then(setTrip),
         updateTripName: name => updateTripName(tripId, name).then(setTrip),
         createTripHighlight: photoId => createTripHighlight(tripId, photoId).then(refetchTrip),
         removeTripHighlight: highlightId => removeTripHighlight(tripId, highlightId).then(refetchTrip),

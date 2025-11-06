@@ -25,13 +25,13 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
 
     const handleMoved = () => {
         showFormToast(
-            "Zadej, o kolik dnů se má výlet přesunout:",
+            "Zadej nový zaátek výletu:",
             [
-                { type: "number", required: true }
+                { type: "date", required: true }
             ],
             "Výlet byl úspěšně přesunut",
             "Nepodařilo se přesunout výlet",
-            onTripMoved
+            async start => onTripMoved(Math.round(new Date(start).getTime() / 1000))
         )
     }
 
