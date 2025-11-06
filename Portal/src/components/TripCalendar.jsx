@@ -1,4 +1,4 @@
-import { eachDayOfInterval, format, fromUnixTime, startOfDay } from "date-fns"
+import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
 import DayCard from "./DayCard"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
@@ -6,7 +6,7 @@ import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
 import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
-import { toZonedTime } from "date-fns-tz"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
@@ -25,13 +25,13 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
 
     const handleMoved = () => {
         showFormToast(
-            "Zadej nový zaátek výletu:",
+            "Zadej nový začátek výletu:",
             [
                 { type: "date", required: true }
             ],
             "Výlet byl úspěšně přesunut",
             "Nepodařilo se přesunout výlet",
-            async start => onTripMoved(Math.round(new Date(start).getTime() / 1000))
+            async start => onTripMoved(Math.round(toZonedTime(new Date(start), configuration?.homeLocation?.timezone).getTime() / 1000))
         )
     }
 

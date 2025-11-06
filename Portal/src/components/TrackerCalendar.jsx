@@ -26,11 +26,9 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const earliestAllowedDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
     const latestAllowedDate = useMemo(() => {
-        const endOfYear = new Date(now.getFullYear(), 11, 31)
-        const last = trips?.at(-1)
-        const base = last && toZonedTime(fromUnixTime(last.end - 1)) > now ? toZonedTime(fromUnixTime(last.end - 1), timezone) : new Date(new Date(now).getTime() + 60 * 86400 * 1000)
-        return base > endOfYear ? endOfYear : base
-    }, [trips, now, timezone, configuration])
+        const lastTripYear = trips?.at(-1)?.year
+        return new Date(lastTripYear || now.getFullYear(), 11, 31)
+    }, [trips, now])
 
     const filteredTrips = useMemo(() => trips?.filter(({ start, end }) => toZonedTime(fromUnixTime(end - 1), timezone) > earliestAllowedDate
         && toZonedTime(fromUnixTime(start), timezone) < latestAllowedDate) ?? [], [trips, earliestAllowedDate, latestAllowedDate, timezone])

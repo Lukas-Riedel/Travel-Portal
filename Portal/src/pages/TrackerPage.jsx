@@ -11,7 +11,7 @@ export default function TrackerPage() {
 
     const trips = useRegularTrips({ include: "flights" })
     const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["overtime", "vacation", "selfcare", "tenure", "plannedWork"])
-    const { isFreeDay } = usePublicHolidays()
+    const { isFreeDay } = usePublicHolidays(trips?.at(-1)?.year)
 
     return (
         <>
@@ -32,7 +32,7 @@ export default function TrackerPage() {
                 tenureEvents={timeTrackingEvents["tenure"]} />
             {isAdmin && (
                 <TripTable
-                    trips={trips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips() && trip?.year === new Date().getFullYear())}
+                    trips={trips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())}
                     isFreeDay={isFreeDay}
                     overtimeEvents={timeTrackingEvents["overtime"]}
                     plannedWorkEvents={timeTrackingEvents["plannedWork"]}

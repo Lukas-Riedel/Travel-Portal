@@ -26,6 +26,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
 
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
     const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
+    const openingTimeOffHours = useMemo(() => Object.values(configuration?.timeTracking?.timeOffHours ?? {}).reduce((sum, val) => sum + (val ?? 0), 0), [configuration])
     const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimeHoursPerDay || 0, [configuration])
 
     const latestAllowedDateStartOfDay = useMemo(() => startOfDay(fromUnixTime(trips?.at(-1)?.end)), [trips])
@@ -67,6 +68,10 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                     }
                 }
 
+                if (days[i].getDate() === 1 && days[i].getMonth() === 0 && openingTimeOffHours) {
+                    currentTimeOffHoursBalance += openingTimeOffHours
+                }
+
                 currentOvertimeHoursBalance = Math.round(currentOvertimeHoursBalance * 10) / 10
 
                 if (currentOvertimeHoursBalance < 0) {
@@ -87,8 +92,6 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
 
         return tripBalances
     }, [overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, days, standardWorkingHoursPerWorkingDay, trips, expectedOvertimeHoursPerDay])
-
-    console.log(tripBalances)
 
     return (!trips || trips.length > 0) && (
         <div className="w-full rounded-xl my-4">
