@@ -40,7 +40,7 @@ export default function TabMenu({ labels, onActiveTabChanged }) {
     }, [activeTabIndex, onActiveTabChanged])
 
 
-    return (
+    return labels.filter(label => label.enabled).length > 1 && (
         <nav className="flex flex-wrap border-b border-gray-200">
             {labels.map((label, index) => label.enabled && (
                 <button
