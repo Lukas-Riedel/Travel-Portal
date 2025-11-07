@@ -134,7 +134,7 @@
                         AND end <= ?
                     UNION ALL
                     SELECT place_id, 
-                        null AS start
+                        NULL AS start
                     FROM place_permanent
                 ) p
                     ON c.place_id = p.place_id
@@ -195,9 +195,9 @@
                     FROM place_event
                     UNION
                     SELECT place_id,
-                        null AS trip_id,
-                        null AS start,
-                        null AS end,
+                        NULL AS trip_id,
+                        NULL AS start,
+                        NULL AS end,
                         0 AS layover
                     FROM place_permanent
                 ) pe
