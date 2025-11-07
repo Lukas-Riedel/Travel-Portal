@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
     const { isAdmin } = useAuth()
-    console.log(region)
+    
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
         "Rádius": region.radius > 0 && formatKilometers(region.radius),
