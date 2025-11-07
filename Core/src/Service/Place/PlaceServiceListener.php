@@ -54,7 +54,6 @@
         public function onCalendarInvalidated(mixed $message) : void {
             if ($message["calendar"] === Calendar::Places->value) {
                 $this->placeService->refreshCalendar($this->tripService);
-                $this->tripService->updateAllDayTripsTripsDates();
             }
         }
 

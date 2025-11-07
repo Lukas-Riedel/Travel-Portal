@@ -42,7 +42,7 @@
             if ($this->scheduler->requestExecution(self::REQUEST_DEVICE_LOG_ON_ACTION_NAME, self::REQUEST_DEVICE_LOG_ON_ACTION_INTERVAL)) {
                 $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestDescending);
                 foreach ($trips as $trip) {
-                    if ($trip->isCurrent() && !$this->tripService->isDayTripsTrip($trip)) {
+                    if ($trip->isCurrent()) {
                         $this->eventPublisher->publish(Event::DeviceLogOnRequested());
                         break;
                     }

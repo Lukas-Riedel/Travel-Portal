@@ -1,4 +1,4 @@
-import { replace, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import PageHeader from "../components/PageHeader"
 import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
 import StatisticsPanel from "../components/StatisticsPanel"
@@ -10,7 +10,6 @@ import TripTileGrid from "../components/TripTileGrid"
 import TripTable from "../components/TripTable"
 import { useAuth } from "../contexts/AuthContext"
 import ExpenseSummary from "../components/ExpenseSummary"
-import { getSortedTrips } from "../utils/helpers"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import Trip from "../model/trip"
@@ -30,7 +29,7 @@ export default function YearPage() {
     const yearTrips = useRegularTrips({ year: yearParameter, include: "expenses" })
 
     const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
-    const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => date.trip === undefined || date.trip?.name === "Výlety"))?.filter(place => place.dates?.length > 0), [places])
+    const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => place.dates?.length > 0), [places])
     const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(fromUnixTime(d.start, { timeZone: timezone })).getTime()) ?? []))).sort((a, b) => a - b).map(ts => new Date(ts)), [placesWithoutTrip, timezone])
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
@@ -58,7 +57,7 @@ export default function YearPage() {
                 onMainHighlightUpdated={updateYearMainHighlight}
                 onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />
             <StatisticsPanel statistics={year && (year.statistics ?? [])} />
-            <TripTileGrid trips={yearTrips && getSortedTrips(yearTrips, isAdmin)} />
+            <TripTileGrid trips={yearTrips?.slice()?.reverse()} />
             <CardGrid cardsPerRowCount={4}>
                 {days?.map((day, index) => (
                     <DayCard
@@ -66,13 +65,13 @@ export default function YearPage() {
                         day={day}
                         // TODO: Extract the function somewhere.
                         events={placesWithoutTrip && new Trip({}).getEvents(day, placesWithoutTrip, timezone)}
-                        fitness={year.fitness && year.fitness[getDayOfYear(day)]}
+                        fitness={year?.fitness && year.fitness[getDayOfYear(day)]}
                         timezone={timezone}
                         onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
                 ))}
             </CardGrid>
             {isAdmin && (
-                <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
+                <TripTable trips={yearTrips?.filter(trip => trip?.isFuture())} />
             )}
             <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses ?? [])} />
         </>

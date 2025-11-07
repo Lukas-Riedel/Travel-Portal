@@ -89,7 +89,7 @@
                 ->getResultSetForColumn("trip_id");
         }
 
-        public function insertStayEvent(Stay $stay, string $eventId, string $tripId) : bool {
+        public function insertStayEvent(Stay $stay, string $eventId, ?string $tripId) : bool {
             $sql = <<<'SQL'
                 INSERT INTO stay_event (
                     id, 

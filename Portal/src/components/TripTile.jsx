@@ -11,8 +11,8 @@ export default function TripTile({ trip }) {
     return (
         <PhotoTile
             src={trip?.mainHighlight?.url?.thumbnail ?? trip?.mainHighlight?.url?.full}
-            firstLineText={!trip?.isDayTrips() ? trip?.name : trip?.getFullName()}
-            secondLineText={!trip?.isDayTrips() && getDateRangeString(trip?.start, trip?.end)}
+            firstLineText={trip?.getFullName()}
+            secondLineText={getDateRangeString(trip?.start, trip?.end)}
             categories={categories}
             to={"/trip/" + trip?.id} />
     )

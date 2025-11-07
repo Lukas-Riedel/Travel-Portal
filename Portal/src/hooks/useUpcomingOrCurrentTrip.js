@@ -4,7 +4,7 @@ import { useTrip } from "./useTrip"
 
 export const useUpcomingOrCurrentTrip = () => {
     const trips = useRegularTrips()
-    const upcomingOrCurrentTripId = useMemo(() => trips?.find(trip => !trip?.isDayTrips() && (trip?.isCurrent() || trip?.isFuture()))?.id, [trips])
+    const upcomingOrCurrentTripId = useMemo(() => trips?.find(trip => trip?.isCurrent() || trip?.isFuture())?.id, [trips])
     
     return useTrip(upcomingOrCurrentTripId)
 }

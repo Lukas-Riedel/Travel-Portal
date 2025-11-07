@@ -2,12 +2,9 @@ import { Link } from "react-router-dom"
 import TripTileGrid from "./TripTileGrid.jsx"
 import { useMemo } from "react"
 import { useAuth } from "../contexts/AuthContext.jsx"
-import { getSortedTrips } from "../utils/helpers"
 
 export default function YearTripTileGrid({ year, trips }) {
-    const { isAdmin } = useAuth()
-
-    const yearTrips = useMemo(() => trips?.filter(trip => trip.year == year && (trip.isPast() || trip.isDayTrips())), [trips, year])
+    const yearTrips = useMemo(() => trips?.filter(trip => trip.year == year && trip.isPast()), [trips, year])
 
     return (
         <div className="my-4">
@@ -18,7 +15,7 @@ export default function YearTripTileGrid({ year, trips }) {
                     {year}
                 </Link>
             </div>
-            <TripTileGrid trips={getSortedTrips(yearTrips, isAdmin)} />
+            <TripTileGrid trips={yearTrips?.slice()?.reverse()} />
         </div>
     )
 }

@@ -29,11 +29,9 @@
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
-        private readonly ConfigurationService $configurationService;
-
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
-            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, ConfigurationService $configurationService) {
+            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService) {
             $this->databaseClient = $databaseClient;
             $this->calendarClient = $calendarClient;
             $this->placeService = $placeService;
@@ -44,7 +42,6 @@
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
-            $this->configurationService = $configurationService;
         }
 
         public function selectTripEventId(string $tripId) : ?string {
@@ -63,13 +60,7 @@
         public function selectTripIdsContainingInterval(int $start, int $end) : array {
             $sql = <<<'SQL'
                 SELECT trip_id
-                FROM (
-                    SELECT trip_id, start, end
-                    FROM trip_event
-                    UNION
-                    SELECT trip_id, start, end
-                    FROM trip_day_trip
-                ) t
+                FROM trip_event
                 WHERE start <= ?
                     AND end >= ?
             SQL;
@@ -92,19 +83,6 @@
                 ->statementBuilder($sql)
                 ->withParameters(($entityStart + $entityEnd) / 2, ($entityStart + $entityEnd) / 2)
                 ->getSingleColumn("trip_id");
-        }
-
-        public function selectExistsDayTripsTrip(string $tripId) : bool {
-            $sql = <<<'SQL'
-                SELECT *
-                FROM trip_day_trip
-                WHERE trip_id = ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($tripId)
-                ->getFirstRow() !== null;
         }
 
         public function selectTripIdentifier(string $name, ?int $year) : ?TripIdentifier {     
@@ -228,17 +206,11 @@
         public function selectRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
             $sql = <<<SQL
                 SELECT ti.*,
-                    t.start,
-                    t.end
-                FROM (
-                    SELECT trip_id, start, end
-                    FROM trip_event
-                    UNION
-                    SELECT trip_id, start, end
-                    FROM trip_day_trip
-                ) t
+                    te.start,
+                    te.end
+                FROM trip_event te
                 INNER JOIN trip_identifier ti
-                    ON t.trip_id = ti.id
+                    ON te.trip_id = ti.id
                 WHERE :CONDITIONS
                 {$tripSortingStrategy->getOrderByClause()}
             SQL;
@@ -251,18 +223,16 @@
                 $whereClauseBuilder->withClause("ti.id = ?", $tripId);
             }
             if ($start !== null) {
-                $whereClauseBuilder->withClause("t.start >= ?", $start);
+                $whereClauseBuilder->withClause("te.start >= ?", $start);
             }
             if ($end !== null) {
-                $whereClauseBuilder->withClause("t.end <= ?", $end);
+                $whereClauseBuilder->withClause("te.end <= ?", $end);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($tripRow) use(&$includedEntities) {
-                    $isDayTrip = $tripRow["name"] === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-
                     $countryCategories = $this->placeService->getCountryCategoriesForTrip($tripRow["id"]);
                     
                     $expenses = array();
@@ -289,8 +259,8 @@
                     if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
                         $startOfDay = $tripRow["start"] - ($tripRow["start"] % CommonConstants::ONE_DAY_SECONDS);
                         while ($startOfDay < $tripRow["end"]) {
-                            $dayStart = max($startOfDay, $isDayTrip ? 0 : $tripRow["start"]);
-                            $dayEnd = min($startOfDay + CommonConstants::ONE_DAY_SECONDS, $isDayTrip ? PHP_INT_MAX : $tripRow["end"]);
+                            $dayStart = max($startOfDay, $tripRow["start"]);
+                            $dayEnd = min($startOfDay + CommonConstants::ONE_DAY_SECONDS, $tripRow["end"]);
 
                             $fitness[] = $this->fitnessService->getFitnessRecordForInterval($dayStart, $dayEnd);
                             $startOfDay += CommonConstants::ONE_DAY_SECONDS;
@@ -308,7 +278,7 @@
                     }
     
                     $statistics = array();
-                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities) && !$isDayTrip && $tripRow["start"] < time()) {
+                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities) && $tripRow["start"] < time()) {
                         $statistics = $this->statisticsService->getTripStatistics($tripRow["id"]);                 
                     }
     
@@ -323,26 +293,6 @@
                         $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $flights, $watchedFlights,
                         $fitness, $notes, $highlights, $statistics, $publicHolidays);
                 });
-        }
-
-        public function insertDayTripsTrip(Trip $trip) : bool {
-            $sql = <<<'SQL'
-                INSERT INTO trip_day_trip (
-                    trip_id, 
-                    start, 
-                    end
-                )
-                VALUES (
-                    ?, 
-                    ?, 
-                    ?
-                )
-            SQL;            
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($trip->getId(), $trip->getStart(), $trip->getEnd())
-                ->execute() === 1;
         }
 
         public function insertTripIdentifier(TripIdentifier $tripIdentifier) : bool {
@@ -407,20 +357,6 @@
                 ->execute();
         }
 
-        public function updateDayTripsTripDates(string $tripId, int $start, int $end) : bool {
-            $sql = <<<'SQL'
-                UPDATE trip_day_trip
-                SET start = ?,
-                    end = ?
-                WHERE trip_id = ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($start, $end, $tripId)
-                ->execute() === 1;
-        }
-
         public function updateTripMainHighlight(string $tripId, string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE trip_identifier
@@ -468,9 +404,6 @@
                     ) AND id NOT IN (
                         SELECT trip_id 
                         FROM trip_candidate
-                    ) AND id NOT IN (
-                        SELECT trip_id 
-                        FROM trip_day_trip
                     )
             SQL;
 
@@ -489,17 +422,6 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
-                ->execute();
-        }
-
-        public function deleteAllDayTripsTrips() : int {
-            $sql = <<<'SQL'
-                DELETE
-                FROM trip_day_trip
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
                 ->execute();
         }
 

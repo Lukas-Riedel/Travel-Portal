@@ -251,13 +251,13 @@
                 $this->flightMapper->deleteAllFlightEvents($flightType);
                 foreach ($flightEvents as &$flightEvent) {
                     $parsedFlightEventName = $this->parseFlightEventName($flightEvent->getSummary());                
-                    $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($flightEvent->getStart(), $flightEvent->getEnd());
+                    $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($flightEvent->getStart(), $flightEvent->getEnd());
 
                     $from = new Airport(null, $parsedFlightEventName["from"], null, null, null, null, null, null);
                     $to = new Airport(null, $parsedFlightEventName["to"], null, null, null, null, null, null);
                     $flight = new Flight($parsedFlightEventName["flight"], null, null, null, null, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), null);
 
-                    $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier->getId());
+                    $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier?->getId());
                 }   
             });      
 

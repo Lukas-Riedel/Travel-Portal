@@ -59,15 +59,6 @@ export function sumEventHours(events) {
     return events.map(e => e.hours).reduce((a, b) => a + b, 0)
 }
 
-export function getSortedTrips(trips, showCurrentDayTripsTrip) {
-    if (!trips) {
-        return trips
-    }
-
-    const dayTripsTrip = trips?.find(trip => (showCurrentDayTripsTrip && trip.isDayTrips()) || trip.isPastDayTrips())
-    return [...(trips.filter(trip => !trip.isDayTrips()).reverse()), dayTripsTrip]
-}
-
 export function getSafeSvgString(svgString, prefix) {
     if (!svgString) {
         return svgString

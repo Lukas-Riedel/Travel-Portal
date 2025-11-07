@@ -16,7 +16,7 @@ export default function TrackerPage() {
     return (
         <>
             <TrackerCalendar
-                trips={trips?.filter(trip => !trip.isDayTrips())}
+                trips={trips}
                 isFreeDay={isFreeDay}
                 overtimeEvents={timeTrackingEvents["overtime"]}
                 plannedWorkEvents={timeTrackingEvents["plannedWork"]}
@@ -32,7 +32,7 @@ export default function TrackerPage() {
                 tenureEvents={timeTrackingEvents["tenure"]} />
             {isAdmin && (
                 <TripTable
-                    trips={trips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())}
+                    trips={trips?.filter(trip => trip?.isFuture())}
                     isFreeDay={isFreeDay}
                     overtimeEvents={timeTrackingEvents["overtime"]}
                     plannedWorkEvents={timeTrackingEvents["plannedWork"]}

@@ -29,8 +29,7 @@
 
             $relevantTrips = $this->tripService->getRegularTrips(null, null, time() + self::TRIP_WITHOUT_TIME_THRESHOLD_SECONDS, array(), TripSortingStrategy::OldestAscending);
             
-            $tripsWithoutTime = array_filter($relevantTrips, fn($trip) => !$this->tripService->isDayTripsTrip($trip)
-                && $this->isMidnight($trip->getStart()) && $this->isMidnight($trip->getEnd()));
+            $tripsWithoutTime = array_filter($relevantTrips, fn($trip) => $this->isMidnight($trip->getStart()) && $this->isMidnight($trip->getEnd()));
             foreach ($tripsWithoutTime as &$tripWithoutTime) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::TRIP_WITHOUT_TIME_ISSUE_NAME, $tripWithoutTime, time());
             }

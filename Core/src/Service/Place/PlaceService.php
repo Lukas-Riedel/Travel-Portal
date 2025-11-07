@@ -270,7 +270,7 @@
                     $start = $placeEvent->getStart() + $timeOffset;
                     $end = $placeEvent->getEnd() + $timeOffset;     
                     $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
-                    $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($start, $end);
+                    $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($start, $end);
                     $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                         $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
                         $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));

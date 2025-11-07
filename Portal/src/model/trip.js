@@ -6,15 +6,6 @@ export default class Trip {
         Object.assign(this, trip)
     }
 
-    isDayTrips() {
-        // TODO: Somehow use value from useConfiguration
-        return this.name === "Výlety"
-    }
-
-    isPastDayTrips() {
-        return this.isDayTrips() && this.year < new Date().getFullYear()
-    }
-
     isCandidate() {
         return !this.year
     }

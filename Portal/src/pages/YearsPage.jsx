@@ -32,7 +32,7 @@ export default function YearsPage() {
             </div>
             <StatisticsPanel statistics={statistics} />
             {isAdmin && (
-                <TripTable trips={trips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
+                <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
             )}
             {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [new Date().getFullYear()]).map(year => (
                 <YearTripTileGrid

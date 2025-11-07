@@ -49,7 +49,7 @@
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
                 $stayService, $flightService, $expenseService, $fitnessService, $noteService,
-                $highlightService, $statisticsService, $configurationService);
+                $highlightService, $statisticsService);
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
             $this->configurationService = $configurationService;
@@ -58,10 +58,6 @@
             $this->noteService = $noteService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
-        }        
-
-        public function isDayTripsTrip(Trip $trip) : bool {
-            return $trip->getName() === $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {
@@ -74,13 +70,13 @@
                 $this->tripMapper->selectTripIdsContainingInterval($start, $end));
         }
 
-        public function getOrCreateTripIdentifierForEntity(int $entityStart, int $entityEnd) : TripIdentifier {
-            $regularTripIdentifier = $this->getTripIdentifierForEntity($entityStart, $entityEnd);
-            if ($regularTripIdentifier !== null) {
-                return $regularTripIdentifier;
+        public function getTripIdentifierForEntity(int $entityStart, int $entityEnd) : ?TripIdentifier {
+            $tripId = $this->tripMapper->selectTripIdForEntity($entityStart, $entityEnd);
+            if ($tripId === null) {
+                return null;
             }
-
-            return $this->getOrCreateDayTripsTripIdentifier(date(self::YEAR_FORMAT, $entityStart));
+            
+            return $this->getTripIdentifierById($tripId);
         }
 
         public function getRegularTrips(?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
@@ -178,6 +174,7 @@
 
             if ($wasRemoved) {
                 $this->tripMapper->deleteStaleTripIdentifiers();
+
             }
             return $wasRemoved;
         }
@@ -212,41 +209,7 @@
             foreach ($affectedTripIds as &$affectedTripId) {
                 $this->eventPublisher->publish(Event::TripEventRemoved($affectedTripId));
             }
-        }
-
-        public function removeAllDayTripsTrips() : void {
-            $this->tripMapper->deleteAllDayTripsTrips();
-        }
-
-        public function updateAllDayTripsTripsDates() : void {
-            $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-            $trips = $this->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
             
-            foreach ($trips as &$trip) {
-                if ($trip->getName() === $dayTripsTripName) {
-                    $places = $this->placeService->getRegularPlaces(null, null, $trip->getId(), null, null, null, null, null, null, null,
-                        array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-                    $minStart = PHP_INT_MAX;
-                    $maxEnd = PHP_INT_MIN;
-
-                    foreach ($places as &$place) {
-                        foreach ($place->getDates() as &$date) {
-                            if ($date->getStart() < $minStart) {
-                                $minStart = $date->getStart();
-                            }
-                            if ($date->getEnd() > $maxEnd) {
-                                $maxEnd = $date->getEnd();
-                            }
-                        }
-                    }
-
-                    // TODO: Extend the functionality for flights and stays.
-                    $this->tripMapper->updateDayTripsTripDates($trip->getId(), $minStart, $maxEnd);
-                }
-            }
-            
-            // This is effectively a part of the calendar refetch, but it must be called from here because at the time when the calendar
-            // is refetched for trips, there are no trips for day trips created yet, and they would be deleted by this call.
             $this->tripMapper->deleteStaleTripIdentifiers();
         }
 
@@ -273,37 +236,6 @@
             $this->tripMapper->insertTripIdentifier($tripIdentifier);
             
             return $tripIdentifier;
-        }
-
-        private function getOrCreateDayTripsTripIdentifier(int $year) : TripIdentifier {
-            $name = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
-            $tripIdentifier = $this->getOrCreateTripIdentifier($name, $year);
-            
-            if (!$this->tripMapper->selectExistsDayTripsTrip($tripIdentifier->getId())) {
-                $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
-                    $this->getBeginningOfYearTimestamp($tripIdentifier->getYear()), $this->getEndOfYearTimestamp($tripIdentifier->getYear()), array(),
-                    array(), array(), array(), array(), array(), array(), array(), array(), array());
-                $this->tripMapper->insertDayTripsTrip($trip);
-            }
-            
-            return $tripIdentifier;
-        }
-
-        private function getBeginningOfYearTimestamp(int $year) : int {
-            return strtotime(sprintf(self::BEGINNING_OF_YEAR_DATE_FORMAT, $year));
-        }
-        
-        private function getEndOfYearTimestamp(int $year) : int {
-            return strtotime(sprintf(self::END_OF_YEAR_DATE_FORMAT, $year));
-        }
-
-        private function getTripIdentifierForEntity(int $entityStart, int $entityEnd) : ?TripIdentifier {
-            $tripId = $this->tripMapper->selectTripIdForEntity($entityStart, $entityEnd);
-            if ($tripId === null) {
-                return null;
-            }
-            
-            return $this->getTripIdentifierById($tripId);
         }
 
         private function getTripEventId(string $tripId) : ?string {

@@ -230,7 +230,7 @@
 
         public function onTripStatisticsInvalidated(mixed $message) : void {
             $trip = $this->tripService->getRegularTrip($message["tripId"]);
-            if ($trip !== null && !$this->tripService->isDayTripsTrip($trip)) {
+            if ($trip !== null) {
                 $this->statisticsService->updateTripStatistics($trip);
             }
         }

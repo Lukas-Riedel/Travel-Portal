@@ -10,8 +10,8 @@ export default function TripNavigation({ trip }) {
 
     const trips = useRegularTrips()
 
-    const previousTrip = useMemo(() => !trip?.isCandidate() && trips?.filter(t => !t.isDayTrips() && t?.start < trip?.start).at(-1), [trip, trips])
-    const nextTrip = useMemo(() => !trip?.isCandidate() && trips?.filter(t => !t.isDayTrips() &&t?.start > trip?.start)[0], [trip, trips])
+    const previousTrip = useMemo(() => !trip?.isCandidate() && trips?.filter(t => t?.start < trip?.start).at(-1), [trip, trips])
+    const nextTrip = useMemo(() => !trip?.isCandidate() && trips?.filter(t => t?.start > trip?.start)[0], [trip, trips])
 
     return (
         <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">

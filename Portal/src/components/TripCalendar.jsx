@@ -65,14 +65,14 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                 ))}
             </CardGrid>
             <div className="absolute bottom-3 right-3 flex items-center gap-2 z-50">
-                {onTripMoved && isAdmin && !trip?.isDayTrips() && (
+                {onTripMoved && isAdmin && (
                     <button
                         onClick={handleMoved}
                         className="btn-chip-gray">
                         <ArrowRightLeft size={16} />
                     </button>
                 )}
-                {onTripLoaded && isAdmin && !trip?.isDayTrips() && (
+                {onTripLoaded && isAdmin && (
                     <button
                         onClick={handleLoaded}
                         className="btn-chip-gray">

@@ -43,9 +43,9 @@
             $this->transactionManager->executeAtomically(function() use(&$tripService, &$stayEvents) {
                 $this->stayMapper->deleteAllStayEvents();                
                 foreach ($stayEvents as &$stayEvent) {
-                    $resolvedTripIdentifier = $tripService->getOrCreateTripIdentifierForEntity($stayEvent->getStart(), $stayEvent->getEnd());
+                    $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($stayEvent->getStart(), $stayEvent->getEnd());
                     $stay = new Stay($stayEvent->getSummary(), $stayEvent->getLocation(), $stayEvent->getStart(), $stayEvent->getEnd());
-                    $this->stayMapper->insertStayEvent($stay, $stayEvent->getId(), $resolvedTripIdentifier->getId());
+                    $this->stayMapper->insertStayEvent($stay, $stayEvent->getId(), $resolvedTripIdentifier?->getId());
                 }
             });
                 

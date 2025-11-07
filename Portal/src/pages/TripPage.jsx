@@ -72,7 +72,7 @@ export default function TripPage() {
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />
-            {!trip?.isDayTrips() && !trip?.isCandidate() && (
+            {!trip?.isCandidate() && (
                 <ExpenseSummary
                     expenses={trip && (trip.expenses ?? [])}
                     expenseCandidates={trip?.isPast() ? [] : [
@@ -90,8 +90,7 @@ export default function TripPage() {
                     onNoteCreated={createTripNote}
                     onNoteRemoved={removeTripNote} />
             )}
-            {!trip?.isDayTrips() && (
-                <TripNavigation trip={trip} />)}
+            <TripNavigation trip={trip} />
         </>
     )
 }

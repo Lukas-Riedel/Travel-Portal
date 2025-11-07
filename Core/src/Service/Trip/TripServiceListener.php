@@ -3,7 +3,6 @@
 
     use Core\Client\Calendar\Calendar;
     use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Flight\FlightService;
     use Core\Service\Flight\FlightType;
     use Core\Service\Highlight\HighlightType;
@@ -27,8 +26,6 @@
         private readonly StayService $stayService;
         private readonly FlightService $flightService;
 
-        private readonly ConfigurationService $configurationService;
-
         private readonly CalendarClient $calendarClient;
 
         private readonly EventPublisher $eventPublisher;
@@ -37,13 +34,11 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, TripService $tripService, PlaceService $placeService, StayService $stayService,
-            FlightService $flightService, ConfigurationService $configurationService, CalendarClient $calendarClient,
-            EventPublisher $eventPublisher, Scheduler $scheduler) {
+            FlightService $flightService, CalendarClient $calendarClient, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
             $this->flightService = $flightService;
-            $this->configurationService = $configurationService;
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -54,12 +49,10 @@
             // All calendars must be fetched as the entity trip ownership could change when adding/modifying/removing a trip.
             if ($message["calendar"] === Calendar::Trips->value) {
                 $this->transactionManager->executeAtomically(function() {
-                    $this->tripService->removeAllDayTripsTrips();
                     $this->tripService->refreshCalendar();
                     $this->placeService->refreshCalendar($this->tripService);
                     $this->stayService->refreshCalendar($this->tripService);
                     $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== null), $this->tripService);
-                    $this->tripService->updateAllDayTripsTripsDates();
                 });
             }
         }
@@ -90,13 +83,10 @@
 
         public function onSchedulerTriggered(mixed $message) : void {   
             if ($this->scheduler->requestExecution(self::UPDATE_TRIP_STATISTICS_ACTION_NAME, self::UPDATE_TRIP_STATISTICS_ACTION_INTERVAL)) {
-                $dayTripsTripName = $this->configurationService->getConfigurationEntry("trips")["dayTripsName"];
                 $trips = $this->tripService->getRegularTrips(null, null, time(), array(), TripSortingStrategy::OldestAscending);
                 
                 foreach ($trips as &$trip) {
-                    if ($trip->getName() !== $dayTripsTripName) {
-                        $this->eventPublisher->publish(Event::TripStatisticsInvalidated($trip->getId()));
-                    }
+                    $this->eventPublisher->publish(Event::TripStatisticsInvalidated($trip->getId()));
                 }                        
             }
         }

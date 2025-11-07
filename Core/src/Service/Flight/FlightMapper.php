@@ -521,7 +521,7 @@
                 ->execute() === 1;
         }
 
-        public function insertFlightEvent(FlightType $flightType, Flight $flight, string $eventId, string $tripId) : bool {
+        public function insertFlightEvent(FlightType $flightType, Flight $flight, string $eventId, ?string $tripId) : bool {
             $sql = <<<SQL
                 INSERT INTO {$flightType->getTableName()} (
                     id,

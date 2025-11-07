@@ -185,20 +185,23 @@
                     pe.trip_id,
                     pe.start,
                     pe.end,
-                    pe.layover
+                    pe.layover,
+                    pe.permanent
                 FROM (
                     SELECT place_id,
                         trip_id,
                         start,
                         end,
-                        layover
+                        layover,
+                        0 AS permanent
                     FROM place_event
                     UNION
                     SELECT place_id,
                         NULL AS trip_id,
                         NULL AS start,
                         NULL AS end,
-                        0 AS layover
+                        0 AS layover,
+                        1 AS permanent
                     FROM place_permanent
                 ) pe
                 INNER JOIN place_identifier pi
@@ -278,7 +281,7 @@
             $places = array();
             foreach ($placeRows as &$placeRow) {
                 $permanentPlaceAlbums = array();
-                if ($placeRow["trip_id"] === null) {
+                if ($placeRow["permanent"]) {
                     $permanentPlaceAlbums = array_filter($this->photoService->getAlbumsForPlace($placeRow["name"]),
                         fn($album) => ($albumId === null || $album->getId() == $albumId) 
                             && ($photoId === null || $this->photoService->getAlbumForPhotoId($photoId)?->getId() == $album->getId()));
@@ -323,7 +326,7 @@
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
-                    if ($placeRow["trip_id"] === null) {
+                    if ($placeRow["permanent"]) {
                         foreach ($permanentPlaceAlbums as &$permanentPlaceAlbum) {
                             $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                             $albumDate->setTime(0, 0);
@@ -343,7 +346,7 @@
                         }
 
                         $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] == 1, $weather, $sun,
-                            $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"]), $tripService->getTripIdentifierById($placeRow["trip_id"])));  
+                            $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"]), $placeRow["trip_id"] == null ? null : $tripService->getTripIdentifierById($placeRow["trip_id"])));  
                     }
                 }
             }
@@ -765,16 +768,11 @@
             foreach ($place->getDates() as &$date) {                
                 $wasInserted &= $this->databaseClient
                     ->statementBuilder($sql)
-                    ->withParameters($eventId, $place->getId(), $date->getTrip()->getId(), $date->getStart(), $date->getEnd(), $date->isLayover() ? 1 : 0)
+                    ->withParameters($eventId, $place->getId(), $date->getTrip()?->getId(), $date->getStart(), $date->getEnd(), $date->isLayover() ? 1 : 0)
                     ->execute() === 1;
             }
 
             return $wasInserted;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($placeEvent->getId(), $placeIdentifier->getId(), $resolvedTripIdentifier->getId(), $start, $end, $isLayover ? 1 : 0)
-                ->execute();
         }
 
         public function insertSpecialPlace(SpecialPlaceType $specialPlaceType, string $placeId) : bool {
