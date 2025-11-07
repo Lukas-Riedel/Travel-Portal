@@ -87,9 +87,11 @@
             }
 
             $nonReviewedPlaces = array_filter($relevantPlaces, fn($place) => count(array_filter($place->getDates(),
-                fn($date) => $date->getEnd() < time() && $date->getAlbum() && !$date->getAlbum()->isReviewed())) > 0);
+                fn($date) => $date->getAlbum() && !$date->getAlbum()->isReviewed())) > 0);
             foreach ($nonReviewedPlaces as &$nonReviewedPlace) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::NON_REVIEWED_PLACE_ISSUE_NAME, $nonReviewedPlace, time());                    
+                // Do not include future dates - they contain a weather forecast that changes regularly, and breaks the reporting of the new issues.
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::NON_REVIEWED_PLACE_ISSUE_NAME,
+                    $nonReviewedPlace->withUpdatedDates(array_filter($place->getDates(), fn($date) => $date->getEnd() < time())), time());                    
             }
 
             return $dataConsistencyIssues;

@@ -17,7 +17,6 @@ import Trip from "../model/trip"
 import CardGrid from "../components/CardGrid"
 import DayCard from "../components/DayCard"
 import { fromUnixTime, startOfDay } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
 import { useConfiguration } from "../contexts/ConfigContext"
 
 export default function YearPage() {
@@ -32,16 +31,17 @@ export default function YearPage() {
 
     const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
     const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => date.trip === undefined || date.trip?.name === "Výlety"))?.filter(place => place.dates?.length > 0), [places])
-    const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(fromUnixTime(d.start, { timeZone: timezone })).getTime()) ?? []))).map(ts => new Date(ts)), [placesWithoutTrip, timezone])
+    const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(fromUnixTime(d.start, { timeZone: timezone })).getTime()) ?? []))).sort((a, b) => a - b).map(ts => new Date(ts)), [placesWithoutTrip, timezone])
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)
+    const getDayOfYear = date => Math.round((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 1)) / 86400000) + 1
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
 
-    // TODO: Introduce Calendar instead of CardGrid, use TripCalendar as base.
+    // TODO: Introduce Calendar instead of CardGrid, use TripCalendar as base. Also make sure that loading tail spins are displayed correctly.
     return (
         <>
             <PageHeader
@@ -66,7 +66,7 @@ export default function YearPage() {
                         day={day}
                         // TODO: Extract the function somewhere.
                         events={placesWithoutTrip && new Trip({}).getEvents(day, placesWithoutTrip, timezone)}
-                        fitness={[]} // TODO
+                        fitness={year.fitness && year.fitness[getDayOfYear(day)]}
                         timezone={timezone}
                         onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
                 ))}

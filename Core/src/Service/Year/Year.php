@@ -22,6 +22,12 @@
                 ref: "#/components/schemas/Highlight"
             ),
             new OA\Property(
+                property: "fitness",
+                description: "The day fitness records of the year",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Fitness")
+            ),
+            new OA\Property(
                 property: "highlights",
                 description: "The highlights of the year",
                 type: "array",
@@ -38,11 +44,13 @@
     class Year implements \JsonSerializable {        
         private readonly string $id;
         private readonly ?Highlight $mainHighlight;
+        private readonly array $fitness;
         private readonly array $highlights;
         private readonly array $statistics;
 
-        public function __construct(string $id, ?Highlight $mainHighlight, array $highlights, array $statistics) {
+        public function __construct(string $id, ?Highlight $mainHighlight, array $fitness, array $highlights, array $statistics) {
             $this->id = $id;
+            $this->fitness = $fitness;
             $this->highlights = $highlights;
             $this->mainHighlight = $mainHighlight;
             $this->statistics = $statistics;
@@ -54,6 +62,10 @@
 
         public function getMainHighlight() : ?Highlight {
             return $this->mainHighlight;
+        }
+
+        public function getFitness() : array {
+            return $this->fitness;
         }
 
         public function getHighlights() : array {

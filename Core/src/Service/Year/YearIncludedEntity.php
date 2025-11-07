@@ -9,6 +9,7 @@
         description: "The entity of the year"
     )]
     enum YearIncludedEntity : string {
+        case Fitness = "fitness";
         case Statistics = "statistics";
         case Highlights = "highlights";
 

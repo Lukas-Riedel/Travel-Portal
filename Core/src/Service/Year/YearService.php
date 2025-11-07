@@ -4,13 +4,15 @@
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Statistics\StatisticsService;
     use Core\Client\Database\DatabaseClient;
+use Core\Service\Fitness\FitnessService;
 
     class YearService {
         
         private readonly YearMapper $yearMapper;
 
-        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, StatisticsService $statisticsService) {
-            $this->yearMapper = new YearMapper($databaseClient, $highlightService, $statisticsService);
+        public function __construct(DatabaseClient $databaseClient, FitnessService $fitnessService,
+            HighlightService $highlightService, StatisticsService $statisticsService) {
+            $this->yearMapper = new YearMapper($databaseClient, $fitnessService, $highlightService, $statisticsService);
         }
 
         public function getYear(int $year) : ?Year {

@@ -4,16 +4,20 @@
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Statistics\StatisticsService;
     use Core\Client\Database\DatabaseClient;
-    
+    use Core\Common\CommonConstants;
+    use Core\Service\Fitness\FitnessService;
+
     class YearMapper {
 
         private readonly DatabaseClient $databaseClient;
 
+        private readonly FitnessService $fitnessService;
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
-        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, StatisticsService $statisticsService) {
+        public function __construct(DatabaseClient $databaseClient, FitnessService $fitnessService, HighlightService $highlightService, StatisticsService $statisticsService) {
             $this->databaseClient = $databaseClient;
+            $this->fitnessService = $fitnessService;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
         }
@@ -54,6 +58,20 @@
             return $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getMappedResultSet(function($yearRow) use(&$includedEntities) {
+                    $fitness = array();
+                    if (in_array(YearIncludedEntity::Fitness->value, $includedEntities)) {
+                        $startOfDay = mktime(0, 0, 0, 1, 1, $yearRow["id"]);
+                        $startOfDay -= $startOfDay % CommonConstants::ONE_DAY_SECONDS;
+
+                        $endOfYear = mktime(0, 0, 0, 1, 1, $yearRow["id"] + 1);
+                        $endOfYear -= $endOfYear % CommonConstants::ONE_DAY_SECONDS;
+
+                        while ($startOfDay < $endOfYear) {
+                            $fitness[] = $this->fitnessService->getFitnessRecordForInterval($startOfDay, $startOfDay + CommonConstants::ONE_DAY_SECONDS);
+                            $startOfDay += CommonConstants::ONE_DAY_SECONDS;
+                        }
+                    }
+
                     $highlights = array();
                     if (in_array(YearIncludedEntity::Highlights->value, $includedEntities)) {
                         $highlights = $this->highlightService->getYearHighlights($yearRow["id"]);                      
@@ -64,7 +82,7 @@
                         $statistics = $this->statisticsService->getYearStatistics($yearRow["id"]);              
                     }
 
-                    return new Year($yearRow["id"], $this->highlightService->getHighlight($yearRow["main_highlight_id"]), $highlights, $statistics);
+                    return new Year($yearRow["id"], $this->highlightService->getHighlight($yearRow["main_highlight_id"]), $fitness, $highlights, $statistics);
                 });
         }
 
