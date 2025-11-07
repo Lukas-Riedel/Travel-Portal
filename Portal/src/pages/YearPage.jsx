@@ -13,15 +13,26 @@ import ExpenseSummary from "../components/ExpenseSummary"
 import { getSortedTrips } from "../utils/helpers"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
+import Trip from "../model/trip"
+import CardGrid from "../components/CardGrid"
+import DayCard from "../components/DayCard"
+import { fromUnixTime, startOfDay } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
+import { useConfiguration } from "../contexts/ConfigContext"
 
 export default function YearPage() {
     const { isAdmin } = useAuth()
+    const { configuration } = useConfiguration()
     const { year: yearParameter } = useParams()
-    const { publishPhotoReplacingTriggeredEvent } = useEvents()
+    const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
-    const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: "categories" })
+    const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: "dates,categories" })
     const yearTrips = useRegularTrips({ year: yearParameter, include: "expenses" })
+
+    const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
+    const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => date.trip === undefined || date.trip?.name === "Výlety"))?.filter(place => place.dates?.length > 0), [places])
+    const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(fromUnixTime(d.start, { timeZone: timezone })).getTime()) ?? []))).map(ts => new Date(ts)), [placesWithoutTrip, timezone])
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])
@@ -30,6 +41,7 @@ export default function YearPage() {
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
 
+    // TODO: Introduce Calendar instead of CardGrid, use TripCalendar as base.
     return (
         <>
             <PageHeader
@@ -47,6 +59,18 @@ export default function YearPage() {
                 onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />
             <StatisticsPanel statistics={year && (year.statistics ?? [])} />
             <TripTileGrid trips={yearTrips && getSortedTrips(yearTrips, isAdmin)} />
+            <CardGrid cardsPerRowCount={4}>
+                {days?.map((day, index) => (
+                    <DayCard
+                        key={index}
+                        day={day}
+                        // TODO: Extract the function somewhere.
+                        events={placesWithoutTrip && new Trip({}).getEvents(day, placesWithoutTrip, timezone)}
+                        fitness={[]} // TODO
+                        timezone={timezone}
+                        onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
+                ))}
+            </CardGrid>
             {isAdmin && (
                 <TripTable trips={yearTrips?.filter(trip => trip?.isFuture() && !trip?.isDayTrips())} />
             )}

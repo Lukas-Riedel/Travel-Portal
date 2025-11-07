@@ -6,6 +6,10 @@ export default class Place {
         Object.assign(this, place)
     }
 
+    withFilteredDates(dateFilter) {
+        return new Place({ ...this, dates: this.dates?.filter(dateFilter) })
+    }
+
     isPermanent() {
         // TODO: This is not 100% true, the first part evaluates to true also for candidates
         return this.dates.length === 0 || this.dates.every(date => !date.trip)

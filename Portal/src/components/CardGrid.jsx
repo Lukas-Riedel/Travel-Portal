@@ -25,7 +25,7 @@ export default function CardGrid({ cardsPerRowCount, children }) {
 
     return (
         <div
-            className="grid gap-4 text-sm w-full my-4"
+            className="grid gap-4 text-sm w-full my-6"
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
             {children || Array.from({ length: cols }, (_, index) => (
                 <LoadingCard key={index} />
