@@ -1,8 +1,6 @@
 import { useCategories } from "../hooks/useCategories.js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
-import StatisticsPanel from "../components/StatisticsPanel.jsx"
-import { useStatistics } from "../hooks/useStatistics.js"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
 import { TailSpin } from "react-loader-spinner"
@@ -22,7 +20,6 @@ export default function RecentPlacesPage() {
     // TODO: Add support for skipping and just append new places.
     const { places } = useRegularPlaces({ include: "categories,dates,excerpt", limit: currentLimit, maxEnd: Math.round(Date.now() / 1000), sort: "-oldest" })
     const { categories: countryCategories } = useCategories({ categories: "country" })
-    const statistics = useStatistics()
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()
 
@@ -66,7 +63,6 @@ export default function RecentPlacesPage() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
-            <StatisticsPanel statistics={statistics} />
             {(isAdmin || upcomingOrCurrentTrip?.isCurrent()) && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}

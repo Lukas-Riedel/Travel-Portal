@@ -5,7 +5,9 @@ import { decapitalize } from "../utils/helpers.js"
 import { TailSpin } from "react-loader-spinner"
 
 const loadingStatisticsCount = 20
+const maxStatisticsValuesCount = 5
 
+// TODO: This is duplicated in StatisticsCard
 const statisticsNames = {
     "LEAST_RECENTLY_VISITED_PLACES": "Nejdéle nenavštívená místa",
     "TOTAL_VISITED_AIRPORTS_COUNT": "Počet navštívených letišť",
@@ -195,7 +197,7 @@ export default function StatisticsPanel({ statistics }) {
                                 <div className="flex-grow flex items-center justify-center">
                                     {Array.isArray(stat?.value) ? (
                                         <ol className="list-decimal list-inside space-y-1 text-xs text-gray-700">
-                                            {stat.value.map((item, index) => (
+                                            {stat.value.slice(0, maxStatisticsValuesCount).map((item, index) => (
                                                 <li key={index}>
                                                     <span>{item.key}</span>{" "}
                                                     <span className="text-gray-400">

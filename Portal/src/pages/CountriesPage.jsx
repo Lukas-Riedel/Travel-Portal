@@ -2,14 +2,11 @@ import { useCategories } from "../hooks/useCategories.js"
 import CategoryTileGrid from "../components/CategoryTileGrid.jsx"
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
-import StatisticsPanel from "../components/StatisticsPanel.jsx"
-import { useStatistics } from "../hooks/useStatistics.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
 export default function CountriesPage() {
     const { places } = useTimeFilteredRegularPlaces({ include: "categories", sort: "-score" })
     const { categories: countryCategories } = useCategories({ categories: "country" })
-    const statistics = useStatistics()
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
@@ -42,7 +39,6 @@ export default function CountriesPage() {
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
-            <StatisticsPanel statistics={statistics} />
             <CategoryTileGrid categories={countries} />
         </>
     )

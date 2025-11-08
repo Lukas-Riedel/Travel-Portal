@@ -1,7 +1,5 @@
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
-import StatisticsPanel from "../components/StatisticsPanel.jsx"
-import { useStatistics } from "../hooks/useStatistics.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useCategories } from "../hooks/useCategories.js"
 import { useRegularTrips } from "../hooks/useRegularTrips.js"
@@ -17,7 +15,6 @@ export default function YearsPage() {
     const { places } = useTimeFilteredRegularPlaces({ include: "categories" })
     const trips = useRegularTrips()
     const { categories: countryCategories } = useCategories({ categories: "country" })
-    const statistics = useStatistics()
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
@@ -30,7 +27,6 @@ export default function YearsPage() {
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
-            <StatisticsPanel statistics={statistics} />
             {isAdmin && (
                 <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
             )}

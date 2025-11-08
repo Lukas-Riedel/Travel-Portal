@@ -10,6 +10,7 @@ const navigationItems = [
     { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
     { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
     { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
+    { label: "Statistiky", to: "/statistics", isProtected: false, allowedPrefixes: ["/statistics"] },
     { label: "Plán", to: "/plan", isProtected: true, allowedPrefixes: ["/plan"] },
     { label: "Tracker", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] },
     { label: "Admin", to: "/admin", isProtected: true, allowedPrefixes: ["/admin"] }

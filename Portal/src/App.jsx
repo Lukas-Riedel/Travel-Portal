@@ -28,6 +28,7 @@ import CategoryHighlightsPage from "./pages/CategoryHighlightsPage"
 import YearHighlightsPage from "./pages/YearHighlightsPage"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
+import StatisticsPage from "./pages/StatisticsPage"
 
 export default function App() {
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
@@ -115,6 +116,7 @@ function AppContent() {
         <Routes>
             <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/feed"} replace />} />
             <Route path="/feed" element={<MainLayout><RecentPlacesPage /></MainLayout>} />
+            <Route path="/statistics" element={<MainLayout><StatisticsPage /></MainLayout>} />
             <Route path="/trip" element={<MainLayout><YearsPage /></MainLayout>} />
             <Route path="/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/trip/:tripId/highlight" element={<MainLayout><TripHighlightsPage /></MainLayout>} />
