@@ -11,7 +11,7 @@
 
     class StatisticsService {
 
-        private const STATISTICS_VALUES_COUNT_LIMIT = 20;
+        private const STATISTICS_VALUES_COUNT_LIMIT = 10;
 
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";

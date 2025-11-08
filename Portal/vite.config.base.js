@@ -10,7 +10,11 @@ export default defineConfig({
             srcDir: "src",
             filename: "firebase-messaging-sw.js",
             injectManifest: {
-                globPatterns: ["**/*.{js,css,html,ico,png,svg}"]
+                globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+                maximumFileSizeToCacheInBytes: 4 * 1024 * 1024
+            },
+            workbox: {
+                maximumFileSizeToCacheInBytes: 4 * 1024 * 1024
             },
             manifest: {
                 name: "Osobní portál",

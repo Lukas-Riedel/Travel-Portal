@@ -1,8 +1,8 @@
-import { Trash2 } from "lucide-react"
 import LoadingCard from "./LoadingCard"
-import { decapitalize, getDateString } from "../utils/helpers"
+import { decapitalize } from "../utils/helpers"
 import { formatStatisticsUnit } from "../utils/formatters"
 import { useConfiguration } from "../contexts/ConfigContext"
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from "recharts"
 
 // TODO: This is duplicated in StatisticsPanel
 const statisticsNames = {
@@ -71,8 +71,23 @@ const statisticsNames = {
     "SOUTHERNMOST_PLACES": "Nejjižnější místa"
 }
 
+const chartTypes = {
+    "VISITED_PLACES_PER_CATEGORY": StandingStatisticsPieChart,
+    "VISITED_PLACES_PER_COUNTRY": StandingStatisticsPieChart,
+    "VISITED_PLACES_PER_CONTINENT": StandingStatisticsPieChart,
+    "TOTAL_TRAVEL_DAYS_PER_CONTINENT": StandingStatisticsPieChart,
+    "TOTAL_TRAVEL_DAYS_PER_COUNTRY": StandingStatisticsPieChart,
+    "MOST_PHOTOS_PER_CATEGORY": StandingStatisticsPieChart,
+    "MOST_PHOTOS_PER_COUNTRY": StandingStatisticsPieChart,
+    "MOST_USED_AIRPORTS": StandingStatisticsPieChart,
+    "MOST_USED_AIRCRAFTS": StandingStatisticsPieChart,
+    "MOST_USED_AIRLINES": StandingStatisticsPieChart
+}
+
 export default function StatisticsCard({ statistics }) {
     const { configuration } = useConfiguration()
+
+    const StandingStatisticsChart = chartTypes[statistics?.name] || StandingStatisticsBarChart
 
     return statistics ? (
         <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full space-y-1">
@@ -81,16 +96,23 @@ export default function StatisticsCard({ statistics }) {
             </div>
             <div className="flex-grow flex items-center justify-center">
                 {Array.isArray(statistics.value) ? (
-                    <ol className="list-decimal list-inside space-y-1 text-xs text-gray-700 text-center">
-                        {statistics.value.map((item, index) => (
-                            <li key={index}>
-                                <span>{item.key}</span>{" "}
-                                <span className="text-gray-400">
-                                    ({decapitalize(formatStatisticsUnit(statistics.unit, item?.value, configuration?.expensify?.mainCurrency ?? ""))})
-                                </span>
-                            </li>
-                        ))}
-                    </ol>
+                    <div className="w-full">
+                        <ol className="list-decimal list-inside space-y-1 text-xs text-gray-700 text-center">
+                            {statistics.value.map((item, index) => (
+                                <li key={index}>
+                                    <span>{item.key}</span>{" "}
+                                    <span className="text-gray-400">
+                                        ({decapitalize(formatStatisticsUnit(statistics.unit, item?.value, configuration?.expensify?.mainCurrency ?? ""))})
+                                    </span>
+                                </li>
+                            ))}
+                        </ol>
+                        <div>
+                            <StandingStatisticsChart
+                                values={statistics.value.map(value => ({ name: value.key, value: value.value }))}
+                                unit={statistics.unit} />
+                        </div>
+                    </div>
                 ) : (
                     <div className="text-lg">
                         {formatStatisticsUnit(statistics.unit, statistics.value, configuration?.expensify?.mainCurrency ?? "")}
@@ -100,5 +122,81 @@ export default function StatisticsCard({ statistics }) {
         </div>
     ) : (
         <LoadingCard />
+    )
+}
+
+function StatisticsContainer({ children }) {
+    return (
+        <div className="w-full h-[300px] p-4">
+            <ResponsiveContainer
+                width="100%"
+                height="100%">
+                {children}
+            </ResponsiveContainer>
+        </div>
+    )
+}
+
+function StandingStatisticsBarChart({ values, unit }) {
+    const { configuration } = useConfiguration()
+
+    return (
+        <StatisticsContainer>
+            <BarChart data={values}>
+                <XAxis dataKey="name" />
+                <YAxis
+                    tickFormatter={value => formatStatisticsUnit(unit, value, configuration?.expensify?.mainCurrency ?? "")}
+                    padding={{ top: 30, bottom: 0 }} />
+                <Tooltip content={<CustomTooltip formatValue={value => formatStatisticsUnit(unit, value, configuration?.expensify?.mainCurrency ?? "")} />} />
+                <Bar
+                    dataKey="value"
+                    fill="#33ccff"
+                    radius={[6, 6, 0, 0]} />
+            </BarChart>
+        </StatisticsContainer>
+    )
+}
+
+function StandingStatisticsPieChart({ values, unit }) {
+    const { configuration } = useConfiguration()
+
+    const getRandomColor = index => {
+        const hue = (index * 360) / values.length
+        return `hsl(${hue}, 65%, 55%)`
+    }
+
+    return (
+        <StatisticsContainer>
+            <PieChart>
+                <Pie
+                    data={values}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label={({ name }) => name}>
+                    {values.map((_, index) => (
+                        <Cell
+                            key={index}
+                            fill={getRandomColor(index)} />
+                    ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip formatValue={value => formatStatisticsUnit(unit, value, configuration?.expensify?.mainCurrency ?? "")} />} />
+            </PieChart>
+        </StatisticsContainer>
+    )
+}
+
+function CustomTooltip({ active, payload, formatValue }) {
+    return active && payload && (
+        <div className="bg-white/90 bg-white border shadow px-3 py-2 rounded">
+            <div className="font-semibold">
+                {payload[0].payload.name}
+            </div>
+            <div>
+                {formatValue(payload[0].payload.value)}
+            </div>
+        </div>
     )
 }
