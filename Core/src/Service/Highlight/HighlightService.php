@@ -69,20 +69,24 @@
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
-            $highlights = array();
-            $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
-                $this->highlightMapper->selectHighlights(HighlightType::Year, $year));
+            $allYearHighlights = $this->highlightMapper->selectHighlights(HighlightType::Year, $year);
+            $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(), array_filter($allYearHighlights,
+                fn($highlight) => !empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlight->getId()))));
 
+            $standaloneHighlights = array_values(array_filter($allYearHighlights,
+                fn($highlight) => empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlight->getId()))));
+
+            $tripHighlights = array();
             foreach ($tripService->getRegularTrips($year, null, null, array(TripIncludedEntity::Highlights->value),
                 TripSortingStrategy::OldestAscending) as &$yearTrip) {
                     foreach ($yearTrip->getHighlights() as &$yearHighlightCandidate) {
                         if (!in_array($yearHighlightCandidate->getId(), $deletedHighlightIds)) {
-                            $highlights[] = $yearHighlightCandidate;
+                            $tripHighlights[] = $yearHighlightCandidate;
                         }
                     }
                 }
 
-            return $highlights;
+            return array_merge($tripHighlights, $standaloneHighlights);
         }
 
         public function createPlaceHighlight(string $placeId, string $photoId) : Highlight {
@@ -104,7 +108,8 @@
                 $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$placeService) {
                     $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
 
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));   
+                    // TODO: Move this to onHighlightCreated.
                     foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
                         $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));                    
                     }
@@ -135,7 +140,8 @@
                 $this->transactionManager->executeAtomically(function() use(&$tripId, &$highlightId, &$tripService) {
                     $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
 
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));                
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));         
+                    // TODO: Move this to onHighlightCreated.       
                     $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));   
                 });         
 
@@ -150,6 +156,9 @@
             if ($highlightId === null) {
                 throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");
             }
+            if (empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Place, $highlightId))) {
+                throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");                
+            }
 
             $wasCreated = true;
             $this->transactionManager->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasCreated) {
@@ -158,22 +167,29 @@
                     $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId));
                 }                   
             });
+
             return $this->getHighlight($highlightId);
         }
 
         public function createYearHighlight(int $year, string $photoId) : Highlight {
-            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
-            if ($highlightId === null) {
-                throw new RuntimeException("Cannot create a highlight for the year. Does a related trip highlight exist?");
-            }
+            $highlightId = $this->getOrCreateHighlightId($photoId);
+            $tripHighlightExists = !empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlightId));
 
             $wasCreated = true;
-            $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasCreated) {
-                $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Year, $year, $highlightId) > 0;
+            $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasCreated, &$tripHighlightExists) {
+                if ($tripHighlightExists) {
+                    $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Year, $year, $highlightId) > 0;
+                }
+                else {
+                    $wasCreated &= $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
+                    $this->updateHighlight($highlightId);
+                }
+
                 if ($wasCreated) {
                     $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $year, $highlightId));
                 }                  
             });
+
             return $this->getHighlight($highlightId);
         }
 
@@ -189,6 +205,7 @@
             if ($wasRemoved) {                
                 $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }  
+
             return $wasRemoved;
         }
 
@@ -204,6 +221,7 @@
             if ($wasRemoved) {
                 $this->highlightMapper->deleteStaleHighlightIdentifiers();
             }
+
             return $wasRemoved;
         }
 
@@ -215,17 +233,27 @@
                     $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category->value, $categoryId, $highlightId));
                 }
             });
+
             return $wasRemoved;
         }
 
         public function removeYearHighlight(int $year, string $highlightId) : bool {
+            $tripHighlightExists = !empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlightId));
+
             $wasRemoved = true;            
-            $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasRemoved) {
-                $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
+            $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasRemoved, &$tripHighlightExists) {
+                if ($tripHighlightExists) {
+                    $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Year, $year, $highlightId);
+                }
+                else {
+                    $wasRemoved &= $this->highlightMapper->deleteHighlight(HighlightType::Year, $year, $highlightId) > 0;
+                }
+
                 if ($wasRemoved) {
                     $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year->value, $year, $highlightId));
                 }
             });
+
             return $wasRemoved;
         }
 

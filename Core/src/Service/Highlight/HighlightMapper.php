@@ -41,6 +41,7 @@
                 INNER JOIN highlight_identifier hi
                     ON ht.highlight_id = hi.id
                 WHERE ht.id = ?
+                ORDER BY photo_id ASC
             SQL;
             
             return $this->databaseClient
@@ -51,7 +52,7 @@
                 });
         }
 
-        public function selectEntityIdsForHighlightId(HighlightType $highlightType, string $entityId) : array {
+        public function selectEntityIdsForHighlightId(HighlightType $highlightType, string $highlightId) : array {
             $sql = <<<SQL
                 SELECT ht.id
                 FROM {$highlightType->getTableName()} ht
@@ -62,7 +63,7 @@
             
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($entityId)
+                ->withParameters($highlightId)
                 ->getResultSetForColumn("id");
         }
 
