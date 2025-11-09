@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { useVisitedAirports } from "./useVisitedAirports"
-import { getCachedCoordinates, getEuclideanDistance } from "../utils/helpers"
+import { getCachedCoordinates } from "../utils/helpers"
 import { useDevices } from "./useDevices"
 import { getCoordinates } from "../clients/coreClient"
+import { getEuclideanDistance } from "../utils/geocodingUtils.ts"
 
 const airportRadius = 3.0
 

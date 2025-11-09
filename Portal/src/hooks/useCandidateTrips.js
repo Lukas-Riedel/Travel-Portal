@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { listCandidateTrips, removeTrip } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
-import Trip from "../model/trip"
+import { Trip } from "../classes/Trip.ts"
 
 // TODO: This accepts string now, make it accept TripIncludedEntity[]
 export const useCandidateTrips = ({ include } = {}) => {

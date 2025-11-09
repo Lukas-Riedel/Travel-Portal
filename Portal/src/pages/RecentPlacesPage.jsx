@@ -50,7 +50,6 @@ export default function RecentPlacesPage() {
         return () => window.removeEventListener("scroll", onScroll)
     }, [])
 
-
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])

@@ -1,7 +1,8 @@
 import { fromUnixTime, isSameDay } from "date-fns"
 import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory, type ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
-import { getEuclideanDistance, getHaversineDistance } from "../utils/helpers.js"
+import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUtils.ts"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 export class Place implements IPlace {
     id: string
@@ -20,7 +21,7 @@ export class Place implements IPlace {
     notes?: Note[]
     dates?: Date[]
 
-    constructor(data: IPlace) {
+    public constructor(data: IPlace) {
         Object.assign(this, data)
     }
 
@@ -33,12 +34,12 @@ export class Place implements IPlace {
         return this.dates.length === 0 || this.dates.every(date => !date.trip)
     }
 
-    public getCategory(type: ExtendedCategoryCategory): Category | undefined {
-        if (type === InternalCategoryCategory.MostSpecificWithMetadata) {
+    public getCategory(categoryCategory: ExtendedCategoryCategory): Category | undefined {
+        if (categoryCategory === InternalCategoryCategory.MostSpecificWithMetadata) {
             return this.categories?.findLast(category => category.metadata != null
                 && category.metadata.color != null && category.metadata.unicode != null)
         }
-        return this.categories?.findLast(category => category.category === type);
+        return this.categories?.findLast(category => category.category === categoryCategory);
     }
 
     public getEuclideanDistanceTo(place: IPlace): number {
@@ -50,9 +51,9 @@ export class Place implements IPlace {
     }
 
     public getPastTrips(): TripIdentifier[] {
-        return [...new globalThis.Map(
+        return [...new Map(
             (this.dates ?? [])
-                .filter(date => date.start < Date.now() / 1000)
+                .filter(date => date.start < getCurrentTimestamp())
                 .map(date => date.trip)
                 .filter(Boolean)
                 .map(trip => [trip.id, trip]))
@@ -60,7 +61,7 @@ export class Place implements IPlace {
     }
 
     public getAllTrips(): TripIdentifier[] {
-        return [...new globalThis.Map(
+        return [...new Map(
             (this.dates ?? [])
                 .map(date => date.trip)
                 .filter(Boolean)

@@ -53,8 +53,8 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                     <DayCard
                         key={index}
                         day={day}
-                        events={places && trip.getEvents(day, places, timezone)}
-                        stay={trip.getStay(day)}
+                        events={places && trip.getCalendarEvents(day, places, timezone)}
+                        stay={trip.getStay(day, configuration?.homeLocation?.timezone)}
                         noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
                         fitness={trip.fitness && trip.fitness[index]}
                         publicHoliday={trip.getPublicHoliday(day)}

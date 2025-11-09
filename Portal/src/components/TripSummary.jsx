@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, format, fromUnixTime, startOfDay } from "date-fns"
-import { getCachedCoordinates, getDateRangeString, getHaversineDistance, getTimeString } from "../utils/helpers"
+import { getCachedCoordinates, getDateRangeString, getTimeString } from "../utils/helpers"
 import DayCard from "./DayCard"
 import { Link } from "react-router-dom"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
@@ -14,6 +14,7 @@ import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { formatTimeAgo } from "../utils/formatters"
 import { getCoordinates } from "../clients/coreClient"
 import SunCalc from "suncalc"
+import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { isAdmin } = useAuth()
@@ -64,7 +65,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
 
     const [targetLocation, setTargetLocation] = useState(null)
 
-    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (toZonedTime(new Date(), lastSeenBridgeXDevice?.timezone || "UTC").getHours() < 10 ? 86400 : 0))))?.address,
+    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (toZonedTime(new Date(), lastSeenBridgeXDevice?.timezone || "UTC").getHours() < 10 ? 86400 : 0))), configuration?.homeLocation?.timezone)?.address,
         [trip, lastSeenBridgeXDevice?.timezone])
 
 
@@ -186,8 +187,8 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                 <DayCard
                     key={index}
                     day={day}
-                    events={places && trip?.getEvents(day, places, timezone)}
-                    stay={trip?.getStay(day)}
+                    events={places && trip?.getCalendarEvents(day, places, timezone)}
+                    stay={trip?.getStay(day, configuration?.homeLocation?.timezone)}
                     fitness={trip?.fitness[(day - startOfTripStartDay) / (86400 * 1000)]}
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
                     publicHoliday={trip?.getPublicHoliday(day)}

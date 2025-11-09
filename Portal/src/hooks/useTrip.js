@@ -1,9 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import Trip from "../model/trip"
 import { getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, createTripHighlight, removeTripHighlight,
         updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote } from "../clients/coreClient"
+import { Trip } from "../classes/Trip.ts"
 
 export const useTrip = tripId => {
     const { isAdmin } = useAuth()

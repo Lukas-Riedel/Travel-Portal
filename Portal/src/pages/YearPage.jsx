@@ -12,11 +12,11 @@ import { useAuth } from "../contexts/AuthContext"
 import ExpenseSummary from "../components/ExpenseSummary"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
-import Trip from "../model/trip"
 import CardGrid from "../components/CardGrid"
 import DayCard from "../components/DayCard"
 import { fromUnixTime, startOfDay } from "date-fns"
 import { useConfiguration } from "../contexts/ConfigContext"
+import { Trip } from "../classes/Trip.ts"
 
 export default function YearPage() {
     const { isAdmin } = useAuth()
@@ -64,7 +64,7 @@ export default function YearPage() {
                         key={index}
                         day={day}
                         // TODO: Extract the function somewhere.
-                        events={placesWithoutTrip && new Trip({}).getEvents(day, placesWithoutTrip, timezone)}
+                        events={placesWithoutTrip && new Trip({}).getCalendarEvents(day, placesWithoutTrip, timezone)}
                         fitness={year?.fitness && year.fitness[getDayOfYear(day)]}
                         timezone={timezone}
                         onPhotosAdded={publishPhotosUploadingTriggeredEvent} />

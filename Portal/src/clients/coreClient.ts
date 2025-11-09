@@ -7,9 +7,10 @@ import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripTy
 import type {
     Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
-    DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip, ExpenseType, Note, Airline, YearIncludedEntity
+    DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity
 } from "../types/CoreSwaggerTypes.ts"
 import { Place } from "../classes/Place.ts"
+import { Trip } from "../classes/Trip.ts"
 
 export const createVoucher = async (code: string, issuer: string, value: number, currency: string, expiration?: number): Promise<Voucher> =>
     coreClient.post<Voucher>("vouchers",
@@ -497,55 +498,62 @@ export const removeTimeTrackingEvent = async (eventId: string): Promise<void> =>
     coreClient.delete(`tracker/${eventId}`)
 
 export const listRegularTrips = async ({ year, include }: { year?: number, include?: TripIncludedEntity[] } = {}): Promise<Trip[]> =>
-    coreClient.get<Trip[]>(createQueryPath("trips",
+    coreClient.get<ITrip[]>(createQueryPath("trips",
         {
             type: TripType.Regular,
             year,
             include: include?.join(",")
         }
     )).then(extractData)
+        .then(trips => trips.map(trip => new Trip(trip)))
 
 export const listCandidateTrips = async ({ include }: { include?: TripIncludedEntity[] } = {}): Promise<Trip[]> =>
-    coreClient.get<Trip[]>(createQueryPath("trips",
+    coreClient.get<ITrip[]>(createQueryPath("trips",
         {
             type: TripType.Candidate,
             include: include?.join(",")
         }
     )).then(extractData)
+        .then(trips => trips.map(trip => new Trip(trip)))
+
 
 export const getTrip = async (tripId: string): Promise<Trip> =>
     coreClient.get<Trip>(`trips/${tripId}`)
         .then(extractData)
 
 export const updateTripName = async (tripId: string, name: string): Promise<Trip> =>
-    coreClient.patch<Trip>(`trips/${tripId}`,
+    coreClient.patch<ITrip>(`trips/${tripId}`,
         {
             name
         }
     ).then(extractData)
+        .then(trip => new Trip(trip))
 
 export const updateTripStart = async (tripId: string, start: number): Promise<Trip> =>
-    coreClient.patch<Trip>(`trips/${tripId}`,
+    coreClient.patch<ITrip>(`trips/${tripId}`,
         {
             start
         }
     ).then(extractData)
+        .then(trip => new Trip(trip))
 
 export const updateTripMainHighlight = async (tripId: string, mainHighlightId: string): Promise<Trip> =>
-    coreClient.patch<Trip>(`trips/${tripId}`,
+    coreClient.patch<ITrip>(`trips/${tripId}`,
         {
             mainHighlight: {
                 id: mainHighlightId
             }
         }
     ).then(extractData)
+        .then(trip => new Trip(trip))
 
 export const replaceTrip = async (tripId: string, candidateTripId: string): Promise<Trip> =>
-    coreClient.put<Trip>(`trips/${tripId}`,
+    coreClient.put<ITrip>(`trips/${tripId}`,
         {
             id: candidateTripId
         }
     ).then(extractData)
+        .then(trip => new Trip(trip))
 
 export const removeTrip = async (tripId: string): Promise<void> =>
     coreClient.delete(`trips/${tripId}`)
