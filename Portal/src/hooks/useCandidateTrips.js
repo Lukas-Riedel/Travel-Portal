@@ -3,12 +3,13 @@ import { listCandidateTrips, removeTrip } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
 import Trip from "../model/trip"
 
+// TODO: This accepts string now, make it accept TripIncludedEntity[]
 export const useCandidateTrips = ({ include } = {}) => {
     const { isAdmin } = useAuth()
 
     const query = useQuery({
         queryKey: ["listCandidateTrips", include],
-        queryFn: () => listCandidateTrips({ include }),
+        queryFn: () => listCandidateTrips({ include: include?.split(",") }),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 

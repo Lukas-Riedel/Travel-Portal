@@ -1,3 +1,3 @@
-import baseConfig from "./vite.config.base.js"
+import baseConfig from "./vite.config.base"
 
 export default baseConfig

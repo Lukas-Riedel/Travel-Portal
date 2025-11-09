@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import Place from "../model/place"
 import { useEvents } from "./useEvents"
 import { useEffect, useMemo } from "react"
 import { createPermanentPlace, listRegularPlaces, removePermanentPlace } from "../clients/coreClient"
+import { Place } from "../classes/Place.ts"
 
+// TODO: This accepts string now, make it accept PlaceIncludedEntity[]
 export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort } = {}) => {
     const { isAdmin } = useAuth()
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
@@ -19,7 +20,7 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
     const validity = 60 * 60 * 2
     const query = useQuery({
         queryKey: ["listRegularPlaces", tripId, categoryId, labelId, year, albumId, photoId, minStart - (minStart % validity), maxEnd - (maxEnd % validity), limit, include, sort],
-        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }),
+        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include: include?.split(","), sort }),
         staleTime: isAdmin ? 0 : 1000 * validity,
         refetchInterval: query => isAdmin && query.state.data?.flatMap(place => place.dates ?? [])?.some(date => (date.album?.uploadingStart && date.album?.uploadingProgress) || datesBeingUploaded.has(date.start)) && 10000
     })

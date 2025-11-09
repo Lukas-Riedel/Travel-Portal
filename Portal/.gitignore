@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-vite.config.development.js
+vite.config.development.ts
 .env.development
+src/types/CoreSwaggerTypes.ts

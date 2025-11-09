@@ -37,7 +37,7 @@
             new OA\Property(
                 property: "path",
                 type: "string",
-                description: "The úath where the error occurred",
+                description: "The path where the error occurred",
                 example: "/configuration"
             ),
         ]

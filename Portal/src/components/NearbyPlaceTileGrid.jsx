@@ -1,8 +1,8 @@
 import { useMemo } from "react"
 import { formatKilometers } from "../utils/formatters.js"
-import Place from "../model/place.js"
 import TileGrid from "./TileGrid.jsx"
 import PlaceTile from "./PlaceTile.jsx"
+import { Place } from "../classes/Place.ts"
 
 export default function NearbyPlaceTileGrid({ place, places, count }) {
     const nearbyPlaces = useMemo(() => places

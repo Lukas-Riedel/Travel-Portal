@@ -1,0 +1,88 @@
+import { fromUnixTime, isSameDay } from "date-fns"
+import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album } from "../types/CoreSwaggerTypes.ts"
+import { InternalCategoryCategory, type ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
+import { getEuclideanDistance, getHaversineDistance } from "../utils/helpers.js"
+
+export class Place implements IPlace {
+    id: string
+    name: string
+    country: string
+    latitude: number
+    longitude: number
+    timezone: string
+    mainHighlight?: Highlight
+    score: number
+    quality?: number
+    excerpt?: string
+    categories?: Category[]
+    highlights?: Highlight[]
+    labels?: Label[]
+    notes?: Note[]
+    dates?: Date[]
+
+    constructor(data: IPlace) {
+        Object.assign(this, data)
+    }
+
+    public withFilteredDates(dateFilter: (date: Date) => boolean): Place {
+        return new Place({ ...this, dates: this.dates?.filter(dateFilter) })
+    }
+
+    public isPermanent(): boolean {
+        // TODO: This is not 100% true, the first part evaluates to true also for candidates, the other part evaluates to true for day trip places
+        return this.dates.length === 0 || this.dates.every(date => !date.trip)
+    }
+
+    public getCategory(type: ExtendedCategoryCategory): Category | undefined {
+        if (type === InternalCategoryCategory.MostSpecificWithMetadata) {
+            return this.categories?.findLast(category => category.metadata != null
+                && category.metadata.color != null && category.metadata.unicode != null)
+        }
+        return this.categories?.findLast(category => category.category === type);
+    }
+
+    public getEuclideanDistanceTo(place: IPlace): number {
+        return getEuclideanDistance(place, this)
+    }
+
+    public getHaversineDistanceTo(place: IPlace): number {
+        return getHaversineDistance(place, this)
+    }
+
+    public getPastTrips(): TripIdentifier[] {
+        return [...new globalThis.Map(
+            (this.dates ?? [])
+                .filter(date => date.start < Date.now() / 1000)
+                .map(date => date.trip)
+                .filter(Boolean)
+                .map(trip => [trip.id, trip]))
+            .values()]
+    }
+
+    public getAllTrips(): TripIdentifier[] {
+        return [...new globalThis.Map(
+            (this.dates ?? [])
+                .map(date => date.trip)
+                .filter(Boolean)
+                .map(trip => [trip.id, trip]))
+            .values()]
+    }
+
+    public getAlbums(): Album[] {
+        return (this.dates ?? [])
+            .map(date => date.album)
+            .filter(album => album != null)
+    }
+
+    public getAlbum(albumId: string): Album | undefined {
+        return this.getAlbums().find(album => album.id === albumId)
+    }
+
+    public getDateByAlbumId(albumId: string): Date | undefined {
+        return (this.dates ?? []).find(date => date.album?.id === albumId)
+    }
+
+    public getDate(date: string | number | globalThis.Date): Date | undefined {
+        return (this.dates ?? []).find(d => isSameDay(date, fromUnixTime(d.start)))
+    }
+}

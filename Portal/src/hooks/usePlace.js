@@ -6,9 +6,9 @@ import {
     updatePlaceAlbumReviewed
 } from "../clients/coreClient"
 import { useAuth } from "../contexts/AuthContext"
-import Place from "../model/place"
 import { useEffect, useMemo } from "react"
 import { useEvents } from "./useEvents"
+import { Place } from "../classes/Place.ts"
 
 export const usePlace = placeId => {
     const { isAdmin } = useAuth()

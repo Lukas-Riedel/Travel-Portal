@@ -60,6 +60,12 @@ jobs:
       run: |
         cd Portal
         npm install --legacy-peer-deps
+    - name: Generate Core Swagger types
+      run: |
+        cd Portal
+        node swagger.config.js
+      env:
+        VITE_CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
     - name: Build React Project
       run: |
         cd Portal

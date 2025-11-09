@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
-import Place from "../model/place"
 import { useEffect, useMemo, useState } from "react"
 import { useLocation } from "../contexts/LocationContext"
 import { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } from "../clients/coreClient"
+import { Place } from "../classes/Place.ts"
 
+// TODO: This accepts string now, make it accept PlaceIncludedEntity[]
 export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort } = {}) => {
     const resolvedLocation = useLocation()
     const { isAdmin } = useAuth()
@@ -19,7 +20,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort 
 
     const query = useQuery({
         queryKey: ["listCandidatePlaces", tripId, categoryId, labelId, include, sort],
-        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, include, sort }),
+        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, include: include?.split(","), sort }),
         staleTime: isAdmin ? 0 : 1000 * 60 * 60 * 2
     })
 
