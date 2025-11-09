@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.development.js",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit --watch",
+    "start:dev": "npm-run-all --parallel dev typecheck"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -47,8 +49,9 @@
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@tailwindcss/postcss": "^4.1.7",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.25.0",
@@ -57,7 +60,9 @@
     "globals": "^16.0.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.3",
     "vite": "^6.3.5",
+    "vite-plugin-checker": "^0.11.0",
     "vite-plugin-pwa": "^1.0.2"
   }
 }
