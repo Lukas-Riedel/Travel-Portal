@@ -1,16 +1,18 @@
 import axios from "axios"
 import * as authRefresh from "axios-auth-refresh"
-import { getAccessToken, getRefreshToken, logout, setIamResponse } from "../hooks/useAuthStore.js"
 import { getIamResponseWithRefresh } from "./iamClient.ts"
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType, } from "../types/CoreSwaggerTypes.ts"
 import type {
     Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
-    DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity
+    DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
+    Location
 } from "../types/CoreSwaggerTypes.ts"
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
+import { useAuthStore } from "../hooks/useAuthStore.ts"
+import { use } from "react"
 
 export const createVoucher = async (code: string, issuer: string, value: number, currency: string, expiration?: number): Promise<Voucher> =>
     coreClient.post<Voucher>("vouchers",
@@ -773,7 +775,7 @@ export const removeYearHighlight = async (year: number, highlightId: string): Pr
     coreClient.delete(`years/${year}/highlights/${highlightId}`)
 
 export const refreshAccessToken = async (): Promise<string> => {
-    const refreshToken = getRefreshToken()
+    const { refreshToken, logout, setIamResponse } = useAuthStore.getState()
 
     if (!refreshToken) {
         logout()
@@ -781,8 +783,9 @@ export const refreshAccessToken = async (): Promise<string> => {
     }
 
     try {
-        const newIamResponse = setIamResponse(await getIamResponseWithRefresh(refreshToken))
-        return Promise.resolve(newIamResponse.data.accessToken)
+        const newIamResponse = await getIamResponseWithRefresh(refreshToken)
+        setIamResponse(newIamResponse)
+        return Promise.resolve(newIamResponse.accessToken)
     }
     catch (error) {
         logout()
@@ -814,7 +817,7 @@ const createAuthRefreshInterceptor = (authRefresh as any).default ?? (authRefres
 createAuthRefreshInterceptor(coreClient, doRefreshAccessToken)
 
 coreClient.interceptors.request.use(config => {
-    const accessToken = getAccessToken()
+    const accessToken = useAuthStore.getState().accessToken
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`
     }

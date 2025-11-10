@@ -23,7 +23,7 @@ import AirlineCardGrid from "../components/AirlineCardGrid"
 import showInputToast from "../components/InputToast"
 import { useAirports } from "../hooks/useAirports"
 import {
-    createScheduledFlight, createWatchedFlight, getCoordinates, createAirlineCode, refreshPlaceAlbum, updateCategoryMetadata,
+    createScheduledFlight, createWatchedFlight, getCoordinates, refreshPlaceAlbum, updateCategoryMetadata,
     listRegularPlaces, createGeographicalExtensionRegion, removeCandidatePlace, logFlight, replaceFitness
 } from "../clients/coreClient"
 import PlaceCardGrid from "../components/PlaceCardGrid"
@@ -38,6 +38,7 @@ import { useDocuments } from "../hooks/useDocuments"
 import DocumentCardGrid from "../components/DocumentCardGrid"
 import { useVouchers } from "../hooks/useVouchers"
 import VoucherCardGrid from "../components/VoucherCardGrid"
+import { useRegions } from "../hooks/useRegions.ts"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -60,18 +61,19 @@ export default function AdminPage() {
     const { configuration, updateConfigurationEntry } = useConfiguration()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
-    const { airlines, createAirline, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
+    const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
     const { updateAirportLongName } = useAirports()
     const devices = useDevices({ type: "agent" })
-    const trips = useRegularTrips({ include: "watchedFlights" })
+    const trips = useRegularTrips({ include: ["watchedFlights"] })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
-    const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: "categories", minStart: 0, maxEnd: 0 })
+    const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: ["categories"], minStart: 0, maxEnd: 0 })
     const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
     const { documents, createDocument, removeDocument } = useDocuments()
     const { vouchers, createVoucher, updateVoucherValue, removeVoucher } = useVouchers()
-    const { categories, createGeographicalRegion, createCompositeRegion } = useCategories()
-    const { categories: countryCategories } = useCategories({ categories: "country" })
+    const categories = useCategories()
+    const { createGeographicalRegion, createCompositeRegion } = useRegions()
+    const countryCategories = useCategories({ categories: ["country"] })
 
     const categoriesWithRegions = useMemo(() => categories?.filter(category => category.category !== "country"), [categories])
 

@@ -10,7 +10,7 @@ export default function LabelPage() {
     const { labelId } = useParams()
 
     const { label, updateLabelName } = useLabel(labelId)
-    const { places } = useTimeFilteredRegularPlaces({ labelId, include: "categories", sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ labelId, include: ["categories"], sort: "-score" })
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])

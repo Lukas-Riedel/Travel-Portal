@@ -21,10 +21,10 @@ const defaultMaxQuality = 80
 export default function PlansPage() {
     const { isAdmin } = useAuth()
 
-    const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: "categories" })
+    const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
-    const { candidateTrips, removeCandidateTrip } = useCandidateTrips()
-    const { categories: countryCategories } = useCategories({ categories: "country" })
+    const { trips, removeTrip } = useCandidateTrips()
+    const countryCategories = useCategories({ categories: ["country"] })
 
     const [maxDistance, setMaxDistance] = useState(defaultMaxDistance)
     const [maxQuality, setMaxQuality] = useState(defaultMaxQuality)
@@ -136,8 +136,8 @@ export default function PlansPage() {
             )}
             {activeTab === 2 && (
                 <TripCardGrid
-                    trips={candidateTrips}
-                    onTripRemoved={removeCandidateTrip} />
+                    trips={trips}
+                    onTripRemoved={removeTrip} />
             )}
             {isAdmin && (
                 <FloatingButton

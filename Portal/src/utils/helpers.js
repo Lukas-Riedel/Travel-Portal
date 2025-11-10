@@ -34,10 +34,6 @@ export function getDateRangeString(start, end, includeYear = true) {
     return `${format(startDate, startFormat)} - ${format(endDate, (includeYear ? "d.M.yyyy" : "d.M."))}`
 }
 
-export function getMaxEndTimestamp(isAdmin) {
-    return isAdmin ? Number.MAX_SAFE_INTEGER : Math.round(Date.now() / 1000)
-}
-
 export function decapitalize(str) {
     return str && (str[0].toLowerCase() + str.slice(1))
 }

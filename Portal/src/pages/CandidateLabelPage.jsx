@@ -10,7 +10,7 @@ export default function CandidateLabelPage() {
     const { labelId } = useParams()
 
     const { label, updateLabelName } = useLabel(labelId)
-    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelId, include: "categories" })
+    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelId, include: ["categories"] })
 
     const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])

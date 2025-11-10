@@ -34,8 +34,17 @@
         }
 
         public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {
-            if (isset($data["latitude"]) && isset($data["longitude"]) && !isset($data["address"])) {
-                $data["address"] = $this->geocodingService->getAddress($data["latitude"], $data["longitude"])?->getAddress();
+            // TODO: This is ugly.
+            if (isset($data["latitude"]) && isset($data["longitude"])) {
+                $address = isset($data["address"]) ? $data["address"] 
+                    : $this->geocodingService->getAddress($data["latitude"], $data["longitude"])?->getAddress();
+
+                if ($address !== null) {
+                    $data["address"] = array(
+                        "name" => $address,
+                        "address" => $address
+                    );
+                }
             }
 
             $device = new Device($id, $deviceType, $name, $data, $userId, time());

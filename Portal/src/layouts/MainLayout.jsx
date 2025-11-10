@@ -4,22 +4,24 @@ import showFormToast from "../components/FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import showConfirmToast from "../components/ConfirmToast"
 import { useState } from "react"
-
-const navigationItems = [
-    { label: "Nedávné", to: "/feed", isProtected: false, allowedPrefixes: ["/feed"] },
-    { label: "Výlety", to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
-    { label: "Místa", to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
-    { label: "Lety", to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
-    { label: "Statistiky", to: "/statistics", isProtected: false, allowedPrefixes: ["/statistics"] },
-    { label: "Plán", to: "/plan", isProtected: true, allowedPrefixes: ["/plan"] },
-    { label: "Tracker", to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] },
-    { label: "Admin", to: "/admin", isProtected: true, allowedPrefixes: ["/admin"] }
-]
+import { useTranslation } from "react-i18next"
 
 export default function MainLayout({ children }) {
     const { login, logout, isAdmin } = useAuth()
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { t } = useTranslation()
+
+    const navigationItems = [
+        { label: t("menu.feed"), to: "/feed", isProtected: false, allowedPrefixes: ["/feed"] },
+        { label: t("menu.trips"), to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
+        { label: t("menu.places"), to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
+        { label: t("menu.flights"), to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
+        { label: t("menu.statistics"), to: "/statistics", isProtected: false, allowedPrefixes: ["/statistics"] },
+        { label: t("menu.plan"), to: "/plan", isProtected: true, allowedPrefixes: ["/plan"] },
+        { label: t("menu.tracker"), to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] },
+        { label: t("menu.admin"), to: "/admin", isProtected: true, allowedPrefixes: ["/admin"] }
+    ]
 
     const handleLogin = () => {
         showFormToast(

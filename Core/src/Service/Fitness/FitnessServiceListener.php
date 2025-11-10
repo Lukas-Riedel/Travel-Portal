@@ -5,7 +5,9 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Trip\TripService;
     use Core\Service\Trip\TripSortingStrategy;
     use Monolog\Logger;
@@ -21,15 +23,18 @@
         private readonly FitnessService $fitnessService;
 
         private readonly TripService $tripService;
+        private readonly PlaceService $placeService;
 
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
         private readonly Logger $logger;
 
-        public function __construct(FitnessService $fitnessService, TripService $tripService, EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
+        public function __construct(FitnessService $fitnessService, TripService $tripService, PlaceService $placeService, 
+            EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
             $this->fitnessService = $fitnessService;
             $this->tripService = $tripService;
+            $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
             $this->logger = $logger;
@@ -79,6 +84,8 @@
 
         private function getAllRequiredFitnessRecordTimestamps() : array {
             $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
+            $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), null,
+                array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $allTimestamps = array();
             foreach ($trips as &$trip) {
@@ -87,6 +94,19 @@
                     <= min(time(), $trip->getEnd() - ($trip->getEnd() % CommonConstants::FITNESS_RECORD_DURATION_SECONDS) + CommonConstants::FITNESS_RECORD_DURATION_SECONDS)) {
                     $allTimestamps[] = $currentTimestamp;
                     $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+                }
+            }
+
+            foreach ($places as &$place) {
+                foreach ($place->getDates() as &$date) {
+                    if ($date->getTrip() === null) {
+                        $currentTimestamp = $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS);
+                        while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS
+                            <= min(time(), $date->getEnd() - ($date->getEnd() % CommonConstants::ONE_DAY_SECONDS) + CommonConstants::ONE_DAY_SECONDS)) {
+                                $allTimestamps[] = $currentTimestamp;
+                                $currentTimestamp += CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+                            }
+                    }
                 }
             }
 

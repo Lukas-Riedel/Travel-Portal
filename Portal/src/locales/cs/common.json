@@ -1,0 +1,15 @@
+{
+    "menu": {
+        "feed": "Nedávné",
+        "trips": "Výlety",
+        "places": "Místa",
+        "flights": "Lety",
+        "statistics": "Statistiky",
+        "plan": "Plán",
+        "tracker": "Tracker",
+        "admin": "Admin"
+    },
+    "flight": {
+        "airport": "Letiště {{name}}"
+    }
+}

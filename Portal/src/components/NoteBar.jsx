@@ -62,7 +62,9 @@ export default function NoteBar({ notes, onNoteCreated, onNoteRemoved }) {
                     key={note.id}
                     className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col justify-between">
                     <div className="prose prose-sm max-w-none text-gray-800 mb-6">
-                        <ReactMarkdown>{note.content}</ReactMarkdown>
+                        <ReactMarkdown>
+                            {note.content}
+                        </ReactMarkdown>
                     </div>
                     <span className="absolute bottom-4 left-4 text-sm text-gray-400">
                         {getDateTimeString(note.timestamp)}

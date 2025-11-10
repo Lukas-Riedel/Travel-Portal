@@ -18,8 +18,8 @@ export default function RecentPlacesPage() {
     const isFetching = useRef(false)
 
     // TODO: Add support for skipping and just append new places.
-    const { places } = useRegularPlaces({ include: "categories,dates,excerpt", limit: currentLimit, maxEnd: Math.round(Date.now() / 1000), sort: "-oldest" })
-    const { categories: countryCategories } = useCategories({ categories: "country" })
+    const { places } = useRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, maxEnd: Math.round(Date.now() / 1000), sort: "-oldest" })
+    const countryCategories = useCategories({ categories: ["country"] })
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()
 

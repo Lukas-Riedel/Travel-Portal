@@ -91,7 +91,7 @@
             foreach ($nonReviewedPlaces as &$nonReviewedPlace) {
                 // Do not include future dates - they contain a weather forecast that changes regularly, and breaks the reporting of the new issues.
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::NON_REVIEWED_PLACE_ISSUE_NAME,
-                    $nonReviewedPlace->withUpdatedDates(array_filter($place->getDates(), fn($date) => $date->getEnd() < time())), time());                    
+                    $nonReviewedPlace->withUpdatedDates(array_filter($nonReviewedPlace->getDates(), fn($date) => $date->getEnd() < time())), time());                    
             }
 
             return $dataConsistencyIssues;

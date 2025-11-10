@@ -4,7 +4,7 @@ import { toZonedTime } from "date-fns-tz"
 import { formatKilometers, formatDuration } from "../utils/formatters.js"
 import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
-import { useAirline } from "../hooks/useAirline.js"
+import { useAirline } from "../hooks/useAirline"
 import LoadingCard from "./LoadingCard.jsx"
 
 export default function FlightCard({ flight }) {

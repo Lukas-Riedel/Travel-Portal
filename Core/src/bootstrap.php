@@ -203,7 +203,7 @@
     // Event listeners.
     $listeners = array(
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
-        new FitnessServiceListener($fitnessService, $tripService, $eventPublisher, $scheduler, $logger),
+        new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
         new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler),
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),

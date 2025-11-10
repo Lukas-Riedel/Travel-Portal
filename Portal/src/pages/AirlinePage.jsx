@@ -10,8 +10,8 @@ import { useAirline } from "../hooks/useAirline"
 export default function AirlinePage() {
     const { airlineId } = useParams()
 
-    const trips = useRegularTrips({ include: "flights" })
-    const { categories: countryCategories } = useCategories({ categories: "country" })
+    const trips = useRegularTrips({ include: ["flights"] })
+    const countryCategories = useCategories({ categories: ["country"] })
     const { airline, updateAirlineName, removeAirline } = useAirline(airlineId)
 
     const flights = useMemo(() => {

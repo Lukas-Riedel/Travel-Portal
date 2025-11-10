@@ -5,8 +5,8 @@ import { useRegularTrips } from "../hooks/useRegularTrips"
 import FlightCardGrid from "../components/FlightCardGrid"
 
 export default function FlightsPage() {
-    const trips = useRegularTrips({ include: "flights" })
-    const { categories: countryCategories } = useCategories({ categories: "country" })
+    const trips = useRegularTrips({ include: ["flights"] })
+    const countryCategories = useCategories({ categories: ["country"] })
 
     const flights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration);

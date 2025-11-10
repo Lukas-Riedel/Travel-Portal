@@ -1,8 +1,10 @@
 import { fromUnixTime, isSameDay } from "date-fns"
 import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album } from "../types/CoreSwaggerTypes.ts"
-import { InternalCategoryCategory, type ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
+import type { ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
 import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import type { Coordinates } from "../types/Coordinates.ts"
 
 export class Place implements IPlace {
     id: string
@@ -42,11 +44,11 @@ export class Place implements IPlace {
         return this.categories?.findLast(category => category.category === categoryCategory);
     }
 
-    public getEuclideanDistanceTo(place: IPlace): number {
+    public getEuclideanDistanceTo(place: Coordinates): number {
         return getEuclideanDistance(place, this)
     }
 
-    public getHaversineDistanceTo(place: IPlace): number {
+    public getHaversineDistanceTo(place: Coordinates): number {
         return getHaversineDistance(place, this)
     }
 

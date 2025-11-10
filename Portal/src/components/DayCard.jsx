@@ -111,7 +111,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
             ],
             "Nahrávání fotek bude brzy zahájeno",
             "Při nahrávání fotek došlo k chybě",
-            async (path, mainPhotoPosition, agentId) => onPhotosAdded(agentId, placeId, placeName, albumId, timestamp, path, mainPhotoPosition)
+            async (path, mainPhotoPosition, agentId) => onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition)
         )
     }
 

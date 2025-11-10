@@ -73,16 +73,25 @@
                     $relevantTrips = $this->tripService->getRegularTrips(null, $start, $end,
                         array(TripIncludedEntity::Expenses->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
 
-                    $mostExpensiveStaysPerNight = array_reduce($relevantTrips, fn($carry, $trip) => array_reduce($trip->getStays(),
-                        function($innerCarry, $stay) use(&$trip) {
-                            $stayExpense = current(array_filter($trip->getExpenses(), fn($expense) => $expense->getType() === ExpenseType::Hotel
-                                && $expense->getDescription() === $stay->getName()));
-                            if ($stayExpense !== false) {
-                                $costPerNight = intval($stayExpense->getMainCurrencyValue() / $stay->getNightsCount());
-                                $innerCarry[$stay->getName()] = new KeyValuePair($stay->getName(), $costPerNight);
+                    $mostExpensiveStaysPerNight = array_reduce($relevantTrips, function($carry, $trip) {
+                        $stayNightsCounts = array_reduce($trip->getStays(), function($innerCarry, $stay) {
+                            if (!isset($innerCarry[$stay->getName()])) {
+                                $innerCarry[$stay->getName()] = 0;
                             }
+                            $innerCarry[$stay->getName()] += $stay->getNightsCount();
                             return $innerCarry;
-                        }, $carry), array());
+                        }, array());
+
+                        return array_reduce(array_keys($stayNightsCounts),
+                            function($innerCarry, $stayName) use($trip, &$stayNightsCounts) {
+                                $stayCost = array_sum(array_map(fn($expense) => $expense->getMainCurrencyValue(), array_filter($trip->getExpenses(),
+                                    fn($expense) => $expense->getType() === ExpenseType::Hotel && $expense->getDescription() === $stayName))); 
+                                if ($stayCost > 0) {
+                                    $innerCarry[$stayName] = new KeyValuePair($stayName, intval($stayCost / $stayNightsCounts[$stayName]));
+                                }
+                                return $innerCarry;
+                            }, $carry);
+                    }, array());
                     usort($mostExpensiveStaysPerNight, fn($a, $b) => $b->getValue() <=> $a->getValue());
 
                     if (count($mostExpensiveStaysPerNight) > 0) {

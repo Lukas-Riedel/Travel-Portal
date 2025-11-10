@@ -9,7 +9,7 @@ export default function CategoryHighlightsPage() {
     const { categoryId } = useParams()
 
     const { category, createCategoryHighlight } = useCategory(categoryId)
-    const { places } = useRegularPlaces({ categoryId, include: "highlights", sort: "-score" })
+    const { places } = useRegularPlaces({ categoryId, include: ["highlights"], sort: "-score" })
 
     const [currentHighlights, setCurrentHighlights] = useState(null)
 

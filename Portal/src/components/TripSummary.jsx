@@ -21,14 +21,14 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
-    const { places } = useRegularPlaces({ tripId: trip?.id, include: "categories,dates" })
+    const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
         ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, radius: 3.0 })) ?? [])
     ])
 
-    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice && Math.round((SunCalc.getPosition(new Date(), lastSeenBridgeXDevice.latitude, lastSeenBridgeXDevice.longitude).altitude * 180) / Math.PI), [lastSeenBridgeXDevice])
+    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data && Math.round((SunCalc.getPosition(new Date(), lastSeenBridgeXDevice.data.latitude, lastSeenBridgeXDevice.data.longitude).altitude * 180) / Math.PI), [lastSeenBridgeXDevice])
     const SunAltitudeIcon = useMemo(() => currentSunAltitude > 10 ? Sun : currentSunAltitude < -10 ? Moon : SunMoon, [currentSunAltitude])
 
     const [timezone, setTimezone] = useState(undefined)
@@ -65,7 +65,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
 
     const [targetLocation, setTargetLocation] = useState(null)
 
-    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (toZonedTime(new Date(), lastSeenBridgeXDevice?.timezone || "UTC").getHours() < 10 ? 86400 : 0))), configuration?.homeLocation?.timezone)?.address,
+    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (toZonedTime(new Date(), lastSeenBridgeXDevice?.data?.timezone || "UTC").getHours() < 10 ? 86400 : 0))), configuration?.homeLocation?.timezone)?.address,
         [trip, lastSeenBridgeXDevice?.timezone])
 
 
@@ -116,8 +116,8 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 <LocateFixedIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.address)}`}>
-                                    {lastSeenBridgeXDevice.name}
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.data.address.address)}`}>
+                                    {lastSeenBridgeXDevice.data.address.name}
                                 </a>
                             </div>
                         ) : (
@@ -125,8 +125,8 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 <LocateOffIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.address)}`}>
-                                    {lastSeenBridgeXDevice.name}
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.data.address.address)}`}>
+                                    {lastSeenBridgeXDevice.data.address.name}
                                 </a>
                             </div>
                         )}
@@ -135,7 +135,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 <div className="flex items-center space-x-1">
                                     <Clock className="w-3 h-3" />
                                     <span className="whitespace-nowrap">
-                                        {getTimeString(toZonedTime(new Date(), lastSeenBridgeXDevice.timezone).getTime() / 1000)}
+                                        {getTimeString(toZonedTime(new Date(), lastSeenBridgeXDevice.data.timezone).getTime() / 1000)}
                                     </span>
                                 </div>
                                 {currentSunAltitude != null && (
@@ -153,7 +153,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 <div className="flex items-center space-x-1">
                                     <Battery className="w-3 h-3" />
                                     <span className="whitespace-nowrap">
-                                        {Math.round(lastSeenBridgeXDevice.battery)} %
+                                        {Math.round(lastSeenBridgeXDevice.data.battery)} %
                                     </span>
                                 </div>
                                 {targetLocation && (
@@ -161,7 +161,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                         <span>|</span>
                                         <Bed className="w-3 h-3" />
                                         <span className="whitespace-nowrap">
-                                            {Math.round(getHaversineDistance(targetLocation, lastSeenBridgeXDevice))} km
+                                            {Math.round(getHaversineDistance(targetLocation, lastSeenBridgeXDevice.data))} km
                                         </span>
                                     </>
                                 )}
@@ -170,7 +170,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                         <span>|</span>
                                         <House className="w-3 h-3" />
                                         <span className="whitespace-nowrap">
-                                            {Math.round(getHaversineDistance(configuration.homeLocation, lastSeenBridgeXDevice))} km
+                                            {Math.round(getHaversineDistance(configuration.homeLocation, lastSeenBridgeXDevice.data))} km
                                         </span>
                                     </>
                                 )}

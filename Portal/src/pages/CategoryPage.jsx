@@ -31,7 +31,7 @@ export default function CategoryPage() {
 
     const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategory,
         removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
-    const { places } = useTimeFilteredRegularPlaces({ categoryId, include: "categories", sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ categoryId, include: ["categories"], sort: "-score" })
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])

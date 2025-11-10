@@ -1,10 +1,12 @@
+import type { Coordinates } from "../types/Coordinates.ts"
+
 export const EARTH_RADIUS_KILOMETERS = 6371.0
 
-export function getEuclideanDistance(a: { latitude: number, longitude: number }, b: { latitude: number, longitude: number }): number {
+export function getEuclideanDistance(a: Coordinates, b: Coordinates): number {
     return 111.0 * Math.hypot(a.latitude - b.latitude, a.longitude - b.longitude)
 }
 
-export function getHaversineDistance(a: { latitude: number, longitude: number }, b: { latitude: number, longitude: number }): number {
+export function getHaversineDistance(a: Coordinates, b: Coordinates): number {
     const x1 = a.latitude - b.latitude;
     const x2 = a.longitude - b.longitude;
     const ar = Math.sin(toRadians(x1) / 2) * Math.sin(toRadians(x1) / 2) + Math.cos(toRadians(b.latitude))

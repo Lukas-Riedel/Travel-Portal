@@ -12,8 +12,8 @@ import LoadingCard from "./LoadingCard"
 export default function TripCard({ trip, onTripRemoved }) {
     const { isAdmin } = useAuth()
 
-    const { places } = useRegularPlaces({ tripId: trip?.id, include: "categories,dates" })
-    const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: "categories,dates" })
+    const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories","dates"] })
+    const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: ["categories","dates"] })
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : places, [trip, places, candidatePlaces])
 
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])

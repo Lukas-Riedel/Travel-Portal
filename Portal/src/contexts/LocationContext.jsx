@@ -32,4 +32,5 @@ export function LocationProvider({ children }) {
     )
 }
 
+// TODO: Type Coordinates
 export const useLocation = () => useContext(LocationContext)

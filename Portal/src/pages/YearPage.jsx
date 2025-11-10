@@ -25,8 +25,8 @@ export default function YearPage() {
     const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
-    const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: "dates,categories" })
-    const yearTrips = useRegularTrips({ year: yearParameter, include: "expenses" })
+    const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: ["dates", "categories"] })
+    const yearTrips = useRegularTrips({ year: yearParameter, include: ["expenses"] })
 
     const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
     const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => place.dates?.length > 0), [places])

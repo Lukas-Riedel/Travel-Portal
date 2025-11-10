@@ -1,7 +1,4 @@
 import type { CategoryCategory } from "./CoreSwaggerTypes.ts"
+import type { InternalCategoryCategory } from "./InternalCategoryCategory.ts"
 
-export type ExtendedCategoryCategory = CategoryCategory | InternalCategoryCategory;
-
-export enum InternalCategoryCategory {
-    MostSpecificWithMetadata = "mostSpecificWithMetadata"
-}
+export type ExtendedCategoryCategory = CategoryCategory | InternalCategoryCategory

@@ -1,15 +1,11 @@
-import { createContext, useContext, useEffect } from "react"
-import { logout, setIamResponse, useAuthStore } from "../hooks/useAuthStore"
-import { refreshAccessToken } from "../clients/coreClient"
+import { createContext, useContext } from "react"
 import { getIamResponseWithCredentials } from "../clients/iamClient"
+import { useAuthStore } from "../hooks/useAuthStore.ts"
 
 const AuthContext = createContext()
-const accessTokenRefreshThreshold = 60 * 1000
 
 export const AuthProvider = ({ children }) => {
-    const accessToken = useAuthStore(state => state.getAccessToken())
-    const iamResponse = useAuthStore(state => state.iamResponse)
-    const isAdmin = useAuthStore(state => state.isAdmin())
+    const { accessToken, isAdmin, logout, setIamResponse, } = useAuthStore()
 
     const login = async ({ username, password }) => {
         if (typeof Android !== "undefined" && Android.login) {
@@ -19,29 +15,12 @@ export const AuthProvider = ({ children }) => {
         getIamResponseWithCredentials(username, password).then(setIamResponse)
     }
 
-    useEffect(() => {
-        if (!iamResponse) {
-            return
-        }
-
-        const delay = iamResponse.expiration - Date.now() - accessTokenRefreshThreshold
-        if (delay <= 0) {
-            return
-        }
-
-        const timeout = setTimeout(() => {
-            refreshAccessToken()
-        }, delay)
-
-        return () => clearTimeout(timeout)
-    }, [iamResponse])
-
     return (
         <AuthContext.Provider value={{
             accessToken,
+            isAdmin,
             login,
-            logout,
-            isAdmin
+            logout
         }}>
             {children}
         </AuthContext.Provider>

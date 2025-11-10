@@ -95,7 +95,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                 if (!place.isPermanent() && !placeDate) {
                     return Promise.reject("Unable to upload photos for the regular place for the date that does not exist.")
                 }
-                return onPhotosAdded(agentId, place.id, place.name, placeDate?.album?.id, timestamp, path, mainPhotoPosition)
+                return onPhotosAdded(agentId, place.id, place.name, path, placeDate?.album?.id, timestamp, mainPhotoPosition)
             }
         )
     }

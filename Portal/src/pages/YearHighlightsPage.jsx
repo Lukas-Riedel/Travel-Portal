@@ -11,8 +11,8 @@ export default function YearHighlightsPage() {
     const { year: yearParameter } = useParams()
 
     const { year, createYearHighlight } = useYear(yearParameter)
-    const trips = useRegularTrips({ year: yearParameter, include: "highlights" })
-    const { places } = useRegularPlaces({ year: yearParameter, include: "dates", sort: "-oldest" })
+    const trips = useRegularTrips({ year: yearParameter, include: ["highlights"] })
+    const { places } = useRegularPlaces({ year: yearParameter, include: ["dates"], sort: "-oldest" })
 
     const [currentHighlights, setCurrentHighlights] = useState(null)
 

@@ -7,8 +7,8 @@ import { useCategories } from "../hooks/useCategories";
 
 export default function StatisticsPage() {
     const statistics = useStatistics()
-    const { places } = useTimeFilteredRegularPlaces({ include: "categories" })
-    const { categories: countryCategories } = useCategories({ categories: "country" })
+    const { places } = useTimeFilteredRegularPlaces({ include: ["categories"] })
+    const countryCategories = useCategories({ categories: ["country"] })
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
