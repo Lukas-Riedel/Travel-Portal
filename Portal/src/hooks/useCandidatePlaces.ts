@@ -6,6 +6,7 @@ import type { UseCandidatePlacesResult } from "../types/UseCandidatePlacesResult
 import { useQuery } from "./useQuery.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
+import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 
 export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort }: { tripId?: string, categoryId?: string, labelId?: string, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): UseCandidatePlacesResult => {
     const resolvedLocation = useLocation()
@@ -23,9 +24,9 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort 
         queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, include, sort }),
         staleTime: ONE_DAY_SECONDS * 1000
     })
-
+    
     return {
-        candidatePlaces: useMemo(() => response?.map(place => new DistanceAwarePlace(place, place.getHaversineDistanceTo(currentLocation))), [response, currentLocation]),
+        candidatePlaces: useMemo(() => response?.map(place => new DistanceAwarePlace(place, currentLocation && getHaversineDistance(place, currentLocation))), [response, currentLocation]),
         changeCurrentLocation: setCurrentLocation,
         createCandidatePlace: (name: string, address: string) => createCandidatePlace(name, address).then(refetchResponse),
         removeCandidatePlace: (placeId: string) => removeCandidatePlace(placeId).then(refetchResponse)

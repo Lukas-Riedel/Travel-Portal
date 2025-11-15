@@ -11,14 +11,14 @@ export const useEvents = (eventType: EventType): UseEventsResult => {
 
     const markAsRead = useCallback((messageId: string) => {
         setReadMessageIds(previous => new Set(previous).add(messageId))
-    }, [])
+    }, [setReadMessageIds])
 
     const events = useMemo(() => messages
         ?.filter(message => message.data?.event === eventType && !readMessageIds.has(message.messageId))
         ?.map(message => ({ ...(message.data?.args ?? {}), markAsRead: () => markAsRead(message.messageId) })), [messages, readMessageIds])
 
     return {
-        events: events,
+        events,
         publishPhotosUploadingTriggeredEvent: (agentId: string, placeId: string, placeName: string, path: string, albumId?: string, timestamp?: number, mainPhotoPosition?: number) =>
             createEvent(EventType.PhotosUploadingTriggered, { agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition }),
         publishPhotoReplacingTriggeredEvent: (agentId: string, placeId: string, albumId: string, placeName: string, replacedPhotoId: string, path: string) =>

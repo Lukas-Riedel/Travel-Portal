@@ -3,6 +3,7 @@ import { getCurrentYear, ONE_MONTH_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
 import { useConfiguration } from "../contexts/ConfigContext.jsx"
 import type { UsePublicHolidaysResult } from "../types/UsePublicHolidaysResult.ts"
+import { useCallback } from "react"
 
 export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => {
     const { configuration } = useConfiguration()
@@ -15,9 +16,26 @@ export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => 
         refetchOnWindowFocus: false
     })
 
+    const isPublicHoliday = useCallback((date: Date) => {
+        if (isLoading) {
+            return false
+        }
+
+        const localDateString = formatLocalDate(date)
+        return publicHolidays.some(publicHoliday => publicHoliday.date === localDateString)
+    }, [isLoading, publicHolidays])
+
+    const isFreeDay = useCallback((date: Date) => {
+        if (isLoading) {
+            return false
+        }
+
+        return isWeekend(date) || isPublicHoliday(date)
+    }, [isLoading, isPublicHoliday])
+
     return {
-        isPublicHoliday: (date: Date) => !isLoading && isPublicHoliday(publicHolidays, date),
-        isFreeDay: (date: Date) => !isLoading && (isWeekend(date) || isPublicHoliday(publicHolidays, date))
+        isPublicHoliday,
+        isFreeDay
     }
 }
 
@@ -34,11 +52,6 @@ async function fetchPublicHolidays(year: number, countryCode: string): Promise<P
 function formatLocalDate(date: Date): string {
     // This format matches the one used by the API.
     return format(date, "yyyy-MM-dd")
-}
-
-function isPublicHoliday(publicHolidays: PublicHolidaysResponse, date: Date): boolean {
-    const localDateString = formatLocalDate(date)
-    return publicHolidays.some(publicHoliday => publicHoliday.date === localDateString)
 }
 
 type PublicHolidaysResponse = { date: string }[]

@@ -20,5 +20,6 @@ interface ImportMeta {
 }
 
 declare const Android: {
+    login?: (username: string, password: string) => void
     logout?: () => void
 } | undefined

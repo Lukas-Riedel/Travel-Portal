@@ -91,7 +91,7 @@ export default function App() {
     return (
         <>
             <Toaster position="top-center" offset={96} />
-            <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+            <BrowserRouter basename={"/"}>
                 <ScrollToTop />
                 <AppContent />
             </BrowserRouter>
