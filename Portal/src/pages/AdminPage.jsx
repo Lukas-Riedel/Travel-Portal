@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import TabMenu from "../components/TabMenu"
 import TripSummary from "../components/TripSummary"
-import NoteBar from "../components/NoteBar"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip"
 import ExpenseSummary from "../components/ExpenseSummary"
 import { Plus } from "lucide-react"
@@ -39,6 +38,7 @@ import DocumentCardGrid from "../components/DocumentCardGrid"
 import { useVouchers } from "../hooks/useVouchers"
 import VoucherCardGrid from "../components/VoucherCardGrid"
 import { useRegions } from "../hooks/useRegions.ts"
+import NoteCardGrid from "../components/NoteCardGrid.jsx"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -65,7 +65,7 @@ export default function AdminPage() {
     const { updateAirportLongName } = useAirports()
     const devices = useDevices({ type: "agent" })
     const trips = useRegularTrips({ include: ["watchedFlights"] })
-    const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense,
+    const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense, updateTripNoteContent,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: ["categories"], minStart: 0, maxEnd: 0 })
     const { subscriptions, createSubscription, removeSubscription } = useSubscriptions()
@@ -372,9 +372,10 @@ export default function AdminPage() {
                         onNoteAdded={createTripNote}
                         onNoteRemoved={removeTripNote}
                     />
-                    <NoteBar
+                    <NoteCardGrid
                         notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
                         onNoteCreated={createTripNote}
+                        onNoteContentUpdated={updateTripNoteContent}
                         onNoteRemoved={removeTripNote} />
                     <ExpenseSummary
                         expenses={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.expenses ?? [])}

@@ -2,7 +2,8 @@ import {
     getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
     updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
     updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote,
-    updatePlaceAlbumReviewed
+    updatePlaceAlbumReviewed,
+    updatePlaceNoteContent
 } from "../clients/coreClient.ts"
 import { useEffect } from "react"
 import { Place } from "../classes/Place.ts"
@@ -47,6 +48,7 @@ export const usePlace = (placeId?: string): UsePlaceResult => {
         updatePlaceAlbumReviewed: () => Promise.all(response?.dates?.map(date => date.album)?.filter(Boolean)?.filter(album => !album.reviewed)?.map(album => updatePlaceAlbumReviewed(placeId, album.id))).then(refetchResponse),
         refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number) => refreshPlaceAlbum(placeId, albumId, mainPhotoPosition ? { mainPhotoPosition } : {}).then(refetchResponse),
         createPlaceNote: (name: string) => createPlaceNote(placeId, name).then(refetchResponse),
+        updatePlaceNoteContent: (noteId: string, content: string) => updatePlaceNoteContent(placeId, noteId, content).then(refetchResponse),
         removePlaceNote: (noteId: string) => removePlaceNote(placeId, noteId).then(refetchResponse)
     }
 }

@@ -16,5 +16,6 @@ export interface UsePlaceResult {
     updatePlaceAlbumReviewed: (albumId: string) => Promise<void>
     refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number) => Promise<void>
     createPlaceNote: (content: string) => Promise<void>
+    updatePlaceNoteContent: (noteId: string, content: string) => Promise<void>
     removePlaceNote: (noteId: string) => Promise<void>
 }

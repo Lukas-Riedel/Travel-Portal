@@ -10,11 +10,11 @@ import TripCalendar from "../components/TripCalendar"
 import TripNavigation from "../components/TripNavigation"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import ExpenseSummary from "../components/ExpenseSummary"
-import NoteBar from "../components/NoteBar"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
+import NoteCardGrid from "../components/NoteCardGrid.jsx"
 
 export default function TripPage() {
     const { isAdmin } = useAuth()
@@ -23,7 +23,7 @@ export default function TripPage() {
     const { tripId } = useParams()
 
     const { trip, removeTrip, moveTrip, loadTrip, updateTripName, removeTripHighlight, updateTripMainHighlight,
-        createTripExpense, updateTripExpenseDescription, updateTripExpenseValue,
+        createTripExpense, updateTripExpenseDescription, updateTripExpenseValue, updateTripNoteContent,
         removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes } = useTrip(tripId)
     const { trips: candidateTrips } = useCandidateTrips()
     const { places } = useRegularPlaces({ tripId, include: ["categories", "dates"], sort: "-score" })
@@ -85,9 +85,10 @@ export default function TripPage() {
                     onExpenseRemoved={removeTripExpense} />
             )}
             {isAdmin && (
-                <NoteBar
+                <NoteCardGrid
                     notes={trip && (trip.notes ?? [])}
                     onNoteCreated={createTripNote}
+                    onNoteContentUpdated={updateTripNoteContent}
                     onNoteRemoved={removeTripNote} />
             )}
             <TripNavigation trip={trip} />

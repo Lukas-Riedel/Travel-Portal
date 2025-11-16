@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { getToken, onMessage } from "firebase/messaging"
 import { messaging } from "../lib/firebase.js"
 import { useAuth } from "./AuthContext.tsx"
@@ -9,7 +9,7 @@ import type { Message } from "../types/Message.ts"
 
 const NotificationContext = createContext<UseNotificationsResult | undefined>(undefined)
 
-export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
+export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     const { accessToken } = useAuth()
     const { deviceId } = useConfiguration()
 

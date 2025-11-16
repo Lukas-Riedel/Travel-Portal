@@ -669,13 +669,6 @@ export const createTripHighlight = async (tripId: string, photoId: string): Prom
 export const removeTripHighlight = async (tripId: string, highlightId: string): Promise<void> =>
     coreClient.delete(`trips/${tripId}/highlights/${highlightId}`)
 
-export const createTripNote = async (tripId: string, content: string): Promise<Note> =>
-    coreClient.post<Note>(`trips/${tripId}/notes`,
-        {
-            content
-        }
-    ).then(extractData)
-
 export const createPlaceNote = async (placeId: string, content: string): Promise<Note> =>
     coreClient.post<Note>(`places/${placeId}/notes`,
         {
@@ -683,11 +676,32 @@ export const createPlaceNote = async (placeId: string, content: string): Promise
         }
     ).then(extractData)
 
-export const removeTripNote = async (tripId: string, noteId: string): Promise<void> =>
-    coreClient.delete(`trips/${tripId}/notes/${noteId}`)
+export const updatePlaceNoteContent = async (placeId: string, noteId: string, content: string): Promise<Note> =>
+    coreClient.patch<Note>(`places/${placeId}/notes/${noteId}`,
+        {
+            content
+        }
+    ).then(extractData)
 
 export const removePlaceNote = async (placeId: string, noteId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}/notes/${noteId}`)
+
+export const createTripNote = async (tripId: string, content: string): Promise<Note> =>
+    coreClient.post<Note>(`trips/${tripId}/notes`,
+        {
+            content
+        }
+    ).then(extractData)
+
+export const updateTripNoteContent = async (tripId: string, noteId: string, content: string): Promise<Note> =>
+    coreClient.patch<Note>(`trips/${tripId}/notes/${noteId}`,
+        {
+            content
+        }
+    ).then(extractData)
+
+export const removeTripNote = async (tripId: string, noteId: string): Promise<void> =>
+    coreClient.delete(`trips/${tripId}/notes/${noteId}`)
 
 export const createPlaceLabel = async (placeId: string, name: string): Promise<Label> =>
     coreClient.post<Label>(`places/${placeId}/labels`,

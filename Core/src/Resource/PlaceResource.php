@@ -50,6 +50,7 @@
                 $group->post("/{placeId}/labels", [$resource, "createPlaceLabel"]);
                 $group->delete("/{placeId}/labels/{labelId}", [$resource, "removePlaceLabel"]);
                 $group->post("/{placeId}/notes", [$resource, "createPlaceNote"]);
+                $group->patch("/{placeId}/notes/{noteId}", [$resource, "updatePlaceNote"]);
                 $group->delete("/{placeId}/notes/{noteId}", [$resource, "removePlaceNote"]);
                 $group->post("/{placeId}/highlights", [$resource, "createPlaceHighlight"]);
                 $group->delete("/{placeId}/highlights/{highlightId}", [$resource, "removePlaceHighlight"]);
@@ -404,7 +405,6 @@
 
             return $this->doGetPlace($placeId);
         }
-
         
         #[OA\Patch(
             path: "/places/{placeId}",
@@ -680,9 +680,9 @@
                     properties: [
                         new OA\Property(
                             property: "content",
-                            description: "The HTML content of the note",
+                            description: "The MD content of the note",
                             type: "string",
-                            example: "<strong>Lorem ipsum</strong> dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
+                            example: "**Lorem ipsum** dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
                         )
                     ]
                 )
@@ -764,6 +764,123 @@
             $content = $this->requireJsonBodyField($request, "content");
 
             return $this->noteService->createPlaceNote($placeId, $content);
+        }
+
+        #[OA\Patch(
+            path: "/places/{placeId}/notes/{noteId}",
+            summary: "Update a note for a place with the specified identifier",
+            operationId: "updatePlaceNote",
+            tags: ["Places"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "content",
+                            description: "The MD content of the note",
+                            type: "string",
+                            example: "**Lorem ipsum** dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
+                        )
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "placeId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the place",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                ),
+                new OA\Parameter(
+                    name: "noteId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the note",
+                    schema: new OA\Schema(type: "string"),
+                    example: "6846808f-b8d8-409c-bc78-97878b3a4446",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Updated a note for a place with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Place")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function updatePlaceNote(Request $request, Response $response, array $routeArguments) : mixed {           
+            $this->requireAdmin($request);
+            $wasUpdated = false;
+
+            $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $noteId = $this->requirePathArgument($routeArguments, "noteId");
+
+            $newContent = $this->getJsonBodyField($request, "content");
+            if ($newContent !== null) {
+                $wasUpdated |= $this->noteService->updateNoteContent($noteId, $newContent);
+            }     
+            
+            if (!$wasUpdated) {
+                $this->logger->warning("The note with the identifier '{$noteId}' was not updated.");
+            }
+
+            return $this->noteService->getPlaceNote($placeId, $noteId);
         }
 
         #[OA\Delete(

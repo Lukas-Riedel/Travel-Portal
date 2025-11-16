@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo } from "react"
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react"
 import { getIamResponseWithCredentials } from "../clients/iamClient.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import type { UseAuthResult } from "../types/UseAuthResult.ts"
@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode"
 
 const AuthContext = createContext<UseAuthResult | undefined>(undefined)
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { accessToken, logout, setIamResponse } = useAuthStore()
 
     const login = useCallback(async ({ username, password }: Credentials) => {

@@ -17,9 +17,9 @@
             ),
             new OA\Property(
                 property: "content",
-                description: "The HTML content of the note",
+                description: "The MD content of the note",
                 type: "string",
-                example: "<strong>Lorem ipsum</strong> dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
+                example: "**Lorem ipsum** dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
             ),
             new OA\Property(
                 property: "timestamp",

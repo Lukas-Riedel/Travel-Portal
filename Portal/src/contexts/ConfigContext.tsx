@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react"
+import { createContext, useContext, type ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { listConfigurationEntries, replaceConfigurationEntry } from "../clients/coreClient.ts"
 import type { UseConfigurationResult } from "../types/UseConfigurationResult.ts"
@@ -19,7 +19,7 @@ const deviceId = (() => {
     return id
 })()
 
-export function ConfigurationProvider({ children }: { children: React.ReactNode }) {
+export function ConfigurationProvider({ children }: { children: ReactNode }) {
     const { response, refetchResponse } = useQuery({
         queryKey: ["listConfigurationEntries"],
         queryFn: listConfigurationEntries,

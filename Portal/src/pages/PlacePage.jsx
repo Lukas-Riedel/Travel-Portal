@@ -12,9 +12,9 @@ import { usePlace } from "../hooks/usePlace.js"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useEvents } from "../hooks/useEvents.js"
-import NoteBar from "../components/NoteBar.jsx"
 import { useMemo } from "react"
 import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
+import NoteCardGrid from "../components/NoteCardGrid.jsx"
 
 export default function PlacePage() {
     const { isAdmin } = useAuth()
@@ -22,7 +22,7 @@ export default function PlacePage() {
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumReviewed,
-        updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt,
+        updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote } = usePlace(placeId)
     const { places } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "-score" })
@@ -72,9 +72,10 @@ export default function PlacePage() {
                 count={3} />
             <SunAltitudeBar place={place} />
             {isAdmin && (
-                <NoteBar
+                <NoteCardGrid
                     notes={place && (place.notes ?? [])}
                     onNoteCreated={createPlaceNote}
+                    onNoteContentUpdated={updatePlaceNoteContent}
                     onNoteRemoved={removePlaceNote} />
             )}
         </>

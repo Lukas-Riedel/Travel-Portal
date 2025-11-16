@@ -18,6 +18,7 @@
                 INNER JOIN {$noteType->getTableName()} n
                     ON ni.id = n.note_id
                 WHERE n.id = ?
+                ORDER BY timestamp DESC
             SQL;
 
             return $this->databaseClient
@@ -26,6 +27,28 @@
                 ->getMappedResultSet(function($noteRow) {
                     return new Note($noteRow["id"], $noteRow["content"], intval($noteRow["timestamp"]));
                 });
+        }
+
+        public function selectNote(NoteType $noteType, string $entityId, string $noteId) : ?Note {
+            $sql = <<<SQL
+                SELECT ni.*
+                FROM note_identifier ni
+                INNER JOIN {$noteType->getTableName()} n
+                    ON ni.id = n.note_id
+                WHERE n.id = ?
+                    AND ni.id = ?
+            SQL;
+
+            $noteRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($entityId, $noteId)
+                ->getSingleRow();
+
+            if ($noteRow === null) {
+                return null;
+            }
+
+            return new Note($noteRow["id"], $noteRow["content"], intval($noteRow["timestamp"]));
         }
 
         public function insertNoteIdentifier(Note $note) : bool {
@@ -69,6 +92,20 @@
                 ->statementBuilder($sql)
                 ->withParameters($entityId, $noteId)
                 ->execute() === 1;            
+        }
+
+        public function updateNoteContent(string $noteId, string $content) : bool {
+            $sql = <<<SQL
+                UPDATE note_identifier
+                SET content = ?,
+                    timestamp = UNIX_TIMESTAMP()
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($content, $noteId)
+                ->execute() === 1;
         }
 
         public function updateNoteOwner(NoteType $noteType, string $noteId, string $entityId) : bool {

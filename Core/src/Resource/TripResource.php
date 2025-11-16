@@ -49,6 +49,7 @@
                 $group->patch("/{tripId}/expenses/{expenseId}", [$resource, "updateTripExpense"]);
                 $group->delete("/{tripId}/expenses/{expenseId}", [$resource, "removeTripExpense"]);
                 $group->post("/{tripId}/notes", [$resource, "createTripNote"]);
+                $group->patch("/{tripId}/notes/{noteId}", [$resource, "updateTripNote"]);
                 $group->delete("/{tripId}/notes/{noteId}", [$resource, "removeTripNote"]);
                 $group->post("/{tripId}/highlights", [$resource, "createTripHighlight"]);
                 $group->delete("/{tripId}/highlights/{highlightId}", [$resource, "removeTripHighlight"]);
@@ -980,9 +981,9 @@
                     properties: [
                         new OA\Property(
                             property: "content",
-                            description: "The HTML content of the note",
+                            description: "The MD content of the note",
                             type: "string",
-                            example: "<strong>Lorem ipsum</strong> dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
+                            example: "**Lorem ipsum** dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
                         )
                     ]
                 )
@@ -1064,6 +1065,123 @@
             $content = $this->requireJsonBodyField($request, "content");
 
             return $this->noteService->createTripNote($tripId, $content);
+        }
+
+        #[OA\Patch(
+            path: "/trips/{tripId}/notes/{noteId}",
+            summary: "Update a note for a trip with the specified identifier",
+            operationId: "updateTripNote",
+            tags: ["Trips"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "content",
+                            description: "The MD content of the note",
+                            type: "string",
+                            example: "**Lorem ipsum** dolor sit amet, consectetur adipiscing elit. Morbi fringilla sem sed nulla luctus iaculis. Cras rutrum turpis massa. Suspendisse."
+                        )
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "tripId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the trip",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                ),
+                new OA\Parameter(
+                    name: "noteId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the note",
+                    schema: new OA\Schema(type: "string"),
+                    example: "6846808f-b8d8-409c-bc78-97878b3a4446",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Updated a note for a trip with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Trip")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function updateTripNote(Request $request, Response $response, array $routeArguments) : mixed {           
+            $this->requireAdmin($request);
+            $wasUpdated = false;
+
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $noteId = $this->requirePathArgument($routeArguments, "noteId");
+
+            $newContent = $this->getJsonBodyField($request, "content");
+            if ($newContent !== null) {
+                $wasUpdated |= $this->noteService->updateNoteContent($noteId, $newContent);
+            }     
+            
+            if (!$wasUpdated) {
+                $this->logger->warning("The note with the identifier '{$noteId}' was not updated.");
+            }
+
+            return $this->noteService->getTripNote($tripId, $noteId);
         }
 
         #[OA\Delete(

@@ -27,8 +27,20 @@
             return $this->noteMapper->selectNotes(NoteType::Trip, $tripId);
         }
 
+        public function getTripNote(string $tripId, string $noteId) : ?Note {
+            return $this->noteMapper->selectNote(NoteType::Trip, $tripId, $noteId);
+        }
+
         public function getPlaceNotes(string $placeId) : array {
             return $this->noteMapper->selectNotes(NoteType::Place, $placeId);
+        }
+
+        public function getPlaceNote(string $placeId, string $noteId) : ?Note {
+            return $this->noteMapper->selectNote(NoteType::Place, $placeId, $noteId);
+        }
+
+        public function updateNoteContent(string $noteId, string $content) : bool {
+            return $this->noteMapper->updateNoteContent($noteId, $content);
         }
 
         public function removeTripNote(string $tripId, string $noteId) : bool {

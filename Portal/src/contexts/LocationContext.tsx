@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import type { UseLocationResult } from "../types/UseLocationResult.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 
 const LocationContext = createContext<UseLocationResult | undefined>(undefined)
 
-export function LocationProvider({ children }: { children: React.ReactNode }) {
+export function LocationProvider({ children }: { children: ReactNode }) {
     const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null)
 
     useEffect(() => {

@@ -16,5 +16,6 @@ export interface UseTripResult {
     updateTripExpenseDescription: (expenseId: string, description: string) => Promise<void>
     updateTripExpenseValue: (expenseId: string, value: number, currency: string) => Promise<void>
     createTripNote: (name: string) => Promise<void>
+    updateTripNoteContent: (noteId: string, content: string) => Promise<void>
     removeTripNote: (noteId: string) => Promise<void>
 }
