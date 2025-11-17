@@ -45,9 +45,9 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
     const handleCopyGeoJsonToClipboard = () => {
         showConfirmToast(
             "GeoJSON reprezentace regionu bude vložena do schránky. Přeješ si pokračovat?",
+            async () => navigator.clipboard.writeText(JSON.stringify(region.geoJson)),
             "GeoJSON reprezentace regionu byla úspěšně vložena do schránky",
-            "Nepodařilo se vložit GeoJSON reprezentaci regionu do schránky",
-            async () => navigator.clipboard.writeText(JSON.stringify(region.geoJson))
+            "Nepodařilo se vložit GeoJSON reprezentaci regionu do schránky"
         )
     }
 

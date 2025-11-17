@@ -84,8 +84,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         const highlight = shuffledHighlights[currentHighlightIndex]
         showConfirmToast(
             "Opravdu chceš přidat tento highlight?",
-            "Highlight byl úspěšně přidán",
-            "Nepodařilo se přidat highlight",
             async () => {
                 return onHighlightCreated(highlight.photo.id).then(_ => {
                     const newHighlights = [...shuffledHighlights]
@@ -93,7 +91,9 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     setShuffledHighlights(newHighlights)
                     setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
                 })
-            })
+            }),
+            "Highlight byl úspěšně přidán",
+            "Nepodařilo se přidat highlight"
     }
 
     const handlePhotoReplaced = () => {
@@ -113,11 +113,11 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const handlePhotoCorrected = () => {
         showConfirmToast(
             "Opravdu chceš upravit tento highlight?",
-            "Highlight byl úspěšně upraven",
-            "Nepodařilo se upravit highlight",
             async () => getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
                 .then(base64Data => onPhotoCorrected(place.id, currentHighlightAlbumId, uuidv4() + ".jpg", base64Data, shuffledHighlights[currentHighlightIndex].photo.id))
-                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
+                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")),
+            "Highlight byl úspěšně upraven",
+            "Nepodařilo se upravit highlight"
         )
     }
 
@@ -125,8 +125,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         const highlight = shuffledHighlights[currentHighlightIndex]
         showConfirmToast(
             "Opravdu chceš odstranit tento highlight?",
-            "Highlight byl úspěšně odstraněn",
-            "Nepodařilo se odstranit highlight",
             async () => {
                 return onHighlightRemoved(highlight.id).then(_ => {
                     const newHighlights = [...shuffledHighlights]
@@ -134,16 +132,18 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     setShuffledHighlights(newHighlights)
                     setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
                 })
-            })
+            }),
+            "Highlight byl úspěšně odstraněn",
+            "Nepodařilo se odstranit highlight"
     }
 
     const handleMainHighlightUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
         showConfirmToast(
             "Opravdu chceš nastavit tento highlight jako hlavní highlight?",
+            async () => onMainHighlightUpdated(highlight.id)),
             "Hlavní highlight byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat hlavní highlight",
-            async () => onMainHighlightUpdated(highlight.id))
+            "Nepodařilo se aktualizovat hlavní highlight"
     }
 
     const handleHighlightQualityAttributesUpdated = () => {

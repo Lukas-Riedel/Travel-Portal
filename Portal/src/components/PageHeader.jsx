@@ -1,6 +1,5 @@
 import { Images, Share2, SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
 import { useUserInput } from "../hooks/useUserInput.ts"
 import React, { useEffect, useState } from "react"
@@ -20,20 +19,21 @@ export default function PageHeader({ name, categories, internalAttributes, showH
     }, [])
 
     const handleNameChanged = () => {
-        showInputToast("Zadej nové jméno:",
-            name,
+        showInputToast(
+            "Zadej nové jméno:",
+            onNameChanged,
             "Jméno bylo úspěšně aktualizováno",
             "Nepodařilo se aktualizovat jméno",
-            onNameChanged
+            name
         )
     }
 
     const handleRemoved = () => {
         showConfirmToast(
             "Opravdu chceš odstranit tuto entitu?",
+            onRemoved,
             "Entita byla úspěšně odstraněna",
-            "Nepodařilo se odstranit entitu",
-            onRemoved
+            "Nepodařilo se odstranit entitu"
         )
     }
 

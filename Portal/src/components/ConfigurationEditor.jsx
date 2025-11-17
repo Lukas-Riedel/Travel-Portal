@@ -14,9 +14,9 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
     const handleConfigurationUpdated = value => {
         showConfirmToast(
             "Opravdu chceš modifikovat tento konfigurační záznam?",
+            async () => onConfigurationUpdated(selectedKey, value),
             "Konfigurační záznam byl uspěšně modifikován",
-            "Nepodařilo se modifikovat konfigurační záznam",
-            async () => onConfigurationUpdated(selectedKey, value)
+            "Nepodařilo se modifikovat konfigurační záznam"
         )
     }
 

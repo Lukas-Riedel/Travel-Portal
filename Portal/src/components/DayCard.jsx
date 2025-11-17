@@ -12,7 +12,6 @@ import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import { useDevices } from "../hooks/useDevices"
 import { useUserInput } from "../hooks/useUserInput.ts"
-import showInputToast from "./InputToast"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -63,7 +62,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showInputToast } = useUserInput()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
 
@@ -73,19 +72,18 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
     const handleNoteRemoved = noteId => {
         showConfirmToast(
             "Opravdu chceš odstranit vybranou poznámku?",
+            async () => onNoteRemoved(noteId),
             "Poznámka byla úspěšně odstraněna",
-            "Nepodařilo se odstranit poznámku",
-            async () => onNoteRemoved(noteId)
+            "Nepodařilo se odstranit poznámku"
         )
     }
 
     const handleNoteCreated = () => {
         showInputToast(
             "Zadej obsah poznámky:",
-            "",
+            async description => onNoteAdded(notePrefix + description),
             "Poznámka byla úspěšně přidána",
-            "Nepodařilo se přidat poznámku",
-            async description => onNoteAdded(notePrefix + description)
+            "Nepodařilo se přidat poznámku"
         )
     }
 

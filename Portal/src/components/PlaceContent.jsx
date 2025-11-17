@@ -2,7 +2,6 @@ import { ImagePlus, LocationEdit, RefreshCcw, SquarePen, TriangleAlert } from "l
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useUserInput } from "../hooks/useUserInput.ts"
 import PlaceMap from "./PlaceMap.jsx"
-import showInputToast from "./InputToast.jsx"
 import { TailSpin } from "react-loader-spinner"
 import showFormToast from "./FormToast.jsx"
 import { getTime, parseISO } from "date-fns"
@@ -27,7 +26,7 @@ const checklistItems = [
 export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onAddressChanged, onExcerptRefreshed, onLocationChanged, onPlaceReviewed }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showInputToast } = useUserInput()
 
     const [checked, setChecked] = useState({})
 
@@ -38,29 +37,30 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     const progress = (Object.values(checked).filter(Boolean).length / checklistItems.length) * 100
 
     const handleExcerptChanged = () => {
-        showInputToast("Zadej nový excerpt:",
-            place.excerpt,
+        showInputToast(
+            "Zadej nový excerpt:",
+            onExcerptChanged,
             "Excerpt byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat excerpt",
-            onExcerptChanged
+            place.excerpt
         )
     }
 
     const handleExcerptRefreshed = () => {
         showConfirmToast(
             "Opravdu chceš znovu vygenerovat excerpt?",
+            onExcerptRefreshed,
             "Excerpt byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat excerpt",
-            onExcerptRefreshed
+            "Nepodařilo se aktualizovat excerpt"
         )
     }
 
     const handlePlaceReviewed = () => {
         showConfirmToast(
             "Bylo místo zrevidováno dle požadavků?",
+            onPlaceReviewed,
             "Revize místa byla úspěšně dokončena",
-            "Nepodařilo se dokončit revizi místa",
-            onPlaceReviewed
+            "Nepodařilo se dokončit revizi místa"
         )
     }
 
@@ -71,9 +71,9 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
 
         showConfirmToast(
             "Opravdu chceš změnit polohu místa na zvolené souřadnice?",
+            async () => onLocationChanged(latitude, longitude)),
             "Poloha místa byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat polohu místa",
-            async () => onLocationChanged(latitude, longitude))
+            "Nepodařilo se aktualizovat polohu místa"
     }
 
     useEffect(() => {
@@ -105,11 +105,12 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     }
 
     const handleAddressChanged = () => {
-        showInputToast("Zadej novou adresu:",
-            place.name,
+        showInputToast(
+            "Zadej novou adresu:",
+            onAddressChanged,
             "Adresa byla úspěšně aktualizována",
             "Nepodařilo se aktualizovat adresu",
-            onAddressChanged
+            place.name
         )
     }
 

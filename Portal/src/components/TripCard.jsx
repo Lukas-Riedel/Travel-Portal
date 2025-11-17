@@ -30,9 +30,9 @@ export default function TripCard({ trip, onTripRemoved }) {
     const handleDelete = () => {
         showConfirmToast(
             "Opravdu chceš odstranit výlet '" + trip.name + "'?",
+            async () => onTripRemoved(trip.id),
             "Výlet byl úspěšně odstraněn",
-            "Nepodařilo se odstranit výlet",
-            async () => onTripRemoved(trip.id)
+            "Nepodařilo se odstranit výlet"
         )
     }
 

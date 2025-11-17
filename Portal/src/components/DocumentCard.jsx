@@ -12,9 +12,9 @@ export default function DocumentCard({ document, onDocumentRemoved }) {
     const handleDelete = () => {
         showConfirmToast(
             "Opravdu chceš odstranit dokument '" + document.name + "'?",
+            async () => onDocumentRemoved(document.id),
             "Dokument byl úspěšně odstraněn",
-            "Nepodařilo se odstranit dokument",
-            async () => onDocumentRemoved(document.id)
+            "Nepodařilo se odstranit dokument"
         )
     }
 

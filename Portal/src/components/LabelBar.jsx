@@ -6,14 +6,13 @@ import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useLabels } from "../hooks/useLabels"
-import showInputToast from "./InputToast"
 import { useConfiguration } from "../contexts/ConfigContext"
 
 const loadingLabelsCount = 3
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showInputToast } = useUserInput()
 
     const { configuration } = useConfiguration();
 
@@ -25,24 +24,24 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const handleKnownLabelAdded = labelName => {
         showConfirmToast(
             `Opravdu chceš přidat štítek '${labelName}'?`,
+            async () => onLabelAdded(labelName)),
             "Štítek byl úspěšně přidán",
-            "Nepodařilo se přidat štítek",
-            async () => onLabelAdded(labelName))
+            "Nepodařilo se přidat štítek"
     }
     const handleUnknownLabelAdded = () => {
-        showInputToast("Zadej jméno štítku k přidání:",
-            "",
+        showInputToast(
+            "Zadej jméno štítku k přidání:",
+            async (labelName) => onLabelAdded(labelName)),
             "Štítek byl úspěšně přidán",
-            "Nepodařilo se přidat štítek",
-            async (labelName) => onLabelAdded(labelName))
+            "Nepodařilo se přidat štítek"
     }
 
     const handleLabelRemoved = label => {
         showConfirmToast(
             `Opravdu chceš odstranit štítek '${label.name}'?`,
+            async () => onLabelRemoved(label.id)),
             "Štítek byl úspěšně odstraněn",
-            "Nepodařilo se odstranit štítek",
-            async () => onLabelRemoved(label.id))
+            "Nepodařilo se odstranit štítek"
     }
 
     return (!labels || labels.length > 0 || isAdmin) && (

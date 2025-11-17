@@ -13,9 +13,9 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
     const handleDelete = () => {
         showConfirmToast(
             "Opravdu chceš odstranit poukaz '" + voucher.description + "'?",
+            async () => onVoucherRemoved(voucher.id),
             "Poukaz byl úspěšně odstraněn",
-            "Nepodařilo se odstranit poukaz",
-            async () => onVoucherRemoved(voucher.id)
+            "Nepodařilo se odstranit poukaz"
         )
     }
 

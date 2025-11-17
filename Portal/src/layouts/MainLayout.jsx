@@ -40,9 +40,9 @@ export default function MainLayout({ children }) {
     const handleLogout = () => {
         showConfirmToast(
             "Opravdu se chceš odhlásit?",
+            logout,
             "Odhlášení proběhlo úspěšně",
-            "Při odhlašování došlo k chybě",
-            logout
+            "Při odhlašování došlo k chybě"
         )
     }
 

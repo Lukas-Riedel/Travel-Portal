@@ -7,21 +7,20 @@ import { getDateString, getDateTimeString, getTimeString } from "../utils/helper
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
-import showInputToast from "./InputToast"
 import { listCategories } from "../clients/coreClient"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showInputToast } = useUserInput()
 
     const handleRefreshAllAlbums = () => {
         showConfirmToast(
             "Pokud bylo album odstraněno, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",
+            onAllAlbumsInvalidated,
             "Všechna alba budou brzy aktualizována",
-            "Nepodařilo se aktualizovat všchna alba",
-            onAllAlbumsInvalidated
+            "Nepodařilo se aktualizovat všchna alba"
         )
     }
 
@@ -130,9 +129,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 window.open(photo.permalink, "_blank")
                 showConfirmToast(
                     "Pokud byla fotka odstraněna, je potřeba aktualizovat její alba. Přeješ si pokračovat?",
+                    async () => onPhotoInvalidated(photo.id),
                     "Alba byla úspěšně aktualizována",
-                    "Nepodařilo se aktualizovat alba",
-                    async () => onPhotoInvalidated(photo.id)
+                    "Nepodařilo se aktualizovat alba"
                 )
             }
         },
@@ -283,10 +282,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: airport => showInputToast(
                 "Zadej nové jméno letiště:",
-                "",
+                async (name) => onAirportNameChanged(airport.id, name),
                 "Jméno letiště bylo úspěšně aktualizováno",
-                "Nepodařilo se aktualizovat jméno letiště",
-                async (name) => onAirportNameChanged(airport.id, name)
+                "Nepodařilo se aktualizovat jméno letiště"
             )
         },
         "AIRLINE_WITHOUT_LOGO": {
@@ -298,10 +296,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: airline => showInputToast(
                 "Zadej nové logo aerolinky:",
-                "",
+                async (logo) => onAirlineLogoChanged(airline.id, logo),
                 "Logo aerolinky bylo úspěšně aktualizováno",
-                "Nepodařilo se aktualizovat logo aerolinky",
-                async (logo) => onAirlineLogoChanged(airline.id, logo)
+                "Nepodařilo se aktualizovat logo aerolinky"
             )
         },
         "NON_LOGGED_FLIGHT": {
@@ -318,9 +315,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             resolve: flight =>
                 showConfirmToast(
                     "Opravdu chceš zalogovat vybraný let?",
+                    async () => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start),
                     "Let byl úspěšně zalogován",
-                    "Nepodařilo se zalogovat let",
-                    async () => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start)
+                    "Nepodařilo se zalogovat let"
                 )
         },
         "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME": {

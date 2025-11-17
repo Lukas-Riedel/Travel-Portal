@@ -33,9 +33,9 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
     const handleMainPhotoUpdated = () => {
         showConfirmToast(
             "Opravdu chceš nastavit tuto fotku jako hlavní fotku alba?",
+            async () => onMainPhotoUpdated(album.id, photoPosition),
             "Hlavní fotka byla úspěšně nastavena",
-            "Nepodařilo se nastavit hlavní fotku",
-            async () => onMainPhotoUpdated(album.id, photoPosition)
+            "Nepodařilo se nastavit hlavní fotku"
         )
     }
 

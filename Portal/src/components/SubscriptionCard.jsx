@@ -12,9 +12,9 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
     const handleDelete = () => {
         showConfirmToast(
             "Opravdu chceš odstranit předplatné '" + subscription.description + "'?",
+            async () => onSubscriptionRemoved(subscription.id),
             "Předplatné bylo úspěšně odstraněno",
-            "Nepodařilo se odstranit předplatné",
-            async () => onSubscriptionRemoved(subscription.id)
+            "Nepodařilo se odstranit předplatné"
         )
     }
 

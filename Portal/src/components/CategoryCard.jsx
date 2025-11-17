@@ -19,9 +19,9 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
     const handleDelete = place => {
         showConfirmToast(
             "Opravdu chceš odstranit místo '" + place.name + "'?",
+            async () => onPlaceRemoved(place.id),
             "Místo bylo úspěšně odstraněno",
-            "Nepodařilo se odstranit místo",
-            async () => onPlaceRemoved(place.id)
+            "Nepodařilo se odstranit místo"
         )
     }
 

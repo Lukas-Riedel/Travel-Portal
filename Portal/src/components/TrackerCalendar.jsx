@@ -268,18 +268,18 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleRemoveEvent = event => {
         showConfirmToast(
             "Opravdu chceš odstranit tuto událost?",
+            async () => onEventRemoved(event.id),
             "Událost byla úspěšně odstraněna",
-            "Nepodařilo se odstranit událost",
-            async () => onEventRemoved(event.id)
+            "Nepodařilo se odstranit událost"
         )
     }
 
     const handleCopyToClipboard = event => {
         showConfirmToast(
             "Text události bude vložen do schránky. Přeješ si pokračovat?",
+            async () => navigator.clipboard.writeText(event.description),
             "Text události byl úspěšně vložen do schránky",
-            "Nepodařilo se vložit text události do schránky",
-            async () => navigator.clipboard.writeText(event.description)
+            "Nepodařilo se vložit text události do schránky"
         )
     }
 

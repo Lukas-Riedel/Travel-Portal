@@ -10,7 +10,6 @@ import showFormToast from "./FormToast"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
-import showInputToast from "./InputToast"
 import { getDateString } from "../utils/helpers"
 import { useVouchers } from "../hooks/useVouchers"
 
@@ -270,24 +269,24 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
 function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showInputToast } = useUserInput()
 
     const handleRemove = expense => {
         showConfirmToast(
             `Opravdu chceš odstranit výdaj "${expense.description}"?`,
+            async () => onExpenseRemoved(expense.id),
             "Výdaj byl úspěšně odstraněn",
-            "Nepodařilo se odstranit výdaj",
-            async () => onExpenseRemoved(expense.id)
+            "Nepodařilo se odstranit výdaj"
         )
     }
 
     const handleEditDescription = expense => {
         showInputToast(
             "Zadej nový popis výdaje:",
-            expense.description,
+            async description => onExpenseDescriptionUpdated(expense.id, description),
             "Popis výdaje byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat popis výdaje",
-            async description => onExpenseDescriptionUpdated(expense.id, description)
+            expense.description
         )
     }
 

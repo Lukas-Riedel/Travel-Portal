@@ -15,9 +15,9 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
     const handleDelete = () => {
         showConfirmToast(
             "Opravdu chceš odstranit vybranou poznámku?",
+            async () => onNoteRemoved(note.id),
             "Poznámka byla úspěšně odstraněna",
-            "Nepodařilo se odstranit poznámku",
-            async () => onNoteRemoved(note.id)
+            "Nepodařilo se odstranit poznámku"
         )
     }
 
@@ -29,11 +29,11 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
 
         showConfirmToast(
             "Opravdu chceš přidat novou poznámku?",
-            "Poznámka byla úspěšně přidána",
-            "Nepodařilo se přidat poznámku",
             async () => onNoteCreated(content).then(() => {
                 textareaRef.current.value = ""
-            })
+            }),
+            "Poznámka byla úspěšně přidána",
+            "Nepodařilo se přidat poznámku"
         )
     }
 
@@ -50,12 +50,12 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
 
         showConfirmToast(
             "Opravdu chceš upravit vybranou poznámku?",
-            "Poznámka byla úspěšně upravena",
-            "Nepodařilo se upravit poznámku",
             async () => onNoteContentUpdated(note.id, content).then(() => {
                 textareaRef.current.value = ""
                 setIsBeingEdited(false)
-            })
+            }),
+            "Poznámka byla úspěšně upravena",
+            "Nepodařilo se upravit poznámku"
         )
     }
 

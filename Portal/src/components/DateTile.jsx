@@ -44,9 +44,9 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
     const handleAlbumRefreshed = () => {
         showConfirmToast(
             "Opravdu chceš aktualizovat vybrané album?",
+            async () => onAlbumRefreshed(date.album.id),
             "Album bylo úspěšně aktualizováno",
-            "Nepodařilo se aktualizovat album",
-            async () => onAlbumRefreshed(date.album.id)
+            "Nepodařilo se aktualizovat album"
         )
     }
 

@@ -33,9 +33,9 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
     const handleAirlineRemoved = airline => {
         showConfirmToast(
             `Opravdu chceš odstranit aerolinku ${airline.name}?`,
+            async () => onAirlineRemoved(airline.id),
             "Aerolinka byla úspěšně odstraněna",
-            "Nepodařilo se odstranit aerolinku",
-            async () => onAirlineRemoved(airline.id)
+            "Nepodařilo se odstranit aerolinku"
         )
     }
 
