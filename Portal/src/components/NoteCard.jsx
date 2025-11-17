@@ -1,6 +1,6 @@
 import { Trash2, Plus, Bold, Italic, Link, Edit2, Check } from "lucide-react"
 import { useUserInput } from "../hooks/useUserInput.ts"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
 import ReactMarkdown from "react-markdown"
@@ -12,12 +12,12 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
     const textareaRef = useRef(null)
     const [isBeingEdited, setIsBeingEdited] = useState(onNoteCreated !== undefined)
 
-    const handleDelete = noteId => {
+    const handleDelete = () => {
         showConfirmToast(
             "Opravdu chceš odstranit vybranou poznámku?",
             "Poznámka byla úspěšně odstraněna",
             "Nepodařilo se odstranit poznámku",
-            async () => onNoteRemoved(noteId)
+            async () => onNoteRemoved(note.id)
         )
     }
 
@@ -37,9 +37,14 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
         )
     }
 
-    const handleUpdate = noteId => {
+    const handleUpdate = () => {
         const content = textareaRef.current.value.trim()
         if (!content) {
+            return
+        }
+
+        if (content === note.content) {
+            setIsBeingEdited(false)
             return
         }
 
@@ -47,7 +52,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             "Opravdu chceš upravit vybranou poznámku?",
             "Poznámka byla úspěšně upravena",
             "Nepodařilo se upravit poznámku",
-            async () => onNoteContentUpdated(noteId, content).then(() => {
+            async () => onNoteContentUpdated(note.id, content).then(() => {
                 textareaRef.current.value = ""
                 setIsBeingEdited(false)
             })
@@ -71,6 +76,19 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
         textarea.focus()
     }
 
+    const adjustHeight = () => {
+        const textarea = textareaRef.current
+        if (!textarea) {
+            return
+        }
+        textarea.style.height = "auto"
+        textarea.style.height = textarea.scrollHeight + "px"
+    }
+
+    useEffect(() => {
+        adjustHeight()
+    }, [note?.content])
+
     return (note || onNoteCreated) ? (
         <div className="relative bg-white rounded-xl shadow-md p-4 min-h-[100px] flex flex-col justify-between">
             {isBeingEdited ? (
@@ -78,6 +96,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                     ref={textareaRef}
                     defaultValue={note?.content}
                     placeholder={!note && "Nová poznámka"}
+                    onInput={adjustHeight}
                     className="w-full resize-none border border-gray-300 rounded-md p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 flex-grow" />
             ) : (
                 <div className="prose prose-sm max-w-none text-gray-800 mb-6">
@@ -128,7 +147,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                                             <Check size={16} />
                                         </button>
                                     )}
-                                    {onNoteContentUpdated && (
+                                    {!isBeingEdited && onNoteContentUpdated && (
                                         <button
                                             onClick={() => setIsBeingEdited(previous => !previous)}
                                             className="p-1 rounded hover:bg-gray-100 transition-colors">

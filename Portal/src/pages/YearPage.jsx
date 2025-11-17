@@ -57,6 +57,9 @@ export default function YearPage() {
                 onMainHighlightUpdated={updateYearMainHighlight}
                 onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />
             <StatisticsPanel statistics={year && (year.statistics ?? [])} />
+            {isAdmin && (
+                <TripTable trips={yearTrips?.filter(trip => trip?.isFuture())} />
+            )}
             <TripTileGrid trips={yearTrips?.slice()?.reverse()} />
             <CardGrid cardsPerRowCount={4}>
                 {days?.map((day, index) => (
@@ -70,9 +73,6 @@ export default function YearPage() {
                         onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
                 ))}
             </CardGrid>
-            {isAdmin && (
-                <TripTable trips={yearTrips?.filter(trip => trip?.isFuture())} />
-            )}
             <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses ?? [])} />
         </>
     )

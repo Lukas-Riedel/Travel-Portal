@@ -221,7 +221,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                                 <td className="p-3 text-center font-semibold hidden sm:table-cell">
                                     {`${totalCost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                                 </td>
-                                {isAdmin && <td />}
+                                {isAdmin && onExpenseRemoved && <td />}
                             </>
                         ) : (
                             <>

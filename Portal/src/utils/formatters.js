@@ -15,7 +15,7 @@ export function formatEvents(value) {
 }
 
 export function formatKilometers(value) {
-    return format(value, ["kilometr", "kilometry", "kilometrů"])
+    return format(Math.round(value), ["kilometr", "kilometry", "kilometrů"])
 }
 
 export function formatPhotos(value) {
