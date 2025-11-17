@@ -2,7 +2,7 @@ import { Wrench } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import LoadingCard from "./LoadingCard"
 import showFormToast from "./FormToast"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
@@ -14,9 +14,11 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
+    const { showConfirmToast } = useUserInput()
 
     const handleRefreshAllAlbums = () => {
-        showConfirmToast("Pokud bylo album odstraněno, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",
+        showConfirmToast(
+            "Pokud bylo album odstraněno, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",
             "Všechna alba budou brzy aktualizována",
             "Nepodařilo se aktualizovat všchna alba",
             onAllAlbumsInvalidated
@@ -126,7 +128,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: photo => {
                 window.open(photo.permalink, "_blank")
-                showConfirmToast("Pokud byla fotka odstraněna, je potřeba aktualizovat její alba. Přeješ si pokračovat?",
+                showConfirmToast(
+                    "Pokud byla fotka odstraněna, je potřeba aktualizovat její alba. Přeješ si pokračovat?",
                     "Alba byla úspěšně aktualizována",
                     "Nepodařilo se aktualizovat alba",
                     async () => onPhotoInvalidated(photo.id)
@@ -313,7 +316,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 }
             ),
             resolve: flight =>
-                showConfirmToast("Opravdu chceš zalogovat vybraný let?",
+                showConfirmToast(
+                    "Opravdu chceš zalogovat vybraný let?",
                     "Let byl úspěšně zalogován",
                     "Nepodařilo se zalogovat let",
                     async () => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start)

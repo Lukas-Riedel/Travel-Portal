@@ -5,7 +5,7 @@ import {
 } from "lucide-react"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import showFormToast from "./FormToast"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { format, fromUnixTime } from "date-fns"
@@ -270,6 +270,7 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
 function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
+    const { showConfirmToast } = useUserInput()
 
     const handleRemove = expense => {
         showConfirmToast(

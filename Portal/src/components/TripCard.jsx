@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { Calendar, Trash2 } from "lucide-react"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { formatDays } from "../utils/formatters"
@@ -11,9 +11,10 @@ import LoadingCard from "./LoadingCard"
 
 export default function TripCard({ trip, onTripRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
-    const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories","dates"] })
-    const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: ["categories","dates"] })
+    const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
+    const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : places, [trip, places, candidatePlaces])
 
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])

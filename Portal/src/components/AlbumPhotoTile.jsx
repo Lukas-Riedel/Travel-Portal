@@ -1,7 +1,7 @@
 import { Edit2, SendToBack, Star } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import PhotoTile from "./PhotoTile"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import showFormToast from "./FormToast"
 import { useState } from "react"
 import { getDateString } from "../utils/helpers"
@@ -12,6 +12,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function AlbumPhotoTile({ place, album, photo, photoPosition, onPhotoReplaced, onMainPhotoUpdated }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
+    const { showConfirmToast } = useUserInput()
 
     const [overlayType, setOverlayType] = useState(0)
 
@@ -30,7 +31,8 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
     }
 
     const handleMainPhotoUpdated = () => {
-        showConfirmToast("Opravdu chceš nastavit tuto fotku jako hlavní fotku alba?",
+        showConfirmToast(
+            "Opravdu chceš nastavit tuto fotku jako hlavní fotku alba?",
             "Hlavní fotka byla úspěšně nastavena",
             "Nepodařilo se nastavit hlavní fotku",
             async () => onMainPhotoUpdated(album.id, photoPosition)

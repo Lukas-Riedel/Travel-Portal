@@ -8,13 +8,14 @@ import { fromUnixTime } from "date-fns"
 import Tooltip from "./Tooltip"
 import { formatDuration } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import showFormToast from "./FormToast"
 import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
+    const { showConfirmToast } = useUserInput()
 
     const now = new Date()
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])

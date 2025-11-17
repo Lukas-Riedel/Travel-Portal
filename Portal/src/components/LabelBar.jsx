@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import clsx from "clsx"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
@@ -13,6 +13,7 @@ const loadingLabelsCount = 3
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const { configuration } = useConfiguration();
 
@@ -22,7 +23,8 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
         && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name), [allLabels, configuration, labels]))
 
     const handleKnownLabelAdded = labelName => {
-        showConfirmToast(`Opravdu chceš přidat štítek '${labelName}'?`,
+        showConfirmToast(
+            `Opravdu chceš přidat štítek '${labelName}'?`,
             "Štítek byl úspěšně přidán",
             "Nepodařilo se přidat štítek",
             async () => onLabelAdded(labelName))
@@ -36,7 +38,8 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     }
 
     const handleLabelRemoved = label => {
-        showConfirmToast(`Opravdu chceš odstranit štítek '${label.name}'?`,
+        showConfirmToast(
+            `Opravdu chceš odstranit štítek '${label.name}'?`,
             "Štítek byl úspěšně odstraněn",
             "Nepodařilo se odstranit štítek",
             async () => onLabelRemoved(label.id))
@@ -90,20 +93,20 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                             <Plus size={16} />
                         </button>
                     )}
-        </>
-    ) : Array.from({ length: loadingLabelsCount }).map((_, index) => (
-        <div
-            key={index}
-            className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
-            <div className="mx-4 min-w-[36px] min-h-[24px] flex items-center justify-center">
-                <TailSpin
-                    color="black"
-                    height={16}
-                    width={16} />
-            </div>
-        </div>
-    ))
-}
+                </>
+            ) : Array.from({ length: loadingLabelsCount }).map((_, index) => (
+                <div
+                    key={index}
+                    className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
+                    <div className="mx-4 min-w-[36px] min-h-[24px] flex items-center justify-center">
+                        <TailSpin
+                            color="black"
+                            height={16}
+                            width={16} />
+                    </div>
+                </div>
+            ))
+            }
         </div >
     )
 }

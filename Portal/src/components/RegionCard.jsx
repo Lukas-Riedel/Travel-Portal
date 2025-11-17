@@ -1,14 +1,15 @@
 import LoadingCard from "./LoadingCard"
 import { formatKilometers } from "../utils/formatters"
 import { Copy, Map, Wrench } from "lucide-react"
-import showConfirmToast from "./ConfirmToast.jsx"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import showFormToast from "./FormToast.jsx"
 import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
     const { isAdmin } = useAuth()
-    
+    const { showConfirmToast } = useUserInput()
+
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
         "Rádius": region.radius > 0 && formatKilometers(region.radius),

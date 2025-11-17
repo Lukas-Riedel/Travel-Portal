@@ -9,6 +9,13 @@
         "tracker": "Tracker",
         "admin": "Admin"
     },
+    "prompt": {
+        "confirm": "Ano",
+        "confirmed": "Akce byla úspěšně provedena",
+        "reject": "Ne",
+        "failed": "Při provádění akce došlo k chybě",
+        "loading": "Probíhá zpracování..."
+    },
     "flight": {
         "airport": "Letiště {{name}}"
     }

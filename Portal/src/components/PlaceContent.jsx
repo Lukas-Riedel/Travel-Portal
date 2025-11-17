@@ -1,6 +1,6 @@
 import { ImagePlus, LocationEdit, RefreshCcw, SquarePen, TriangleAlert } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext.jsx"
-import showConfirmToast from "./ConfirmToast.jsx"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import PlaceMap from "./PlaceMap.jsx"
 import showInputToast from "./InputToast.jsx"
 import { TailSpin } from "react-loader-spinner"
@@ -27,6 +27,7 @@ const checklistItems = [
 export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onAddressChanged, onExcerptRefreshed, onLocationChanged, onPlaceReviewed }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
+    const { showConfirmToast } = useUserInput()
 
     const [checked, setChecked] = useState({})
 
@@ -46,7 +47,8 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     }
 
     const handleExcerptRefreshed = () => {
-        showConfirmToast("Opravdu chceš znovu vygenerovat excerpt?",
+        showConfirmToast(
+            "Opravdu chceš znovu vygenerovat excerpt?",
             "Excerpt byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat excerpt",
             onExcerptRefreshed
@@ -54,7 +56,8 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     }
 
     const handlePlaceReviewed = () => {
-        showConfirmToast("Bylo místo zrevidováno dle požadavků?",
+        showConfirmToast(
+            "Bylo místo zrevidováno dle požadavků?",
             "Revize místa byla úspěšně dokončena",
             "Nepodařilo se dokončit revizi místa",
             onPlaceReviewed
@@ -66,7 +69,8 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
             return
         }
 
-        showConfirmToast("Opravdu chceš změnit polohu místa na zvolené souřadnice?",
+        showConfirmToast(
+            "Opravdu chceš změnit polohu místa na zvolené souřadnice?",
             "Poloha místa byla úspěšně aktualizována",
             "Nepodařilo se aktualizovat polohu místa",
             async () => onLocationChanged(latitude, longitude))

@@ -2,12 +2,13 @@ import { Images, Share2, SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import showInputToast from "./InputToast"
 import { getPrettyName } from "../utils/helpers"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
 export default function PageHeader({ name, categories, internalAttributes, showHighlightsButton, onNameChanged, onRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
 
@@ -28,7 +29,8 @@ export default function PageHeader({ name, categories, internalAttributes, showH
     }
 
     const handleRemoved = () => {
-        showConfirmToast("Opravdu chceš odstranit tuto entitu?",
+        showConfirmToast(
+            "Opravdu chceš odstranit tuto entitu?",
             "Entita byla úspěšně odstraněna",
             "Nepodařilo se odstranit entitu",
             onRemoved

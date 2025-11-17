@@ -1,17 +1,19 @@
 import { useState } from "react"
 import ReactJson from "react-json-view"
 import { TailSpin } from "react-loader-spinner"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { useAuth } from "../contexts/AuthContext"
 
 export default function ConfigurationEditor({ configuration, onConfigurationUpdated }) {
     const { accessToken } = useAuth()
     const [selectedKey, setSelectedKey] = useState(null)
+    const { showConfirmToast } = useUserInput()
 
     const formatConfigurationKeyName = key => key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase()).trim()
 
     const handleConfigurationUpdated = value => {
-        showConfirmToast("Opravdu chceš modifikovat tento konfigurační záznam?",
+        showConfirmToast(
+            "Opravdu chceš modifikovat tento konfigurační záznam?",
             "Konfigurační záznam byl uspěšně modifikován",
             "Nepodařilo se modifikovat konfigurační záznam",
             async () => onConfigurationUpdated(selectedKey, value)

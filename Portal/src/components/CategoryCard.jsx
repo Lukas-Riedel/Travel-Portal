@@ -4,13 +4,14 @@ import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { formatKilometers, formatNextPlaces } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import LoadingCard from "./LoadingCard"
 
 const maximumPlacesCount = 5
 
 export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const visiblePlaces = useMemo(() => [...(places ?? [])]?.sort((a, b) => a.distance - b.distance)?.slice(0, maximumPlacesCount), [places])
     const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places, visiblePlaces])

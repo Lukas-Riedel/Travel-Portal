@@ -11,7 +11,7 @@ import Tooltip from "./Tooltip"
 import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import { useDevices } from "../hooks/useDevices"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import showInputToast from "./InputToast"
 
 const weatherIcons = {
@@ -63,6 +63,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
+    const { showConfirmToast } = useUserInput()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
 

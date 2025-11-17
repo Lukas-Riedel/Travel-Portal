@@ -1,13 +1,14 @@
 
 import { Diff, Minus, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 import showFormToast from "./FormToast"
 
 export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const handleDelete = () => {
         showConfirmToast(

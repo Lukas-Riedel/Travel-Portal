@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Pause, Play, Trash2, Star, SlidersVertical, Edit2, Plus, Upload, Check } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { TailSpin } from "react-loader-spinner"
 import showFormToast from "./FormToast"
 import { format, fromUnixTime } from "date-fns"
@@ -29,6 +29,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const agents = useDevices({ type: "agent" })
+    const { showConfirmToast } = useUserInput()
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
@@ -81,7 +82,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     const handleHighlightCreated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
-        showConfirmToast("Opravdu chceš přidat tento highlight?",
+        showConfirmToast(
+            "Opravdu chceš přidat tento highlight?",
             "Highlight byl úspěšně přidán",
             "Nepodařilo se přidat highlight",
             async () => {
@@ -109,7 +111,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }
 
     const handlePhotoCorrected = () => {
-        showConfirmToast("Opravdu chceš upravit tento highlight?",
+        showConfirmToast(
+            "Opravdu chceš upravit tento highlight?",
             "Highlight byl úspěšně upraven",
             "Nepodařilo se upravit highlight",
             async () => getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
@@ -120,7 +123,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     const handleHighlightRemoved = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
-        showConfirmToast("Opravdu chceš odstranit tento highlight?",
+        showConfirmToast(
+            "Opravdu chceš odstranit tento highlight?",
             "Highlight byl úspěšně odstraněn",
             "Nepodařilo se odstranit highlight",
             async () => {
@@ -135,7 +139,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     const handleMainHighlightUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
-        showConfirmToast("Opravdu chceš nastavit tento highlight jako hlavní highlight?",
+        showConfirmToast(
+            "Opravdu chceš nastavit tento highlight jako hlavní highlight?",
             "Hlavní highlight byl úspěšně aktualizován",
             "Nepodařilo se aktualizovat hlavní highlight",
             async () => onMainHighlightUpdated(highlight.id))

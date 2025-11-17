@@ -1,12 +1,13 @@
 
 import { Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 
 export default function SubscriptionCard({ subscription, onSubscriptionRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const handleDelete = () => {
         showConfirmToast(

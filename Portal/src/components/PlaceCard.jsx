@@ -2,13 +2,14 @@ import { Link } from "react-router-dom"
 import { getPrettyName } from "../utils/helpers"
 import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { useAuth } from "../contexts/AuthContext"
 import { formatKilometers } from "../utils/formatters"
 import LoadingCard from "./LoadingCard"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("country"), [place])
 

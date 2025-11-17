@@ -2,15 +2,16 @@ import { LogIn, LogOut } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import showFormToast from "../components/FormToast"
 import { useAuth } from "../contexts/AuthContext"
-import showConfirmToast from "../components/ConfirmToast"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useUserInput } from "../hooks/useUserInput.ts"
 
 export default function MainLayout({ children }) {
     const { login, logout, isAdmin } = useAuth()
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
+    const { showConfirmToast } = useUserInput()
 
     const navigationItems = [
         { label: t("menu.feed"), to: "/feed", isProtected: false, allowedPrefixes: ["/feed"] },

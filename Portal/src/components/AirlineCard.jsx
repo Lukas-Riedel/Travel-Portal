@@ -2,10 +2,12 @@ import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
 import LoadingCard from "./LoadingCard.jsx"
 import { Trash2, Wrench } from "lucide-react"
-import showConfirmToast from "./ConfirmToast.jsx"
 import showFormToast from "./FormToast.jsx"
+import { useUserInput } from "../hooks/useUserInput.ts"
 
 export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineRemoved, onAirlineCodeRemoved }) {
+    const { showConfirmToast } = useUserInput()
+
     const handleAirlineUpdated = airline => {
         showFormToast(
             "Zadej nové údaje o aerolince:",
@@ -29,7 +31,8 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
     }
 
     const handleAirlineRemoved = airline => {
-        showConfirmToast(`Opravdu chceš odstranit aerolinku ${airline.name}?`,
+        showConfirmToast(
+            `Opravdu chceš odstranit aerolinku ${airline.name}?`,
             "Aerolinka byla úspěšně odstraněna",
             "Nepodařilo se odstranit aerolinku",
             async () => onAirlineRemoved(airline.id)

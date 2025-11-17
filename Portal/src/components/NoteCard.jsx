@@ -1,5 +1,5 @@
 import { Trash2, Plus, Bold, Italic, Link, Edit2, Check } from "lucide-react"
-import showConfirmToast from "./ConfirmToast"
+import { useUserInput } from "../hooks/useUserInput.ts"
 import { useRef, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown"
 
 export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, onNoteRemoved }) {
     const { isAdmin } = useAuth()
+    const { showConfirmToast } = useUserInput()
 
     const textareaRef = useRef(null)
     const [isBeingEdited, setIsBeingEdited] = useState(onNoteCreated !== undefined)
