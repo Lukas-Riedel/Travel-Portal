@@ -4,7 +4,11 @@ import type { UseYearsResult } from "../types/UseYearsResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
 
-export const useYears = ({ include }: { include?: YearIncludedEntity[] } = {}): UseYearsResult => {
+interface UseYearsProps {
+    include?: YearIncludedEntity[]
+}
+
+export const useYears = ({ include }: UseYearsProps = {}): UseYearsResult => {
     const { response } = useQuery({
         queryKey: ["listYears", ...(include ?? [])],
         queryFn: () => listYears({ include }),

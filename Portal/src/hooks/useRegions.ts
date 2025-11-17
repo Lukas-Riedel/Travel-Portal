@@ -3,7 +3,11 @@ import type { UseRegionsResult } from "../types/UseRegionsResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
 
-export const useRegions = ({ name }: { name?: string } = {}): UseRegionsResult => {
+interface UseRegionsProps {
+    name?: string
+}
+
+export const useRegions = ({ name }: UseRegionsProps = {}): UseRegionsResult => {
     const { response, refetchResponse } = useQuery({
         queryKey: ["listRegions", name],
         queryFn: () => listRegions({ name }),

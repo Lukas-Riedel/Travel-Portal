@@ -4,7 +4,11 @@ import type { UseDevicesResults } from "../types/UseDevicesResult.ts"
 import { ONE_MINUTE_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
 
-export const useDevices = ({ type }: { type?: DeviceType } = {}): UseDevicesResults => {
+interface UseDevicesProps {
+    type?: DeviceType
+}
+
+export const useDevices = ({ type }: UseDevicesProps = {}): UseDevicesResults => {
     const { response } = useQuery({
         queryKey: ["listDevices", type],
         queryFn: () => listDevices({ type }),

@@ -5,7 +5,11 @@ import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
 import type { UseCandidateTripsResult } from "../types/UseCandidateTripsResult.ts"
 
-export const useCandidateTrips = ({ include }: { include?: TripIncludedEntity[] } = {}): UseCandidateTripsResult => {
+interface UseCandidateTripsProps {
+    include?: TripIncludedEntity[]
+}
+
+export const useCandidateTrips = ({ include }: UseCandidateTripsProps = {}): UseCandidateTripsResult => {
     const { response, refetchResponse } = useQuery({
         queryKey: ["listCandidateTrips", ...(include ?? [])],
         queryFn: () => listCandidateTrips({ include }),

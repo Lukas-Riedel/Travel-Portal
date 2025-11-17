@@ -10,8 +10,21 @@ import { useAlbumsBeingUploaded } from "./useAlbumsBeingUploaded.ts"
 const RESPONSE_VALIDITY_SECONDS = ONE_HOUR_SECONDS
 const ALBUM_UPLOADING_REFETCH_INTERVAL_SECONDS = 5
 
-export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }:
-    { tripId?: string, categoryId?: string, labelId?: string, year?: number, albumId?: string, photoId?: string, minStart?: number, maxEnd?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): UseRegularPlacesResult => {
+interface UseRegularPlacesProps {
+    tripId?: string
+    categoryId?: string
+    labelId?: string
+    year?: number
+    albumId?: string
+    photoId?: string
+    minStart?: number
+    maxEnd?: number
+    limit?: number
+    include?: PlaceIncludedEntity[]
+    sort?: PlaceSortingStrategy
+}
+
+export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }: UseRegularPlacesProps = {}): UseRegularPlacesResult => {
     const { startedUploadingsCount, isBeingUploaded } = useAlbumsBeingUploaded()
 
     const { response, refetchResponse } = useQuery({

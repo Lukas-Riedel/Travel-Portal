@@ -6,7 +6,12 @@ import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import type { UseRegularTripsResult } from "../types/UseRegularTripsResult.ts"
 import { useMemo } from "react"
 
-export const useRegularTrips = ({ year, include }: { year?: number, include?: TripIncludedEntity[] } = {}): UseRegularTripsResult => {
+interface UseRegularTripsProps {
+    year?: number
+    include?: TripIncludedEntity[]
+}
+
+export const useRegularTrips = ({ year, include }: UseRegularTripsProps = {}): UseRegularTripsResult => {
     const { response } = useQuery({
         queryKey: ["listRegularTrips", `${year}`, ...(include ?? [])],
         queryFn: () => listRegularTrips({ year, include }),
