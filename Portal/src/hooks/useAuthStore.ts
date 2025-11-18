@@ -14,18 +14,5 @@ export const useAuthStore = create<UseAuthStoreResult>(set => ({
         refreshTokenCache.set(iamResponse.refreshToken, iamResponse.refreshExpiresIn)
 
         set(iamResponse)
-    },
-    logout: () => {
-        if (typeof Android !== "undefined" && Android.logout) {
-            Android.logout()
-        }
-
-        accessTokenCache.remove()
-        refreshTokenCache.remove()
-
-        set({
-            accessToken: null,
-            refreshToken: null
-        })
     }
 }))

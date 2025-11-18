@@ -4,11 +4,12 @@ import { useAuthStore } from "../hooks/useAuthStore.ts"
 import type { UseAuthResult } from "../types/UseAuthResult.ts"
 import type { Credentials } from "../types/Credentials.ts"
 import { jwtDecode } from "jwt-decode"
+import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
 
 const AuthContext = createContext<UseAuthResult | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const { accessToken, logout, setIamResponse } = useAuthStore()
+    const { accessToken, setIamResponse } = useAuthStore()
 
     const login = useCallback(async ({ username, password }: Credentials) => {
         if (typeof Android !== "undefined" && Android.login) {
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             accessToken,
             isAdmin,
             login,
-            logout
+            logout: () => login(GUEST_CREDENTIALS)
         }}>
             {children}
         </AuthContext.Provider>

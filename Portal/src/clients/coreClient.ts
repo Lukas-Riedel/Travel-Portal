@@ -1,6 +1,6 @@
 import axios from "axios"
 import * as authRefresh from "axios-auth-refresh"
-import { getIamResponseWithRefresh } from "./iamClient.ts"
+import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType, } from "../types/CoreSwaggerTypes.ts"
 import type {
@@ -12,7 +12,7 @@ import type {
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
-import { use } from "react"
+import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
 
 export const createVoucher = async (code: string, issuer: string, value: number, currency: string, expiration?: number): Promise<Voucher> =>
     coreClient.post<Voucher>("vouchers",
@@ -789,11 +789,13 @@ export const removeYearHighlight = async (year: number, highlightId: string): Pr
     coreClient.delete(`years/${year}/highlights/${highlightId}`)
 
 export const refreshAccessToken = async (): Promise<string> => {
-    const { refreshToken, logout, setIamResponse } = useAuthStore.getState()
+    const { refreshToken, setIamResponse } = useAuthStore.getState()
+    const { username: fallbackUsername, password: fallbackPassword } = GUEST_CREDENTIALS
 
     if (!refreshToken) {
-        logout()
-        return Promise.reject()
+        const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
+        setIamResponse(newIamResponse)
+        return Promise.resolve(newIamResponse.accessToken)
     }
 
     try {
@@ -802,8 +804,9 @@ export const refreshAccessToken = async (): Promise<string> => {
         return Promise.resolve(newIamResponse.accessToken)
     }
     catch (error) {
-        logout()
-        return Promise.reject(error)
+        const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
+        setIamResponse(newIamResponse)
+        return Promise.resolve(newIamResponse.accessToken)
     }
 }
 

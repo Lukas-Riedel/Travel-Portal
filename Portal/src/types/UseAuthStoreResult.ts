@@ -4,5 +4,4 @@ export interface UseAuthStoreResult {
     accessToken?: string
     refreshToken?: string
     setIamResponse: (iamResponse: IamResponse) => void
-    logout: () => void
 }

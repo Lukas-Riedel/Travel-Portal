@@ -22,14 +22,11 @@ class AuthenticationService private constructor(context: Context) {
     private var cachedAccessToken: String? = null
     private var cachedAccessTokenExpiration: Long = 0L
 
-    suspend fun login(username: String?, password: String?) {
+    suspend fun login(username: String?, password: String?): String? {
         Log.d(AuthenticationService::class.java.simpleName, "Logging in as $username...")
         val iamResponse = iamClient.createToken(TokenRequest(username, password, null, DEFAULT_TOKEN_SCOPE))
         extractIamResponse(iamResponse)
-    }
-
-    fun logout() {
-        extractIamResponse(null)
+        return iamResponse.accessToken
     }
 
     suspend fun getAccessToken(): String? {
@@ -44,7 +41,12 @@ class AuthenticationService private constructor(context: Context) {
 
             Log.d(AuthenticationService::class.java.simpleName, "Received a request to obtain an access token...")
             
-            val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return@withLock null
+            val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return@withLock try {
+                login(FALLBACK_USERNAME, FALLBACK_PASSWORD)
+            } catch (e: Exception) {
+                Log.e(AuthenticationService::class.java.simpleName, "An error occurred when obtaining an access token.", e)
+                null
+            }
 
             return@withLock try {
                 val iamResponse = iamClient.createToken(TokenRequest(null, null, refreshToken, DEFAULT_TOKEN_SCOPE))
@@ -77,6 +79,8 @@ class AuthenticationService private constructor(context: Context) {
         private const val REFRESH_TOKEN_KEY = "RefreshToken"
         private const val DEFAULT_TOKEN_SCOPE = "openid offline_access"
         private const val ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95
+        private const val FALLBACK_USERNAME = "guest"
+        private const val FALLBACK_PASSWORD = "guest"
 
         @Volatile
         private var INSTANCE: AuthenticationService? = null

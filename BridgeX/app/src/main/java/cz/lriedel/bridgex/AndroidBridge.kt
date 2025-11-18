@@ -21,12 +21,6 @@ class AndroidBridge(
             deviceInitializer.initialize()
         }
     }
-    
-    @JavascriptInterface
-    fun logout() {
-        authenticationService.logout()
-        deviceInitializer.initialize()
-    }
 
     @JavascriptInterface
     fun share(title: String?, url: String?) {

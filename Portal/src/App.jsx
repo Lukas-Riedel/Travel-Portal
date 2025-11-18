@@ -100,19 +100,9 @@ export default function App() {
 }
 
 function AppContent() {
-    const { accessToken, login, isAdmin } = useAuth()
+    const { accessToken, isAdmin } = useAuth()
 
-    useEffect(() => {
-        if (!accessToken) {
-            login({ username: "guest", password: "guest" })
-        }
-    }, [accessToken, login])
-
-    if (!accessToken) {
-        return
-    }
-
-    return (
+    return accessToken && (
         <Routes>
             <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/feed"} replace />} />
             <Route path="/feed" element={<MainLayout><RecentPlacesPage /></MainLayout>} />
