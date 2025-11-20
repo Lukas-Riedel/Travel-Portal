@@ -7,7 +7,7 @@ import { Link } from "react-router-dom"
 
 export default function PageHeader({ name, categories, internalAttributes, showHighlightsButton, onNameChanged, onRemoved }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showInputToast } = useUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
 

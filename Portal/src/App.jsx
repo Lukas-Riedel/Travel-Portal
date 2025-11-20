@@ -29,6 +29,7 @@ import YearHighlightsPage from "./pages/YearHighlightsPage"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import StatisticsPage from "./pages/StatisticsPage"
+import { TailSpin } from "react-loader-spinner"
 
 export default function App() {
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
@@ -39,7 +40,7 @@ export default function App() {
             toast.success(`Hlášeno ${formatNewProblems(event.count)}`)
         })
     }, [newDataConsistencyIssuesDetectedEvents])
-    
+
     const { events: flightLoggedEvents } = useEvents("FlightLogged")
     useEffect(() => {
         flightLoggedEvents.forEach(event => {
@@ -102,7 +103,7 @@ export default function App() {
 function AppContent() {
     const { accessToken, isAdmin } = useAuth()
 
-    return accessToken && (
+    return accessToken ? (
         <Routes>
             <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/feed"} replace />} />
             <Route path="/feed" element={<MainLayout><RecentPlacesPage /></MainLayout>} />
@@ -130,6 +131,15 @@ function AppContent() {
             <Route path="/plan/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/admin" element={<MainLayout><AdminPage /></MainLayout>} />
         </Routes>
+    ) : (
+        <MainLayout>
+            <div className="p-16 flex items-center justify-center">
+                <TailSpin
+                    color="black"
+                    height={128}
+                    width={128} />
+            </div>
+        </MainLayout>
     )
 }
 
