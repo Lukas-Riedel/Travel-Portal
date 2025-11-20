@@ -7,7 +7,7 @@
 
     class GeminiGenerativeContentClient implements GenerativeContentClient {
         
-        private const GENERATE_CONTENT_URL_FORMAT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=%s";
+        private const GENERATE_CONTENT_URL_FORMAT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%s";
 
         private const KEY_PLACEHOLDER_FORMAT = "{%s}";
 
