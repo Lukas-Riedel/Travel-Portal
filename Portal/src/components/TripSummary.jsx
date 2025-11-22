@@ -23,7 +23,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
-        ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, radius: 0.15 })) ?? []),
+        ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, radius: 0.5 })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, radius: 3.0 })) ?? [])
     ])
