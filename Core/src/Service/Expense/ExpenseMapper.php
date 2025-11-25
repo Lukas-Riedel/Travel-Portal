@@ -55,6 +55,7 @@
                 SELECT *
                 FROM expense
                 WHERE trip_id = ?
+                ORDER BY timestamp
             SQL;
 
             return $this->databaseClient
