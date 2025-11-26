@@ -77,7 +77,7 @@
                     }
                 }
 
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
+                if ($statisticsType === StatisticsType::Category) {
                     if ($visitedPlacesCount > 0) {
                         $dates = array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces));
                         if (count($dates) > 0) {

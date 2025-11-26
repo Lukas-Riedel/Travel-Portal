@@ -7,10 +7,10 @@
         schema: "Statistics",
         type: "object",
         description: "A class representing a statistics record",
-        required: ["key", "value"],
+        required: ["name", "value"],
         properties: [
             new OA\Property(
-                property: "key",
+                property: "name",
                 description: "The name of the statistics record",
                 type: "string",
                 example: "TOTAL_PHOTOS_COUNT"

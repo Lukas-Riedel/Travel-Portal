@@ -4,9 +4,11 @@ import StatisticsCardGrid from "../components/StatisticsCardGrid";
 import { useStatistics } from "../hooks/useStatistics";
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces";
 import { useCategories } from "../hooks/useCategories";
+import { useYears } from "../hooks/useYears.ts";
 
 export default function StatisticsPage() {
     const statistics = useStatistics()
+    const years = useYears({ include: ["statistics"] })
     const { places } = useTimeFilteredRegularPlaces({ include: ["categories"] })
     const countryCategories = useCategories({ categories: ["country"] })
 
@@ -21,7 +23,9 @@ export default function StatisticsPage() {
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
-            <StatisticsCardGrid statistics={statistics} />
+            <StatisticsCardGrid
+                statistics={statistics}
+                years={years} />
         </>
     )
 }

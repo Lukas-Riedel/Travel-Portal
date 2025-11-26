@@ -3,6 +3,7 @@ import { decapitalize } from "../utils/helpers"
 import { formatStatisticsUnit } from "../utils/formatters"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from "recharts"
+import { getCurrentYear } from "../utils/timeUtils.ts"
 
 // TODO: This is duplicated in StatisticsPanel
 const statisticsNames = {
@@ -84,7 +85,7 @@ const chartTypes = {
     "MOST_USED_AIRLINES": StandingStatisticsPieChart
 }
 
-export default function StatisticsCard({ statistics }) {
+export default function StatisticsCard({ statistics, years }) {
     const { configuration } = useConfiguration()
 
     const StandingStatisticsChart = chartTypes[statistics?.name] || StandingStatisticsBarChart
@@ -114,8 +115,17 @@ export default function StatisticsCard({ statistics }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="text-lg">
-                        {formatStatisticsUnit(statistics.unit, statistics.value, configuration?.expensify?.mainCurrency ?? "")}
+                    <div className="w-full">
+                        <div className="text-center text-lg">
+                            {formatStatisticsUnit(statistics.unit, statistics.value, configuration?.expensify?.mainCurrency ?? "")}
+                        </div>
+                        {years && (
+                            <div>
+                                <StandingStatisticsChart
+                                    values={years.filter(year => year.id <= getCurrentYear()).map(year => ({ name: year.id, value: year.statistics?.find(stat => stat.name === statistics.name)?.value })).filter(year => year.value)}
+                                    unit={statistics.unit} />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
