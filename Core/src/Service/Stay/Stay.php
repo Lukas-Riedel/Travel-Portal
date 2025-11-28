@@ -8,7 +8,7 @@
         schema: "Stay",
         type: "object",
         description: "A class representing a stay",
-        required: ["name", "address", "start", "end"],
+        required: ["name", "start", "end"],
         properties: [
             new OA\Property(
                 property: "name",
@@ -40,11 +40,11 @@
     )]
     class Stay implements \JsonSerializable {
         private readonly string $name;
-        private readonly string $address;
+        private readonly ?string $address;
         private readonly int $start;
         private readonly int $end;
 
-        public function __construct(string $name, string $address, int $start, int $end) {
+        public function __construct(string $name, ?string $address, int $start, int $end) {
             $this->name = $name;
             $this->address = $address;
             $this->start = $start;
@@ -55,7 +55,7 @@
             return $this->name;
         }
 
-        public function getAddress() : string {
+        public function getAddress() : ?string {
             return $this->address;
         }
 

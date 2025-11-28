@@ -2,7 +2,7 @@ import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
 import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash, Trash2, Plus } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash, Trash2, Plus, Ship } from "lucide-react"
 import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
@@ -127,17 +127,28 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                     </span>
                     {stay && (
                         <div className="flex flex-col items-end min-w-0 ml-4">
-                            <a
-                                href={`https://www.google.com/maps/search/${stay.address}`}
-                                className="text-amber-900 text-xs leading-tight text-right break-words hover:underline hover:text-amber-600 transition-colors duration-200">
-                                <Bed
-                                    size={14}
-                                    className="inline mr-1 relative top-[-1px]" />
-                                <span className="whitespace-nowrap mr-1">
-                                    {stay.name.split(" ")[0]}
-                                </span>
-                                {stay.name.split(" ").slice(1).join(" ")}
-                            </a>
+                            {stay.address ? (
+                                <a
+                                    href={`https://www.google.com/maps/search/${stay.address}`}
+                                    className="text-amber-900 text-xs leading-tight text-right break-words hover:underline hover:text-amber-600 transition-colors duration-200">
+                                    <Bed
+                                        size={14}
+                                        className="inline mr-1 relative top-[-1px]" />
+                                    <span className="whitespace-nowrap mr-1">
+                                        {stay.name.split(" ")[0]}
+                                    </span>
+                                    {stay.name.split(" ").slice(1).join(" ")}
+                                </a>
+                            ) : (
+                                <div className="text-cyan-600 text-xs leading-tight text-right break-words">
+                                    <Ship
+                                        size={14}
+                                        className="inline mr-1 relative top-[-1px]" />
+                                    <span className="whitespace-nowrap mr-1">
+                                        {stay.name.split(" ")[0]}
+                                    </span>
+                                    {stay.name.split(" ").slice(1).join(" ")}
+                                </div>)}
                         </div>
                     )}
                 </div>
