@@ -8,7 +8,7 @@ import { useMemo } from "react"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { useEvents } from "../hooks/useEvents"
 import { useAuth } from "../contexts/AuthContext"
-import { Edit2 } from "lucide-react"
+import { Edit2, Folder } from "lucide-react"
 import showFormToast from "../components/FormToast"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 
@@ -100,6 +100,11 @@ export default function CategoryPage() {
             {isAdmin && (
                 <div className="flex justify-end">
                     <div className="flex items-center gap-2">
+                        <a
+                            href={`/plan/category/${category?.id}`}
+                            className="btn-chip-gray">
+                            <Folder size={16} />
+                        </a>
                         <button
                             onClick={handleMetadataChanged}
                             className="btn-chip-gray">
