@@ -2,40 +2,22 @@ import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
 import LoadingCard from "./LoadingCard.jsx"
 import { Trash2, Wrench } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.tsx"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineRemoved, onAirlineCodeRemoved }) {
-    const { showConfirmToast, showFormToast } = useUserInput()
+    const { showUpdateAirlineToast, showRemoveAirlineToast } = usePredefinedUserInput()
 
-    const handleAirlineUpdated = airline => {
-        showFormToast(
-            "Zadej nové údaje o aerolince:",
-            [
-                { label: "Název", defaultValue: airline.name, required: true },
-                { label: "Logo", defaultValue: airline.logo },
-                { label: "Kódy", defaultValue: airline.codes, multiple: true, required: false, type: "select", options: airline.codes.map(code => ({ id: code, name: code })) }
-            ],
-            async (name, logo, codes) => {
-                if (airline.name !== name) {
-                    await onAirlineNameUpdated(airline.id, name)
-                }
-                if (airline.logo !== logo) {
-                    await onAirlineLogoUpdated(airline.id, logo)
-                }
-                await Promise.all(airline.codes.filter(code => !codes.includes(code)).map(code => onAirlineCodeRemoved(airline.id, code)))
-            },
-            "Aerolinka byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat aerolinku"
-        )
+    const handleAirlineUpdated = () => {
+        showUpdateAirlineToast(airline,
+            // TODO: No need to propagate airline.id here, do it in the caller.
+            name => onAirlineNameUpdated(airline.id, name),
+            logo => onAirlineLogoUpdated(airline.id, logo),
+            code => onAirlineCodeRemoved(airline.id, code))
     }
 
-    const handleAirlineRemoved = airline => {
-        showConfirmToast(
-            `Opravdu chceš odstranit aerolinku ${airline.name}?`,
-            async () => onAirlineRemoved(airline.id),
-            "Aerolinka byla úspěšně odstraněna",
-            "Nepodařilo se odstranit aerolinku"
-        )
+    const handleAirlineRemoved = () => {
+        showRemoveAirlineToast(airline,
+            () => onAirlineRemoved(airline.id))
     }
 
     return airline ? (
@@ -73,14 +55,14 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
             <div className="mt-4">
                 {onAirlineNameUpdated && onAirlineLogoUpdated && (
                     <button
-                        onClick={() => handleAirlineUpdated(airline)}
+                        onClick={handleAirlineUpdated}
                         className="rounded text-orange-600 hover:bg-gray-100 transition-colors p-2">
                         <Wrench size={16} />
                     </button>
                 )}
                 {onAirlineRemoved && (
                     <button
-                        onClick={() => handleAirlineRemoved(airline)}
+                        onClick={handleAirlineRemoved}
                         className="rounded text-red-600 hover:bg-gray-100 transition-colors p-2">
                         <Trash2 size={16} />
                     </button>

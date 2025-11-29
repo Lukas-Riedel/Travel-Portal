@@ -8,7 +8,7 @@ import type { SelectFormField } from "../types/SelectFormField.ts"
 export const useUserInput = (): UseUserInputResult => {
     const { t } = useTranslation()
 
-    const showConfirmToast = useCallback((message: string, onConfirmed?: () => Promise<void>, success?: string, error?: string): Promise<boolean> =>
+    const showConfirmToast = useCallback(<R extends any>(message: string, onConfirmed?: () => Promise<R>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             const id = toast(message, {
                 action: {
@@ -43,7 +43,7 @@ export const useUserInput = (): UseUserInputResult => {
             })
         }), [t])
 
-    const showFormToast = useCallback(<F extends readonly FormField<any>[]>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<void>, success?: string, error?: string): Promise<boolean> =>
+    const showFormToast = useCallback(<F extends readonly FormField<any>[], R extends any>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<R>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             toast.custom(
                 id => {
@@ -192,7 +192,7 @@ export const useUserInput = (): UseUserInputResult => {
             )
         }), [t])
 
-    const showInputToast = <T extends any>(message: string, onSubmitted?: (value: T) => Promise<void>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
+    const showInputToast = <T extends any, R extends any>(message: string, onSubmitted?: (value: T) => Promise<R>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
         showFormToast(message, [{ type: "text", required: true, defaultValue }], onSubmitted, success, error)
 
     return {

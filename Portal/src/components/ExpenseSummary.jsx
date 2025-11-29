@@ -11,6 +11,7 @@ import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useVouchers } from "../hooks/useVouchers"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const expenseTypes = {
     attraction: {
@@ -268,38 +269,21 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
 function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
-    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
+    const { showRemoveExpenseToast, showUpdateExpenseDescriptionToast, showUpdateExpenseValueToast } = usePredefinedUserInput()
 
-    const handleRemove = expense => {
-        showConfirmToast(
-            `Opravdu chceš odstranit výdaj "${expense.description}"?`,
-            async () => onExpenseRemoved(expense.id),
-            "Výdaj byl úspěšně odstraněn",
-            "Nepodařilo se odstranit výdaj"
-        )
+    const handleRemove = () => {
+        // TODO: Remove expense.id, provide in the caller.
+        showRemoveExpenseToast(() => onExpenseRemoved(expense.id))
     }
 
-    const handleEditDescription = expense => {
-        showInputToast(
-            "Zadej nový popis výdaje:",
-            async description => onExpenseDescriptionUpdated(expense.id, description),
-            "Popis výdaje byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat popis výdaje",
-            expense.description
-        )
+    const handleEditDescription = () => {
+        // TODO: Remove expense.id, provide in the caller.
+        showUpdateExpenseDescriptionToast(expense, description => onExpenseDescriptionUpdated(expense.id, description))
     }
 
-    const handleEditValue = expense => {
-        showFormToast(
-            "Zadej novou hodnotu a měnu výdaje:",
-            [
-                { label: "Hodnota", defaultValue: expense.value, required: true, type: "number", min: 0 },
-                { label: "Měna", defaultValue: expense.currency, required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) }
-            ],
-            async (value, currency) => onExpenseValueUpdated(expense.id, value, currency),
-            "Hodnota výdaje byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat hodnotu výdaje"
-        )
+    const handleEditValue = () => {
+        // TODO: Remove expense.id, provide in the caller.
+        showUpdateExpenseValueToast(expense, currencies, (value, currency) => onExpenseValueUpdated(expense.id, value, currency))
     }
 
     const Icon = expenseTypes[expense.type]?.icon || expenseTypes.other.icon
@@ -325,7 +309,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     {isAdmin && onExpenseDescriptionUpdated && (
                         <button
                             className="p-1 btn-icon-hover"
-                            onClick={() => handleEditDescription(expense)}>
+                            onClick={handleEditDescription}>
                             <Edit2 size={16} />
                         </button>
                     )}
@@ -339,7 +323,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     {isAdmin && onExpenseValueUpdated && (
                         <button
                             className="p-1 btn-icon-hover"
-                            onClick={() => handleEditValue(expense)}>
+                            onClick={handleEditValue}>
                             <Edit2 size={16} />
                         </button>
                     )}
@@ -353,7 +337,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
                         <button
                             className="p-1 btn-icon-hover"
-                            onClick={() => handleRemove(expense)}>
+                            onClick={handleRemove}>
                             <Trash2 size={16} />
                         </button>
                     </td>
@@ -366,6 +350,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
 function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }) {
     const { configuration } = useConfiguration()
     const { showFormToast } = useUserInput()
+    const { showCreateExpenseToast } = usePredefinedUserInput()
 
     const { subscriptions } = useSubscriptions()
     const { vouchers, updateVoucherValue, removeVoucher } = useVouchers()
@@ -387,29 +372,9 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     }, [expenseCandidate])
 
     const handleExpenseCreated = () => {
-        showFormToast(
-            "Opravdu chceš přidat nový výdaj?",
-            [
-                { label: "Předplatné", defaultValue: expenseCandidate?.subscriptionId, required: false, type: "select", options: subscriptions.map(subscription => ({ id: subscription.id, name: `${subscription.description} (do ${format(fromUnixTime(subscription.expiration), "dd.MM.yyyy")})` })) },
-                { label: "Poukaz", required: false, type: "select", options: vouchers.filter(voucher => voucher.currency === newCurrency).map(voucher => ({ id: voucher.id, name: `${voucher.issuer} ${voucher.value} ${voucher.currency}` + (voucher.expiration ? " (do " + format(fromUnixTime(voucher.expiration), "dd.MM.yyyy") + ")" : "") })) }
-            ],
-            async (subscriptionId, voucherId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId)
-                .then(async expense => {
-                    if (voucherId) {
-                        const voucher = vouchers.find(v => v.id === voucherId)
-                        if (voucher.value <= newValue) {
-                            await removeVoucher(voucherId)
-                        }
-                        else {
-                            await updateVoucherValue(voucherId, voucher.value - newValue)
-                        }
-                    }
-
-                    return Promise.resolve(expense)
-                }),
-            "Nový výdaj byl úspěšně přidán",
-            "Nepodařilo se přidat nový výdaj"
-        )
+        showCreateExpenseToast(subscriptions, vouchers.filter(voucher => voucher.currency === newCurrency),
+            (subscriptionId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId),
+            (voucherId, value) => updateVoucherValue(voucherId, value),  (voucherId) => removeVoucher(voucherId))
     }
 
     return (

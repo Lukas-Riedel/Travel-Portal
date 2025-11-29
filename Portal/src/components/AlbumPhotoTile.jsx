@@ -5,13 +5,15 @@ import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useState } from "react"
 import { getDateString } from "../utils/helpers"
 import { useDevices } from "../hooks/useDevices"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const agentOnlineStatusThresholdSeconds = 60
 
 export default function AlbumPhotoTile({ place, album, photo, photoPosition, onPhotoReplaced, onMainPhotoUpdated }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showUpdateAlbumMainPhotoToast } = usePredefinedUserInput()
 
     const [overlayType, setOverlayType] = useState(0)
 
@@ -30,12 +32,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
     }
 
     const handleMainPhotoUpdated = () => {
-        showConfirmToast(
-            "Opravdu chceš nastavit tuto fotku jako hlavní fotku alba?",
-            async () => onMainPhotoUpdated(album.id, photoPosition),
-            "Hlavní fotka byla úspěšně nastavena",
-            "Nepodařilo se nastavit hlavní fotku"
-        )
+        showUpdateAlbumMainPhotoToast(() => onMainPhotoUpdated(album.id, photoPosition))
     }
 
     return (

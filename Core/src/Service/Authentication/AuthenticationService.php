@@ -55,7 +55,7 @@
             }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::GOOGLE_API_TOKEN_API_ENDPOINT_PATH,
-                array("Content-Length: 0", "Authorization: Bearer " . $this->getServiceAccessToken()));
+                array("Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!isset($response["accessToken"])) {
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
@@ -72,7 +72,7 @@
             }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::GOOGLE_FCM_TOKEN_API_ENDPOINT_PATH,
-                array("Content-Length: 0", "Authorization: Bearer " . $this->getServiceAccessToken()));
+                array("Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!isset($response["accessToken"])) {
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
@@ -89,7 +89,7 @@
             }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->iamBaseUrl . self::IBM_CLOUD_TOKEN_API_ENDPOINT_PATH,
-                array("Content-Length: 0", "Authorization: Bearer " . $this->getServiceAccessToken()));
+                array("Authorization: Bearer " . $this->getServiceAccessToken()));
 
             if (!isset($response["accessToken"])) {
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));

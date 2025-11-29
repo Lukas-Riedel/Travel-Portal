@@ -1,4 +1,9 @@
 {
+    "general": {
+        "format": {
+            "date": "dd.MM.yyyy"
+        }
+    },
     "menu": {
         "feed": "Nedávné",
         "trips": "Výlety",
@@ -16,7 +21,127 @@
         "failed": "Při provádění akce došlo k chybě",
         "loading": "Probíhá zpracování..."
     },
+    "airline": {
+        "prompt": {
+            "create": {
+                "message": "Zadej název aerolinky k vytvoření:",
+                "confirmed": "Aerolinka byla úspěšně vytvořena",
+                "failed": "Při vytváření aerolinky došlo k chybě"
+            },
+            "update": {
+                "message": "Zadej nové údaje o aerolince:",
+                "label": {
+                    "name": "Název",
+                    "logo": "Logo",
+                    "codes": "Kódy"
+                },
+                "confirmed": "Aerolinka byla úspěšně aktualizována",
+                "failed": "Nepodařilo se aktualizovat aerolinku"
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit aerolinku {{name}}?",
+                "confirmed": "Aerolinka byla úspěšně odstraněna",
+                "failed": "Nepodařilo se odstranit aerolinku"
+            }
+        }
+    },
     "flight": {
         "airport": "Letiště {{name}}"
+    },
+    "note": {
+        "prompt": {
+            "create": {
+                "message": "Zadej obsah poznámky:",
+                "confirmed": "Poznámka byla úspěšně vytvořena",
+                "failed": "Nepodařilo se vytvořit poznámku"
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit vybranou poznámku?",
+                "confirmed": "Poznámka byla úspěšně odstraněna",
+                "failed": "Nepodařilo se odstranit poznámku"
+            }
+        }
+    },
+    "expense": {
+        "subscription": "{{description}} (do {{expiration}})",
+        "voucher": {
+            "expirable": "{{issuer}} {{value}} {{currency}} (do {{expiration}})",
+            "nonexpirable": "{{issuer}} {{value}} {{currency}}"
+        },
+        "prompt": {
+            "create": {
+                "message": "Opravdu chceš vytvořit nový výdaj?",
+                "label": {
+                    "subscription": "Předplatné",
+                    "voucher": "Poukaz"
+                },
+                "confirmed": "Výdaj byl úspěšně vytvořen",
+                "failed": "Nepodařilo se vytvořit výdaj"
+            },
+            "update": {
+                "description": {
+                    "message": "Zadej nový popis výdaje:",
+                    "confirmed": "Popis výdaje byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat popis výdaje"
+                },
+                "value": {
+                    "message": "Zadej novou hodnotu a měnu výdaje:",
+                    "label": {
+                        "value": "Hodnota",
+                        "currency": "Měna"
+                    },
+                    "confirmed": "Hodnota výdaje byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat hodnotu výdaje"
+                }
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit výdaj {{description}}?",
+                "confirmed": "Výdaj byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit výdaj"
+            }
+        }
+    },
+    "album": {
+        "prompt": {
+            "update": {
+                "cover": {
+                    "message": "Opravdu chceš nastavit tuto fotku jako hlavní fotku alba?",
+                    "confirmed": "Hlavní fotka byla úspěšně nastavena",
+                    "failed": "Nepodařilo se nastavit hlavní fotku"
+                }
+            },
+            "refresh": {
+                "message": "Opravdu chceš aktualizovat vybrané album?",
+                "confirmed": "Album bylo úspěšně aktualizováno",
+                "failed": "Nepodařilo se aktualizovat album"
+            }
+        }
+    },
+    "place": {
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit místo {{name}}?",
+                "confirmed": "Místo bylo úspěšně odstraněno",
+                "failed": "Nepodařilo se odstranit místo"
+            }
+        }
+    },
+    "configuration": {
+        "prompt": {
+            "update": {
+                "message": "Opravdu chceš modifikovat tento konfigurační záznam?",
+                "confirmed": "Konfigurační záznam byl uspěšně modifikován",
+                "failed": "Nepodařilo se modifikovat konfigurační záznam"
+            }
+        }
+    },
+    "document": {
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit dokument {{name}}?",
+                "confirmed": "Dokument byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit dokument"
+            }
+        }
     }
 }

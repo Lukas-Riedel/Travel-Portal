@@ -1,21 +1,16 @@
 
 import { Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function DocumentCard({ document, onDocumentRemoved }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast } = useUserInput()
+    const { showRemoveDocumentToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit dokument '" + document.name + "'?",
-            async () => onDocumentRemoved(document.id),
-            "Dokument byl úspěšně odstraněn",
-            "Nepodařilo se odstranit dokument"
-        )
+        showRemoveDocumentToast(() => onDocumentRemoved(document.id))
     }
 
     const documentProperties = {

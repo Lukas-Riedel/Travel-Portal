@@ -6,6 +6,12 @@
     class HttpClient {
     
         private const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+        private const DEFAULT_HEADERS = array(
+            "Accept: */*",
+            "Accept-Language: en-US,en;q=0.9",
+            "Connection: keep-alive",
+            "Cache-Control: max-age=0",
+        );
 
         private readonly Logger $logger;
 
@@ -26,11 +32,16 @@
             curl_setopt($curl, CURLOPT_TIMEOUT, 300);
             curl_setopt($curl, CURLOPT_AUTOREFERER, true); 
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array_merge(self::DEFAULT_HEADERS, $headers));
+            curl_setopt($curl, CURLOPT_ENCODING, "");
     
             if ($payload !== null) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
             }     
+            // TODO: Remove this dirty hack after switching to VPS.
+            else if ($method === HttpMethod::POST) {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, "{}");
+            }
             
             $response = curl_exec($curl);
 

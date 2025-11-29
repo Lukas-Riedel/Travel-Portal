@@ -1,4 +1,4 @@
-export interface SelectFormFieldOption {
+export interface SelectFormFieldOption<T> {
     id: string
-    name: string
+    name: T
 }

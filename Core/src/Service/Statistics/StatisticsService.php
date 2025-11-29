@@ -101,7 +101,7 @@
                 }
             }
 
-            if (count($updatedStatisticsRecords) > 0) {
+            if ($cachedStatisticsCollection === null || count($updatedStatisticsRecords) > 0) {
                 $this->cacheClient->set($statisticsCollectionCacheKey, new StatisticsCollection($updatedStatisticsRecords, time()),
                     self::STATISTICS_COLLECTION_CACHE_TTL);
             }

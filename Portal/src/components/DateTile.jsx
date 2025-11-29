@@ -9,13 +9,13 @@ import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useAuth } from "../contexts/AuthContext"
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { Link } from "react-router-dom"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function DateTile({ place, date, onAlbumRefreshed }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast } = useUserInput()
+    const { showRefreshAlbumToast } = usePredefinedUserInput()
 
     const photos = usePlaceAlbumPhotos(place?.id, date?.album?.id)
 
@@ -42,12 +42,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
     }
 
     const handleAlbumRefreshed = () => {
-        showConfirmToast(
-            "Opravdu chceš aktualizovat vybrané album?",
-            async () => onAlbumRefreshed(date.album.id),
-            "Album bylo úspěšně aktualizováno",
-            "Nepodařilo se aktualizovat album"
-        )
+        showRefreshAlbumToast(() => onAlbumRefreshed(date.album.id))
     }
 
     return (

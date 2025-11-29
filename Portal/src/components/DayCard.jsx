@@ -11,6 +11,8 @@ import Tooltip from "./Tooltip"
 import { useAuth } from "../contexts/AuthContext"
 import { useDevices } from "../hooks/useDevices"
 import { useUserInput } from "../hooks/useUserInput.tsx"
+import ReactMarkdown from "react-markdown"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -61,29 +63,20 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showCreateNoteToast, showRemoveNoteToast } = usePredefinedUserInput()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
 
     const notePrefix = useMemo(() => format(day, "d.M.", { locale: cs }) + " ", [day])
     const notes = useMemo(() => noteSelector && noteSelector(notePrefix), [noteSelector, notePrefix])
 
-    const handleNoteRemoved = noteId => {
-        showConfirmToast(
-            "Opravdu chceš odstranit vybranou poznámku?",
-            async () => onNoteRemoved(noteId),
-            "Poznámka byla úspěšně odstraněna",
-            "Nepodařilo se odstranit poznámku"
-        )
+    const handleNoteRemoved = note => {
+        showRemoveNoteToast(() => onNoteRemoved(note.id))
     }
 
     const handleNoteCreated = () => {
-        showInputToast(
-            "Zadej obsah poznámky:",
-            async description => onNoteAdded(notePrefix + description),
-            "Poznámka byla úspěšně přidána",
-            "Nepodařilo se přidat poznámku"
-        )
+        showCreateNoteToast(content => onNoteAdded(notePrefix + content))
     }
 
     const renderDescriptionRow = (color, items) => items?.length > 0 && (
@@ -307,18 +300,22 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                             className="clear-left flex items-center space-x-2">
                             <NotebookPen className="w-4 h-4 shrink-0" />
                             <div className="relative group inline-block flex-1 min-w-0">
-                                <span
-                                    className="truncate block"
-                                    dangerouslySetInnerHTML={{ __html: note.content }} />
+                                <span className="truncate block">
+                                    <ReactMarkdown>
+                                        {note.content}
+                                    </ReactMarkdown>
+                                </span>
                                 <Tooltip>
                                     <NotebookPen size={16} />
-                                    <span dangerouslySetInnerHTML={{ __html: note.content }} />
+                                    <ReactMarkdown>
+                                        {note.content}
+                                    </ReactMarkdown>
                                 </Tooltip>
                             </div>
-                            {onNoteRemoved && (
+                            {isAdmin && onNoteRemoved && (
                                 <button
                                     className="btn-icon-hover"
-                                    onClick={() => handleNoteRemoved(note.id)}>
+                                    onClick={() => handleNoteRemoved(note)}>
                                     <Trash2 size={16} />
                                 </button>
                             )}

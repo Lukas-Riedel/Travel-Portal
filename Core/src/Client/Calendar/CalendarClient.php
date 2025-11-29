@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Calendar;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
@@ -8,25 +9,34 @@
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Configuration\ConfigurationService;
     use ICal\ICal;
+    use Monolog\Logger;
 
     class CalendarClient {
         
+        private const PUBLIC_HOLIDAYS_CACHE_KEY_FORMAT = "CalendarClient:PublicHolidays:%s";
+        private const PUBLIC_HOLIDAYS_CACHE_TTL = CommonConstants::ONE_WEEK_SECONDS;
+        
         private const GOOGLE_CALENDAR_WATCH_TTL_SECONDS = CommonConstants::ONE_DAY_SECONDS;
-
         private const WATCH_CALENDAR_CALLBACK_URL_FORMAT = "%s/events/webhook?eventId=%s";
 
         private const ATTRIBUTE_KEY_VALUE_DELIMITER = ":";
 
         private readonly GoogleClient $googleClient;
+
+        private readonly CacheClient $cacheClient;
         
         private readonly string $coreBaseUrl;
+
+        private readonly Logger $logger;
 
         private ?ConfigurationService $configurationService;
 
         private ?EventPublisher $eventPublisher;
 
-        public function __construct(GoogleClient $googleClient, string $coreBaseUrl) {
+        public function __construct(GoogleClient $googleClient, CacheClient $cacheClient, Logger $logger, string $coreBaseUrl) {
             $this->googleClient = $googleClient;
+            $this->cacheClient = $cacheClient;
+            $this->logger = $logger;
             $this->coreBaseUrl = $coreBaseUrl;
             $this->configurationService = null;
             $this->eventPublisher = null;
@@ -86,16 +96,30 @@
         }
 
         public function getPublicHolidaysForCategory(CategoryIdentifier $categoryIdentifier) : array {
-            $holidays = array();
-            
-            foreach ($this->getPublicHolidayEvents($categoryIdentifier) as &$event) {
-                if ($event->getStart() > time()) {
-                    $date = getdate($event->getStart());
-                    $holidays[] = new PublicHoliday($event->getSummary(), $categoryIdentifier->getName(), $date["mday"] . "." . $date["mon"] . "." . $date["year"]);                    
-                }
+            $cacheKey = $this->getPublicHolidaysCacheKey($categoryIdentifier);
+            $cachedHolidays = $this->cacheClient->get($cacheKey);
+            if ($cachedHolidays !== null) {
+                return array_map(fn($publicHoliday) => new PublicHoliday($publicHoliday["name"], $publicHoliday["category"], $publicHoliday["date"]), $cachedHolidays);
             }
 
-            return $holidays;
+            $fetchedHolidays = array();
+            $fetchedHolidaysValiditySeconds = self::PUBLIC_HOLIDAYS_CACHE_TTL;
+            
+            try {
+                foreach ($this->getPublicHolidayEvents($categoryIdentifier) as &$event) {
+                    if ($event->getStart() > time()) {
+                        $date = getdate($event->getStart());
+                        $fetchedHolidays[] = new PublicHoliday($event->getSummary(), $categoryIdentifier->getName(), $date["mday"] . "." . $date["mon"] . "." . $date["year"]);                    
+                    }
+                }
+            }
+            catch (\Throwable $t) {
+                $this->logger->error("Unable to fetch public holidays for category " . $categoryIdentifier->getName() . ": " . $t->getMessage());
+                $fetchedHolidaysValiditySeconds = CommonConstants::ONE_HOUR_SECONDS;
+            }
+
+            $this->cacheClient->set($cacheKey, $fetchedHolidays, $fetchedHolidaysValiditySeconds);
+            return $fetchedHolidays;
         }
 
         private function getPublicHolidayEvents(CategoryIdentifier $categoryIdentifier) : array {
@@ -139,6 +163,10 @@
             }
 
             return $attributes;
+        }
+
+        private function getPublicHolidaysCacheKey(CategoryIdentifier $categoryIdentifier) : string {
+            return sprintf(self::PUBLIC_HOLIDAYS_CACHE_KEY_FORMAT, $categoryIdentifier->getName());
         }
     }
 ?>
