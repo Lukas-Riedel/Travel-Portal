@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import clsx from "clsx"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"

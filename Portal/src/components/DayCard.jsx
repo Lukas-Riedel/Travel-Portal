@@ -8,10 +8,9 @@ import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 import Tooltip from "./Tooltip"
-import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import { useDevices } from "../hooks/useDevices"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -62,7 +61,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast, showInputToast } = useUserInput()
+    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
 
@@ -108,9 +107,9 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                 { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 },
                 { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
             ],
+            async (path, mainPhotoPosition, agentId) => onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition),
             "Nahrávání fotek bude brzy zahájeno",
-            "Při nahrávání fotek došlo k chybě",
-            async (path, mainPhotoPosition, agentId) => onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition)
+            "Při nahrávání fotek došlo k chybě"
         )
     }
 

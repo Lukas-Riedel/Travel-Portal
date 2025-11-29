@@ -1,9 +1,8 @@
 import { ImagePlus, LocationEdit, RefreshCcw, SquarePen, TriangleAlert } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext.jsx"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import PlaceMap from "./PlaceMap.jsx"
 import { TailSpin } from "react-loader-spinner"
-import showFormToast from "./FormToast.jsx"
 import { getTime, parseISO } from "date-fns"
 import { useDevices } from "../hooks/useDevices.js"
 import { useEffect, useState } from "react"
@@ -26,7 +25,7 @@ const checklistItems = [
 export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onAddressChanged, onExcerptRefreshed, onLocationChanged, onPlaceReviewed }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast, showInputToast } = useUserInput()
+    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
     const [checked, setChecked] = useState({})
 
@@ -91,8 +90,6 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                 { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 },
                 { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
             ],
-            "Nahrávání fotek bude brzy zahájeno",
-            "Při nahrávání fotek došlo k chybě",
             async (date, path, mainPhotoPosition, agentId) => {
                 const placeDate = place.getDate(parseISO(date))
                 const timestamp = Math.floor(getTime(parseISO(date)) / 1000)
@@ -100,7 +97,9 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                     return Promise.reject("Unable to upload photos for the regular place for the date that does not exist.")
                 }
                 return onPhotosAdded(agentId, place.id, place.name, path, placeDate?.album?.id, timestamp, mainPhotoPosition)
-            }
+            },
+            "Nahrávání fotek bude brzy zahájeno",
+            "Při nahrávání fotek došlo k chybě"
         )
     }
 

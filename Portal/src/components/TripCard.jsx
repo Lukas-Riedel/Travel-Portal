@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { Calendar, Trash2 } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { formatDays } from "../utils/formatters"

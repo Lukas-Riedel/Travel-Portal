@@ -1,7 +1,7 @@
 
 import { Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 

@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import TabMenu from "../components/TabMenu"
 import TripSummary from "../components/TripSummary"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip"
 import ExpenseSummary from "../components/ExpenseSummary"
 import { Plus } from "lucide-react"
-import showFormToast from "../components/FormToast"
 import FloatingButton from "../components/FloatingButton"
 import { useDataConsistencyIssues } from "../hooks/useDataConsistencyIssues"
 import { fromZonedTime } from "date-fns-tz"
@@ -38,7 +37,7 @@ import { useVouchers } from "../hooks/useVouchers"
 import VoucherCardGrid from "../components/VoucherCardGrid"
 import { useRegions } from "../hooks/useRegions.ts"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -59,7 +58,7 @@ export default function AdminPage() {
     const { isAdmin } = useAuth()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
-    const { showInputToast } = useUserInput()
+    const { showInputToast, showFormToast } = useUserInput()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
@@ -151,8 +150,6 @@ export default function AdminPage() {
                     ]
                 }
             ],
-            "Let byl úspěšně přidán",
-            "Při přidávání letu došlo k chybě",
             async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
                 if (type === "scheduled") {
                     return createScheduledFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
@@ -163,7 +160,9 @@ export default function AdminPage() {
                 else {
                     return Promise.reject(`Unknown flight type '${type}'.`)
                 }
-            }
+            },
+            "Let byl úspěšně přidán",
+            "Při přidávání letu došlo k chybě"
         )
     }
 
@@ -185,8 +184,6 @@ export default function AdminPage() {
                 { label: "Měna", required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) },
                 { label: "Expirace", required: true, type: "datetime-local" }
             ],
-            "Předplatné bylo úspěšně přidáno",
-            "Při přidávání předplatného došlo k chybě",
             async (description, value, currency, expiration) => {
                 const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
                 if (convertedExpiration < Date.now() / 1000) {
@@ -194,7 +191,9 @@ export default function AdminPage() {
                 }
 
                 return createSubscription(description, value, currency, convertedExpiration)
-            }
+            },
+            "Předplatné bylo úspěšně přidáno",
+            "Při přidávání předplatného došlo k chybě"
         )
     }
 
@@ -207,8 +206,6 @@ export default function AdminPage() {
                 { label: "Vydavatel", required: true },
                 { label: "Expirace", type: "date" }
             ],
-            "Dokument byl úspěšně přidán",
-            "Při přidávání dokumentu došlo k chybě",
             async (name, code, issuer, expiration) => {
                 const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
                 if (convertedExpiration < Date.now() / 1000) {
@@ -216,7 +213,9 @@ export default function AdminPage() {
                 }
 
                 return createDocument(name, code, issuer, convertedExpiration)
-            }
+            },
+            "Dokument byl úspěšně přidán",
+            "Při přidávání dokumentu došlo k chybě"
         )
     }
 
@@ -230,8 +229,6 @@ export default function AdminPage() {
                 { label: "Měna", required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) },
                 { label: "Expirace", type: "date" }
             ],
-            "Poukaz byl úspěšně přidán",
-            "Při přidávání poukazu došlo k chybě",
             async (code, issuer, value, currency, expiration) => {
                 const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
                 if (convertedExpiration < Date.now() / 1000) {
@@ -239,7 +236,9 @@ export default function AdminPage() {
                 }
 
                 return createVoucher(code, issuer, value, currency, convertedExpiration)
-            }
+            },
+            "Poukaz byl úspěšně přidán",
+            "Při přidávání poukazu došlo k chybě"
         )
     }
 
@@ -250,9 +249,9 @@ export default function AdminPage() {
                 { label: "Jméno", required: true },
                 { label: "Adresa", required: false }
             ],
+            async (name, address) => createPermanentPlace(name, address || name),
             "Místo bylo úspěšně přidáno",
-            "Při přidávání místa došlo k chybě",
-            async (name, address) => createPermanentPlace(name, address || name)
+            "Při přidávání místa došlo k chybě"
         )
     }
 
@@ -268,11 +267,9 @@ export default function AdminPage() {
                             { label: "Název", required: true },
                             { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
                             { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                            { label: "Rádius", value: 0, required: true, type: "number", min: 0 },
+                            { label: "Rádius", defaultValue: 0, required: true, type: "number", min: 0 },
                             { label: "GeoJSON", required: true }
                         ],
-                        "Geografický region byl úspěšně přidán",
-                        "Nepodařilo se přidat geografický region",
                         async (name, country, category, radius, geoJson) => {
                             const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
                             if (geoFeatures.length !== 1) {
@@ -280,7 +277,9 @@ export default function AdminPage() {
                             }
 
                             return createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeatures[0].geometry))
-                        }
+                        },
+                        "Geografický region byl úspěšně přidán",
+                        "Nepodařilo se přidat geografický region"
                     )
                 },
                 composite: {
@@ -294,10 +293,10 @@ export default function AdminPage() {
                                 { label: "Zahrnuté regiony", required: true },
                                 { label: "Vyloučené regiony", required: false }
                             ],
-                            "Kompozitní region byl úspěšně přidán",
-                            "Nepodařilo se přidat kompozitní region",
                             async (name, category, includedCategories, excludedCategories) => createCompositeRegion(name, category,
-                                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim()))
+                                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim())),
+                            "Kompozitní region byl úspěšně přidán",
+                            "Nepodařilo se přidat kompozitní region"
                         )
                 },
                 multipleGeographical: {
@@ -312,17 +311,17 @@ export default function AdminPage() {
                                         await showFormToast(
                                             "Zadej reprezentaci geografického regionu:",
                                             [
-                                                { label: "Název", value: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
+                                                { label: "Název", defaultValue: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
                                                 // TODO: Use the value from the previous toast as a default.
                                                 { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
                                                 // TODO: Use the value from the previous toast as a default.
                                                 { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
                                                 // TODO: Use the value from the previous toast as a default.
-                                                { label: "Rádius", value: 0, required: true, type: "number", min: 0 }
+                                                { label: "Rádius", defaultValue: 0, required: true, type: "number", min: 0 }
                                             ],
+                                            async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry)),
                                             "Geografický region byl úspěšně přidán",
-                                            "Nepodařilo se přidat geografický region",
-                                            async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry))
+                                            "Nepodařilo se přidat geografický region"
                                         )
 
                                     }
@@ -345,8 +344,6 @@ export default function AdminPage() {
                 { label: "Cesta", required: true },
                 { label: "Konec synchronizace", required: true, type: "datetime-local" },
             ],
-            "Automatická synchronizace složky bude brzy zahájena",
-            "Při nastavování automatické synchronizace složky došlo k chybě",
             async (path, expiration) => {
                 const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
                 if (convertedExpiration < Date.now() / 1000) {
@@ -354,7 +351,9 @@ export default function AdminPage() {
                 }
 
                 return publishFolderSynchronizationRequestedEvent(agentId, path, convertedExpiration)
-            }
+            },
+            "Automatická synchronizace složky bude brzy zahájena",
+            "Při nastavování automatické synchronizace složky došlo k chybě"
         )
     }
 

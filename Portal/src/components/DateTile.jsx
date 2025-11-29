@@ -9,7 +9,7 @@ import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useAuth } from "../contexts/AuthContext"
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { Link } from "react-router-dom"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos"
 

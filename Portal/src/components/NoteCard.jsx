@@ -1,5 +1,5 @@
 import { Trash2, Plus, Bold, Italic, Link, Edit2, Check } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useEffect, useRef, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"

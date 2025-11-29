@@ -3,14 +3,15 @@ import DayCard from "./DayCard"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
-import showFormToast from "./FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
-import { fromZonedTime, toZonedTime } from "date-fns-tz"
+import { toZonedTime } from "date-fns-tz"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
     const { isAdmin } = useAuth()
+    const { showFormToast } = useUserInput()
 
     const [timezone, setTimezone] = useState(undefined)
     useEffect(() => {
@@ -29,9 +30,9 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
             [
                 { type: "date", required: true }
             ],
+            async start => onTripMoved(Math.round(toZonedTime(new Date(start), configuration?.homeLocation?.timezone).getTime() / 1000)),
             "Výlet byl úspěšně přesunut",
-            "Nepodařilo se přesunout výlet",
-            async start => onTripMoved(Math.round(toZonedTime(new Date(start), configuration?.homeLocation?.timezone).getTime() / 1000))
+            "Nepodařilo se přesunout výlet"
         )
     }
 
@@ -41,9 +42,9 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
             [
                 { type: "select", required: true, options: tripCandidates?.map(candidateTrip => ({ id: candidateTrip.id, name: candidateTrip.name })) }
             ],
+            onTripLoaded,
             "Výlet byl úspěšně načten",
-            "Nepodařilo se načíst výlet",
-            onTripLoaded
+            "Nepodařilo se načíst výlet"
         )
     }
     return (

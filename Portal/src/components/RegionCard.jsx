@@ -1,14 +1,13 @@
 import LoadingCard from "./LoadingCard"
 import { formatKilometers } from "../utils/formatters"
 import { Copy, Map, Wrench } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.ts"
-import showFormToast from "./FormToast.jsx"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showFormToast } = useUserInput()
 
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
@@ -55,11 +54,9 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
         showFormToast(
             "Zadej novou reprezentaci geografického regionu (existující geografické body budou odstraněny):",
             [
-                { label: "Rádius", value: region.radius, required: true, type: "number", min: 0 },
-                { label: "GeoJSON", value: JSON.stringify(region.geoJson), required: true }
+                { label: "Rádius", defaultValue: region.radius, required: true, type: "number", min: 0 },
+                { label: "GeoJSON", defaultValue: JSON.stringify(region.geoJson), required: true }
             ],
-            "Geografický region byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat geografický region",
             async (radius, geoJson) => {
                 const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
                 if (geoFeatures.length !== 1) {
@@ -67,7 +64,9 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                 }
 
                 return onGeographicalRegionUpdated(region.category.name, region.countryCategory?.name, region.category.category, radius, getGeoJson(geoFeatures[0].geometry))
-            }
+            },
+            "Geografický region byl úspěšně aktualizován",
+            "Nepodařilo se aktualizovat geografický region"
         )
     }
 
@@ -75,13 +74,13 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
         showFormToast(
             "Zadej novou reprezentaci kompozitního regionu:",
             [
-                { label: "Zahrnuté regiony", value: region.includedCategories.map(category => category.name).join(","), required: true },
-                { label: "Vyloučené regiony", value: region.excludedCategories.map(category => category.name).join(","), required: true }
+                { label: "Zahrnuté regiony", defaultValue: region.includedCategories.map(category => category.name).join(","), required: true },
+                { label: "Vyloučené regiony", defaultValue: region.excludedCategories.map(category => category.name).join(","), required: true }
             ],
-            "Kompozitní region byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat kompozitní region",
             async (includedCategories, excludedCategories) => onCompositeRegionUpdated(region.category.name, region.category.category,
-                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim()))
+                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim())),
+            "Kompozitní region byl úspěšně aktualizován",
+            "Nepodařilo se aktualizovat kompozitní region"
         )
     }
 

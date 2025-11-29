@@ -9,8 +9,8 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useEvents } from "../hooks/useEvents"
 import { useAuth } from "../contexts/AuthContext"
 import { Edit2, Folder } from "lucide-react"
-import showFormToast from "../components/FormToast"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 const categoryCategories = {
     continent: "Kontinent",
@@ -26,6 +26,7 @@ const categoryCategories = {
 export default function CategoryPage() {
     const { categoryId } = useParams()
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
+    const {showFormToast} = useUserInput()
 
     const { isAdmin } = useAuth()
 
@@ -63,15 +64,15 @@ export default function CategoryPage() {
         showFormToast(
             "Zadej metadata kategorie:",
             [
-                { label: "Kategorie", required: true, value: category.category, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                { label: "Barva", required: false, value: category.metadata?.color },
-                { label: "Unicode", required: false, value: category.metadata?.unicode },
-                { label: "Kalendář", required: false, value: category.metadata?.publicHolidaysCalendar }
+                { label: "Kategorie", required: true, defaultValue: category.category, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
+                { label: "Barva", required: false, defaultValue: category.metadata?.color },
+                { label: "Unicode", required: false, defaultValue: category.metadata?.unicode },
+                { label: "Kalendář", required: false, defaultValue: category.metadata?.publicHolidaysCalendar }
             ],
-            "Kategorie byla úspěšně aktualizována",
-            "Při aktualizování kategorie došlo k chybě",
             async (category, color, unicode, publicHolidaysCalendar) =>
-                updateCategoryCategory(category).then(() => updateCategoryMetadata({ color, unicode, publicHolidaysCalendar }))
+                updateCategoryCategory(category).then(() => updateCategoryMetadata({ color, unicode, publicHolidaysCalendar })),
+            "Kategorie byla úspěšně aktualizována",
+            "Při aktualizování kategorie došlo k chybě"
         )
     }
 

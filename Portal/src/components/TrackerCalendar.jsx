@@ -8,14 +8,13 @@ import { fromUnixTime } from "date-fns"
 import Tooltip from "./Tooltip"
 import { formatDuration } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.ts"
-import showFormToast from "./FormToast"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showFormToast } = useUserInput()
 
     const now = new Date()
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
@@ -197,21 +196,21 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             "Zadej údaje pro vytvoření přesčasu:",
             [
                 { label: "Popis přesčasu", required: true },
-                { label: "Počet hodin", value: Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
+                { label: "Počet hodin", defaultValue: Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
             ],
+            async (description, hours) => onEventCreated("overtime", description, hours, toNoonTimestamp(day)),
             "Přesčas byl úspěšně vytvořen",
-            "Nepodařilo se vytvořit přesčas",
-            async (description, hours) => onEventCreated("overtime", description, hours, toNoonTimestamp(day))
+            "Nepodařilo se vytvořit přesčas"
         )
     }
 
     const handleBalanceUsageEvent = (day, type, title, success, error) => {
         showFormToast(
             title,
-            [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }],
+            [{ defaultValue: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }],
+            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, toNoonTimestamp(day)),
             success,
-            error,
-            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, toNoonTimestamp(day))
+            error
         )
     }
 
@@ -258,10 +257,10 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const handleCreatePlannedWorkEvent = day => {
         showFormToast(
             "Zadej počet hodin k modifikaci plánované práce:",
-            [{ value: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }],
+            [{ defaultValue: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }],
+            async (hours) => onEventCreated("plannedWork", "Planned work", hours, toNoonTimestamp(day)),
             "Plánovaná práce byla úspěšně modifikována",
-            "Nepodařilo se modifikovat plánovanou práci",
-            async (hours) => onEventCreated("plannedWork", "Planned work", hours, toNoonTimestamp(day))
+            "Nepodařilo se modifikovat plánovanou práci"
         )
     }
 

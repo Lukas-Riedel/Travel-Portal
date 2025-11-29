@@ -1,17 +1,16 @@
 import { LogIn, LogOut } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
-import showFormToast from "../components/FormToast"
 import { useAuth } from "../contexts/AuthContext"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 export default function MainLayout({ children }) {
     const { login, logout, isAdmin } = useAuth()
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showFormToast } = useUserInput()
 
     const navigationItems = [
         { label: t("menu.feed"), to: "/feed", isProtected: false, allowedPrefixes: ["/feed"] },
@@ -31,9 +30,9 @@ export default function MainLayout({ children }) {
                 { label: "Uživatelské jméno", required: true },
                 { label: "Heslo", required: true, type: "password" }
             ],
+            (username, password) => login({ username, password }),
             "Přihlášení proběhlo úspěšně",
-            "Při přihlašování došlo k chybě",
-            (username, password) => login({ username, password })
+            "Při přihlašování došlo k chybě"
         )
     }
 

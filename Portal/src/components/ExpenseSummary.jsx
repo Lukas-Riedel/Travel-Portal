@@ -5,8 +5,7 @@ import {
 } from "lucide-react"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.ts"
-import showFormToast from "./FormToast"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
@@ -269,7 +268,7 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
 function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
-    const { showConfirmToast, showInputToast } = useUserInput()
+    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
     const handleRemove = expense => {
         showConfirmToast(
@@ -294,12 +293,12 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
         showFormToast(
             "Zadej novou hodnotu a měnu výdaje:",
             [
-                { label: "Hodnota", value: expense.value, required: true, type: "number", min: 0 },
-                { label: "Měna", value: expense.currency, required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) }
+                { label: "Hodnota", defaultValue: expense.value, required: true, type: "number", min: 0 },
+                { label: "Měna", defaultValue: expense.currency, required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) }
             ],
+            async (value, currency) => onExpenseValueUpdated(expense.id, value, currency),
             "Hodnota výdaje byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat hodnotu výdaje",
-            async (value, currency) => onExpenseValueUpdated(expense.id, value, currency)
+            "Nepodařilo se aktualizovat hodnotu výdaje"
         )
     }
 
@@ -366,6 +365,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
 
 function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }) {
     const { configuration } = useConfiguration()
+    const { showFormToast } = useUserInput()
 
     const { subscriptions } = useSubscriptions()
     const { vouchers, updateVoucherValue, removeVoucher } = useVouchers()
@@ -390,11 +390,9 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
         showFormToast(
             "Opravdu chceš přidat nový výdaj?",
             [
-                { label: "Předplatné", value: expenseCandidate?.subscriptionId, required: false, type: "select", options: [{ id: null, name: "" }, ...subscriptions.map(subscription => ({ id: subscription.id, name: `${subscription.description} (do ${format(fromUnixTime(subscription.expiration), "dd.MM.yyyy")})` }))] },
-                { label: "Poukaz", required: false, type: "select", options: [{ id: null, name: "" }, ...vouchers.filter(voucher => voucher.currency === newCurrency).map(voucher => ({ id: voucher.id, name: `${voucher.issuer} ${voucher.value} ${voucher.currency}` + (voucher.expiration ? " (do " + format(fromUnixTime(voucher.expiration), "dd.MM.yyyy") + ")" : "") }))] }
+                { label: "Předplatné", defaultValue: expenseCandidate?.subscriptionId, required: false, type: "select", options: subscriptions.map(subscription => ({ id: subscription.id, name: `${subscription.description} (do ${format(fromUnixTime(subscription.expiration), "dd.MM.yyyy")})` })) },
+                { label: "Poukaz", required: false, type: "select", options: vouchers.filter(voucher => voucher.currency === newCurrency).map(voucher => ({ id: voucher.id, name: `${voucher.issuer} ${voucher.value} ${voucher.currency}` + (voucher.expiration ? " (do " + format(fromUnixTime(voucher.expiration), "dd.MM.yyyy") + ")" : "") })) }
             ],
-            "Nový výdaj byl úspěšně přidán",
-            "Nepodařilo se přidat nový výdaj",
             async (subscriptionId, voucherId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId)
                 .then(async expense => {
                     if (voucherId) {
@@ -408,7 +406,9 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     }
 
                     return Promise.resolve(expense)
-                })
+                }),
+            "Nový výdaj byl úspěšně přidán",
+            "Nepodařilo se přidat nový výdaj"
         )
     }
 

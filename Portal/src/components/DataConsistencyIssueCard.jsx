@@ -1,8 +1,7 @@
 import { Wrench } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import LoadingCard from "./LoadingCard"
-import showFormToast from "./FormToast"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
@@ -13,7 +12,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
-    const { showConfirmToast, showInputToast } = useUserInput()
+    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
     const handleRefreshAllAlbums = () => {
         showConfirmToast(
@@ -44,10 +43,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 [
                     { type: "select", required: true, options: Array.from({ length: fitnessCollection.fitness.length }, (_, index) => ({ id: index, name: "Záznam " + (index + 1) })) }
                 ],
-                "Záznam byl úspěšně nahrazen",
-                "Nepodařilo se nahradit záznam",
                 fitnessIndex => onFitnessReplaced(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
-                    fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true)
+                    fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true),
+                "Záznam byl úspěšně nahrazen",
+                "Nepodařilo se nahradit záznam"
             )
         },
         "PLACE_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {
@@ -84,13 +83,13 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             resolve: category => showFormToast(
                 "Zadej metadata kategorie:",
                 [
-                    { label: "Barva", required: false, value: category.metadata?.color },
-                    { label: "Unicode", required: false, value: category.metadata?.unicode },
-                    { label: "Kalendář", required: false, value: category.metadata?.publicHolidaysCalendar }
+                    { label: "Barva", required: false, defaultValue: category.metadata?.color },
+                    { label: "Unicode", required: false, defaultValue: category.metadata?.unicode },
+                    { label: "Kalendář", required: false, defaultValue: category.metadata?.publicHolidaysCalendar }
                 ],
+                async (color, unicode, publicHolidaysCalendar) => onCategoryMetadataChanged(category.id, { color, unicode, publicHolidaysCalendar }),
                 "Metadata byla úspěšně aktualizována",
-                "Při aktualizování metadat došlo k chybě",
-                async (color, unicode, publicHolidaysCalendar) => onCategoryMetadataChanged(category.id, { color, unicode, publicHolidaysCalendar })
+                "Při aktualizování metadat došlo k chybě"
             )
         },
         "ALBUM_WITHOUT_PLACE": {
@@ -147,9 +146,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 [
                     { type: "select", required: true, options: airlines?.map(airline => ({ id: airline.id, name: airline.name })) }
                 ],
+                async (airlineId) => onAirlineCodeAssigned(airlineId, code),
                 "Aerolinka byla úspěšně přiřazena",
-                "Nepodařilo se přiřadit aerolinku",
-                async (airlineId) => onAirlineCodeAssigned(airlineId, code)
+                "Nepodařilo se přiřadit aerolinku"
             )
         },
         "COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION": {
@@ -176,9 +175,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     [
                         { type: "select", required: true, options: categories.map(category => ({ id: category.name, name: category.name })) }
                     ],
+                    async (name) => onGeographicalExtensionCategoryAdded(name, place.country, "administrative", place.latitude, place.longitude),
                     "Kategorie byla úspěšně přiřazena",
-                    "Při přiřazování kategorie došlo k chybě",
-                    async (name) => onGeographicalExtensionCategoryAdded(name, place.country, "administrative", place.latitude, place.longitude)
+                    "Při přiřazování kategorie došlo k chybě"
                 )
             }
         },
@@ -267,9 +266,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 [
                     { type: "select", required: true, options: places.filter(place => place.dates.length === 0).map(place => ({ id: place.id, name: place.name })) }
                 ],
+                onPlaceRemoved,
                 "Místo bylo úspěšně odstraněno",
-                "Nepodařilo se odstranit místo",
-                onPlaceRemoved
+                "Nepodařilo se odstranit místo"
             )
         },
         "AIRPORT_WITHOUT_LONG_NAME": {

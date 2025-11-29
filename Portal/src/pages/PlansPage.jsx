@@ -8,18 +8,19 @@ import Slider from "../components/Slider"
 import { formatKilometers } from "../utils/formatters"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useAuth } from "../contexts/AuthContext"
-import showFormToast from "../components/FormToast"
 import FloatingButton from "../components/FloatingButton"
 import { Plus } from "lucide-react"
 import TabMenu from "../components/TabMenu"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { endOfDay } from "date-fns"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
 
 export default function PlansPage() {
     const { isAdmin } = useAuth()
+    const { showFormToast } = useUserInput()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
@@ -78,9 +79,9 @@ export default function PlansPage() {
                 { label: "Jméno", required: true },
                 { label: "Adresa", required: false }
             ],
+            async (name, address) => createCandidatePlace(name, address || name),
             "Místo bylo úspěšně přidáno",
-            "Při přidávání místa došlo k chybě",
-            async (name, address) => createCandidatePlace(name, address || name)
+            "Při přidávání místa došlo k chybě"
         )
     }
 

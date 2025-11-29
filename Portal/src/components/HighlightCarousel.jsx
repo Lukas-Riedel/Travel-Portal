@@ -2,9 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Pause, Play, Trash2, Star, SlidersVertical, Edit2, Plus, Upload, Check } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { TailSpin } from "react-loader-spinner"
-import showFormToast from "./FormToast"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { getOnlyElement, isDaylightSavingTime } from "../utils/helpers"
@@ -29,7 +28,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showFormToast } = useUserInput()
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
@@ -103,10 +102,10 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 { label: "Cesta", required: true },
                 { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
             ],
-            "Nahrazování fotky bude brzy zahájeno",
-            "Při nahrazování fotky došlo k chybě",
             async (path, agentId) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path)
-                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank"))
+                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")),
+            "Nahrazování fotky bude brzy zahájeno",
+            "Při nahrazování fotky došlo k chybě"
         )
     }
 
@@ -153,16 +152,14 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
             "Zadej nové atributy:",
             [
                 {
-                    label: "Kompozice", value: highlight.attributes?.composition, required: true, type: "select", options: [
-                        { id: null, name: "" },
+                    label: "Kompozice", defaultValue: highlight.attributes?.composition, required: true, type: "select", options: [
                         { id: 5, name: "Nedostatečná" },
                         { id: 60, name: "Průměrná" },
                         { id: 100, name: "Kvalitní" }
                     ]
                 },
                 {
-                    label: "Obloha", value: highlight.attributes?.sky, required: true, type: "select", options: [
-                        { id: null, name: "" },
+                    label: "Obloha", defaultValue: highlight.attributes?.sky, required: true, type: "select", options: [
                         { id: 10, name: "Jednolitá šedá" },
                         { id: 30, name: "Zataženo s výraznou strukturou mraků" },
                         { id: 50, name: "Oblačná s prosvítajícím sluncem" },
@@ -171,8 +168,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Stíny", value: highlight.attributes?.shadows, required: true, type: "select", options: [
-                        { id: null, name: "" },
+                    label: "Stíny", defaultValue: highlight.attributes?.shadows, required: true, type: "select", options: [
                         { id: 35, name: "Silné protisvětlo (špatná denní doba)" },
                         { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
                         { id: 60, name: "Mírné (lehké modelování scény)" },
@@ -180,8 +176,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Okolnosti", value: highlight.attributes?.circumstances, required: true, type: "select", options: [
-                        { id: null, name: "" },
+                    label: "Okolnosti", defaultValue: highlight.attributes?.circumstances, required: true, type: "select", options: [
                         { id: 20, name: "Výrazně rušivé (lešení, davy, nepořádek)" },
                         { id: 70, name: "Rušivé (něco narušuje celkový dojem)" },
                         { id: 90, name: "Minimálně rušivé (drobná rušení)" },
@@ -190,20 +185,19 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 },
                 {
                     label: "Atmosféra", value: highlight.attributes?.atmosphere, required: true, type: "select", options: [
-                        { id: null, name: "" },
                         { id: 30, name: "Znečištěný nebo zakalený vzduch (opar, smog, inverze)" },
                         { id: 80, name: "Mírný opar (snížená čirost, ale přijatelná)" },
                         { id: 95, name: "Čistý vzduch (dobrá viditelnost, přirozené barvy)" },
                         { id: 100, name: "Křišťálově čistý vzduch (výjimečně fotogenické podmínky)" }
                     ]
                 },
-                place && { label: "Čas pořízení:", value: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
-                highlight.photo.sunAltitude && { label: "Výška slunce:", value: highlight.photo.sunAltitude.toFixed(1) + "°", required: true, disabled: true }
+                place && { label: "Čas pořízení:", defaultValue: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
+                highlight.photo.sunAltitude && { label: "Výška slunce:", defaultValue: highlight.photo.sunAltitude.toFixed(1) + "°", required: true, disabled: true }
             ],
-            "Atributy highlightu byly úspěšně aktualizovány",
-            "Nepodařilo se aktualizovat atributy highlightu",
             async (composition, sky, shadows, circumstances, atmosphere) =>
-                onHighlightQualityAttributesUpdated(highlight.id, composition, sky, shadows, circumstances, atmosphere)
+                onHighlightQualityAttributesUpdated(highlight.id, composition, sky, shadows, circumstances, atmosphere),
+            "Atributy highlightu byly úspěšně aktualizovány",
+            "Nepodařilo se aktualizovat atributy highlightu"
         )
     }
 

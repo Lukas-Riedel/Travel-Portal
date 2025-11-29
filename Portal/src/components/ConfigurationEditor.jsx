@@ -1,7 +1,7 @@
 import { useState } from "react"
 import ReactJson from "react-json-view"
 import { TailSpin } from "react-loader-spinner"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useAuth } from "../contexts/AuthContext"
 
 export default function ConfigurationEditor({ configuration, onConfigurationUpdated }) {

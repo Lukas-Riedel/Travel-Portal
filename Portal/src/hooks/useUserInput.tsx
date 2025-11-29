@@ -1,0 +1,203 @@
+import { useTranslation } from "react-i18next"
+import { toast } from "sonner"
+import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
+import type { FormField } from "../types/FormField.ts"
+import { useCallback, useRef } from "react"
+import type { SelectFormField } from "../types/SelectFormField.ts"
+
+export const useUserInput = (): UseUserInputResult => {
+    const { t } = useTranslation()
+
+    const showConfirmToast = useCallback((message: string, onConfirmed?: () => Promise<void>, success?: string, error?: string): Promise<boolean> =>
+        new Promise((resolve, reject) => {
+            const id = toast(message, {
+                action: {
+                    label: t("prompt.confirm"),
+                    onClick: () => {
+                        toast.dismiss(id)
+
+                        if (onConfirmed) {
+                            toast.promise(onConfirmed(), {
+                                loading: t("prompt.loading"),
+                                success: () => {
+                                    resolve(true)
+                                    return success || t("prompt.confirmed")
+                                },
+                                error: e => {
+                                    reject(e)
+                                    return error || t("prompt.failed")
+                                },
+                            })
+                        }
+                        else {
+                            resolve(true)
+                        }
+                    }
+                },
+                cancel: {
+                    label: t("prompt.reject"),
+                    onClick: () => {
+                        resolve(false)
+                    }
+                }
+            })
+        }), [t])
+
+    const showFormToast = useCallback(<F extends readonly FormField<any>[]>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<void>, success?: string, error?: string): Promise<boolean> =>
+        new Promise((resolve, reject) => {
+            toast.custom(
+                id => {
+                    // TODO: Extract to a separate component in order to follow React best practices.
+                    function Form() {
+                        const inputRefs = useRef<(HTMLInputElement | HTMLSelectElement | null)[]>([])
+
+                        const handleSubmit = async () => {
+                            if (fields.filter(Boolean).some((field, index) => field.required && !inputRefs.current[index]?.value)) {
+                                return
+                            }
+
+                            const args = fields.map((_, index) => {
+                                const inputElement = inputRefs.current[index]
+                                if (!inputElement) {
+                                    return undefined
+                                }
+
+                                if (inputElement instanceof HTMLSelectElement) {
+                                    if (inputElement.multiple) {
+                                        const values = Array.from(inputElement.selectedOptions, optionElement => optionElement.value.trim())
+                                        return values.length ? values : undefined
+                                    }
+                                    else {
+                                        return inputElement.value.trim() || undefined
+                                    }
+                                }
+
+                                if (inputElement instanceof HTMLInputElement) {
+                                    return inputElement.value.trim() || undefined
+                                }
+
+                                return undefined
+                            }) as { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }
+
+                            toast.dismiss(id)
+
+                            if (onSubmitted) {
+                                toast.promise(onSubmitted(...args), {
+                                    loading: t("prompt.loading"),
+                                    success: () => {
+                                        resolve(true)
+                                        return success || t("prompt.confirmed")
+                                    },
+                                    error: e => {
+                                        reject(e)
+                                        return error || t("prompt.failed")
+                                    }
+                                })
+                            }
+                            else {
+                                resolve(true)
+                            }
+                        }
+
+                        const handleCancel = () => {
+                            toast.dismiss(id)
+                            resolve(false)
+                        }
+
+                        const isSelectFormField = <T extends any>(field: FormField<T>): field is SelectFormField<T> => field.type === "select"
+
+                        return (
+                            <div className="w-full flex justify-center">
+                                <div className="bg-white rounded-lg shadow-md border p-4 w-80 space-y-3 text-sm">
+                                    {message && (
+                                        <div className="font-medium">
+                                            {message}
+                                        </div>
+                                    )}
+                                    {fields.filter(Boolean).map((field, index) => (
+                                        <div key={index}>
+                                            {field.label && (
+                                                <label className="block mb-1 text-gray-600 text-sm">
+                                                    {field.label}
+                                                    {field.required && (
+                                                        <span className="text-red-600">
+                                                            {"*"}
+                                                        </span>
+                                                    )}
+                                                </label>
+                                            )}
+                                            {isSelectFormField(field) ? (
+                                                <select
+                                                    ref={element => {
+                                                        if (element) {
+                                                            inputRefs.current[index] = element
+                                                        }
+                                                    }}
+                                                    className="border rounded px-2 py-1 w-full text-sm"
+                                                    defaultValue={field.defaultValue ?? ""}
+                                                    multiple={field.multiple}
+                                                    disabled={field.disabled}>
+                                                    {!field.required && (
+                                                        <option key="empty">
+                                                            {""}
+                                                        </option>
+                                                    )}
+                                                    {field.options.map(option => (
+                                                        <option
+                                                            key={option.id}
+                                                            value={option.id}>
+                                                            {option.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    ref={element => {
+                                                        if (element) {
+                                                            inputRefs.current[index] = element
+                                                        }
+                                                    }}
+                                                    className="border rounded px-2 py-1 w-full text-sm"
+                                                    type={field.type ?? "text" /** TODO: Remove the default type after the transition to TypeScript is done. */}
+                                                    min={field.min}
+                                                    max={field.max}
+                                                    placeholder={field.placeholder}
+                                                    defaultValue={field.defaultValue}
+                                                    disabled={field.disabled}
+                                                    autoFocus={index === 0} />
+                                            )}
+                                        </div>
+                                    ))}
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            className="px-3 py-1 rounded bg-gray-200"
+                                            onClick={handleCancel}>
+                                            {t("prompt.reject")}
+                                        </button>
+                                        <button
+                                            className="px-3 py-1 rounded bg-black text-white"
+                                            onClick={handleSubmit}>
+                                            {t("prompt.confirm")}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+                    return <Form />
+                },
+                {
+                    duration: Infinity
+                }
+            )
+        }), [t])
+
+    const showInputToast = <T extends any>(message: string, onSubmitted?: (value: T) => Promise<void>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
+        showFormToast(message, [{ type: "text", required: true, defaultValue }], onSubmitted, success, error)
+
+    return {
+        showConfirmToast,
+        showFormToast,
+        showInputToast
+    }
+}

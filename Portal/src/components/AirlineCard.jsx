@@ -2,22 +2,19 @@ import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
 import LoadingCard from "./LoadingCard.jsx"
 import { Trash2, Wrench } from "lucide-react"
-import showFormToast from "./FormToast.jsx"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 
 export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineRemoved, onAirlineCodeRemoved }) {
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showFormToast } = useUserInput()
 
     const handleAirlineUpdated = airline => {
         showFormToast(
             "Zadej nové údaje o aerolince:",
             [
-                { label: "Název", value: airline.name, required: true },
-                { label: "Logo", value: airline.logo },
-                { label: "Kódy", value: airline.codes, multiple: true, required: false, type: "select", options: airline.codes.map(code => ({ id: code, name: code })) }
+                { label: "Název", defaultValue: airline.name, required: true },
+                { label: "Logo", defaultValue: airline.logo },
+                { label: "Kódy", defaultValue: airline.codes, multiple: true, required: false, type: "select", options: airline.codes.map(code => ({ id: code, name: code })) }
             ],
-            "Aerolinka byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat aerolinku",
             async (name, logo, codes) => {
                 if (airline.name !== name) {
                     await onAirlineNameUpdated(airline.id, name)
@@ -26,7 +23,9 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                     await onAirlineLogoUpdated(airline.id, logo)
                 }
                 await Promise.all(airline.codes.filter(code => !codes.includes(code)).map(code => onAirlineCodeRemoved(airline.id, code)))
-            }
+            },
+            "Aerolinka byla úspěšně aktualizována",
+            "Nepodařilo se aktualizovat aerolinku"
         )
     }
 

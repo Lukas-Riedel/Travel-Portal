@@ -4,7 +4,7 @@ import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { formatKilometers, formatNextPlaces } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import LoadingCard from "./LoadingCard"
 
 const maximumPlacesCount = 5

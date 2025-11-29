@@ -1,7 +1,7 @@
 import { Images, Share2, SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import { getPrettyName } from "../utils/helpers"
-import { useUserInput } from "../hooks/useUserInput.ts"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 

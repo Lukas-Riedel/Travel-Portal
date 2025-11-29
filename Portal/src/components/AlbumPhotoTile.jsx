@@ -1,8 +1,7 @@
 import { Edit2, SendToBack, Star } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import PhotoTile from "./PhotoTile"
-import { useUserInput } from "../hooks/useUserInput.ts"
-import showFormToast from "./FormToast"
+import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useState } from "react"
 import { getDateString } from "../utils/helpers"
 import { useDevices } from "../hooks/useDevices"
@@ -12,7 +11,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function AlbumPhotoTile({ place, album, photo, photoPosition, onPhotoReplaced, onMainPhotoUpdated }) {
     const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showConfirmToast } = useUserInput()
+    const { showConfirmToast, showFormToast } = useUserInput()
 
     const [overlayType, setOverlayType] = useState(0)
 
@@ -23,10 +22,10 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
                 { label: "Cesta", required: true },
                 { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
             ],
-            "Nahrazování fotky bude brzy zahájeno",
-            "Při nahrazování fotky došlo k chybě",
             async (path, agentId) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path)
-                .then(() => window.open(photo.permalink, "_blank"))
+                .then(() => window.open(photo.permalink, "_blank")),
+            "Nahrazování fotky bude brzy zahájeno",
+            "Při nahrazování fotky došlo k chybě"
         )
     }
 
