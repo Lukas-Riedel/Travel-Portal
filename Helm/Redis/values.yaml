@@ -4,7 +4,7 @@ redis:
   tag: 7.4
   replicas: 1
   service:
-    type: ClusterIP
+    type: NodePort # TODO: Switch to ClusterIP after moving Core to k8s
     port: 6379
 redisinsight:
   enabled: true

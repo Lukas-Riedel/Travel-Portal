@@ -1,7 +1,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: portal-ingress
+  name: portal-ingress-admin
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-auth-middleware@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

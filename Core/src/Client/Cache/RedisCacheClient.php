@@ -6,7 +6,7 @@
     
     class RedisCacheClient implements CacheClient {
 
-        private const REDIS_SCHEME = "rediss";
+        private const REDIS_SCHEME = "redis";
         
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rediss://%s:%s";
 
