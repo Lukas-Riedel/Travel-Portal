@@ -8,7 +8,7 @@
 
         private const REDIS_SCHEME = "redis";
         
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rediss://%s:%s";
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = self::REDIS_SCHEME . "://%s:%s";
 
         private readonly string $host;
         private readonly int $port;
