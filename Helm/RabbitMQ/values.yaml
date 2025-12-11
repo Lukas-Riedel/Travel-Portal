@@ -1,0 +1,13 @@
+rabbitmq:
+  enabled: true
+  image: rabbitmq
+  tag: 3.12-management
+  replicas: 1
+  service:
+    broker: 
+      type: ClusterIP
+      port: 5672
+    management:
+      type: ClusterIP
+      port: 15672
+    

@@ -1,7 +1,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: auth-middleware
+  name: redisinsight-auth-middleware
 spec:
   basicAuth:
-    secret: auth-middleware-admin-password
+    secret: redisinsight-password

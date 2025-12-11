@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rabbitmq-web-router
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/rabbitmq`)
+      kind: Rule
+      services:
+        - name: rabbitmq
+          port: 15672

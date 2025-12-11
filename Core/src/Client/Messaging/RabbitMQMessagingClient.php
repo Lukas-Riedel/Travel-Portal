@@ -94,6 +94,7 @@
 
         public function getConsumerChannel() : AMQPChannel {
             $this->init();
+            
             return $this->consumerChannel;
         }
 

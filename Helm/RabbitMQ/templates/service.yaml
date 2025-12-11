@@ -1,0 +1,22 @@
+
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  type: {{ .Values.rabbitmq.service.broker.type }}   
+  ports:
+    - port: {{ .Values.rabbitmq.service.broker.port }}
+      targetPort: {{ .Values.rabbitmq.service.broker.port }}
+      protocol: TCP
+      name: amqp      
+    - port: {{ .Values.rabbitmq.service.management.port }}
+      targetPort: {{ .Values.rabbitmq.service.management.port }}
+      protocol: TCP
+      name: http-management
+  selector:
+    app: rabbitmq
+{{- end }}
