@@ -30,10 +30,49 @@ jobs:
               - 'Agent/**'
             bridgex:
               - 'BridgeX/**'
-  deploy-iam-core-and-portal:
-    name: Deploy IAM, Core and Portal
+  deploy-iam:
+    name: Deploy IAM
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.iam == 'true' || needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.portal == 'true' }}
+    if: ${{ needs.detect-changes.outputs.iam == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set Lowercase Owner Name
+      id: owner_formatting
+      run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build IAM Image
+      run: |
+        docker build -t ghcr.io/${{ steps.owner_formatting.outputs.owner }}/iam:${{ github.run_number }} -f Iam/Dockerfile .
+    - name: Push IAM Image
+      run: |
+        docker push ghcr.io/${{ steps.owner_formatting.outputs.owner }}/iam:${{ github.run_number }}
+    - name: Set Up Kubectl
+      uses: azure/setup-kubectl@v3
+    - name: Set Up Helm
+      uses: azure/setup-helm@v3
+    - name: Deploy IAM with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade iam ./Helm/Iam \
+          -f ./Helm/Iam/values.yaml \
+          --set iam.tag=${{ github.run_number }} \
+          --install
+  deploy-core-and-portal:
+    name: Deploy Core and Portal
+    needs: detect-changes
+    # if: false
+    if: ${{ needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.portal == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -51,10 +90,6 @@ jobs:
     - name: Install Core Composer Dependencies
       run: |
         cd Core
-        composer install --no-dev --optimize-autoloader
-    - name: Install IAM Composer Dependencies
-      run: |
-        cd Iam
         composer install --no-dev --optimize-autoloader
     - name: Install NPM Dependencies
       run: |
@@ -89,13 +124,10 @@ jobs:
       run: |
         mkdir target
         mkdir target/api
-        mkdir target/iam
         shopt -s dotglob
         cp -r ./Core/* target/api/
-        cp -r ./Iam/* target/iam/
         rm -rf target/api/public
         cp -r ./Core/public/* target/api/
-        cp -r ./Iam/public/* target/iam/
         cp -r ./Portal/dist/* target/
     - name: Generate secrets.php
       run: |

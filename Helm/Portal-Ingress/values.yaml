@@ -15,3 +15,9 @@ redisinsight:
   service:
     name: redisinsight
     port: 5540
+iam:
+  enabled: true
+  host: iam.lriedel.fun
+  service:
+    name: iam
+    port: 8080

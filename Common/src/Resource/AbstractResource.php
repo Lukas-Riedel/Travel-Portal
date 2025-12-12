@@ -5,7 +5,6 @@
     use Common\CommonConstants;
     use Common\Routing\AuthorizationException;
     use Slim\Psr7\Request;
-    use function Secrets\getenv; // TODO: Delete when switching to k8s.
     
     abstract class AbstractResource {
 

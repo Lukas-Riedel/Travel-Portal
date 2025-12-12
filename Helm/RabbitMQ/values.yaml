@@ -12,4 +12,5 @@ rabbitmq:
       name: http-management
       type: ClusterIP
       port: 15672
+  username: admin
     

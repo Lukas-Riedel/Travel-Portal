@@ -1,0 +1,96 @@
+{{- if .Values.iam.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam
+  labels:
+    app: iam
+spec:
+  replicas: {{ .Values.iam.replicas }}
+  selector:
+    matchLabels:
+      app: iam
+  template:
+    metadata:
+      labels:
+        app: iam
+    spec:
+      containers:
+        - name: iam
+          image: "{{ .Values.iam.image }}:{{ .Values.iam.tag }}" 
+          ports:
+            - containerPort: {{ .Values.iam.service.port }}            
+          env:
+            - name: ENCRYPTION_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: iam-encryption-key
+                  key: iam-encryption-key
+            - name: IAM_APP_CLIENT_ID
+              value: "{{ .Values.iam.client.app.id }}"
+            - name: IAM_BACKEND_CLIENT_ID
+              value: "{{ .Values.iam.client.backend.id }}"
+            - name: IAM_BACKEND_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: iam-client-backend-secret
+                  key: iam-client-backend-secret
+            - name: JWKS_PUBLIC_KEY
+              value: "{{ .Values.iam.jwks.key.public }}"
+            - name: IAM_BASE_URL
+              value: "{{ .Values.iam.url.base.public }}"
+            - name: INTERNAL_IAM_BASE_URL
+              value: "{{ .Values.iam.url.base.private.user }}"
+            - name: INTERNAL_ADMIN_IAM_BASE_URL
+              value: "{{ .Values.iam.url.base.private.admin }}"
+            - name: FCM_PROJECT_ID
+              value: "{{ .Values.iam.fcm.project.id }}"
+            - name: FCM_PRIVATE_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: iam-fcm-private-key-id
+                  key: iam-fcm-private-key-id
+            - name: FCM_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: iam-fcm-private-key
+                  key: iam-fcm-private-key
+            - name: FCM_CLIENT_EMAIL
+              value: "{{ .Values.iam.fcm.client.email }}"
+            - name: FCM_CLIENT_ID
+              value: "{{ .Values.iam.fcm.client.id }}"
+            - name: FCM_CLIENT_X509_CERTIFICATE_URL
+              value: "{{ .Values.iam.fcm.client.certificate.url }}"
+            - name: GOOGLE_API_CLIENT_ID
+              value: "{{ .Values.iam.google.client.id }}"
+            - name: GOOGLE_API_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: iam-google-client-secret
+                  key: iam-google-client-secret
+            - name: IBM_CLOUD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: iam-ibm-cloud-api-key
+                  key: iam-ibm-cloud-api-key
+            - name: GRAFANA_LOKI_ENTRYPOINT
+              value: "{{ .Values.iam.grafana.entrypoint }}"
+            - name: GRAFANA_LOKI_CLIENT_NAME
+              value: "{{ .Values.iam.grafana.client.name }}"
+            - name: GRAFANA_LOKI_USER
+              value: "{{ .Values.iam.grafana.username }}"
+            - name: GRAFANA_LOKI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: iam-grafana-password
+                  key: iam-grafana-password
+            - name: ALLOWED_REQUEST_ORIGINS
+              value: "{{ .Values.iam.origins.whitelist }}"
+          volumeMounts:
+            - name: iam-data
+              mountPath: /var/lib/iam
+      volumes:
+        - name: iam-data
+          persistentVolumeClaim:
+            claimName: shared
+{{- end }}

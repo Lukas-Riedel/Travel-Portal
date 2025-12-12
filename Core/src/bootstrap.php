@@ -110,7 +110,7 @@
     $logger->pushHandler($handler); 
 
     // Clients.
-    $databaseClient = new MySQLDatabaseClient(getenv("DB_HOST"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $logger);
+    $databaseClient = new MySQLDatabaseClient(getenv("DB_HOST"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $logger); 
     $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $httpClient = new HttpClient($logger);
     $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));

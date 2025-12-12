@@ -1,0 +1,17 @@
+{{- if .Values.iam.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: iam-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.iam.host }}`)
+      kind: Rule
+      services:
+        - name: {{ .Values.iam.service.name }}
+          port: {{ .Values.iam.service.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}

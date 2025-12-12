@@ -1,0 +1,13 @@
+{{- if .Values.iam.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam
+spec:
+  type: {{ .Values.iam.service.type }}
+  ports:
+    - port: {{ .Values.iam.service.port }}
+      targetPort: {{ .Values.iam.service.port }}
+  selector:
+    app: iam
+{{- end }}

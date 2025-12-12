@@ -1,6 +1,5 @@
 <?php
     require_once(__DIR__ . "/../vendor/autoload.php");
-    require_once(__DIR__ . "/../../secrets.php");
 
     use Common\Service\Authentication\AuthenticationService;
     use Common\Client\Http\HttpClient;
@@ -12,7 +11,6 @@
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
-    use function Secrets\getenv; // TODO: Delete when switching to k8s.
     
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message);
@@ -49,7 +47,7 @@
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     
     // Authentication service.
-    $authenticationService = new AuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY"));
+    $authenticationService = new AuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY")); 
 
     // Services.
     $tokenService = new TokenService($httpClient, getenv("IAM_APP_CLIENT_ID"), getenv("INTERNAL_IAM_BASE_URL"));
