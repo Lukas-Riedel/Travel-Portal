@@ -4,10 +4,12 @@ metadata:
   name: rabbitmq-web-router
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
-    - match: PathPrefix(`/rabbitmq`)
+    - match: Host(`rmq.lriedel.fun`)
       kind: Rule
       services:
         - name: rabbitmq
           port: 15672
+  tls:
+    certResolver: letsencrypt

@@ -36,15 +36,9 @@ spec:
                   key: rabbitmq-password 
           volumeMounts:
             - name: rabbitmq-data
-              mountPath: /rabbitmq      
-            - name: rabbitmq-config
-              mountPath: /etc/rabbitmq/rabbitmq.conf 
-              subPath: rabbitmq.conf
+              mountPath: /var/libs/rabbitmq
       volumes:
         - name: rabbitmq-data
           persistentVolumeClaim:
             claimName: shared
-        - name: rabbitmq-config
-          configMap:
-            name: rabbitmq-configmap
 {{- end }}

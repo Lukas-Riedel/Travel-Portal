@@ -4,9 +4,9 @@ metadata:
   name: redisinsight-web-router
 spec:
   entryPoints:
-    - web
+    - websecure
   routes:
-    - match: PathPrefix(`/redis`)
+    - match: Host(`redis.lriedel.fun`)
       kind: Rule
       services:
         - name: redisinsight
@@ -14,3 +14,5 @@ spec:
       middlewares:
         - name: redisinsight-auth-middleware
           namespace: default
+  tls:
+    certResolver: letsencrypt
