@@ -7,16 +7,16 @@ metadata:
   labels:
     app: rabbitmq
 spec:
-  type: {{ .Values.rabbitmq.service.broker.type }}   
+  type: {{ .Values.rabbitmq.service.amqp.type }}   
   ports:
-    - port: {{ .Values.rabbitmq.service.broker.port }}
-      targetPort: {{ .Values.rabbitmq.service.broker.port }}
+    - port: {{ .Values.rabbitmq.service.amqp.port }}
+      targetPort: {{ .Values.rabbitmq.service.amqp.port }}
       protocol: TCP
-      name: amqp      
+      name: {{ .Values.rabbitmq.service.amqp.name }}      
     - port: {{ .Values.rabbitmq.service.management.port }}
       targetPort: {{ .Values.rabbitmq.service.management.port }}
       protocol: TCP
-      name: http-management
+      name: {{ .Values.rabbitmq.service.management.name }}
   selector:
     app: rabbitmq
 {{- end }}

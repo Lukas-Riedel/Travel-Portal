@@ -1,0 +1,17 @@
+rabbitmq:
+  enabled: true
+  host: rmq.lriedel.fun
+  service:
+    amqp:
+      name: rabbitmq
+      port: 5672
+    management:
+      name: rabbitmq
+      port: 15672
+  certResolver: letsencrypt
+redisinsight:
+  enabled: true
+  host: redis.lriedel.fun
+  service:
+    name: redisinsight
+    port: 5540

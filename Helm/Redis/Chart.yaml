@@ -3,4 +3,3 @@ name: redis
 description: Redis with RedisInsight UI
 type: application
 version: 0.1.0
-appVersion: "7.4"

@@ -4,10 +4,12 @@ rabbitmq:
   tag: 3.12-management
   replicas: 1
   service:
-    broker: 
+    amqp:
+      name: amqp 
       type: ClusterIP
       port: 5672
     management:
+      name: http-management
       type: ClusterIP
       port: 15672
     

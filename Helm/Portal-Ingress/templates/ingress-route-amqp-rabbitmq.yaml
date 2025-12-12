@@ -1,3 +1,4 @@
+{{- if .Values.rabbitmq.enabled }}
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteTCP
 metadata:
@@ -6,9 +7,10 @@ spec:
   entryPoints:
     - amqp
   routes:
-    - match: HostSNI(`lriedel.fun`)
+    - match: HostSNI(`{{ .Values.rabbitmq.host }}`)
       services:
-        - name: rabbitmq
-          port: 5672
+        - name: {{ .Values.rabbitmq.service.amqp.name }}
+          port: {{ .Values.rabbitmq.service.amqp.port }}
   tls:
     certResolver: letsencrypt
+{{- end }}
