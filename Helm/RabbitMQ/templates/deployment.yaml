@@ -33,9 +33,10 @@ spec:
                   key: rabbitmq-password 
           volumeMounts:
             - name: rabbitmq-data
-              mountPath: /var/lib/rabbitmq
+              mountPath: /var/lib/rabbitmq/mnesia
       volumes:
         - name: rabbitmq-data
           persistentVolumeClaim:
-            claimName: shared
+            claimName: rabbitmq-pvc
+      hostname: rmq-host
 {{- end }}

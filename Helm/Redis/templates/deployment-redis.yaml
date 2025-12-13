@@ -30,5 +30,5 @@ spec:
       volumes:
         - name: redis-data
           persistentVolumeClaim:
-            claimName: shared
+            claimName: redis-pvc
 {{- end }}
