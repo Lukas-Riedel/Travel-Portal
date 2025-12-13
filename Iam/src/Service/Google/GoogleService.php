@@ -25,7 +25,7 @@
         private const GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
         private const GOOGLE_API_ACCESS_TYPE = "offline";
         
-        private const GOOGLE_REFRESH_TOKEN_FILE_PATH = __DIR__ . "/../../../google.txt";
+        private const GOOGLE_REFRESH_TOKEN_FILE_PATH = __DIR__ . "/../../../../../tmp/google.txt";
 
         public const GOOGLE_API_AUTHORIZATION_SCOPES = array(
             "https://www.googleapis.com/auth/photoslibrary.appendonly",

@@ -88,9 +88,9 @@ spec:
               value: "{{ .Values.iam.origins.whitelist }}"
           volumeMounts:
             - name: iam-data
-              mountPath: /var/lib/iam
+              mountPath: /var/tmp
       volumes:
         - name: iam-data
           persistentVolumeClaim:
-            claimName: shared
+            claimName: iam-pvc
 {{- end }}
