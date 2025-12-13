@@ -1,0 +1,19 @@
+postgres:
+  enabled: true
+  image: postgres
+  tag: 16
+  replicas: 1
+  database: core
+  user: admin
+  service:
+    type: ClusterIP
+    port: 5432
+pgadmin:
+  enabled: true
+  image: dpage/pgadmin4
+  tag: latest
+  replicas: 1
+  email: admin@lriedel.cz
+  service:
+    type: ClusterIP
+    port: 80

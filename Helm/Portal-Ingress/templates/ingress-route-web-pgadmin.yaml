@@ -1,0 +1,17 @@
+{{- if .Values.pgadmin.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pgadmin-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.pgadmin.host }}`)
+      kind: Rule
+      services:
+        - name: {{ .Values.pgadmin.service.name }}
+          port: {{ .Values.pgadmin.service.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}

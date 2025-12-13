@@ -8,13 +8,18 @@ rabbitmq:
     management:
       name: rabbitmq
       port: 15672
-  certResolver: letsencrypt
 redisinsight:
   enabled: true
   host: redis.lriedel.fun
   service:
     name: redisinsight
     port: 5540
+pgadmin:
+  enabled: true
+  host: postgres.lriedel.fun
+  service:
+    name: pgadmin
+    port: 80
 iam:
   enabled: true
   host: iam.lriedel.fun

@@ -33,7 +33,7 @@ spec:
                   key: rabbitmq-password 
           volumeMounts:
             - name: rabbitmq-data
-              mountPath: /var/libs/rabbitmq
+              mountPath: /var/lib/rabbitmq
       volumes:
         - name: rabbitmq-data
           persistentVolumeClaim:
