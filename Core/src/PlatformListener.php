@@ -34,7 +34,7 @@
             $rootBackupFolderId = $this->googleClient->getOrCreateFolderId(self::BACKUP_ROOT_FOLDER_NAME, null);
             $backupFolderId = $this->googleClient->createFolder(date(self::BACKUP_FOLDER_NAME_DATE_FORMAT), $rootBackupFolderId);
 
-            foreach (explode(",", $message["tables"]) as &$table) {
+            foreach ($message["tables"] as &$table) {
                 $tableRows = $this->databaseClient
                     ->statementBuilder("SELECT * FROM {$table}")
                     ->getResultSet();
