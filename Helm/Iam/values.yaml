@@ -24,7 +24,7 @@ iam:
     project:
       id: travel-blog-free
     client:
-      id: 109261228732220758403
+      id: "109261228732220758403"
       email: firebase-adminsdk-fbsvc@travel-blog-free.iam.gserviceaccount.com
       certificate:
         url: https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40travel-blog-free.iam.gserviceaccount.com
@@ -35,6 +35,6 @@ iam:
     entrypoint: https://logs-prod-012.grafana.net
     client:
       name: travel-portal-service
-    username: 1287508
+    username: "1287508"
   origins:
     whitelist: https://travel-portal.eu,https://lriedel.cz
