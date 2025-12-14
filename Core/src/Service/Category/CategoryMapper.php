@@ -88,7 +88,7 @@
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if (count($categoryCategories) > 0) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(category, ?)", implode(",", $categoryCategories));
+                $whereClauseBuilder->withClause("category = ANY(STRING_TO_ARRAY(?, ','))", implode(",", $categoryCategories));
             }
             if ($categoryId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $categoryId);
@@ -189,7 +189,7 @@
                 INNER JOIN category_identifier ci
                     ON re.subject_category_id = ci.id
                 WHERE re.category_id = ?
-                    AND re.included = 1
+                    AND re.included
             SQL;
 
             return $this->databaseClient
@@ -211,7 +211,7 @@
                 INNER JOIN category_identifier ci
                     ON re.subject_category_id = ci.id
                 WHERE re.category_id = ?
-                    AND re.included = 0
+                    AND re.included
             SQL;
 
             return $this->databaseClient
@@ -360,7 +360,7 @@
                 VALUES (
                     ?,
                     ?,
-                    1
+                    true
                 )
             SQL;
 
@@ -380,7 +380,7 @@
                 VALUES (
                     ?,
                     ?,
-                    0
+                    false
                 )
             SQL;
 
@@ -400,18 +400,20 @@
                     ?,
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($categoryIdentifier->getName(), $categoryIdentifier->getCategory()->value)
-                ->execute() === 1;
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $categoryIdentifier->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
             
-            return $wasInserted;
+            $categoryIdentifier->setId($id);
+            return true;
         }
 
         public function updateCategoryMainHighlight(string $categoryId, ?string $highlightIdentifier) : bool {

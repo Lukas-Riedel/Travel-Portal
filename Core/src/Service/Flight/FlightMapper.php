@@ -41,10 +41,10 @@
                 INNER JOIN {$oldFlightEventTableName} ofe
                     ON ofe.id = nfe.id
                 WHERE ofe.flight <> nfe.flight
-                    OR ofe.from <> nfe.from
-                    OR ofe.to <> nfe.to
-                    OR ofe.start <> nfe.start
-                    OR ofe.end <> nfe.end
+                    OR ofe."from" <> nfe."from"
+                    OR ofe."to" <> nfe."to"
+                    OR ofe."start" <> nfe."start"
+                    OR ofe."end" <> nfe."end"
             SQL;
 
             return $this->databaseClient
@@ -115,17 +115,17 @@
         public function selectFlightsForTrip(FlightType $flightType, string $tripId) : array {
             $sql = <<<SQL
                 SELECT fe.flight,
-                    fe.from, 
-                    fe.to, 
-                    COALESCE(fl.actual_departure, fe.start) AS start, 
-                    COALESCE(fl.actual_arrival, fe.end) AS end, 
+                    fe."from", 
+                    fe."to", 
+                    COALESCE(fl.actual_departure, fe."start") AS "start", 
+                    COALESCE(fl.actual_arrival, fe."end") AS "end", 
                     fl.registration, 
                     fl.aircraft,
                     ai.id AS airline_id,
                     ai.name AS airline_name,
                     fl.from_airport_id, 
                     fl.to_airport_id,
-                    IF(fl.actual_arrival IS NULL, null, fl.actual_arrival - fl.scheduled_arrival) AS delay,
+                    CASE WHEN fl.actual_arrival IS NULL THEN NULL ELSE fl.actual_arrival - fl.scheduled_arrival END AS delay,
                     fai.name AS from_airport_name,
                     fai.code AS from_airport_code, 
                     fai.latitude AS from_airport_latitude, 
@@ -141,7 +141,7 @@
                 FROM {$flightType->getTableName()} fe 
                 LEFT JOIN flight_log fl 
                     ON fe.flight = fl.flight 
-                        AND fe.start = fl.scheduled_departure 
+                        AND fe."start" = fl.scheduled_departure 
                 LEFT JOIN airport_identifier fai 
                     ON fl.from_airport_id = fai.id
                 LEFT JOIN airport_identifier tai 
@@ -151,7 +151,7 @@
                 LEFT JOIN airline_identifier ai
                     ON ac.airline_id = ai.id
                 WHERE fe.trip_id = ?
-                ORDER BY start
+                ORDER BY "start"
             SQL;
             
             return $this->databaseClient
@@ -183,7 +183,7 @@
                 SELECT ai.id,
                     ai.name,
                     ai.logo,
-                    COALESCE(GROUP_CONCAT(ac.code SEPARATOR ','), '') AS codes
+                    COALESCE(STRING_AGG(ac.code, ','), '') AS codes
                 FROM airline_identifier ai
                 LEFT JOIN airline_code ac
                     ON ai.id = ac.airline_id
@@ -203,7 +203,7 @@
                 SELECT ai.id,
                     ai.name,
                     ai.logo,
-                    COALESCE(GROUP_CONCAT(ac.code SEPARATOR ','), '') AS codes
+                    COALESCE(STRING_AGG(ac.code, ','), '') AS codes
                 FROM airline_identifier ai
                 LEFT JOIN airline_code ac
                     ON ai.id = ac.airline_id
@@ -228,7 +228,7 @@
                 SELECT ai.id,
                     ai.name,
                     ai.logo,
-                    COALESCE(GROUP_CONCAT(ac.code SEPARATOR ','), '') AS codes
+                    COALESCE(STRING_AGG(ac.code, ','), '') AS codes
                 FROM airline_identifier ai
                 LEFT JOIN airline_code ac
                     ON ai.id = ac.airline_id
@@ -255,10 +255,10 @@
         public function selectLoggedFlightsWithoutEvent() : array {
             $sql = <<<SQL
                 SELECT fl.flight,
-                    fai.code AS `from`, 
-                    tai.code AS `to`, 
-                    fl.actual_departure AS start, 
-                    fl.actual_arrival AS end, 
+                    fai.code AS "from", 
+                    tai.code AS "to", 
+                    fl.actual_departure AS "start", 
+                    fl.actual_arrival AS "end", 
                     fl.registration, 
                     fl.aircraft, 
                     ai.id AS airline_id,
@@ -313,10 +313,10 @@
         public function selectLoggedFlightsForInterval(int $start, int $end, FlightSortingStrategy $flightSortingStrategy) : array {
             $sql = <<<SQL
                 SELECT fl.flight,
-                    fe.from, 
-                    fe.to, 
-                    fl.actual_departure AS start, 
-                    fl.actual_arrival AS end, 
+                    fe."from", 
+                    fe."to", 
+                    fl.actual_departure AS "start", 
+                    fl.actual_arrival AS "end", 
                     fl.registration, 
                     fl.aircraft, 
                     ai.id AS airline_id,
@@ -410,7 +410,7 @@
                     ON fe.flight = fl.flight 
                     AND fe.start = fl.scheduled_departure
                 WHERE fl.actual_arrival IS NULL
-                ORDER BY fe.end ASC
+                ORDER BY fe."end" ASC
             SQL;       
             
             return $this->databaseClient
@@ -471,19 +471,21 @@
                     ?, 
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airportIdentifier->getCode(), $this->categoryService->getOrCreateCountryCategoryIdentifier($airportIdentifier->getCountry())->getId(),
                     $airportIdentifier->getLatitude(), $airportIdentifier->getLongitude(), $airportIdentifier->getTimezone())
-                ->execute();
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $airportIdentifier->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $airportIdentifier->setId($id);
+            return true;
         }
 
         public function insertFlight(Flight $flight, string $airlineCodeId, int $scheduledDeparture, int $scheduledArrival) : bool {
@@ -527,10 +529,10 @@
                     id,
                     trip_id, 
                     flight, 
-                    `from`, 
-                    `to`, 
-                    start, 
-                    end
+                    "from", 
+                    "to", 
+                    "start", 
+                    "end"
                 )
                 VALUES (
                     ?, 
@@ -560,18 +562,20 @@
                     ?, 
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($airline->getName(), $airline->getLogo())
-                ->execute() === 1;
+                ->getSingleColumn("id");
                 
-            if ($wasInserted) {
-                $airline->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $airline->setId($id);
+            return true;
         }
 
         public function updateAirlineCodeAirline(string $airlineCodeId, ?string $airlineId) : bool {            

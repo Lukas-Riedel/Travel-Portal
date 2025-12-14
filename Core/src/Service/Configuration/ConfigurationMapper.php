@@ -16,7 +16,7 @@
                 SELECT *
                 FROM configuration
                 WHERE private <= ?
-                ORDER BY `key` ASC
+                ORDER BY key ASC
             SQL;
             
             $configurationRows = $this->databaseClient
@@ -35,7 +35,7 @@
             $sql = <<<'SQL'
                 SELECT *
                 FROM configuration
-                WHERE `key` = ?
+                WHERE key = ?
             SQL;
             
             $configurationRow = $this->databaseClient
@@ -54,7 +54,7 @@
             $sql = <<<'SQL'
                 UPDATE configuration
                 SET value = ?
-                WHERE `key` = ?
+                WHERE key = ?
             SQL;
             
             return $this->databaseClient

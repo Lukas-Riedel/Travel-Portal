@@ -2,12 +2,14 @@
     namespace Core\Client\Database;
 
     use Monolog\Logger;
+    use PgSql\Connection;
+use PgSql\Result;
 
-    class MySQLStatementBuilder implements StatementBuilder {
+    class PostgreSQLStatementBuilder implements StatementBuilder {
 
         private const DURATION_THRESHOLD_MILLISECONDS = 100;
         
-        private readonly \mysqli $mysqli;
+        private readonly Connection $connection;
 
         private readonly string $sql;
         private array $params;
@@ -15,8 +17,8 @@
 
         private readonly Logger $logger;
 
-        public function __construct(\mysqli $mysqli, string $sql, Logger $logger) {
-            $this->mysqli = $mysqli;
+        public function __construct(Connection $connection, string $sql, Logger $logger) {
+            $this->connection = $connection;
             $this->sql = $sql;
             $this->params = array();
             $this->deferredParams = array();
@@ -34,21 +36,21 @@
         }
 
         public function execute() : int {
-            $statement = $this->doExecute(true);
-            if (!$statement) {
+            $result = $this->doExecute(true);
+            if ($result === false) {
                 return 0;
             }
 
-            return $statement->affected_rows;
+            return pg_affected_rows($result);
         }
 
         public function getResultSet() : array {
-            $statement = $this->doExecute(false);
-            if (!$statement) {
+            $result = $this->doExecute(false);
+            if ($result === false) {
                 return array();
             }
 
-            return $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+            return pg_fetch_all($result) ?: array();
         }
 
         public function getMappedResultSet(callable $fn) : array {
@@ -80,38 +82,51 @@
             return $this->getFirstRow()[$column] ?? null;
         }
 
-        private function doExecute(bool $logStatement) : \mysqli_stmt|false {
-            $statement = $this->mysqli->prepare($this->sql);
-
-            if (!$statement) {
-                return false;
-            }
-
+        private function doExecute(bool $logStatement) : Result|false {
             $params = array_merge($this->params, $this->deferredParams);            
             $start = microtime(true);
-            try {                
-                if (empty($params)) {
-                    $statement->execute();
-                }
-                else {
-                    $statement->execute($params);
-                }
-            }
-            catch (\Exception $e) {
-                $this->logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
-                throw $e;
-            }
+            $statementName = uniqid("", true);
+            
+            $result = $this->doGetResult($statementName, $params);
 
             $duration = round((microtime(true) - $start) * 1000);
             if ($duration > self::DURATION_THRESHOLD_MILLISECONDS) {
                 $this->logger->debug("Took " . $duration . " milliseconds: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
 
-            if ($logStatement && !str_contains($this->sql, "INSERT INTO") && $statement->affected_rows > 0) {
-                $this->logger->debug("Affected " . $statement->affected_rows . " rows: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
+            $affectedRows = pg_affected_rows($result);
+            if ($logStatement && !str_contains($this->sql, "INSERT INTO") && $affectedRows > 0) {
+                $this->logger->debug("Affected " . $affectedRows . " rows: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
 
-            return $statement;
+            return $result;
+        }
+
+        private function doGetResult(string $statementName, array $params) : Result|false {
+            try {
+                pg_prepare($this->connection, $statementName, $this->convertPlaceholders($this->sql));
+                return pg_execute($this->connection, $statementName, $params);
+            }
+            catch (\Exception $e) {
+                $this->logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
+                throw $e;
+            }
+        }
+
+        private function convertPlaceholders(string $sql) : string {
+            $out = "";
+            $index = 1;
+
+            for ($i = 0; $i < strlen($sql); $i++) {
+                if ($sql[$i] === "?") {
+                    $out .= "$" . $index++;
+                }
+                else {
+                    $out .= $sql[$i];
+                }
+            }
+
+            return $out;
         }
     }
 ?>

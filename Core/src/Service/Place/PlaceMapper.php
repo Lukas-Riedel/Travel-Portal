@@ -43,7 +43,7 @@
 
         public function selectDatesForTripAndCountry(string $tripId, string $countryCategoryId) : array {
             $sql = <<<'SQL'
-                SELECT DISTINCT DATE_FORMAT(FROM_UNIXTIME(pe.start), '%e.%c.%Y') AS date
+                SELECT DISTINCT TO_CHAR(TO_TIMESTAMP(pe."start"), 'FMDD.FMMM.YYYY') AS date
                 FROM place_event pe
                 INNER JOIN place_identifier pi
                     ON pe.place_id = pi.id
@@ -59,7 +59,7 @@
 
         public function selectCountryCategoriesForTrip(string $tripId) : array {
             $sql = <<<'SQL'
-                SELECT DISTINCT pi.country_category_id
+                SELECT pi.country_category_id
                 FROM place_event pe
                 INNER JOIN place_identifier pi
                     ON pe.place_id = pi.id
@@ -90,8 +90,8 @@
 
             $sql = <<<SQL
                 CREATE TEMPORARY TABLE {$temporaryTableName} (
-                    category_id bigint(20) unsigned NOT NULL,
-                    place_id bigint(20) unsigned NOT NULL
+                    category_id uuid not null,
+                    place_id uuid not null
                 )
             SQL;
             
@@ -124,17 +124,17 @@
 
             $sql = <<<SQL
                 SELECT c.category_id,
-                    GROUP_CONCAT(DISTINCT c.place_id SEPARATOR ",") AS place_ids
+                    STRING_AGG(DISTINCT c.place_id, ",") AS place_ids
                 FROM {$temporaryTableName} c
                 INNER JOIN (
                     SELECT place_id, 
-                        start
+                        "start"
                     FROM place_event
-                    WHERE start >= ?
-                        AND end <= ?
+                    WHERE "start" >= ?
+                        AND "end" <= ?
                     UNION ALL
                     SELECT place_id, 
-                        NULL AS start
+                        NULL AS "start"
                     FROM place_permanent
                 ) p
                     ON c.place_id = p.place_id
@@ -183,25 +183,25 @@
             $sql = <<<SQL
                 SELECT pi.*,
                     pe.trip_id,
-                    pe.start,
-                    pe.end,
+                    pe."start",
+                    pe."end",
                     pe.layover,
                     pe.permanent
                 FROM (
                     SELECT place_id,
                         trip_id,
-                        start,
-                        end,
+                        "start",
+                        "end",
                         layover,
-                        0 AS permanent
+                        false AS permanent
                     FROM place_event
                     UNION
                     SELECT place_id,
                         NULL AS trip_id,
-                        NULL AS start,
-                        NULL AS end,
-                        0 AS layover,
-                        1 AS permanent
+                        NULL AS "start",
+                        NULL AS "end",
+                        false AS layover,
+                        true AS permanent
                     FROM place_permanent
                 ) pe
                 INNER JOIN place_identifier pi
@@ -216,7 +216,7 @@
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
             }
             if ($year !== null) {
-                $whereClauseBuilder->withClause("DATE_FORMAT(FROM_UNIXTIME(pe.start), '%Y') = ?", $year);
+                $whereClauseBuilder->withClause("TO_CHAR(TO_TIMESTAMP(pe.\"start\"), 'YYYY') = ?", $year);
             }
             if ($tripId !== null) {
                 $whereClauseBuilder->withClause("pe.trip_id = ?", $tripId);
@@ -227,7 +227,7 @@
                     $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
-                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
+                    $whereClauseBuilder->withClause("pi.name = ? AND pe.\"start\" >= ? AND pe.\"start\" < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -239,7 +239,7 @@
                     $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
-                    $whereClauseBuilder->withClause("pi.name = ? AND pe.start >= ? AND pe.start < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
+                    $whereClauseBuilder->withClause("pi.name = ? AND pe.\"start\" >= ? AND pe.\"start\" < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -267,10 +267,10 @@
                 $whereClauseBuilder->withClause("pi.quality <= ?", $maxQuality);
             }
             if ($minStart !== null) {
-                $whereClauseBuilder->withClause("(? <= pe.start OR pe.start IS NULL)", $minStart);
+                $whereClauseBuilder->withClause("(? <= pe.\"start\" OR pe.\"start\" IS NULL)", $minStart);
             }
             if ($maxEnd !== null) {
-                $whereClauseBuilder->withClause("(pe.end <= ? OR pe.start IS NULL)", $maxEnd);
+                $whereClauseBuilder->withClause("(pe.\"end\" <= ? OR pe.\"start\" IS NULL)", $maxEnd);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
             
@@ -365,7 +365,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
-                ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE end < UNIX_TIMESTAMP())")
+                ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE end < ROUND(EXTRACT(EPOCH FROM NOW())))")
                 ->withClause("pi.id NOT IN (SELECT place_id FROM place_permanent)");
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
@@ -434,8 +434,8 @@
 
             $sql = <<<'SQL'
                 SELECT pi.*,
-                    pce.start,
-                    pce.end
+                    pce."start",
+                    pce."end"
                 FROM place_candidate_event pce
                 INNER JOIN place_identifier pi
                     ON pce.place_id = pi.id
@@ -575,7 +575,7 @@
                 FROM place_event npe
                 LEFT JOIN {$oldPlaceEventTableName} ope
                     ON ope.id = npe.id
-                WHERE ope.start IS NULL
+                WHERE ope."start" IS NULL
             SQL;
 
             return $this->databaseClient
@@ -589,8 +589,8 @@
                 FROM place_event npe
                 INNER JOIN {$oldPlaceEventTableName} ope
                     ON ope.id = npe.id
-                WHERE ope.start <> npe.start
-                    OR ope.end <> npe.end
+                WHERE ope."start" <> npe."start"
+                    OR ope."end" <> npe."end"
                     OR ope.layover <> npe.layover
             SQL;
 
@@ -701,20 +701,22 @@
                     ?,
                     ?
                 )
+                RETURNING id
             SQL;
             
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeIdentifier->getName(), $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
                     $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getExcerpt(),
                     $placeIdentifier->getScore(), $placeIdentifier->getQuality())
-                ->execute() === 1;
+                ->getSingleColumn("id");
                 
-            if ($wasInserted) {
-                $placeIdentifier->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $placeIdentifier->setId($id);
+            return true;
         }
 
         public function insertPlaceCandidateEvent(Place $place) : bool {
@@ -722,8 +724,8 @@
                 INSERT INTO place_candidate_event (
                     place_id,
                     trip_id,
-                    start,
-                    end
+                    "start",
+                    "end"
                 )
                 VALUES (
                     ?, 
@@ -750,8 +752,8 @@
                     id,
                     place_id,
                     trip_id,
-                    start,
-                    end,
+                    "start",
+                    "end",
                     layover
                 )
                 VALUES (
@@ -768,7 +770,7 @@
             foreach ($place->getDates() as &$date) {                
                 $wasInserted &= $this->databaseClient
                     ->statementBuilder($sql)
-                    ->withParameters($eventId, $place->getId(), $date->getTrip()?->getId(), $date->getStart(), $date->getEnd(), $date->isLayover() ? 1 : 0)
+                    ->withParameters($eventId, $place->getId(), $date->getTrip()?->getId(), $date->getStart(), $date->getEnd(), $date->isLayover())
                     ->execute() === 1;
             }
 
@@ -863,7 +865,7 @@
                 WHERE place_id IN (
                         SELECT place_id 
                         FROM place_event 
-                        WHERE end < UNIX_TIMESTAMP()
+                        WHERE end < ROUND(EXTRACT(EPOCH FROM NOW()))
                     )
                     OR place_id IN (
                         SELECT place_id

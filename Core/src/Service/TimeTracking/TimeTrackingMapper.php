@@ -61,7 +61,7 @@
                 SELECT COALESCE(SUM(hours), 0) AS balance
                 FROM tracking
                 WHERE type = ?
-                    AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))
+                    AND EXTRACT(YEAR FROM TO_TIMESTAMP(timestamp)) < EXTRACT(YEAR FROM NOW())
             SQL;
 
             return $this->databaseClient
@@ -84,20 +84,21 @@
                     ?, 
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($timeTrackingEvent->getType()->value, $timeTrackingEvent->getHours(),
                     $timeTrackingEvent->getDescription(), $timeTrackingEvent->getTimestamp())
-                ->execute();
-                 
+                ->getSingleColumn("id");                 
 
-            if ($wasInserted) {
-                $timeTrackingEvent->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $timeTrackingEvent->setId($id);
+            return true;
         }
 
         public function deleteTimeTrackingEvent(string $eventId) : int {
@@ -118,7 +119,7 @@
                 DELETE
                 FROM tracking
                 WHERE type = ?
-                    AND YEAR(FROM_UNIXTIME(timestamp)) < YEAR(FROM_UNIXTIME(UNIX_TIMESTAMP()))
+                    AND EXTRACT(YEAR FROM TO_TIMESTAMP(timestamp)) < EXTRACT(YEAR FROM NOW())
             SQL;
 
             return $this->databaseClient
@@ -132,7 +133,7 @@
                 DELETE
                 FROM tracking
                 WHERE type = ?
-                    AND timestamp <= (UNIX_TIMESTAMP() - 86400)
+                    AND timestamp <= (ROUND(EXTRACT(EPOCH FROM NOW())) - 86400)
             SQL;
 
             return $this->databaseClient
@@ -148,7 +149,7 @@
                 WHERE timestamp <= (
                     SELECT COALESCE(MAX(t1.timestamp), 0) 
                     FROM tracking t1 
-                    WHERE timestamp < UNIX_TIMESTAMP() - ? 
+                    WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW())) - ? 
                         AND (
                             SELECT SUM(t2.hours) 
                             FROM tracking t2 

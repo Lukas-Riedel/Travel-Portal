@@ -14,14 +14,14 @@
                 description: "The URL of the thumbnail version of the highlight image",
                 type: "string",
                 format: "uri",
-                example: "https://lriedel.cz/api/cache/highlight/thumbnail/7f6ccad1-0e4e-48ff-8cbd-d6607936eb4d.jpg"
+                example: "https://api.lriedel.cz/cache/highlight/thumbnail/7f6ccad1-0e4e-48ff-8cbd-d6607936eb4d.jpg"
             ),
             new OA\Property(
                 property: "full",
                 description: "The URL of the full-size version of the highlight image",
                 type: "string",
                 format: "uri",
-                example: "https://lriedel.cz/api/cache/highlight/full/7f6ccad1-0e4e-48ff-8cbd-d6607936eb4d.jpg"
+                example: "https://api.lriedel.cz/cache/highlight/full/7f6ccad1-0e4e-48ff-8cbd-d6607936eb4d.jpg"
             )
         ]
     )]

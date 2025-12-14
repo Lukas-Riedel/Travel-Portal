@@ -126,14 +126,14 @@
                     name: "latitude",
                     in: "query",
                     required: true,
-                    description: "The latitude to track",
+                    description: "The latitude to retrieve address for",
                     example: "45.767019213737065"
                 ),
                 new OA\Parameter(
                     name: "longitude",
                     in: "query",
                     required: true,
-                    description: "The longitude to track",
+                    description: "The longitude to retrieve address for",
                     example: "4.844979856479775"
                 )
             ],

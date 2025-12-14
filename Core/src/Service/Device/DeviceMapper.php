@@ -25,7 +25,7 @@
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($requiredRole !== null) {
-                $whereClauseBuilder->withClause("FIND_IN_SET(user_id, ?)", implode(",", $this->authenticationService->getUserIdsWithRole($requiredRole)));
+                $whereClauseBuilder->withClause("user_id = ANY(STRING_TO_ARRAY(?, ','))", implode(",", $this->authenticationService->getUserIdsWithRole($requiredRole)));
             }
             if ($deviceType !== null) {
                 $whereClauseBuilder->withClause("type = ?", $deviceType->value);
@@ -105,7 +105,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM device
-                WHERE last_seen + ? < UNIX_TIMESTAMP()
+                WHERE last_seen + ? < ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient

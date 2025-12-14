@@ -7,7 +7,7 @@
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Logger;
     use PhpAmqpLib\Channel\AMQPChannel;
-    use PhpAmqpLib\Connection\AMQPSSLConnection;
+    use PhpAmqpLib\Connection\AMQPStreamConnection;
     use PhpAmqpLib\Message\AMQPMessage;
 
     class RabbitMQMessagingClient implements MessagingClient {
@@ -26,7 +26,7 @@
 
         private readonly TransactionManager $transactionManager;
 
-        private ?AMQPSSLConnection $connection = null;
+        private ?AMQPStreamConnection $connection = null;
         private ?AMQPChannel $producerChannel = null;
         private ?AMQPChannel $consumerChannel = null;
 
@@ -100,9 +100,9 @@
 
         private function init() {
             if ($this->connection === null || $this->producerChannel === null) {                    
-                $this->connection = new AMQPSSLConnection($this->host, $this->port, $this->user, $this->password, $this->vhost,
-                    array("verify_peer" => true, "verify_peer_name" => true),
-                    array("read_write_timeout" => round(1.2 * self::HEARTBEAT_INTERVAL_SECONDS), "heartbeat" => self::HEARTBEAT_INTERVAL_SECONDS));
+                $this->connection = new AMQPStreamConnection($this->host, $this->port, $this->user, $this->password, $this->vhost,
+                    false, "AMQPLAIN", null, "en_US", round(1.2 * self::HEARTBEAT_INTERVAL_SECONDS), round(1.2 * self::HEARTBEAT_INTERVAL_SECONDS),
+                    null, true, self::HEARTBEAT_INTERVAL_SECONDS);
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
                 $this->consumerChannel->basic_qos(null, self::PREFETCH_COUNT, null);

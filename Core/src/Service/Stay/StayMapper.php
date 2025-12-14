@@ -15,8 +15,8 @@
             $sql = <<<SQL
                 SELECT *
                 FROM stay_event
-                WHERE start >= ?
-                    AND end <= ?
+                WHERE "start" >= ?
+                    AND "end" <= ?
                 {$staySortingStrategy->getOrderByClause()}
             SQL;
 
@@ -33,7 +33,7 @@
                 SELECT *
                 FROM stay_event
                 WHERE trip_id = ?
-                ORDER BY start
+                ORDER BY "start"
             SQL;
 
             return $this->databaseClient
@@ -66,8 +66,8 @@
                     ON ose.id = nse.id
                 WHERE ose.name <> nse.name
                     OR ose.address <> nse.address
-                    OR ose.start <> nse.start
-                    OR ose.end <> nse.end
+                    OR ose."start" <> nse."start"
+                    OR ose."end" <> nse."end"
             SQL;
 
             return $this->databaseClient
@@ -95,8 +95,8 @@
                     id, 
                     name, 
                     trip_id, 
-                    start, 
-                    end, 
+                    "start", 
+                    "end", 
                     address
                 )
                 VALUES (

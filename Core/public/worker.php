@@ -1,7 +1,5 @@
 <?php
-    require_once(__DIR__ . "/src/bootstrap.php");
-
-    use function Secrets\getenv; // TODO: Delete when switching to k8s.
+    require_once(__DIR__ . "/../src/bootstrap.php");
 
     $lockKeyFormat = "Worker:Lock:%s";
     $lock = NULL;

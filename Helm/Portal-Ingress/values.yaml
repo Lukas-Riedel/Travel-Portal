@@ -26,3 +26,9 @@ iam:
   service:
     name: iam
     port: 8080
+core:
+  enabled: true
+  host: api.lriedel.fun
+  service:
+    name: core
+    port: 8080

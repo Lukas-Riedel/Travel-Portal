@@ -63,19 +63,21 @@
                     ?,
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($document->getName(), $this->encryptionClient->encrypt($document->getCode()),
                     $document->getIssuer(), $document->getExpiration())
-                ->execute() === 1;
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $document->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;           
+            $document->setId($id);
+            return true;           
         }
 
         public function deleteDocument(string $documentId) : int {
@@ -96,7 +98,7 @@
                 DELETE
                 FROM document
                 WHERE expiration IS NOT NULL
-                    AND expiration < UNIX_TIMESTAMP()
+                    AND expiration < ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient

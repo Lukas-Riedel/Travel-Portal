@@ -211,7 +211,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM forecast_actual
-                WHERE timestamp < UNIX_TIMESTAMP();
+                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW()));
             SQL;
 
             return $this->databaseClient
@@ -223,7 +223,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM forecast_historical
-                WHERE timestamp < UNIX_TIMESTAMP();
+                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW()));
             SQL;
 
             return $this->databaseClient
@@ -235,7 +235,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM forecast_daylight
-                WHERE timestamp < UNIX_TIMESTAMP();
+                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW()));
             SQL;
 
             return $this->databaseClient

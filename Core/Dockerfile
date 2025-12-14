@@ -1,16 +1,16 @@
-FROM php:8.2-apache
-RUN apt-get update && apt-get install -y \
-    curl \
-    zip \
-    unzip \
-    git \
-    libzip-dev \
-    && docker-php-ext-install mysqli zip
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN curl -sSL https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh -o /usr/local/bin/wait-for-it && chmod +x /usr/local/bin/wait-for-it
-RUN a2enmod rewrite
-WORKDIR /var/www/html/
-COPY . /var/www/html/
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-EXPOSE 80
-CMD ["apache2-foreground"]
+FROM php:8.2-cli-bullseye AS builder
+RUN apt-get update && apt-get install -y libpq-dev git unzip && docker-php-ext-install sockets pdo_pgsql pgsql && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY Common/ /Common
+COPY Core/composer.json ./
+COPY Core/composer.lock ./
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php --install-dir=/usr/local/bin --filename=composer && rm composer-setup.php
+RUN composer install --no-dev --prefer-dist --optimize-autoloader && composer dump-autoload --optimize
+COPY Core/. ./
+FROM php:8.2-fpm-bullseye
+RUN apt-get update && apt-get install -y libpq-dev nginx bash curl && docker-php-ext-install sockets pdo_pgsql pgsql && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /var/www/html
+COPY --from=builder /app ./
+COPY Core/nginx.conf /etc/nginx/nginx.conf
+EXPOSE 8080
+CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]

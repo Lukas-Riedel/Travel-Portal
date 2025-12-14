@@ -31,9 +31,9 @@
         public function requestExecution(string $action, int $interval) : bool {
             $sql = <<<'SQL'
                 UPDATE scheduler
-                SET last_triggered = UNIX_TIMESTAMP()
+                SET last_triggered = ROUND(EXTRACT(EPOCH FROM NOW()))
                 WHERE action = ?
-                    AND last_triggered <= UNIX_TIMESTAMP() - ?
+                    AND last_triggered <= ROUND(EXTRACT(EPOCH FROM NOW())) - ?
             SQL;
 
             $wasRequested = $this->databaseClient
@@ -67,7 +67,7 @@
                 )
                 VALUES (
                     ?,
-                    UNIX_TIMESTAMP()
+                    ROUND(EXTRACT(EPOCH FROM NOW()))
                 )
             SQL;
 

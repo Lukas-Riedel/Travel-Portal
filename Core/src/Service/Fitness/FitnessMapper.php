@@ -146,7 +146,7 @@
                 SELECT timestamp
                 FROM fitness
                 WHERE timestamp + ? * 86400 < last_update 
-                    OR timestamp + ? * 86400 > UNIX_TIMESTAMP()
+                    OR timestamp + ? * 86400 > ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient
@@ -178,7 +178,7 @@
                 )
                 VALUES (
                     ?, 
-                    UNIX_TIMESTAMP(),
+                    ROUND(EXTRACT(EPOCH FROM NOW())),
                     ?,
                     ?, 
                     ?
@@ -217,7 +217,7 @@
         public function updateFitnessRecordLastUpdate(int $timestamp) : bool {
             $sql = <<<'SQL'
                 UPDATE fitness
-                SET last_update = UNIX_TIMESTAMP()
+                SET last_update = ROUND(EXTRACT(EPOCH FROM NOW()))
                 WHERE timestamp = ?
             SQL;
 

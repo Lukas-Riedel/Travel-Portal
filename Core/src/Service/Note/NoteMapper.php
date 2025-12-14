@@ -61,19 +61,20 @@
                     ?,
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($note->getContent(), $note->getTimestamp())
-                ->execute();
-                 
+                ->getSingleColumn("id");                 
 
-            if ($wasInserted) {
-                $note->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $note->setId($id);
+            return true;
         }
 
         public function insertNote(NoteType $noteType, string $entityId, string $noteId) : bool {
@@ -98,7 +99,7 @@
             $sql = <<<SQL
                 UPDATE note_identifier
                 SET content = ?,
-                    timestamp = UNIX_TIMESTAMP()
+                    timestamp = ROUND(EXTRACT(EPOCH FROM NOW()))
                 WHERE id = ?
             SQL;
 

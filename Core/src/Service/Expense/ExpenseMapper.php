@@ -19,7 +19,8 @@
             $sql = <<<'SQL'
                 SELECT *
                 FROM expense_voucher
-                ORDER BY issuer, expiration
+                ORDER BY issuer,
+                    expiration
             SQL;
 
             return $this->databaseClient
@@ -133,7 +134,7 @@
                         WHERE subscription_id = expense_subscription.id
                     ) AS occurrences
                 FROM expense_subscription
-                WHERE expiration > UNIX_TIMESTAMP()
+                WHERE expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient
@@ -163,22 +164,24 @@
                     ?,
                     ?,
                     ?,
-                    UNIX_TIMESTAMP(),
+                    ROUND(EXTRACT(EPOCH FROM NOW())),
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripId, $expense->getValue(), $expense->getCurrency(), $expense->getExchangeRate(), $expense->getType()->value,
                     $expense->getDescription(), $subscriptionId)
-                ->execute() === 1;                
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $expense->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $expense->setId($id);
+            return true;
         }
 
         public function insertSubscription(Subscription $subscription) : bool {
@@ -197,19 +200,21 @@
                     ?,
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($subscription->getValue(), $subscription->getCurrency(), $subscription->getExchangeRate(),
                     $subscription->getDescription(), $subscription->getExpiration())
-                ->execute() === 1;                
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $subscription->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $subscription->setId($id);
+            return true;
         }
 
         public function insertVoucher(Voucher $voucher) : bool {
@@ -228,19 +233,21 @@
                     ?,
                     ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($this->encryptionClient->encrypt($voucher->getCode()), $voucher->getIssuer(),
                     $voucher->getValue(), $voucher->getCurrency(), $voucher->getExpiration())
-                ->execute() === 1;
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $voucher->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $voucher->setId($id);
+            return true;
         }
 
         public function updateExpenseDescription(string $expenseId, string $description) : bool {
@@ -314,7 +321,7 @@
                 DELETE
                 FROM expense_subscription
                 WHERE id = ?
-                    AND expiration > UNIX_TIMESTAMP()
+                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient
@@ -341,7 +348,7 @@
                 DELETE
                 FROM expense_voucher
                 WHERE expiration IS NOT NULL
-                    AND expiration < UNIX_TIMESTAMP()
+                    AND expiration < ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient

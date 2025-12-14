@@ -37,10 +37,6 @@
     
             if ($payload !== null) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
-            }     
-            // TODO: Remove this dirty hack after switching to VPS.
-            else if ($method === HttpMethod::POST) {
-                curl_setopt($curl, CURLOPT_POSTFIELDS, "{}");
             }
             
             $response = curl_exec($curl);

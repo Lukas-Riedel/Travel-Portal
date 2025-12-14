@@ -1,6 +1,5 @@
 <?php
     require_once(__DIR__ . "/../vendor/autoload.php");
-    require_once(__DIR__ . "/../../secrets.php");
 
     use Common\Client\Encryption\EncryptionClient;
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
@@ -10,7 +9,7 @@
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
-    use Core\Client\Database\MySQLDatabaseClient;
+    use Core\Client\Database\PostgreSQLDatabaseClient;
     use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
     use Core\Client\Flight\FlightRadar24FlightClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
@@ -77,7 +76,6 @@
     use Core\Service\Trip\TripStatisticsProvider;
     use Core\Service\Year\YearService;
     use Core\Service\Year\YearServiceListener;
-    use function Secrets\getenv; // TODO: Delete when switching to k8s.
     
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message);
@@ -110,13 +108,13 @@
     $logger->pushHandler($handler); 
 
     // Clients.
-    $databaseClient = new MySQLDatabaseClient(getenv("DB_HOST"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $logger); 
+    $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $logger); 
     $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $httpClient = new HttpClient($logger);
     $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
-    $calendarClient = new CalendarClient($googleClient, $cacheClient, $logger, getenv("CORE_BASE_URL"));
-    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), $databaseClient, $logger);
+    $calendarClient = new CalendarClient($googleClient, $cacheClient, $logger, getenv("CORE_BASE_URL")); 
+    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), $databaseClient, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);
@@ -131,7 +129,7 @@
     $scheduler = new Scheduler($databaseClient, $cacheClient, $eventPublisher);
 
     // Configuration service.
-    $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_HOST"), getenv("RMQ_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
+    $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
     $calendarClient->setConfigurationService($configurationService);
     $googleClient->setConfigurationService($configurationService);
     $actualForecastClient->setConfigurationService($configurationService);

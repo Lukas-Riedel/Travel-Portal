@@ -82,8 +82,8 @@ spec:
             - name: GRAFANA_LOKI_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: iam-grafana-password
-                  key: iam-grafana-password
+                  name: grafana-password
+                  key: grafana-password
             - name: ALLOWED_REQUEST_ORIGINS
               value: "{{ .Values.iam.origins.whitelist }}"
           volumeMounts:

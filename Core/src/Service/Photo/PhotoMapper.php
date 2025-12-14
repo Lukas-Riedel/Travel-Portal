@@ -56,10 +56,10 @@
                 WITH target_album AS (
                     SELECT *
                     FROM album
-                    WHERE name LIKE CONCAT(?, ' _._.____')
-                        OR name LIKE CONCAT(?, ' __._.____')
-                        OR name LIKE CONCAT(?, ' _.__.____')
-                        OR name LIKE CONCAT(?, ' __.__.____')
+                    WHERE name LIKE ? || ' _._.____'
+                        OR name LIKE ? || ' __._.____'
+                        OR name LIKE ? || ' _.__.____'
+                        OR name LIKE ? || ' __.__.____'
                 )
                 {$this->getSelectAlbumsQuery("target_album")}
             SQL;
@@ -161,7 +161,7 @@
                 FROM photo_pending
                 WHERE album_id = ?
                     AND replaced_photo_id IS NULL
-                    AND expiration > UNIX_TIMESTAMP()
+                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
                 ORDER BY batch_position
                 LIMIT 50
             SQL;
@@ -182,7 +182,7 @@
                 FROM photo_pending
                 WHERE album_id = ?
                     AND replaced_photo_id IS NOT NULL
-                    AND expiration > UNIX_TIMESTAMP()
+                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
             
             return $this->databaseClient
@@ -349,23 +349,25 @@
                     ?,
                     ?,
                     ?,
-                    UNIX_TIMESTAMP(),
-                    UNIX_TIMESTAMP() + ?
+                    ROUND(EXTRACT(EPOCH FROM NOW())),
+                    ROUND(EXTRACT(EPOCH FROM NOW())) + ?
                 )
+                RETURNING id
             SQL;
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($pendingPhoto->getAlbumId(), $pendingPhoto->getFileName(), $pendingPhoto->getBatchId(),
                     $pendingPhoto->getExpectedBatchSize(), $pendingPhoto->getBatchPosition(),  $pendingPhoto->getReplacedPhotoId(),
                     $pendingPhoto->getUploadToken(), $expirationInterval)
-                ->execute() === 1;
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $pendingPhoto->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $pendingPhoto->setId($id);
+            return true;
         }
 
         public function insertAlbumId(string $externalId) : bool {    
@@ -389,7 +391,7 @@
                 UPDATE photo_identifier pi
                 INNER JOIN photo p
                     ON pi.id = p.id
-                SET pi.reviewed = UNIX_TIMESTAMP()
+                SET pi.reviewed = ROUND(EXTRACT(EPOCH FROM NOW()))
                 WHERE p.album_id = ?
             SQL;
 
@@ -510,7 +512,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM photo_pending
-                WHERE expiration <= UNIX_TIMESTAMP()
+                WHERE expiration <= ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
 
             return $this->databaseClient
@@ -594,7 +596,7 @@
                     ON a.id = pp.album_id
                 LEFT JOIN (
                     SELECT p.album_id,
-                        SUM(pi.reviewed IS NULL) AS non_reviewed_count
+                        SUM(CASE WHEN pi.reviewed IS NULL THEN 1 ELSE 0 END) AS non_reviewed_count
                     FROM photo p
                     INNER JOIN photo_identifier pi
                         ON p.id = pi.id

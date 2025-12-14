@@ -96,16 +96,10 @@
                 )
             SQL;
 
-            $wasInserted = $this->databaseClient
+            return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($yearIdentifier->getId())
                 ->execute() === 1;
-
-            if ($yearIdentifier) {
-                $yearIdentifier->setId($this->databaseClient->getLastInsertedId());
-            }
-            
-            return $wasInserted;
         }
 
         public function updateYearMainHighlight(int $year, ?string $highlightIdentifier) : bool {

@@ -14,11 +14,7 @@
         private readonly int $port;
         private readonly string $password;
 
-        private ?Client $redisClient = null;
-        
-        // Decrease Redis calls as much as possible by caching in memory.
-        // TODO: Remove after switching to VPS.
-        private array $cache;
+        private ?Client $redisClient = null;    
 
         private ?OpenLineageEventManager $openLineageEventManager;
 
@@ -26,7 +22,6 @@
             $this->host = $host;
             $this->port = $port;
             $this->password = $password;
-            $this->cache = array();
             $this->openLineageEventManager = null;
         }
 
@@ -36,14 +31,6 @@
 
         public function get(string $key, ?int $newTtl = null) : mixed {
             $this->init();
-            
-            // TODO: Remove after switching to VPS.
-            $value = $this->cache[$key] ?? null;
-            if ($value !== null) {
-                $convertedValue = json_decode($value, true);
-                $this->addOpenLineageInputDataset($key, $value);
-                return $convertedValue;
-            }
 
             $value = $this->redisClient->get($key);
             if ($value !== null) {
@@ -63,7 +50,6 @@
             $this->init();
 
             $this->redisClient->set($key, json_encode($value), "EX", $ttl);
-            $this->cache[$key] = json_encode($value);
 
             $this->addOpenLineageOutputDataset($key, $value);
         }
@@ -72,8 +58,7 @@
             $this->init();
 
             $wasSet = $this->redisClient->set($key, json_encode($value), "NX", "EX", $ttl) !== null;
-            if ($wasSet) {                
-                $this->cache[$key] = json_encode($value);
+            if ($wasSet) {
                 $this->addOpenLineageOutputDataset($key, $value);
             }
 

@@ -61,8 +61,8 @@
             $sql = <<<'SQL'
                 SELECT trip_id
                 FROM trip_event
-                WHERE start <= ?
-                    AND end >= ?
+                WHERE "start" <= ?
+                    AND "end" >= ?
             SQL;
 
             return $this->databaseClient
@@ -75,8 +75,8 @@
             $sql = <<<'SQL'
                 SELECT trip_id
                 FROM trip_event
-                WHERE ? >= start
-                    AND ? <= end
+                WHERE ? >= "start"
+                    AND ? <= "end"
             SQL;
 
             return $this->databaseClient
@@ -166,7 +166,7 @@
                 FROM trip_event nte
                 LEFT JOIN {$oldTripEventTableName} ote
                     ON ote.id = nte.id
-                WHERE ote.start IS NULL
+                WHERE ote."start" IS NULL
             SQL;
 
             return $this->databaseClient
@@ -180,8 +180,8 @@
                 FROM trip_event nte
                 INNER JOIN {$oldTripEventTableName} ote
                     ON ote.id = nte.id
-                WHERE ote.start <> nte.start
-                    OR ote.end <> nte.end
+                WHERE ote."start" <> nte."start"
+                    OR ote."end" <> nte."end"
             SQL;
 
             return $this->databaseClient
@@ -206,8 +206,8 @@
         public function selectRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
             $sql = <<<SQL
                 SELECT ti.*,
-                    te.start,
-                    te.end
+                    te."start",
+                    te."end"
                 FROM trip_event te
                 INNER JOIN trip_identifier ti
                     ON te.trip_id = ti.id
@@ -223,10 +223,10 @@
                 $whereClauseBuilder->withClause("ti.id = ?", $tripId);
             }
             if ($start !== null) {
-                $whereClauseBuilder->withClause("te.start >= ?", $start);
+                $whereClauseBuilder->withClause("te.\"start\" >= ?", $start);
             }
             if ($end !== null) {
-                $whereClauseBuilder->withClause("te.end <= ?", $end);
+                $whereClauseBuilder->withClause("te.\"end\" <= ?", $end);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
@@ -305,18 +305,20 @@
                     ?, 
                     ?
                 )
+                RETURNING id
             SQL;            
 
-            $wasInserted = $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($tripIdentifier->getName(), $tripIdentifier->getYear())
-                ->execute() === 1;
+                ->getSingleColumn("id");
 
-            if ($wasInserted) {
-                $tripIdentifier->setId($this->databaseClient->getLastInsertedId());
+            if ($id === null) {
+                return false;
             }
 
-            return $wasInserted;
+            $tripIdentifier->setId($id);
+            return true;
         }
 
         public function insertTripEvent(Trip $trip, string $eventId) : bool {
@@ -324,8 +326,8 @@
                 INSERT INTO trip_event (
                     id,
                     trip_id, 
-                    start, 
-                    end
+                    "start", 
+                    "end"
                 )
                 VALUES (
                     ?,

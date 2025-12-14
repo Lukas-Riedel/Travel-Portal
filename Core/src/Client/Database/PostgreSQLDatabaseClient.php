@@ -3,17 +3,19 @@
 
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Logger;
+    use PgSql\Connection;
     use PHPSQLParser\PHPSQLParser;
 
-    class MySQLDatabaseClient implements DatabaseClient {
+    class PostgreSQLDatabaseClient implements DatabaseClient {
 
-        private const DEFAULT_CHARSET = "utf8mb4";
+        private const CONNECTION_CONFIGURATION_STRING_FORMAT = "host=%s port=%d dbname=%s user=%s password=%s";
+        private const DEFAULT_SCHEMA_NAME = "public";
         private const WHERE_CLAUSE_PLACEHOLDER = "WHERE :CONDITIONS";
         
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "mysql://%s";
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "postgress://%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s.%s";
 
-        private readonly \mysqli $mysqli;
+        private readonly Connection $connection;
         private readonly string $host;
         private readonly string $database;
 
@@ -23,9 +25,8 @@
         
         private ?AtomicExecution $currentAtomicExecution;
 
-        public function __construct(string $host, string $user, string $password, string $database, Logger $logger) {
-            $this->mysqli = new \mysqli($host, $user, $password, $database);
-            $this->mysqli->set_charset(self::DEFAULT_CHARSET);
+        public function __construct(string $host, int $port, string $user, string $password, string $database, Logger $logger) {
+            $this->connection = pg_connect(sprintf(self::CONNECTION_CONFIGURATION_STRING_FORMAT, $host, $port, $database, $user, $password));
             $this->host = $host;
             $this->database = $database;
             $this->openLineageEventManager = null;
@@ -39,24 +40,30 @@
 
         public function isDatabaseInitialized() : bool {
             $sql = <<<'SQL'
-                SELECT COUNT(*) AS count 
-                FROM INFORMATION_SCHEMA.TABLES 
-                WHERE TABLE_NAME = 'configuration'
+                SELECT COUNT(*) AS count
+                FROM information_schema.tables
+                WHERE table_name = 'configuration'
             SQL;
             
-            // Keep it as much low-level as possible.
-            return $this->mysqli->query($sql)->fetch_assoc()["count"] > 0;
-        }
-
-        public function query(string $sql) : mixed {
-            $result = $this->mysqli->query($sql);
+            $result = pg_query($this->connection, $sql);
             if ($result === false) {
                 return false;
             }
-            if ($result instanceof \mysqli_result) {
-                return $result->fetch_all(MYSQLI_ASSOC);
+
+            return (int) pg_fetch_result($result, 0, "count") > 0;
+        }
+
+        public function query(string $sql) : mixed {
+            $result = pg_query($this->connection, $sql);
+            if ($result === false) {
+                return false;
             }
-            return $this->mysqli->affected_rows;
+
+            if (pg_num_fields($result) > 0) {
+                return pg_fetch_all($result) ?: array();
+            }
+
+            return pg_affected_rows($result);
         }
         
         public function statementBuilder(string $sql, ?WhereClause $whereClause = null) : StatementBuilder {
@@ -64,7 +71,7 @@
                 $sql = str_replace(self::WHERE_CLAUSE_PLACEHOLDER, $whereClause->getClause(), $sql);
             }
 
-            $builder = new MySQLStatementBuilder($this->mysqli, $sql, $this->logger);
+            $builder = new PostgreSQLStatementBuilder($this->connection, $sql, $this->logger);
             if ($whereClause !== null) {
                 $builder->withDeferredParameters(...$whereClause->getParameters());
             }
@@ -83,12 +90,8 @@
             return new WhereClauseBuilder();
         }
         
-        public function getIsNullOrEqualTo(mixed $var) : string {
-            return $var == null ? "IS NULL" : ("= '" . $this->mysqli->real_escape_string($var) . "'");
-        }
-        
-        public function getLastInsertedId() : int|string {
-            return $this->mysqli->insert_id;
+        public function getIsNullOrEqualTo(string $var) : string {
+            return $var == null ? "IS NULL" : ("= '" . pg_escape_string($this->connection, $var) . "'");
         }
 
         public function getCurentAtomicExecution() : ?AtomicExecution {
@@ -101,14 +104,14 @@
             }
             else {
                 $this->currentAtomicExecution = new AtomicExecution();
-                $this->mysqli->begin_transaction();
+                pg_query($this->connection, "BEGIN");
                 try {
                     $callable();
-                    $this->mysqli->commit();
+                    pg_query($this->connection, "COMMIT");
                     $this->currentAtomicExecution->commit();
                 }
                 catch (\Throwable $e) {
-                    $this->mysqli->rollback();
+                    pg_query($this->connection, "ROLLBACK");
                     throw $e;
                 }   
                 finally {
@@ -179,15 +182,15 @@
 
         private function fetchTableColumns(string $table) : array {
             $sql = <<<SQL
-                SELECT COLUMN_NAME
-                FROM information_schema.COLUMNS
-                WHERE TABLE_SCHEMA = ?
-                    AND TABLE_NAME = ?
-                ORDER BY ORDINAL_POSITION
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = ?
+                    AND table_name = ?
+                ORDER BY ordinal_position
             SQL;
 
-            return (new MySQLStatementBuilder($this->mysqli, $sql, $this->logger))
-                ->withParameters($this->database, $table)
+            return (new PostgreSQLStatementBuilder($this->connection, $sql, $this->logger))
+                ->withParameters(self::DEFAULT_SCHEMA_NAME, $table)
                 ->getResultSetForColumn("COLUMN_NAME");
         }
     }
