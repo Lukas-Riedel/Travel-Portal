@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: core
-          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}" 
+          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           ports:
             - containerPort: {{ .Values.core.service.port }}            
           env:
@@ -26,6 +26,8 @@ spec:
                 secretKeyRef:
                   name: core-encryption-key
                   key: core-encryption-key
+            - name: MAX_WORKERS_COUNT
+              value: "{{ .Values.core.workers }}"
             - name: CORE_BASE_URL
               value: "{{ .Values.core.url.base.public }}"
             - name: IAM_BASE_URL

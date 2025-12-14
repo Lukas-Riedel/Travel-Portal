@@ -26,7 +26,7 @@
         private ?AtomicExecution $currentAtomicExecution;
 
         public function __construct(string $host, int $port, string $user, string $password, string $database, Logger $logger) {
-            $this->connection = pg_connect(sprintf(self::CONNECTION_CONFIGURATION_STRING_FORMAT, $host, $port, $database, $user, $password));
+            $this->connection = \pg_connect(sprintf(self::CONNECTION_CONFIGURATION_STRING_FORMAT, $host, $port, $database, $user, $password));
             $this->host = $host;
             $this->database = $database;
             $this->openLineageEventManager = null;
@@ -38,32 +38,17 @@
             $this->openLineageEventManager = $openLineageEventManager;
         }
 
-        public function isDatabaseInitialized() : bool {
-            $sql = <<<'SQL'
-                SELECT COUNT(*) AS count
-                FROM information_schema.tables
-                WHERE table_name = 'configuration'
-            SQL;
-            
-            $result = pg_query($this->connection, $sql);
-            if ($result === false) {
-                return false;
-            }
-
-            return (int) pg_fetch_result($result, 0, "count") > 0;
-        }
-
         public function query(string $sql) : mixed {
-            $result = pg_query($this->connection, $sql);
+            $result = \pg_query($this->connection, $sql);
             if ($result === false) {
                 return false;
             }
 
-            if (pg_num_fields($result) > 0) {
-                return pg_fetch_all($result) ?: array();
+            if (\pg_num_fields($result) > 0) {
+                return \pg_fetch_all($result) ?: array();
             }
 
-            return pg_affected_rows($result);
+            return \pg_affected_rows($result);
         }
         
         public function statementBuilder(string $sql, ?WhereClause $whereClause = null) : StatementBuilder {
@@ -91,7 +76,7 @@
         }
         
         public function getIsNullOrEqualTo(string $var) : string {
-            return $var == null ? "IS NULL" : ("= '" . pg_escape_string($this->connection, $var) . "'");
+            return $var == null ? "IS NULL" : ("= '" . \pg_escape_string($this->connection, $var) . "'");
         }
 
         public function getCurentAtomicExecution() : ?AtomicExecution {
@@ -104,14 +89,14 @@
             }
             else {
                 $this->currentAtomicExecution = new AtomicExecution();
-                pg_query($this->connection, "BEGIN");
+                \pg_query($this->connection, "BEGIN");
                 try {
                     $callable();
-                    pg_query($this->connection, "COMMIT");
+                    \pg_query($this->connection, "COMMIT");
                     $this->currentAtomicExecution->commit();
                 }
                 catch (\Throwable $e) {
-                    pg_query($this->connection, "ROLLBACK");
+                    \pg_query($this->connection, "ROLLBACK");
                     throw $e;
                 }   
                 finally {

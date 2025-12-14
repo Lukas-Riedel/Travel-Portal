@@ -12,5 +12,8 @@ RUN apt-get update && apt-get install -y libpq-dev nginx bash curl && docker-php
 WORKDIR /var/www/html
 COPY --from=builder /app ./
 COPY Core/nginx.conf /etc/nginx/nginx.conf
+COPY Core/www.conf /usr/local/etc/php-fpm.d/www.conf
 EXPOSE 8080
-CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
+COPY Core/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

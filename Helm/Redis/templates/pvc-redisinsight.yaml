@@ -1,13 +1,13 @@
-{{- if .Values.core.enabled }}
+{{- if .Values.redisinsight.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: core-pvc
+  name: redisinsight-pvc
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
   storageClassName: local-path
 {{- end }}

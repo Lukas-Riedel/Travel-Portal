@@ -41,7 +41,7 @@ use PgSql\Result;
                 return 0;
             }
 
-            return pg_affected_rows($result);
+            return \pg_affected_rows($result);
         }
 
         public function getResultSet() : array {
@@ -50,7 +50,7 @@ use PgSql\Result;
                 return array();
             }
 
-            return pg_fetch_all($result) ?: array();
+            return \pg_fetch_all($result) ?: array();
         }
 
         public function getMappedResultSet(callable $fn) : array {
@@ -94,7 +94,7 @@ use PgSql\Result;
                 $this->logger->debug("Took " . $duration . " milliseconds: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
 
-            $affectedRows = pg_affected_rows($result);
+            $affectedRows = \pg_affected_rows($result);
             if ($logStatement && !str_contains($this->sql, "INSERT INTO") && $affectedRows > 0) {
                 $this->logger->debug("Affected " . $affectedRows . " rows: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
             }
@@ -104,8 +104,8 @@ use PgSql\Result;
 
         private function doGetResult(string $statementName, array $params) : Result|false {
             try {
-                pg_prepare($this->connection, $statementName, $this->convertPlaceholders($this->sql));
-                return pg_execute($this->connection, $statementName, $params);
+                \pg_prepare($this->connection, $statementName, $this->convertPlaceholders($this->sql));
+                return \pg_execute($this->connection, $statementName, $params);
             }
             catch (\Exception $e) {
                 $this->logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));

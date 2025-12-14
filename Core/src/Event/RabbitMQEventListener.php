@@ -9,7 +9,7 @@
 
     class RabbitMQEventListener extends AbstractEventListener {
 
-        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 15;
+        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 60;
 
         private readonly RabbitMQMessagingClient $messagingClient;
 

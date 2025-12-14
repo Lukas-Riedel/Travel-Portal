@@ -28,4 +28,11 @@ spec:
                 secretKeyRef:
                   name: redis-password
                   key: redis-password
+          volumeMounts:
+            - name: redisinsight-data
+              mountPath: /data
+      volumes:
+        - name: redisinsight-data
+          persistentVolumeClaim:
+            claimName: redisinsight-pvc
 {{- end }}
