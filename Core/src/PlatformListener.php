@@ -40,17 +40,8 @@
                 $currentOffset = 0;
 
                 do {
-                    $sql = <<<'SQL'
-                        SELECT *
-                        FROM $table
-                        ORDER BY ctid
-                        OFFSET ?
-                        LIMIT ?
-                    SQL;
-
                     $tableRows = $this->databaseClient
-                        ->statementBuilder($sql)
-                        ->withParameters($currentOffset, self::BACKUP_CHUNK_SIZE)
+                        ->statementBuilder("SELECT * FROM $table ORDER BY ctid OFFSET $currentOffset LIMIT " . self::BACKUP_CHUNK_SIZE)
                         ->getResultSet();
 
                     $tableDump = array_map(function($row) use(&$table) {

@@ -21,7 +21,7 @@
             $sql = <<<'SQL'
                 SELECT id
                 FROM photo_identifier
-                WHERE replaced = 1
+                WHERE replaced
             SQL;
 
             return $this->databaseClient
