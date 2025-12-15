@@ -50,6 +50,6 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         SwaggerResource::register($app, $coreBaseUrl);
-        ProxyResource::register($app, $coreBaseUrl, $httpClient);
+        ProxyResource::register($app, $httpClient);
     };
 ?>

@@ -21,7 +21,7 @@
             $this->openLineageEventManager = $openLineageEventManager;
         }
 
-        public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) {
+        public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) : mixed {
             $result = parent::executeRequest($method, $url, $headers, $payload, $includeResponseHeaders);
 
             $parsedUrl = parse_url($url);
