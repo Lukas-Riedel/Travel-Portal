@@ -1,6 +1,7 @@
 <?php
     namespace Core\Event;
 
+    use Core\Client\Database\DatabaseClient;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
     use Monolog\Logger;
@@ -10,6 +11,8 @@
         private const EVENT_HANDLER_METHOD_PREFIX = "on";
         private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
 
+        private readonly DatabaseClient $databaseClient;
+
         private readonly Logger $logger;
         private readonly OpenLineageEventManager $openLineageEventManager;
 
@@ -17,7 +20,8 @@
 
         private readonly string $workerQueueName;
         
-        public function __construct(Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+        public function __construct(DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+            $this->databaseClient = $databaseClient;
             $this->logger = $logger;
             $this->openLineageEventManager = $openLineageEventManager;
             
@@ -60,6 +64,8 @@
                 else {
                     $this->openLineageEventManager->publishCurrentEventAsync();
                 }
+                
+                $this->databaseClient->clearCache();
             }
         }
 

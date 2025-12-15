@@ -146,7 +146,10 @@
             $sql = <<<'SQL'
                 SELECT *
                 FROM region_geographical
-                WHERE json NOT LIKE '%Point%'
+                WHERE NOT (
+                    json->>'type' = 'Feature'
+                    AND json->'geometry'->>'type' = 'Point'
+                )
             SQL;
 
             return $this->databaseClient

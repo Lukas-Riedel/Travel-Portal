@@ -218,6 +218,6 @@
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($databaseClient, $googleClient, $eventPublisher, $scheduler)
     );
-    $eventListener = new RabbitMQEventListener($messagingClient, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
+    $eventListener = new RabbitMQEventListener($messagingClient, $databaseClient, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
     $eventPublisher->setDeviceService($deviceService);    
 ?>

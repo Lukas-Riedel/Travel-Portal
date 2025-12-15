@@ -281,7 +281,7 @@
             $places = array();
             foreach ($placeRows as &$placeRow) {
                 $permanentPlaceAlbums = array();
-                if ($placeRow["permanent"]) {
+                if ($placeRow["permanent"] === "t") {
                     $permanentPlaceAlbums = array_filter($this->photoService->getAlbumsForPlace($placeRow["name"]),
                         fn($album) => ($albumId === null || $album->getId() == $albumId) 
                             && ($photoId === null || $this->photoService->getAlbumForPhotoId($photoId)?->getId() == $album->getId()));
@@ -326,7 +326,7 @@
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
-                    if ($placeRow["permanent"]) {
+                    if ($placeRow["permanent"] === "t") {
                         foreach ($permanentPlaceAlbums as &$permanentPlaceAlbum) {
                             $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
                             $albumDate->setTime(0, 0);
@@ -345,7 +345,7 @@
                             $sun = $this->forecastService->getDaylightForecast($placeRow["id"], $placeRow["start"]);
                         }
 
-                        $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] == 1, $weather, $sun,
+                        $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] === "t", $weather, $sun,
                             $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"]), $placeRow["trip_id"] == null ? null : $tripService->getTripIdentifierById($placeRow["trip_id"])));  
                     }
                 }

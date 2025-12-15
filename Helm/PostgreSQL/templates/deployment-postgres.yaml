@@ -16,6 +16,12 @@ spec:
       containers:
         - name: postgres
           image: "{{ .Values.postgres.image }}:{{ .Values.postgres.tag }}"
+          command: ["/usr/local/bin/docker-entrypoint.sh"]
+          args:
+            - "-D"
+            - "/var/lib/postgresql/data"
+            - "-c"
+            - "config_file=/etc/postgresql/custom/postgresql.conf" 
           ports:
             - containerPort: {{ .Values.postgres.service.port }}
           env:
@@ -33,11 +39,16 @@ spec:
               mountPath: /var/lib/postgresql/data
             - name: postgres-init
               mountPath: /docker-entrypoint-initdb.d
+            - name: postgres-config
+              mountPath: /etc/postgresql/custom/
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-pvc
         - name: postgres-init
+          configMap:
+            name: postgres-configmap
+        - name: postgres-config
           configMap:
             name: postgres-configmap
 {{- end }}

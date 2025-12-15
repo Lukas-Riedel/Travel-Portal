@@ -85,9 +85,8 @@ use PgSql\Result;
         private function doExecute(bool $logStatement) : Result|false {
             $params = array_merge($this->params, $this->deferredParams);            
             $start = microtime(true);
-            $statementName = uniqid("", true);
             
-            $result = $this->doGetResult($statementName, $params);
+            $result = $this->doGetResult($params);
 
             $duration = round((microtime(true) - $start) * 1000);
             if ($duration > self::DURATION_THRESHOLD_MILLISECONDS) {
@@ -102,10 +101,9 @@ use PgSql\Result;
             return $result;
         }
 
-        private function doGetResult(string $statementName, array $params) : Result|false {
+        private function doGetResult(array $params) : Result|false {
             try {
-                \pg_prepare($this->connection, $statementName, $this->convertPlaceholders($this->sql));
-                return \pg_execute($this->connection, $statementName, $params);
+                return \pg_query_params($this->connection, $this->convertPlaceholders($this->sql), $params);
             }
             catch (\Exception $e) {
                 $this->logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));

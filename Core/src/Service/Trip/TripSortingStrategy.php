@@ -16,10 +16,10 @@
         
         public function getOrderByClause() : string {
             return match ($this) {
-                self::OldestAscending => "ORDER BY start ASC",
-                self::OldestDescending => "ORDER BY start DESC",
-                self::LongestAscending => "ORDER BY (end - start) DESC",
-                self::LongestDescending => "ORDER BY (end - start) ASC"
+                self::OldestAscending => "ORDER BY \"start\" ASC",
+                self::OldestDescending => "ORDER BY \"start\" DESC",
+                self::LongestAscending => "ORDER BY (\"end\" - \"start\") DESC",
+                self::LongestDescending => "ORDER BY (\"end\" - \"start\") ASC"
             };
         }
     }

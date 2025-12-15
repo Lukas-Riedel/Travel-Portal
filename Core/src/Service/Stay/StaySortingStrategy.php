@@ -14,8 +14,8 @@
 
         public function getOrderByClause() : string {
             return match ($this) {
-                self::DurationDescending => "ORDER BY (end - start) DESC",
-                self::DurationAscending => "ORDER BY (end - start) ASC"
+                self::DurationDescending => "ORDER BY (\"end\" - \"start\") DESC",
+                self::DurationAscending => "ORDER BY (\"end\" - \"start\") ASC"
             };
         }
     }

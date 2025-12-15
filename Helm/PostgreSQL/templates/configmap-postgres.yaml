@@ -6,4 +6,14 @@ metadata:
 data:
   init.sql: |
     CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+  postgresql.conf: |
+    shared_buffers = 512MB
+    work_mem = 16MB
+    temp_buffers = 32MB
+    wal_buffers = 16MB
+    effective_cache_size = 1GB
+    max_connections = 50
+    max_parallel_workers = 4
+    max_parallel_workers_per_gather = 2
+    listen_addresses = '*'
 {{- end }}

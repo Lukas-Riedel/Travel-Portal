@@ -46,7 +46,7 @@
                     return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                         ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                         $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
-                        boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                        $albumRow["reviewed"] === "t", $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                         $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
                 });
         }
@@ -71,7 +71,7 @@
                     return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                         ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                         $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
-                        boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                        $albumRow["reviewed"] === "t", $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                         $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
                 });
         }
@@ -98,7 +98,7 @@
             return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                 ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                 $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
-                boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                $albumRow["reviewed"] === "t", $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                 $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
         }
 
@@ -124,7 +124,7 @@
             return new Album($albumRow["id"], $albumRow["name"], $albumRow["main_photo_id"] === null 
                 ? null : $this->doSelectPhoto($albumRow["main_photo_id"], fn() => $albumRow["thumbnail_url"]),
                 $albumRow["thumbnail_url"], $albumRow["permalink"], intval($albumRow["images_count"]), intval($albumRow["indoor_images_count"]),
-                boolval($albumRow["reviewed"]), $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
+                $albumRow["reviewed"] === "t", $albumRow["uploading_start"] === null ? null : intval($albumRow["uploading_start"]), 
                 $albumRow["uploading_progress"] === null ? null : floatval($albumRow["uploading_progress"]));
         }
 

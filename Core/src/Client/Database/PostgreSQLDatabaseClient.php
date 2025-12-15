@@ -34,6 +34,10 @@
             $this->currentAtomicExecution = null;
         }
 
+        public function __destruct() {
+            \pg_close($this->connection);
+        }
+
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
             $this->openLineageEventManager = $openLineageEventManager;
         }
@@ -103,6 +107,10 @@
                     $this->currentAtomicExecution = null;
                 } 
             }        
+        }
+
+        public function clearCache() : void {            
+            \pg_query($this->connection, "DISCARD ALL");
         }
 
         private function addOpenLineageDatasets(string $sql) : void {
