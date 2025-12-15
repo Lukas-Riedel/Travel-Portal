@@ -83,7 +83,7 @@
 
                 // Do not compute the same statistics within a short interval to avoid flooding worker processes.
                 if ($secondsSinceLastUpdate < self::STATISTICS_VALIDITY_SECONDS) {
-                    $this->logger->debug("The statistics for the entity '{$statisticsType->name}{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...");
+                    $this->logger->debug("The statistics for the entity '{$statisticsType->name}:{$entityId}' were computed {$secondsSinceLastUpdate} seconds ago, skipping the update...");
                     $this->eventPublisher->publish($this->createStatisticsInvalidatedEvent($statisticsType, $entityId), $cachedStatisticsCollection["timestamp"] + self::STATISTICS_VALIDITY_SECONDS);
                     return;
                 }
@@ -126,7 +126,7 @@
                 return $statisticsCollection["statistics"];
             }
 
-            $this->logger->warning("The statistics for the entity '{$statisticsType->name}{$entityId}' are not available, scheduling an update...");
+            $this->logger->warning("The statistics for the entity '{$statisticsType->name}:{$entityId}' are not available, scheduling an update...");
             $this->eventPublisher->publish($this->createStatisticsInvalidatedEvent($statisticsType, $entityId));
 
             return array();

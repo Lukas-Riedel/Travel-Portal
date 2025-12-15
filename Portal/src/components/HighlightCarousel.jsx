@@ -16,7 +16,7 @@ import { listPlaceAlbumPhotos } from "../clients/coreClient"
 import piexif from "piexifjs"
 import { v4 as uuidv4 } from "uuid"
 
-const invalidPhotoId = "INVALID_PHOTO_ID"
+const invalidPhotoId = "d4cbc2ec-1dd2-4f57-87e6-ae12f197aa5c" // TODO: Resolve in a better way.
 const agentOnlineStatusThresholdSeconds = 60
 
 const defaultRotation = 0
