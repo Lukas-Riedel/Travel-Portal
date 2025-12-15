@@ -22,16 +22,16 @@
 
         public function getOrderByClause() : string {
             return match ($this) {
-                self::OldestAscending => "ORDER BY pe.start ASC",
-                self::OldestDescending => "ORDER BY pe.start DESC",
+                self::OldestAscending => "ORDER BY pe.\"start\" ASC NULLS LAST",
+                self::OldestDescending => "ORDER BY pe.\"start\" DESC NULLS LAST",
                 self::ScoreAsscending => "ORDER BY pi.score ASC",
                 self::ScoreDescending => "ORDER BY pi.score DESC",
                 self::QualityAscending => "ORDER BY pi.quality ASC",
                 self::QualityDescending => "ORDER BY pi.quality DESC",
-                self::LatitudeAscending => "ORDER BY pi.latitude ASC, pe.start ASC",
-                self::LatitudeDescending => "ORDER BY pi.latitude DESC, pe.start ASC",
-                self::LongitudeAscending => "ORDER BY pi.longitude ASC, pe.start ASC",
-                self::LongitudeDescending => "ORDER BY pi.longitude DESC, pe.start ASC"
+                self::LatitudeAscending => "ORDER BY pi.latitude ASC, pe.\"start\" ASC",
+                self::LatitudeDescending => "ORDER BY pi.latitude DESC, pe.\"start\" ASC",
+                self::LongitudeAscending => "ORDER BY pi.longitude ASC, pe.\"start\" ASC",
+                self::LongitudeDescending => "ORDER BY pi.longitude DESC, pe.\"start\" ASC"
             };
         }
     }
