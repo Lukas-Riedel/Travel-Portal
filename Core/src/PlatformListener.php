@@ -16,6 +16,7 @@
 
         private const BACKUP_ROOT_FOLDER_NAME = "Travel Portal Backups";
         private const BACKUP_FOLDER_NAME_DATE_FORMAT = "d.m.Y H:i:s";
+        private const BACKUP_CHUNK_SIZE = 10000;
 
         private readonly DatabaseClient $databaseClient;
         private readonly GoogleClient $googleClient;
@@ -35,18 +36,34 @@
             $backupFolderId = $this->googleClient->createFolder(date(self::BACKUP_FOLDER_NAME_DATE_FORMAT), $rootBackupFolderId);
 
             foreach ($message["tables"] as &$table) {
-                $tableRows = $this->databaseClient
-                    ->statementBuilder("SELECT * FROM {$table}")
-                    ->getResultSet();
+                $tableRows = array();
+                $currentOffset = 0;
 
-                $tableDump = array_map(function($row) use(&$table) {
-                    $columns = array_map(fn($k) => "\"$k\"", array_keys($row));
-                    $values  = array_map(fn($v) => $v === null ? "null" : "'" . str_replace("'", "''", $v) . "'", array_values($row));
+                do {
+                    $sql = <<<'SQL'
+                        SELECT *
+                        FROM $table
+                        ORDER BY ctid
+                        OFFSET ?
+                        LIMIT ?
+                    SQL;
 
-                    return "INSERT INTO {$table} (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");";
-                }, $tableRows);
+                    $tableRows = $this->databaseClient
+                        ->statementBuilder($sql)
+                        ->withParameters($currentOffset, self::BACKUP_CHUNK_SIZE)
+                        ->getResultSet();
 
-                $this->googleClient->createFile("{$table}.sql", $backupFolderId, "application/sql", implode("\n", $tableDump));
+                    $tableDump = array_map(function($row) use(&$table) {
+                        $columns = array_map(fn($k) => "\"$k\"", array_keys($row));
+                        $values  = array_map(fn($v) => $v === null ? "null" : "'" . str_replace("'", "''", $v) . "'", array_values($row));
+
+                        return "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");";
+                    }, $tableRows);
+
+                    $this->googleClient->createFile("{$table}_{$currentOffset}.sql", $backupFolderId, "application/sql", implode("\n", $tableDump));
+
+                    $currentOffset += self::BACKUP_CHUNK_SIZE;
+                } while (count($tableRows) === self::BACKUP_CHUNK_SIZE);
             }
         }
 
