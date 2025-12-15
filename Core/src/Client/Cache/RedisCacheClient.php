@@ -106,7 +106,6 @@
         public function delete(string $key) : void {
             $this->init();
             
-            unset($this->cache[$key]);
             $this->redisClient->del($key);
         }
 

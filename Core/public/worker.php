@@ -3,6 +3,8 @@
 
     $defaultLockTtl = 1800;
     $maxExecutionTime = (int) ini_get("max_execution_time");
+    
+    // When changing the lock key format, change also in deploy.php.
     $lockKeyFormat = "Worker:Lock:%s";
 
     $lock = NULL;    
