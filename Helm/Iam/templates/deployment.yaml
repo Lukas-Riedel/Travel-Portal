@@ -21,6 +21,8 @@ spec:
           ports:
             - containerPort: {{ .Values.iam.service.port }}            
           env:
+            - name: VERSION_TAG
+              value: "{{ .Values.iam.tag }}"
             - name: ENCRYPTION_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:

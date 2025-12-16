@@ -34,7 +34,7 @@ core:
       port: 5671
     vhost: /
     username: admin
-    heartbeat: "600"
+    heartbeat: "300"
     queue:
       worker: WorkerQueue
   fcm:

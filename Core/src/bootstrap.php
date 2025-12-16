@@ -90,11 +90,12 @@
         new LokiHandler(array(
             "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
             "context" => array(
-                "transactionId" => $transactionId
+                "transaction_id" => $transactionId
             ),
             "labels" => array(
                 "service" => "core",
-                "transactionId" => $transactionId
+                "version_tag" => getenv("VERSION_TAG"),
+                "transaction_id" => $transactionId
             ),
             "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
             "auth" => array(

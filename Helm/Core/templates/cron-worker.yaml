@@ -10,6 +10,7 @@ spec:
   concurrencyPolicy: Allow
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 3600
       template:
         spec:
           restartPolicy: Never

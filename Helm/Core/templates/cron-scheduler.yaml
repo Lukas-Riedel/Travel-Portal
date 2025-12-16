@@ -10,13 +10,14 @@ spec:
   concurrencyPolicy: Allow
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 3600
       template:
         spec:
           restartPolicy: Never
           containers:
           - name: core-scheduler
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-            command: ["php", "/var/www/html/src/scheduler.php"]
+            command: ["php", "-d", "max_execution_time=3600", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
             env:
 {{ include "core.env" . | nindent 14 }}
             volumeMounts:
