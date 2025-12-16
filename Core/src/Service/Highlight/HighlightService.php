@@ -412,7 +412,13 @@
         }
 
         private function getPhysicalCachePath(HighlightSize $highlightSize) : string {
-            return __DIR__ . "/../../../" . $highlightSize->getCachePath();
+            $path = __DIR__ . "/../../../../tmp/" . $highlightSize->getCachePath();
+
+            if (!is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            return $path;
         }
     }
 ?>

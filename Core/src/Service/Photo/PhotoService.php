@@ -359,7 +359,13 @@
         }
 
         private function getPhysicalCachePath() : string {
-            return __DIR__ . "/../../../" . self::ALBUM_THUMBNAIL_CACHE_PATH;
+            $path = __DIR__ . "/../../../../tmp/" . self::ALBUM_THUMBNAIL_CACHE_PATH;
+
+            if (!is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            return $path;
         }
 
         private function prunePhysicalCache(array $usedFilePaths) : void {
