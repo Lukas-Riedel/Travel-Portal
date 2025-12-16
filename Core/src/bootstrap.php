@@ -150,8 +150,8 @@
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient, getenv("CORE_BASE_URL"));
-    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, getenv("CORE_BASE_URL"));
+    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient, $httpClient, getenv("CORE_BASE_URL"));
+    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $httpClient, getenv("CORE_BASE_URL"));
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);

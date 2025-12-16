@@ -2,6 +2,7 @@
     namespace Core\Service\Photo;
 
     use AurorasLive\SunCalc;
+    use Common\Client\Http\HttpMethod;
     use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;
@@ -11,6 +12,7 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Google\GoogleClient;
+    use Core\Client\Http\HttpClient;
     use Core\Service\Place\PlaceIncludedEntity;
 
     class PhotoService {
@@ -32,17 +34,20 @@
         
         private readonly CacheClient $cacheClient;
 
+        private readonly HttpClient $httpClient;
+
         private readonly TransactionManager $transactionManager;
 
         private readonly string $coreBaseUrl;
 
         public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
-            EventPublisher $eventPublisher, CacheClient $cacheClient, string $coreBaseUrl) {
+            EventPublisher $eventPublisher, CacheClient $cacheClient, HttpClient $httpClient, string $coreBaseUrl) {
             $this->photoMapper = new PhotoMapper($databaseClient, $googleClient);
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cacheClient = $cacheClient;
             $this->transactionManager = $databaseClient;
+            $this->httpClient = $httpClient;
             $this->coreBaseUrl = $coreBaseUrl;
         }
 
@@ -235,9 +240,9 @@
                         $filePath = $this->getPhysicalCachePath() . "/" . $fileName;
             
                         if ($overwrite || !file_exists($filePath)) {
-                            file_put_contents($filePath, file_get_contents($album["coverPhotoBaseUrl"] 
-                                . "=w" . self::ALBUM_THUMBNAIL_WIDTH
-                                . "-h" . self::ALBUM_THUMBNAIL_HEIGHT));
+                            $data = $this->httpClient->executeRequest(HttpMethod::GET,
+                                $album["coverPhotoBaseUrl"] . "=w" . self::ALBUM_THUMBNAIL_WIDTH . "-h" . self::ALBUM_THUMBNAIL_HEIGHT);
+                            file_put_contents($filePath, $data);
                         }
             
                         $filePaths[] = $filePath;
@@ -359,7 +364,7 @@
         }
 
         private function getPhysicalCachePath() : string {
-            $path = __DIR__ . "/../../../../tmp/" . self::ALBUM_THUMBNAIL_CACHE_PATH;
+            $path = __DIR__ . "/../../../../../tmp/" . self::ALBUM_THUMBNAIL_CACHE_PATH;
 
             if (!is_dir($path)) {
                 mkdir($path, 0777, true);

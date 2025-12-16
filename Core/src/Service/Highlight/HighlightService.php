@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Highlight;
 
+    use Common\Client\Http\HttpMethod;
     use Core\Common\CommonConstants;
     use RuntimeException;
     use Core\Service\Photo\PhotoService;
@@ -12,6 +13,7 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Http\HttpClient;
 
     class HighlightService {
 
@@ -21,15 +23,18 @@
         
         private readonly EventPublisher $eventPublisher;
 
+        private readonly HttpClient $httpClient;
+
         private readonly TransactionManager $transactionManager;
 
         private readonly string $coreBaseUrl;
 
-        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher, string $coreBaseUrl) {
+        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher, HttpClient $httpClient, string $coreBaseUrl) {
             $this->highlightMapper = new HighlightMapper($databaseClient, $photoService);
             $this->photoService = $photoService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
+            $this->httpClient = $httpClient;
             $this->coreBaseUrl = $coreBaseUrl;
         }
 
@@ -387,9 +392,9 @@
                         $photo = $this->photoService->getPhoto($photoId);
 
                         if ($photo !== null) {
-                            file_put_contents($filePath, file_get_contents($photo->getUrl()
-                                . "=w" . $highlightSize->getWidth()
-                                . "-h" . $highlightSize->getHeight()));
+                            $data = $this->httpClient->executeRequest(HttpMethod::GET,
+                                $photo->getUrl() . "=w" . $highlightSize->getWidth() . "-h" . $highlightSize->getHeight());
+                            file_put_contents($filePath, $data);
                         }
                     }
                 }
@@ -412,7 +417,7 @@
         }
 
         private function getPhysicalCachePath(HighlightSize $highlightSize) : string {
-            $path = __DIR__ . "/../../../../tmp/" . $highlightSize->getCachePath();
+            $path = __DIR__ . "/../../../../../tmp/" . $highlightSize->getCachePath();
 
             if (!is_dir($path)) {
                 mkdir($path, 0777, true);
