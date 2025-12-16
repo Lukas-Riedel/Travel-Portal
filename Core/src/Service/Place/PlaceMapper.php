@@ -81,7 +81,7 @@
             $temporaryTableName = ($category?->value ?? "all") . "_" . self::VISITED_CATEGORIES_TEMPORARY_TABLE_NAME;
             
             $sql = <<<SQL
-                DROP TEMPORARY TABLE IF EXISTS {$temporaryTableName}
+                DROP TABLE IF EXISTS {$temporaryTableName}
             SQL;
             
             $this->databaseClient
@@ -893,7 +893,7 @@
 
         public function createPlaceEventTemporaryTable(string $tableName) : void {            
             $sql = <<<SQL
-                DROP TEMPORARY TABLE IF EXISTS {$tableName}
+                DROP TABLE IF EXISTS {$tableName}
             SQL;
             
             $this->databaseClient

@@ -671,7 +671,7 @@
 
         public function createFlightEventTemporaryTable(string $tableName) : void {            
             $sql = <<<SQL
-                DROP TEMPORARY TABLE IF EXISTS {$tableName}
+                DROP TABLE IF EXISTS {$tableName}
             SQL;
             
             $this->databaseClient
