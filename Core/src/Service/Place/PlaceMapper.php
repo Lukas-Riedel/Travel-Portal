@@ -124,7 +124,7 @@
 
             $sql = <<<SQL
                 SELECT c.category_id,
-                    STRING_AGG(DISTINCT c.place_id, ',') AS place_ids
+                    STRING_AGG(DISTINCT c.place_id::text, ',') AS place_ids
                 FROM {$temporaryTableName} c
                 INNER JOIN (
                     SELECT place_id, 

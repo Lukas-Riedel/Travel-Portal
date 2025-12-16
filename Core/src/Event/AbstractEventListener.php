@@ -64,8 +64,6 @@
                 else {
                     $this->openLineageEventManager->publishCurrentEventAsync();
                 }
-                
-                $this->databaseClient->clearCache();
             }
         }
 

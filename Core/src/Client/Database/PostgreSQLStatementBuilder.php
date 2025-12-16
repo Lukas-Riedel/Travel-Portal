@@ -18,11 +18,14 @@ use Monolog\Logger;
         private array $params;
         private array $deferredParams;
 
+        private array $preparedStatements;
+
         private readonly Logger $logger;
 
-        public function __construct(?ProgressReporter $progressReporter, Connection $connection, string $sql, Logger $logger) {
+        public function __construct(?ProgressReporter $progressReporter, Connection $connection, array &$preparedStatements, string $sql, Logger $logger) {
             $this->progressReporter = $progressReporter;
             $this->connection = $connection;
+            $this->preparedStatements = &$preparedStatements;
             $this->sql = $sql;
             $this->params = array();
             $this->deferredParams = array();
@@ -108,7 +111,13 @@ use Monolog\Logger;
         private function doGetResult(array $params) : Result|false {            
             $this->progressReporter?->heartbeat();
             try {
-                return \pg_query_params($this->connection, $this->convertPlaceholders($this->sql), $params);
+                $statementName = md5($this->sql);
+                if (!isset($this->preparedStatements[$statementName])) {
+                    \pg_prepare($this->connection, $statementName, $this->convertPlaceholders($this->sql));
+                    $this->preparedStatements[$statementName] = true;
+                }
+
+                return \pg_execute($this->connection, $statementName, $params);
             }
             catch (\Exception $e) {
                 $this->logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));

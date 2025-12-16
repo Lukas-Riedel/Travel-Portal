@@ -27,6 +27,8 @@
         
         private ?AtomicExecution $currentAtomicExecution;
 
+        private array $preparedStatements;
+
         public function __construct(string $host, int $port, string $user, string $password, string $database, Logger $logger) {
             $this->connection = \pg_connect(sprintf(self::CONNECTION_CONFIGURATION_STRING_FORMAT, $host, $port, $database, $user, $password));
             $this->host = $host;
@@ -34,6 +36,7 @@
             $this->openLineageEventManager = null;
             $this->logger = $logger;
             $this->currentAtomicExecution = null;
+            $this->preparedStatements = array();
         }
 
         public function __destruct() {
@@ -66,7 +69,7 @@
                 $sql = str_replace(self::WHERE_CLAUSE_PLACEHOLDER, $whereClause->getClause(), $sql);
             }
 
-            $builder = new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $sql, $this->logger);
+            $builder = new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $this->preparedStatements, $sql, $this->logger);
             if ($whereClause !== null) {
                 $builder->withDeferredParameters(...$whereClause->getParameters());
             }
@@ -114,11 +117,7 @@
                 } 
             }        
         }
-
-        public function clearCache() : void {            
-            \pg_query($this->connection, "DISCARD ALL");
-        }
-
+        
         private function addOpenLineageDatasets(string $sql) : void {
             $parser = new PHPSQLParser($sql);
             $parsed = $parser->parsed;
@@ -188,7 +187,7 @@
                 ORDER BY ordinal_position
             SQL;
 
-            return (new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $sql, $this->logger))
+            return (new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $this->preparedStatements, $sql, $this->logger))
                 ->withParameters(self::DEFAULT_SCHEMA_NAME, $table)
                 ->getResultSetForColumn("COLUMN_NAME");
         }
