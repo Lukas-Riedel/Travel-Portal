@@ -3,7 +3,7 @@
 
     use Monolog\Logger;
     use PgSql\Connection;
-use PgSql\Result;
+    use PgSql\Result;
 
     class PostgreSQLStatementBuilder implements StatementBuilder {
 

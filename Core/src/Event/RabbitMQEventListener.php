@@ -10,7 +10,8 @@
 
     class RabbitMQEventListener extends AbstractEventListener {
 
-        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 60;
+        // TODO: Make configurable in the deployment.
+        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 30;
 
         private readonly RabbitMQMessagingClient $messagingClient;
 
@@ -28,6 +29,7 @@
             $channel->basic_consume($this->workerQueueName, "", false, false, false, false, function($message) {
                     $this->onEvent(json_decode($message->getBody(), true));
                     $message->ack();
+                    $this->messagingClient->recordProgress();
                 }
             );
 

@@ -12,7 +12,6 @@
 
     class RabbitMQMessagingClient implements MessagingClient {
 
-        private const HEARTBEAT_INTERVAL_SECONDS = 90;
         private const PREFETCH_COUNT = 1;
 
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
@@ -23,25 +22,34 @@
         private readonly string $vhost;
         private readonly string $user;
         private readonly string $password;
+        private readonly int $heartbeatSeconds;
 
         private readonly TransactionManager $transactionManager;
 
-        private ?AMQPStreamConnection $connection = null;
-        private ?AMQPChannel $producerChannel = null;
-        private ?AMQPChannel $consumerChannel = null;
+        private ?AMQPStreamConnection $connection;
+        private ?AMQPChannel $producerChannel;
+        private ?AMQPChannel $consumerChannel;
 
         private readonly Logger $logger;
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $host, string $port, string $vhost, string $user, string $password, TransactionManager $transactionManager, Logger $logger) {
+        private ?int $lastHeartbeatTimestamp;
+
+        public function __construct(string $host, string $port, string $vhost, string $user, string $password, int $heartbeatSeconds,
+            TransactionManager $transactionManager, Logger $logger) {
             $this->host = $host;
             $this->port = $port;
             $this->vhost = $vhost;
             $this->user = $user;
             $this->password = $password;
+            $this->heartbeatSeconds = $heartbeatSeconds;
+            $this->connection = null;
+            $this->producerChannel = null;
+            $this->consumerChannel = null;
             $this->logger = $logger;
             $this->transactionManager = $transactionManager;
             $this->openLineageEventManager = null;
+            $this->lastHeartbeatTimestamp = null;
         }
 
         public function __destruct() {
@@ -58,6 +66,19 @@
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
             $this->openLineageEventManager = $openLineageEventManager;
+        }
+
+        public function recordProgress() : void {
+            if ($this->connection !== null) {
+                $secondsSinceLastHeartbeat = time() - $this->lastHeartbeatTimestamp ?? 0;
+
+                if ($secondsSinceLastHeartbeat > 0) {
+                    $this->logger->debug("Sending a RabbitMQ heartbeat (the previous heartbeat was sent $secondsSinceLastHeartbeat seconds ago)...");
+
+                    $this->connection->checkHeartBeat();
+                    $this->lastHeartbeatTimestamp = time();
+                }
+            }
         }
 
         public function publish(string $queueName, Event $event, ?EventPriority $eventPriority = null) : void {
@@ -101,11 +122,12 @@
         private function init() {
             if ($this->connection === null || $this->producerChannel === null) {                    
                 $this->connection = new AMQPStreamConnection($this->host, $this->port, $this->user, $this->password, $this->vhost,
-                    false, "AMQPLAIN", null, "en_US", round(1.2 * self::HEARTBEAT_INTERVAL_SECONDS), round(1.2 * self::HEARTBEAT_INTERVAL_SECONDS),
-                    null, true, self::HEARTBEAT_INTERVAL_SECONDS);
+                    false, "AMQPLAIN", null, "en_US", round(1.2 * $this->heartbeatSeconds), round(1.2 * $this->heartbeatSeconds),
+                    null, true, $this->heartbeatSeconds);
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
                 $this->consumerChannel->basic_qos(null, self::PREFETCH_COUNT, null);
+                $this->lastHeartbeatTimestamp = time();
             }
         }
     }

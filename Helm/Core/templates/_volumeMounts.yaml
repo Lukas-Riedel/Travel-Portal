@@ -1,0 +1,4 @@
+{{- define "core.volumeMounts" }}
+- name: core-data
+  mountPath: /var/tmp
+{{- end }}

@@ -365,7 +365,7 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
-                ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE end < ROUND(EXTRACT(EPOCH FROM NOW())))")
+                ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE \"end\" < ROUND(EXTRACT(EPOCH FROM NOW())))")
                 ->withClause("pi.id NOT IN (SELECT place_id FROM place_permanent)");
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
@@ -865,7 +865,7 @@
                 WHERE place_id IN (
                         SELECT place_id 
                         FROM place_event 
-                        WHERE end < ROUND(EXTRACT(EPOCH FROM NOW()))
+                        WHERE "end" < ROUND(EXTRACT(EPOCH FROM NOW()))
                     )
                     OR place_id IN (
                         SELECT place_id

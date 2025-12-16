@@ -1,0 +1,101 @@
+{{- define "core.env" }}
+- name: ENCRYPTION_PRIVATE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: core-encryption-key
+      key: core-encryption-key
+- name: MAX_WORKERS_COUNT
+  value: "{{ .Values.core.workers }}"
+- name: CORE_BASE_URL
+  value: "{{ .Values.core.url.base.public }}"
+- name: IAM_BASE_URL
+  value: "{{ .Values.core.url.iam.base.public }}"
+- name: IBM_DATAPLATFORM_BASE_URL
+  value: "{{ .Values.core.url.ibm.dataplatform.base.public }}"
+- name: DB_HOST
+  value: "{{ .Values.core.db.hostname }}"            
+- name: DB_PORT
+  value: "{{ .Values.core.db.port }}"  
+- name: DB_NAME
+  value: "{{ .Values.core.db.database }}"  
+- name: DB_USER
+  value: "{{ .Values.core.db.username }}"
+- name: DB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: postgres-password
+      key: postgres-password
+- name: REDIS_HOST
+  value: "{{ .Values.core.redis.hostname }}"            
+- name: REDIS_PORT
+  value: "{{ .Values.core.redis.port }}"  
+- name: REDIS_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: redis-password
+      key: redis-password
+- name: RMQ_INTERNAL_HOST
+  value: "{{ .Values.core.rabbitmq.internal.hostname }}"            
+- name: RMQ_INTERNAL_PORT
+  value: "{{ .Values.core.rabbitmq.internal.port }}"  
+- name: RMQ_EXTERNAL_HOST
+  value: "{{ .Values.core.rabbitmq.external.hostname }}"            
+- name: RMQ_EXTERNAL_PORT
+  value: "{{ .Values.core.rabbitmq.external.port }}"  
+- name: RMQ_VHOST
+  value: "{{ .Values.core.rabbitmq.vhost }}"  
+- name: RMQ_USER
+  value: "{{ .Values.core.rabbitmq.username }}"
+- name: RMQ_HEARTBEAT
+  value: "{{ .Values.core.rabbitmq.heartbeat }}"
+- name: RMQ_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: rabbitmq-password
+      key: rabbitmq-password
+- name: BACKEND_GOOGLE_MAPS_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: core-google-maps-api-key
+      key: core-google-maps-api-key
+- name: GOOGLE_GEMINI_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: core-google-gemini-api-key
+      key: core-google-gemini-api-key
+- name: FCM_PROJECT_ID
+  value: "{{ .Values.core.fcm.project.id }}"
+- name: EXCHANGE_RATE_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: core-exchange-rate-api-key
+      key: core-exchange-rate-api-key
+- name: WORKER_QUEUE_NAME
+  value: "{{ .Values.core.rabbitmq.queue.worker }}"
+- name: IAM_APP_CLIENT_ID
+  value: "{{ .Values.core.iam.client.app.id }}"
+- name: JWKS_PUBLIC_KEY
+  value: "{{ .Values.core.iam.jwks.key.public }}"
+- name: IAM_BACKEND_CLIENT_ID
+  value: "{{ .Values.core.iam.client.backend.id }}"
+- name: IAM_AGENT_CLIENT_ID
+  value: "{{ .Values.core.iam.client.agent.id }}"
+- name: IAM_BACKEND_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: iam-client-backend-secret
+      key: iam-client-backend-secret
+- name: GRAFANA_LOKI_ENTRYPOINT
+  value: "{{ .Values.core.grafana.entrypoint }}"
+- name: GRAFANA_LOKI_CLIENT_NAME
+  value: "{{ .Values.core.grafana.client.name }}"
+- name: GRAFANA_LOKI_USER
+  value: "{{ .Values.core.grafana.username }}"
+- name: GRAFANA_LOKI_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: grafana-password
+      key: grafana-password
+- name: ALLOWED_REQUEST_ORIGINS
+  value: "{{ .Values.core.origins.whitelist }}"
+{{- end }}

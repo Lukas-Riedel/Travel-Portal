@@ -1,0 +1,5 @@
+{{- define "core.volumes" }}
+- name: core-data
+  persistentVolumeClaim:
+    claimName: core-pvc
+{{- end }}

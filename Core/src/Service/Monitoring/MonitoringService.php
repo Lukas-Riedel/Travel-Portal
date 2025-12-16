@@ -2,6 +2,7 @@
     namespace Core\Service\Monitoring;
 
     use Core\Client\Cache\CacheClient;
+    use Core\Client\Messaging\ProgressReporter;
     use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Event\Event;
@@ -12,6 +13,7 @@
         private const DATA_CONSISTENCY_ISSUES_CACHE_KEY = "MonitoringService:DataConsistencyIssues";
         private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
+        private readonly ProgressReporter $progressReporter;
         private readonly CacheClient $cacheClient;
         
         private readonly EventPublisher $eventPublisher;
@@ -20,7 +22,8 @@
 
         private array $dataConsistencyMonitors = array();
 
-        public function __construct(CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
+        public function __construct(ProgressReporter $progressReporter, CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
+            $this->progressReporter = $progressReporter;
             $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
@@ -50,6 +53,7 @@
                 foreach ($dataConsistencyMonitor->fetchDataConsistencyIssues() as &$dataConsistencyIssue) {
                     $dataConsistencyIssues[] = $dataConsistencyIssue;
                 }
+                $this->progressReporter->recordProgress();
             }
 
             $previousRawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);

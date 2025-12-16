@@ -82,7 +82,8 @@
         }
 
         public function getQuality() : ?float {
-            if ($this->composition === null || $this->sky === null || $this->shadows === null || $this->circumstances === null || $this->atmosphere === null) {
+            if ($this->composition === null || $this->sky === null || $this->shadows === null || $this->circumstances === null || $this->atmosphere === null
+                || $this->composition === 0 || $this->sky === 0 || $this->shadows === 0 || $this->circumstances === 0 || $this->atmosphere === 0) {
                 return null;
             }
 

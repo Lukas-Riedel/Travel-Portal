@@ -1,7 +1,7 @@
 <?php
-    require_once(__DIR__ . "/../src/bootstrap.php");
+    require_once(__DIR__ . "/bootstrap.php");
 
-    $defaultLockTtl = 1800;
+    $defaultLockTtl = 900;
     $maxExecutionTime = (int) ini_get("max_execution_time");
     
     // When changing the lock key format, change also in deploy.php.

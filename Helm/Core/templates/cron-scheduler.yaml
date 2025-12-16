@@ -12,9 +12,15 @@ spec:
     spec:
       template:
         spec:
+          restartPolicy: Never
           containers:
-          - name: trigger
-            image: curlimages/curl
-            command: ["curl", "-X", "POST", "http://core:{{ .Values.core.service.port }}/scheduler.php"]
-          restartPolicy: OnFailure
+          - name: core-scheduler
+            image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+            command: ["php", "/var/www/html/src/scheduler.php"]
+            env:
+{{ include "core.env" . | nindent 14 }}
+            volumeMounts:
+{{ include "core.volumeMounts" . | nindent 14 }}
+          volumes:
+{{ include "core.volumes" . | nindent 12 }}
 {{- end }}

@@ -12,9 +12,15 @@ spec:
     spec:
       template:
         spec:
+          restartPolicy: Never
           containers:
-          - name: trigger
-            image: curlimages/curl
-            command: ["curl", "-X", "POST", "http://core:{{ .Values.core.service.port }}/worker.php"]
-          restartPolicy: OnFailure
+          - name: core-worker
+            image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+            command: ["php", "-d", "max_execution_time=3600", "-d", "memory_limit=512M", "/var/www/html/src/worker.php"]
+            env:
+{{ include "core.env" . | nindent 14 }}
+            volumeMounts:
+{{ include "core.volumeMounts" . | nindent 14 }}
+          volumes:
+{{ include "core.volumes" . | nindent 12 }}
 {{- end }}
