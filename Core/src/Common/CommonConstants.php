@@ -3,6 +3,7 @@
 
     class CommonConstants {
         public const GOOGLE_USER_CONTENT_BASE_URL = "https://lh3.googleusercontent.com";
+        // When changing, make sure to update nginx.conf as well.
         public const GOOGLE_USER_CONTENT_PROXY_BASE_URL = "/proxy/googleusercontent";
         public const DELAYED_EVENTS_SORTED_SET_KEY = "Scheduler:DelayedEvents";
         public const FITNESS_RECORD_DURATION_SECONDS = 1800;

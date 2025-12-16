@@ -14,7 +14,6 @@
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
-    use Core\Resource\ProxyResource;
     use Core\Resource\RegionResource;
     use Core\Resource\StatisticsResource;
     use Core\Resource\TrackerResource;
@@ -50,6 +49,5 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         SwaggerResource::register($app, $coreBaseUrl);
-        ProxyResource::register($app, $httpClient);
     };
 ?>
