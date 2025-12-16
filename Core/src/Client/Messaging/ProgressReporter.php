@@ -2,6 +2,6 @@
     namespace Core\Client\Messaging;
 
     interface ProgressReporter {
-        public function recordProgress() : void;
+        public function heartbeat() : void;
     }
 ?>

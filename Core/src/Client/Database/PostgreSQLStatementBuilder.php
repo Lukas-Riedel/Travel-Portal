@@ -1,13 +1,16 @@
 <?php
     namespace Core\Client\Database;
 
-    use Monolog\Logger;
+use Core\Client\Messaging\ProgressReporter;
+use Monolog\Logger;
     use PgSql\Connection;
     use PgSql\Result;
 
     class PostgreSQLStatementBuilder implements StatementBuilder {
 
         private const DURATION_THRESHOLD_MILLISECONDS = 100;
+
+        private readonly ?ProgressReporter $progressReporter;
         
         private readonly Connection $connection;
 
@@ -17,7 +20,8 @@
 
         private readonly Logger $logger;
 
-        public function __construct(Connection $connection, string $sql, Logger $logger) {
+        public function __construct(?ProgressReporter $progressReporter, Connection $connection, string $sql, Logger $logger) {
+            $this->progressReporter = $progressReporter;
             $this->connection = $connection;
             $this->sql = $sql;
             $this->params = array();
@@ -101,7 +105,8 @@
             return $result;
         }
 
-        private function doGetResult(array $params) : Result|false {
+        private function doGetResult(array $params) : Result|false {            
+            $this->progressReporter?->heartbeat();
             try {
                 return \pg_query_params($this->connection, $this->convertPlaceholders($this->sql), $params);
             }
@@ -109,6 +114,9 @@
                 $this->logger->warning("Unable to execute query: " . trim(preg_replace('/\s+/', ' ', $this->sql)) . "", array("parameters" => $params));
                 throw $e;
             }
+            finally {
+                $this->progressReporter?->heartbeat();
+            }            
         }
 
         private function convertPlaceholders(string $sql) : string {

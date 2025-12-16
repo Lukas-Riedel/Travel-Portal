@@ -29,7 +29,7 @@
             $channel->basic_consume($this->workerQueueName, "", false, false, false, false, function($message) {
                     $this->onEvent(json_decode($message->getBody(), true));
                     $message->ack();
-                    $this->messagingClient->recordProgress();
+                    $this->messagingClient->heartbeat();
                 }
             );
 

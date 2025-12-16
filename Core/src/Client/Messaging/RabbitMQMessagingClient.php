@@ -13,6 +13,7 @@
     class RabbitMQMessagingClient implements MessagingClient {
 
         private const PREFETCH_COUNT = 1;
+        private const SEND_HEARTBEAT_THRESHOLD_SECONDS = 10;
 
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
@@ -68,13 +69,11 @@
             $this->openLineageEventManager = $openLineageEventManager;
         }
 
-        public function recordProgress() : void {
+        public function heartbeat() : void {
             if ($this->connection !== null) {
                 $secondsSinceLastHeartbeat = time() - $this->lastHeartbeatTimestamp ?? 0;
 
-                if ($secondsSinceLastHeartbeat > 0) {
-                    $this->logger->debug("Sending a RabbitMQ heartbeat (the previous heartbeat was sent $secondsSinceLastHeartbeat seconds ago)...");
-
+                if ($secondsSinceLastHeartbeat > self::SEND_HEARTBEAT_THRESHOLD_SECONDS) {
                     $this->connection->checkHeartBeat();
                     $this->lastHeartbeatTimestamp = time();
                 }

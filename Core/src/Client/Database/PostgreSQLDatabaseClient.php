@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Database;
 
+    use Core\Client\Messaging\ProgressReporter;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Logger;
     use PgSql\Connection;
@@ -19,6 +20,7 @@
         private readonly string $host;
         private readonly string $database;
 
+        private ?ProgressReporter $progressReporter;
         private ?OpenLineageEventManager $openLineageEventManager;
 
         private readonly Logger $logger;
@@ -36,6 +38,10 @@
 
         public function __destruct() {
             \pg_close($this->connection);
+        }
+
+        public function setProgressReporter(ProgressReporter $progressReporter) : void {
+            $this->progressReporter = $progressReporter;
         }
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
@@ -60,7 +66,7 @@
                 $sql = str_replace(self::WHERE_CLAUSE_PLACEHOLDER, $whereClause->getClause(), $sql);
             }
 
-            $builder = new PostgreSQLStatementBuilder($this->connection, $sql, $this->logger);
+            $builder = new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $sql, $this->logger);
             if ($whereClause !== null) {
                 $builder->withDeferredParameters(...$whereClause->getParameters());
             }
@@ -182,7 +188,7 @@
                 ORDER BY ordinal_position
             SQL;
 
-            return (new PostgreSQLStatementBuilder($this->connection, $sql, $this->logger))
+            return (new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $sql, $this->logger))
                 ->withParameters(self::DEFAULT_SCHEMA_NAME, $table)
                 ->getResultSetForColumn("COLUMN_NAME");
         }

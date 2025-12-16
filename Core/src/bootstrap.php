@@ -114,13 +114,15 @@
     $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $calendarClient = new CalendarClient($googleClient, $cacheClient, $logger, getenv("CORE_BASE_URL")); 
-    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), $databaseClient, $logger);
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);
     $actualForecastClient = new YrNoActualForecastClient($httpClient, getenv("CORE_BASE_URL"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
+    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), $databaseClient, $logger);
+    $databaseClient->setProgressReporter($messagingClient);
+    $httpClient->setProgressReporter($messagingClient);
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"));
@@ -145,7 +147,7 @@
     $geocodingService = new GeocodingService($configurationService, $cacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
-    $statisticsService = new StatisticsService($messagingClient, $cacheClient, $eventPublisher, $logger);
+    $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
     $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient, getenv("CORE_BASE_URL"));
@@ -159,7 +161,7 @@
     $yearService = new YearService($databaseClient, $fitnessService, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
-    $monitoringService = new MonitoringService($messagingClient, $cacheClient, $eventPublisher, $logger);
+    $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
 
     // Statistics providers.

@@ -3,7 +3,6 @@
 
     use Monolog\Logger;
     use Core\Client\Cache\CacheClient;
-    use Core\Client\Messaging\ProgressReporter;
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Trip\Trip;
@@ -22,7 +21,6 @@
         private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
         private const STATISTICS_COLLECTION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
-        private readonly ProgressReporter $progressReporter;
         private readonly CacheClient $cacheClient;
         
         private readonly EventPublisher $eventPublisher;
@@ -31,8 +29,7 @@
 
         private array $statisticsProviders = array();
 
-        public function __construct(ProgressReporter $progressReporter, CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
-            $this->progressReporter = $progressReporter;
+        public function __construct(CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
             $this->cacheClient = $cacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
@@ -101,7 +98,6 @@
                             $updatedStatisticsRecords[] = $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT);
                         }
                     }
-                    $this->progressReporter->recordProgress();
                 }
             }
 
