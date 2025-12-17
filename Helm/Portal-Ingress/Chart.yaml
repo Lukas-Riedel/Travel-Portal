@@ -1,4 +1,0 @@
-apiVersion: v2
-name: portal-ingress
-description: Ingress file for services
-version: 0.1.0

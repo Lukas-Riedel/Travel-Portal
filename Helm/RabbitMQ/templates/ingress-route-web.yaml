@@ -10,7 +10,7 @@ spec:
     - match: Host(`{{ .Values.rabbitmq.host }}`)
       kind: Rule
       services:
-        - name: {{ .Values.rabbitmq.service.management.name }}
+        - name: rabbitmq
           port: {{ .Values.rabbitmq.service.management.port }}
   tls:
     certResolver: letsencrypt

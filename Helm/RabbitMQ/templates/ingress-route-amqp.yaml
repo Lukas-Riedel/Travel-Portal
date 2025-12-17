@@ -9,7 +9,7 @@ spec:
   routes:
     - match: HostSNI(`{{ .Values.rabbitmq.host }}`)
       services:
-        - name: {{ .Values.rabbitmq.service.amqp.name }}
+        - name: rabbitmq
           port: {{ .Values.rabbitmq.service.amqp.port }}
   tls:
     certResolver: letsencrypt

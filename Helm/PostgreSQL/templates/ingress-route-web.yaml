@@ -10,7 +10,7 @@ spec:
     - match: Host(`{{ .Values.pgadmin.host }}`)
       kind: Rule
       services:
-        - name: {{ .Values.pgadmin.service.name }}
+        - name: pgadmin
           port: {{ .Values.pgadmin.service.port }}
   tls:
     certResolver: letsencrypt

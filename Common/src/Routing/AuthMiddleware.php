@@ -44,6 +44,7 @@
             if (preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
                 return $this->authenticationService->authenticate($matches[1]);
             }
+            
             return null;
         }
     }

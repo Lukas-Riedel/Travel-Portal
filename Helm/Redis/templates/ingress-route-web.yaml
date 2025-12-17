@@ -10,7 +10,7 @@ spec:
     - match: Host(`{{ .Values.redisinsight.host }}`)
       kind: Rule
       services:
-        - name: {{ .Values.redisinsight.service.name }}
+        - name: redisinsight
           port: {{ .Values.redisinsight.service.port }}
       middlewares:
         - name: redisinsight-auth-middleware

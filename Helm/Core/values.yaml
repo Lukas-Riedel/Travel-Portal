@@ -4,6 +4,7 @@ core:
   # tag: latest
   replicas: 1
   workers: 3
+  host: api.lriedel.fun
   service:
     type: ClusterIP
     port: 8080

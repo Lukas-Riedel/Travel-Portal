@@ -3,6 +3,7 @@ rabbitmq:
   image: rabbitmq
   tag: 3.12-management
   replicas: 1
+  host: rmq.lriedel.fun
   service:
     amqp:
       name: amqp 
@@ -13,4 +14,3 @@ rabbitmq:
       type: ClusterIP
       port: 15672
   username: admin
-    

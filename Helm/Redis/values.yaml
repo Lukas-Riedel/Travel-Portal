@@ -11,6 +11,7 @@ redisinsight:
   image: redis/redisinsight
   tag: latest
   replicas: 1
+  host: redis.lriedel.fun
   service:
     type: ClusterIP
     port: 5540

@@ -10,7 +10,7 @@ spec:
     - match: Host(`{{ .Values.iam.host }}`)
       kind: Rule
       services:
-        - name: {{ .Values.iam.service.name }}
+        - name: iam
           port: {{ .Values.iam.service.port }}
   tls:
     certResolver: letsencrypt
