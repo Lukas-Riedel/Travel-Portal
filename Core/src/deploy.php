@@ -1,6 +1,4 @@
 <?php
-    use Core\Event\Event;
-
     require_once(__DIR__ . "/bootstrap.php");
     
     $lockKeyFormat = "Worker:Lock:%s";
@@ -8,15 +6,9 @@
         $cacheClient->delete(sprintf($lockKeyFormat, $i));
     }
 
-    $sql = <<<'SQL'
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-    SQL;
+    // If changing this, change also in docker-entrypoint.sh.
+    $backupFilePath = "/var/tmp/backup.sql.gz";
     
-    $tablesToBackup = $databaseClient
-        ->statementBuilder($sql)
-        ->getResultSetForColumn("table_name");
-    
-    $eventPublisher->publish(Event::ApplicationStarted($tablesToBackup));
+    $backupFolderId = $googleClient->getOrCreateFolderId("Travel Portal Backups", null);    
+    $googleClient->createFile(date("Y-m-d H:i:s") . ".sql.gz", $backupFolderId, "application/gzip", file_get_contents($backupFilePath));
 ?>

@@ -1,14 +1,28 @@
 FROM php:8.2-cli-bullseye AS builder
-RUN apt-get update && apt-get install -y libpq-dev git unzip && docker-php-ext-install sockets pdo_pgsql pgsql && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y libpq-dev git unzip \
+    && docker-php-ext-install sockets pdo_pgsql pgsql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY Common/ /Common
 COPY Core/composer.json ./
 COPY Core/composer.lock ./
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php --install-dir=/usr/local/bin --filename=composer && rm composer-setup.php
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && rm composer-setup.php
 RUN composer install --no-dev --prefer-dist --optimize-autoloader && composer dump-autoload --optimize
 COPY Core/. ./
 FROM php:8.2-fpm-bullseye
-RUN apt-get update && apt-get install -y libpq-dev nginx bash curl && docker-php-ext-install sockets pdo_pgsql pgsql && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y wget gnupg2 lsb-release \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && apt-get update \
+    && apt-get install -y libpq-dev nginx  bash curl postgresql-client-16 \
+    && docker-php-ext-install sockets pdo_pgsql pgsql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /var/www/html
 COPY --from=builder /app ./
 COPY Core/nginx.conf /etc/nginx/nginx.conf

@@ -22,10 +22,6 @@
             return $this->args;
         }
 
-        public static function ApplicationStarted(mixed $tables) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("tables" => $tables));
-        }
-
         public static function SchedulerTriggered() : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array());
         }
