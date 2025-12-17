@@ -1,5 +1,5 @@
-on: push
 name: Main Pipeline
+on: push
 jobs:
   detect-changes:
     name: Detect Changes

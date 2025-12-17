@@ -1,0 +1,25 @@
+name: Weekly Deployment Respin
+on:
+  schedule:
+    - cron: '0 3 * * 5'
+  workflow_dispatch:
+jobs:
+  respin:
+    name: Respin Deployment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Set Up Kubectl
+        uses: azure/setup-kubectl@v3
+      - name: Rollout Core Restart
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl rollout restart deployment core
+      - name: Rollout IAM Restart
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl rollout restart deployment iam
