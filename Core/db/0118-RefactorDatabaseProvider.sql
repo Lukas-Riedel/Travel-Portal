@@ -1,1 +1,0 @@
-DROP TABLE view_materialization

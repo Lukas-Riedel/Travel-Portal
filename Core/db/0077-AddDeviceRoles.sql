@@ -1,2 +1,0 @@
-ALTER TABLE device
-ADD roles set('USER','ADMIN') NOT NULL

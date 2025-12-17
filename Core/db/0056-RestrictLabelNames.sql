@@ -1,2 +1,0 @@
-INSERT INTO configuration (type, levels, `key`, value) VALUES ('LABELS', 'public,modifiable', 'public', '[]');
-INSERT INTO configuration (type, levels, `key`, value) VALUES ('LABELS', 'public,modifiable', 'private', '[]');

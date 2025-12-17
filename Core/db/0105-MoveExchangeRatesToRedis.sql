@@ -1,1 +1,0 @@
-DROP TABLE cache_exchange_rate

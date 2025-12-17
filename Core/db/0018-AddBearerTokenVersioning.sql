@@ -1,1 +1,0 @@
-INSERT INTO configuration (`type`, `levels`, `key`, `value`) VALUES ('BEARER_TOKEN', 'private', 'version', '4926bbef-97ec-422c-8e69-7ab49eed50e2');

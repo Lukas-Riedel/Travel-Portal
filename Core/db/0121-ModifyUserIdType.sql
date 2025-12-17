@@ -1,2 +1,0 @@
-ALTER TABLE device
-MODIFY user_id TEXT NOT NULL

@@ -1,3 +1,0 @@
-UPDATE configuration
-SET type = 'GOOGLE_GEMINI_API_KEY'
-WHERE type = 'OPEN_AI_API_KEY';

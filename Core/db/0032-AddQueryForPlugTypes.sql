@@ -1,1 +1,0 @@
-INSERT INTO configuration (`type`, `levels`, `key`, `value`) VALUES ('CHAT_REQUESTS', 'private', 'plugTypes', 'Jaký typ zásuvek se používá v zemi %s? Stačí jedna velmi krátká věta.')

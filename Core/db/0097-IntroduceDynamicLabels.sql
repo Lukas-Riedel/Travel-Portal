@@ -1,5 +1,0 @@
-INSERT INTO scheduler (action, last_triggered) VALUES ('UPDATE_DYNAMIC_LABELS', UNIX_TIMESTAMP());
-
-UPDATE configuration
-SET type = 'DYNAMIC_LABELS'
-WHERE type = 'VARIABLE_TIME_CATEGORIES';

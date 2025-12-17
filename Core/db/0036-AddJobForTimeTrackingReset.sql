@@ -1,1 +1,0 @@
-INSERT INTO scheduler (`name`, `processor`, `args_query`, `interval_query`, `last_execution`) VALUES ('RESET_TIME_TRACKING_OPENING_BALANCES', 'ResetTimeTrackingOpeningBalances', NULL, 'SELECT 31557600', '1704078000')

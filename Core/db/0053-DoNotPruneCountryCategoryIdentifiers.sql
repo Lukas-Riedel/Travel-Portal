@@ -1,3 +1,0 @@
-UPDATE pruner
-SET query = 'DELETE FROM category_identifier WHERE category <> ''COUNTRY'' AND name NOT IN (SELECT `key` FROM configuration WHERE type = ''VARIABLE_TIME_CATEGORIES'') AND id NOT IN (SELECT category_id FROM category) AND id NOT IN (SELECT category_id FROM region_geographical) AND id NOT IN (SELECT category_id FROM region_composite) AND id NOT IN (SELECT subject_category_id FROM region_composite)'
-WHERE name = 'PRUNE_CATEGORY_IDENTIFIERS'

@@ -1,2 +1,0 @@
-INSERT INTO configuration (type, levels, `key`, value) VALUES ('COUNTRY_NAMES', 'private', 'Hong Kong', 'Hong Kong');
-INSERT INTO configuration (type, levels, `key`, value) VALUES ('COUNTRY_NAMES', 'private', 'Macao', 'Macao');

@@ -1,1 +1,0 @@
-INSERT INTO scheduler (action, last_triggered) VALUES ('RUN_DATA_CONSISTENCY_SCAN', UNIX_TIMESTAMP());
