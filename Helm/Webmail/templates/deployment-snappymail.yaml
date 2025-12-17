@@ -1,0 +1,30 @@
+{{- if .Values.snappymail.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snappymail
+  labels:
+    app: snappymail
+spec:
+  replicas: {{ .Values.snappymail.replicas }}
+  selector:
+    matchLabels:
+      app: snappymail
+  template:
+    metadata:
+      labels:
+        app: snappymail
+    spec:
+      containers:
+        - name: snappymail
+          image: "{{ .Values.snappymail.image }}:{{ .Values.snappymail.tag }}"
+          ports:
+            - containerPort: {{ .Values.snappymail.service.port }}
+          volumeMounts:
+            - name: snappymail-data
+              mountPath: /var/lib/snappymail
+      volumes:
+        - name: snappymail-data
+          persistentVolumeClaim:
+            claimName: snappymail-pvc
+{{- end }}

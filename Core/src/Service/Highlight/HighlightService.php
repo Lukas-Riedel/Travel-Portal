@@ -265,8 +265,8 @@
 
         public function updateHighlights() : void {      
             foreach (HighlightSize::cases() as &$highlightSize) {
-                $filePaths = $this->doUpdateHighlights($highlightSize, null, null, false);
-                $this->unlinkUnusedFiles($filePaths, $highlightSize);
+                $objectKeys = $this->doUpdateHighlights($highlightSize, null, null, false);
+                $this->pruneUnusedObjects($objectKeys, $highlightSize);
             }
         }
 

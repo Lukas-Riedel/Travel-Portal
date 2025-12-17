@@ -1,0 +1,17 @@
+{{- if .Values.snappymail.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: snappymail-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.snappymail.service.host }}`)
+      kind: Rule
+      services:
+        - name: snappymail
+          port: {{ .Values.snappymail.service.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}

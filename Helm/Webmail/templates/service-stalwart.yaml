@@ -1,0 +1,26 @@
+
+{{- if .Values.stalwart.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: stalwart
+  labels:
+    app: stalwart
+spec:
+  type: {{ .Values.stalwart.service.type }}   
+  ports:
+    - port: {{ .Values.stalwart.service.imap.port }}
+      targetPort: {{ .Values.stalwart.service.imap.port }}
+      protocol: TCP
+      name: imap
+    - port: {{ .Values.stalwart.service.ui.port }}
+      targetPort: {{ .Values.stalwart.service.ui.port }}
+      protocol: TCP
+      name: ui
+    - port: {{ .Values.stalwart.service.smtp.port }}
+      targetPort: {{ .Values.stalwart.service.smtp.port }}
+      protocol: TCP
+      name: smtp
+  selector:
+    app: stalwart
+{{- end }}

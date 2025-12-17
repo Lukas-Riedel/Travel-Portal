@@ -1,0 +1,17 @@
+{{- if .Values.stalwart.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: stalwart-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.stalwart.service.ui.host }}`)
+      kind: Rule
+      services:
+        - name: stalwart
+          port: {{ .Values.stalwart.service.ui.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}

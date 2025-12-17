@@ -1,0 +1,5 @@
+apiVersion: v2
+name: webmail
+description: Stalwart Mail Server with SnappyMail UI
+type: application
+version: 0.1.0

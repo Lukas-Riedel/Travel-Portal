@@ -1,0 +1,13 @@
+{{- if .Values.snappymail.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: snappymail-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Mi
+  storageClassName: local-path
+{{- end }}

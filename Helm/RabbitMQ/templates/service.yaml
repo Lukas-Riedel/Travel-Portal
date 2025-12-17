@@ -7,7 +7,7 @@ metadata:
   labels:
     app: rabbitmq
 spec:
-  type: {{ .Values.rabbitmq.service.amqp.type }}   
+  type: {{ .Values.rabbitmq.service.type }}   
   ports:
     - port: {{ .Values.rabbitmq.service.amqp.port }}
       targetPort: {{ .Values.rabbitmq.service.amqp.port }}

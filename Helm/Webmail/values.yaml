@@ -1,0 +1,26 @@
+stalwart:
+  enabled: true
+  image: stalwartlabs/stalwart
+  tag: latest
+  replicas: 1
+  domain: lriedel.fun
+  service:
+    type: ClusterIP
+    smtp:
+      port: 25
+      host: mail.lriedel.fun
+    imap:
+      port: 143
+      host: mail.lriedel.fun
+    ui:
+      port: 8080
+      host: stalwart.lriedel.fun
+snappymail:
+  enabled: true
+  image: djmaze/snappymail
+  tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8888
+    host: mail.lriedel.fun

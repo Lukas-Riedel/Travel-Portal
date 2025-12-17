@@ -1,0 +1,30 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      web:
+        expose:
+          default: true
+      websecure:
+        expose:
+          default: true
+      smtp:
+        port: 25
+        exposedPort: 25
+        expose:
+          default: true
+      amqpsecure:
+        port: 5671
+        exposedPort: 5671
+        expose:
+          default: true
+    additionalArguments:
+        - "--certificatesresolvers.letsencrypt.acme.email=admin@lriedel.cz"
+        - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+        - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+        - "--entrypoints.smtp.address=:25/tcp"
+        

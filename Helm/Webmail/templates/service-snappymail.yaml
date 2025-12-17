@@ -1,0 +1,16 @@
+
+{{- if .Values.snappymail.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappymail
+  labels:
+    app: snappymail
+spec:
+  type: {{ .Values.snappymail.service.type }}   
+  ports:
+    - port: {{ .Values.snappymail.service.port }}
+      targetPort: {{ .Values.snappymail.service.port }}
+  selector:
+    app: snappymail
+{{- end }}

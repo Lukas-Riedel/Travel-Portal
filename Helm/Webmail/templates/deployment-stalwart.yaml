@@ -1,0 +1,40 @@
+{{- if .Values.stalwart.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stalwart
+  labels:
+    app: stalwart
+spec:
+  replicas: {{ .Values.stalwart.replicas }}
+  selector:
+    matchLabels:
+      app: stalwart
+  template:
+    metadata:
+      labels:
+        app: stalwart
+    spec:
+      containers:
+        - name: stalwart
+          image: "{{ .Values.stalwart.image }}:{{ .Values.stalwart.tag }}"
+          ports:
+            - name: imap
+              containerPort: {{ .Values.stalwart.service.imap.port }}
+            - name: ui
+              containerPort: {{ .Values.stalwart.service.ui.port }}
+            - name: smtp
+              containerPort: {{ .Values.stalwart.service.smtp.port }}
+          env:
+            - name: STALWART_HOSTNAME
+              value: "{{ .Values.stalwart.service.ui.host }}"
+            - name: STALWART_DOMAINS
+              value: "{{ .Values.stalwart.domain }}"
+          volumeMounts:
+            - name: stalwart-data
+              mountPath: /opt/stalwart/data
+      volumes:
+        - name: stalwart-data
+          persistentVolumeClaim:
+            claimName: stalwart-pvc
+{{- end }}

@@ -5,7 +5,7 @@ metadata:
   name: rabbitmq-amqp-router
 spec:
   entryPoints:
-    - amqp
+    - amqpsecure
   routes:
     - match: HostSNI(`{{ .Values.rabbitmq.service.amqp.host }}`)
       services:
