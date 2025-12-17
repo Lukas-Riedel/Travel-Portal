@@ -25,6 +25,7 @@
         private const GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
         private const GOOGLE_API_ACCESS_TYPE = "offline";
         
+        // TODO: Do not use a file to store the refresh token.
         private const GOOGLE_REFRESH_TOKEN_FILE_PATH = __DIR__ . "/../../../../../tmp/google.txt";
 
         public const GOOGLE_API_AUTHORIZATION_SCOPES = array(

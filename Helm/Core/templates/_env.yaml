@@ -12,6 +12,8 @@
   value: "{{ .Values.core.url.base.public }}"
 - name: IAM_BASE_URL
   value: "{{ .Values.core.url.iam.base.public }}"
+- name: S3_BASE_URL
+  value: "{{ .Values.core.url.s3.base.public }}"
 - name: IBM_DATAPLATFORM_BASE_URL
   value: "{{ .Values.core.url.ibm.dataplatform.base.public }}"
 - name: DB_HOST
@@ -55,6 +57,19 @@
     secretKeyRef:
       name: rabbitmq-password
       key: rabbitmq-password
+- name: S3_REGION
+  value: "{{ .Values.core.s3.region }}"
+- name: S3_HOST
+  value: "{{ .Values.core.s3.host }}"
+- name: S3_PORT
+  value: "{{ .Values.core.s3.port }}"
+- name: S3_ACCESS_KEY
+  value: "{{ .Values.core.s3.accesskey }}"
+- name: S3_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: minio-password
+      key: minio-password
 - name: BACKEND_GOOGLE_MAPS_API_KEY
   valueFrom:
     secretKeyRef:

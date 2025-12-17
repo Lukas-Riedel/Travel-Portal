@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`{{ .Values.rabbitmq.host }}`)
+    - match: Host(`{{ .Values.rabbitmq.service.management.host }}`)
       kind: Rule
       services:
         - name: rabbitmq

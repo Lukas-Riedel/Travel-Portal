@@ -6,7 +6,8 @@
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
-    use Itspire\MonologLoki\Handler\LokiHandler;
+use Core\Client\CloudStorage\S3CloudStorageClient;
+use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
     use Core\Client\Database\PostgreSQLDatabaseClient;
@@ -122,6 +123,7 @@
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), $databaseClient, $logger);
+    $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
 
@@ -151,8 +153,8 @@
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cacheClient, $httpClient, getenv("CORE_BASE_URL"));
-    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $httpClient, getenv("CORE_BASE_URL"));
+    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $cacheClient, $httpClient, getenv("CORE_BASE_URL"));
+    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $cloudStorageClient, $httpClient);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);

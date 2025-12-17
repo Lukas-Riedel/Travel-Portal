@@ -12,11 +12,11 @@ spec:
     - port: {{ .Values.rabbitmq.service.amqp.port }}
       targetPort: {{ .Values.rabbitmq.service.amqp.port }}
       protocol: TCP
-      name: {{ .Values.rabbitmq.service.amqp.name }}      
+      name: amqp
     - port: {{ .Values.rabbitmq.service.management.port }}
       targetPort: {{ .Values.rabbitmq.service.management.port }}
       protocol: TCP
-      name: {{ .Values.rabbitmq.service.management.name }}
+      name: http-management
   selector:
     app: rabbitmq
 {{- end }}

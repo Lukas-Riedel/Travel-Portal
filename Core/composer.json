@@ -29,6 +29,12 @@
         "predis/predis": "^3.2",
         "itspire/monolog-loki": "^2.1",
         "enshrined/svg-sanitize": "^0.22.0",
-        "greenlion/php-sql-parser": "^4.7"
+        "greenlion/php-sql-parser": "^4.7",
+        "aws/aws-sdk-php": "^3.368"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.29"
+        }
     }
 }

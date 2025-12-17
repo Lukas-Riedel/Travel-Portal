@@ -1,0 +1,17 @@
+{{- if .Values.minio.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: minio-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.minio.service.console.host }}`)
+      kind: Rule
+      services:
+        - name: minio
+          port: {{ .Values.minio.service.console.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}

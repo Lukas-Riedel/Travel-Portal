@@ -3,10 +3,10 @@ iam:
   image: ghcr.io/lukas-riedel/iam
   # tag: latest
   replicas: 1
-  host: iam.lriedel.fun
   service:
     type: ClusterIP
     port: 8080
+    host: iam.lriedel.fun
   client:
     app:
       id: travel-portal-app

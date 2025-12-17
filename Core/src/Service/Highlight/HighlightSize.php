@@ -33,10 +33,10 @@
             };
         }
 
-        public function getCachePath() : string {
+        public function getBucket() : string {
             return match ($this) {
-                self::Full => "cache/highlight/full",
-                self::Thumbnail => "cache/highlight/thumbnail"
+                self::Full => "highlight-photos",
+                self::Thumbnail => "highlight-thumbnails"
             };
         }
     }

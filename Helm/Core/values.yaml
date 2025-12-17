@@ -4,16 +4,19 @@ core:
   # tag: latest
   replicas: 1
   workers: 3
-  host: api.lriedel.fun
   service:
     type: ClusterIP
     port: 8080
+    host: api.lriedel.fun
   url:
     base:
       public: https://api.lriedel.fun
     iam:
       base:
         public: https://iam.lriedel.fun
+    s3:
+      base:
+        public: https://s3.lriedel.fun
     ibm:
       dataplatform:
         base:
@@ -41,6 +44,11 @@ core:
   fcm:
     project:
       id: travel-blog-free
+  s3:
+    region: eu-central-1
+    host: minio
+    port: 9000
+    accesskey: admin
   iam:
     client:
       app:

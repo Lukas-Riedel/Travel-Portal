@@ -2,6 +2,7 @@
     namespace Core\Service\Highlight;
 
     use Common\Client\Http\HttpMethod;
+    use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Common\CommonConstants;
     use RuntimeException;
     use Core\Service\Photo\PhotoService;
@@ -23,19 +24,19 @@
         
         private readonly EventPublisher $eventPublisher;
 
+        private readonly CloudStorageClient $cloudStorageClient;
+
         private readonly HttpClient $httpClient;
 
         private readonly TransactionManager $transactionManager;
 
-        private readonly string $coreBaseUrl;
-
-        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher, HttpClient $httpClient, string $coreBaseUrl) {
+        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, HttpClient $httpClient) {
             $this->highlightMapper = new HighlightMapper($databaseClient, $photoService);
             $this->photoService = $photoService;
+            $this->cloudStorageClient = $cloudStorageClient;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
             $this->httpClient = $httpClient;
-            $this->coreBaseUrl = $coreBaseUrl;
         }
 
         public function getHighlight(?string $highlightId) : ?Highlight {
@@ -378,14 +379,13 @@
         }
 
         private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $overwrite) : array {
-            $filePaths = array();
+            $objectKeys = array();
 
             $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
             foreach ($highlights as &$highlight) {
-                $fileName = $highlight->getId() . CommonConstants::JPG_FILE_EXTENSION;
-                $filePath = $this->getPhysicalCachePath($highlightSize) . "/" . $fileName;
+                $objectKey = $highlight->getId() . CommonConstants::JPG_FILE_EXTENSION;
     
-                if ($overwrite || !file_exists($filePath)) {
+                if ($overwrite || !$this->cloudStorageClient->exists($highlightSize->getBucket(), $objectKey)) {
                     $photoId = $this->highlightMapper->selectPhotoId($highlight->getId());
 
                     if ($photoId !== null) {
@@ -394,36 +394,26 @@
                         if ($photo !== null) {
                             $data = $this->httpClient->executeRequest(HttpMethod::GET,
                                 $photo->getUrl() . "=w" . $highlightSize->getWidth() . "-h" . $highlightSize->getHeight());
-                            file_put_contents($filePath, $data);
+                            $this->cloudStorageClient->put($highlightSize->getBucket(), $objectKey, $data);
                         }
                     }
                 }
     
-                $filePaths[] = $filePath;
-                $imageUrl = $this->coreBaseUrl
-                    . "/" . $highlightSize->getCachePath()
-                    . "/" . $fileName;
+                $objectKeys[] = $objectKey;
+                $imageUrl = $this->cloudStorageClient->getPath($highlightSize->getBucket(), $objectKey);
 
                 $this->highlightMapper->updateHighlightImageUrl($highlightSize, $highlight->getId(), $imageUrl);
             }
             
-            return $filePaths;
+            return $objectKeys;
         }
-
-        private function unlinkUnusedFiles(array $usedFilePaths, HighlightSize $highlightSize) : void {
-            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath($highlightSize) . "/*"));
-            $unusedFilePaths = array_diff($existingFilePaths, $usedFilePaths);    
-            array_map("unlink", $unusedFilePaths);
-        }
-
-        private function getPhysicalCachePath(HighlightSize $highlightSize) : string {
-            $path = __DIR__ . "/../../../../../tmp/" . $highlightSize->getCachePath();
-
-            if (!is_dir($path)) {
-                mkdir($path, 0777, true);
+        
+        private function pruneUnusedObjects(array $usedObjectKeys, HighlightSize $highlightSize) : void {
+            $existingObjectKeys = $this->cloudStorageClient->list($highlightSize->getBucket());
+            $unusedObjectKeys = array_diff($existingObjectKeys, $usedObjectKeys);
+            foreach ($unusedObjectKeys as $objectKey) {
+                $this->cloudStorageClient->delete($highlightSize->getBucket(), $objectKey);
             }
-
-            return $path;
         }
     }
 ?>

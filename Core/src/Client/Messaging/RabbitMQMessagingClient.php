@@ -118,7 +118,7 @@
             return $this->consumerChannel;
         }
 
-        private function init() {
+        private function init() : void {
             if ($this->connection === null || $this->producerChannel === null) {                    
                 $this->connection = new AMQPStreamConnection($this->host, $this->port, $this->user, $this->password, $this->vhost,
                     false, "AMQPLAIN", null, "en_US", round(1.2 * $this->heartbeatSeconds), round(1.2 * $this->heartbeatSeconds),

@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`{{ .Values.pgadmin.host }}`)
+    - match: Host(`{{ .Values.pgadmin.service.host }}`)
       kind: Rule
       services:
         - name: pgadmin

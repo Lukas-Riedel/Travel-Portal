@@ -13,8 +13,8 @@ pgadmin:
   image: dpage/pgadmin4
   tag: latest
   replicas: 1
-  host: postgres.lriedel.fun
   email: admin@lriedel.cz
   service:
     type: ClusterIP
     port: 80
+    host: postgres.lriedel.fun

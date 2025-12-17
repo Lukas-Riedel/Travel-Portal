@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - amqp
   routes:
-    - match: HostSNI(`{{ .Values.rabbitmq.host }}`)
+    - match: HostSNI(`{{ .Values.rabbitmq.service.amqp.host }}`)
       services:
         - name: rabbitmq
           port: {{ .Values.rabbitmq.service.amqp.port }}

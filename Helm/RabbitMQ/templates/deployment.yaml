@@ -19,9 +19,9 @@ spec:
         - name: rabbitmq
           image: "{{ .Values.rabbitmq.image }}:{{ .Values.rabbitmq.tag }}"
           ports:
-            - name: {{ .Values.rabbitmq.service.amqp.name }}
+            - name: amqp
               containerPort: {{ .Values.rabbitmq.service.amqp.port }}
-            - name: {{ .Values.rabbitmq.service.management.name }}
+            - name: http-management
               containerPort: {{ .Values.rabbitmq.service.management.port }}
           env:
             - name: RABBITMQ_DEFAULT_USER

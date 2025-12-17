@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`{{ .Values.iam.host }}`)
+    - match: Host(`{{ .Values.iam.service.host }}`)
       kind: Rule
       services:
         - name: iam

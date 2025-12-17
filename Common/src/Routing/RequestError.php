@@ -75,8 +75,7 @@
 
         public function getPath() : string {
             return $this->path;
-        }
-        
+        }        
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {

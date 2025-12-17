@@ -4,6 +4,7 @@
     use AurorasLive\SunCalc;
     use Common\Client\Http\HttpMethod;
     use Core\Client\Cache\CacheClient;
+    use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -24,13 +25,15 @@
 
         private const ALBUM_THUMBNAIL_WIDTH = 350;
         private const ALBUM_THUMBNAIL_HEIGHT = 233;
-        private const ALBUM_THUMBNAIL_CACHE_PATH = "cache/album";
+        private const ALBUM_THUMBNAIL_BUCKET = "album-thumbnails";
 
         private readonly PhotoMapper $photoMapper;
 
         private readonly GoogleClient $googleClient;
         
         private readonly EventPublisher $eventPublisher;
+
+        private readonly CloudStorageClient $cloudStorageClient;
         
         private readonly CacheClient $cacheClient;
 
@@ -41,10 +44,12 @@
         private readonly string $coreBaseUrl;
 
         public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
-            EventPublisher $eventPublisher, CacheClient $cacheClient, HttpClient $httpClient, string $coreBaseUrl) {
+            EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, CacheClient $cacheClient,
+            HttpClient $httpClient, string $coreBaseUrl) {
             $this->photoMapper = new PhotoMapper($databaseClient, $googleClient);
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
+            $this->cloudStorageClient = $cloudStorageClient;
             $this->cacheClient = $cacheClient;
             $this->transactionManager = $databaseClient;
             $this->httpClient = $httpClient;
@@ -84,8 +89,8 @@
         }
 
         public function updateAllAlbums() : void {            
-            $filePaths = $this->doUpdateAlbums(null, false);
-            $this->prunePhysicalCache($filePaths);
+            $objectKeys = $this->doUpdateAlbums(null, false);
+            $this->pruneUnusedObjects($objectKeys);
         }
 
         public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, ?int $mainPhotoPosition = null) : void {            
@@ -225,7 +230,7 @@
         private function doUpdateAlbums(?string $albumId, bool $overwrite) : array {
             global $highlightService, $placeService;
         
-            $filePaths = array();
+            $objectKeys = array();
             $albums = array();
         
             // Fetch albums.
@@ -236,19 +241,16 @@
                     $mainImageUrl = null;
 
                     if (isset($album["coverPhotoMediaItemId"])) {
-                        $fileName = $album["coverPhotoMediaItemId"] . CommonConstants::JPG_FILE_EXTENSION;
-                        $filePath = $this->getPhysicalCachePath() . "/" . $fileName;
+                        $objectKey = $album["coverPhotoMediaItemId"] . CommonConstants::JPG_FILE_EXTENSION;
             
-                        if ($overwrite || !file_exists($filePath)) {
+                        if ($overwrite || !$this->cloudStorageClient->exists(self::ALBUM_THUMBNAIL_BUCKET, $objectKey)) {
                             $data = $this->httpClient->executeRequest(HttpMethod::GET,
                                 $album["coverPhotoBaseUrl"] . "=w" . self::ALBUM_THUMBNAIL_WIDTH . "-h" . self::ALBUM_THUMBNAIL_HEIGHT);
-                            file_put_contents($filePath, $data);
+                            $this->cloudStorageClient->put(self::ALBUM_THUMBNAIL_BUCKET, $objectKey, $data);
                         }
-            
-                        $filePaths[] = $filePath;
-                        $mainImageUrl = $this->coreBaseUrl
-                            . "/" . self::ALBUM_THUMBNAIL_CACHE_PATH
-                            . "/" . $fileName;
+
+                        $objectKeys[] = $objectKey;
+                        $mainImageUrl = $this->cloudStorageClient->getPath(self::ALBUM_THUMBNAIL_BUCKET, $objectKey);
                         
                         $mainPhotoId = $this->getOrCreatePhotoId($album["coverPhotoMediaItemId"]);
                     }
@@ -312,7 +314,7 @@
             $this->photoMapper->deleteStalePhotoIdentifiers();
             $this->photoMapper->deleteStalePendingPhotos();
 
-            return $filePaths;
+            return $objectKeys;
         }
         
         private function createPendingPhotos(string $albumId) : void {            
@@ -363,20 +365,12 @@
             }
         }
 
-        private function getPhysicalCachePath() : string {
-            $path = __DIR__ . "/../../../../../tmp/" . self::ALBUM_THUMBNAIL_CACHE_PATH;
-
-            if (!is_dir($path)) {
-                mkdir($path, 0777, true);
+        private function pruneUnusedObjects(array $usedObjectKeys) : void {
+            $existingObjectKeys = $this->cloudStorageClient->list(self::ALBUM_THUMBNAIL_BUCKET);
+            $unusedObjectKeys = array_diff($existingObjectKeys, $usedObjectKeys);
+            foreach ($unusedObjectKeys as $objectKey) {
+                $this->cloudStorageClient->delete(self::ALBUM_THUMBNAIL_BUCKET, $objectKey);
             }
-
-            return $path;
-        }
-
-        private function prunePhysicalCache(array $usedFilePaths) : void {
-            $existingFilePaths = array_filter((array) glob($this->getPhysicalCachePath() . "/*"));
-            $unusedFilePaths = array_diff($existingFilePaths, $usedFilePaths);    
-            array_map("unlink", $unusedFilePaths);
         }
 
         private function getAlbumName(string $placeName, int $timestamp) : string {
