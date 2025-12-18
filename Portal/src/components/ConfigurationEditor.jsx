@@ -27,7 +27,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                     </button>
                 ))}
                 <form
-                    action={import.meta.env.VITE_IAM_BASE_URL + "/google/auth"}
+                    action={(window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL) + "/google/auth"}
                     method="post"
                     target="_blank"
                     className="block w-full text-left px-3 py-2 rounded hover:bg-gray-200">

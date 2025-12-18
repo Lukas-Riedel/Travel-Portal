@@ -173,7 +173,7 @@ export default function Map({ points, lines, geoJson, onRightClick }) {
     }, [points?.length, lines?.length, geoJson])
 
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: import.meta.env.VITE_FRONTEND_GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey: window.env?.VITE_FRONTEND_GOOGLE_MAPS_API_KEY || import.meta.env.VITE_FRONTEND_GOOGLE_MAPS_API_KEY,
         language: "cs",
         region: "CZ"
     })

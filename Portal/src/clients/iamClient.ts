@@ -18,7 +18,7 @@ export const getIamResponseWithRefresh = async (refreshToken: string): Promise<I
     ).then(extractIamResponse)
 
 const iamClient: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_IAM_BASE_URL,
+    baseURL: window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     }

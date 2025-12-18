@@ -18,10 +18,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         if ("serviceWorker" in navigator) {
-            const swVersion = import.meta.env.VITE_SW_VERSION || Date.now()
+            const swVersion = window.env?.VITE_SW_VERSION || import.meta.env.VITE_SW_VERSION || Date.now()
             navigator.serviceWorker.register("/firebase-messaging-sw.js?v=" + swVersion)
                 .then(registration => getToken(messaging, {
-                    vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+                    vapidKey: window.env?.VITE_FIREBASE_VAPID_KEY || import.meta.env.VITE_FIREBASE_VAPID_KEY,
                     serviceWorkerRegistration: registration
                 }))
                 .then(setFcmToken)

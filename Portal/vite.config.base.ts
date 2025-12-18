@@ -31,13 +31,13 @@ export default defineConfig({
         })
     ],
     define: {
-        __VITE_PORTAL_BASE_URL__: JSON.stringify(process.env.VITE_PORTAL_BASE_URL),
-        __VITE_FIREBASE_API_KEY__: JSON.stringify(process.env.VITE_FIREBASE_API_KEY),
-        __VITE_FIREBASE_AUTH_DOMAIN__: JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN),
-        __VITE_FIREBASE_PROJECT_ID__: JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID),
-        __VITE_FIREBASE_STORAGE_BUCKET__: JSON.stringify(process.env.VITE_FIREBASE_STORAGE_BUCKET),
-        __VITE_FIREBASE_MESSAGING_SENDER_ID__: JSON.stringify(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
-        __VITE_FIREBASE_APP_ID__: JSON.stringify(process.env.VITE_FIREBASE_APP_ID),
-        __VITE_FIREBASE_MEASUREMENT_ID__: JSON.stringify(process.env.VITE_FIREBASE_MEASUREMENT_ID)
+        __VITE_PORTAL_BASE_URL__: process.env.VITE_PORTAL_BASE_URL ? JSON.stringify(process.env.VITE_PORTAL_BASE_URL) : "self.env.VITE_PORTAL_BASE_URL",
+        __VITE_FIREBASE_API_KEY__: process.env.VITE_FIREBASE_API_KEY ? JSON.stringify(process.env.VITE_FIREBASE_API_KEY) : "self.env.VITE_FIREBASE_API_KEY",
+        __VITE_FIREBASE_AUTH_DOMAIN__: process.env.VITE_FIREBASE_AUTH_DOMAIN ? JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN) : "self.env.VITE_FIREBASE_AUTH_DOMAIN",
+        __VITE_FIREBASE_PROJECT_ID__: process.env.VITE_FIREBASE_PROJECT_ID ? JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID) : "self.env.VITE_FIREBASE_PROJECT_ID",
+        __VITE_FIREBASE_STORAGE_BUCKET__: process.env.VITE_FIREBASE_STORAGE_BUCKET ? JSON.stringify(process.env.VITE_FIREBASE_STORAGE_BUCKET) : "self.env.VITE_FIREBASE_STORAGE_BUCKET",
+        __VITE_FIREBASE_MESSAGING_SENDER_ID__: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID ? JSON.stringify(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID) : "self.env.VITE_FIREBASE_MESSAGING_SENDER_ID",
+        __VITE_FIREBASE_APP_ID__: process.env.VITE_FIREBASE_APP_ID ? JSON.stringify(process.env.VITE_FIREBASE_APP_ID) : "self.env.VITE_FIREBASE_APP_ID",
+        __VITE_FIREBASE_MEASUREMENT_ID__: process.env.VITE_FIREBASE_MEASUREMENT_ID ? JSON.stringify(process.env.VITE_FIREBASE_MEASUREMENT_ID) : "self.env.VITE_FIREBASE_MEASUREMENT_ID"
     }
 })

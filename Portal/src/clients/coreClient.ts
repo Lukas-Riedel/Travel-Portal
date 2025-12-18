@@ -811,7 +811,7 @@ export const refreshAccessToken = async (): Promise<string> => {
 }
 
 const coreClient: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_CORE_BASE_URL,
+    baseURL: window.env?.VITE_CORE_BASE_URL || import.meta.env.VITE_CORE_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     }

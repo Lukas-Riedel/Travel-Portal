@@ -42,7 +42,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Set Lowercase Owner Name
-      id: owner_formatting
+      id: owner-lowercasing
       run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
     - name: Login to GHCR
       uses: docker/login-action@v3
@@ -52,10 +52,10 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build IAM Image
       run: |
-        docker build -t ghcr.io/${{ steps.owner_formatting.outputs.owner }}/iam:${{ github.run_number }} -f Iam/Dockerfile .
+        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:${{ github.run_number }} -f Iam/Dockerfile .
     - name: Push IAM Image
       run: |
-        docker push ghcr.io/${{ steps.owner_formatting.outputs.owner }}/iam:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:${{ github.run_number }}
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
     - name: Set Up Helm
@@ -67,7 +67,9 @@ jobs:
         helm upgrade iam ./Helm/Iam \
           -f ./Helm/Iam/values.yaml \
           --set iam.tag=${{ github.run_number }} \
-          --install
+          --install \
+          --wait \
+          --timeout 5m
   deploy-core:
     name: Deploy Core
     needs: detect-changes
@@ -80,7 +82,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Set Lowercase Owner Name
-      id: owner_formatting
+      id: owner-lowercasing
       run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
     - name: Login to GHCR
       uses: docker/login-action@v3
@@ -90,10 +92,10 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Core Image
       run: |
-        docker build -t ghcr.io/${{ steps.owner_formatting.outputs.owner }}/core:${{ github.run_number }} -f Core/Dockerfile .
+        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:${{ github.run_number }} -f Core/Dockerfile .
     - name: Push Core Image
       run: |
-        docker push ghcr.io/${{ steps.owner_formatting.outputs.owner }}/core:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:${{ github.run_number }}
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
     - name: Set Up Helm
@@ -105,30 +107,33 @@ jobs:
         helm upgrade core ./Helm/Core \
           -f ./Helm/Core/values.yaml \
           --set core.tag=${{ github.run_number }} \
-          --install
-  deploy-core-and-portal:
-    name: Deploy Core and Portal
+          --install \
+          --wait \
+          --timeout 5m
+  deploy-portal:
+    name: Deploy Portal
     needs: detect-changes
-    if: false
-    # if: ${{ needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.portal == 'true' }}
+    if: ${{ needs.detect-changes.outputs.portal == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
     - name: Checkout
-      uses: actions/checkout@v4    
-    - name: Set Up PHP and Composer
-      uses: shivammathur/setup-php@v2
+      uses: actions/checkout@v4
+    - name: Set Lowercase Owner Name
+      id: owner-lowercasing
+      run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+    - name: Login to GHCR
+      uses: docker/login-action@v3
       with:
-        php-version: '8.2'
-        extensions: mbstring, mysqli
-        coverage: none
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Set Up Node.js
       uses: actions/setup-node@v3
       with:
           node-version: '18'
-    - name: Install Core Composer Dependencies
-      run: |
-        cd Core
-        composer install --no-dev --optimize-autoloader
     - name: Install NPM Dependencies
       run: |
         cd Portal
@@ -138,132 +143,27 @@ jobs:
         cd Portal
         node swagger.config.js
       env:
-        VITE_CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
-    - name: Build React Project
-      run: |
-        cd Portal
-        npm run build
-      env:
-        VITE_SW_VERSION: ${{ github.run_number }}
-        VITE_PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
-        VITE_CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
-        VITE_IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
-        VITE_IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
-        VITE_FRONTEND_GOOGLE_MAPS_API_KEY: ${{ secrets.FRONTEND_GOOGLE_MAPS_API_KEY }}
-        VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-        VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
-        VITE_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-        VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.FIREBASE_STORAGE_BUCKET }}
-        VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
-        VITE_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
-        VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.FIREBASE_MEASUREMENT_ID }}
-        VITE_FIREBASE_VAPID_KEY: ${{ secrets.FIREBASE_VAPID_KEY }}
-    - name: Prepare Files
-      run: |
-        mkdir target
-        mkdir target/api
-        shopt -s dotglob
-        cp -r ./Core/* target/api/
-        rm -rf target/api/public
-        cp -r ./Core/public/* target/api/
-        cp -r ./Portal/dist/* target/
-    - name: Generate secrets.php
-      run: |
-        cat > generate_secrets.php <<'PHP'
-        <?php
-        $keys = [
-          "MAX_WORKERS_COUNT","DB_NAME","DB_USER","DB_PASSWORD","DB_HOST",
-          "ENCRYPTION_PRIVATE_KEY","CORE_BASE_URL","IAM_BASE_URL","INTERNAL_IAM_BASE_URL",
-          "INTERNAL_ADMIN_IAM_BASE_URL","IAM_APP_CLIENT_ID","IAM_BACKEND_CLIENT_ID",
-          "IAM_BACKEND_CLIENT_SECRET", "IAM_AGENT_CLIENT_ID", "IBM_CLOUD_API_KEY", "IBM_DATAPLATFORM_BASE_URL",
-          "GOOGLE_API_CLIENT_ID","GOOGLE_API_CLIENT_SECRET","GOOGLE_GEMINI_API_KEY",
-          "EXCHANGE_RATE_API_KEY","GRAFANA_LOKI_ENTRYPOINT","GRAFANA_LOKI_CLIENT_NAME",
-          "GRAFANA_LOKI_USER","GRAFANA_LOKI_PASSWORD","RMQ_HOST","RMQ_PORT","RMQ_USER",
-          "RMQ_PASSWORD","RMQ_VHOST","WORKER_QUEUE_NAME","REDIS_HOST","REDIS_PORT",
-          "REDIS_PASSWORD","ALLOWED_REQUEST_ORIGINS","FCM_PROJECT_ID","FCM_PRIVATE_KEY_ID",
-          "FCM_CLIENT_X509_CERTIFICATE_URL","FCM_PRIVATE_KEY","FCM_CLIENT_EMAIL",
-          "FCM_CLIENT_ID","JWKS_PUBLIC_KEY","BACKEND_GOOGLE_MAPS_API_KEY"
-        ];
-
-        $header = <<<'HEADER'
-        <?php
-        namespace Secrets;
-
-        function getenv(string $key) : array|string|false {
-          if (\defined($key)) {
-            return \constant($key);
-          }
-          return \getenv($key);
-        }
-        HEADER;
-
-        $out = $header . "\n";
-        foreach ($keys as $k) {
-          $out .= "define(\"" . $k . "\", \"" . getenv($k) . "\");\n";
-        }
-
-        $out .= "?>\n";
-        file_put_contents("target/secrets.php", $out);
-        PHP
-
-        php generate_secrets.php
-        rm -f generate_secrets.php
-      env:
-        MAX_WORKERS_COUNT: ${{ vars.MAX_WORKERS_COUNT }}
-        DB_NAME: ${{ vars.DB_NAME }}
-        DB_USER: ${{ vars.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_HOST: ${{ vars.DB_HOST }}
-        ENCRYPTION_PRIVATE_KEY: ${{ secrets.ENCRYPTION_PRIVATE_KEY }}
         CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
-        IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
-        INTERNAL_IAM_BASE_URL: ${{ vars.INTERNAL_IAM_BASE_URL }}
-        INTERNAL_ADMIN_IAM_BASE_URL: ${{ vars.INTERNAL_ADMIN_IAM_BASE_URL }}
-        IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
-        IAM_BACKEND_CLIENT_ID: ${{ vars.IAM_BACKEND_CLIENT_ID }}
-        IAM_BACKEND_CLIENT_SECRET: ${{ secrets.IAM_BACKEND_CLIENT_SECRET }}
-        IAM_AGENT_CLIENT_ID: ${{ vars.IAM_AGENT_CLIENT_ID }}
-        BACKEND_GOOGLE_MAPS_API_KEY: ${{ secrets.BACKEND_GOOGLE_MAPS_API_KEY }}
-        IBM_DATAPLATFORM_BASE_URL: ${{ vars.IBM_DATAPLATFORM_BASE_URL }}
-        IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
-        GOOGLE_API_CLIENT_ID: ${{ vars.GOOGLE_API_CLIENT_ID }}
-        GOOGLE_API_CLIENT_SECRET: ${{ secrets.GOOGLE_API_CLIENT_SECRET }}
-        GOOGLE_GEMINI_API_KEY: ${{ secrets.GOOGLE_GEMINI_API_KEY }}
-        EXCHANGE_RATE_API_KEY: ${{ secrets.EXCHANGE_RATE_API_KEY }}
-        GRAFANA_LOKI_ENTRYPOINT: ${{ vars.GRAFANA_LOKI_ENTRYPOINT }}
-        GRAFANA_LOKI_CLIENT_NAME: ${{ vars.GRAFANA_LOKI_CLIENT_NAME }}
-        GRAFANA_LOKI_USER: ${{ vars.GRAFANA_LOKI_USER }}
-        GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
-        RMQ_HOST: ${{ vars.RMQ_HOST }}
-        RMQ_PORT: ${{ vars.RMQ_PORT }}
-        RMQ_USER: ${{ vars.RMQ_USER }}
-        RMQ_PASSWORD: ${{ secrets.RMQ_PASSWORD }}
-        RMQ_VHOST: ${{ vars.RMQ_VHOST }}
-        WORKER_QUEUE_NAME: ${{ vars.WORKER_QUEUE_NAME }}
-        REDIS_HOST: ${{ vars.REDIS_HOST }}
-        REDIS_PORT: ${{ vars.REDIS_PORT }}
-        REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        ALLOWED_REQUEST_ORIGINS: ${{ vars.ALLOWED_REQUEST_ORIGINS }}
-        FCM_PROJECT_ID: ${{ vars.FCM_PROJECT_ID }}
-        FCM_PRIVATE_KEY_ID: ${{ secrets.FCM_PRIVATE_KEY_ID }}
-        FCM_CLIENT_X509_CERTIFICATE_URL: ${{ vars.FCM_CLIENT_X509_CERTIFICATE_URL }}
-        FCM_PRIVATE_KEY: ${{ secrets.FCM_PRIVATE_KEY }}
-        FCM_CLIENT_EMAIL: ${{ vars.FCM_CLIENT_EMAIL }}
-        FCM_CLIENT_ID: ${{ vars.FCM_CLIENT_ID }}
-        JWKS_PUBLIC_KEY: ${{ vars.JWKS_PUBLIC_KEY }}
-    - name: Upload Files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ vars.FTP_SERVER }}
-        username: ${{ vars.FTP_USER }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: target/
-        server-dir: ${{ vars.FTP_DIRECTORY }}
-    - name: Deploy
-      uses: muhfaris/request-action@v0.1.2
-      with:
-        method: GET
-        url: ${{ vars.CORE_BASE_URL }}/deploy.php
+    - name: Build Portal Image
+      run: |
+        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:${{ github.run_number }} -f Portal/Dockerfile .
+    - name: Push Portal Image
+      run: |
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:${{ github.run_number }}
+    - name: Set Up Kubectl
+      uses: azure/setup-kubectl@v3
+    - name: Set Up Helm
+      uses: azure/setup-helm@v3
+    - name: Deploy Portal with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade portal ./Helm/Portal \
+          -f ./Helm/Portal/values.yaml \
+          --set portal.tag=${{ github.run_number }} \
+          --install \
+          --wait \
+          --timeout 5m
   verify-agent:
     name: Verify Agent
     needs: detect-changes

@@ -1,0 +1,17 @@
+{{- if .Values.portal.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portal-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.portal.service.host }}`)
+      kind: Rule
+      services:
+        - name: portal
+          port: {{ .Values.portal.service.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}
