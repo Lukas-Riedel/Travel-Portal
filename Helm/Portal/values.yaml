@@ -6,16 +6,16 @@ portal:
   service:
     type: ClusterIP
     port: 80
-    host: lriedel.fun
+    host: lriedel.cz
   url:
     base:
-      public: https://lriedel.fun
+      public: https://lriedel.cz
     iam:
       base:
-        public: https://iam.lriedel.fun
+        public: https://iam.lriedel.cz
     core:
       base:
-        public: https://api.lriedel.fun
+        public: https://api.lriedel.cz
   iam:
     client:
       app:

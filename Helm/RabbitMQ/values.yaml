@@ -7,8 +7,8 @@ rabbitmq:
     type: ClusterIP
     amqp:
       port: 5672
-      host: rmq.lriedel.fun
+      host: rmq.lriedel.cz
     management:
       port: 15672
-      host: rmq.lriedel.fun
+      host: rmq.lriedel.cz
   username: admin

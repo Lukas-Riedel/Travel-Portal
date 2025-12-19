@@ -14,4 +14,4 @@ redisinsight:
   service:
     type: ClusterIP
     port: 5540
-    host: redis.lriedel.fun
+    host: redis.lriedel.cz

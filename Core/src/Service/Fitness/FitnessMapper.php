@@ -106,6 +106,7 @@
             $sql = <<<'SQL'
                 SELECT MIN(distance / steps) AS minimum_distance_per_step
                 FROM fitness
+                WHERE steps > 0
             SQL;
 
             $fitnessRow = $this->databaseClient
@@ -119,6 +120,7 @@
             $sql = <<<'SQL'
                 SELECT MAX(distance / steps) AS maximum_distance_per_step
                 FROM fitness
+                WHERE steps > 0
             SQL;
 
             $fitnessRow = $this->databaseClient
@@ -132,6 +134,7 @@
             $sql = <<<'SQL'
                 SELECT AVG(distance / steps) AS average_distance_per_step
                 FROM fitness
+                WHERE steps > 0
             SQL;
 
             $fitnessRow = $this->databaseClient

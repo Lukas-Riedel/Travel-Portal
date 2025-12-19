@@ -7,16 +7,16 @@ core:
   service:
     type: ClusterIP
     port: 8080
-    host: api.lriedel.fun
+    host: api.lriedel.cz
   url:
     base:
-      public: https://api.lriedel.fun
+      public: https://api.lriedel.cz
     iam:
       base:
-        public: https://iam.lriedel.fun
+        public: https://iam.lriedel.cz
     s3:
       base:
-        public: https://s3.lriedel.fun
+        public: https://s3.lriedel.cz
     ibm:
       dataplatform:
         base:
@@ -34,7 +34,7 @@ core:
       hostname: rabbitmq
       port: 5672
     external:
-      hostname: rmq.lriedel.fun
+      hostname: rmq.lriedel.cz
       port: 5671
     vhost: /
     username: admin
@@ -66,4 +66,4 @@ core:
       name: travel-portal-service
     username: "1287508"
   origins:
-    whitelist: https://travel-portal.eu,https://lriedel.cz,https://lriedel.fun
+    whitelist: https://travel-portal.eu,https://lriedel.cz,https://lriedel.cz
