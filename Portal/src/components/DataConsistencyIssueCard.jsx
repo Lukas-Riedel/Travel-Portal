@@ -169,7 +169,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 }
             ),
             resolve: async (place) => {
-                const categories = await listCategories({ country: place.country, categories: "administrative" });
+                const categories = await listCategories({ country: place.country, categories: ["administrative"] });
                 return showFormToast(
                     "Vyber administrativní kategorii k přiřazení:",
                     [
