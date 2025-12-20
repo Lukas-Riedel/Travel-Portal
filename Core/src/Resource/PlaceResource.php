@@ -229,6 +229,12 @@
                     schema: new OA\Schema(ref: "#/components/schemas/PlaceType")                    
                 ),
                 new OA\Parameter(
+                    name: "nearbyPlaces",
+                    in: "query",
+                    description: "The count of nearby places for each returned place",
+                    example: 3
+                ),
+                new OA\Parameter(
                     name: "limit",
                     in: "query",
                     description: "The limit of returned places",
@@ -308,6 +314,7 @@
             $maxEnd = $this->getQueryParameter($request, "maxEnd");
             $maxQuality = $this->getQueryParameter($request, "maxQuality");
             $type = $this->getQueryParameter($request, "type") ?? PlaceType::Regular->value;
+            $nearbyPlaces = $this->getQueryParameter($request, "nearbyPlaces");
             $limit = $this->getQueryParameter($request, "limit");
             $include = $this->getQueryParameter($request, "include") ?? "";
             $sort = $this->getQueryParameter($request, "sort") ?? PlaceSortingStrategy::OldestAscending->value;
@@ -319,8 +326,8 @@
             $mappedType = PlaceType::from($type);
             
             return match ($mappedType) {
-                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $mappedInclude, $mappedSort),
-                PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $mappedInclude)
+                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
+                PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $nearbyPlaces, $mappedInclude)
             };
         }
 
@@ -338,7 +345,13 @@
                     description: "The identifier of the place",
                     schema: new OA\Schema(type: "string"),
                     example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
-                )
+                ),
+                new OA\Parameter(
+                    name: "nearbyPlaces",
+                    in: "query",
+                    description: "The count of nearby places for the returned place",
+                    example: 3
+                ),
             ],
             responses: [
                 new OA\Response(
@@ -402,8 +415,9 @@
         )]
         public function getPlace(Request $request, Response $response, array $routeArguments) : mixed {    
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
+            $nearbyPlaces = $this->getQueryParameter($request, "nearbyPlaces");
 
-            return $this->doGetPlace($placeId);
+            return $this->doGetPlace($placeId, $nearbyPlaces);
         }
         
         #[OA\Patch(
@@ -1979,13 +1993,13 @@
             return $this->photoService->getPhotos($albumId, $place->getLatitude(), $place->getLongitude());
         }
 
-        private function doGetPlace(string $placeId) : Place {            
-            $place = $this->placeService->getRegularPlace($placeId);
+        private function doGetPlace(string $placeId, ?int $nearbyPlaces = null) : Place {            
+            $place = $this->placeService->getRegularPlace($placeId, $nearbyPlaces);
             if ($place !== null) {
                 return $place;
             }
             
-            $place = $this->placeService->getCandidatePlace($placeId);
+            $place = $this->placeService->getCandidatePlace($placeId, $nearbyPlaces);
             if ($place !== null) {
                 return $place;
             }

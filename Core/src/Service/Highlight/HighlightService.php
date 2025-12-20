@@ -59,7 +59,7 @@
             $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
                 $this->highlightMapper->selectHighlights(HighlightType::Category, $categoryId));
 
-            foreach ($placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, null, null,
+            foreach ($placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, null, null, null,
                 array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending) as &$categoryPlace) {
                     foreach ($categoryPlace->getHighlights() as &$categoryHighlightCandidate) {
                         if (!in_array($categoryHighlightCandidate->getId(), $deletedHighlightIds)) {

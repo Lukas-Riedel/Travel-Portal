@@ -327,8 +327,8 @@ export const createPermanentPlace = async (name: string, address: string): Promi
     ).then(extractData)
         .then(place => new Place(place))
 
-export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }:
-    { tripId?: string, categoryId?: string, labelId?: string, year?: number, albumId?: string, photoId?: string, minStart?: number, maxEnd?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
+export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, nearbyPlaces, limit, include, sort }:
+    { tripId?: string, categoryId?: string, labelId?: string, year?: number, albumId?: string, photoId?: string, minStart?: number, maxEnd?: number, nearbyPlaces?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
     coreClient.get<IPlace[]>(createQueryPath("places",
         {
             type: PlaceType.Regular,
@@ -340,6 +340,7 @@ export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, alb
             photoId,
             minStart,
             maxEnd,
+            nearbyPlaces,
             limit,
             include: include?.join(","),
             sort
@@ -347,13 +348,15 @@ export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, alb
     )).then(extractData)
         .then(places => places.map(place => new Place(place)))
 
-export const listCandidatePlaces = async ({ tripId, categoryId, labelId, limit, include, sort }: { tripId?: string, categoryId?: string, labelId?: string, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
+export const listCandidatePlaces = async ({ tripId, categoryId, labelId, nearbyPlaces, limit, include, sort }:
+    { tripId?: string, categoryId?: string, labelId?: string, nearbyPlaces?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
     coreClient.get<IPlace[]>(createQueryPath("places",
         {
             type: PlaceType.Candidate,
             tripId,
             categoryId,
             labelId,
+            nearbyPlaces,
             limit,
             include: include?.join(","),
             sort
@@ -361,8 +364,12 @@ export const listCandidatePlaces = async ({ tripId, categoryId, labelId, limit, 
     )).then(extractData)
         .then(places => places.map(place => new Place(place)))
 
-export const getPlace = async (placeId: string): Promise<Place> =>
-    coreClient.get<IPlace>(`places/${placeId}`)
+export const getPlace = async (placeId: string, nearbyPlaces?: number): Promise<Place> =>
+    coreClient.get<IPlace>(createQueryPath(`places/${placeId}`,
+        {
+            nearbyPlaces
+        }
+    ))
         .then(extractData)
         .then(place => new Place(place))
 

@@ -150,7 +150,7 @@
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
                         array_filter(array_map(function($placeId) use(&$start, &$end, &$placesCache) {
                             if (!isset($placesCache[$placeId])) {
-                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end, PHP_INT_MAX,
+                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end, null, PHP_INT_MAX,
                                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                                 $placesCache[$placeId] = count($places) === 0 ? null : $places[0];                                
                             }
@@ -176,7 +176,7 @@
                 });
         }
         
-        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -315,6 +315,11 @@
                     if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
                         $notes = $this->noteService->getPlaceNotes($placeRow["id"]);                   
                     }
+
+                    $nearbyPlacesArr = array();
+                    if ($nearbyPlaces !== null) {
+                        $nearbyPlacesArr = $this->selectVisitedNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
+                    }
                     
                     $excerpt = null;
                     if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
@@ -322,7 +327,7 @@
                     }
                     
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array());
+                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -354,7 +359,7 @@
             return array_values($places);
         }
         
-        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, array $includedEntities) : array {
+        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT pi.*
                 FROM place_candidate pc
@@ -421,14 +426,20 @@
                     $notes = $this->noteService->getPlaceNotes($placeRow["id"]);                   
                 }
 
+                $nearbyPlacesArr = array();
+                if ($nearbyPlaces !== null) {
+                    $nearbyPlacesArr = $this->selectCandidateNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
+                }
+
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                    $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array());
+                    $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
             }
             
             return $places;
         }
         
-        public function selectCandidatePlacesForTrip(?string $categoryId, string $tripId, array $includedEntities) {         
+        // TODO: Missing filter label identifier.
+        public function selectCandidatePlacesForTrip(?string $categoryId, string $tripId, ?int $nearbyPlaces, array $includedEntities) {         
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -487,9 +498,14 @@
                     if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
                         $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
                     }
+                    
+                    $nearbyPlacesArr = array();
+                    if ($nearbyPlaces !== null) {
+                        $nearbyPlacesArr = $this->selectCandidateNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
+                    }
 
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
-                        $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, array()); 
+                        $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array()); 
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -909,6 +925,50 @@
             $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
+        }
+
+        private function selectVisitedNearbyPlaces(string $placeId, float $latitude, float $longitude, int $limit) : array {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM place_identifier
+                WHERE id <> ?
+                    AND main_highlight_id IS NOT NULL
+                    AND id IN (
+                        SELECT place_id
+                        FROM place_event
+                    )
+                ORDER BY coordinates <-> ST_SetSRID(ST_MakePoint(?, ?), 4326)
+                LIMIT ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($placeId, $longitude, $latitude, $limit)
+                ->getMappedResultSet(function($placeIdentifierRow) {
+                    return $this->selectRegularPlaces($placeIdentifierRow["id"], null, null, null, null,
+                        null, null, null, null, time(), null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending)[0];
+                });
+        }
+
+        private function selectCandidateNearbyPlaces(string $placeId, float $latitude, float $longitude, int $limit) : array {
+            $sql = <<<'SQL'
+                SELECT id
+                FROM place_identifier
+                WHERE id <> ?
+                    AND id IN (
+                        SELECT place_id
+                        FROM place_candidate
+                    )
+                ORDER BY coordinates <-> ST_SetSRID(ST_MakePoint(?, ?), 4326)
+                LIMIT ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($placeId, $longitude, $latitude, $limit)
+                ->getMappedResultSet(function($placeIdentifierRow) {
+                    return $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, null, PlaceIncludedEntity::values())[0];
+                });
         }
 
         private function selectCountry(string $countryCategoryId) : string {

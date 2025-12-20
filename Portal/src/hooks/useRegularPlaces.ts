@@ -19,17 +19,18 @@ interface UseRegularPlacesProps {
     photoId?: string
     minStart?: number
     maxEnd?: number
+    nearbyPlaces?: number
     limit?: number
     include?: PlaceIncludedEntity[]
     sort?: PlaceSortingStrategy
 }
 
-export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }: UseRegularPlacesProps = {}): UseRegularPlacesResult => {
+export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, nearbyPlaces, limit, include, sort }: UseRegularPlacesProps = {}): UseRegularPlacesResult => {
     const { startedUploadingsCount, isBeingUploaded } = useAlbumsBeingUploaded()
 
     const { response, refetchResponse } = useQuery({
-        queryKey: ["listRegularPlaces", tripId, categoryId, labelId, `${year}`, albumId, photoId, `${minStart - (minStart % RESPONSE_VALIDITY_SECONDS)}`, `${maxEnd - (maxEnd % RESPONSE_VALIDITY_SECONDS)}`, `${limit}`, ...(include ?? []), sort],
-        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }),
+        queryKey: ["listRegularPlaces", tripId, categoryId, labelId, `${year}`, albumId, photoId, `${minStart - (minStart % RESPONSE_VALIDITY_SECONDS)}`, `${maxEnd - (maxEnd % RESPONSE_VALIDITY_SECONDS)}`, `${nearbyPlaces}`, `${limit}`, ...(include ?? []), sort],
+        queryFn: () => listRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, nearbyPlaces, limit, include, sort }),
         staleTime: RESPONSE_VALIDITY_SECONDS * 1000,
         refetchInterval: query => query.state.data?.flatMap(place => place.dates ?? [])?.some(date => (date.album?.uploadingStart && date.album?.uploadingProgress) || isBeingUploaded(date)) && ALBUM_UPLOADING_REFETCH_INTERVAL_SECONDS
     })

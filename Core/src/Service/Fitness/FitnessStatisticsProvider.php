@@ -131,7 +131,7 @@
             $cacheKey = ($categoryId ?? "null") . "_" . ($tripId ?? "null") . "_" . $minTimestamp . "_" . $maxTimestamp;
             if (!isset($placesCache[$cacheKey])) {
                 $allPlaces = $this->placeService->getRegularPlaces($categoryId, null, $tripId, null, null, null, null, $minTimestamp, 
-                    $maxTimestamp, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                    $maxTimestamp, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $placesByDay = array();
                 foreach ($allPlaces as $place) {

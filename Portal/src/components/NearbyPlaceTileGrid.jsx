@@ -1,25 +1,12 @@
-import { useMemo } from "react"
 import { formatKilometers } from "../utils/formatters.js"
 import TileGrid from "./TileGrid.jsx"
 import PlaceTile from "./PlaceTile.jsx"
 import { Place } from "../classes/Place.ts"
 
-export default function NearbyPlaceTileGrid({ place, places, count }) {
-    const nearbyPlaces = useMemo(() => places
-        ?.filter(p => p.id !== place?.id)
-        ?.filter(p => p?.mainHighlight)
-        ?.map(p => place && new Place({ ...p, distance: p.getEuclideanDistanceTo(place) }))
-        ?.filter(Boolean)
-        ?.sort((a, b) => a.distance - b.distance)
-        ?.slice(0, 2 * count)
-        ?.map(p => place && new Place({ ...p, distance: p.getHaversineDistanceTo(place) }))
-        ?.filter(Boolean)
-        ?.sort((a, b) => a.distance - b.distance)
-        ?.slice(0, count), [place, places, count])
-
+export default function NearbyPlaceTileGrid({ place }) {
     return (
         <TileGrid>
-            {nearbyPlaces?.map(nearbyPlace => (
+            {place?.nearbyPlaces?.map(nearbyPlace => new Place(nearbyPlace))?.map(nearbyPlace => (
                 <PlaceTile
                     key={nearbyPlace.id}
                     place={nearbyPlace}

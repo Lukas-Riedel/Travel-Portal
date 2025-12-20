@@ -64,12 +64,13 @@
         }
 
         public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
+            $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null,
+                null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
             foreach ($places as &$place) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }
             
-            $places = $this->placeService->getCandidatePlaces($message["categoryId"], null, null, array());
+            $places = $this->placeService->getCandidatePlaces($message["categoryId"], null, null, null, array());
             foreach ($places as &$place) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }

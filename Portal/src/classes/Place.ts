@@ -1,5 +1,5 @@
 import { fromUnixTime, isSameDay } from "date-fns"
-import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album } from "../types/CoreSwaggerTypes.ts"
+import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album, PlaceIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
 import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
@@ -21,6 +21,7 @@ export class Place implements IPlace {
     highlights?: Highlight[]
     labels?: Label[]
     notes?: Note[]
+    nearbyPlaces?: PlaceIdentifier[]
     dates?: Date[]
 
     public constructor(data: IPlace) {

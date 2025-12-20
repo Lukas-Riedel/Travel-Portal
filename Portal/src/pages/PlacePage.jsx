@@ -16,6 +16,8 @@ import { useMemo } from "react"
 import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
 
+const nearbyPlacesCount = 3
+
 export default function PlacePage() {
     const { isAdmin } = useAuth()
     const { placeId } = useParams()
@@ -24,7 +26,7 @@ export default function PlacePage() {
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
-        createPlaceNote, removePlaceNote } = usePlace(placeId)
+        createPlaceNote, removePlaceNote } = usePlace(placeId, nearbyPlacesCount)
     const { places } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "-score" })
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
@@ -66,10 +68,7 @@ export default function PlacePage() {
             <TripBar trips={isAdmin ? place?.getAllTrips() : place?.getPastTrips()} />
             {place?.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
-            <NearbyPlaceTileGrid
-                place={place}
-                places={places}
-                count={3} />
+            <NearbyPlaceTileGrid place={place} />
             <SunAltitudeBar place={place} />
             {isAdmin && (
                 <NoteCardGrid

@@ -12,11 +12,12 @@ interface UseCandidatePlacesProps {
     tripId?: string
     categoryId?: string
     labelId?: string
+    nearbyPlaces?: number
     include?: PlaceIncludedEntity[]
     sort?: PlaceSortingStrategy
 }
 
-export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort }: UseCandidatePlacesProps = {}): UseCandidatePlacesResult => {
+export const useCandidatePlaces = ({ tripId, categoryId, labelId, nearbyPlaces, include, sort }: UseCandidatePlacesProps = {}): UseCandidatePlacesResult => {
     const resolvedLocation = useLocation()
 
     const [currentLocation, setCurrentLocation] = useState(resolvedLocation)
@@ -28,8 +29,8 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, include, sort 
     }, [resolvedLocation])
 
     const { response, refetchResponse } = useQuery({
-        queryKey: ["listCandidatePlaces", tripId, categoryId, labelId, ...(include ?? []), sort],
-        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, include, sort }),
+        queryKey: ["listCandidatePlaces", tripId, categoryId, labelId, `${nearbyPlaces}`, ...(include ?? []), sort],
+        queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, nearbyPlaces, include, sort }),
         staleTime: ONE_DAY_SECONDS * 1000
     })
 

@@ -14,12 +14,12 @@ import type { UsePlaceResult } from "../types/UsePlaceResult.ts"
 
 const ALBUM_UPLOADING_REFETCH_INTERVAL_SECONDS = 5
 
-export const usePlace = (placeId?: string): UsePlaceResult => {
+export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResult => {
     const { startedUploadingsCount, isBeingUploaded } = useAlbumsBeingUploaded()
 
     const { response, setResponse, refetchResponse } = useQuery({
-        queryKey: ["getPlace", placeId],
-        queryFn: () => getPlace(placeId),
+        queryKey: ["getPlace", placeId, `${nearbyPlaces}`],
+        queryFn: () => getPlace(placeId, nearbyPlaces),
         enabled: !!placeId,
         staleTime: ONE_HOUR_SECONDS * 1000,
         refetchInterval: query => query.state.data?.dates?.some(date => (date.album?.uploadingStart && date.album?.uploadingProgress) || isBeingUploaded(date)) && ALBUM_UPLOADING_REFETCH_INTERVAL_SECONDS

@@ -99,6 +99,12 @@
                 items: new OA\Items(ref: "#/components/schemas/Note")
             ),
             new OA\Property(
+                property: "nearbyPlaces",
+                description: "The nearby places of the place",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Place")
+            ),
+            new OA\Property(
                 property: "dates",
                 description: "The dates of the place",
                 type: "array",
@@ -121,11 +127,12 @@
         private readonly array $highlights;
         private readonly array $labels;
         private readonly array $notes;
+        private readonly array $nearbyPlaces;
         private array $dates;
 
         public function __construct(string $id, string $name, string $country, float $latitude, float $longitude,
             string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt, array $categories,
-            array $highlights, array $labels, array $notes, array $dates) {
+            array $highlights, array $labels, array $notes, array $nearbyPlaces, array $dates) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
@@ -140,6 +147,7 @@
             $this->highlights = $highlights;
             $this->labels = $labels;
             $this->notes = $notes;
+            $this->nearbyPlaces = $nearbyPlaces;
             $this->dates = $dates;
         }
 
@@ -197,6 +205,10 @@
 
         public function getNotes() : array {
             return $this->notes;
+        }
+
+        public function getNearbyPlaces() : array {
+            return $this->nearbyPlaces;
         }
 
         public function getDates() : array {

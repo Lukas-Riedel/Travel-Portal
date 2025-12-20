@@ -77,29 +77,29 @@
             return $this->placeMapper->selectVisitedCategoriesForInterval($start, $end, $category, $visitedCategoriesSortingStrategy);
         }
 
-        public function getRegularPlace(string $placeId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces($placeId, null, null, null, null, null, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
+        public function getRegularPlace(string $placeId, ?int $nearbyPlaces = null) : ?Place {
+            $regularPlaces = $this->doGetRegularPlaces($placeId, null, null, null, null, null, null, null, null, null, $nearbyPlaces, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : null;
         }
 
-        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $includedEntities, $placeSortingStrategy);
+        public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $includedEntities, $placeSortingStrategy);
         }
 
         public function getRegularPlaceForAlbum(string $albumId) : ?Place {
-            $regularPlaces = $this->doGetRegularPlaces(null, null, null, null, null, $albumId, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
+            $regularPlaces = $this->doGetRegularPlaces(null, null, null, null, null, $albumId, null, null, null, null, null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending);
             return count($regularPlaces) === 1 ? $regularPlaces[0] : null;            
         }
 
-        public function getCandidatePlace(string $placeId) : ?Place {
-            $candidatePlaces = $this->doGetCandidatePlaces($placeId, null, null, PlaceIncludedEntity::values());
+        public function getCandidatePlace(string $placeId, ?int $nearbyPlaces = null) : ?Place {
+            $candidatePlaces = $this->doGetCandidatePlaces($placeId, null, null, $nearbyPlaces, PlaceIncludedEntity::values());
             return count($candidatePlaces) === 1 ? $candidatePlaces[0] : null;
         }
 
-        public function getCandidatePlaces(?string $categoryId, ?string $tripId, ?string $labelId, array $includedEntities) : array {
+        public function getCandidatePlaces(?string $categoryId, ?string $tripId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
             return $tripId !== null
-                ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $includedEntities)
-                : $this->doGetCandidatePlaces(null, $categoryId, $labelId, $includedEntities);
+                ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $nearbyPlaces, $includedEntities)
+                : $this->doGetCandidatePlaces(null, $categoryId, $labelId, $nearbyPlaces, $includedEntities);
         }
 
         public function getAllPlaceIdentifiers() : array {
@@ -185,7 +185,7 @@
         }
 
         public function movePlaces(string $tripId, int $offset) : array {
-            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
@@ -198,7 +198,7 @@
         }
 
         public function loadPlaces(string $candidateTripId, int $startOffset) : array {
-            $places = $this->doGetCandidatePlacesForTrip(null, $candidateTripId, array());
+            $places = $this->doGetCandidatePlacesForTrip(null, $candidateTripId, null, array());
 
             foreach ($places as &$place) {
                 $address = $this->geocodingService->getFormattedAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());
@@ -213,7 +213,7 @@
         }
 
         public function archivePlaces(string $tripId, int $tripStart, TripIdentifier $archivedTripIdentifier) : array {
-            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+            $places = $this->getRegularPlaces(null, null, $tripId, null, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             
             $this->transactionManager->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
                 foreach ($places as &$place) {
@@ -226,7 +226,7 @@
                 }
             });
             
-            return $this->doGetCandidatePlacesForTrip(null, $archivedTripIdentifier->getId(), array());
+            return $this->doGetCandidatePlacesForTrip(null, $archivedTripIdentifier->getId(), null, array());
         }
         
         public function removeCandidateEventsForCandidateTrip(string $tripId) : bool {
@@ -273,7 +273,7 @@
                     $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($start, $end);
                     $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                         $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
-                        $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));
+                        $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));
 
                     $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 
@@ -373,7 +373,7 @@
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
-                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array());
+                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array());
         }
         
 
@@ -385,19 +385,19 @@
 
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
-                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array());
+                $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array());
         }
 
-        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
-            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $limit, $includedEntities, $placeSortingStrategy);
+        private function doGetRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+            return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $includedEntities, $placeSortingStrategy);
         }
         
-        private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, array $includedEntities) : array {
-            return $this->placeMapper->selectCandidatePlaces($placeId, $categoryId, $labelId, $includedEntities);
+        private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
+            return $this->placeMapper->selectCandidatePlaces($placeId, $categoryId, $labelId, $nearbyPlaces, $includedEntities);
         }
 
-        private function doGetCandidatePlacesForTrip(?string $categoryId, string $tripId, array $includedEntities) : array {            
-            return $this->placeMapper->selectCandidatePlacesForTrip($categoryId, $tripId, $includedEntities);
+        private function doGetCandidatePlacesForTrip(?string $categoryId, string $tripId, ?int $nearbyPlaces, array $includedEntities) : array {            
+            return $this->placeMapper->selectCandidatePlacesForTrip($categoryId, $tripId, $nearbyPlaces, $includedEntities);
         }
     }
 ?>
