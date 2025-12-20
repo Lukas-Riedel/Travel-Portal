@@ -1,7 +1,9 @@
 <?php
     namespace Core\Client\Database;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Messaging\ProgressReporter;
+    use Core\Common\CommonConstants;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Logger;
     use PgSql\Connection;
@@ -13,8 +15,11 @@
         private const DEFAULT_SCHEMA_NAME = "public";
         private const WHERE_CLAUSE_PLACEHOLDER = "WHERE :CONDITIONS";
         
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "postgress://%s";
-        private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s.%s";
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "postgres://%s";
+        private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s.%s.%s";
+
+        private const TABLE_COLUMNS_CACHE_KEY_FORMAT = "PostgreSQLDatabaseClient:TableColumns:%s";
+        private const TABLE_COLUMNS_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private readonly Connection $connection;
         private readonly string $host;
@@ -23,18 +28,21 @@
         private ?ProgressReporter $progressReporter;
         private ?OpenLineageEventManager $openLineageEventManager;
 
+        private readonly CacheClient $cacheClient;
+
         private readonly Logger $logger;
         
         private ?AtomicExecution $currentAtomicExecution;
 
         private array $preparedStatements;
 
-        public function __construct(string $host, int $port, string $user, string $password, string $database, Logger $logger) {
+        public function __construct(string $host, int $port, string $user, string $password, string $database, CacheClient $cacheClient, Logger $logger) {
             $this->connection = \pg_connect(sprintf(self::CONNECTION_CONFIGURATION_STRING_FORMAT, $host, $port, $database, $user, $password));
             $this->host = $host;
             $this->database = $database;
-            $this->openLineageEventManager = null;
+            $this->cacheClient = $cacheClient;
             $this->logger = $logger;
+            $this->openLineageEventManager = null;
             $this->currentAtomicExecution = null;
             $this->preparedStatements = array();
         }
@@ -166,19 +174,25 @@
             $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host);
 
             foreach ($inputTables as $table) {
-                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, $table);
+                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, self::DEFAULT_SCHEMA_NAME, $table);
                 $columns = $this->fetchTableColumns($table);
                 $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, array_fill_keys($columns, null));
             }
 
             foreach ($outputTables as $table) {
-                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, $table);
+                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, self::DEFAULT_SCHEMA_NAME, $table);
                 $columns = $this->fetchTableColumns($table);
                 $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, array_fill_keys($columns, null));
             }
         }
 
         private function fetchTableColumns(string $table) : array {
+            $cacheKey = $this->getTableColumnsCacheKey($table);
+            $tableColumns = $this->cacheClient->get($cacheKey);
+            if ($tableColumns !== null) {
+                return $tableColumns;
+            }
+
             $sql = <<<SQL
                 SELECT column_name
                 FROM information_schema.columns
@@ -187,9 +201,17 @@
                 ORDER BY ordinal_position
             SQL;
 
-            return (new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $this->preparedStatements, $sql, $this->logger))
+            $tableColumns = (new PostgreSQLStatementBuilder($this->progressReporter, $this->connection, $this->preparedStatements, $sql, $this->logger))
                 ->withParameters(self::DEFAULT_SCHEMA_NAME, $table)
-                ->getResultSetForColumn("COLUMN_NAME");
+                ->getResultSetForColumn("column_name");
+
+            $this->cacheClient->set($cacheKey, $tableColumns, self::TABLE_COLUMNS_CACHE_TTL);
+
+            return $tableColumns;
+        }
+
+        private function getTableColumnsCacheKey(string $table) : string {
+            return sprintf(self::TABLE_COLUMNS_CACHE_KEY_FORMAT, $table);
         }
     }
 ?>

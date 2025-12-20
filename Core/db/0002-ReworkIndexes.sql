@@ -1,0 +1,23 @@
+drop index idx_fitness_last_update;
+drop index idx_album_main_photo_id;
+drop index idx_place_identifier_quality;
+drop index idx_place_identifier_score;
+drop index idx_place_identifier_main_highlight_id;
+drop index idx_expense_timestamp;
+drop index idx_year_identifier_main_highlight_id;
+drop index idx_flight_watched_event_trip_id;
+drop index idx_flight_watched_event_start_end;
+drop index idx_label_identifier_name;
+drop index idx_place_candidate_event_trip_id;
+drop index idx_place_candidate_event_start_end;
+drop index idx_trip_identifier_main_highlight_id;
+drop index idx_airport_identifier_country_category_id;
+drop index idx_region_composite_category_id;
+drop index idx_highlight_year_highlight_id;
+drop index idx_highlight_category_highlight_id;
+drop index idx_place_event_place_id;
+
+create index idx_region_area_category_id ON region_area (category_id);
+create index idx_photo_identifier_external_id ON photo_identifier (external_id);
+create index idx_album_name_pattern_ops ON album (name varchar_pattern_ops);
+create index idx_place_event_place_id_trip_id on place_event (place_id, trip_id);

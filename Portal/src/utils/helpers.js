@@ -39,7 +39,8 @@ export function decapitalize(str) {
 }
 
 export function getPrettyName(name) {
-    return name?.split("(")[0].trim()
+    // Name can also be an integer (e.g., a year name).
+    return `${name}`?.split("(")[0].trim()
 }
 
 export function isInTrip(trips, date) {

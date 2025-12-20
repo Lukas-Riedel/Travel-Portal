@@ -6,7 +6,10 @@ metadata:
 data:
   init.sql: |
     CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
   postgresql.conf: |
+    shared_preload_libraries = 'pg_stat_statements'
+    pg_stat_statements.track = all
     shared_buffers = 512MB
     work_mem = 16MB
     temp_buffers = 32MB

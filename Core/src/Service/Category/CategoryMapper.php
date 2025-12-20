@@ -214,7 +214,7 @@
                 INNER JOIN category_identifier ci
                     ON re.subject_category_id = ci.id
                 WHERE re.category_id = ?
-                    AND re.included
+                    AND NOT re.included
             SQL;
 
             return $this->databaseClient

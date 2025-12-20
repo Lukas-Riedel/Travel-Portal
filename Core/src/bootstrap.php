@@ -110,8 +110,8 @@ use Itspire\MonologLoki\Handler\LokiHandler;
     $logger->pushHandler($handler); 
 
     // Clients.
-    $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $logger); 
     $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
+    $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $cacheClient, $logger); 
     $httpClient = new HttpClient($logger);
     $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));

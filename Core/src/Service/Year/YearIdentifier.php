@@ -24,20 +24,16 @@
         ]
     )]
     class YearIdentifier implements \JsonSerializable {        
-        private ?string $id;
+        private int $id;
         private readonly ?Highlight $mainHighlight;
 
-        public function __construct(?string $id, ?Highlight $mainHighlight) {
+        public function __construct(int $id, ?Highlight $mainHighlight) {
             $this->id = $id;
             $this->mainHighlight = $mainHighlight;
         }
 
-        public function getId() : string {
+        public function getId() : int {
             return $this->id;
-        }
-
-        public function setId(string $id) : void {
-            $this->id = $id;
         }
 
         public function getMainHighlight() : ?Highlight {

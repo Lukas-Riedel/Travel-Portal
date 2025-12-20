@@ -42,13 +42,13 @@
         ]
     )]
     class Year implements \JsonSerializable {        
-        private readonly string $id;
+        private readonly int $id;
         private readonly ?Highlight $mainHighlight;
         private readonly array $fitness;
         private readonly array $highlights;
         private readonly array $statistics;
 
-        public function __construct(string $id, ?Highlight $mainHighlight, array $fitness, array $highlights, array $statistics) {
+        public function __construct(int $id, ?Highlight $mainHighlight, array $fitness, array $highlights, array $statistics) {
             $this->id = $id;
             $this->fitness = $fitness;
             $this->highlights = $highlights;
@@ -56,7 +56,7 @@
             $this->statistics = $statistics;
         }
 
-        public function getId() : string {
+        public function getId() : int {
             return $this->id;
         }
 
