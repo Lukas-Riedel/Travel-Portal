@@ -417,7 +417,7 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($externalId, $replaced ? 1 : 0)
+                ->withParameters($externalId, $replaced ? "true" : "false")
                 ->execute() === 1;
         }
 
@@ -481,10 +481,11 @@
         public function deleteStaleAlbumIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM album_identifier
-                WHERE id NOT IN (
-                    SELECT id
-                    FROM album
+                FROM album_identifier ai
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM album a
+                    WHERE a.id = ai.id
                 )
             SQL;
 
@@ -496,10 +497,11 @@
         public function deleteStalePhotoIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM photo_identifier
-                WHERE id NOT IN (
-                    SELECT id
-                    FROM photo
+                FROM photo_identifier pi
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM photo p
+                    WHERE p.id = pi.id
                 )
             SQL;
 
@@ -583,13 +585,17 @@
                         SUM(batch_size) AS batch_size
                     FROM (
                         SELECT 
-                        album_id, 
-                        MIN(created) AS created, 
+                        pp.album_id, 
+                        MIN(pp.created) AS created, 
                         COUNT(*) AS uploaded_photos, 
-                        MAX(expected_batch_size) AS batch_size
-                        FROM photo_pending
-                        WHERE album_id IN (SELECT id FROM {$cteName})
-                        GROUP BY album_id, batch_id
+                        MAX(pp.expected_batch_size) AS batch_size
+                        FROM photo_pending pp
+                        WHERE EXISTS (
+                                SELECT 1 
+                                FROM {$cteName} cte 
+                                WHERE cte.id = pp.album_id
+                            )
+                        GROUP BY pp.album_id, pp.batch_id
                     ) x
                     GROUP BY album_id
                 ) pp 
@@ -600,7 +606,11 @@
                     FROM photo p
                     INNER JOIN photo_identifier pi
                         ON p.id = pi.id
-                    WHERE album_id IN (SELECT id FROM {$cteName})
+                    WHERE EXISTS (
+                            SELECT 1 
+                            FROM {$cteName} cte
+                            WHERE cte.id = p.album_id
+                        )
                     GROUP BY p.album_id
                 ) ps
                     ON a.id = ps.album_id

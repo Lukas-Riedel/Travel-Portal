@@ -370,8 +370,8 @@
             SQL;
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
-                ->withClause("pi.id NOT IN (SELECT place_id FROM place_event WHERE \"end\" < ROUND(EXTRACT(EPOCH FROM NOW())))")
-                ->withClause("pi.id NOT IN (SELECT place_id FROM place_permanent)");
+                ->withClause("NOT EXISTS (SELECT 1 FROM place_event pe WHERE pe.place_id = pi.id AND pe.\"end\" < ROUND(EXTRACT(EPOCH FROM NOW())))")
+                ->withClause("NOT EXISTS (SELECT 1 FROM place_permanent pp WHERE pp.place_id = pi.id)");
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
             }
@@ -786,7 +786,7 @@
             foreach ($place->getDates() as &$date) {                
                 $wasInserted &= $this->databaseClient
                     ->statementBuilder($sql)
-                    ->withParameters($eventId, $place->getId(), $date->getTrip()?->getId(), $date->getStart(), $date->getEnd(), $date->isLayover())
+                    ->withParameters($eventId, $place->getId(), $date->getTrip()?->getId(), $date->getStart(), $date->getEnd(), $date->isLayover() ? "true" : "false")
                     ->execute() === 1;
             }
 
@@ -850,22 +850,26 @@
         public function deleteStalePlaceIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM place_identifier
-                WHERE id NOT IN (
-                        SELECT place_id 
-                        FROM place_candidate
+                FROM place_identifier pi
+                WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM place_candidate pc
+                        WHERE pc.place_id = pi.id
                     )
-                    AND id NOT IN (
-                        SELECT place_id 
-                        FROM place_event
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM place_event pe
+                        WHERE pe.place_id = pi.id
                     ) 
-                    AND id NOT IN (
-                        SELECT place_id 
-                        FROM place_permanent
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM place_permanent pp
+                        WHERE pp.place_id = pi.id
                     ) 
-                    AND id NOT IN (
-                        SELECT place_id 
-                        FROM place_candidate_event
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM place_candidate_event pce
+                        WHERE pce.place_id = pi.id
                     )
             SQL;
 
@@ -877,15 +881,17 @@
         public function deleteVisitedCandidatePlaces() : int {
             $sql = <<<'SQL'
                 DELETE 
-                FROM place_candidate 
-                WHERE place_id IN (
-                        SELECT place_id 
-                        FROM place_event 
-                        WHERE "end" < ROUND(EXTRACT(EPOCH FROM NOW()))
+                FROM place_candidate pc
+                WHERE EXISTS (
+                        SELECT 1
+                        FROM place_event pe
+                        WHERE pe.place_id = pc.place_id
+                            AND pe."end" < ROUND(EXTRACT(EPOCH FROM NOW()))
                     )
-                    OR place_id IN (
-                        SELECT place_id
-                        FROM place_permanent
+                    OR EXISTS (
+                        SELECT 1
+                        FROM place_permanent pp
+                        WHERE pp.place_id = pc.place_id
                     )
             SQL;
 
@@ -929,15 +935,16 @@
 
         private function selectVisitedNearbyPlaces(string $placeId, float $latitude, float $longitude, int $limit) : array {
             $sql = <<<'SQL'
-                SELECT id
-                FROM place_identifier
-                WHERE id <> ?
-                    AND main_highlight_id IS NOT NULL
-                    AND id IN (
-                        SELECT place_id
-                        FROM place_event
+                SELECT pi.id
+                FROM place_identifier pi
+                WHERE pi.id <> ?
+                    AND pi.main_highlight_id IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM place_event pe
+                        WHERE pe.place_id = pi.id
                     )
-                ORDER BY coordinates <-> ST_SetSRID(ST_MakePoint(?, ?), 4326)
+                ORDER BY pi.coordinates <-> ST_SetSRID(ST_MakePoint(?, ?), 4326)
                 LIMIT ?
             SQL;
 
@@ -952,14 +959,15 @@
 
         private function selectCandidateNearbyPlaces(string $placeId, float $latitude, float $longitude, int $limit) : array {
             $sql = <<<'SQL'
-                SELECT id
-                FROM place_identifier
-                WHERE id <> ?
-                    AND id IN (
-                        SELECT place_id
-                        FROM place_candidate
+                SELECT pi.id
+                FROM place_identifier pi
+                WHERE pi.id <> ?
+                    AND EXISTS (
+                        SELECT 1
+                        FROM place_candidate pc
+                        WHERE pc.place_id = pi.id
                     )
-                ORDER BY coordinates <-> ST_SetSRID(ST_MakePoint(?, ?), 4326)
+                ORDER BY pi.coordinates <-> ST_SetSRID(ST_MakePoint(?, ?), 4326)
                 LIMIT ?
             SQL;
 

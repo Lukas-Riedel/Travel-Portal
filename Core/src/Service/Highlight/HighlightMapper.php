@@ -245,13 +245,15 @@
         public function deleteStaleHighlightIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM highlight_identifier
-                WHERE id NOT IN (
-                        SELECT highlight_id 
-                        FROM highlight_place
-                    ) AND id NOT IN (
-                        SELECT highlight_id 
-                        FROM highlight_trip
+                FROM highlight_identifier hi
+                WHERE NOT EXISTS (
+                        SELECT 1 
+                        FROM highlight_place hp
+                        WHERE hp.highlight_id = hi.id
+                    ) AND NOT EXISTS (
+                        SELECT 1 
+                        FROM highlight_trip ht
+                        WHERE ht.highlight_id = hi.id
                     )
             SQL;
 

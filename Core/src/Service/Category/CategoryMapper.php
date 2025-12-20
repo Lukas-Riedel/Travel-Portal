@@ -81,20 +81,20 @@
         public function selectCategories(?string $categoryId, ?string $countryCategoryId, array $categoryCategories, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT *
-                FROM category_identifier
+                FROM category_identifier ci
                 WHERE :CONDITIONS
                 ORDER BY name
             SQL;
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if (count($categoryCategories) > 0) {
-                $whereClauseBuilder->withClause("category = ANY(STRING_TO_ARRAY(?, ','))", implode(",", $categoryCategories));
+                $whereClauseBuilder->withClause("ci.category = ANY(STRING_TO_ARRAY(?, ','))", implode(",", $categoryCategories));
             }
             if ($categoryId !== null) {
-                $whereClauseBuilder->withClause("id = ?", $categoryId);
+                $whereClauseBuilder->withClause("ci.id = ?", $categoryId);
             }
             if ($countryCategoryId !== null) {
-                $whereClauseBuilder->withClause("id IN (SELECT category_id FROM region_geographical WHERE country_category_id = ?)", $countryCategoryId);
+                $whereClauseBuilder->withClause("EXISTS (SELECT 1 FROM region_geographical rg WHERE ci.id = rg.category_id AND rg.country_category_id = ?)", $countryCategoryId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
@@ -563,16 +563,16 @@
         public function deleteStaleCategoryIdentifiers() : int {
             $sql = <<<SQL
                 DELETE 
-                FROM category_identifier 
+                FROM category_identifier ci
                 WHERE :CONDITIONS
             SQL;
             
             $countryNames = array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames"));
             $whereClause = $this->databaseClient->whereClauseBuilder()
-                ->withClause("name NOT IN (" . implode(",", array_fill(0, count($countryNames), "?")) . ")", ...$countryNames)
-                ->withClause("id NOT IN (SELECT category_id FROM region_geographical)")
-                ->withClause("id NOT IN (SELECT category_id FROM region_composite)")
-                ->withClause("id NOT IN (SELECT subject_category_id FROM region_composite)")
+                ->withClause("ci.name NOT IN (" . implode(",", array_fill(0, count($countryNames), "?")) . ")", ...$countryNames)
+                ->withClause("NOT EXISTS (SELECT 1 FROM region_geographical rg WHERE rg.category_id = ci.id)")
+                ->withClause("NOT EXISTS (SELECT 1 FROM region_composite rc WHERE rc.category_id = ci.id)")
+                ->withClause("NOT EXISTS (SELECT 1 FROM region_composite rc WHERE rc.subject_category_id = ci.id)")
                 ->buildForAnd();
 
             return $this->databaseClient

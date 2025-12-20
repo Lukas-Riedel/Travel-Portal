@@ -399,13 +399,15 @@
         public function deleteStaleTripIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE 
-                FROM trip_identifier 
-                WHERE id NOT IN (
-                        SELECT trip_id 
-                        FROM trip_event
-                    ) AND id NOT IN (
-                        SELECT trip_id 
-                        FROM trip_candidate
+                FROM trip_identifier ti
+                WHERE NOT EXISTS (
+                        SELECT 1 
+                        FROM trip_event te
+                        WHERE te.trip_id = ti.id
+                    ) AND NOT EXISTS(
+                        SELECT 1 
+                        FROM trip_candidate tc
+                        WHERE tc.trip_id = ti.id
                     )
             SQL;
 

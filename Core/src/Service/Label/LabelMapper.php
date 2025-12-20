@@ -169,12 +169,12 @@
         public function deleteStaleLabelIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_identifier
+                FROM label_identifier li
                 WHERE :CONDITIONS
             SQL;
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
-                ->withClause("id NOT IN (SELECT label_id FROM label)");
+                ->withClause("NOT EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id)");
 
             $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 
                 $this->configurationService->getConfigurationEntry("dynamicLabels"));

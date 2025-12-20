@@ -232,10 +232,11 @@
                 FROM airline_identifier ai
                 LEFT JOIN airline_code ac
                     ON ai.id = ac.airline_id
-                WHERE ai.id IN (
-                    SELECT airline_id 
-                    FROM airline_code 
-                    WHERE code = ?
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM airline_code ac
+                    WHERE ai.id = ac.airline_id
+                        AND code = ?
                 )
                 GROUP BY ai.id
             SQL;
