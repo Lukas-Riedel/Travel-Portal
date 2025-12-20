@@ -27,6 +27,7 @@ WORKDIR /var/www/html
 COPY --from=builder /app ./
 COPY Core/nginx.conf /etc/nginx/nginx.conf
 COPY Core/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY Core/opcache.ini /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 EXPOSE 8080
 COPY Core/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

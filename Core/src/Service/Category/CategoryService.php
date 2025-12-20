@@ -22,6 +22,7 @@
 
         private readonly TransactionManager $transactionManager;
 
+        // TODO: Evaluate the benefit of having these caches as a field (instead of a local variable).
         private array $categoryIdToCategoryIdentifierCache = array();
         private array $placeIdToCategoryIdsCache = array();
 

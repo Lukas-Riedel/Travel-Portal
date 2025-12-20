@@ -27,6 +27,7 @@
         private readonly HighlightService $highlightService;
         private readonly NoteService $noteService;
 
+        // TODO: Evaluate the benefit of having these caches as a field (instead of a local variable).
         private array $countryNames = array();
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
