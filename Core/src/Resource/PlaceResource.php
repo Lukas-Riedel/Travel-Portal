@@ -1990,7 +1990,7 @@
                 throw new NotFoundException($albumId);
             }
 
-            return $this->photoService->getPhotos($albumId, $place->getLatitude(), $place->getLongitude());
+            return $this->photoService->getPhotosForAlbum($albumId, $place->getLatitude(), $place->getLongitude());
         }
 
         private function doGetPlace(string $placeId, ?int $nearbyPlaces = null) : Place {            

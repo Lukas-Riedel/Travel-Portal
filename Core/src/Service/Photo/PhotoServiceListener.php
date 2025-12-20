@@ -46,7 +46,7 @@
             $album = $this->photoService->getAlbum($message["albumId"]);
             if ($album !== null) {
                 $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
-                $photos = $this->photoService->getPhotos($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
+                $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
     
                 if (count($photos) !== $album->getImagesCount()) {
                     $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));

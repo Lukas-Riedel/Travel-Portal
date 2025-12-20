@@ -152,7 +152,29 @@
                 return $this->googleClient->getPhoto($this->selectPhotoExternalId($photoId))["baseUrl"];
             };
             $urlProvider->bindTo($this);
+
             return $this->doSelectPhoto($photoId, $urlProvider);
+        }
+
+        public function selectPhotos(array $photoIds) : array {
+            $sql = <<<SQL
+                SELECT *
+                FROM photo
+                WHERE id IN ({$this->databaseClient->getPlaceholdersSequence(count($photoIds))})
+            SQL;            
+                
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters(...$photoIds)
+                ->getMappedResultSet(function ($photoRow) {
+                    $urlProvider = function() use($photoRow) { 
+                        return $this->googleClient->getPhoto($this->selectPhotoExternalId($photoRow["id"]))["baseUrl"];
+                    };
+                    $urlProvider->bindTo($this);
+
+                    return new Photo($photoRow["id"], $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+                        $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"], $photoRow["sun_altitude"], $photoRow["sun_azimuth"]);                    
+                });
         }
 
         public function selectPendingPhotosWithFixedPosition(string $albumId) : array {

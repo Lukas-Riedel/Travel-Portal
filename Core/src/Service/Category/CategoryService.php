@@ -90,6 +90,7 @@
             if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
                 $this->categoryIdToCategoryIdentifierCache[$categoryId] = $this->categoryMapper->selectCategoryIdentifierById($categoryId);
             }
+            
             return $this->categoryIdToCategoryIdentifierCache[$categoryId];
         }
 
@@ -113,17 +114,27 @@
             return $this->getCategoryIdentifiersByIds($this->placeIdToCategoryIdsCache[$placeId] ?? array());
         }
 
-        public function getCategoryIdentifiersByIds(array $categoryIds) : array { 
-            $categories = array();
-
+        public function getCategoryIdentifiersByIds(array $categoryIds) : array {            
+            $categoryIdsToFetch = array();
             foreach ($categoryIds as &$categoryId) {
-                $category = $this->getCategoryIdentifierById($categoryId);
-                if ($category !== null) {
-                    $categories[] = $category;
+                if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
+                    $categoryIdsToFetch[] = $categoryId;
+                }
+            }
+
+            if (!empty($categoryIdsToFetch)) {
+                $fetchedCategoryIdentifiers = $this->categoryMapper->selectCategoryIdentifiersByIds($categoryIdsToFetch);
+                foreach ($fetchedCategoryIdentifiers as &$fetchedCategoryIdentifier) {
+                    $this->categoryIdToCategoryIdentifierCache[$fetchedCategoryIdentifier->getId()] = $fetchedCategoryIdentifier;
                 }
             }
             
-            return $categories;
+            $categoryIdentifiers = array();
+            foreach ($categoryIds as &$categoryId) {
+                $categoryIdentifiers[] = $this->categoryIdToCategoryIdentifierCache[$categoryId] ?? null;
+            }
+            
+            return $categoryIdentifiers;
         }
 
         public function getCategory(string $categoryId) : ?Category {

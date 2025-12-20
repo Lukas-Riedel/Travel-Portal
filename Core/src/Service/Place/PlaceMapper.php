@@ -27,7 +27,7 @@
         private readonly HighlightService $highlightService;
         private readonly NoteService $noteService;
 
-        private array $countries = array();
+        private array $countryNames = array();
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
             ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService, NoteService $noteService) {
@@ -248,7 +248,7 @@
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {
-                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -257,7 +257,7 @@
             if ($labelId !== null) {
                 $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
                 if (count($placeIds) > 0) {
-                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -277,6 +277,13 @@
             $placeRows = $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
+
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $placeRows), fn($highlightId) => !is_null($highlightId));
+            
+            $mainHighlights = array();
+            foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
+                $mainHighlights[$mainHighlight->getId()] = $mainHighlight;
+            }
 
             $places = array();
             foreach ($placeRows as &$placeRow) {
@@ -326,8 +333,8 @@
                         $excerpt = $placeRow["excerpt"];
                     }
                     
-                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
-                        $this->highlightService->getHighlight($placeRow["main_highlight_id"]), $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
+                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                        $mainHighlights[$placeRow["main_highlight_id"]] ?? null, $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -378,7 +385,7 @@
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {
-                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -387,7 +394,7 @@
             if ($labelId !== null) {
                 $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
                 if (count($placeIds) > 0) {
-                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -431,7 +438,7 @@
                     $nearbyPlacesArr = $this->selectCandidateNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
                 }
 
-                $places[] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
+                $places[] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
                     $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
             }
             
@@ -457,7 +464,7 @@
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {
-                    $whereClauseBuilder->withClause("pi.id IN (" . implode(",", array_fill(0, count($placeIds), "?")) . ")", ...$placeIds);
+                    $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -504,7 +511,7 @@
                         $nearbyPlacesArr = $this->selectCandidateNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
                     }
 
-                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->selectCountry($placeRow["country_category_id"]), $placeRow["latitude"],
+                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
                         $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array()); 
                 }
                 
@@ -525,7 +532,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($placeIdentifierRow) {
-                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
                         $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
                 });
         }
@@ -547,7 +554,7 @@
                 return null;
             }
 
-            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
                 $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
         }
 
@@ -567,7 +574,7 @@
                 return null;
             }
 
-            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->selectCountry($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
                 $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
         }
 
@@ -979,14 +986,14 @@
                 });
         }
 
-        private function selectCountry(string $countryCategoryId) : string {
-            if (array_key_exists($countryCategoryId, $this->countries)) {
-                return $this->countries[$countryCategoryId];
+        private function getCountryName(string $countryCategoryId) : string {
+            if (empty($this->countryNames)) {
+                foreach ($this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array()) as &$country) {
+                    $this->countryNames[$country->getId()] = $country->getName();
+                }
             }
 
-            $country = $this->categoryService->getCategoryIdentifierById($countryCategoryId)->getName();
-            $this->countries[$countryCategoryId] = $country;
-            return $country;
+            return $this->countryNames[$countryCategoryId];
         }
     }
 ?>

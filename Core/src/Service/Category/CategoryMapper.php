@@ -56,6 +56,36 @@
                 $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
         }
 
+        public function selectCategoryIdentifiersByIds(array $categoryIds) : array {
+            $sql = <<<SQL
+                SELECT *
+                FROM category_identifier
+                WHERE id IN ({$this->databaseClient->getPlaceholdersSequence(count($categoryIds))})
+            SQL;
+
+            $categoryIdentifierRows = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters(...$categoryIds)
+                ->getResultSet();
+            
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $categoryIdentifierRows), fn($highlightId) => !is_null($highlightId));
+            
+            $mainHighlights = array();
+            foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
+                $mainHighlights[$mainHighlight->getId()] = $mainHighlight;
+            }
+
+            $categoryIdentifiers = array();
+            foreach ($categoryIdentifierRows as &$categoryIdentifierRow) {
+                $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
+                    ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
+                $categoryIdentifiers[] = new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
+                    $metadata, $mainHighlights[$categoryIdentifierRow["main_highlight_id"]] ?? null);                    
+            }
+
+            return $categoryIdentifiers;
+        }
+
         public function selectCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
             $sql = <<<'SQL'
                 SELECT *
@@ -98,24 +128,36 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseClient
+            $categoryRows = $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
-                ->getMappedResultSet(function($categoryRow) use(&$includedEntities) {
-                    $highlights = array();
-                    if (in_array(CategoryIncludedEntity::Highlights->value, $includedEntities)) {
-                        $highlights = $this->highlightService->getCategoryHighlights($categoryRow["id"]);                      
-                    }
-    
-                    $statistics = array();
-                    if (in_array(CategoryIncludedEntity::Statistics->value, $includedEntities)) {
-                        $statistics = $this->statisticsService->getCategoryStatistics($categoryRow["id"]);              
-                    }
-                    
-                    $metadata = $categoryRow["color"] === null && $categoryRow["unicode"] === null && $categoryRow["public_holidays_calendar"] === null
-                        ? null : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
-                    return new Category($categoryRow["id"], $categoryRow["name"], CategoryCategory::from($categoryRow["category"]), $metadata,
-                        $this->highlightService->getHighlight($categoryRow["main_highlight_id"]), $highlights, $statistics);
-                });
+                ->getResultSet();
+            
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $categoryRows), fn($highlightId) => !is_null($highlightId));
+            
+            $mainHighlights = array();
+            foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
+                $mainHighlights[$mainHighlight->getId()] = $mainHighlight;
+            }
+
+            $categories = array();
+            foreach ($categoryRows as &$categoryRow) {
+                $highlights = array();
+                if (in_array(CategoryIncludedEntity::Highlights->value, $includedEntities)) {
+                    $highlights = $this->highlightService->getCategoryHighlights($categoryRow["id"]);                      
+                }
+
+                $statistics = array();
+                if (in_array(CategoryIncludedEntity::Statistics->value, $includedEntities)) {
+                    $statistics = $this->statisticsService->getCategoryStatistics($categoryRow["id"]);              
+                }
+                
+                $metadata = $categoryRow["color"] === null && $categoryRow["unicode"] === null && $categoryRow["public_holidays_calendar"] === null
+                    ? null : new CategoryMetadata($categoryRow["color"], $categoryRow["unicode"], $categoryRow["public_holidays_calendar"]);
+                $categories[] = new Category($categoryRow["id"], $categoryRow["name"], CategoryCategory::from($categoryRow["category"]), $metadata,
+                    $mainHighlights[$categoryRow["main_highlight_id"]] ?? null, $highlights, $statistics);
+            }
+
+            return $categories;
         }
 
         public function selectGeographicalRegions(?string $name) : array {            
@@ -569,7 +611,7 @@
             
             $countryNames = array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames"));
             $whereClause = $this->databaseClient->whereClauseBuilder()
-                ->withClause("ci.name NOT IN (" . implode(",", array_fill(0, count($countryNames), "?")) . ")", ...$countryNames)
+                ->withClause("ci.name NOT IN (" . $this->databaseClient->getPlaceholdersSequence(count($countryNames)) . ")", ...$countryNames)
                 ->withClause("NOT EXISTS (SELECT 1 FROM region_geographical rg WHERE rg.category_id = ci.id)")
                 ->withClause("NOT EXISTS (SELECT 1 FROM region_composite rc WHERE rc.category_id = ci.id)")
                 ->withClause("NOT EXISTS (SELECT 1 FROM region_composite rc WHERE rc.subject_category_id = ci.id)")

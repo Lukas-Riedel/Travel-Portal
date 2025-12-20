@@ -7,5 +7,6 @@
         // TODO: Get rid of this method.
         public function whereClauseBuilder() : WhereClauseBuilder;
         public function getIsNullOrEqualTo(string $var) : string;
+        public function getPlaceholdersSequence(int $count) : string;
     }
 ?>

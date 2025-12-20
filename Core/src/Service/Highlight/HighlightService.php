@@ -43,12 +43,16 @@
             return $highlightId === null ? null : $this->highlightMapper->selectHighlight($highlightId);
         }
 
+        public function getHighlights(array $highlightIds) : array {
+            return $this->highlightMapper->selectHighlightsByIds($highlightIds);
+        }
+
         public function getPlaceHighlights(string $placeId) : array {
-            return $this->highlightMapper->selectHighlights(HighlightType::Place, $placeId);
+            return $this->highlightMapper->selectHighlightsForEntity(HighlightType::Place, $placeId);
         }
 
         public function getTripHighlights(string $tripId) : array {
-            return $this->highlightMapper->selectHighlights(HighlightType::Trip, $tripId);
+            return $this->highlightMapper->selectHighlightsForEntity(HighlightType::Trip, $tripId);
         }
 
         public function getCategoryHighlights(string $categoryId) : array {
@@ -57,7 +61,7 @@
 
             $highlights = array();
             $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
-                $this->highlightMapper->selectHighlights(HighlightType::Category, $categoryId));
+                $this->highlightMapper->selectHighlightsForEntity(HighlightType::Category, $categoryId));
 
             foreach ($placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, null, null, null,
                 array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending) as &$categoryPlace) {
@@ -75,7 +79,7 @@
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
-            $allYearHighlights = $this->highlightMapper->selectHighlights(HighlightType::Year, $year);
+            $allYearHighlights = $this->highlightMapper->selectHighlightsForEntity(HighlightType::Year, $year);
             $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(), array_filter($allYearHighlights,
                 fn($highlight) => !empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlight->getId()))));
 

@@ -99,6 +99,10 @@
         public function getIsNullOrEqualTo(string $var) : string {
             return $var == null ? "IS NULL" : ("= '" . \pg_escape_string($this->connection, $var) . "'");
         }
+        
+        public function getPlaceholdersSequence(int $count) : string {
+            return $count === 0 ? "NULL" : implode(",", array_fill(0, $count, "?"));
+        }
 
         public function getCurentAtomicExecution() : ?AtomicExecution {
             return $this->currentAtomicExecution;

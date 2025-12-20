@@ -2,7 +2,6 @@
     namespace Core\Service\Trip;
 
     use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
     use Core\Service\Flight\FlightService;
@@ -230,69 +229,81 @@
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
-            return $this->databaseClient
+            $tripRows = $this->databaseClient
                 ->statementBuilder($sql, $whereClause)
-                ->getMappedResultSet(function($tripRow) use(&$includedEntities) {
-                    $countryCategories = $this->placeService->getCountryCategoriesForTrip($tripRow["id"]);
-                    
-                    $expenses = array();
-                    if (in_array(TripIncludedEntity::Expenses->value, $includedEntities)) {
-                        $expenses = $this->expenseService->getExpensesForTrip($tripRow["id"]);            
-                    }
-    
-                    $stays = array();
-                    if (in_array(TripIncludedEntity::Stays->value, $includedEntities)) {
-                        $stays = $this->stayService->getStaysForTrip($tripRow["id"]);                        
-                    }
-    
-                    $flights = array();
-                    if (in_array(TripIncludedEntity::Flights->value, $includedEntities)) {
-                        $flights = $this->flightService->getScheduledFlightsForTrip($tripRow["id"]);             
-                    }
-    
-                    $watchedFlights = array();
-                    if (in_array(TripIncludedEntity::WatchedFlights->value, $includedEntities)) {
-                        $watchedFlights = $this->flightService->getWatchedFlightsForTrip($tripRow["id"]);
-                    }
-    
-                    $fitness = array();
-                    if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
-                        $startOfDay = $tripRow["start"] - ($tripRow["start"] % CommonConstants::ONE_DAY_SECONDS);
-                        while ($startOfDay < $tripRow["end"]) {
-                            $dayStart = max($startOfDay, $tripRow["start"]);
-                            $dayEnd = min($startOfDay + CommonConstants::ONE_DAY_SECONDS, $tripRow["end"]);
+                ->getResultSet();
+            
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $tripRows), fn($highlightId) => !is_null($highlightId));
+            
+            $mainHighlights = array();
+            foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
+                $mainHighlights[$mainHighlight->getId()] = $mainHighlight;
+            }
 
-                            $fitness[] = $this->fitnessService->getFitnessRecordForInterval($dayStart, $dayEnd);
-                            $startOfDay += CommonConstants::ONE_DAY_SECONDS;
-                        }
+            $trips = array();
+            foreach ($tripRows as &$tripRow) {
+                $countryCategories = $this->placeService->getCountryCategoriesForTrip($tripRow["id"]);
+                    
+                $expenses = array();
+                if (in_array(TripIncludedEntity::Expenses->value, $includedEntities)) {
+                    $expenses = $this->expenseService->getExpensesForTrip($tripRow["id"]);            
+                }
+
+                $stays = array();
+                if (in_array(TripIncludedEntity::Stays->value, $includedEntities)) {
+                    $stays = $this->stayService->getStaysForTrip($tripRow["id"]);                        
+                }
+
+                $flights = array();
+                if (in_array(TripIncludedEntity::Flights->value, $includedEntities)) {
+                    $flights = $this->flightService->getScheduledFlightsForTrip($tripRow["id"]);             
+                }
+
+                $watchedFlights = array();
+                if (in_array(TripIncludedEntity::WatchedFlights->value, $includedEntities)) {
+                    $watchedFlights = $this->flightService->getWatchedFlightsForTrip($tripRow["id"]);
+                }
+
+                $fitness = array();
+                if (in_array(TripIncludedEntity::Fitness->value, $includedEntities)) {
+                    $startOfDay = $tripRow["start"] - ($tripRow["start"] % CommonConstants::ONE_DAY_SECONDS);
+                    while ($startOfDay < $tripRow["end"]) {
+                        $dayStart = max($startOfDay, $tripRow["start"]);
+                        $dayEnd = min($startOfDay + CommonConstants::ONE_DAY_SECONDS, $tripRow["end"]);
+
+                        $fitness[] = $this->fitnessService->getFitnessRecordForInterval($dayStart, $dayEnd);
+                        $startOfDay += CommonConstants::ONE_DAY_SECONDS;
                     }
-    
-                    $notes = array();
-                    if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
-                        $notes = $this->noteService->getTripNotes($tripRow["id"]);                   
-                    }
-    
-                    $highlights = array();
-                    if (in_array(TripIncludedEntity::Highlights->value, $includedEntities)) {
-                        $highlights = $this->highlightService->getTripHighlights($tripRow["id"]);        
-                    }
-    
-                    $statistics = array();
-                    if (in_array(TripIncludedEntity::Statistics->value, $includedEntities) && $tripRow["start"] < time()) {
-                        $statistics = $this->statisticsService->getTripStatistics($tripRow["id"]);                 
-                    }
-    
-                    $publicHolidays = array();
-                    if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
-                        $publicHolidays = $this->calendarClient->getPublicHolidaysForDatesInCategories(function($countryCategory) use(&$tripRow) {
-                            return $this->placeService->getDatesForTripAndCountry($tripRow["id"], $countryCategory->getId());
-                        }, $countryCategories);                               
-                    }
-    
-                    return new Trip($tripRow["id"], $tripRow["name"], $tripRow["year"], $this->highlightService->getHighlight($tripRow["main_highlight_id"]), $tripRow["start"],
-                        $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $flights, $watchedFlights,
-                        $fitness, $notes, $highlights, $statistics, $publicHolidays);
-                });
+                }
+
+                $notes = array();
+                if (in_array(TripIncludedEntity::Notes->value, $includedEntities)) {
+                    $notes = $this->noteService->getTripNotes($tripRow["id"]);                   
+                }
+
+                $highlights = array();
+                if (in_array(TripIncludedEntity::Highlights->value, $includedEntities)) {
+                    $highlights = $this->highlightService->getTripHighlights($tripRow["id"]);        
+                }
+
+                $statistics = array();
+                if (in_array(TripIncludedEntity::Statistics->value, $includedEntities) && $tripRow["start"] < time()) {
+                    $statistics = $this->statisticsService->getTripStatistics($tripRow["id"]);                 
+                }
+
+                $publicHolidays = array();
+                if (in_array(TripIncludedEntity::PublicHolidays->value, $includedEntities)) {
+                    $publicHolidays = $this->calendarClient->getPublicHolidaysForDatesInCategories(function($countryCategory) use(&$tripRow) {
+                        return $this->placeService->getDatesForTripAndCountry($tripRow["id"], $countryCategory->getId());
+                    }, $countryCategories);                               
+                }
+
+                $trips[] = new Trip($tripRow["id"], $tripRow["name"], $tripRow["year"], $mainHighlights[$tripRow["main_highlight_id"]] ?? null, $tripRow["start"],
+                    $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $flights, $watchedFlights,
+                    $fitness, $notes, $highlights, $statistics, $publicHolidays);
+            }
+
+            return $trips;
         }
 
         public function insertTripIdentifier(TripIdentifier $tripIdentifier) : bool {

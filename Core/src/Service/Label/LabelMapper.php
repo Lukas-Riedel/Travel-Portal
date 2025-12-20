@@ -179,7 +179,7 @@
             $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 
                 $this->configurationService->getConfigurationEntry("dynamicLabels"));
             if (count($dynamicLabelNames) > 0) {
-                $whereClauseBuilder->withClause("name NOT IN (" . implode(",", array_fill(0, count($dynamicLabelNames), "?")) . ")", ...$dynamicLabelNames);
+                $whereClauseBuilder->withClause("name NOT IN (" . $this->databaseClient->getPlaceholdersSequence(count($dynamicLabelNames)) . ")", ...$dynamicLabelNames);
             }
 
             $whereClause = $whereClauseBuilder->buildForAnd();

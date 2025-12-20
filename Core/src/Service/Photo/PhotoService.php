@@ -101,7 +101,7 @@
                     throw new \InvalidArgumentException("Latitude and longitude must be provided when setting main photo.");
                 }
 
-                $photos = $this->getPhotos($albumId, $latitude, $longitude, true);
+                $photos = $this->getPhotosForAlbum($albumId, $latitude, $longitude, true);
 
                 $mainPhotoPosition = $mainPhotoPosition - 1;
                 if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
@@ -128,7 +128,11 @@
             return $this->photoMapper->selectPhoto($photoId);
         }
 
-        public function getPhotos(string $albumId, float $latitude, float $longitude, bool $forceRefetch = false) : array {
+        public function getPhotosByIds(array $photoIds) : array {
+            return $this->photoMapper->selectPhotos($photoIds);
+        }
+
+        public function getPhotosForAlbum(string $albumId, float $latitude, float $longitude, bool $forceRefetch = false) : array {
             $fetchedAlbumKey = sprintf(self::ALBUM_PHOTOS_CACHE_KEY_FORMAT, $albumId);
             if ($forceRefetch) {
                 $this->cacheClient->delete($fetchedAlbumKey);
