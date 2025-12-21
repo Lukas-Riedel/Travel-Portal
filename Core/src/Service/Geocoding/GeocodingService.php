@@ -109,11 +109,7 @@
                 foreach ($resolvedLocation["address_components"] as &$addressComponent) {
                     if (in_array("country", $addressComponent["types"])) {
                         $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
-                        if ($addressComponent["long_name"] === null) {
-                            // TODO: Remove the UNKNOWN country, use null instead.
-                            $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == "UNKNOWN"))[0]["name"];
-                        }
-                        else if (in_array($addressComponent["long_name"], array_map(fn($c) => $c["country"], $countryNames))) {
+                        if (in_array($addressComponent["long_name"], array_map(fn($c) => $c["country"], $countryNames))) {
                             $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $addressComponent["long_name"]))[0]["name"];
                         }
                         else {

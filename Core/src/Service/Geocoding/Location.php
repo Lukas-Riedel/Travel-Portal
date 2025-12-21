@@ -7,7 +7,7 @@
         schema: "Location",
         type: "object",
         description: "A class representing a geographical location",
-        required: ["country", "latitude", "longitude", "timezone"],
+        required: ["latitude", "longitude", "timezone"],
         properties: [
             new OA\Property(
                 property: "country",

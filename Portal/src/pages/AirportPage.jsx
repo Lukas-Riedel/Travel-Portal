@@ -28,7 +28,7 @@ export default function AirportPage() {
         <>
             <PageHeader
                 name={airport && (airport.longName ?? airport.code)}
-                categories={airport ? [countryCategoriesMap.get(airport.country)] : []}
+                categories={airport?.country ? [countryCategoriesMap.get(airport.country)] : []}
                 onNameChanged={updateAirportLongName} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <FlightMap

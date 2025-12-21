@@ -21,8 +21,8 @@ import AirlineCardGrid from "../components/AirlineCardGrid"
 import { useAirports } from "../hooks/useAirports"
 import {
     createScheduledFlight, createWatchedFlight, getCoordinates, refreshPlaceAlbum, updateCategoryMetadata,
-    listRegularPlaces, createGeographicalExtensionRegion, removeCandidatePlace, logFlight, replaceFitness
-} from "../clients/coreClient"
+    listRegularPlaces, createGeographicalExtensionRegion, removeCandidatePlace, logFlight, replaceFitness, updatePlaceCountry
+} from "../clients/coreClient.ts"
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useSubscriptions } from "../hooks/useSubscriptions"
@@ -64,7 +64,7 @@ export default function AdminPage() {
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
-    const { updateAirportLongName } = useAirports()
+    const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: "agent" })
     const trips = useRegularTrips({ include: ["watchedFlights"] })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense, updateTripNoteContent,
@@ -414,7 +414,9 @@ export default function AdminPage() {
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionRegion}
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}
-                    onCategoryMetadataChanged={updateCategoryMetadata} />
+                    onCategoryMetadataChanged={updateCategoryMetadata}
+                    onPlaceCountryChanged={updatePlaceCountry}
+                    onAirportCountryChanged={updateAirportCountry} />
             )}
             {activeTab === 4 && (
                 <ConfigurationEditor

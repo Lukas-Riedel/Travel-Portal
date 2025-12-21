@@ -17,6 +17,7 @@
         private const DATE_WITH_INCORRECT_DURATION_ISSUE_NAME = "DATE_WITH_INCORRECT_DURATION";
         private const DUPLICATED_PLACE_ISSUE_NAME = "DUPLICATED_PLACE";
         private const NON_REVIEWED_PLACE_ISSUE_NAME = "NON_REVIEWED_PLACE";
+        private const PLACE_WITHOUT_COUNTRY_ISSUE_NAME = "PLACE_WITHOUT_COUNTRY";
 
         private readonly PlaceService $placeService;
 
@@ -30,7 +31,7 @@
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                 time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
 
-            $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() != $place->getCountry()
+            $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() !== $place->getCountry()
                 && count(array_filter($place->getCategories(), fn($category) => $category->getCategory() === CategoryCategory::Administrative)) === 0);
             foreach ($placesWithoutAdministrativeCategory as &$placeWithoutAdministrativeCategory) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_WITHOUT_ADMINISTRATIVE_CATEGORY_ISSUE_NAME, 
@@ -84,6 +85,11 @@
                 }, array())), fn($group) => count($group) > 1);
             foreach ($duplicatedPlacesGroups as &$duplicatedPlacesGroup) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::DUPLICATED_PLACE_ISSUE_NAME, $duplicatedPlacesGroup, time());                    
+            }
+            
+            $placesWithoutCountry = array_filter($relevantPlaces, fn($place) => $place->getCountry() === null);
+            foreach ($placesWithoutCountry as &$placeWithoutCountry) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_WITHOUT_COUNTRY_ISSUE_NAME, $placeWithoutCountry, time());                    
             }
 
             $nonReviewedPlaces = array_filter($relevantPlaces, fn($place) => count(array_filter($place->getDates(),

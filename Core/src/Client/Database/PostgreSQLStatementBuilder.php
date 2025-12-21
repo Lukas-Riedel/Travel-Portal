@@ -61,7 +61,7 @@ use Monolog\Logger;
         }
 
         public function getMappedResultSet(callable $fn) : array {
-            return array_filter(array_map($fn, $this->getResultSet()), fn($v) => !is_null($v));
+            return array_filter(array_map($fn, $this->getResultSet()), fn($v) => $v !== null);
         }
 
         public function getResultSetForColumn(string $column) : array {
@@ -69,7 +69,7 @@ use Monolog\Logger;
         }
 
         public function getMappedResultSetForColumn(string $column, callable $fn) : array {
-            return array_filter(array_map($fn, $this->getResultSetForColumn($column)), fn($v) => !is_null($v));
+            return array_filter(array_map($fn, $this->getResultSetForColumn($column)), fn($v) => $v !== null);
         }
 
         public function getSingleRow() : mixed {

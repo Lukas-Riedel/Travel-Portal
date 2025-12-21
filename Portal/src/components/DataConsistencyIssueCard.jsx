@@ -9,7 +9,8 @@ import { useNavigate } from "react-router"
 import { listCategories } from "../clients/coreClient"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
-    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged }) {
+    onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
+    onPlaceCountryChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
     const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
@@ -181,6 +182,20 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 )
             }
         },
+        "PLACE_WITHOUT_COUNTRY": {
+            name: "Místo bez státní příslušnosti",
+            getProperties: place => (
+                {
+                    "Název": place.name
+                }
+            ),
+            resolve: place => showInputToast(
+                "Zadej novou státní příslušnost místa:",
+                async (country) => onPlaceCountryChanged(place.id, country),
+                "Státní příslušnost místa byla úspěšně aktualizována",
+                "Nepodařilo se aktualizovat státní příslušnost místa"
+            )
+        },
         "NON_REVIEWED_PLACE": {
             name: "Nezrevidované místo",
             getProperties: place => (
@@ -258,13 +273,13 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: places => (
                 {
                     "Souřadnice": places[0].latitude.toFixed(4) + ", " + places[0].longitude.toFixed(4),
-                    ...Object.fromEntries(places.map((place, idx) => ["Název " + (idx + 1), place.name + (place.dates.length > 0 ? " (" + formatEvents(place.dates.length) + ")" : "")]))
+                    ...Object.fromEntries(places.map((place, idx) => ["Název " + (idx + 1), place.name + (place.dates?.length ? " (" + formatEvents(place.dates.length) + ")" : "")]))
                 }
             ),
             resolve: places => showFormToast(
                 "Vyber místo k odstranění:",
                 [
-                    { type: "select", required: true, options: places.filter(place => place.dates.length === 0).map(place => ({ id: place.id, name: place.name })) }
+                    { type: "select", required: true, options: places.filter(place => !place.dates?.length).map(place => ({ id: place.id, name: place.name })) }
                 ],
                 onPlaceRemoved,
                 "Místo bylo úspěšně odstraněno",
@@ -284,6 +299,21 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 async (name) => onAirportNameChanged(airport.id, name),
                 "Jméno letiště bylo úspěšně aktualizováno",
                 "Nepodařilo se aktualizovat jméno letiště"
+            )
+        },
+        "AIRPORT_WITHOUT_COUNTRY": {
+            name: "Letiště bez státní příslušnosti",
+            getProperties: airport => (
+                {
+                    "Název": airport.shortName,
+                    "Kód": airport.code
+                }
+            ),
+            resolve: airport => showInputToast(
+                "Zadej novou státní příslušnost letiště:",
+                async (country) => onAirportCountryChanged(airport.id, country),
+                "Státní příslušnost letiště byla úspěšně aktualizována",
+                "Nepodařilo se aktualizovat státní příslušnost letiště"
             )
         },
         "AIRLINE_WITHOUT_LOGO": {

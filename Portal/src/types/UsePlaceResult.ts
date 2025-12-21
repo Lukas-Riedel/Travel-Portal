@@ -18,4 +18,5 @@ export interface UsePlaceResult {
     createPlaceNote: (content: string) => Promise<void>
     updatePlaceNoteContent: (noteId: string, content: string) => Promise<void>
     removePlaceNote: (noteId: string) => Promise<void>
+    updatePlaceCountry: (country: string) => Promise<void>
 }

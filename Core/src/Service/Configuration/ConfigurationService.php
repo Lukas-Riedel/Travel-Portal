@@ -6,7 +6,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
 
-    // TODO: Initialize the database with default values if they don't exist.
+    // TODO: Initialize the database with default values if they don't exist -> in deploy.php.
     class ConfigurationService {
 
         private readonly ConfigurationMapper $configurationMapper;

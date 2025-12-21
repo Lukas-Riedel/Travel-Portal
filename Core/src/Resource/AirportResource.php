@@ -194,7 +194,13 @@
                             description: "The long name of the airport",
                             type: "string",
                             example: "Dubai International Airport"
-                        )
+                        ),
+                        new OA\Property(
+                            property: "country",
+                            description: "The country of the airport",
+                            type: "string",
+                            example: "United Arab Emirates"
+                        ),
                     ]
                 )
             ),
@@ -277,6 +283,11 @@
             $newLongName = $this->getJsonBodyField($request, "longName");
             if ($newLongName !== null) {
                 $wasUpdated |= $this->flightService->updateAirportName($airportId, $newLongName);
+            }
+
+            $newCountry = $this->getJsonBodyField($request, "country");
+            if ($newCountry !== null) {
+                $wasUpdated |= $this->flightService->updateAirportCountry($airportId, $newCountry);
             }
 
             if (!$wasUpdated) {

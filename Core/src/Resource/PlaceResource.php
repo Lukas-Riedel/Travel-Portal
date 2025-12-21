@@ -438,6 +438,12 @@
                             example: "Prague"
                         ),
                         new OA\Property(
+                            property: "country",
+                            description: "The country of the place",
+                            type: "string",
+                            example: "Czechia"
+                        ),
+                        new OA\Property(
                             property: "latitude",
                             type: "number",
                             format: "float",
@@ -553,6 +559,11 @@
             $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->placeService->updatePlaceName($placeId, $newName);
+            }
+
+            $newCountry = $this->getJsonBodyField($request, "country");
+            if ($newCountry !== null) {
+                $wasUpdated |= $this->placeService->updatePlaceCountry($placeId, $newCountry);
             }
 
             $newLatitude = $this->getJsonBodyField($request, "latitude");

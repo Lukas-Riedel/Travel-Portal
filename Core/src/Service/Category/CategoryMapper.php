@@ -68,7 +68,7 @@
                 ->withParameters(...$categoryIds)
                 ->getResultSet();
             
-            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $categoryIdentifierRows), fn($highlightId) => !is_null($highlightId));
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $categoryIdentifierRows), fn($highlightId) => $highlightId !== null);
             
             $mainHighlights = array();
             foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
@@ -132,7 +132,7 @@
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
             
-            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $categoryRows), fn($highlightId) => !is_null($highlightId));
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $categoryRows), fn($highlightId) => $highlightId !== null);
             
             $mainHighlights = array();
             foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {

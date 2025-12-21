@@ -477,7 +477,8 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($airportIdentifier->getCode(), $this->categoryService->getOrCreateCountryCategoryIdentifier($airportIdentifier->getCountry())->getId(),
+                ->withParameters($airportIdentifier->getCode(), $airportIdentifier->getCountry() === null ? null
+                    : $this->categoryService->getOrCreateCountryCategoryIdentifier($airportIdentifier->getCountry())->getId(),
                     $airportIdentifier->getLatitude(), $airportIdentifier->getLongitude(), $airportIdentifier->getTimezone())
                 ->getSingleColumn("id");
 
@@ -628,6 +629,19 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $airportId)
+                ->execute() === 1;
+        }
+
+        public function updateAirportCountry(string $airportId, string $country) : bool {
+            $sql = <<<'SQL'
+                UPDATE airport_identifier
+                SET country_category_id = ?
+                WHERE id = ?
+            SQL;
+            
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getId(), $airportId)
                 ->execute() === 1;
         }
 

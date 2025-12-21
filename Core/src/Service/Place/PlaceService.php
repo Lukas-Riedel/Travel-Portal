@@ -173,6 +173,17 @@
             return $wasUpdated;
         }
 
+        public function updatePlaceCountry(string $placeId, string $country) : bool {
+            $wasUpdated = true;
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$country, &$wasUpdated) {
+                $wasUpdated &= $this->placeMapper->updatePlaceCountry($placeId, $country);            
+                if ($wasUpdated) {
+                    $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
+                }
+            });
+            return $wasUpdated;
+        }
+
         public function updatePlaceLocation(string $placeId, float $latitude, float $longitude) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$placeId, &$latitude, &$longitude, &$wasUpdated) {
@@ -307,19 +318,14 @@
             $this->placeMapper->deleteVisitedCandidatePlaces();
         }
 
-        private function getOrCreatePlaceIdentifier(string $name, string $country, string $address) : PlaceIdentifier {            
+        private function getOrCreatePlaceIdentifier(string $name, ?string $country, string $address) : PlaceIdentifier {            
             $placeIdentifier = $this->placeMapper->selectPlaceIdentifier($name, $country);
             if ($placeIdentifier !== null) {
                 return $placeIdentifier;
             }
 
-            if ($country === array_values(array_filter($this->configurationService->getConfigurationEntry("countryNames"), 
-                fn($c) => $c["country"] === "UNKNOWN"))[0]["name"]) {
-                throw new \InvalidArgumentException("Cannot create an identifier for an unknown country.");
-            }
-            
             $location = $this->geocodingService->getLocation($address);
-            $placeIdentifier = new PlaceIdentifier(null, $name, $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
+            $placeIdentifier = new PlaceIdentifier(null, $name, $country === null ? null : $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
                 $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
             $this->transactionManager->executeAtomically(function() use(&$placeIdentifier) {
                 $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
@@ -346,9 +352,9 @@
             return $wasRemoved;
         }
 
-        private function getSuggestedExcerpt(string $name, string $country) : ?string {
+        private function getSuggestedExcerpt(string $name, ?string $country) : ?string {
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeExcerpt"];
-            return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country));
+            return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country ?? ""));
         }
 
         private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) : int {

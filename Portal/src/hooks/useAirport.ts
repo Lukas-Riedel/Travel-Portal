@@ -1,4 +1,4 @@
-import { getAirport, updateAirportLongName } from "../clients/coreClient.ts"
+import { getAirport, updateAirportCountry, updateAirportLongName } from "../clients/coreClient.ts"
 import type { UseAirportResult } from "../types/UseAirportResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
@@ -13,6 +13,7 @@ export const useAirport = (airportId?: string): UseAirportResult => {
 
     return {
         airport: response,
-        updateAirportLongName: (name: string) => updateAirportLongName(airportId, name).then(setResponse)
+        updateAirportLongName: (name: string) => updateAirportLongName(airportId, name).then(setResponse),
+        updateAirportCountry: (country: string) => updateAirportCountry(airportId, country).then(setResponse)
     }
 }

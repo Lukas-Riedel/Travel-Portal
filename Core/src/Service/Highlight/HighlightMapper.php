@@ -46,7 +46,7 @@
                 ->withParameters(...$highlightIds)
                 ->getResultSet();            
             
-            $photoIds = array_filter(array_map(fn($placeRow) => $placeRow["photo_id"], $highlightRows), fn($photoId) => !is_null($photoId));
+            $photoIds = array_filter(array_map(fn($placeRow) => $placeRow["photo_id"], $highlightRows), fn($photoId) => $photoId !== null);
 
             $photos = array();
             foreach ($this->photoService->getPhotosByIds($photoIds) as &$photo) {

@@ -7,7 +7,7 @@
         schema: "AirportIdentifier",
         type: "object",
         description: "A class representing an airport identifier",
-        required: ["id", "code", "country", "latitude", "longitude", "timezone"],
+        required: ["id", "code", "latitude", "longitude", "timezone"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -59,12 +59,12 @@
         private ?string $id;
         private ?string $longName;
         private readonly string $code;
-        private readonly string $country;
+        private readonly ?string $country;
         private readonly float $latitude;
         private readonly float $longitude;
         private readonly string $timezone;
 
-        public function __construct(?string $id, ?string $longName, string $code, string $country,
+        public function __construct(?string $id, ?string $longName, string $code, ?string $country,
             float $latitude, float $longitude, string $timezone) {
             $this->id = $id;
             $this->longName = $longName;
@@ -91,7 +91,7 @@
             return $this->code;
         }
 
-        public function getCountry() : string {
+        public function getCountry() : ?string {
             return $this->country;
         }
 

@@ -110,6 +110,13 @@ export const updateAirportLongName = async (airportId: string, longName: string)
         }
     ).then(extractData)
 
+export const updateAirportCountry = async (airportId: string, country: string): Promise<Airport> =>
+    coreClient.patch<Airport>(`airports/${airportId}`,
+        {
+            country
+        }
+    ).then(extractData)
+
 export const getHighlight = async (highlightId: string): Promise<Highlight> =>
     coreClient.get<Highlight>(`highlights/${highlightId}`)
         .then(extractData)
@@ -369,14 +376,21 @@ export const getPlace = async (placeId: string, nearbyPlaces?: number): Promise<
         {
             nearbyPlaces
         }
-    ))
-        .then(extractData)
+    )).then(extractData)
         .then(place => new Place(place))
 
 export const updatePlaceName = async (placeId: string, name: string): Promise<Place> =>
     coreClient.patch<IPlace>(`places/${placeId}`,
         {
             name
+        }
+    ).then(extractData)
+        .then(place => new Place(place))
+
+export const updatePlaceCountry = async (placeId: string, country: string): Promise<Place> =>
+    coreClient.patch<IPlace>(`places/${placeId}`,
+        {
+            country
         }
     ).then(extractData)
         .then(place => new Place(place))

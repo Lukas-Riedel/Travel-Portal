@@ -27,7 +27,7 @@
         private readonly HighlightService $highlightService;
         private readonly NoteService $noteService;
 
-        // TODO: Evaluate the benefit of having these caches as a field (instead of a local variable).
+        // TODO: Evaluate the benefit of having this cache as a field (instead of a local variable).
         private array $countryNames = array();
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
@@ -279,7 +279,7 @@
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
 
-            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $placeRows), fn($highlightId) => !is_null($highlightId));
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $placeRows), fn($highlightId) => $highlightId !== null);
             
             $mainHighlights = array();
             foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
@@ -538,17 +538,17 @@
                 });
         }
 
-        public function selectPlaceIdentifier(string $name, string $country) : ?PlaceIdentifier {
-            $sql = <<<'SQL'
+        public function selectPlaceIdentifier(string $name, ?string $country) : ?PlaceIdentifier {
+            $sql = <<<SQL
                 SELECT *
                 FROM place_identifier
                 WHERE name = ?
-                    AND country_category_id = ?
+                    AND country_category_id {$this->databaseClient->getIsNullOrEqualTo($country === null ? null : $this->categoryService->getCategoryIdentifier($country)?->getId())}
             SQL;
 
             $placeIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($name, $this->categoryService->getCategoryIdentifier($country)->getId())
+                ->withParameters($name)
                 ->getSingleRow();
 
             if ($placeIdentifierRow === null) {
@@ -730,9 +730,10 @@
             
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($placeIdentifier->getName(), $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
-                    $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getExcerpt(),
-                    $placeIdentifier->getScore(), $placeIdentifier->getQuality())
+                ->withParameters($placeIdentifier->getName(), $placeIdentifier->getCountry() === null ? null
+                    : $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
+                    $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
+                    $placeIdentifier->getExcerpt(), $placeIdentifier->getScore(), $placeIdentifier->getQuality())
                 ->getSingleColumn("id");
                 
             if ($id === null) {
@@ -815,6 +816,19 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->execute();
+        }
+
+        public function updatePlaceCountry(string $placeId, string $country) : bool {
+            $sql = <<<'SQL'
+                UPDATE place_identifier
+                SET country_category_id = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getId(), $placeId)
+                ->execute() === 1;
         }
 
         public function updatePlaceLocation(string $placeId, float $latitude, float $longitude) : bool {
@@ -987,14 +1001,14 @@
                 });
         }
 
-        private function getCountryName(string $countryCategoryId) : string {
+        private function getCountryName(?string $countryCategoryId) : ?string {
             if (empty($this->countryNames)) {
                 foreach ($this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array()) as &$country) {
                     $this->countryNames[$country->getId()] = $country->getName();
                 }
             }
 
-            return $this->countryNames[$countryCategoryId];
+            return $this->countryNames[$countryCategoryId] ?? null;
         }
     }
 ?>

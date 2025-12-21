@@ -9,7 +9,7 @@
         schema: "Place",
         type: "object",
         description: "A class representing a place",
-        required: ["id", "name", "country", "latitude", "longitude", "timezone", "score"],
+        required: ["id", "name", "latitude", "longitude", "timezone", "score"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -115,7 +115,7 @@
     class Place implements \JsonSerializable {        
         private readonly string $id;
         private readonly string $name;
-        private readonly string $country;
+        private readonly ?string $country;
         private readonly float $latitude;
         private readonly float $longitude;
         private readonly string $timezone;
@@ -130,7 +130,7 @@
         private readonly array $nearbyPlaces;
         private array $dates;
 
-        public function __construct(string $id, string $name, string $country, float $latitude, float $longitude,
+        public function __construct(string $id, string $name, ?string $country, float $latitude, float $longitude,
             string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt, array $categories,
             array $highlights, array $labels, array $notes, array $nearbyPlaces, array $dates) {
             $this->id = $id;
@@ -159,7 +159,7 @@
             return $this->name;
         }
 
-        public function getCountry() : string {
+        public function getCountry() : ?string {
             return $this->country;
         }
 

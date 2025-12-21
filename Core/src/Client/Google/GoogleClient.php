@@ -30,6 +30,7 @@
         private const ACCESS_CALENDAR_EVENT_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events/%s";
         private const WATCH_CALENDAR_EVENTS_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events/watch";
         
+        // TODO: Do not hardcode the language here.
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=en&address=%s";
         private const GET_ADDRESS_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&latlng=%s,%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";

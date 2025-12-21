@@ -30,8 +30,8 @@
             $countryCategories = $this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array());
             $geographicalRegions = $this->categoryService->getAllGeographicalRegions();
 
-            $visitedCountryNames = array_keys(array_filter(array_count_values(array_map(fn($place) => $place->getCountry(),
-                $relevantPlaces)), fn($count) => $count > 1));
+            $visitedCountryNames = array_keys(array_filter(array_count_values(array_filter(array_map(fn($place) => $place->getCountry(),
+                $relevantPlaces), fn($country) => $country !== null)), fn($count) => $count > 1));
             $visitedCountryCategoryIds = array_map(fn($category) => $category->getId(), array_filter($countryCategories,
                 fn($category) => in_array($category->getName(), $visitedCountryNames)));
             $visitedCountryCategoryIdsWithoutGeographicalRegions = array_filter($visitedCountryCategoryIds,
@@ -51,7 +51,8 @@
             }
             
             $allPlaceIdentifiers = $this->placeService->getAllPlaceIdentifiers();
-            $plannedCountryNames = array_unique(array_map(fn($placeIdentifier) => $placeIdentifier->getCountry(), $allPlaceIdentifiers));
+            $plannedCountryNames = array_unique(array_filter(array_map(fn($placeIdentifier) => $placeIdentifier->getCountry(),
+                $allPlaceIdentifiers), fn($country) => $country !== null));
             $plannedCountryCategories = array_filter($countryCategories,
                 fn($category) => in_array($category->getName(), $plannedCountryNames));
 

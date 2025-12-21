@@ -11,6 +11,7 @@
         private const LOGGED_FLIGHT_WITHOUT_FLIGHT_EVENT_ISSUE_NAME = "LOGGED_FLIGHT_WITHOUT_FLIGHT_EVENT";
         private const AIRPORT_WITHOUT_LONG_NAME_ISSUE_NAME = "AIRPORT_WITHOUT_LONG_NAME";
         private const AIRLINE_WITHOUT_LOGO_ISSUE_NAME = "AIRLINE_WITHOUT_LOGO";
+        private const AIRPORT_WITHOUT_COUNTRY_ISSUE_NAME = "AIRPORT_WITHOUT_COUNTRY";
 
         private readonly FlightService $flightService;
 
@@ -39,6 +40,11 @@
             $airportsWithoutLongName = array_filter($this->flightService->getAllAirports(), fn($airport) => $airport->getCode() !== null && $airport->getLongName() === null);
             foreach ($airportsWithoutLongName as &$airportWithoutLongName) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::AIRPORT_WITHOUT_LONG_NAME_ISSUE_NAME, $airportWithoutLongName, time());
+            }
+
+            $airportsWithoutCountry = array_filter($this->flightService->getAllAirports(), fn($airport) => $airport->getCountry() === null);
+            foreach ($airportsWithoutCountry as &$airportWithoutCountry) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::AIRPORT_WITHOUT_COUNTRY_ISSUE_NAME, $airportWithoutCountry, time());
             }
 
             $airlinesWithoutLogo = array_filter($this->flightService->getAllAirlines(), fn($airline) => $airline->getLogo() === null);

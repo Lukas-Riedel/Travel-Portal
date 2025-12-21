@@ -38,8 +38,10 @@
             $categoryIds = array();
             
             // Include country category.
-            $countryCategoryIdentifier = $this->getOrCreateCountryCategoryIdentifier($placeIdentifier->getCountry());
-            $categoryIds[] = $countryCategoryIdentifier->getId();
+            if ($placeIdentifier->getCountry() !== null) {
+                $countryCategoryIdentifier = $this->getOrCreateCountryCategoryIdentifier($placeIdentifier->getCountry());
+                $categoryIds[] = $countryCategoryIdentifier->getId();                
+            }
         
             // Include geographical region categories.
             $point = $this->getWktPoint($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
@@ -256,7 +258,7 @@
             }
             
             $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
-            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$countryCategoryId, &$geographicalRegion, &$overwrite) {
+            $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$geographicalRegion, &$overwrite) {
                 if ($overwrite) {
                     $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId());
                 }

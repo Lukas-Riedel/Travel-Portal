@@ -205,6 +205,10 @@
             return $this->flightMapper->updateAirportName($airportId, $name);
         }
 
+        public function updateAirportCountry(string $airportId, string $country) : bool {
+            return $this->flightMapper->updateAirportCountry($airportId, $country);
+        }
+
         public function removeAirline(string $airlineId) : bool {
             return $this->flightMapper->deleteAirline($airlineId) > 0;
         }

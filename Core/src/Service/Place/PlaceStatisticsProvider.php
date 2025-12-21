@@ -72,7 +72,7 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     if ($visitedPlacesCount > 0) {
-                        $visitedCountriesCount = count(array_unique(array_map(fn($place) => $place->getCountry(), $relevantPlaces)));
+                        $visitedCountriesCount = count(array_unique(array_filter(array_map(fn($place) => $place->getCountry(), $relevantPlaces), fn($country) => $country !== null)));
                         $statistics[] = new Statistics(self::TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME, $visitedCountriesCount, StatisticsUnit::Countries);
                     }
                 }

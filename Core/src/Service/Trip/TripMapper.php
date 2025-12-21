@@ -233,7 +233,7 @@
                 ->statementBuilder($sql, $whereClause)
                 ->getResultSet();
             
-            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $tripRows), fn($highlightId) => !is_null($highlightId));
+            $mainHighlightIds = array_filter(array_map(fn($placeRow) => $placeRow["main_highlight_id"], $tripRows), fn($highlightId) => $highlightId !== null);
             
             $mainHighlights = array();
             foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
