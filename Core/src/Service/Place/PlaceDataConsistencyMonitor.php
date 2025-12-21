@@ -34,7 +34,7 @@
             $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() !== $place->getCountry()
                 && count(array_filter($place->getCategories(), fn($category) => $category->getCategory() === CategoryCategory::Administrative)) === 0);
             foreach ($placesWithoutAdministrativeCategory as &$placeWithoutAdministrativeCategory) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_WITHOUT_ADMINISTRATIVE_CATEGORY_ISSUE_NAME, 
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_WITHOUT_ADMINISTRATIVE_CATEGORY_ISSUE_NAME, $placeWithoutAdministrativeCategory->getId(),
                     $placeWithoutAdministrativeCategory->getPlaceIdentifier(), time());
             }
             
@@ -45,7 +45,7 @@
                 fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % CommonConstants::ONE_DAY_SECONDS === 0)), $relevantPlaces);
             foreach ($placesWithDatesWithoutTime as &$placeWithDatesWithoutTime) {
                 foreach ($placeWithDatesWithoutTime->getDates() as &$dateWithoutTime) {
-                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITHOUT_TIME_ISSUE_NAME, 
+                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITHOUT_TIME_ISSUE_NAME, $placeWithDatesWithoutTime->getId(),
                         $placeWithDatesWithoutTime->withUpdatedDates(array($dateWithoutTime)), time());                    
                 }
             }
@@ -54,7 +54,7 @@
                 fn($date) => $date->getTrip() !== null && $date->getStart() % 1800 > 0)), $relevantPlaces);
             foreach ($placesWithDatesWithIncorrectTime as &$placeWithDatesWithIncorrectTime) {
                 foreach ($placeWithDatesWithIncorrectTime->getDates() as &$dateWithIncorrectTime) {
-                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITH_INCORRECT_TIME_ISSUE_NAME, 
+                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITH_INCORRECT_TIME_ISSUE_NAME, $placeWithDatesWithIncorrectTime->getId(),
                         $placeWithDatesWithIncorrectTime->withUpdatedDates(array($dateWithIncorrectTime)), time());                    
                 }
             }
@@ -63,7 +63,7 @@
                 fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % 1800 > 0)), $relevantPlaces);
             foreach ($placesWithDatesWithIncorrectDuration as &$placeWithDatesWithIncorrectDuration) {
                 foreach ($placeWithDatesWithIncorrectDuration->getDates() as &$dateWithIncorrectDuration) {
-                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITH_INCORRECT_DURATION_ISSUE_NAME, 
+                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::DATE_WITH_INCORRECT_DURATION_ISSUE_NAME, $placeWithDatesWithIncorrectDuration->getId(), 
                         $placeWithDatesWithIncorrectDuration->withUpdatedDates(array($dateWithIncorrectDuration)), time());                    
                 }
             }
@@ -84,20 +84,21 @@
                     return $carry;
                 }, array())), fn($group) => count($group) > 1);
             foreach ($duplicatedPlacesGroups as &$duplicatedPlacesGroup) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::DUPLICATED_PLACE_ISSUE_NAME, $duplicatedPlacesGroup, time());                    
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::DUPLICATED_PLACE_ISSUE_NAME,
+                    implode("/", array_map(fn($place) => $place->getId(), $duplicatedPlacesGroup)), $duplicatedPlacesGroup, time());                    
             }
             
             $placesWithoutCountry = array_filter($relevantPlaces, fn($place) => $place->getCountry() === null);
             foreach ($placesWithoutCountry as &$placeWithoutCountry) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_WITHOUT_COUNTRY_ISSUE_NAME, $placeWithoutCountry, time());                    
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_WITHOUT_COUNTRY_ISSUE_NAME,
+                    $placeWithoutCountry->getId(), $placeWithoutCountry, time());                    
             }
 
             $nonReviewedPlaces = array_filter($relevantPlaces, fn($place) => count(array_filter($place->getDates(),
                 fn($date) => $date->getAlbum() && !$date->getAlbum()->isReviewed())) > 0);
             foreach ($nonReviewedPlaces as &$nonReviewedPlace) {
-                // Do not include future dates - they contain a weather forecast that changes regularly, and breaks the reporting of the new issues.
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::NON_REVIEWED_PLACE_ISSUE_NAME,
-                    $nonReviewedPlace->withUpdatedDates(array_filter($nonReviewedPlace->getDates(), fn($date) => $date->getEnd() < time())), time());                    
+                    $nonReviewedPlace->getId(), $nonReviewedPlace, time());                    
             }
 
             return $dataConsistencyIssues;

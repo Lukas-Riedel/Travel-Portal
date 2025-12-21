@@ -38,8 +38,9 @@
                 fn($countryCategoryId) => count(array_filter($geographicalRegions, 
                     fn($geographicalRegion) => $geographicalRegion->getCountryCategory()?->getId() == $countryCategoryId)) === 0);
             foreach ($visitedCountryCategoryIdsWithoutGeographicalRegions as &$visitedCountryCategoryIdWithoutGeographicalRegions) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION_ISSUE_NAME, 
-                    $this->categoryService->getCategoryIdentifierById($visitedCountryCategoryIdWithoutGeographicalRegions), time());
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION_ISSUE_NAME,
+                    $visitedCountryCategoryIdWithoutGeographicalRegions, $this->categoryService->getCategoryIdentifierById(
+                        $visitedCountryCategoryIdWithoutGeographicalRegions), time());
             }
 
             $allNonTrivialGeographicalRegions = $this->categoryService->getAllNonTrivialGeographicalRegions();
@@ -47,7 +48,7 @@
                 $allNonTrivialGeographicalRegions)), fn($count) => $count > 1));
             foreach ($duplicatedCategoryIds as &$duplicatedCategoryId) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::GEOGRAPHICAL_REGIONS_WITH_SAME_NAME_ISSUE_NAME,
-                    $this->categoryService->getCategoryIdentifierById($duplicatedCategoryId), time());
+                    $duplicatedCategoryId, $this->categoryService->getCategoryIdentifierById($duplicatedCategoryId), time());
             }
             
             $allPlaceIdentifiers = $this->placeService->getAllPlaceIdentifiers();
@@ -60,7 +61,7 @@
                 fn($category) => $category->getMetadata() === null || !$category->getMetadata()->isComplete());
             foreach ($countryCategoriesWithIncompleteMetadata as &$countryCategoryWithIncompleteMetadata) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITH_INCOMPLETE_METADATA_ISSUE_NAME,
-                    $countryCategoryWithIncompleteMetadata, time());
+                    $countryCategoryWithIncompleteMetadata->getId(), $countryCategoryWithIncompleteMetadata, time());
             }
 
             return $dataConsistencyIssues;

@@ -7,13 +7,19 @@
         schema: "DataConsistencyIssue",
         type: "object",
         description: "A class representing a data consistency issue",
-        required: ["name", "context", "timestamp"],
+        required: ["name", "key", "context", "timestamp"],
         properties: [
             new OA\Property(
                 property: "name",
                 type: "string",
                 description: "The name of the data consistency issue",
                 example: "EMPTY_ALBUM"
+            ),
+            new OA\Property(
+                property: "key",
+                type: "string",
+                description: "The key of the data consistency issue",
+                example: "86e22d7d-5e5c-4cfe-acd0-750d63569bfc"
             ),
             new OA\Property(
                 property: "context",
@@ -34,17 +40,23 @@
     )]
     class DataConsistencyIssue implements \JsonSerializable {
         private readonly string $name;
+        private readonly string $key;
         private readonly mixed $context;
         private readonly int $timestamp;
 
-        public function __construct(string $name, mixed $context, int $timestamp) {
+        public function __construct(string $name, string $key, mixed $context, int $timestamp) {
             $this->name = $name;
+            $this->key = $key;
             $this->context = $context;
             $this->timestamp = $timestamp;
         }
 
         public function getName() : string {
             return $this->name;
+        }
+
+        public function getKey() : string {
+            return $this->key;
         }
 
         public function getContext() : mixed {

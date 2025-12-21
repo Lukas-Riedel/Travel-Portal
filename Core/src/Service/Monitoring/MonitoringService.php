@@ -34,7 +34,7 @@
             $rawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
             if ($rawIssues !== null) {
                 return array_map(fn($dataConsistencyIssue) => new DataConsistencyIssue($dataConsistencyIssue["name"],
-                    $dataConsistencyIssue["context"], $dataConsistencyIssue["timestamp"]), $rawIssues);
+                    $dataConsistencyIssue["key"], $dataConsistencyIssue["context"], $dataConsistencyIssue["timestamp"]), $rawIssues);
             }
 
             $this->logger->warning("The data consistency issues are not available, triggering a data consistency scan...");
@@ -54,8 +54,8 @@
 
             $previousRawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
             if ($previousRawIssues !== null) {
-                $currentIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue->getName() . " " . json_encode($dataConsistencyIssue->getContext()), $dataConsistencyIssues);
-                $previousIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue["name"] . " " . json_encode($dataConsistencyIssue["context"]), $previousRawIssues);
+                $currentIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue->getName() . "/" . $dataConsistencyIssue->getKey(), $dataConsistencyIssues);
+                $previousIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue["name"] . "/" . $dataConsistencyIssue["key"], $previousRawIssues);
 
                 $newIssues = array_diff($currentIssues, $previousIssues);
                 if (count($newIssues) > 0) {

@@ -34,14 +34,14 @@ use Core\Service\Year\YearService;
             $placesWithHighlightsWithoutQualityAttributes = array_filter($relevantPlaces, fn($place) => $this->hasHighlightsWithNullQuality($place));
             foreach ($placesWithHighlightsWithoutQualityAttributes as &$placeWithHighlightsWithoutQualityAttributes) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::PLACE_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES_ISSUE_NAME,
-                    $placeWithHighlightsWithoutQualityAttributes, time());
+                    $placeWithHighlightsWithoutQualityAttributes->getId(), $placeWithHighlightsWithoutQualityAttributes, time());
             }
 
             $relevantTrips = $this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
             $tripsWithHighlightsWithoutQualityAttributes = array_filter($relevantTrips, fn($trip) => $this->hasHighlightsWithNullQuality($trip));
             foreach ($tripsWithHighlightsWithoutQualityAttributes as &$tripWithHighlightsWithoutQualityAttributes) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::TRIP_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES_ISSUE_NAME,
-                    $tripWithHighlightsWithoutQualityAttributes, time());
+                    $tripWithHighlightsWithoutQualityAttributes->getId(), $tripWithHighlightsWithoutQualityAttributes, time());
             }
 
             return $dataConsistencyIssues;

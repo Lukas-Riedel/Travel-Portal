@@ -31,7 +31,8 @@
             
             $tripsWithoutTime = array_filter($relevantTrips, fn($trip) => $this->isMidnight($trip->getStart()) && $this->isMidnight($trip->getEnd()));
             foreach ($tripsWithoutTime as &$tripWithoutTime) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::TRIP_WITHOUT_TIME_ISSUE_NAME, $tripWithoutTime, time());
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::TRIP_WITHOUT_TIME_ISSUE_NAME, $tripWithoutTime->getId(),
+                    $tripWithoutTime, time());
             }
 
             return $dataConsistencyIssues;

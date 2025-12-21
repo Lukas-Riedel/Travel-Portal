@@ -22,8 +22,8 @@
             foreach ($conflictingFitnessRecords as &$conflictingFitnessRecord) {
                 $existingFitnessRecord = $this->fitnessService->getFitnessRecordForInterval($conflictingFitnessRecord->getTimestamp(),
                     $conflictingFitnessRecord->getTimestamp() + CommonConstants::FITNESS_RECORD_DURATION_SECONDS);
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::CONFLICTING_FITNESS_RECORDS_ISSUE_NAME,
-                    new TimeBasedFitnessCollection($conflictingFitnessRecord->getTimestamp(), 
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::CONFLICTING_FITNESS_RECORDS_ISSUE_NAME, $conflictingFitnessRecord->getTimestamp(),
+                    new TimeBasedFitnessCollection($conflictingFitnessRecord->getTimestamp(),
                         array($conflictingFitnessRecord->getFitness(), $existingFitnessRecord)), time());
             }
 

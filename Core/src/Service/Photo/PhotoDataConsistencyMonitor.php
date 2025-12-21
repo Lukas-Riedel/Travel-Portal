@@ -34,18 +34,18 @@
                 fn($place) => $place->getDates(), $relevantPlaces)), fn($date) => $date->getAlbum() !== null));
             $nonReferencedAlbumIds = array_diff($allAlbumIds, $referencedAlbumIds);
             foreach ($nonReferencedAlbumIds as &$nonReferencedAlbumId) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::ALBUM_WITHOUT_PLACE_ISSUE_NAME, 
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::ALBUM_WITHOUT_PLACE_ISSUE_NAME, $nonReferencedAlbumId,
                     $this->photoService->getAlbum($nonReferencedAlbumId), time());
             }
 
             $emptyAlbums = array_filter($allAlbums, fn($album) => $album->getImagesCount() === 0);
             foreach ($emptyAlbums as &$emptyAlbum) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::EMPTY_ALBUM_ISSUE_NAME, $emptyAlbum, time());
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::EMPTY_ALBUM_ISSUE_NAME, $emptyAlbum->getId(), $emptyAlbum, time());
             }
 
             $replacedPhotos = $this->photoService->getReplacedPhotos();
             foreach ($replacedPhotos as &$replacedPhoto) {
-                $dataConsistencyIssues[] = new DataConsistencyIssue(self::REPLACED_PHOTO_ISSUE_NAME, $replacedPhoto, time());
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::REPLACED_PHOTO_ISSUE_NAME, $replacedPhoto->getId(), $replacedPhoto, time());
             }
 
             return $dataConsistencyIssues;
