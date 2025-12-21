@@ -10,4 +10,9 @@ generateApi({
     modelTypes: true,
     separateModels: true,
     modelPath: "models"
+}).then(() => {
+    process.exit(0)
+}).catch(e => {
+    console.error(e)
+    process.exit(1)
 })

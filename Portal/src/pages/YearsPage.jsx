@@ -12,7 +12,7 @@ export default function YearsPage() {
     const { isAdmin } = useAuth()
 
     const years = useYears()
-    const { places } = useTimeFilteredRegularPlaces({ include: ["categories"] })
+    const { places } = useTimeFilteredRegularPlaces({ sort: "-score" })
     const trips = useRegularTrips()
     const countryCategories = useCategories({ categories: ["country"] })
 

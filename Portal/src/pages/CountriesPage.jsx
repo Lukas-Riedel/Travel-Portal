@@ -5,7 +5,7 @@ import PlaceMap from "../components/PlaceMap.jsx"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 
 export default function CountriesPage() {
-    const { places } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ sort: "-score" })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const countryCategoriesMap = useMemo(() => {

@@ -9,7 +9,7 @@ import { useYears } from "../hooks/useYears.ts";
 export default function StatisticsPage() {
     const statistics = useStatistics()
     const years = useYears({ include: ["statistics"] })
-    const { places } = useTimeFilteredRegularPlaces({ include: ["categories"] })
+    const { places } = useTimeFilteredRegularPlaces({ sort: "-score" })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const countryCategoriesMap = useMemo(() => {
