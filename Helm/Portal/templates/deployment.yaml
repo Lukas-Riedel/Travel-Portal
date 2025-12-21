@@ -7,6 +7,11 @@ metadata:
     app: portal
 spec:
   replicas: {{ .Values.portal.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: portal
@@ -19,7 +24,23 @@ spec:
         - name: portal
           image: "{{ .Values.portal.image }}:{{ .Values.portal.tag }}" 
           ports:
-            - containerPort: {{ .Values.portal.service.port }}            
+            - containerPort: {{ .Values.portal.service.port }}    
+          readinessProbe:
+            httpGet:
+              path: /management/readiness
+              port: {{ .Values.portal.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /management/liveness
+              port: {{ .Values.portal.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 1         
           volumeMounts:
             - name: portal-config
               mountPath: /usr/share/nginx/html/env.js

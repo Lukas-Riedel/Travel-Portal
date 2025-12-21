@@ -10,7 +10,7 @@
 
     class SwaggerResource extends AbstractResource {
 
-        public static function register(App $app, string $coreBaseUrl) {
+        public static function register(App $app, string $coreBaseUrl) : void {
             $app->get("/swagger/swagger.json", function(ServerRequestInterface $request, ResponseInterface $response) use(&$coreBaseUrl) {
                 $openapi = (new Generator())->generate(array(
                     __DIR__ . "/../Resource/", 

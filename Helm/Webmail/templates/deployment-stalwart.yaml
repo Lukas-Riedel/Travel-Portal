@@ -7,6 +7,8 @@ metadata:
     app: stalwart
 spec:
   replicas: {{ .Values.stalwart.replicas }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: stalwart
@@ -25,6 +27,19 @@ spec:
               containerPort: {{ .Values.stalwart.service.ui.port }}
             - name: smtp
               containerPort: {{ .Values.stalwart.service.smtp.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.stalwart.service.ui.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.stalwart.service.ui.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 20
           env:
             - name: STALWART_HOSTNAME
               value: "{{ .Values.stalwart.service.ui.host }}"

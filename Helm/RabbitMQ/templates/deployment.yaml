@@ -7,6 +7,8 @@ metadata:
     app: rabbitmq
 spec:
   replicas: {{ .Values.rabbitmq.replicas }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: rabbitmq
@@ -23,6 +25,24 @@ spec:
               containerPort: {{ .Values.rabbitmq.service.amqp.port }}
             - name: http-management
               containerPort: {{ .Values.rabbitmq.service.management.port }}
+          readinessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - -q
+                - check_running
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - -q
+                - check_local_alarms
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
           env:
             - name: RABBITMQ_DEFAULT_USER
               value: "{{ .Values.rabbitmq.username }}"

@@ -1,4 +1,6 @@
 {{- define "core.env" }}
+- name: SERVICE_NAME
+  value: "{{ .Values.core.image }}"
 - name: VERSION_TAG
   value: "{{ .Values.core.tag }}"
 - name: ENCRYPTION_PRIVATE_KEY

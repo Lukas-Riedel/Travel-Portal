@@ -7,6 +7,11 @@ metadata:
     app: core
 spec:
   replicas: {{ .Values.core.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: core
@@ -19,7 +24,23 @@ spec:
         - name: core
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           ports:
-            - containerPort: {{ .Values.core.service.port }}            
+            - containerPort: {{ .Values.core.service.port }}    
+          readinessProbe:
+            httpGet:
+              path: /management/readiness
+              port: {{ .Values.core.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /management/liveness
+              port: {{ .Values.core.service.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
           env:
 {{- include "core.env" . | nindent 12 }}
           volumeMounts:

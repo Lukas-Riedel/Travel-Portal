@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Database;
 
+    use Common\Client\HealthCheckable;
     use Core\Client\Cache\CacheClient;
     use Core\Client\Messaging\ProgressReporter;
     use Core\Common\CommonConstants;
@@ -9,7 +10,7 @@
     use PgSql\Connection;
     use PHPSQLParser\PHPSQLParser;
 
-    class PostgreSQLDatabaseClient implements DatabaseClient {
+    class PostgreSQLDatabaseClient implements DatabaseClient, HealthCheckable {
 
         private const CONNECTION_CONFIGURATION_STRING_FORMAT = "host=%s port=%d dbname=%s user=%s password=%s";
         private const DEFAULT_SCHEMA_NAME = "public";
@@ -57,6 +58,20 @@
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
             $this->openLineageEventManager = $openLineageEventManager;
+        }
+
+        public function getServiceName() : string {
+            return "postgresql";
+        }
+
+        public function isHealthy() : bool {
+            try {
+                $result = \pg_query($this->connection, "SELECT 1");
+                return $result && \pg_num_rows($result) > 0;
+            }
+            catch (\Throwable $e) {
+                return false;
+            }
         }
 
         public function query(string $sql) : mixed {

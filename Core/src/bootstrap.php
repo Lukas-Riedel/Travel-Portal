@@ -6,8 +6,8 @@
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
-use Core\Client\CloudStorage\S3CloudStorageClient;
-use Itspire\MonologLoki\Handler\LokiHandler;
+    use Core\Client\CloudStorage\S3CloudStorageClient;
+    use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
     use Core\Client\Database\PostgreSQLDatabaseClient;
@@ -126,6 +126,11 @@ use Itspire\MonologLoki\Handler\LokiHandler;
     $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
+    $healthCheckables = array(
+        $cacheClient,
+        $databaseClient,
+        $messagingClient
+    );
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"));

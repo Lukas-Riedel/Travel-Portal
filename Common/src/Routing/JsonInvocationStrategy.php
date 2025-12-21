@@ -10,11 +10,11 @@
         public function __invoke(callable $callable, ServerRequestInterface $request,
             ResponseInterface $response, array $routeArguments) : ResponseInterface {
             $result = $callable($request, $response, $routeArguments);
-            if ($result instanceof ResponseInterface && $result->getStatusCode() >= 300 && $result->getStatusCode() < 400) {
-                return $result;
+
+            if ($result instanceof ResponseInterface) {
+                $response = $result;
             }
-            
-            if ($result === null) {
+            else if ($result === null) {
                 $response = $response->withStatus(204);
             }
             else {
@@ -24,6 +24,7 @@
                     ->withStatus($request->getMethod() === "POST" ? 201 : 200)
                     ->withHeader("Content-Type", "application/json");
             }
+
             return $response
                 ->withHeader("Cache-Control", "no-cache, no-store, must-revalidate")
                 ->withHeader("Pragma", "no-cache")

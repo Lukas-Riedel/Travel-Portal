@@ -5,6 +5,11 @@ metadata:
   name: pgadmin
 spec:
   replicas: {{ .Values.pgadmin.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: pgadmin

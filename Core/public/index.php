@@ -19,7 +19,7 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook", "/proxy")));
+    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook", "/management/liveness", "/management/readiness")));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($logger));
     $app->addBodyParsingMiddleware();
@@ -27,7 +27,7 @@
     $app->add(new OpenLineageMiddleware($openLineageEventManager));
     $app->add(new CorsMiddleware(explode(",", getenv("ALLOWED_REQUEST_ORIGINS"))));
 
-    (require_once(__DIR__ . "/../src/routes.php"))($app, getenv("CORE_BASE_URL"));
+    (require_once(__DIR__ . "/../src/routes.php"))($app, getenv("SERVICE_NAME"), getenv("VERSION_TAG"), getenv("CORE_BASE_URL"));
 
     $app->any("/{path:.*}", function(ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
         $acceptHeader = $request->getHeaderLine("Accept");

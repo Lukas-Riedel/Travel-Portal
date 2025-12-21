@@ -1,6 +1,7 @@
 <?php
     namespace Core\Client\Messaging;
 
+    use Common\Client\HealthCheckable;
     use Core\Client\Database\TransactionManager;
     use Core\Event\Event;
     use Core\Event\EventPriority;
@@ -10,7 +11,7 @@
     use PhpAmqpLib\Connection\AMQPStreamConnection;
     use PhpAmqpLib\Message\AMQPMessage;
 
-    class RabbitMQMessagingClient implements MessagingClient {
+    class RabbitMQMessagingClient implements MessagingClient, HealthCheckable {
 
         private const PREFETCH_COUNT = 1;
         private const SEND_HEARTBEAT_THRESHOLD_SECONDS = 10;
@@ -69,9 +70,23 @@
             $this->openLineageEventManager = $openLineageEventManager;
         }
 
+        public function getServiceName() : string {
+            return "rabbitmq";
+        }
+
+        public function isHealthy() : bool {
+            try {
+                $this->init();
+                return $this->connection->isConnected();
+            }
+            catch (\Throwable $e) {
+                return false;
+            }
+        }
+
         public function heartbeat() : void {
             if ($this->connection !== null) {
-                $secondsSinceLastHeartbeat = time() - $this->lastHeartbeatTimestamp ?? 0;
+                $secondsSinceLastHeartbeat = time() - ($this->lastHeartbeatTimestamp ?? 0);
 
                 if ($secondsSinceLastHeartbeat > self::SEND_HEARTBEAT_THRESHOLD_SECONDS) {
                     $this->connection->checkHeartBeat();

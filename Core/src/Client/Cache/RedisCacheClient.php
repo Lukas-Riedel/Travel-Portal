@@ -1,10 +1,11 @@
 <?php
     namespace Core\Client\Cache;
 
+    use Common\Client\HealthCheckable;
     use Core\OpenLineage\OpenLineageEventManager;
     use Predis\Client;
     
-    class RedisCacheClient implements CacheClient {
+    class RedisCacheClient implements CacheClient, HealthCheckable {
 
         private const REDIS_SCHEME = "redis";
         
@@ -27,6 +28,21 @@
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
             $this->openLineageEventManager = $openLineageEventManager;
+        }
+
+        public function getServiceName() : string {
+            return "redis";
+        }
+
+        public function isHealthy() : bool {
+            try {
+                $this->init();
+                $ping = uniqid();
+                return $this->redisClient->ping($ping) === $ping;
+            }
+            catch (\Throwable $e) {
+                return false;
+            }
         }
 
         public function get(string $key, ?int $newTtl = null) : mixed {

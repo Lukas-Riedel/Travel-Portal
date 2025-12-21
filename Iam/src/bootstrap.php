@@ -46,6 +46,7 @@
     // Clients.
     $httpClient = new HttpClient($logger);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
+    $healthCheckables = array();
     
     // Authentication service.
     $authenticationService = new AuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY")); 
