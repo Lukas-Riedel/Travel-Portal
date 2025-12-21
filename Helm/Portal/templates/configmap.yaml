@@ -7,6 +7,8 @@ data:
   env.js: |
     const envValues = {
       "VITE_SW_VERSION": {{ .Values.portal.tag | quote }},
+      "VITE_DEFAULT_USERNAME": {{ .Values.portal.credentials.default.username | quote }},
+      "VITE_DEFAULT_PASSWORD": {{ .Values.portal.credentials.default.password | quote }},
       "VITE_PORTAL_BASE_URL": {{ .Values.portal.url.base.public | quote }},
       "VITE_CORE_BASE_URL": {{ .Values.portal.url.core.base.public | quote }},
       "VITE_IAM_BASE_URL": {{ .Values.portal.url.iam.base.public | quote }},

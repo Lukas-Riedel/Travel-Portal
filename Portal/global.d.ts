@@ -3,6 +3,8 @@ export { }
 declare global {
     interface ImportMetaEnv {
         readonly VITE_SW_VERSION: string
+        readonly VITE_DEFAULT_USERNAME: string
+        readonly VITE_DEFAULT_PASSWORD: string
         readonly VITE_PORTAL_BASE_URL: string
         readonly VITE_CORE_BASE_URL: string
         readonly VITE_IAM_BASE_URL: string

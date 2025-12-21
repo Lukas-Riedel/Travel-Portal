@@ -7,6 +7,10 @@ portal:
     type: ClusterIP
     port: 80
     host: lriedel.cz
+  credentials:
+    default:
+      username: guest
+      password: guest
   url:
     base:
       public: https://lriedel.cz
