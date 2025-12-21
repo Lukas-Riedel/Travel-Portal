@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -49,7 +48,8 @@ import static java.util.stream.Collectors.toSet;
 public final class PhotoService implements AgentContextDataProvider {
 
     private static final int AVAILABLE_WORKERS = 16;
-    private static final int MIN_PHOTO_AGE_SECONDS = 10;
+    private static final Duration MIN_PHOTO_AGE = Duration.ofSeconds(10);
+    private static final Duration UPLOADED_PHOTOS_RETENTION_POLICY = Duration.ofDays(30);
     private static final String JPG_SUFFIX = ".jpg";
     
     private final ServiceClient serviceClient;
@@ -99,8 +99,6 @@ public final class PhotoService implements AgentContextDataProvider {
                 }
             }
         }
-
-        uploadedPhotoRepository.deleteByUploadedBefore(getOldestSynchronizedFolderCreation(synchronizedFolders));
     }
 
     @Synchronized
@@ -127,7 +125,7 @@ public final class PhotoService implements AgentContextDataProvider {
             albumId = serviceClient.createAlbum(placeId, Objects.requireNonNull(timestamp)).id();
         }
         log.info("Starting photos uploading for album {}...", albumId);
-        uploadPhotos(placeId, albumId, path);
+        uploadPhotos(placeId, albumId, path, whatever -> true);
         log.info("Uploading has finished. Refreshing the album...");
         if (mainPhotoPosition != null) {
             serviceClient.refreshAlbum(placeId, albumId, mainPhotoPosition);
@@ -142,10 +140,9 @@ public final class PhotoService implements AgentContextDataProvider {
         try (Stream<Path> paths = Files.list(path)) {
             return uploadPhotos(placeId, albumId, paths.filter(predicate));
         }
-    }
-
-    private boolean uploadPhotos(String placeId, String albumId, Path path) {
-        return uploadPhotos(placeId, albumId, path, whatever -> true);
+        finally {
+            uploadedPhotoRepository.deleteByUploadedBefore(Instant.now().minus(UPLOADED_PHOTOS_RETENTION_POLICY));
+        }
     }
 
     @SneakyThrows
@@ -250,23 +247,10 @@ public final class PhotoService implements AgentContextDataProvider {
         return Files.isDirectory(expectedPath) ? expectedPath : null;
     }
 
-    @SneakyThrows
-    private Instant getOldestSynchronizedFolderCreation(List<SynchronizedFolder> synchronizedFolders) {
-        Instant oldestCreationTime = Instant.now();
-        for (SynchronizedFolder synchronizedFolder : synchronizedFolders) {
-            BasicFileAttributes folderAttributes = Files.readAttributes(synchronizedFolder.path(), BasicFileAttributes.class);
-            Instant creationTime = folderAttributes.creationTime().toInstant();
-
-            if (creationTime.isBefore(oldestCreationTime)) {
-                oldestCreationTime = creationTime;
-            }
-        }
-        return oldestCreationTime;
-    }
-
     private boolean isPathCreated(Path path) {
         try {
-            return Duration.between(Files.getLastModifiedTime(path).toInstant(), Instant.now()).compareTo(Duration.ofSeconds(MIN_PHOTO_AGE_SECONDS)) > 0;
+            return Duration.between(Files.getLastModifiedTime(path).toInstant(), Instant.now())
+                    .compareTo(MIN_PHOTO_AGE) > 0;
         }
         catch (Exception e) {
             return false;
