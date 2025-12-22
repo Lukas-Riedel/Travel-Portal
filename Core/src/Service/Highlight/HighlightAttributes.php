@@ -82,14 +82,13 @@
         }
 
         public function getQuality() : ?float {
-            if ($this->composition === null || $this->sky === null || $this->shadows === null || $this->circumstances === null || $this->atmosphere === null
-                || $this->composition === 0 || $this->sky === 0 || $this->shadows === 0 || $this->circumstances === 0 || $this->atmosphere === 0) {
+            if ($this->composition === null || $this->sky === null || $this->shadows === null || $this->circumstances === null || $this->atmosphere === null) {
                 return null;
             }
 
-            return 5.0 / (1 / $this->composition + 1 / $this->sky + 1 / $this->shadows + 1 / $this->circumstances + 1 / $this->atmosphere);
+            $values = array($this->composition, $this->sky, $this->shadows, $this->circumstances, $this->atmosphere);
+            return in_array(0, $values, true) ? 0.0 : count($values) / array_sum(array_map(fn($value) => 1 / $value, $values));
         }
-
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {

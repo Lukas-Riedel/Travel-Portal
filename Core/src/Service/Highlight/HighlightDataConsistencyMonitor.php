@@ -1,17 +1,14 @@
 <?php
     namespace Core\Service\Highlight;
 
-    use Core\Service\Category\CategoryService;
     use Core\Service\Monitoring\DataConsistencyIssue;
     use Core\Service\Monitoring\DataConsistencyMonitor;
-use Core\Service\Place\Place;
-use Core\Service\Place\PlaceIncludedEntity;
-use Core\Service\Place\PlaceService;
-use Core\Service\Place\PlaceSortingStrategy;
-use Core\Service\Trip\TripIncludedEntity;
-use Core\Service\Trip\TripService;
-use Core\Service\Trip\TripSortingStrategy;
-use Core\Service\Year\YearService;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Service\Trip\TripIncludedEntity;
+    use Core\Service\Trip\TripService;
+    use Core\Service\Trip\TripSortingStrategy;
 
     class HighlightDataConsistencyMonitor implements DataConsistencyMonitor {
 

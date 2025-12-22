@@ -125,9 +125,8 @@
                 foreach ($place->getHighlights() as &$highlight) {
                     $highlightQuality = $highlight->getQuality();
                     if ($highlightQuality !== null) {
-                        for ($i = 0; $i < ($highlight->getId() == $place->getMainHighlight()?->getId() ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1); ++$i) {
-                            $highlightQualities[] = $highlightQuality;
-                        }
+                        $count = ($highlight->getId() === $place->getMainHighlight()?->getId()) ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1;
+                        $highlightQualities = array_merge($highlightQualities, array_fill(0, $count, $highlightQuality));
                     }
                 }
 
