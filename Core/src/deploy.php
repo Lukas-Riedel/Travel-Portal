@@ -1,4 +1,6 @@
 <?php
+    use Common\Client\Http\HttpMethod;
+
     require_once(__DIR__ . "/bootstrap.php");
 
     $migrationScriptsBasePath = __DIR__ . "/../db/";
@@ -90,8 +92,14 @@
     // If changing this, change also in docker-entrypoint.sh.
     $backupFilePath = "/var/tmp/backup.sql.gz";
     
-    $backupFolderId = $googleClient->getOrCreateFolderId("Travel Portal Backups", null);    
-    $googleClient->createFile(date("Y-m-d H:i:s") . ".sql.gz", $backupFolderId, "application/gzip", file_get_contents($backupFilePath));
+    $rootBackupFolderId = $googleClient->getOrCreateFolderId("Travel Portal Backups", null);  
+    $backupFolderId = $googleClient->createFolder(date("Y-m-d H:i:s"), $rootBackupFolderId);
+
+    $googleClient->createFile("db.sql.gz", $backupFolderId, "application/gzip", file_get_contents($backupFilePath));
+
+    foreach ($configurationService->getConfigurationEntry("calendars") as $calendarName => $calendarUrl) {
+        $googleClient->createFile($calendarName . ".ics", $backupFolderId, "text/calendar", $httpClient->executeRequest(HttpMethod::GET, $calendarUrl));
+    }
     
     $lockKeyFormat = "Worker:Lock:%s";
     for ($i = 0; $i < getenv("MAX_WORKERS_COUNT"); ++$i) {
