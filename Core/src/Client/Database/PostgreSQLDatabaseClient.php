@@ -43,6 +43,7 @@
             $this->database = $database;
             $this->cacheClient = $cacheClient;
             $this->logger = $logger;
+            $this->progressReporter = null;
             $this->openLineageEventManager = null;
             $this->currentAtomicExecution = null;
             $this->preparedStatements = array();
@@ -146,6 +147,10 @@
         }
         
         private function addOpenLineageDatasets(string $sql) : void {
+            if ($this->openLineageEventManager === null) {
+                return;
+            }
+
             $parser = new PHPSQLParser($sql);
             $parsed = $parser->parsed;
 
@@ -195,13 +200,13 @@
             foreach ($inputTables as $table) {
                 $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, self::DEFAULT_SCHEMA_NAME, $table);
                 $columns = $this->fetchTableColumns($table);
-                $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, array_fill_keys($columns, null));
+                $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, array_fill_keys($columns, null));
             }
 
             foreach ($outputTables as $table) {
                 $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, self::DEFAULT_SCHEMA_NAME, $table);
                 $columns = $this->fetchTableColumns($table);
-                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, array_fill_keys($columns, null));
+                $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, array_fill_keys($columns, null));
             }
         }
 

@@ -17,8 +17,8 @@
 
         private readonly string $workerQueueName;
 
-        public function __construct(RabbitMQMessagingClient $messagingClient, DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
-            parent::__construct($databaseClient, $logger, $openLineageEventManager, $listeners, $workerQueueName);
+        public function __construct(RabbitMQMessagingClient $messagingClient, Logger $logger, ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+            parent::__construct($logger, $openLineageEventManager, $listeners, $workerQueueName);
             $this->messagingClient = $messagingClient;
             $this->workerQueueName = $workerQueueName;
         }

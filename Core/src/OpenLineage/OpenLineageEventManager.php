@@ -11,19 +11,20 @@
 
         private readonly array $openLineageEventPublishers;
 
-        private readonly ConfigurationService $configurationService;
-
         private readonly EventPublisher $eventPublisher;
 
         private readonly string $coreBaseUrl;
 
-        public function __construct(array $openLineageEventPublishers, ConfigurationService $configurationService,
-            EventPublisher $eventPublisher, string $coreBaseUrl) {
+        public function __construct(array $openLineageEventPublishers, EventPublisher $eventPublisher, string $coreBaseUrl) {
             $this->event = null;
             $this->openLineageEventPublishers = $openLineageEventPublishers;
-            $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->coreBaseUrl = $coreBaseUrl;
+        }
+
+        public static function isOpenLineageEnabled(ConfigurationService $configurationService) : bool {
+            $producers = $configurationService->getConfigurationEntry("openLineage")["producers"];
+            return array_reduce($producers, fn($carry, $producer) => $carry || $producer["enabled"], false);            
         }
 
         public function initializeEvent(string $jobName) : void {
@@ -53,11 +54,7 @@
         }
 
         public function publishEventAsync(OpenLineageEvent $event) : void {
-            // Do not spam RMQ when all producers are disabled.
-            $producers = $this->configurationService->getConfigurationEntry("openLineage")["producers"];
-            $someProducerEnabled = array_reduce($producers, fn($carry, $producer) => $carry || $producer["enabled"], false);
-
-            if ($someProducerEnabled && $event->shouldBePublished()) {                
+            if ($event->shouldBePublished()) {                
                 $this->eventPublisher->publish(Event::OpenLineageEventPublished($event));
             }
         }

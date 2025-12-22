@@ -9,16 +9,16 @@
 
     class OpenLineageMiddleware implements MiddlewareInterface {
 
-        private readonly OpenLineageEventManager $openLineageEventManager;
+        private readonly ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(OpenLineageEventManager $openLineageEventManager) {
+        public function __construct(?OpenLineageEventManager $openLineageEventManager) {
             $this->openLineageEventManager = $openLineageEventManager;
         }
 
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-            $this->openLineageEventManager->initializeEvent(ltrim($request->getUri()->getPath(), "/"));
+            $this->openLineageEventManager?->initializeEvent(ltrim($request->getUri()->getPath(), "/"));
             $response = $handler->handle($request);
-            $this->openLineageEventManager->publishCurrentEventAsync();
+            $this->openLineageEventManager?->publishCurrentEventAsync();
             return $response;
         }
     }

@@ -118,9 +118,11 @@
                 $messageHeaders["priority"] = $eventPriority->value;
             }
 
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->user, $this->host, $this->port, $this->vhost);
-            $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $queueName, $event->getName());
-            $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());
+            if ($this->openLineageEventManager !== null) {
+                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->user, $this->host, $this->port, $this->vhost);
+                $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $queueName, $event->getName());
+                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());
+            }
 
             $this->logger->debug("Publishing the '" . $event->getName() . "' event to RabbitMQ...", json_decode($json, true));
 

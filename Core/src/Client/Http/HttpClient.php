@@ -18,6 +18,8 @@
 
         public function __construct(Logger $logger) {
             parent::__construct($logger);
+            $this->progressReporter = null;
+            $this->openLineageEventManager = null;
         }
 
         public function setProgressReporter(ProgressReporter $progressReporter) : void {
@@ -33,14 +35,16 @@
             $result = parent::executeRequest($method, $url, $headers, $payload, $includeResponseHeaders);            
             $this->progressReporter?->heartbeat();
 
-            $parsedUrl = parse_url($url);
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
-            $name = str_replace(".", "", isset($parsedUrl["path"]) ? ltrim($parsedUrl["path"], "/") : self::UNKNOWN_PATH);
-            if ($method === HttpMethod::GET) {
-                $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $result);
-            }
-            else {
-                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $payload);
+            if ($this->openLineageEventManager !== null) {
+                $parsedUrl = parse_url($url);
+                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
+                $name = str_replace(".", "", isset($parsedUrl["path"]) ? ltrim($parsedUrl["path"], "/") : self::UNKNOWN_PATH);
+                if ($method === HttpMethod::GET) {
+                    $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $result);
+                }
+                else {
+                    $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $payload);
+                }
             }
 
             return $result;

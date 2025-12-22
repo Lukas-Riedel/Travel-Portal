@@ -196,17 +196,20 @@
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
 
-    // OpenLineage manager.
-    $openLineageEventPublishers = array(
-        new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
-        new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
-    );
-    $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $configurationService, $eventPublisher, getenv("CORE_BASE_URL"));
-    $messagingClient->setOpenLineageEventManager($openLineageEventManager);
-    $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
-    $cacheClient->setOpenLineageEventManager($openLineageEventManager);
-    $databaseClient->setOpenLineageEventManager($openLineageEventManager);
-    $httpClient->setOpenLineageEventManager($openLineageEventManager);
+    // OpenLineage manager. Switching the producers on or off will require a script restart for changes to take effect.
+    $openLineageEventManager = null;
+    if (OpenLineageEventManager::isOpenLineageEnabled($configurationService)) {
+        $openLineageEventPublishers = array(
+            new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
+            new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
+        );
+        $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
+        $messagingClient->setOpenLineageEventManager($openLineageEventManager);
+        $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
+        $cacheClient->setOpenLineageEventManager($openLineageEventManager);
+        $databaseClient->setOpenLineageEventManager($openLineageEventManager);
+        $httpClient->setOpenLineageEventManager($openLineageEventManager);        
+    }
     
     // Event listeners.
     $listeners = array(
@@ -228,6 +231,6 @@
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );
-    $eventListener = new RabbitMQEventListener($messagingClient, $databaseClient, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
+    $eventListener = new RabbitMQEventListener($messagingClient, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
     $eventPublisher->setDeviceService($deviceService);    
 ?>

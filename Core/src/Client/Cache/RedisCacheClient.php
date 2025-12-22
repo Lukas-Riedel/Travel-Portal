@@ -165,17 +165,19 @@
         }
 
         private function addOpenLineageInputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager?->getCurrentEvent()?->addInput($namespace, $name, $columns), $key, $value);
+            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $columns), $key, $value);
         }
 
         private function addOpenLineageOutputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $columns), $key, $value);
+            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $columns), $key, $value);
         }
 
         private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
-            $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port);
-            $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
-            $callable($namespace, $name, $value);
+            if ($this->openLineageEventManager !== null) {
+                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port);
+                $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
+                $callable($namespace, $name, $value);
+            }
         }
     }
 ?>

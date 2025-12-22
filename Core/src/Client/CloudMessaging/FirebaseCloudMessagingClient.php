@@ -57,15 +57,17 @@
                     )
                 );
                 
-                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->projectId);
-                if ($event instanceof CloudMessagingEvent) {
-                    foreach ($event->getSupportedDeviceTypes() as &$deviceType) {
-                        $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $deviceType->name, $event->getName());
-                        $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());                        
+                if ($this->openLineageEventManager !== null) {
+                    $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->projectId);
+                    if ($event instanceof CloudMessagingEvent) {
+                        foreach ($event->getSupportedDeviceTypes() as &$deviceType) {
+                            $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $deviceType->name, $event->getName());
+                            $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());                        
+                        }
                     }
-                }
-                else {
-                    $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $event->getName(), $event->getArgs());   
+                    else {
+                        $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $event->getName(), $event->getArgs());   
+                    }
                 }
                 
                 $this->logger->debug("Publishing the '" . $event->getName() . "' event to FCM...", $payload);

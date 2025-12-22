@@ -11,17 +11,14 @@
         private const EVENT_HANDLER_METHOD_PREFIX = "on";
         private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
 
-        private readonly DatabaseClient $databaseClient;
-
         private readonly Logger $logger;
-        private readonly OpenLineageEventManager $openLineageEventManager;
+        private readonly ?OpenLineageEventManager $openLineageEventManager;
 
         private readonly array $eventHandlers;
 
         private readonly string $workerQueueName;
         
-        public function __construct(DatabaseClient $databaseClient, Logger $logger, OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
-            $this->databaseClient = $databaseClient;
+        public function __construct(Logger $logger, ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
             $this->logger = $logger;
             $this->openLineageEventManager = $openLineageEventManager;
             
@@ -43,7 +40,7 @@
 
         protected function onEvent(mixed $event) : void {
             $start = microtime(true);
-            $this->openLineageEventManager->initializeEvent($this->workerQueueName . "/" . $event["name"]);
+            $this->openLineageEventManager?->initializeEvent($this->workerQueueName . "/" . $event["name"]);
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
             try {
                 $handlerMethod = self::EVENT_HANDLER_METHOD_PREFIX . $event["name"];
@@ -59,10 +56,10 @@
                 $this->flushLogger();
 
                 if ($event["name"] === self::OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME) {
-                    $this->openLineageEventManager->publishCurrentEvent();
+                    $this->openLineageEventManager?->publishCurrentEvent();
                 }
                 else {
-                    $this->openLineageEventManager->publishCurrentEventAsync();
+                    $this->openLineageEventManager?->publishCurrentEventAsync();
                 }
             }
         }
