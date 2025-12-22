@@ -20,6 +20,7 @@
     use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Service\Geocoding\Location;
 
     class PlaceService {
         
@@ -268,6 +269,24 @@
             return $this->removeSpecialPlace(SpecialPlaceType::Candidate, $placeId);
         }
 
+        public function refreshPlaceEventLocation(string $placeId, int $start) : bool {
+            $placeIdentifier = $this->getPlaceIdentifierById($placeId);
+            if ($placeIdentifier === null) {
+                return false;
+            }
+
+            $eventId = $this->placeMapper->selectPlaceEventId($placeId, $start);
+            if ($eventId === null) {
+                return false;
+            }
+            
+            $resolvedLocation = new Location($placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
+                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone());
+            $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
+            
+            return $this->googleClient->updateCalendarEventLocation(Calendar::Places, $eventId, $newAddress);
+        }
+
         public function refreshCalendar(TripService $tripService) : void {
             $this->placeMapper->createPlaceEventTemporaryTable(self::OLD_PLACE_EVENT_TEMPORARY_TABLE);
             $placeEvents = $this->calendarClient->getEvents(Calendar::Places);
@@ -288,7 +307,7 @@
 
                     $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 
-                    // Update address to match a common format.
+                    // Update address to match the common format.
                     $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
                     if ($this->normalize($placeEvent->getLocation()) !== $this->normalize($newAddress)) {
                         $this->googleClient->updateCalendarEventLocation(Calendar::Places, $placeEvent->getId(), $newAddress);

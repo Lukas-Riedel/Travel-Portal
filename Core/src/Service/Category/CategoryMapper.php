@@ -600,25 +600,18 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
-        }        
-
-        public function deleteStaleCategoryIdentifiers() : int {
-            $sql = <<<SQL
-                DELETE 
-                FROM category_identifier ci
-                WHERE :CONDITIONS
+        }    
+        
+        public function deleteCategoryIdentifier(string $categoryId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM category_identifier
+                WHERE id = ?
             SQL;
-            
-            $countryNames = array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames"));
-            $whereClause = $this->databaseClient->whereClauseBuilder()
-                ->withClause("ci.name NOT IN (" . $this->databaseClient->getPlaceholdersSequence(count($countryNames)) . ")", ...$countryNames)
-                ->withClause("NOT EXISTS (SELECT 1 FROM region_geographical rg WHERE rg.category_id = ci.id)")
-                ->withClause("NOT EXISTS (SELECT 1 FROM region_composite rc WHERE rc.category_id = ci.id)")
-                ->withClause("NOT EXISTS (SELECT 1 FROM region_composite rc WHERE rc.subject_category_id = ci.id)")
-                ->buildForAnd();
 
             return $this->databaseClient
-                ->statementBuilder($sql, $whereClause)
+                ->statementBuilder($sql)
+                ->withParameters($categoryId)
                 ->execute();
         }
     }

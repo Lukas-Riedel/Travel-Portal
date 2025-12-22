@@ -75,7 +75,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
             "Zadej novou reprezentaci kompozitního regionu:",
             [
                 { label: "Zahrnuté regiony", defaultValue: region.includedCategories.map(category => category.name).join(","), required: true },
-                { label: "Vyloučené regiony", defaultValue: region.excludedCategories.map(category => category.name).join(","), required: true }
+                { label: "Vyloučené regiony", defaultValue: region.excludedCategories?.map(category => category.name)?.join(","), required: true }
             ],
             async (includedCategories, excludedCategories) => onCompositeRegionUpdated(region.category.name, region.category.category,
                 includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim())),

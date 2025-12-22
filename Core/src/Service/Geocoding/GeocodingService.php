@@ -18,36 +18,33 @@
         
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
-        
-        private readonly ConfigurationService $configurationService;
 
         private readonly CacheClient $cacheClient;
 
         private readonly GoogleClient $googleClient;
 
-        public function __construct(ConfigurationService $configurationService, CacheClient $cacheClient, GoogleClient $googleClient) {
-            $this->configurationService = $configurationService;
+        public function __construct(CacheClient $cacheClient, GoogleClient $googleClient) {
             $this->cacheClient = $cacheClient;
             $this->googleClient = $googleClient;
         }
 
-        public function getAddress(float $latitude, float $longitude,  bool $apiFetchEnabled = true) : ?Address {
+        public function getAddress(float $latitude, float $longitude, bool $fetchIfNotPresent = true) : ?Address {
             $address = $this->tryGetCachedAddress($latitude, $longitude);
-            if ($address !== null || !$apiFetchEnabled) {
+            if ($address !== null || !$fetchIfNotPresent) {
                 return $address;
             }
 
             return $this->createAddress($latitude, $longitude);
         }
 
-        public function getLocation(string $address, bool $apiFetchEnabled = true) : ?Location {
+        public function getLocation(string $address, bool $fetchIfNotPresent = true) : ?Location {
             $location = $this->tryParseLocation($address);
             if ($location !== null) {
                 return $location;
             }
 
             $location = $this->tryGetCachedLocation($address);
-            if ($location !== null || !$apiFetchEnabled) {
+            if ($location !== null || !$fetchIfNotPresent) {
                 return $location;
             }
 
@@ -103,25 +100,13 @@
             // Geocoding request.
             $resolvedLocation = $this->googleClient->getLocation($address);
             if ($resolvedLocation !== null) {
+                $country = $this->extractCountryName($resolvedLocation);
                 $latitude = $resolvedLocation["geometry"]["location"]["lat"];
                 $longitude = $resolvedLocation["geometry"]["location"]["lng"];
-                
-                foreach ($resolvedLocation["address_components"] as &$addressComponent) {
-                    if (in_array("country", $addressComponent["types"])) {
-                        $countryNames = $this->configurationService->getConfigurationEntry("countryNames");
-                        if (in_array($addressComponent["long_name"], array_map(fn($c) => $c["country"], $countryNames))) {
-                            $country = array_values(array_filter($countryNames, fn($c) => $c["country"] == $addressComponent["long_name"]))[0]["name"];
-                        }
-                        else {
-                            throw new \RuntimeException("Unknown country '" . $addressComponent["long_name"] . "' encountered.");
-                        }
-                        break;
-                    }
-                }
             }
 
             // Timezone request.
-            if ($latitude !== null && $longitude !== null && $timezone === null) {
+            if ($latitude !== null && $longitude !== null) {
                 $timezone = $this->googleClient->getTimezone($latitude, $longitude);
             }
 
@@ -129,6 +114,16 @@
             $this->cacheClient->set($this->getAddressCacheKey($address), $convertedLocation, self::ADDRESS_CACHE_TTL);
 
             return $convertedLocation;
+        }
+
+        private function extractCountryName(mixed $resolvedLocation) : ?string {
+            foreach ($resolvedLocation["address_components"] as &$addressComponent) {
+                if (in_array("country", $addressComponent["types"])) {
+                    return mb_strtoupper(mb_substr($addressComponent["long_name"], 0, 1)) . mb_substr($addressComponent["long_name"], 1);
+                }
+            }
+
+            return null;
         }
 
         private function createAddress(float $latitude, float $longitude) : Address {

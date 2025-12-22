@@ -62,12 +62,6 @@
             }
         }
 
-        public function onConfigurationEntryUpdated(mixed $message) : void {
-            if ($message["key"] === "countryNames") {
-                $this->categoryService->removeStaleCategoryIdentifiers();
-            }
-        }
-
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_CATEGORY_STATISTICS_ACTION_NAME, self::UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL)) {
                 $categories = $this->categoryService->getCategories(null, CategoryCategory::values(), array());

@@ -152,7 +152,7 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $geocodingService = new GeocodingService($configurationService, $cacheClient, $googleClient);
+    $geocodingService = new GeocodingService($cacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
@@ -216,7 +216,7 @@
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler),
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $placeService, $highlightService, $eventPublisher, $scheduler),
-        new PlaceServiceListener($placeService, $tripService, $calendarClient, $eventPublisher),
+        new PlaceServiceListener($placeService, $tripService, $categoryService, $calendarClient, $eventPublisher),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),

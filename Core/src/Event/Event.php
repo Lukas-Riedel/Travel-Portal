@@ -130,6 +130,10 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("categoryId" => $categoryId));
         }
 
+        public static function CategoryRenamed(string $categoryId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("categoryId" => $categoryId));
+        }
+
         public static function ExpenseCreated(string $expenseId, string $tripId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("expenseId" => $expenseId, "tripId" => $tripId));
         }

@@ -168,6 +168,7 @@
             $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$categoryId, &$name) {
                 $wasUpdated &= $this->categoryMapper->updateCategoryName($categoryId, $name);                
                 if ($wasUpdated) {
+                    $this->eventPublisher->publish(Event::CategoryRenamed($categoryId));
                     $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
                 }
             });
@@ -191,10 +192,6 @@
 
         // TODO: Replace string $category by CategoryCategory $category.
         public function createCompositeRegion(string $name, string $category, array $includedCategories, array $excludedCategories, bool $overwrite) : CompositeRegion {
-            foreach ($this->configurationService->getConfigurationEntry("countryNames") as $country) {
-                $this->getOrCreateCountryCategoryIdentifier($country["name"]);
-            }
-
             // Verify that all referenced regions exist.
             $referencableRegionNames = $this->categoryMapper->selectAllCategoryNames();
 
@@ -223,7 +220,6 @@
                 }
                 
                 // TODO: Block the insertion if the composite region already exists.
-
                 foreach ($includedCategories as &$includedCategory) {
                     $subjectCategoryIdentifier = $this->getCategoryIdentifier($includedCategory);
                     $includedCategoryIdentifiers[] = $subjectCategoryIdentifier;
@@ -344,24 +340,14 @@
         }
 
         public function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {
-            if (!in_array($country, array_map(fn($country) => $country["name"], $this->configurationService->getConfigurationEntry("countryNames")))) {
-                throw new \InvalidArgumentException("The country '" . $country . "' does not exist.");
-            }
-
             return $this->getOrCreateCategoryIdentifier($country, CategoryCategory::Country->value);
-        }
-
-        public function removeStaleCategoryIdentifiers() : void {
-            $this->categoryMapper->deleteStaleCategoryIdentifiers();
         }
 
         public function removeCategory(string $categoryId) : void {
             $this->categoryMapper->deleteGeographicalRegion($categoryId);
             $this->categoryMapper->deleteCompositeRegion($categoryId);
             $this->categoryMapper->deleteCompositeRegionReferences($categoryId);
-
-            // The category became stale, and will be removed.
-            $this->categoryMapper->deleteStaleCategoryIdentifiers();
+            $this->categoryMapper->deleteCategoryIdentifier($categoryId);
         }
 
         private function getWktPointsOnCircle(float $latitude, float $longitude, int $radiusInKms, int $pointsCount) : array {    

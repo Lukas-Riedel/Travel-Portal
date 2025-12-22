@@ -8,6 +8,8 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Category\CategoryCategory;
+    use Core\Service\Category\CategoryService;
 
     class PlaceServiceListener {
 
@@ -20,17 +22,33 @@
         private readonly PlaceService $placeService;
 
         private readonly TripService $tripService;
+        private readonly CategoryService $categoryService;
 
         private readonly CalendarClient $calendarClient;
 
         private readonly EventPublisher $eventPublisher;
 
-        public function __construct(PlaceService $placeService, TripService $tripService,
+        public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService,
             CalendarClient $calendarClient, EventPublisher $eventPublisher) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
+            $this->categoryService = $categoryService;
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
+        }
+
+        public function onCategoryRenamed(mixed $message) : void {
+            $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["categoryId"]);
+            if ($categoryIdentifier?->getCategory() === CategoryCategory::Country) {
+                $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null,
+                    null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                    
+                foreach ($places as &$place) {
+                    foreach ($place->getDates() as &$date) {
+                        $this->placeService->refreshPlaceEventLocation($place->getId(), $date->getStart());
+                    }
+                }
+            }
         }
         
         public function onAlbumUpdated(mixed $message) : void {            
