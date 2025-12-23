@@ -1,6 +1,6 @@
 FROM php:8.2-cli-bullseye AS builder
 RUN apt-get update \
-    && apt-get install -y libpq-dev git unzip \
+    && apt-get install -y libpq-dev git unzip tini \
     && docker-php-ext-install sockets pdo_pgsql pgsql pcntl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -19,7 +19,7 @@ RUN apt-get update \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && apt-get update \
-    && apt-get install -y libpq-dev nginx  bash curl postgresql-client-16 \
+    && apt-get install -y libpq-dev nginx bash curl postgresql-client-16 tini \
     && docker-php-ext-install sockets pdo_pgsql pgsql pcntl opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

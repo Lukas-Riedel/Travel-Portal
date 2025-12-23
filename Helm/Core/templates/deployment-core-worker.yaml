@@ -6,7 +6,12 @@ metadata:
   labels:
     app: core-worker
 spec:
-  replicas: 0
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: core-worker
@@ -15,11 +20,12 @@ spec:
       labels:
         app: core-worker
     spec:
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
       containers:
         - name: core-worker
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-          command:
+          command: ["/usr/bin/tini", "-g", "-v", "--"]
+          args:
             - php
             - -d
             - max_execution_time=0

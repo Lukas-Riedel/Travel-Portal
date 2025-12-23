@@ -30,18 +30,25 @@
             $channel = $this->messagingClient->getConsumerChannel();
             $channel->queue_declare($this->workerQueueName, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
             $channel->basic_consume($this->workerQueueName, $this->consumerTag, false, false, false, false, function($message) {
-                    $this->onEvent(json_decode($message->getBody(), true));
-                    $message->ack();
-                    $this->messagingClient->heartbeat();
+                    if ($this->isRunning) {
+                        $this->onEvent(json_decode($message->getBody(), true));
+                        $message->ack();
+                        $this->messagingClient->heartbeat();
+                    }
+                    else {
+                        $message->nack(true); 
+                    }
                 }
             );
 
-            pcntl_signal(SIGTERM, function() use($channel) {
-                $this->isRunning = false;
-                $this->logger->info("The consumer '{$this->consumerTag}' is being terminated...");
+            foreach (array(SIGTERM, SIGQUIT, SIGINT) as &$signal) {
+                pcntl_signal($signal, function() use($channel) {
+                    $this->isRunning = false;
+                    $this->logger->info("The consumer '{$this->consumerTag}' is being terminated...");
 
-                $channel->basic_cancel($this->consumerTag);
-            });
+                    $channel->basic_cancel($this->consumerTag);
+                });
+            }
 
             while ($this->isRunning) {
                 try {
@@ -49,7 +56,7 @@
                 }
                 catch (AMQPTimeoutException $e) {
                     $this->logger->warning("The AMQP process timed out. Reason: " . $e->getMessage());
-                    exit(0);
+                    return;
                 }
             }
         }

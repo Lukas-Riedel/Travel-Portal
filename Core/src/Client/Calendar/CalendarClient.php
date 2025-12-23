@@ -68,13 +68,14 @@
                         $item["id"],
                         $item["summary"],
                         $item["location"] ?? null,
-                        $this->getEventTimestamp($item["start"]["dateTime"]),
-                        $this->getEventTimestamp($item["end"]["dateTime"]),
-                        $item["start"]["dateTime"],
-                        $item["end"]["dateTime"],
+                        $this->getEventTimestamp($item["start"]["dateTime"] ?? $item["start"]["date"]),
+                        $this->getEventTimestamp($item["end"]["dateTime"] ?? $item["end"]["date"]),
+                        $item["start"]["dateTime"] ?? $item["start"]["date"],
+                        $item["end"]["dateTime"] ?? $item["end"]["date"],
                         isset($item["start"]["timeZone"]) ? $item["start"]["timeZone"] : null,
                         isset($item["end"]["timeZone"]) ? $item["end"]["timeZone"] : null,
-                        isset($item["description"]) ? $this->getEventAttributes($item["description"]) : array()
+                        isset($item["description"]) ? $this->getEventAttributes($item["description"]) : array(),
+                        isset($item["start"]["date"]) && isset($item["end"]["date"])
                     );
                 }
                 
@@ -173,7 +174,8 @@
                         $event["DTEND"],
                         null,
                         null,
-                        isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array()
+                        isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array(),
+                        ($this->getEventTimestamp($event["DTEND"]) - $this->getEventTimestamp($event["DTSTART"])) % CommonConstants::ONE_DAY_SECONDS === 0
                     );
                 }
             }

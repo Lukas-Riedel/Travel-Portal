@@ -7,7 +7,7 @@
         schema: "CalendarEvent",
         type: "object",
         description: "A class representing a calendar event",
-        required: ["id", "summary", "start", "end", "attributes"],
+        required: ["id", "summary", "start", "end", "rawStart", "rawEnd", "attributes", "allDay"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -42,6 +42,18 @@
                 example: 1689786000
             ),
             new OA\Property(
+                property: "rawStart",
+                description: "The raw start time of the calendar event in epoch seconds",
+                type: "string",
+                example: "2025-12-01T07:00:00+01:00"
+            ),
+            new OA\Property(
+                property: "rawEnd",
+                description: "The raw end time of the calendar event in epoch seconds",
+                type: "string",
+                example: "2025-12-09T20:00:00+01:00"
+            ),
+            new OA\Property(
                 property: "startTimezone",
                 description: "The start timezone of the calendar event",
                 type: "string",
@@ -58,6 +70,12 @@
                 description: "The attributes of the calendar event",
                 type: "array",
                 items: new OA\Items(type: "string")
+            ),
+            new OA\Property(
+                property: "allDay",
+                description: "Whether the calendar event is an all-day event or not",
+                type: "boolean",
+                example: true
             )
         ]
     )]
@@ -72,9 +90,10 @@
         private readonly ?string $startTimezone;
         private readonly ?string $endTimezone;        
         private readonly array $attributes;
+        private readonly bool $allDay;
 
         public function __construct(string $id, string $summary, ?string $location, int $start,
-            int $end, string $rawStart, string $rawEnd, ?string $startTimezone, ?string $endTimezone, array $attributes) {
+            int $end, string $rawStart, string $rawEnd, ?string $startTimezone, ?string $endTimezone, array $attributes, bool $allDay) {
             $this->id = $id;
             $this->summary = $summary;
             $this->location = $location;
@@ -85,6 +104,7 @@
             $this->startTimezone = $startTimezone;
             $this->endTimezone = $endTimezone;
             $this->attributes = $attributes;
+            $this->allDay = $allDay;
         }
 
         public function getId() : string {
@@ -130,13 +150,17 @@
         }
 
         public function shouldBeNormalized(string $expectedStartTimezone, string $expectedEndTimezone) : bool {
-            return !$this->hasNormalizedStart() || !$this->hasNormalizedEnd()
+            return !$this->isAllDay() && (!$this->hasNormalizedStart() || !$this->hasNormalizedEnd()
                 || !$this->hasSameEffectiveStartTimezone($expectedStartTimezone)
-                || !$this->hasSameEffectiveEndTimezone($expectedEndTimezone);
+                || !$this->hasSameEffectiveEndTimezone($expectedEndTimezone));
         }
 
         public function getAttributes() : array {
             return $this->attributes;
+        }
+
+        public function isAllDay() : bool {
+            return $this->allDay;
         }
 
         #[\ReturnTypeWillChange]

@@ -8,9 +8,7 @@
     use Core\Service\Flight\FlightService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Note\NoteService;
-    use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
-    use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Stay\StayService;
     use Core\Service\Year\YearService;
@@ -191,6 +189,12 @@
                         $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
                     $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
+                    
+                    $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
+                    if ($tripEvent->shouldBeNormalized($homeTimezone, $homeTimezone)) {
+                        $this->googleClient->updateCalendarEventStartEnd(Calendar::Trips, $tripEvent->getId(),
+                            $tripEvent->getStart(), $tripEvent->getEnd(), $homeTimezone, $homeTimezone);                        
+                    }
                 }
             });
             
