@@ -1,7 +1,6 @@
 <?php
     namespace Core\Event;
 
-    use Core\Client\Database\DatabaseClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Event\EventPriority;
     use Core\OpenLineage\OpenLineageEventManager;
@@ -10,35 +9,47 @@
 
     class RabbitMQEventListener extends AbstractEventListener {
 
-        // TODO: Make configurable in the deployment.
-        private const WAITING_FOR_MESSAGES_TIMEOUT_SECONDS = 30;
-
         private readonly RabbitMQMessagingClient $messagingClient;
 
         private readonly string $workerQueueName;
+        private readonly string $consumerTag;
+
+        private readonly Logger $logger;
+
+        private bool $isRunning = true;
 
         public function __construct(RabbitMQMessagingClient $messagingClient, Logger $logger, ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
             parent::__construct($logger, $openLineageEventManager, $listeners, $workerQueueName);
             $this->messagingClient = $messagingClient;
             $this->workerQueueName = $workerQueueName;
+            $this->consumerTag = uniqid();
+            $this->logger = $logger;
         }
 
         public function listen() : void {
             $channel = $this->messagingClient->getConsumerChannel();
             $channel->queue_declare($this->workerQueueName, false, true, false, false, false, array("x-max-priority" => array("I", count(EventPriority::cases()))));
-            $channel->basic_consume($this->workerQueueName, "", false, false, false, false, function($message) {
+            $channel->basic_consume($this->workerQueueName, $this->consumerTag, false, false, false, false, function($message) {
                     $this->onEvent(json_decode($message->getBody(), true));
                     $message->ack();
                     $this->messagingClient->heartbeat();
                 }
             );
 
-            while (true) {
+            pcntl_signal(SIGTERM, function() use($channel) {
+                $this->isRunning = false;
+                $this->logger->info("The consumer '{$this->consumerTag}' is being terminated...");
+
+                $channel->basic_cancel($this->consumerTag);
+            });
+
+            while ($this->isRunning) {
                 try {
-                    $channel->wait(null, false, self::WAITING_FOR_MESSAGES_TIMEOUT_SECONDS);
+                    $channel->wait(null, false);
                 }
                 catch (AMQPTimeoutException $e) {
-                    break;
+                    $this->logger->warning("The AMQP process timed out. Reason: " . $e->getMessage());
+                    exit(0);
                 }
             }
         }

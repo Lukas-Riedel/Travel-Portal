@@ -3,7 +3,11 @@ core:
   image: ghcr.io/lukas-riedel/core
   # tag: latest
   replicas: 1
-  workers: 3
+  workers: 5
+  scaling:
+    items: "100"
+    cooldown: 120
+    grace: 60
   service:
     type: ClusterIP
     port: 8080
@@ -38,7 +42,7 @@ core:
       port: 5671
     vhost: /
     username: admin
-    heartbeat: "300"
+    heartbeat: "60"
     queue:
       worker: WorkerQueue
   fcm:

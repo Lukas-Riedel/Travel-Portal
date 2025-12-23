@@ -1,0 +1,21 @@
+{{- if .Values.core.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: core-worker-scaler
+spec:
+  scaleTargetRef:
+    name: core-worker
+  minReplicaCount: 1
+  maxReplicaCount: {{ .Values.core.workers }}
+  pollingInterval: 15
+  cooldownPeriod: {{ .Values.core.scaling.cooldown }}
+  triggers:
+    - type: rabbitmq
+      metadata:
+        mode: QueueLength
+        value: "{{ .Values.core.scaling.items }}"
+        queueName: "{{ .Values.core.rabbitmq.queue.worker }}"
+      authenticationRef:
+        name: core-worker-scaler-auth
+{{- end }}

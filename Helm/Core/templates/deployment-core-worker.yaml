@@ -1,0 +1,36 @@
+{{- if .Values.core.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-worker
+  labels:
+    app: core-worker
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: core-worker
+  template:
+    metadata:
+      labels:
+        app: core-worker
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: core-worker
+          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+          command:
+            - php
+            - -d
+            - max_execution_time=0
+            - -d
+            - memory_limit=512M
+            - /var/www/html/src/worker.php
+          env:
+{{ include "core.env" . | nindent 12 }}
+          volumeMounts:
+{{ include "core.volumeMounts" . | nindent 12 }}
+      volumes:
+      - name: core-data
+        emptyDir: {}
+{{- end }}

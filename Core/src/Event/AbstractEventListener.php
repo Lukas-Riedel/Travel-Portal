@@ -1,7 +1,6 @@
 <?php
     namespace Core\Event;
 
-    use Core\Client\Database\DatabaseClient;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
     use Monolog\Logger;

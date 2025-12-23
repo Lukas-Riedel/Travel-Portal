@@ -166,7 +166,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(...$photoIds)
-                ->getMappedResultSet(function ($photoRow) {
+                ->getMappedResultSet(function($photoRow) {
                     $urlProvider = function() use($photoRow) { 
                         return $this->googleClient->getPhoto($this->selectPhotoExternalId($photoRow["id"]))["baseUrl"];
                     };

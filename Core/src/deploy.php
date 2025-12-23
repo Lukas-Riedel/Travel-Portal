@@ -100,9 +100,4 @@
     foreach ($configurationService->getConfigurationEntry("calendars") as $calendarName => $calendarUrl) {
         $googleClient->createFile($calendarName . ".ics", $backupFolderId, "text/calendar", $httpClient->executeRequest(HttpMethod::GET, $calendarUrl));
     }
-    
-    $lockKeyFormat = "Worker:Lock:%s";
-    for ($i = 0; $i < getenv("MAX_WORKERS_COUNT"); ++$i) {
-        $cacheClient->delete(sprintf($lockKeyFormat, $i));
-    }
 ?>

@@ -110,7 +110,8 @@
             )
         ]
     )]
-    class Trip implements \JsonSerializable {          
+    class Trip implements \JsonSerializable {    
+              
         private const FULL_TRIP_NAME_FORMAT = "%s %d";
 
         private readonly string $id;

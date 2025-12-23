@@ -1,0 +1,17 @@
+{{- if .Values.core.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: core-worker-scaler-auth
+spec:
+  secretTargetRef:
+    - parameter: host
+      name: core-worker-scaler-secret
+      key: rmqConnectionString
+    - parameter: username
+      name: core-worker-scaler-secret
+      key: rmqUser
+    - parameter: password
+      name: rabbitmq-password
+      key: rabbitmq-password
+{{- end }}
