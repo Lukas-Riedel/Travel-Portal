@@ -42,6 +42,18 @@
                 example: 1689786000
             ),
             new OA\Property(
+                property: "startTimezone",
+                description: "The start timezone of the calendar event",
+                type: "string",
+                example: "Asia/Dubai"
+            ),
+            new OA\Property(
+                property: "startTimezone",
+                description: "The start timezone of the calendar event",
+                type: "string",
+                example: "Asia/Bangkok"
+            ),
+            new OA\Property(
                 property: "attributes",
                 description: "The attributes of the calendar event",
                 type: "array",
@@ -55,14 +67,23 @@
         private readonly ?string $location;
         private readonly int $start;
         private readonly int $end;
+        private readonly string $rawStart;        
+        private readonly string $rawEnd;
+        private readonly ?string $startTimezone;
+        private readonly ?string $endTimezone;        
         private readonly array $attributes;
 
-        public function __construct(string $id, string $summary, ?string $location, int $start, int $end, array $attributes) {
+        public function __construct(string $id, string $summary, ?string $location, int $start,
+            int $end, string $rawStart, string $rawEnd, ?string $startTimezone, ?string $endTimezone, array $attributes) {
             $this->id = $id;
             $this->summary = $summary;
             $this->location = $location;
             $this->start = $start;
             $this->end = $end;
+            $this->rawStart = $rawStart;
+            $this->rawEnd = $rawEnd;
+            $this->startTimezone = $startTimezone;
+            $this->endTimezone = $endTimezone;
             $this->attributes = $attributes;
         }
 
@@ -84,6 +105,34 @@
 
         public function getEnd() : int {
             return $this->end;
+        }
+
+        public function hasNormalizedStart() : bool {
+            return date(DATE_RFC3339, $this->start) === $this->rawStart;
+        }
+
+        public function hasNormalizedEnd() : bool {
+            return date(DATE_RFC3339, $this->end) === $this->rawEnd;
+        }
+
+        public function hasSameEffectiveStartTimezone(string $otherTimezone) : bool {
+            $tzExpected = new \DateTimeZone($otherTimezone);
+            $tzActual = new \DateTimeZone($this->startTimezone);
+            $dtStart = new \DateTimeImmutable("@" . $this->start); 
+            return $tzActual->getOffset($dtStart) === $tzExpected->getOffset($dtStart);
+        }
+
+        public function hasSameEffectiveEndTimezone(string $otherTimezone) : bool {
+            $tzExpected = new \DateTimeZone($otherTimezone);
+            $tzActual = new \DateTimeZone($this->endTimezone);
+            $dtEnd = new \DateTimeImmutable("@" . $this->end); 
+            return $tzActual->getOffset($dtEnd) === $tzExpected->getOffset($dtEnd);
+        }
+
+        public function shouldBeNormalized(string $expectedStartTimezone, string $expectedEndTimezone) : bool {
+            return !$this->hasNormalizedStart() || !$this->hasNormalizedEnd()
+                || !$this->hasSameEffectiveStartTimezone($expectedStartTimezone)
+                || !$this->hasSameEffectiveEndTimezone($expectedEndTimezone);
         }
 
         public function getAttributes() : array {

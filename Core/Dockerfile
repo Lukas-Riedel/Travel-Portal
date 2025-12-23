@@ -20,14 +20,13 @@ RUN apt-get update \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && apt-get update \
     && apt-get install -y libpq-dev nginx  bash curl postgresql-client-16 \
-    && docker-php-ext-install sockets pdo_pgsql pgsql pcntl \
+    && docker-php-ext-install sockets pdo_pgsql pgsql pcntl opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /var/www/html
 COPY --from=builder /app ./
 COPY Core/nginx.conf /etc/nginx/nginx.conf
 COPY Core/www.conf /usr/local/etc/php-fpm.d/www.conf
-COPY Core/opcache.ini /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 EXPOSE 8080
 COPY Core/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

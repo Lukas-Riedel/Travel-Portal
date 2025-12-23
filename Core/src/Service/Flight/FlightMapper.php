@@ -372,6 +372,70 @@
                 });                 
         }
 
+        public function selectLoggedFlight(string $flight, int $scheduledDeparture) : ?Flight {
+            $sql = <<<'SQL'
+                SELECT fl.flight,
+                    fe."from", 
+                    fe."to", 
+                    fl.actual_departure AS "start", 
+                    fl.actual_arrival AS "end", 
+                    fl.registration, 
+                    fl.aircraft, 
+                    ai.id AS airline_id,
+                    ai.name AS airline_name,
+                    fl.from_airport_id, 
+                    fl.to_airport_id, 
+                    fl.actual_arrival - fl.scheduled_arrival AS delay,
+                    fai.name AS from_airport_name,
+                    fai.code AS from_airport_code, 
+                    fai.latitude AS from_airport_latitude, 
+                    fai.longitude AS from_airport_longitude, 
+                    fai.country_category_id AS from_airport_country_category_id, 
+                    fai.timezone AS from_airport_timezone, 
+                    tai.name AS to_airport_name,
+                    tai.code AS to_airport_code, 
+                    tai.latitude AS to_airport_latitude, 
+                    tai.longitude AS to_airport_longitude, 
+                    tai.country_category_id AS to_airport_country_category_id, 
+                    tai.timezone AS to_airport_timezone 
+                FROM flight_event fe 
+                INNER JOIN flight_log fl 
+                    ON fe.flight = fl.flight 
+                        AND fe.start = fl.scheduled_departure 
+                INNER JOIN airport_identifier fai 
+                    ON fl.from_airport_id = fai.id
+                INNER JOIN airport_identifier tai 
+                    ON fl.to_airport_id = tai.id 
+                LEFT JOIN airline_code ac
+                    ON fl.airline_code_id = ac.id
+                LEFT JOIN airline_identifier ai
+                    ON ac.airline_id = ai.id
+                WHERE fl.flight = ?
+                    AND fl.scheduled_departure = ?
+            SQL;
+            
+            $flightRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($flight, $scheduledDeparture)
+                ->getSingleRow();
+
+            if ($flightRow === null) {
+                return null;
+            }
+                
+            $distance = $this->geocodingService->getDistance($flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"]);
+
+            $airlineIdentifier = $flightRow["airline_id"] === null || $flightRow["airline_name"] === null ? null : new AirlineIdentifier($flightRow["airline_id"], $flightRow["airline_name"]);
+            $from = new Airport($flightRow["from_airport_id"], $flightRow["from"], $flightRow["from_airport_name"], $flightRow["from_airport_code"], 
+                $flightRow["from_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["from_airport_country_category_id"])->getName(), 
+                $flightRow["from_airport_latitude"], $flightRow["from_airport_longitude"], $flightRow["from_airport_timezone"]);
+            $to = new Airport($flightRow["to_airport_id"], $flightRow["to"], $flightRow["to_airport_name"], $flightRow["to_airport_code"],
+                $flightRow["to_airport_country_category_id"] === null ? null : $this->categoryService->getCategoryIdentifierById($flightRow["to_airport_country_category_id"])->getName(), 
+                $flightRow["to_airport_latitude"], $flightRow["to_airport_longitude"], $flightRow["to_airport_timezone"]);
+
+            return new Flight($flightRow["flight"], $flightRow["registration"], $flightRow["aircraft"], $airlineIdentifier, $distance, $from, $to, $flightRow["start"], $flightRow["end"], $flightRow["delay"]);
+        }
+
         public function selectAirportIdentifierById(string $airportId) : ?AirportIdentifier {
             $sql = <<<'SQL'
                 SELECT *

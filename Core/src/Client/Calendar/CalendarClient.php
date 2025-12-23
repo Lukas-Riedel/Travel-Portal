@@ -65,11 +65,15 @@
             while (isset($response["items"])) {
                 foreach ($response["items"] as &$item) {
                     $events[] = new CalendarEvent(
-                        $item["iCalUID"],
+                        $item["id"],
                         $item["summary"],
                         $item["location"] ?? null,
                         $this->getEventTimestamp($item["start"]["dateTime"]),
                         $this->getEventTimestamp($item["end"]["dateTime"]),
+                        $item["start"]["dateTime"],
+                        $item["end"]["dateTime"],
+                        isset($item["start"]["timeZone"]) ? $item["start"]["timeZone"] : null,
+                        isset($item["end"]["timeZone"]) ? $item["end"]["timeZone"] : null,
                         isset($item["description"]) ? $this->getEventAttributes($item["description"]) : array()
                     );
                 }
@@ -165,6 +169,10 @@
                         isset($event["LOCATION"]) ? html_entity_decode(str_replace("\\", "", $event["LOCATION"]), ENT_QUOTES | ENT_HTML5) : null,
                         $this->getEventTimestamp($event["DTSTART"]),
                         $this->getEventTimestamp($event["DTEND"]),
+                        $event["DTSTART"],
+                        $event["DTEND"],
+                        null,
+                        null,
                         isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array()
                     );
                 }

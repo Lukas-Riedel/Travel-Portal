@@ -2,4 +2,7 @@
 - name: core-data
   persistentVolumeClaim:
     claimName: core-pvc
+- name: core-config
+  configMap:
+    name: core-configmap
 {{- end }}

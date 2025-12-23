@@ -71,3 +71,4 @@ core:
     username: "1287508"
   origins:
     whitelist: https://travel-portal.eu,https://lriedel.cz
+  timezone: Europe/Prague

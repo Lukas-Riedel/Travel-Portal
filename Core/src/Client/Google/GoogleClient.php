@@ -250,25 +250,37 @@
             return true;
         }
 
-        public function updateCalendarEventDates(Calendar $calendar, string $eventId, int $start, int $end) : bool {
+        public function updateCalendarEventStartEnd(Calendar $calendar, string $eventId, ?int $start, ?int $end, ?string $startTimezone, ?string $endTimezone) : bool {
             $payload = $this->executeRequest(HttpMethod::GET, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)));
 
             if (!array_key_exists("start", $payload) || !array_key_exists("end", $payload)) {
                 return false;
             }
 
-            if (array_key_exists("dateTime", $payload["start"])) {
-                $payload["start"]["dateTime"] = date(DATE_RFC3339, $start);
-            }
-            else {
-                $payload["start"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $start);
+            if ($start !== null) {
+                if (array_key_exists("dateTime", $payload["start"])) {
+                    $payload["start"]["dateTime"] = date(DATE_RFC3339, $start);
+                }
+                else {
+                    $payload["start"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $start);
+                }                
             }
 
-            if (array_key_exists("dateTime", $payload["end"])) {
-                $payload["end"]["dateTime"] = date(DATE_RFC3339, $end);
+            if ($startTimezone !== null && array_key_exists("dateTime", $payload["start"])) {
+                $payload["start"]["timeZone"] = $startTimezone;
             }
-            else {
-                $payload["end"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $end);
+
+            if ($end !== null) {
+                if (array_key_exists("dateTime", $payload["end"])) {
+                    $payload["end"]["dateTime"] = date(DATE_RFC3339, $end);
+                }
+                else {
+                    $payload["end"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $end);
+                }
+            }
+
+            if ($endTimezone !== null && array_key_exists("dateTime", $payload["end"])) {
+                $payload["end"]["timeZone"] = $endTimezone;
             }
 
             $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);

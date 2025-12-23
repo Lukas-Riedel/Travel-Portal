@@ -202,7 +202,7 @@
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
-                    $this->googleClient->updateCalendarEventDates(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()), $date->getStart() - $timezoneOffset + $offset, $date->getEnd() - $timezoneOffset + $offset);
+                    $this->googleClient->updateCalendarEventStartEnd(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()), $date->getStart() - $timezoneOffset + $offset, $date->getEnd() - $timezoneOffset + $offset, null, null);
                 }
             }
 

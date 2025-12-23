@@ -262,6 +262,23 @@
                     $flight = new Flight($parsedFlightEventName["flight"], null, null, null, null, $from, $to, $flightEvent->getStart(), $flightEvent->getEnd(), null);
 
                     $this->flightMapper->insertFlightEvent($flightType, $flight, $flightEvent->getId(), $resolvedTripIdentifier?->getId());
+
+                    $loggedFlight = $this->flightMapper->selectLoggedFlight($flight->getFlight(), $flightEvent->getStart());
+
+                    $fromTimezone = $loggedFlight?->getFrom()?->getTimezone();
+                    if ($fromTimezone === null) {
+                        $fromTimezone = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $from->getShortName()))?->getTimezone();
+                    }
+
+                    $toTimezone = $loggedFlight?->getTo()?->getTimezone();
+                    if ($toTimezone === null) {
+                        $toTimezone = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $to->getShortName()))?->getTimezone();
+                    }
+                    
+                    if ($flightEvent->shouldBeNormalized($fromTimezone, $toTimezone)) {
+                        $this->googleClient->updateCalendarEventStartEnd($flightType->getCalendar(), $flightEvent->getId(),
+                            $flightEvent->getStart(), $flightEvent->getEnd(), $fromTimezone, $toTimezone);                        
+                    }
                 }   
             });      
 

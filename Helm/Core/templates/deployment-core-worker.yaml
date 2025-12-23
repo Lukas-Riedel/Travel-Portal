@@ -33,4 +33,7 @@ spec:
       volumes:
       - name: core-data
         emptyDir: {}
+      - name: core-config
+        configMap:
+          name: core-configmap
 {{- end }}

@@ -124,7 +124,7 @@
 
             $offset = $start - $trip->getStart();
             $this->placeService->movePlaces($tripId, $offset);
-            $this->googleClient->updateCalendarEventDates(Calendar::Trips, $this->getTripEventId($tripId), $start, $trip->getEnd() + $offset);
+            $this->googleClient->updateCalendarEventStartEnd(Calendar::Trips, $this->getTripEventId($tripId), $start, $trip->getEnd() + $offset, null, null);
 
             return $trip->withOffset($offset);
         }
