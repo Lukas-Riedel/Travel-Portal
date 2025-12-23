@@ -59,7 +59,30 @@
         }
 
         public function getEvents(Calendar $calendar) : array {
-            return $this->fetchEvents($this->configurationService->getConfigurationEntry("calendars")[$calendar->value]);
+            $events = array();
+
+            $response = $this->googleClient->getCalendarEvents($calendar);
+            while (isset($response["items"])) {
+                foreach ($response["items"] as &$item) {
+                    $events[] = new CalendarEvent(
+                        $item["iCalUID"],
+                        $item["summary"],
+                        $item["location"] ?? null,
+                        $this->getEventTimestamp($item["start"]["dateTime"]),
+                        $this->getEventTimestamp($item["end"]["dateTime"]),
+                        isset($item["description"]) ? $this->getEventAttributes($item["description"]) : array()
+                    );
+                }
+                
+                if (isset($response["nextPageToken"])) {
+                    $response = $this->googleClient->getCalendarEvents($calendar, $response["nextPageToken"]);
+                }
+                else {
+                    $response = array();
+                }
+            }
+
+            return $events;
         }
     
         public function getPublicHolidaysForCategories(array $categories) : array {
@@ -136,12 +159,14 @@
             $ical = new ICal($url);
             if (isset($ical->cal["VEVENT"])) {
                 foreach ($ical->cal["VEVENT"] as &$event) {
-                    $events[] = new CalendarEvent($event["UID"],
+                    $events[] = new CalendarEvent(
+                        $event["UID"],
                         html_entity_decode($event["SUMMARY"], ENT_QUOTES | ENT_HTML5), 
                         isset($event["LOCATION"]) ? html_entity_decode(str_replace("\\", "", $event["LOCATION"]), ENT_QUOTES | ENT_HTML5) : null,
                         $this->getEventTimestamp($event["DTSTART"]),
                         $this->getEventTimestamp($event["DTEND"]),
-                        isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array());
+                        isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array()
+                    );
                 }
             }
 

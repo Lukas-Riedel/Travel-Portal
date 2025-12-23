@@ -27,6 +27,7 @@
         private const GET_FILES_URL_FORMAT = "https://www.googleapis.com/drive/v3/files?pageSize=%d&q=%s";
 
         private const CREATE_CALENDAR_EVENT_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events";
+        private const GET_CALENDAR_EVENTS_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events";
         private const ACCESS_CALENDAR_EVENT_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events/%s";
         private const WATCH_CALENDAR_EVENTS_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events/watch";
         
@@ -277,6 +278,22 @@
             }
 
             return true;
+        }
+
+        public function getCalendarEvents(Calendar $calendar, ?string $pageToken = null) : array {
+            $queryParameters = "?maxResults=2500";
+
+            if ($pageToken !== null) {
+                $queryParameters .= "&pageToken=" . $pageToken;
+            }
+
+            $apiResponse = $this->executeRequest(HttpMethod::GET, sprintf(self::GET_CALENDAR_EVENTS_URL_FORMAT . $queryParameters, $this->getCalendarIdentifier($calendar)));
+
+            if (isset($apiResponse["error"])) {
+                throw new \RuntimeException("Calendar events could not be obtained. Reason: " . $apiResponse["error"]["message"]);
+            }
+
+            return $apiResponse;
         }
 
         public function watchCalendar(Calendar $calendar, string $channelId, string $url, int $ttl, ?string $token = null) : bool {                    
