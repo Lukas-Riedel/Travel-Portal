@@ -37,24 +37,24 @@ class DeviceInitializer(
         Log.d(DeviceInitializer::class.java.simpleName, "Received a request to initialize a device...")
 
         CoroutineScope(Dispatchers.IO).launch {
-            for (deviceType in DeviceType.entries) {
-                try {
-                    val batteryStatus: Intent? = ContextCompat.getSystemService(context, BatteryManager::class.java)?.let { _ ->
-                        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-                        context.registerReceiver(null, intentFilter)
-                    }
-                    val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-                    val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+            try {
+                val batteryStatus: Intent? = ContextCompat.getSystemService(context, BatteryManager::class.java)?.let { _ ->
+                    val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                    context.registerReceiver(null, intentFilter)
+                }
+                val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
 
-                    val location = getLocation()
+                val location = getLocation(batteryLevel / batteryScale.toDouble() * 100)
 
+                for (deviceType in DeviceType.entries) {
                     coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName,
                         DeviceData(fcmToken, location?.latitude, location?.longitude,
                             java.util.TimeZone.getDefault().id, batteryLevel / batteryScale.toDouble() * 100)))
                 }
-                catch (e: Exception) {
-                    Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when initializing a device.", e)
-                }
+            }
+            catch (e: Exception) {
+                Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when initializing a device.", e)
             }
         }
     }
@@ -71,14 +71,15 @@ class DeviceInitializer(
             }
     }
 
-    private suspend fun getLocation(): Location? {
+    private suspend fun getLocation(batteryLevel: Double): Location? {
         val lastLocation = fusedLocationClient.lastLocation.await()
-        if (lastLocation != null && System.currentTimeMillis() - lastLocation.time <= MAX_LOCATION_AGE_MILLISECONDS) {
+        if (batteryLevel < LOCATION_FETCH_BATTERY_THRESHOLD
+            || (lastLocation != null && System.currentTimeMillis() - lastLocation.time <= MAX_LOCATION_AGE_MILLISECONDS)) {
             return lastLocation
         }
 
         val currentLocationRequest = CurrentLocationRequest.Builder()
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
             .setDurationMillis(LOCATION_FETCH_TIMEOUT_MILLISECONDS)
             .setMaxUpdateAgeMillis(0)
             .build()
@@ -106,7 +107,8 @@ class DeviceInitializer(
         private const val DEVICE_ID_KEY = "deviceId"
         private const val DEVICE_NAME_KEY = "device_name"
         private const val MAX_LOCATION_AGE_MILLISECONDS = 30 * 60 * 1000L
-        private const val LOCATION_FETCH_TIMEOUT_MILLISECONDS = 30 * 1000L
+        private const val LOCATION_FETCH_TIMEOUT_MILLISECONDS = 10 * 1000L
+        private const val LOCATION_FETCH_BATTERY_THRESHOLD = 30
 
         private fun getPrettyDeviceName(context: Context): String {
             val deviceNameSetting = Settings.Global.getString(context.contentResolver, DEVICE_NAME_KEY)
