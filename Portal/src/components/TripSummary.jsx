@@ -32,9 +32,6 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const SunAltitudeIcon = useMemo(() => currentSunAltitude > 10 ? Sun : currentSunAltitude < -10 ? Moon : SunMoon, [currentSunAltitude])
 
     const [timezone, setTimezone] = useState(undefined)
-    useEffect(() => {
-        setTimezone(configuration?.homeLocation?.timezone)
-    }, [configuration])
 
     const [count, setCount] = useState(3)
     useEffect(() => {

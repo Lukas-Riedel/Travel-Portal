@@ -60,8 +60,8 @@
                 example: "Asia/Dubai"
             ),
             new OA\Property(
-                property: "startTimezone",
-                description: "The start timezone of the calendar event",
+                property: "endTimezone",
+                description: "The end timezone of the calendar event",
                 type: "string",
                 example: "Asia/Bangkok"
             ),
@@ -125,6 +125,14 @@
 
         public function getEnd() : int {
             return $this->end;
+        }
+
+        public function getRawStart() : string {
+            return $this->rawStart;
+        }
+
+        public function getRawEnd() : string {
+            return $this->rawEnd;
         }
 
         public function getStartTimezone() : ?string {

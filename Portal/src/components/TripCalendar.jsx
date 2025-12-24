@@ -14,9 +14,6 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
     const { showFormToast } = useUserInput()
 
     const [timezone, setTimezone] = useState(undefined)
-    useEffect(() => {
-        setTimezone(configuration?.homeLocation?.timezone)
-    }, [configuration])
 
     const days = useMemo(() => trip && eachDayOfInterval({
         start: startOfDay(toZonedTime(fromUnixTime(trip?.start || (places && Math.min(...places.flatMap(place => place?.dates).map(date => date.start)))), timezone)),
