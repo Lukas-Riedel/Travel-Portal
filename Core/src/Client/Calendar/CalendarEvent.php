@@ -127,6 +127,14 @@
             return $this->end;
         }
 
+        public function getStartTimezone() : ?string {
+            return $this->startTimezone;
+        }
+
+        public function getEndTimezone() : ?string {
+            return $this->endTimezone;
+        }
+
         public function hasNormalizedStart() : bool {
             return date(DATE_RFC3339, $this->start) === $this->rawStart;
         }

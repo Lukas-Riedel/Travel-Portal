@@ -164,10 +164,13 @@
         }
 
         public function createFlight(FlightType $flightType, string $flight, string $originAirportName, string $destinationAirportName, int $scheduledDeparture, int $scheduledArrival) : Flight {
-            $this->googleClient->createCalendarEvent($flightType->getCalendar(), $this->getFlightEventName($flight, $originAirportName, $destinationAirportName), null, $scheduledDeparture, $scheduledArrival);
+            $fromLocation = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $originAirportName));
+            $toLocation = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $destinationAirportName));
+            $this->googleClient->createCalendarEvent($flightType->getCalendar(), $this->getFlightEventName($flight, $originAirportName, $destinationAirportName),
+                null, $scheduledDeparture, $scheduledArrival, $fromLocation?->getTimezone(), $toLocation?->getTimezone());
             
-            $from = new Airport(null, $originAirportName, null, null, null, null, null, null);
-            $to = new Airport(null, $destinationAirportName, null, null, null, null, null, null);
+            $from = new Airport(null, $originAirportName, null, null, $fromLocation?->getCountry(), $fromLocation?->getLatitude(), $fromLocation?->getLongitude(), $fromLocation?->getTimezone());
+            $to = new Airport(null, $destinationAirportName, null, null, $toLocation?->getCountry(), $toLocation?->getLatitude(), $toLocation?->getLongitude(), $toLocation?->getTimezone());
             return new Flight($flight, null, null, null, null, $from, $to, $scheduledDeparture, $scheduledArrival, null);
         }
 

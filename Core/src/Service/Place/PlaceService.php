@@ -201,8 +201,8 @@
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
-                    $timezoneOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
-                    $this->googleClient->updateCalendarEventStartEnd(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()), $date->getStart() - $timezoneOffset + $offset, $date->getEnd() - $timezoneOffset + $offset, null, null);
+                    $this->googleClient->updateCalendarEventStartEnd(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()),
+                        $date->getStart() + $offset, $date->getEnd() + $offset, $place->getTimezone(), $place->getTimezone());
                 }
             }
 
@@ -215,7 +215,7 @@
             foreach ($places as &$place) {
                 $address = $this->geocodingService->getFormattedAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());
                 foreach ($place->getDates() as &$date) {
-                    $this->googleClient->createCalendarEvent(Calendar::Places, $place->getName(), $address, $startOffset + $date->getStart(), $startOffset + $date->getEnd());
+                    $this->googleClient->createCalendarEvent(Calendar::Places, $place->getName(), $address, $startOffset + $date->getStart(), $startOffset + $date->getEnd(), $place->getTimezone(), $place->getTimezone());
                 }
             }
 
@@ -230,8 +230,7 @@
             $this->transactionManager->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
-                        $timeOffset = $this->getTimezoneOffset($date->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $place->getTimezone());
-                        if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $timeOffset - $tripStart, $date->getEnd() - $timeOffset - $tripStart, false, null, null, null, $archivedTripIdentifier))))) {
+                        if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $tripStart, $date->getEnd() - $tripStart, false, null, null, null, $archivedTripIdentifier))))) {
                             $this->googleClient->deleteCalendarEvent(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
                         }
                     }
@@ -295,10 +294,20 @@
                 $this->placeMapper->deleteAllPlaceEvents();                
                 foreach ($placeEvents as &$placeEvent) {
                     $resolvedLocation = $this->geocodingService->getLocation($placeEvent->getLocation());
-                    $placeIdentifier = $this->getOrCreatePlaceIdentifier($placeEvent->getSummary(), $resolvedLocation->getCountry(), $placeEvent->getLocation());                        
-                    $timeOffset = $this->getTimezoneOffset($placeEvent->getStart(), $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $placeIdentifier->getTimezone());
-                    $start = $placeEvent->getStart() + $timeOffset;
-                    $end = $placeEvent->getEnd() + $timeOffset;     
+                    $placeIdentifier = $this->getOrCreatePlaceIdentifier($placeEvent->getSummary(), $resolvedLocation->getCountry(), $placeEvent->getLocation());
+                    $start = $placeEvent->getStart();
+                    $end = $placeEvent->getEnd();
+                    
+                    // The time is considered normalized if the event timezone is the same as the place timezone.
+                    $isTimeNormalized = !$placeEvent->shouldBeNormalized($placeIdentifier->getTimezone(), $placeIdentifier->getTimezone());
+                    if (!$isTimeNormalized) {
+                        // TODO: For the offset computation, should we prioritize the timezone from the event? Like '$placeEvent->getStartTimezone() ?? $homeTimezone'.
+                        // This should ensure that creating an event on a device in a different timezone will not cause any discrepancies, but it should be verified.
+                        $timeOffset = $this->getTimezoneOffset($start, $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $placeIdentifier->getTimezone());
+                        $start += $timeOffset;
+                        $end += $timeOffset;
+                    }
+                    
                     $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
                     $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($start, $end);
                     $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
@@ -311,6 +320,11 @@
                     $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
                     if ($this->normalize($placeEvent->getLocation()) !== $this->normalize($newAddress)) {
                         $this->googleClient->updateCalendarEventLocation(Calendar::Places, $placeEvent->getId(), $newAddress);
+                    }
+
+                    if (!$isTimeNormalized) {
+                        $this->googleClient->updateCalendarEventStartEnd(Calendar::Places, $placeEvent->getId(), $start, $end,
+                            $placeIdentifier->getTimezone(), $placeIdentifier->getTimezone());
                     }
                 }
             });
@@ -376,7 +390,7 @@
             return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country ?? ""));
         }
 
-        private function getTimezoneOffset($timestamp, $fromTimezone, $toTimezone) : int {
+        private function getTimezoneOffset(int $timestamp, string $fromTimezone, string $toTimezone) : int {
             $timezone = new \DateTimeZone($fromTimezone);
             $dateTimeHome = new \DateTime(date(self::MDY_HMS_DATE_TIME_FORMAT, $timestamp), new \DateTimeZone($toTimezone));
             return $timezone->getOffset($dateTimeHome) - (new \DateTimeZone($toTimezone))->getOffset($dateTimeHome);

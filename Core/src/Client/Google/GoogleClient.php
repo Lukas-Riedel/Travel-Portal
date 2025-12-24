@@ -189,7 +189,7 @@
             return count($files) === 1 ? $files[0]["id"] : null;
         }
 
-        public function createCalendarEvent(Calendar $calendar, string $name, ?string $address, int $start, int $end) : string {
+        public function createCalendarEvent(Calendar $calendar, string $name, ?string $address, int $start, int $end,?string $startTimezone, ?string $endTimezone) : string {
             $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
             $payload = array(
                 "summary" => $name, 
@@ -202,6 +202,14 @@
                     "timeZone" => $homeTimezone
                 )
             );
+
+            if ($startTimezone !== null) {
+                $payload["start"]["timeZone"] = $startTimezone;
+            }
+
+            if ($endTimezone !== null) {
+                $payload["end"]["timeZone"] = $endTimezone;
+            }
 
             if ($address !== null) {
                 $payload["location"] = $address;
