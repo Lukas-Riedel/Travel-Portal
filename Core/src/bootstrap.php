@@ -113,7 +113,7 @@
     $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $cacheClient, $logger); 
     $httpClient = new HttpClient($logger);
-    $googleClient = new GoogleClient($cacheClient, $httpClient, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
+    $googleClient = new GoogleClient($cacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $calendarClient = new CalendarClient($googleClient, $cacheClient, $logger, getenv("CORE_BASE_URL")); 
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $logger);

@@ -8,6 +8,7 @@
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;
     use Common\Client\Http\HttpMethod;
+    use Monolog\Logger;
 
     // TODO: Switch to Google SDK.
     // TODO: Split to StorageClient, PhotoClient, GeocodingClient and CalendarClient, and make return values non-Google-specific.
@@ -46,14 +47,17 @@
         private readonly CacheClient $cacheClient;
         private readonly HttpClient $httpClient;
 
+        private readonly Logger $logger;
+
         private readonly string $googleMapsApiKey;
 
         private ?ConfigurationService $configurationService;
         private ?AuthenticationService $authenticationService;
 
-        public function __construct(CacheClient $cacheClient, HttpClient $httpClient, string $googleMapsApiKey) {
+        public function __construct(CacheClient $cacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey) {
             $this->cacheClient = $cacheClient;
             $this->httpClient = $httpClient;
+            $this->logger = $logger;
             $this->googleMapsApiKey = $googleMapsApiKey;
             $this->configurationService = null;
             $this->authenticationService = null;
@@ -249,6 +253,8 @@
         public function updateCalendarEventLocation(Calendar $calendar, string $eventId, string $location) : bool {
             $payload = array("location" => $location);
 
+            $this->logger->info("Updating the '$calendar->value:$eventId' event location to '$location'...");
+
             $apiResponse = $this->executeRequest(HttpMethod::PATCH, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
             if (isset($apiResponse["error"])) {
@@ -264,6 +270,8 @@
             if (!array_key_exists("start", $payload) || !array_key_exists("end", $payload)) {
                 return false;
             }
+
+            $original = $payload;
 
             if ($start !== null) {
                 if (array_key_exists("dateTime", $payload["start"])) {
@@ -291,6 +299,8 @@
                 $payload["end"]["timeZone"] = $endTimezone;
             }
 
+            $this->logger->info("Updating the '$calendar->value:$eventId' event dates from ''" . json_encode($original) . "'' to '" . json_encode($payload) . "'...");
+
             $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
             if (isset($apiResponse["error"])) {
@@ -306,6 +316,8 @@
             if (!array_key_exists("start", $payload) || !array_key_exists("end", $payload)) {
                 return false;
             }
+            
+            $original = $payload;
 
             if ($start !== null) {
                 $payload["start"] = array("date" => date(CommonConstants::YMD_DATE_FORMAT, $start));             
@@ -314,6 +326,8 @@
             if ($end !== null) {
                 $payload["end"] = array("date" => date(CommonConstants::YMD_DATE_FORMAT, $end));
             }
+            
+            $this->logger->info("Updating the '$calendar->value:$eventId' event dates from ''" . json_encode($original) . "'' to '" . json_encode($payload) . "'...");
 
             $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
