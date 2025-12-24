@@ -157,7 +157,7 @@
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
-    $stayService = new StayService($databaseClient, $calendarClient, $eventPublisher);
+    $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
     $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $cacheClient, $httpClient, getenv("CORE_BASE_URL"));
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $cloudStorageClient, $httpClient);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);

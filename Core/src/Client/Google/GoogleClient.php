@@ -292,6 +292,30 @@
             return true;
         }
 
+        public function updateCalendarEventAllDayDates(Calendar $calendar, string $eventId, ?int $start, ?int $end) : bool {
+            $payload = $this->executeRequest(HttpMethod::GET, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)));
+
+            if (!array_key_exists("start", $payload) || !array_key_exists("end", $payload)) {
+                return false;
+            }
+
+            if ($start !== null) {
+                $payload["start"] = array("date" => date(CommonConstants::YMD_DATE_FORMAT, $start));             
+            }
+
+            if ($end !== null) {
+                $payload["end"] = array("date" => date(CommonConstants::YMD_DATE_FORMAT, $end));
+            }
+
+            $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
+
+            if (isset($apiResponse["error"])) {
+                throw new \RuntimeException("The calendar event dates could not be updated. Reason: " . $apiResponse["error"]["message"]);
+            }
+
+            return true;
+        }
+
         public function getCalendarEvents(Calendar $calendar, ?string $pageToken = null) : array {
             $queryParameters = "?maxResults=2500";
 
@@ -499,6 +523,7 @@
             return $tokens[1];
         }
 
+        // This may not be needed anymore after the switch to Google IDs from iCal IDs, but it shouldn't really bother anyone.
         private function getEventIdentifier(string $eventId) : string {
             return str_replace(self::EVENT_IDENTIFIER_SUFFIX, "", $eventId);
         }

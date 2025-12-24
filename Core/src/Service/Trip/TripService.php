@@ -23,8 +23,6 @@
 
         private const OLD_TRIP_EVENT_TEMPORARY_TABLE = "old_trip_event";
 
-        private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
-        private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
         private const YEAR_FORMAT = "Y";
 
         private readonly TripMapper $tripMapper;
