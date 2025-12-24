@@ -100,16 +100,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.368.0",
+            "version": "3.369.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c1189f8e4ba3268d6306e515f6f65611c671d033"
+                "reference": "5e3f541e344d71f3b9591fe1d94d9576530fa795"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c1189f8e4ba3268d6306e515f6f65611c671d033",
-                "reference": "c1189f8e4ba3268d6306e515f6f65611c671d033",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5e3f541e344d71f3b9591fe1d94d9576530fa795",
+                "reference": "5e3f541e344d71f3b9591fe1d94d9576530fa795",
                 "shasum": ""
             },
             "require": {
@@ -191,9 +191,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.368.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.2"
             },
-            "time": "2025-12-16T20:11:32+00:00"
+            "time": "2025-12-23T19:21:43+00:00"
         },
         {
             "name": "enshrined/svg-sanitize",
@@ -862,7 +862,7 @@
             "dist": {
                 "type": "path",
                 "url": "../Common",
-                "reference": "d71a15e0f185bb3cc7c8658818333c471a6ebeec"
+                "reference": "cc1ba0a84561f72f26c9d735c0c663d21cf534e9"
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
