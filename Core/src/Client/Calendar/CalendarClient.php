@@ -7,7 +7,6 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryIdentifier;
-    use Core\Service\Configuration\ConfigurationService;
     use ICal\ICal;
     use Monolog\Logger;
 
@@ -29,8 +28,6 @@
 
         private readonly Logger $logger;
 
-        private ?ConfigurationService $configurationService;
-
         private ?EventPublisher $eventPublisher;
 
         public function __construct(GoogleClient $googleClient, CacheClient $cacheClient, Logger $logger, string $coreBaseUrl) {
@@ -38,12 +35,7 @@
             $this->cacheClient = $cacheClient;
             $this->logger = $logger;
             $this->coreBaseUrl = $coreBaseUrl;
-            $this->configurationService = null;
             $this->eventPublisher = null;
-        }
-
-        public function setConfigurationService(ConfigurationService $configurationService) : void {
-            $this->configurationService = $configurationService;
         }
 
         public function setEventPublisher(EventPublisher $eventPublisher) : void {
@@ -184,7 +176,7 @@
         }
 
         private function getEventTimestamp(string $date) : int {
-            return (new \DateTime($date, new \DateTimeZone($this->configurationService->getConfigurationEntry("homeLocation")["timezone"])))->getTimestamp();
+            return (new \DateTime($date, new \DateTimeZone(date_default_timezone_get())))->getTimestamp();
         }
 
         private function getEventAttributes(string $description) : array {

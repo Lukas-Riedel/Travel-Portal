@@ -140,10 +140,8 @@
 
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
-    $calendarClient->setConfigurationService($configurationService);
     $googleClient->setConfigurationService($configurationService);
     $actualForecastClient->setConfigurationService($configurationService);
-    $historicalForecastClient->setConfigurationService($configurationService);
 
     // Authentication service.
     $commonAuthenticationService = new CommonAuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY"));

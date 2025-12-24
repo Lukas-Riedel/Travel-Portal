@@ -194,16 +194,15 @@
         }
 
         public function createCalendarEvent(Calendar $calendar, string $name, ?string $address, int $start, int $end,?string $startTimezone, ?string $endTimezone) : string {
-            $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
             $payload = array(
                 "summary" => $name, 
                 "start" => array(
                     "dateTime" => date(DATE_RFC3339, $start),
-                    "timeZone" => $homeTimezone
+                    "timeZone" => date_default_timezone_get()
                 ), 
                 "end" => array(
                     "dateTime" => date(DATE_RFC3339, $end),
-                    "timeZone" => $homeTimezone
+                    "timeZone" => date_default_timezone_get()
                 )
             );
 

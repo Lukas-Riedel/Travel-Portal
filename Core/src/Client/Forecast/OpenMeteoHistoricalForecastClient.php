@@ -4,7 +4,6 @@
     use Common\Client\Http\HttpMethod;
     use Core\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Forecast\Weather;
 
     class OpenMeteoHistoricalForecastClient implements ForecastClient {
@@ -13,14 +12,8 @@
 
         private readonly HttpClient $httpClient;
 
-        private ?ConfigurationService $configurationService;
-
         public function __construct(HttpClient $httpClient) {
             $this->httpClient = $httpClient;
-        }
-
-        public function setConfigurationService(ConfigurationService $configurationService) : void {
-            $this->configurationService = $configurationService;
         }
 
         public function getForecast(float $latitude, float $longitude, int $start, int $end) : ?Weather {
@@ -28,7 +21,7 @@
             $endDate = date(CommonConstants::YMD_DATE_FORMAT, $end);
         
             $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_HISTORICAL_WEATHER_FORECAST_ENDPOINT_FORMAT,
-                $latitude, $longitude, $startDate, $endDate, $this->configurationService->getConfigurationEntry("homeLocation")["timezone"]));
+                $latitude, $longitude, $startDate, $endDate, date_default_timezone_get()));
 
             if (!isset($apiResponse["daily"])) {
                 throw new \RuntimeException("Unable to fetch historical forecast. Response: " . json_encode($apiResponse));

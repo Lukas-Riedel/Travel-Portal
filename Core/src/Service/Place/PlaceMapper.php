@@ -211,7 +211,7 @@
                 {$placeSortingStrategy->getOrderByClause()}
             SQL;
 
-            $homeTimeZone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
+            $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
@@ -225,7 +225,7 @@
             if ($albumId !== null) {
                 $album = $this->photoService->getAlbum($albumId);
                 if ($album !== null) {                    
-                    $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                    $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimezone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
                     $whereClauseBuilder->withClause("pi.name = ? AND pe.\"start\" >= ? AND pe.\"start\" < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
@@ -237,7 +237,7 @@
             if ($photoId !== null) {
                 $album = $this->photoService->getAlbumForPhotoId($photoId);
                 if ($album !== null) {
-                    $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                    $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimezone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
                     $whereClauseBuilder->withClause("pi.name = ? AND pe.\"start\" >= ? AND pe.\"start\" < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
@@ -341,7 +341,7 @@
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
                     if ($placeRow["permanent"] === "t") {
                         foreach ($permanentPlaceAlbums as &$permanentPlaceAlbum) {
-                            $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimeZone));
+                            $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $permanentPlaceAlbum->getPlaceDateString(), new \DateTimeZone($homeTimezone));
                             $albumDate->setTime(0, 0);
                             $albumTimestamp = $albumDate->getTimestamp();
 
