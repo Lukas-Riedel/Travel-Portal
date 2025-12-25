@@ -4,21 +4,18 @@ import { useEffect, useRef, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
 import ReactMarkdown from "react-markdown"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, onNoteRemoved }) {
     const { isAdmin } = useAuth()
     const { showConfirmToast } = useUserInput()
+    const { showCreateNoteToast, showRemoveNoteToast } = usePredefinedUserInput()
 
     const textareaRef = useRef(null)
     const [isBeingEdited, setIsBeingEdited] = useState(onNoteCreated !== undefined)
 
     const handleDelete = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit vybranou poznámku?",
-            async () => onNoteRemoved(note.id),
-            "Poznámka byla úspěšně odstraněna",
-            "Nepodařilo se odstranit poznámku"
-        )
+        showRemoveNoteToast(() => onNoteRemoved(note.id))
     }
 
     const handleCreate = () => {
@@ -27,14 +24,9 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             return
         }
 
-        showConfirmToast(
-            "Opravdu chceš přidat novou poznámku?",
-            async () => onNoteCreated(content).then(() => {
-                textareaRef.current.value = ""
-            }),
-            "Poznámka byla úspěšně přidána",
-            "Nepodařilo se přidat poznámku"
-        )
+        showCreateNoteToast(() => onNoteCreated(content).then(() => {
+            textareaRef.current.value = ""
+        }))
     }
 
     const handleUpdate = () => {

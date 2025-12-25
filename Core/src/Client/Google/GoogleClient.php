@@ -298,7 +298,7 @@
                 $payload["end"]["timeZone"] = $endTimezone;
             }
 
-            $this->logger->info("Updating the '$calendar->value:$eventId' event dates from ''" . json_encode($original) . "'' to '" . json_encode($payload) . "'...");
+            $this->logger->info("Updating the '$calendar->value:$eventId' event dates from ''" . json_encode($original["start"]) . "' - '" . json_encode($original["end"]) . "' to '" . json_encode($payload["start"]) . "' - '" . json_encode($payload["end"]) . "'...");
 
             $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 
@@ -326,7 +326,7 @@
                 $payload["end"] = array("date" => date(CommonConstants::YMD_DATE_FORMAT, $end));
             }
             
-            $this->logger->info("Updating the '$calendar->value:$eventId' event dates from ''" . json_encode($original) . "'' to '" . json_encode($payload) . "'...");
+            $this->logger->info("Updating the '$calendar->value:$eventId' event dates from ''" . json_encode($original["start"]) . "' - '" . json_encode($original["end"]) . "' to '" . json_encode($payload["start"]) . "' - '" . json_encode($payload["end"]) . "'...");
 
             $apiResponse = $this->executeRequest(HttpMethod::PUT, sprintf(self::ACCESS_CALENDAR_EVENT_URL_FORMAT, $this->getCalendarIdentifier($calendar), $this->getEventIdentifier($eventId)), array(), $payload);
 

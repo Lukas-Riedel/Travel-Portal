@@ -7,12 +7,14 @@ import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 import { useLabels } from "../hooks/useLabels"
 import { useConfiguration } from "../contexts/ConfigContext"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const loadingLabelsCount = 3
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast, showInputToast } = useUserInput()
+    const { showInputToast } = useUserInput()
+    const { showAssignLabelToast, showUnassignLabelToast } = usePredefinedUserInput()
 
     const { configuration } = useConfiguration();
 
@@ -21,13 +23,10 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     const unassignedLabels = useMemo(() => allLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id)
         && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name), [allLabels, configuration, labels]))
 
-    const handleKnownLabelAdded = labelName => {
-        showConfirmToast(
-            `Opravdu chceš přidat štítek '${labelName}'?`,
-            async () => onLabelAdded(labelName)),
-            "Štítek byl úspěšně přidán",
-            "Nepodařilo se přidat štítek"
+    const handleKnownLabelAdded = label => {
+        showAssignLabelToast(label, () => onLabelAdded(label.name))
     }
+
     const handleUnknownLabelAdded = () => {
         showInputToast(
             "Zadej jméno štítku k přidání:",
@@ -37,11 +36,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     }
 
     const handleLabelRemoved = label => {
-        showConfirmToast(
-            `Opravdu chceš odstranit štítek '${label.name}'?`,
-            async () => onLabelRemoved(label.id)),
-            "Štítek byl úspěšně odstraněn",
-            "Nepodařilo se odstranit štítek"
+        showUnassignLabelToast(label, () => onLabelRemoved(label.id))
     }
 
     return (!labels || labels.length > 0 || isAdmin) && (
@@ -79,7 +74,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                                 {label.name}
                             </Link>
                             <button
-                                onClick={() => handleKnownLabelAdded(label.name)}
+                                onClick={() => handleKnownLabelAdded(label)}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
                                 <Plus size={16} />
                             </button>

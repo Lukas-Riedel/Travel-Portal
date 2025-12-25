@@ -7,21 +7,18 @@ import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
 import { listCategories } from "../clients/coreClient"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }) {
     const { isAdmin } = useAuth()
     const navigate = useNavigate()
-    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
+    const { showInputToast, showFormToast } = useUserInput()
+    const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast } = usePredefinedUserInput()
 
-    const handleRefreshAllAlbums = () => {
-        showConfirmToast(
-            "Pokud bylo album odstraněno, je potřeba aktualizovat všechna alba. Přeješ si pokračovat?",
-            onAllAlbumsInvalidated,
-            "Všechna alba budou brzy aktualizována",
-            "Nepodařilo se aktualizovat všchna alba"
-        )
+    const handleremoveAlbum = () => {
+        showRemoveAlbumToast(onAllAlbumsInvalidated)
     }
 
     const dataConsistencyIssues = {
@@ -103,7 +100,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: album => {
                 window.open(album.permalink, "_blank")
-                handleRefreshAllAlbums()
+                handleremoveAlbum()
             }
         },
         "EMPTY_ALBUM": {
@@ -115,7 +112,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: album => {
                 window.open(album.permalink, "_blank")
-                handleRefreshAllAlbums()
+                handleremoveAlbum()
             }
         },
         "REPLACED_PHOTO": {
@@ -127,12 +124,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             ),
             resolve: photo => {
                 window.open(photo.permalink, "_blank")
-                showConfirmToast(
-                    "Pokud byla fotka odstraněna, je potřeba aktualizovat její alba. Přeješ si pokračovat?",
-                    async () => onPhotoInvalidated(photo.id),
-                    "Alba byla úspěšně aktualizována",
-                    "Nepodařilo se aktualizovat alba"
-                )
+                showRemovePhotoToast(async () => onPhotoInvalidated(photo.id))
             }
         },
         "AIRLINE_CODE_WITHOUT_AIRLINE": {
@@ -341,13 +333,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Plánovaný přílet": getDateTimeString(flight.end)
                 }
             ),
-            resolve: flight =>
-                showConfirmToast(
-                    "Opravdu chceš zalogovat vybraný let?",
-                    async () => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start),
-                    "Let byl úspěšně zalogován",
-                    "Nepodařilo se zalogovat let"
-                )
+            resolve: flight => showLogFlightToast(() => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start))
         },
         "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME": {
             name: "Duplicitní název geogragického regionu",

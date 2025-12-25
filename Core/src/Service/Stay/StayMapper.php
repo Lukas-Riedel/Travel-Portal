@@ -117,7 +117,8 @@
 
         public function deleteAllStayEvents() : void {
             $sql = <<<'SQL'
-                DELETE FROM stay_event
+                DELETE
+                FROM stay_event
             SQL;
 
             $this->databaseClient

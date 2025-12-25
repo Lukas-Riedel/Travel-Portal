@@ -37,8 +37,8 @@ export const useLastSeenBridgeXDevice = (knownAddresses: KnownAddress[] = []): U
 
                     if (distance <= AIRPORT_RADIUS_KILOMETERS) {
                         setCurrentAddress({
-                            name: visitedAirport.longName ?? t("flight.airport", { name: visitedAirport.shortName }),
-                            address: visitedAirport.longName ?? t("flight.airport", { name: visitedAirport.shortName })
+                            name: visitedAirport.longName ?? t("airport.format", { name: visitedAirport.shortName }),
+                            address: visitedAirport.longName ?? t("airport.format", { name: visitedAirport.shortName })
                         })
                         return
                     }

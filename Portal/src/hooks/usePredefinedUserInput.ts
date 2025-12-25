@@ -1,11 +1,11 @@
 import { useTranslation } from "react-i18next"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { useUserInput } from "./useUserInput.tsx"
-import type { Airline, Album, Document, Expense, Note, Subscription, Voucher } from "../types/CoreSwaggerTypes.ts"
+import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscription, Voucher, Place, Trip, Year, Category, Label } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
-import type { Place } from "../classes/Place.ts"
+import type { Highlightable } from "../types/Highlightable.ts"
 
-// TODO: Unify all messages (e.g., its context arguments).
+// TODO: Unify all messages (e.g., its context arguments - some confirmations contain context information, some don't).
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
     const { t } = useTranslation()
@@ -42,6 +42,14 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("album.prompt.refresh.failed")
         )
 
+    const showRemoveAlbumToast = (removeAlbum: () => Promise<void>) =>
+        showConfirmToast(
+            t("album.prompt.remove.message"),
+            removeAlbum,
+            t("album.prompt.remove.confirmed"),
+            t("album.prompt.remove.failed")
+        )
+
     const showUpdateAlbumMainPhotoToast = (updateAlbumMainPhoto: () => Promise<Album>) =>
         showConfirmToast(
             t("album.prompt.update.cover.message"),
@@ -60,7 +68,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("expense.prompt.create.label.subscription"),
                     options: subscriptions.map(subscription => ({
                         id: subscription.id,
-                        name: t("expense.subscription", { description: subscription.description, expiration: format(fromUnixTime(subscription.expiration), t("general.format.date")) })
+                        name: t("subscription.format", { description: subscription.description, expiration: format(fromUnixTime(subscription.expiration), t("general.format.date")) })
                     }))
                 },
                 {
@@ -70,8 +78,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     options: vouchers.map(voucher => ({
                         id: voucher.id,
                         name: voucher.expiration
-                            ? t("expense.voucher.expirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency, expiration: format(fromUnixTime(voucher.expiration), t("general.format.date")) })
-                            : t("expense.voucher.nonexpirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency }),
+                            ? t("voucher.format.expirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency, expiration: format(fromUnixTime(voucher.expiration), t("general.format.date")) })
+                            : t("voucher.format.nonexpirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency }),
                     }))
                 }
             ] as const,
@@ -141,13 +149,20 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("expense.prompt.remove.failed")
         )
 
-    const showCreateNoteToast = (createNote: (content: string) => Promise<Note>) =>
-        showInputToast(
-            t("note.prompt.create.message"),
-            createNote,
-            t("note.prompt.create.confirmed"),
-            t("note.prompt.create.failed")
-        )
+    const showCreateNoteToast = (createNote: (() => Promise<Note>) | ((content: string) => Promise<Note>)) =>
+        createNote.length === 0
+            ? showConfirmToast(
+                t("note.prompt.create.message.confirm"),
+                createNote as () => Promise<Note>,
+                t("note.prompt.create.confirmed"),
+                t("note.prompt.create.failed")
+            )
+            : showInputToast(
+                t("note.prompt.create.message.input"),
+                createNote as (content: string) => Promise<Note>,
+                t("note.prompt.create.confirmed"),
+                t("note.prompt.create.failed")
+            )
 
     const showRemoveNoteToast = (removeNote: () => Promise<void>) =>
         showConfirmToast(
@@ -214,11 +229,76 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("airline.prompt.remove.failed")
         )
 
+    const showRemovePhotoToast = (removePhoto: () => Promise<void>) =>
+        showConfirmToast(
+            t("photo.prompt.remove.message"),
+            removePhoto,
+            t("photo.prompt.remove.confirmed"),
+            t("photo.prompt.remove.failed")
+        )
+
+    const showLogFlightToast = (logFlight: () => Promise<Flight>) =>
+        showConfirmToast(
+            t("flight.prompt.log.message"),
+            logFlight,
+            t("flight.prompt.log.confirmed"),
+            t("flight.prompt.log.failed")
+        )
+
+    const showCreateHighlightToast = (createHighlight: () => Promise<Highlight>) =>
+        showConfirmToast(
+            t("highlight.prompt.create.message"),
+            createHighlight,
+            t("highlight.prompt.create.confirmed"),
+            t("highlight.prompt.create.failed")
+        )
+
+    const showUpdateMainHighlightToast = <T extends Highlightable>(updateMainHighlight: () => Promise<T>) =>
+        showConfirmToast(
+            t("highlight.prompt.feature.message"),
+            updateMainHighlight,
+            t("highlight.prompt.feature.confirmed"),
+            t("highlight.prompt.feature.failed")
+        )
+
+    const showUpdateHighlightToast = (updateHighlight: () => Promise<Highlight>) =>
+        showConfirmToast(
+            t("highlight.prompt.update.message"),
+            updateHighlight,
+            t("highlight.prompt.update.confirmed"),
+            t("highlight.prompt.update.failed")
+        )
+
+    const showRemoveHighlightToast = (removeHighlight: () => Promise<void>) =>
+        showConfirmToast(
+            t("highlight.prompt.remove.message"),
+            removeHighlight,
+            t("highlight.prompt.remove.confirmed"),
+            t("highlight.prompt.remove.failed")
+        )
+
+    const showAssignLabelToast = (label: Label, createLabel: () => Promise<Label>) =>
+        showConfirmToast(
+            t("label.prompt.assign.message", { name: label.name }),
+            createLabel,
+            t("label.prompt.assign.confirmed"),
+            t("label.prompt.assign.failed")
+        )
+
+    const showUnassignLabelToast = (label: Label, removeLabel: () => Promise<void>) =>
+        showConfirmToast(
+            t("label.prompt.unassign.message", { name: label.name }),
+            removeLabel,
+            t("label.prompt.unassign.confirmed"),
+            t("label.prompt.unassign.failed")
+        )
+
     return {
         showRemoveDocumentToast,
         showUpdateConfigurationEntryToast,
         showRemovePlaceToast,
         showRefreshAlbumToast,
+        showRemoveAlbumToast,
         showUpdateAlbumMainPhotoToast,
         showCreateExpenseToast,
         showUpdateExpenseValueToast,
@@ -228,6 +308,14 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showRemoveNoteToast,
         showCreateAirlineToast,
         showUpdateAirlineToast,
-        showRemoveAirlineToast
+        showRemoveAirlineToast,
+        showRemovePhotoToast,
+        showLogFlightToast,
+        showCreateHighlightToast,
+        showUpdateMainHighlightToast,
+        showUpdateHighlightToast,
+        showRemoveHighlightToast,
+        showAssignLabelToast,
+        showUnassignLabelToast
     }
 }

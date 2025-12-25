@@ -21,6 +21,9 @@
         "failed": "Při provádění akce došlo k chybě",
         "loading": "Probíhá zpracování..."
     },
+    "airport": {
+        "format": "Letiště {{name}}"
+    },
     "airline": {
         "prompt": {
             "create": {
@@ -46,12 +49,21 @@
         }
     },
     "flight": {
-        "airport": "Letiště {{name}}"
+        "prompt": {
+            "log": {
+                "message": "Opravdu chceš zalogovat vybraný let?",
+                "confirmed": "Let byl úspěšně zalogovan",
+                "failed": "Nepodařilo se zalogovat let"
+            }
+        }
     },
     "note": {
         "prompt": {
             "create": {
-                "message": "Zadej obsah poznámky:",
+                "message": {
+                    "input": "Zadej obsah poznámky:",
+                    "confirm": "Opravdu chceš vytvořit novou poznámku?"
+                },
                 "confirmed": "Poznámka byla úspěšně vytvořena",
                 "failed": "Nepodařilo se vytvořit poznámku"
             },
@@ -62,12 +74,16 @@
             }
         }
     },
-    "expense": {
-        "subscription": "{{description}} (do {{expiration}})",
-        "voucher": {
+    "subscription": {
+        "format": "{{description}} (do {{expiration}})"
+    },
+    "voucher": {
+        "format": {
             "expirable": "{{issuer}} {{value}} {{currency}} (do {{expiration}})",
             "nonexpirable": "{{issuer}} {{value}} {{currency}}"
-        },
+        }
+    },    
+    "expense": {
         "prompt": {
             "create": {
                 "message": "Opravdu chceš vytvořit nový výdaj?",
@@ -101,6 +117,20 @@
             }
         }
     },
+    "labels": {
+        "prompt": {
+            "assign": {
+                "message": "Opravdu chceš přiřadit štítek {{name}}?",
+                "confirmed": "Štítek bylo úspěšně přiřazen",
+                "failed": "Nepodařilo se přiřadit štítek"
+            },
+            "unassign": {
+                "message": "Opravdu chceš odstranit štítek {{name}}?",
+                "confirmed": "Štítek bylo úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit štítek"
+            }
+        }
+    },
     "album": {
         "prompt": {
             "update": {
@@ -111,9 +141,25 @@
                 }
             },
             "refresh": {
-                "message": "Opravdu chceš aktualizovat vybrané album?",
-                "confirmed": "Album bylo úspěšně aktualizováno",
-                "failed": "Nepodařilo se aktualizovat album"
+                "selected": {
+                    "message": "Opravdu chceš aktualizovat vybrané album?",
+                    "confirmed": "Album bylo úspěšně aktualizováno",
+                    "failed": "Nepodařilo se aktualizovat album"
+                }
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit vybrané album?",
+                "confirmed": "Album bylo úspěšně odstraněno",
+                "failed": "Nepodařilo se odstranit album"
+            }
+        }
+    },
+    "photo": {
+        "prompt": {
+            "remove": {
+                "message": "Operavdu chceš odstranit vybranou fotku?",
+                "confirmed": "Fotka byla úspěšně odstraněna",
+                "failed": "Nepodařilo se odstranit fotku"
             }
         }
     },
@@ -141,6 +187,30 @@
                 "message": "Opravdu chceš odstranit dokument {{name}}?",
                 "confirmed": "Dokument byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit dokument"
+            }
+        }
+    },
+    "highlight": {
+        "prompt": {
+            "create": {
+                "message": "Opravdu chceš přidat tento highlight?",
+                "confirmed": "Highlight byl úspěšně vytvořen",
+                "failed": "Nepodařilo se vytvořit highlight"
+            },
+            "feature": {
+                "message": "Opravdu chceš nastavit tento highlight jako hlavní highlight?",
+                "confirmed": "Hlavní highlight byl úspěšně nastaven",
+                "failed": "Nepodařilo se nastavit hlavní highlight"
+            },
+            "update": {
+                "message": "Opravdu chceš upravit tento highlight?",
+                "confirmed": "Highlight byl úspěšně upraven",
+                "failed": "Nepodařilo se upravit highlight"
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit tento highlight?",
+                "confirmed": "Highlight byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit highlight"
             }
         }
     }

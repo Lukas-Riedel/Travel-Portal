@@ -124,7 +124,7 @@
 
         public function deleteNoteIdentifier(NoteType $noteType, string $noteId, string $entityId) : int {
             $sql = <<<SQL
-                DELETE ni
+                DELETE
                 FROM note_identifier ni
                 WHERE ni.id = ?
                     AND EXISTS (
