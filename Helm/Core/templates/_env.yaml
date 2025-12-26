@@ -41,11 +41,11 @@
 - name: RMQ_INTERNAL_HOST
   value: "{{ .Values.core.rabbitmq.internal.hostname }}"            
 - name: RMQ_INTERNAL_PORT
-  value: "{{ .Values.core.rabbitmq.internal.port }}"  
+  value: "{{ .Values.core.rabbitmq.internal.port.amqp }}"  
 - name: RMQ_EXTERNAL_HOST
   value: "{{ .Values.core.rabbitmq.external.hostname }}"            
 - name: RMQ_EXTERNAL_PORT
-  value: "{{ .Values.core.rabbitmq.external.port }}"  
+  value: "{{ .Values.core.rabbitmq.external.port.amqp }}"  
 - name: RMQ_VHOST
   value: "{{ .Values.core.rabbitmq.vhost }}"  
 - name: RMQ_USER
@@ -89,6 +89,8 @@
       key: core-exchange-rate-api-key
 - name: WORKER_QUEUE_NAME
   value: "{{ .Values.core.rabbitmq.queue.worker }}"
+- name: CORTEX_QUEUE_NAME
+  value: "{{ .Values.core.rabbitmq.queue.cortex }}"
 - name: IAM_APP_CLIENT_ID
   value: "{{ .Values.core.iam.client.app.id }}"
 - name: JWKS_PUBLIC_KEY

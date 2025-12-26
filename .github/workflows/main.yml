@@ -6,6 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       core: ${{ steps.filter.outputs.core }}
+      cortex: ${{ steps.filter.outputs.cortex }}
       iam: ${{ steps.filter.outputs.iam }}
       portal: ${{ steps.filter.outputs.portal }}
       agent: ${{ steps.filter.outputs.agent }}
@@ -21,11 +22,21 @@ jobs:
             core:
               - 'Core/**'
               - 'Common/**'
+              - 'Helm/Core/**'
+              - 'Helm/Common/**'
+            cortex:
+              - 'Cortex/**'
+              - 'Helm/Cortex/**'
+              - 'Helm/Common/**'
             iam:
               - 'Iam/**'
               - 'Common/**'
+              - 'Helm/Iam/**'
+              - 'Helm/Common/**'
             portal:
               - 'Portal/**'
+              - 'Helm/Portal/**'
+              - 'Helm/Common/**'
             agent:
               - 'Agent/**'
             bridgex:
@@ -107,6 +118,46 @@ jobs:
         helm upgrade core ./Helm/Core \
           -f ./Helm/Core/values.yaml \
           --set core.tag=${{ github.run_number }} \
+          --install \
+          --wait \
+          --timeout 5m
+  deploy-cortex:
+    name: Deploy Cortex
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.cortex == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set Lowercase Owner Name
+      id: owner-lowercasing
+      run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build Cortex Image
+      run: |
+        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:${{ github.run_number }} -f Cortex/Dockerfile .
+    - name: Push Cortex Image
+      run: |
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:${{ github.run_number }}
+    - name: Set Up Kubectl
+      uses: azure/setup-kubectl@v3
+    - name: Set Up Helm
+      uses: azure/setup-helm@v3
+    - name: Deploy Cortex with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade cortex ./Helm/Cortex \
+          -f ./Helm/Cortex/values.yaml \
+          --set cortex.tag=${{ github.run_number }} \
           --install \
           --wait \
           --timeout 5m

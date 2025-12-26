@@ -18,12 +18,15 @@
         private readonly CacheClient $cacheClient;
 
         private readonly string $workerQueueName;
+        private readonly string $cortexQueueName;
 
-        public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient, CacheClient $cacheClient, string $workerQueueName) {
+        public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient,
+            CacheClient $cacheClient, string $workerQueueName, string $cortexQueueName) {
             $this->messagingClient = $messagingClient;
             $this->cloudMessagingClient = $cloudMessagingClient;
             $this->cacheClient = $cacheClient;
             $this->workerQueueName = $workerQueueName;
+            $this->cortexQueueName = $cortexQueueName;
         }
 
         public function setDeviceService(DeviceService $deviceService) : void {
@@ -63,6 +66,11 @@
 
             if ($event instanceof WorkerEvent) {
                 $this->messagingClient->publish($this->workerQueueName, $event, $event->getPriority());
+                return null;
+            }
+
+            if ($event instanceof CortexEvent) {
+                $this->messagingClient->publish($this->cortexQueueName, $event);
                 return null;
             }
 

@@ -83,7 +83,7 @@
         }
 
         public static function AlbumInvalidated(string $albumId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("albumId" => $albumId));
+            return new WorkerEvent(Event::getName(), EventPriority::Medium, array("albumId" => $albumId));
         }
 
         public static function AllAlbumsInvalidated() : Event {
@@ -256,6 +256,10 @@
 
         public static function FolderSynchronizationRequested(string $agentId, string $path, int $expiration) : Event {
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
+        }
+
+        public static function HighlightsSelectingTriggered(string $placeId, int $highlightsCount) : Event {
+            return new CortexEvent(Event::getEventName(), array("placeId" => $placeId, "highlightsCount" => $highlightsCount));
         }
 
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {

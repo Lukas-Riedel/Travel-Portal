@@ -1,0 +1,49 @@
+cortex:
+  enabled: true
+  image: ghcr.io/lukas-riedel/cortex
+  # tag: latest
+  workers: 1
+  threads: 2
+  scaling:
+    items: "5"
+    cooldown: 300
+    grace: 900
+  url:
+    core:
+      base:
+        public: https://api.lriedel.cz
+    iam:
+      base:
+        public: https://iam.lriedel.cz
+  model: clip-ViT-B-32
+  # model: clip-ViT-L-14
+  engine: cpu
+  highlights:
+    coefficient:
+      content: "0.75"
+      age: "0.2"
+      negative: "0.3"
+    threshold:
+      similarity: "0.9"
+  rabbitmq:
+    hostname: rabbitmq
+    port: 
+      amqp: 5672
+      management: 15672
+    vhost: /
+    username: admin
+    heartbeat: "60"
+    queue:
+      cortex: CortexQueue
+  redis:
+    hostname: redis
+    port: 6379
+  iam:
+    client:
+      backend:
+        id: admin-cli
+  grafana:
+    entrypoint: https://logs-prod-012.grafana.net
+    client:
+      name: travel-portal-service
+    username: "1287508"

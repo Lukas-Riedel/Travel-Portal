@@ -27,7 +27,9 @@
         }
 
         public function onHighlightRemoved(mixed $message) : void {
-            $this->highlightService->updateHighlights();
+            if ($message["highlightType"] === HighlightType::Place->value || $message["highlightType"] === HighlightType::Trip->value) {
+                $this->highlightService->deleteHighlightObject($message["highlightId"]);
+            }
         }
         
         public function onPhotoInvalidated(mixed $message) : void {

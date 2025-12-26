@@ -24,7 +24,7 @@ spec:
       containers:
         - name: core-worker
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-          command: ["/usr/bin/tini", "-g", "-v", "--"]
+          command: ["/usr/bin/tini", "-g", "--"]
           args:
             - php
             - -d

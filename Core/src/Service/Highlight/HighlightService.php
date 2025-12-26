@@ -341,6 +341,13 @@
             return $wasUpdated;
         }
 
+        public function deleteHighlightObject(string $highlightId) : void {
+            foreach (HighlightSize::cases() as &$highlightSize) {
+                $objectKey = $this->getHighlightObjectKey($highlightId);
+                $this->cloudStorageClient->delete($highlightSize->getBucket(), $objectKey);
+            }
+        }
+
         private function publishHighlightUpdatedEvents(string $highlightId) : void {
             foreach (HighlightType::cases() as &$highlightType) {
                 foreach ($this->getEntityIdsForHighlightId($highlightType, $highlightId) as &$entityId) {
@@ -387,7 +394,7 @@
 
             $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
             foreach ($highlights as &$highlight) {
-                $objectKey = $highlight->getId() . CommonConstants::JPG_FILE_EXTENSION;
+                $objectKey = $this->getHighlightObjectKey($highlight->getId());
     
                 if ($overwrite || !$this->cloudStorageClient->exists($highlightSize->getBucket(), $objectKey)) {
                     $photoId = $this->highlightMapper->selectPhotoId($highlight->getId());
@@ -410,6 +417,10 @@
             }
             
             return $objectKeys;
+        }
+
+        private function getHighlightObjectKey(string $highlightId) : string {
+            return $highlightId . CommonConstants::JPG_FILE_EXTENSION;
         }
         
         private function pruneUnusedObjects(array $usedObjectKeys, HighlightSize $highlightSize) : void {

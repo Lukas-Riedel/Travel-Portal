@@ -41,13 +41,13 @@
         }
 
         public function createApiToken(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireServiceAccount($request);
+            $this->requireBackendServiceAccount($request);
 
             return $this->googleService->getGoogleApiAccessToken();
         }
         
         public function createFcmToken(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireServiceAccount($request);
+            $this->requireBackendServiceAccount($request);
 
             return $this->googleService->getGoogleFcmAccessToken();
         }

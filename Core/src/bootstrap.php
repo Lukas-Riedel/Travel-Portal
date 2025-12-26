@@ -133,7 +133,7 @@
     );
 
     // Event producers.
-    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"));
+    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"), getenv("CORTEX_QUEUE_NAME"));
     $calendarClient->setEventPublisher($eventPublisher);
 
     $scheduler = new Scheduler($databaseClient, $cacheClient, $eventPublisher);

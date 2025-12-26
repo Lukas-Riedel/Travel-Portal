@@ -47,10 +47,6 @@
             if ($album !== null) {
                 $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
                 $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
-    
-                if (count($photos) !== $album->getImagesCount()) {
-                    $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));
-                }
 
                 if ($place !== null && count($photos) > 0) {
                     if ($place->getMainHighlight() === null) {
@@ -63,6 +59,10 @@
                     foreach ($tripIdsWithoutHighlights as &$tripId) {
                         $this->highlightService->createTripHighlight($tripId, $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
                     }
+                }
+    
+                if (count($photos) !== $album->getImagesCount()) {
+                    $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));
                 }
             }
         }

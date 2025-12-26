@@ -36,15 +36,19 @@ core:
   rabbitmq:
     internal:
       hostname: rabbitmq
-      port: 5672
+      port: 
+        amqp: 5672
+        management: 15672
     external:
       hostname: rmq.lriedel.cz
-      port: 5671
+      port: 
+        management: 5671
     vhost: /
     username: admin
     heartbeat: "60"
     queue:
       worker: WorkerQueue
+      cortex: CortexQueue
   fcm:
     project:
       id: travel-blog-free

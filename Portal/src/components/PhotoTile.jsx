@@ -28,12 +28,16 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                                 )
                             ))}
                         </li>
-                        <li className="break-words max-w-[300px] text-center">
-                            {getPrettyName(firstLineText)}
-                        </li>
-                        <li>
-                            {secondLineText}
-                        </li>
+                        {firstLineText && (
+                            <li className="break-words max-w-[300px] text-center">
+                                {getPrettyName(firstLineText)}
+                            </li>
+                        )}
+                        {secondLineText && (
+                            <li>
+                                {secondLineText}
+                            </li>
+                        )}
                     </ul>
                 </div>
             </InteractiveElement>

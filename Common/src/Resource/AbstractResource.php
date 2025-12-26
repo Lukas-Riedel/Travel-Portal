@@ -30,12 +30,12 @@
         }
 
         public function requireAdmin(Request $request) : void {          
-            if (!$this->isAdmin($request)) {
+            if (!$this->isAdmin($request) && !$this->isBackendServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }
 
-        public function requireServiceAccount(Request $request) : void {          
+        public function requireBackendServiceAccount(Request $request) : void {          
             if (!$this->isBackendServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }

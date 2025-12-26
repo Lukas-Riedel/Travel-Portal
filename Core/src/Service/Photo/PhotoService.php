@@ -21,7 +21,7 @@
         private const PENDING_PHOTOS_EXPIRATION_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
         
         private const ALBUM_PHOTOS_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:%s";
-        private const ALBUM_PHOTOS_CACHE_TTL = 3000;
+        private const ALBUM_PHOTOS_CACHE_TTL = 1800;
 
         private const ALBUM_THUMBNAIL_WIDTH = 350;
         private const ALBUM_THUMBNAIL_HEIGHT = 233;

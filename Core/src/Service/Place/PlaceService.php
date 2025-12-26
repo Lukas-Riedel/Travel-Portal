@@ -396,8 +396,8 @@
             return $timezone->getOffset($dateTimeHome) - (new \DateTimeZone($toTimezone))->getOffset($dateTimeHome);
         }
 
-        private function normalize(string $string) {
-            return str_replace(" ", "", $string);
+        private function normalize(?string $str) {
+            return $str === null ? null : str_replace(" ", "", $str);
         }
 
         private function createSpecialPlace(SpecialPlaceType $specialPlaceType, string $name, string $address) : Place {            

@@ -1,0 +1,17 @@
+{{- if .Values.cortex.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: cortex-worker-scaler-auth
+spec:
+  secretTargetRef:
+    - parameter: host
+      name: cortex-worker-scaler-secret
+      key: rmqConnectionString
+    - parameter: username
+      name: cortex-worker-scaler-secret
+      key: rmqUser
+    - parameter: password
+      name: rabbitmq-password
+      key: rabbitmq-password
+{{- end }}

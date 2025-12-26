@@ -23,7 +23,7 @@
             });
         }
         public function listUsers(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireServiceAccount($request);
+            $this->requireBackendServiceAccount($request);
             
             $role = $this->requireQueryParameter($request, "role");
 

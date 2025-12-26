@@ -50,11 +50,13 @@
             return $this->createLocation($address);
         }
 
-        public function getFormattedAddress(string $placeName, Location $location) : string {
+        public function getFormattedAddress(string $placeName, Location $location) : ?string {
             // The timezone shall stay here (and shouldn't be obtained from the calendar event)
             // because Google Calendar performs "timezone approximation" when creating an event.
             // For example, it translates Asia/Muscat into Asia/Dubai.
-            return sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(), $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
+            return $location->getCountry() === null ? null
+                : sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(),
+                    $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
         }
 
         public function getDistance(float $aLatitude, float $aLongitude, float $bLatitude, float $bLongitude) : float {

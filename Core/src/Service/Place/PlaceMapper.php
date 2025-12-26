@@ -66,6 +66,7 @@
                     ON pe.place_id = pi.id
                 WHERE trip_id = ?
                     AND NOT layover
+                    AND pi.country_category_id IS NOT NULL
                 GROUP BY pi.country_category_id
                 ORDER BY MIN(pe.start)
             SQL;

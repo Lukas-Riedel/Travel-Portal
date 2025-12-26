@@ -18,6 +18,8 @@ spec:
       containers:
         - name: redis
           image: "{{ .Values.redis.image }}:{{ .Values.redis.tag }}"
+          command: ["redis-server"]
+          args: ["--requirepass", "$(REDIS_PASSWORD)"]
           ports:
             - containerPort: {{ .Values.redis.service.port }}
           readinessProbe:

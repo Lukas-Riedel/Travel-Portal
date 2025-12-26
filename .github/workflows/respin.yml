@@ -18,6 +18,7 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
           kubectl rollout restart deployment core
+          kubectl rollout restart deployment core-worker
       - name: Rollout IAM Restart
         run: |
           echo "${{ secrets.KUBECONFIG }}" > kubeconfig
@@ -28,3 +29,8 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
           kubectl rollout restart deployment portal
+      - name: Rollout Cortex Restart
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl rollout restart deployment cortex-worker
