@@ -1,16 +1,17 @@
 <?php
     namespace Core\Event;
 
+    use Common\LoggingContext;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
     use Monolog\Logger;
-    use Ramsey\Uuid\Uuid;
 
     abstract class AbstractEventListener {
 
         private const EVENT_HANDLER_METHOD_PREFIX = "on";
         private const OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME = "OpenLineageEventPublished";
 
+        private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
         private readonly ?OpenLineageEventManager $openLineageEventManager;
 
@@ -18,7 +19,8 @@
 
         private readonly string $workerQueueName;
         
-        public function __construct(Logger $logger, ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+        public function __construct(LoggingContext $loggingContext, Logger $logger, ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+            $this->loggingContext = $loggingContext;
             $this->logger = $logger;
             $this->openLineageEventManager = $openLineageEventManager;
             
@@ -40,10 +42,9 @@
 
         protected function onEvent(mixed $event) : void {
             $start = microtime(true);
-            $transactionId = Uuid::uuid4()->toString(); 
-            $this->logger->pushProcessor(function($record) use($transactionId) {
-                $record["context"]["transaction_id"] = $transactionId;
-                $record["extra"]["transaction_id"] = $transactionId;
+            $this->logger->pushProcessor(function($record) {
+                $record["context"]["transaction_id"] = $this->loggingContext->getTransactionId();
+                $record["extra"]["transaction_id"] = $this->loggingContext->getTransactionId();
                 return $record;
             });
             $this->openLineageEventManager?->initializeEvent($this->workerQueueName . "/" . $event["name"]);

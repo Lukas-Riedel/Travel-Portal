@@ -17,7 +17,7 @@ cortex:
   highlights:
     coefficient:
       content: "0.75"
-      age: "0.2"
+      age: "0.1"
       negative: "0.3"
     threshold:
       similarity: "0.9"

@@ -5,6 +5,7 @@
     use Monolog\Logger;
     use Common\Client\Http\HttpClient as CommonHttpClient;
     use Common\Client\Http\HttpMethod;
+    use Common\LoggingContext;
     use Core\Client\Messaging\ProgressReporter;
 
     class HttpClient extends CommonHttpClient {
@@ -16,8 +17,8 @@
 
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(Logger $logger) {
-            parent::__construct($logger);
+        public function __construct(LoggingContext $loggingContext, Logger $logger) {
+            parent::__construct($loggingContext, $logger);
             $this->progressReporter = null;
             $this->openLineageEventManager = null;
         }

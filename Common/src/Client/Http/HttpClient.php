@@ -1,6 +1,8 @@
 <?php
     namespace Common\Client\Http;
 
+    use Common\CommonConstants;
+    use Common\LoggingContext;
     use Monolog\Logger;
 
     class HttpClient {
@@ -10,12 +12,14 @@
             "Accept: */*",
             "Accept-Language: en-US,en;q=0.9",
             "Connection: keep-alive",
-            "Cache-Control: max-age=0",
+            "Cache-Control: max-age=0"
         );
 
+        private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
 
-        public function __construct(Logger $logger) {
+        public function __construct(LoggingContext $loggingContext, Logger $logger) {
+            $this->loggingContext = $loggingContext;
             $this->logger = $logger;
         }
 
@@ -25,6 +29,13 @@
 
             $curl = curl_init($url);
 
+            $finalHeaders = array_merge(self::DEFAULT_HEADERS, $headers);
+            
+            $transactionId = $this->loggingContext->getTransactionId();
+            if ($transactionId !== null) {
+                $finalHeaders[] = CommonConstants::TRANSACTION_ID_HEADER . ": " . $transactionId;
+            }
+
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
             curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
             curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
@@ -32,7 +43,7 @@
             curl_setopt($curl, CURLOPT_TIMEOUT, 300);
             curl_setopt($curl, CURLOPT_AUTOREFERER, true); 
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array_merge(self::DEFAULT_HEADERS, $headers));
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $finalHeaders);
             curl_setopt($curl, CURLOPT_ENCODING, "");
     
             if ($payload !== null) {

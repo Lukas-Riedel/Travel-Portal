@@ -2,6 +2,7 @@
     require_once(__DIR__ . "/../vendor/autoload.php");
 
     use Common\Client\Encryption\EncryptionClient;
+    use Common\LoggingContext;
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
@@ -84,6 +85,7 @@
     set_error_handler($onError);
 
     // Logger.
+    $loggingContext = new LoggingContext();
     $logger = new Logger("core");
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
@@ -106,7 +108,7 @@
     // Clients.
     $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $cacheClient, $logger); 
-    $httpClient = new HttpClient($logger);
+    $httpClient = new HttpClient($loggingContext, $logger);
     $googleClient = new GoogleClient($cacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $cacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $calendarClient = new CalendarClient($googleClient, $cacheClient, $logger, getenv("CORE_BASE_URL")); 
@@ -116,7 +118,7 @@
     $actualForecastClient = new YrNoActualForecastClient($httpClient, getenv("CORE_BASE_URL"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
-    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), $databaseClient, $logger);
+    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), $databaseClient, $loggingContext, $logger);
     $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
@@ -223,6 +225,6 @@
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );
-    $eventListener = new RabbitMQEventListener($messagingClient, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
+    $eventListener = new RabbitMQEventListener($messagingClient, $loggingContext, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
     $eventPublisher->setDeviceService($deviceService);    
 ?>

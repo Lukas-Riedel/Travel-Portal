@@ -5,11 +5,10 @@ import uuid
 import ssl
 import threading
 import signal
-from typing import List, Final, Any, Optional
+from typing import List, Any, Optional
 from src.core.logger import logger
 from src.handlers.base_handler import BaseHandler
 from src.core.logger import transaction_id
-from pika.adapters.select_connection import SelectConnection
 from pika.channel import Channel
 from types import FrameType
 
@@ -47,9 +46,7 @@ class CortexListener:
 
         credentials = pika.PlainCredentials(self.rmq_user, self.rmq_password)
         ssl_options = (
-            pika.SSLOptions(context=ssl.create_default_context())
-            if rmq_ssl
-            else None
+            pika.SSLOptions(context=ssl.create_default_context()) if rmq_ssl else None
         )
 
         self.params = pika.ConnectionParameters(
@@ -146,16 +143,23 @@ class CortexListener:
         properties: pika.spec.BasicProperties,
         body: bytes,
     ) -> None:
+        headers = properties.headers or {}
+        tx_id = headers.get("Transaction-Id")
+        if not tx_id:
+            tx_id = str(uuid.uuid4())
+
         worker_thread = threading.Thread(
             target=self._process_in_thread,
-            args=(method.delivery_tag, body),
+            args=(method.delivery_tag, tx_id, body),
             daemon=False,
         )
         worker_thread.start()
 
-    def _process_in_thread(self, delivery_tag: int, body: bytes) -> None:
+    def _process_in_thread(
+        self, delivery_tag: int, tx_id: str, body: bytes
+    ) -> None:
         with self.processing_lock:
-            token = transaction_id.set(str(uuid.uuid4()))
+            token = transaction_id.set(tx_id)
             start_time = time.time()
             event = json.loads(body)
             event_name = event.get("name")

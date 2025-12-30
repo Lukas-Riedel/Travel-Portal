@@ -49,11 +49,13 @@ class CortexLogger:
         self,
         version_tag: str,
         grafana_base_url: str,
+        grafana_client_name: str,
         grafana_user: str,
         grafana_password: str,
     ) -> None:
         self.version_tag = version_tag
         self.grafana_base_url = grafana_base_url
+        self.grafana_client_name = grafana_client_name
         self.grafana_user = grafana_user
         self.grafana_password = grafana_password
 
@@ -72,7 +74,7 @@ class CortexLogger:
             loki_handler = logging_loki.LokiHandler(
                 url=loki_url,
                 tags={
-                    "client_name": SERVICE_NAME,
+                    "host": self.grafana_client_name,
                     "service": SERVICE_NAME,
                     "version_tag": self.version_tag,
                 },
@@ -89,6 +91,7 @@ class CortexLogger:
 logger_provider = CortexLogger(
     os.getenv("VERSION_TAG"),
     os.getenv("GRAFANA_LOKI_ENTRYPOINT"),
+    os.getenv("GRAFANA_LOKI_CLIENT_NAME"),
     os.getenv("GRAFANA_LOKI_USER"),
     os.getenv("GRAFANA_LOKI_PASSWORD"),
 )

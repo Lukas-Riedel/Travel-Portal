@@ -2,6 +2,8 @@
     namespace Core\Client\Messaging;
 
     use Common\Client\HealthCheckable;
+    use Common\CommonConstants;
+    use Common\LoggingContext;
     use Core\Client\Database\TransactionManager;
     use Core\Event\Event;
     use Core\Event\EventPriority;
@@ -10,6 +12,7 @@
     use PhpAmqpLib\Channel\AMQPChannel;
     use PhpAmqpLib\Connection\AMQPStreamConnection;
     use PhpAmqpLib\Message\AMQPMessage;
+    use PhpAmqpLib\Wire\AMQPTable;
 
     class RabbitMQMessagingClient implements MessagingClient, HealthCheckable {
 
@@ -32,13 +35,14 @@
         private ?AMQPChannel $producerChannel;
         private ?AMQPChannel $consumerChannel;
 
+        private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
         private ?OpenLineageEventManager $openLineageEventManager;
 
         private ?int $lastHeartbeatTimestamp;
 
         public function __construct(string $host, string $port, string $vhost, string $user, string $password, int $heartbeatSeconds,
-            TransactionManager $transactionManager, Logger $logger) {
+            TransactionManager $transactionManager, LoggingContext $loggingContext, Logger $logger) {
             $this->host = $host;
             $this->port = $port;
             $this->vhost = $vhost;
@@ -48,6 +52,7 @@
             $this->connection = null;
             $this->producerChannel = null;
             $this->consumerChannel = null;
+            $this->loggingContext = $loggingContext;
             $this->logger = $logger;
             $this->transactionManager = $transactionManager;
             $this->openLineageEventManager = null;
@@ -116,6 +121,11 @@
             $messageHeaders = array("content_type" => "application/json");
             if ($eventPriority !== null) {
                 $messageHeaders["priority"] = $eventPriority->value;
+            }
+
+            $transactionId = $this->loggingContext->getTransactionId();
+            if ($transactionId !== null) {
+                $messageHeaders["application_headers"] = new AMQPTable(array(CommonConstants::TRANSACTION_ID_HEADER => $transactionId));
             }
 
             if ($this->openLineageEventManager !== null) {

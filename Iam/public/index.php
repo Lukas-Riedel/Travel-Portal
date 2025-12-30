@@ -8,17 +8,9 @@
     use Common\Routing\JsonInvocationStrategy;
     use Common\Routing\LoggingMiddleware;
     use Common\Routing\RequestError;
-    use Ramsey\Uuid\Uuid;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/../src/bootstrap.php");
-    
-    $transactionId = Uuid::uuid4()->toString();
-    $logger->pushProcessor(function($record) use($transactionId) {
-        $record["context"]["transaction_id"] = $transactionId;
-        $record["extra"]["transaction_id"] = $transactionId;
-        return $record;
-    });
 
     $basePath = parse_url(getenv("IAM_BASE_URL"))["path"] ?? "";
 
@@ -28,7 +20,7 @@
 
     $app->add(new AuthMiddleware($authenticationService, $basePath, array("/token", "/google/auth", "/management/liveness", "/management/readiness")));
     $app->addRoutingMiddleware();
-    $app->add(new LoggingMiddleware($logger));
+    $app->add(new LoggingMiddleware($loggingContext, $logger));
     $app->addBodyParsingMiddleware();
     $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new CorsMiddleware(explode(",", getenv("ALLOWED_REQUEST_ORIGINS"))));

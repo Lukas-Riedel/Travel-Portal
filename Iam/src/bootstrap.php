@@ -4,6 +4,7 @@
     use Common\Service\Authentication\AuthenticationService;
     use Common\Client\Http\HttpClient;
     use Common\Client\Encryption\EncryptionClient;
+    use Common\LoggingContext;
     use Iam\Service\Google\GoogleService;
     use Iam\Service\IbmCloud\IbmCloudService;
     use Iam\Service\Token\TokenService;
@@ -18,9 +19,8 @@
     };
     set_error_handler($onError);
 
-    $transactionId = Uuid::uuid4()->toString();
-
     // Logger.
+    $loggingContext = new LoggingContext();
     $logger = new Logger("iam");
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
@@ -41,7 +41,7 @@
     $logger->pushHandler($handler);
 
     // Clients.
-    $httpClient = new HttpClient($logger);
+    $httpClient = new HttpClient($loggingContext, $logger);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $healthCheckables = array();
     

@@ -4,10 +4,9 @@
 
     require_once(__DIR__ . "/bootstrap.php");
     
-    $transactionId = Uuid::uuid4()->toString();
-    $logger->pushProcessor(function($record) use($transactionId) {
-        $record["context"]["transaction_id"] = $transactionId;
-        $record["extra"]["transaction_id"] = $transactionId;
+    $logger->pushProcessor(function($record) use(&$loggingContext) {
+        $record["context"]["transaction_id"] = $loggingContext->getTransactionId();
+        $record["extra"]["transaction_id"] = $loggingContext->getTransactionId();
         return $record;
     });
 
