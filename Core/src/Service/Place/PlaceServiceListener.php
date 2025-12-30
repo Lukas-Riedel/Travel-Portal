@@ -99,6 +99,8 @@
                 $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["entityId"]);
                 if ($placeIdentifier !== null && $placeIdentifier->getMainHighlight() === null) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Place->value, $message["entityId"],
+                        $this->getSuggestedHighlightsCount($message["entityId"])));
                 }
                 $this->updatePlaceScore($message["entityId"]);
             }
@@ -133,6 +135,11 @@
 
         public function onPlaceUpdated(mixed $message) : void {
             $this->updatePlaceQuality($message["placeId"]);
+        }
+
+        private function getSuggestedHighlightsCount(string $placeId) : int {
+            $v = max(0.0, min(1.0, $this->placeService->getPlaceSignificance($placeId) / 100.0));
+            return (int) round(3 + 27 * pow($v, 1.4));
         }
 
         private function updatePlaceQuality(string $placeId) : void {

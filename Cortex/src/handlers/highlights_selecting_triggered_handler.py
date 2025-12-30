@@ -36,9 +36,30 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         self.similarity_threshold = similarity_threshold
 
     def handle(self, args: dict) -> None:
-        place = self.core_client.get_place(args.get("placeId"))
-        place_and_country_name = f"{place.get('name')} ({place.get('country')})"
+        entity_id = args.get("entityId")
         highlights_count = int(args.get("highlightsCount"))
+
+        match args.get("highlightType"):
+            case "place":
+                self._handle_place(entity_id, highlights_count)
+                return
+            case "trip":
+                # TODO: Implement.
+                return
+            case "category":
+                # TODO: Implement.
+                return
+            case "year":
+                # TODO: Implement.
+                return
+            case _:
+                raise ValueError(
+                    f"Unknown highlight type '{args.get('highlightType')}' encountered."
+                )
+
+    def _handle_place(self, place_id: str, highlights_count: int) -> None:
+        place = self.core_client.get_place(place_id)
+        place_and_country_name = f"{place.get('name')} ({place.get('country')})"
 
         try:
             # Preprocess photos in all albums.

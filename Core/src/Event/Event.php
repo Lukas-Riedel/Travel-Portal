@@ -258,8 +258,8 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function HighlightsSelectingTriggered(string $placeId, int $highlightsCount) : Event {
-            return new CortexEvent(Event::getEventName(), array("placeId" => $placeId, "highlightsCount" => $highlightsCount));
+        public static function HighlightsSelectingTriggered(string $highlightType, string $entityId, int $highlightsCount) : Event {
+            return new CortexEvent(Event::getEventName(), array("highlightType" => $highlightType, "entityId" => $entityId, "highlightsCount" => $highlightsCount));
         }
 
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {

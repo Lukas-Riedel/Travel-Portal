@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Place;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Calendar\Calendar;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
@@ -20,6 +21,7 @@
     use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Geocoding\Location;
 
     class PlaceService {
@@ -28,15 +30,23 @@
         private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
 
+        private const PLACE_SIGNIFICANCE_CACHE_KEY_FORMAT = "PlaceService:PlaceSignificance:%s";
+        private const PLACE_SIGNIFICANCE_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
+
         private readonly PlaceMapper $placeMapper;
 
         private readonly GenerativeContentClient $generativeContentClient;
+        
         private readonly CalendarClient $calendarClient;
+
         private readonly GoogleClient $googleClient;
+
+        private readonly CacheClient $cacheClient;
 
         private readonly ConfigurationService $configurationService;
 
         private readonly CategoryService $categoryService;
+
         private readonly PhotoService $photoService;
 
         private readonly GeocodingService $geocodingService;
@@ -46,7 +56,7 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, CalendarClient $calendarClient,
-            GoogleClient $googleClient, ConfigurationService $configurationService, CategoryService $categoryService,
+            GoogleClient $googleClient, CacheClient $cacheClient, ConfigurationService $configurationService, CategoryService $categoryService,
             LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
             NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
@@ -54,12 +64,29 @@
             $this->generativeContentClient = $generativeContentClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
+            $this->cacheClient = $cacheClient;
             $this->configurationService = $configurationService;
             $this->categoryService = $categoryService;
             $this->photoService = $photoService;
             $this->geocodingService = $geocodingService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
+        }
+
+        public function getPlaceSignificance(string $placeId) : int {
+            $cacheKey = sprintf(self::PLACE_SIGNIFICANCE_CACHE_KEY_FORMAT, $placeId);
+            $placeSignificance = $this->cacheClient->get($cacheKey);
+            if ($placeSignificance !== null) {
+                return intval($placeSignificance);
+            }
+            
+            $placeIdentifier = $this->getPlaceIdentifierById($placeId);
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeSignificance"];
+            $placeSignificance = intval($this->generativeContentClient->getResponse($prompt, array("name" => $placeIdentifier->getName(), "country" => $placeIdentifier->getCountry() ?? "")));
+
+            $this->cacheClient->set($cacheKey, $placeSignificance, self::PLACE_SIGNIFICANCE_CACHE_TTL);
+
+            return $placeSignificance;
         }
 
         public function getDatesForTripAndCountry(string $tripId, string $countryCategoryId) : array {

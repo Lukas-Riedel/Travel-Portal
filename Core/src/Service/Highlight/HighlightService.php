@@ -4,7 +4,6 @@
     use Common\Client\Http\HttpMethod;
     use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Common\CommonConstants;
-    use RuntimeException;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -164,10 +163,10 @@
         public function createCategoryHighlight(string $categoryId, string $photoId) : Highlight {
             $highlightId = $this->highlightMapper->selectHighlightId($photoId);
             if ($highlightId === null) {
-                throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");
+                throw new \RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");
             }
             if (empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Place, $highlightId))) {
-                throw new RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");                
+                throw new \RuntimeException("Cannot create a highlight for the category. Does a related place highlight exist?");                
             }
 
             $wasCreated = true;
