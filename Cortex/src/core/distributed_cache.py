@@ -17,9 +17,14 @@ class DistributedCache:
         if new_ttl is not None:
             self._client.expire(key, new_ttl)
 
+
         try:
-            return json.loads(value)
-        except (json.JSONDecodeError, UnicodeDecodeError):
+            decoded = value.decode("utf-8")
+            try:
+                return json.loads(decoded)
+            except json.JSONDecodeError:
+                return decoded
+        except UnicodeDecodeError:
             return value
 
     def set(self, key: str, value: Any, ttl: int) -> None:
