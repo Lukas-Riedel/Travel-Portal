@@ -146,13 +146,10 @@
                 $destinationAirportIdentifier->getLatitude(), $destinationAirportIdentifier->getLongitude());
             
             $result = new Flight($flight, $registration, $aircraft, null, $distance, $from, $to, $actualDeparture, $actualArrival, $actualArrival - $scheduledArrival);
-            $this->transactionManager->executeAtomically(function() use(&$result, &$airlineCodeId, &$scheduledDeparture, &$scheduledArrival) {
-                $this->flightMapper->deleteLoggedFlight($result->getFlight(), $result->getStart(), $result->getEnd());
-                $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
+            $this->flightMapper->insertFlight($result, $airlineCodeId, $scheduledDeparture, $scheduledArrival);
 
-                $this->eventPublisher->publish(Event::FlightLogged($result->getFlight(), $result->getFrom()->getShortName(), $result->getTo()->getShortName(), $scheduledDeparture, $scheduledArrival, 
-                    $result->getEnd(), $result->getTo()->getTimezone()));  
-            });
+            $this->eventPublisher->publish(Event::FlightLogged($result->getFlight(), $result->getFrom()->getShortName(), $result->getTo()->getShortName(), $scheduledDeparture, $scheduledArrival, 
+                $result->getEnd(), $result->getTo()->getTimezone()));  
 
             return $result;
         }

@@ -231,9 +231,7 @@
             $this->photoMapper->deletePendingPhotosForAlbum($albumId);
         }
         
-        private function doUpdateAlbums(?string $albumId, bool $overwrite) : array {
-            global $highlightService, $placeService;
-        
+        private function doUpdateAlbums(?string $albumId, bool $overwrite) : array {        
             $objectKeys = array();
             $albums = array();
         
@@ -267,23 +265,7 @@
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
                     $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === null ? null : new Photo($mainPhotoId,
                         fn() => $this->getGooglePhotoProxyUrl($album["coverPhotoBaseUrl"]), null, null, null, null, null, null, null, null),
-                        $mainImageUrl, $album["productUrl"], $imagesCount, 0, false, null, null);
-
-                    // TODO: This is temporary until there is proper support for highlights (Q3/2025).
-                    // Remove global variables when removing this code.
-                    if ($albumId !== null && isset($album["coverPhotoMediaItemId"])) {
-                        $places = $placeService->getRegularPlaces(null, null, null, null, $currentAlbumId, null, null, null,
-                            null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-                        foreach ($places as &$place) {
-                            $highlightService->createPlaceHighlight($place->getId(), $mainPhotoId);
-                            foreach ($place->getDates() as &$date) {
-                                if ($date->getTrip() !== null) {
-                                    $highlightService->createTripHighlight($date->getTrip()->getId(), $mainPhotoId);
-                                }
-                            }
-                        }
-                    }  
-                    // End of temporary code.                          
+                        $mainImageUrl, $album["productUrl"], $imagesCount, 0, false, null, null);                         
                 }
         
                 if (isset($response["nextPageToken"])) {

@@ -431,11 +431,7 @@
             $country = $this->geocodingService->getLocation($address)->getCountry();
             $placeIdentifier = $this->getOrCreatePlaceIdentifier($name, $country, $address);
 
-            // TODO: Remove the create-if-not-exists semantics.
-            $this->transactionManager->executeAtomically(function() use(&$specialPlaceType, &$placeIdentifier) {
-                $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeIdentifier->getId());
-                $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
-            });
+            $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),

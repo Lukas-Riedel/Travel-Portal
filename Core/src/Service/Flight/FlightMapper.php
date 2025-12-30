@@ -709,21 +709,6 @@
                 ->execute() === 1;
         }
 
-        public function deleteLoggedFlight(string $flight, string $actualDeparture, string $actualArrival) : int {
-            $sql = <<<'SQL'
-                DELETE
-                FROM flight_log
-                WHERE flight = ?
-                    AND actual_departure = ?
-                    AND actual_arrival = ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($flight, $actualDeparture, $actualArrival)
-                ->execute();
-        }
-
         public function deleteAllFlightEvents(FlightType $flightType) : int {
             $sql = <<<SQL
                 DELETE

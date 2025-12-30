@@ -104,28 +104,17 @@
 
             $highlightId = $this->getOrCreateHighlightId($photoId);
 
-            // TODO: Remove the create-if-not-exists semantics.
-            $highlightNotExists = true;
-            foreach ($this->getPlaceHighlights($placeId) as &$entityHighlight) {
-                if ($entityHighlight->getId() == $highlightId) {
-                    $highlightNotExists = false;
-                    break;
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$placeService) {
+                $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
+
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));   
+                // TODO: Move this to onHighlightCreated.
+                foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));                    
                 }
-            }
+            });
 
-            if ($highlightNotExists) {
-                $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$placeService) {
-                    $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
-
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));   
-                    // TODO: Move this to onHighlightCreated.
-                    foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
-                        $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));                    
-                    }
-                });
-
-                $this->updateHighlight($highlightId);
-            }
+            $this->updateHighlight($highlightId);
             
            return $this->getHighlight($highlightId);
         }
@@ -136,26 +125,15 @@
 
             $highlightId = $this->getOrCreateHighlightId($photoId);
 
-            // TODO: Remove the create-if-not-exists semantics.
-            $highlightNotExists = true;
-            foreach ($this->getTripHighlights($tripId) as &$entityHighlight) {
-                if ($entityHighlight->getId() == $highlightId) {
-                    $highlightNotExists = false;
-                    break;
-                }
-            }
+            $this->transactionManager->executeAtomically(function() use(&$tripId, &$highlightId, &$tripService) {
+                $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
 
-            if ($highlightNotExists) {
-                $this->transactionManager->executeAtomically(function() use(&$tripId, &$highlightId, &$tripService) {
-                    $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));         
+                // TODO: Move this to onHighlightCreated.       
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));   
+            });         
 
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));         
-                    // TODO: Move this to onHighlightCreated.       
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));   
-                });         
-
-                $this->updateHighlight($highlightId);
-            }
+            $this->updateHighlight($highlightId);
             
            return $this->getHighlight($highlightId);
         }
@@ -171,6 +149,7 @@
 
             $wasCreated = true;
             $this->transactionManager->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasCreated) {
+                // TODO: Throw an exception if the highlight couldn't be created (because it already exists -> HTTP 400).
                 $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Category, $categoryId, $highlightId) > 0;
                 if ($wasCreated) {
                     $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId));
@@ -187,6 +166,7 @@
             $wasCreated = true;
             $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasCreated, &$tripHighlightExists) {
                 if ($tripHighlightExists) {
+                    // TODO: Throw an exception if the highlight couldn't be created (because it already exists -> HTTP 400).
                     $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Year, $year, $highlightId) > 0;
                 }
                 else {

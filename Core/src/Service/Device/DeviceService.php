@@ -34,7 +34,7 @@
         }
 
         public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {
-            // TODO: This is ugly.
+            // TODO: This is ugly. This piece of code should be oblivious to the data object contents.
             if (isset($data["latitude"]) && isset($data["longitude"])) {
                 $address = isset($data["address"]) ? $data["address"] 
                     : $this->geocodingService->getAddress($data["latitude"], $data["longitude"])?->getAddress();
