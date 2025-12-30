@@ -8,16 +8,12 @@ cortex:
     items: "5"
     cooldown: 300
     grace: 900
-  url:
-    core:
-      base:
-        public: https://api.lriedel.cz
-    iam:
-      base:
-        public: https://iam.lriedel.cz
   model: clip-ViT-B-32
   # model: clip-ViT-L-14
   engine: cpu
+  core:
+    host: core
+    port: 8080
   highlights:
     coefficient:
       content: "0.75"
@@ -39,6 +35,8 @@ cortex:
     hostname: redis
     port: 6379
   iam:
+    host: iam
+    port: 8080
     client:
       backend:
         id: admin-cli

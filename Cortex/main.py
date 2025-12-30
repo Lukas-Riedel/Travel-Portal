@@ -11,8 +11,12 @@ load_dotenv()
 
 def main():
     core_client = CoreClient(
-        os.getenv("CORE_BASE_URL"),
-        os.getenv("IAM_BASE_URL"),
+        os.getenv("CORE_HOST"),
+        int(os.getenv("CORE_PORT")),
+        os.getenv("CORE_SSL", "false").lower() == "true",
+        os.getenv("IAM_HOST"),
+        int(os.getenv("IAM_PORT")),
+        os.getenv("IAM_SSL", "false").lower() == "true",
         os.getenv("IAM_BACKEND_CLIENT_ID"),
         os.getenv("IAM_BACKEND_CLIENT_SECRET"),
     )

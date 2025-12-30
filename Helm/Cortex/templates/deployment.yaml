@@ -41,10 +41,14 @@ spec:
               value: "{{ .Values.cortex.highlights.coefficient.age }}"
             - name: SIMILARITY_THRESHOLD
               value: "{{ .Values.cortex.highlights.threshold.similarity }}"
-            - name: CORE_BASE_URL
-              value: "{{ .Values.cortex.url.core.base.public }}"
-            - name: IAM_BASE_URL
-              value: "{{ .Values.cortex.url.iam.base.public }}"
+            - name: CORE_HOST
+              value: "{{ .Values.cortex.core.host }}"
+            - name: CORE_PORT
+              value: "{{ .Values.cortex.core.port }}"
+            - name: IAM_HOST
+              value: "{{ .Values.cortex.iam.host }}"
+            - name: IAM_PORT
+              value: "{{ .Values.cortex.iam.port }}"
             - name: RMQ_HOST
               value: "{{ .Values.cortex.rabbitmq.hostname }}"            
             - name: RMQ_PORT

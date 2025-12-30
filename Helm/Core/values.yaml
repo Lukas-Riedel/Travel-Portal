@@ -15,9 +15,6 @@ core:
   url:
     base:
       public: https://api.lriedel.cz
-    iam:
-      base:
-        public: https://iam.lriedel.cz
     s3:
       base:
         public: https://s3.lriedel.cz
@@ -58,6 +55,8 @@ core:
     port: 9000
     accesskey: admin
   iam:
+    host: iam
+    port: 8080
     client:
       app:
         id: travel-portal-app

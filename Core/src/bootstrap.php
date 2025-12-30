@@ -145,7 +145,7 @@
 
     // Authentication service.
     $commonAuthenticationService = new CommonAuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY"));
-    $authenticationService = new AuthenticationService($httpClient, $cacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_BASE_URL"));
+    $authenticationService = new AuthenticationService($httpClient, $cacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
 

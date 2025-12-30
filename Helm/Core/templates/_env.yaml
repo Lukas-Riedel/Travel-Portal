@@ -10,8 +10,6 @@
       key: core-encryption-key
 - name: CORE_BASE_URL
   value: "{{ .Values.core.url.base.public }}"
-- name: IAM_BASE_URL
-  value: "{{ .Values.core.url.iam.base.public }}"
 - name: S3_BASE_URL
   value: "{{ .Values.core.url.s3.base.public }}"
 - name: IBM_DATAPLATFORM_BASE_URL
@@ -91,10 +89,12 @@
   value: "{{ .Values.core.rabbitmq.queue.worker }}"
 - name: CORTEX_QUEUE_NAME
   value: "{{ .Values.core.rabbitmq.queue.cortex }}"
+- name: IAM_HOST
+  value: "{{ .Values.core.iam.host }}"
+- name: IAM_PORT
+  value: "{{ .Values.core.iam.port }}"
 - name: IAM_APP_CLIENT_ID
   value: "{{ .Values.core.iam.client.app.id }}"
-- name: JWKS_PUBLIC_KEY
-  value: "{{ .Values.core.iam.jwks.key.public }}"
 - name: IAM_BACKEND_CLIENT_ID
   value: "{{ .Values.core.iam.client.backend.id }}"
 - name: IAM_AGENT_CLIENT_ID
@@ -104,6 +104,8 @@
     secretKeyRef:
       name: iam-client-backend-secret
       key: iam-client-backend-secret
+- name: JWKS_PUBLIC_KEY
+  value: "{{ .Values.core.iam.jwks.key.public }}"
 - name: GRAFANA_LOKI_ENTRYPOINT
   value: "{{ .Values.core.grafana.entrypoint }}"
 - name: GRAFANA_LOKI_CLIENT_NAME

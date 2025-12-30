@@ -10,13 +10,21 @@ ACCESS_TOKEN_VALIDITY_MULTIPLIER: Final[float] = 0.95
 class CoreClient:
     def __init__(
         self,
-        core_base_url: str,
-        iam_base_url: str,
+        core_host: str,
+        core_port: int,
+        core_ssl: bool,
+        iam_host: str,
+        iam_port: int,
+        iam_ssl: bool,
         iam_backend_client_id: str,
         iam_backend_client_secret: str,
     ) -> None:
-        self.core_base_url = core_base_url
-        self.iam_base_url = iam_base_url
+        self.core_host = core_host
+        self.core_port = core_port
+        self.core_ssl = core_ssl
+        self.iam_host = iam_host
+        self.iam_port = iam_port
+        self.iam_ssl = iam_ssl
         self.iam_backend_client_id = iam_backend_client_id
         self.iam_backend_client_secret = iam_backend_client_secret
 
@@ -29,7 +37,7 @@ class CoreClient:
     def get_places(self) -> dict:
         self._ensure_authenticated()
 
-        url = f"{self.core_base_url}/places"
+        url = f"{self._get_core_base_url()}/places"
 
         response = self.session.get(url)
         response.raise_for_status()
@@ -38,7 +46,7 @@ class CoreClient:
     def get_place(self, place_id: str) -> dict:
         self._ensure_authenticated()
 
-        url = f"{self.core_base_url}/places/{place_id}"
+        url = f"{self._get_core_base_url()}/places/{place_id}"
         response = self.session.get(url)
         response.raise_for_status()
         return response.json()
@@ -46,7 +54,7 @@ class CoreClient:
     def get_place_album_photos(self, place_id: str, album_id: str) -> dict:
         self._ensure_authenticated()
 
-        url = f"{self.core_base_url}/places/{place_id}/albums/{album_id}/photos"
+        url = f"{self._get_core_base_url()}/places/{place_id}/albums/{album_id}/photos"
         response = self.session.get(url)
         response.raise_for_status()
         return response.json()
@@ -54,7 +62,7 @@ class CoreClient:
     def create_place_highlight(self, place_id: str, photo_id: str) -> None:
         self._ensure_authenticated()
 
-        url = f"{self.core_base_url}/places/{place_id}/highlights"
+        url = f"{self._get_core_base_url()}/places/{place_id}/highlights"
         response = self.session.post(url, json={"photo": {"id": photo_id}})
         response.raise_for_status()
 
@@ -67,7 +75,7 @@ class CoreClient:
                 "clientId": self.iam_backend_client_id,
                 "clientSecret": self.iam_backend_client_secret,
             }
-            response = requests.post(f"{self.iam_base_url}/token", json=payload)
+            response = requests.post(f"{self._get_iam_base_url()}/token", json=payload)
             response.raise_for_status()
             data = response.json()
 
@@ -81,3 +89,9 @@ class CoreClient:
         except Exception as e:
             logger.error(f"Unable to authenticate: {e}")
             raise
+        
+    def _get_core_base_url(self) -> str:
+        return f"{'https' if self.core_ssl else 'http'}://{self.core_host}:{self.core_port}"
+    
+    def _get_iam_base_url(self) -> str:
+        return f"{'https' if self.iam_ssl else 'http'}://{self.iam_host}:{self.iam_port}"

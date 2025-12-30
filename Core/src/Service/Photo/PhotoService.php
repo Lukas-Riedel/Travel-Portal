@@ -7,14 +7,12 @@
     use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;
-    use Core\Service\Place\PlaceSortingStrategy;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\HttpClient;
-    use Core\Service\Place\PlaceIncludedEntity;
 
     class PhotoService {
 
