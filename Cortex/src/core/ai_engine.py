@@ -16,8 +16,11 @@ torch.set_num_interop_threads(int(os.getenv("MAX_THREADS")))
 MODEL_NAME: Final[str] = os.getenv("MODEL_NAME")
 ENGINE_DEVICE: Final[str] = os.getenv("ENGINE_DEVICE")
 
-PHOTO_EMBEDDINGS_CACHE_KEY_FORMAT = "AiEngine:PhotoEmbedding:{model_name}:{photo_id}"
-PHOTO_EMBEDDINGS_CACHE_TTL: Final[int] = 365 * 86400
+PHOTO_EMBEDDING_CACHE_KEY_FORMAT = "AiEngine:PhotoEmbedding:{model_name}:{photo_id}"
+PHOTO_EMBEDDING_CACHE_TTL: Final[int] = 365 * 86400
+
+PHOTO_CHECKSUM_CACHE_KEY_FORMAT = "AiEngine:PhotoChecksum:{photo_id}"
+PHOTO_CHECKSUM_CACHE_TTL: Final[int] = 365 * 86400
 
 
 class AiEngine:
@@ -37,15 +40,23 @@ class AiEngine:
 
         if photos:
             for photo in photos:
-                cache_key = PHOTO_EMBEDDINGS_CACHE_KEY_FORMAT.format(
+                embedding_cache_key = PHOTO_EMBEDDING_CACHE_KEY_FORMAT.format(
                     model_name=MODEL_NAME, photo_id=photo.get("id")
+                )
+                checksum_cache_key = PHOTO_CHECKSUM_CACHE_KEY_FORMAT.format(
+                    photo_id=photo.get("id")
                 )
 
                 cached_emb = self.distributed_cache.get(
-                    cache_key, PHOTO_EMBEDDINGS_CACHE_TTL
+                    embedding_cache_key, PHOTO_EMBEDDING_CACHE_TTL
+                )
+                cached_checksum = self.distributed_cache.get(
+                    checksum_cache_key, PHOTO_CHECKSUM_CACHE_TTL
                 )
 
-                if cached_emb:
+                actual_checksum = self.get_photo_checksum(photo)
+
+                if cached_emb and cached_checksum == actual_checksum:
                     emb_tensor = torch.from_numpy(
                         np.frombuffer(cached_emb, dtype=np.float32).copy()
                     ).to(ENGINE_DEVICE)
@@ -65,7 +76,12 @@ class AiEngine:
 
                         emb_storage = emb.cpu().numpy().astype(np.float32).tobytes()
                         self.distributed_cache.set(
-                            cache_key, emb_storage, PHOTO_EMBEDDINGS_CACHE_TTL
+                            embedding_cache_key, emb_storage, PHOTO_EMBEDDING_CACHE_TTL
+                        )
+                        self.distributed_cache.set(
+                            checksum_cache_key,
+                            actual_checksum,
+                            PHOTO_CHECKSUM_CACHE_TTL,
                         )
 
                         style_embeddings.append(emb)
@@ -122,3 +138,7 @@ class AiEngine:
                 total_score = total_score - (neg_sim * self.negative_coeff)
 
             return total_score
+        
+    def get_photo_checksum(self, photo: dict) -> str:        
+        # Use the photo permalink as its checksum -> if the photo changes, its permalink changes, too.
+        return photo.get("permalink")
