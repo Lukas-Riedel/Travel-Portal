@@ -3,6 +3,7 @@ import { useNotifications } from "../contexts/NotificationContext.jsx"
 import { createEvent } from "../clients/coreClient.ts"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
+import type { HighlightType } from "../types/CoreSwaggerTypes.ts"
 
 export const useEvents = (eventType: EventType): UseEventsResult => {
     const { messages } = useNotifications()
@@ -19,6 +20,8 @@ export const useEvents = (eventType: EventType): UseEventsResult => {
 
     return {
         events,
+        publishHighlightsSelectingTriggeredEvent: (highlightType: HighlightType, entityId: string, highlightsCount: number) =>
+            createEvent(EventType.HighlightsSelectingTriggered, { highlightType, entityId, highlightsCount }),
         publishPhotosUploadingTriggeredEvent: (agentId: string, placeId: string, placeName: string, path: string, albumId?: string, timestamp?: number, mainPhotoPosition?: number) =>
             createEvent(EventType.PhotosUploadingTriggered, { agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition }),
         publishPhotoReplacingTriggeredEvent: (agentId: string, placeId: string, albumId: string, placeName: string, replacedPhotoId: string, path: string) =>

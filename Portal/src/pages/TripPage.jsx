@@ -15,10 +15,11 @@ import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
+import { HighlightType } from "../types/CoreSwaggerTypes.ts"
 
 export default function TripPage() {
     const { isAdmin } = useAuth()
-    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
 
     const { tripId } = useParams()
 
@@ -47,7 +48,7 @@ export default function TripPage() {
             <PageHeader
                 name={trip && trip.getFullName()}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                showHighlightsButton={places?.some(place => place.dates?.some(date => date.album))}
+                onHighlightsSelectingTriggered={places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Trip, tripId, (trip?.highlights ?? []).length + highlightsCount))}
                 onNameChanged={updateTripName}
                 onRemoved={removeTrip} />
             <HighlightCarouselAndPlaceMapToggle

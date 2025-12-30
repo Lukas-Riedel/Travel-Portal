@@ -17,12 +17,13 @@ import DayCard from "../components/DayCard"
 import { fromUnixTime, startOfDay } from "date-fns"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Trip } from "../classes/Trip.ts"
+import { HighlightType } from "../types/CoreSwaggerTypes.ts"
 
 export default function YearPage() {
     const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { year: yearParameter } = useParams()
-    const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent } = useEvents()
+    const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
     const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: ["dates", "categories"] })
@@ -46,7 +47,8 @@ export default function YearPage() {
             <PageHeader
                 name={year?.id}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                showHighlightsButton={yearTrips?.some(trip => trip.mainHighlight)} />
+                onHighlightsSelectingTriggered={yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Year, yearParameter, (year?.highlights ?? []).length + highlightsCount))}
+            />
             <HighlightCarouselAndPlaceMapToggle
                 entity={year}
                 places={places}

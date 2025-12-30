@@ -1,13 +1,13 @@
-import { Images, Share2, SquarePen, Trash2 } from "lucide-react"
+import { Images, RefreshCcw, Share2, SquarePen, Trash2 } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import { getPrettyName } from "../utils/helpers"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
-export default function PageHeader({ name, categories, internalAttributes, showHighlightsButton, onNameChanged, onRemoved }) {
+export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsSelectingTriggered }) {
     const { isAdmin } = useAuth()
-    const { showConfirmToast, showInputToast } = useUserInput()
+    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
 
@@ -25,6 +25,18 @@ export default function PageHeader({ name, categories, internalAttributes, showH
             "Jméno bylo úspěšně aktualizováno",
             "Nepodařilo se aktualizovat jméno",
             name
+        )
+    }
+
+    const handleHighlightsSelectingTriggered = () => {
+        showFormToast(
+            "Zadej počet highlightů k přidání:",
+            [
+                { type: "number", required: true, min: 1 }
+            ],
+            onHighlightsSelectingTriggered,
+            "Přidávání highlightů bude brzy zahájeno",
+            "Při přidávání highlightů došlo k chybě"
         )
     }
 
@@ -58,12 +70,19 @@ export default function PageHeader({ name, categories, internalAttributes, showH
                     <Share2 size={16} />
                 </button>
             )}
-            {showHighlightsButton && (
-                <Link
-                    to={`${location.pathname}/highlight`}
-                    className="btn-chip-gray">
-                    <Images size={16} />
-                </Link>
+            {onHighlightsSelectingTriggered && (
+                <>
+                    <Link
+                        to={`${location.pathname}/highlight`}
+                        className="btn-chip-gray">
+                        <Images size={16} />
+                    </Link>
+                    <button
+                        onClick={handleHighlightsSelectingTriggered}
+                        className="btn-chip-gray">
+                        <RefreshCcw size={16} />
+                    </button>
+                </>
             )}
             {onNameChanged && (
                 <button

@@ -9,25 +9,24 @@ import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
 import { useParams } from "react-router-dom"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
 import { usePlace } from "../hooks/usePlace.js"
-import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useEvents } from "../hooks/useEvents.js"
 import { useMemo } from "react"
 import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
+import { HighlightType } from "../types/CoreSwaggerTypes.ts"
 
 const nearbyPlacesCount = 3
 
 export default function PlacePage() {
     const { isAdmin } = useAuth()
     const { placeId } = useParams()
-    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote } = usePlace(placeId, nearbyPlacesCount)
-    const { places } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "-score" })
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
 
@@ -39,7 +38,7 @@ export default function PlacePage() {
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score }}
-                showHighlightsButton={place?.dates?.some(date => date.album)}
+                onHighlightsSelectingTriggered={place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, (place?.highlights ?? []).length + highlightsCount))}
                 onNameChanged={updatePlaceName} />
             <HighlightCarousel
                 place={place}

@@ -11,6 +11,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { Edit2, Folder } from "lucide-react"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import { useUserInput } from "../hooks/useUserInput.tsx"
+import { HighlightType } from "../types/CoreSwaggerTypes.ts"
 
 const categoryCategories = {
     continent: "Kontinent",
@@ -25,8 +26,8 @@ const categoryCategories = {
 
 export default function CategoryPage() {
     const { categoryId } = useParams()
-    const { publishPhotoReplacingTriggeredEvent } = useEvents()
-    const {showFormToast} = useUserInput()
+    const { publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
+    const { showFormToast } = useUserInput()
 
     const { isAdmin } = useAuth()
 
@@ -82,7 +83,7 @@ export default function CategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={attributes}
-                showHighlightsButton={totalScore > 0}
+                onHighlightsSelectingTriggered={totalScore > 0 && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Category, categoryId, (category?.highlights ?? []).length + highlightsCount))}
                 onNameChanged={updateCategoryName}
                 onRemoved={category?.category !== "country" && removeCategory} />
             <HighlightCarouselAndPlaceMapToggle
