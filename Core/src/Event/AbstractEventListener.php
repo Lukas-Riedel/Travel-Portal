@@ -39,6 +39,12 @@
 
         protected function onEvent(mixed $event) : void {
             $start = microtime(true);
+            $transactionId = uniqid(); 
+            $this->logger->pushProcessor(function($record) use($transactionId) {
+                $record["context"]["transaction_id"] = $transactionId;
+                $record["extra"]["transaction_id"] = $transactionId;
+                return $record;
+            });
             $this->openLineageEventManager?->initializeEvent($this->workerQueueName . "/" . $event["name"]);
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
             try {
@@ -53,6 +59,7 @@
             finally {
                 $this->logger->info("The '" . $event["name"] . "' event was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.", $event);
                 $this->flushLogger();
+                $this->logger->popProcessor();
 
                 if ($event["name"] === self::OPENLINEAGE_EVENT_PUBLISHED_EVENT_NAME) {
                     $this->openLineageEventManager?->publishCurrentEvent();

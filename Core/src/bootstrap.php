@@ -83,20 +83,14 @@
     };
     set_error_handler($onError);
 
-    $transactionId = uniqid();
-
     // Logger.
     $logger = new Logger("core");
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
             "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
-            "context" => array(
-                "transaction_id" => $transactionId
-            ),
             "labels" => array(
                 "service" => "core",
-                "version_tag" => getenv("VERSION_TAG"),
-                "transaction_id" => $transactionId
+                "version_tag" => getenv("VERSION_TAG")
             ),
             "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
             "auth" => array(
@@ -107,7 +101,7 @@
             )
         ))
     ));
-    $logger->pushHandler($handler); 
+    $logger->pushHandler($handler);
 
     // Clients.
     $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));

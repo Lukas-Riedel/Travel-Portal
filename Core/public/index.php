@@ -11,7 +11,14 @@
     use Common\Routing\RequestError;
     use Slim\Handlers\Strategies\RequestResponse;
 
-    require_once(__DIR__ . "/../src/bootstrap.php");    
+    require_once(__DIR__ . "/../src/bootstrap.php");
+    
+    $transactionId = uniqid();
+    $logger->pushProcessor(function($record) use($transactionId) {
+        $record["context"]["transaction_id"] = $transactionId;
+        $record["extra"]["transaction_id"] = $transactionId;
+        return $record;
+    });
 
     $basePath = parse_url(getenv("CORE_BASE_URL"))["path"] ?? "";
 

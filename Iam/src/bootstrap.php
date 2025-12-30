@@ -24,13 +24,9 @@
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
             "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
-            "context" => array(
-                "transaction_id" => $transactionId
-            ),
             "labels" => array(
                 "service" => "iam",
-                "verion_tag" => getenv("VERSION_TAG"),
-                "transaction_id" => $transactionId
+                "version_tag" => getenv("VERSION_TAG")
             ),
             "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
             "auth" => array(

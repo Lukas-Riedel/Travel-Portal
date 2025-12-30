@@ -1,7 +1,9 @@
 import logging
 import logging_loki
 import os
-import uuid
+import json
+import contextvars
+import datetime
 from dotenv import load_dotenv
 from logging import Logger
 from typing import Final
@@ -9,6 +11,37 @@ from typing import Final
 load_dotenv()
 
 SERVICE_NAME: Final[str] = "cortex"
+
+transaction_id = contextvars.ContextVar("transaction_id", default="")
+
+
+class TransactionFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.transaction_id = transaction_id.get()
+        return True
+
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        tx_id = getattr(record, "transaction_id", "")
+
+        dt = datetime.datetime.fromtimestamp(record.created).astimezone()
+
+        log_record = {
+            "message": record.getMessage(),
+            "level": record.levelno * 10,
+            "level_name": record.levelname,
+            "channel": record.name,
+            "datetime": dt.isoformat(),
+            "transaction_id": tx_id,
+        }
+
+        event = getattr(record, "event", None)
+        if event:
+            log_record["ctxt_name"] = event.get("name")
+            log_record["ctxt_args"] = json.dumps(event.get("args"), default=str)
+
+        return json.dumps(log_record, default=str)
 
 
 class CortexLogger:
@@ -27,8 +60,6 @@ class CortexLogger:
     def get_logger(self) -> Logger:
         logger = logging.getLogger(SERVICE_NAME)
         logger.setLevel(logging.DEBUG)
-        
-        transaction_id = str(uuid.uuid4())
 
         if logger.hasHandlers():
             logger.handlers.clear()
@@ -44,11 +75,12 @@ class CortexLogger:
                     "client_name": SERVICE_NAME,
                     "service": SERVICE_NAME,
                     "version_tag": self.version_tag,
-                    "transaction_id": transaction_id,
                 },
                 auth=(auth_user, auth_pass) if auth_user else None,
                 version="1",
             )
+            loki_handler.addFilter(TransactionFilter())
+            loki_handler.setFormatter(JsonFormatter())
             logger.addHandler(loki_handler)
 
         return logger

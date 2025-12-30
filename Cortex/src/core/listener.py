@@ -1,12 +1,14 @@
 import pika
 import json
 import time
+import uuid
 import ssl
 import threading
 import signal
 from typing import List, Final, Any, Optional
 from src.core.logger import logger
 from src.handlers.base_handler import BaseHandler
+from src.core.logger import transaction_id
 from pika.adapters.select_connection import SelectConnection
 from pika.channel import Channel
 from types import FrameType
@@ -153,6 +155,7 @@ class CortexListener:
 
     def _process_in_thread(self, delivery_tag: int, body: bytes) -> None:
         with self.processing_lock:
+            token = transaction_id.set(str(uuid.uuid4()))
             start_time = time.time()
             event = json.loads(body)
             event_name = event.get("name")
@@ -189,3 +192,4 @@ class CortexListener:
                 logger.info(
                     f"The '{event_name}' event was processed in {duration} milliseconds."
                 )
+                transaction_id.reset(token)
