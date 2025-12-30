@@ -9,11 +9,12 @@
     use Common\Routing\LoggingMiddleware;
     use Core\Routing\OpenLineageMiddleware;
     use Common\Routing\RequestError;
+    use Ramsey\Uuid\Uuid;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/../src/bootstrap.php");
     
-    $transactionId = uniqid();
+    $transactionId = Uuid::uuid4()->toString();;
     $logger->pushProcessor(function($record) use($transactionId) {
         $record["context"]["transaction_id"] = $transactionId;
         $record["extra"]["transaction_id"] = $transactionId;

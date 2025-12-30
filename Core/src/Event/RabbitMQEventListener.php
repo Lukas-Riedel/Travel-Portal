@@ -6,6 +6,7 @@
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Logger;
     use PhpAmqpLib\Exception\AMQPTimeoutException;
+    use Ramsey\Uuid\Uuid;
 
     class RabbitMQEventListener extends AbstractEventListener {
 
@@ -22,7 +23,7 @@
             parent::__construct($logger, $openLineageEventManager, $listeners, $workerQueueName);
             $this->messagingClient = $messagingClient;
             $this->workerQueueName = $workerQueueName;
-            $this->consumerTag = uniqid();
+            $this->consumerTag = Uuid::uuid4()->toString();;
             $this->logger = $logger;
         }
 

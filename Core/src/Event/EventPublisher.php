@@ -6,6 +6,7 @@
     use Core\Client\Messaging\MessagingClient;
     use Core\Common\CommonConstants;
     use Core\Service\Device\DeviceService;
+    use Ramsey\Uuid\Uuid;
 
     class EventPublisher {
 
@@ -111,7 +112,7 @@
             }
 
             if ($event instanceof WebhookEvent) {
-                $eventId = uniqid("", true);
+                $eventId = Uuid::uuid4()->toString();
                 $eventCacheKey = sprintf(self::WEBHOOK_EVENT_CACHE_KEY_FORMAT, $eventId);
                 $this->cacheClient->set($eventCacheKey, $event, $event->getTtl());
                 return $eventId;

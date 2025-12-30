@@ -11,13 +11,14 @@
     use Itspire\MonologLoki\Handler\LokiHandler;
     use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
-    
+    use Ramsey\Uuid\Uuid;
+
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message);
     };
     set_error_handler($onError);
 
-    $transactionId = uniqid();
+    $transactionId = Uuid::uuid4()->toString();
 
     // Logger.
     $logger = new Logger("iam");

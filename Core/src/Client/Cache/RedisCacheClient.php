@@ -4,7 +4,8 @@
     use Common\Client\HealthCheckable;
     use Core\OpenLineage\OpenLineageEventManager;
     use Predis\Client;
-    
+    use Ramsey\Uuid\Uuid;
+
     class RedisCacheClient implements CacheClient, HealthCheckable {
 
         private const REDIS_SCHEME = "redis";
@@ -37,7 +38,7 @@
         public function isHealthy() : bool {
             try {
                 $this->init();
-                $ping = uniqid();
+                $ping = Uuid::uuid4()->toString();
                 return $this->redisClient->ping($ping) === $ping;
             }
             catch (\Throwable $e) {
@@ -82,7 +83,7 @@
         }
 
         public function tryLock(string $key, int $ttl) : ?DistributedLock {
-            $lockValue = uniqid("", true);
+            $lockValue = Uuid::uuid4()->toString();
             return $this->trySet($key, $lockValue, $ttl) ? new DistributedLock($this, $key, $lockValue) : null;
         }
 

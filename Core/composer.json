@@ -30,7 +30,8 @@
         "itspire/monolog-loki": "^2.1",
         "enshrined/svg-sanitize": "^0.22.0",
         "greenlion/php-sql-parser": "^4.7",
-        "aws/aws-sdk-php": "^3.368"
+        "aws/aws-sdk-php": "^3.368",
+        "ramsey/uuid": "^4.9"
     },
     "config": {
         "platform": {

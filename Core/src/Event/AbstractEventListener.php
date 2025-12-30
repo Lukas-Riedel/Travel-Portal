@@ -4,6 +4,7 @@
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Handler\BufferHandler;
     use Monolog\Logger;
+    use Ramsey\Uuid\Uuid;
 
     abstract class AbstractEventListener {
 
@@ -39,7 +40,7 @@
 
         protected function onEvent(mixed $event) : void {
             $start = microtime(true);
-            $transactionId = uniqid(); 
+            $transactionId = Uuid::uuid4()->toString(); 
             $this->logger->pushProcessor(function($record) use($transactionId) {
                 $record["context"]["transaction_id"] = $transactionId;
                 $record["extra"]["transaction_id"] = $transactionId;
