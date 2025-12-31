@@ -8,6 +8,8 @@
     use Core\Service\Authentication\AuthenticationService;
     use Monolog\Logger;
     use Common\Client\Http\HttpClient;
+    use Common\CommonConstants;
+    use Common\LoggingContext;
 
     class FirebaseCloudMessagingClient implements CloudMessagingClient {
 
@@ -22,13 +24,15 @@
 
         private readonly HttpClient $httpClient;
 
+        private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
 
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $projectId, HttpClient $httpClient, Logger $logger) {
+        public function __construct(string $projectId, HttpClient $httpClient, LoggingContext $loggingContext, Logger $logger) {
             $this->projectId = $projectId;
             $this->httpClient = $httpClient;
+            $this->loggingContext = $loggingContext;
             $this->logger = $logger;
             $this->authenticationService = null;
             $this->openLineageEventManager = null;
@@ -51,6 +55,9 @@
                             "priority" => "high"
                         ),
                         "data" => array(
+                            "headers" => json_encode((object) array(
+                                CommonConstants::TRANSACTION_ID_HEADER => $this->loggingContext->getTransactionId()
+                            )),
                             "event" => $event->getName(),
                             "args" => json_encode((object) $event->getArgs())
                         )

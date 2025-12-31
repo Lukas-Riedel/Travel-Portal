@@ -5,7 +5,11 @@
 
     class LoggingContext {
 
-        private ?string $transactionId = null;
+        private string $transactionId;
+
+        public function __construct() {
+            $this->transactionId = Uuid::uuid4()->toString();            
+        }
 
         public function getTransactionId() : ?string {
             return $this->transactionId;

@@ -10,6 +10,9 @@ import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
 import cz.lriedel.bridgex.ui.CustomWebChromeClient
 import cz.lriedel.bridgex.ui.CustomWebViewClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,7 +32,9 @@ class MainActivity : AppCompatActivity() {
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
         loadWebViewUrl(savedInstanceState, intent.getStringExtra("placeId"))
-        deviceInitializer.initialize()
+        CoroutineScope(Dispatchers.IO).launch {
+            deviceInitializer.initialize()
+        }
     }
 
     private fun setupWebView() {

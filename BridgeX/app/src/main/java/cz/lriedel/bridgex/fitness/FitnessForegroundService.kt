@@ -8,24 +8,32 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import cz.lriedel.bridgex.R
 import cz.lriedel.bridgex.authentication.AuthenticationService
+import cz.lriedel.bridgex.notification.NotificationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.lang.reflect.Type
 
 class FitnessForegroundService : Service() {
+    private val gson = Gson()
+    private val mapGsonType: Type = object : TypeToken<Map<String?, Any?>?>() {}.type
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val fitnessService by lazy { FitnessService.getOrCreate(this, AuthenticationService.getOrCreate(this)) }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val intervals = intent?.getParcelableArrayListExtra("intervals", FitnessInterval::class.java) ?: emptyList()
+        val headers = gson.fromJson<Map<String, Any>>(intent?.getStringExtra("headers"), mapGsonType)
 
         startForeground(NOTIFICATION_ID, createNotification(intervals.size))
 
-        serviceScope.launch {
+        serviceScope.launch(NotificationContext.headers.asContextElement(headers)) {
             try {
                 for (interval in intervals) {
                     try {

@@ -3,12 +3,15 @@ package cz.lriedel.bridgex.notification
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
 import cz.lriedel.bridgex.fitness.FitnessForegroundService
 import cz.lriedel.bridgex.fitness.FitnessInterval
 
 class FitnessActivityDetectedNotificationFactory(
     private val context: Context
 ) : NotificationFactory {
+    private val gson = Gson()
+
     override suspend fun create(args: Map<String, Any>): Notification? {
         val intervalEntries = args["intervals"] as? List<*> ?: return null
         val fitnessIntervals = intervalEntries.mapNotNull { entry ->
@@ -20,6 +23,10 @@ class FitnessActivityDetectedNotificationFactory(
 
         val serviceIntent = Intent(context, FitnessForegroundService::class.java).apply {
             putParcelableArrayListExtra("intervals", ArrayList(fitnessIntervals))
+            val currentHeaders = NotificationContext.headers.get()
+            if (currentHeaders != null) {
+                putExtra("headers", gson.toJson(currentHeaders))
+            }
         }
 
         ContextCompat.startForegroundService(context, serviceIntent)

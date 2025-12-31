@@ -33,42 +33,36 @@ class DeviceInitializer(
     private val coreClient: CoreClient = CoreClient.getOrCreate(authenticationService)
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(context) }
 
-    fun initialize(fcmToken: String) {
+    suspend fun initialize(fcmToken: String) {
         Log.d(DeviceInitializer::class.java.simpleName, "Received a request to initialize a device...")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val batteryStatus: Intent? = ContextCompat.getSystemService(context, BatteryManager::class.java)?.let { _ ->
-                    val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-                    context.registerReceiver(null, intentFilter)
-                }
-                val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-                val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-
-                val location = getLocation(batteryLevel / batteryScale.toDouble() * 100)
-
-                for (deviceType in DeviceType.entries) {
-                    coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName,
-                        DeviceData(fcmToken, location?.latitude, location?.longitude,
-                            java.util.TimeZone.getDefault().id, batteryLevel / batteryScale.toDouble() * 100)))
-                }
+        try {
+            val batteryStatus: Intent? = ContextCompat.getSystemService(context, BatteryManager::class.java)?.let { _ ->
+                val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                context.registerReceiver(null, intentFilter)
             }
-            catch (e: Exception) {
-                Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when initializing a device.", e)
+            val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+
+            val location = getLocation(batteryLevel / batteryScale.toDouble() * 100)
+
+            for (deviceType in DeviceType.entries) {
+                coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName,
+                    DeviceData(fcmToken, location?.latitude, location?.longitude,
+                        java.util.TimeZone.getDefault().id, batteryLevel / batteryScale.toDouble() * 100)))
             }
+        }
+        catch (e: Exception) {
+            Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when initializing a device.", e)
         }
     }
 
-    fun initialize() {
-        FirebaseMessaging.getInstance().token
-            .addOnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    return@addOnCompleteListener
-                }
-                val fcmToken = task.result ?: return@addOnCompleteListener
+    suspend fun initialize() {
+        val fcmToken = FirebaseMessaging.getInstance().token.await()
 
-                initialize(fcmToken)
-            }
+        if (fcmToken != null) {
+            initialize(fcmToken)
+        }
     }
 
     private suspend fun getLocation(batteryLevel: Double): Location? {

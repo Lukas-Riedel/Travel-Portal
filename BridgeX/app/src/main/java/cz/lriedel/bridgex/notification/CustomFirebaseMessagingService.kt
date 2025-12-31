@@ -16,6 +16,7 @@ import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.reflect.Type
@@ -40,7 +41,10 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        deviceInitializer.initialize(token)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            deviceInitializer.initialize(token)
+        }
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
@@ -51,8 +55,10 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
 
             val notificationFactory = notificationFactories[message.data["event"]]
             if (notificationFactory != null) {
+                val headers = gson.fromJson<Map<String, Any>>(message.data["headers"], mapGsonType)
                 val args = gson.fromJson<Map<String, Any>>(message.data["args"], mapGsonType)
-                CoroutineScope(Dispatchers.IO).launch {
+
+                CoroutineScope(Dispatchers.IO).launch(NotificationContext.headers.asContextElement(headers)) {
                     val notification = notificationFactory.create(args)
 
                     notification?.let {
@@ -63,7 +69,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
                 }
             }
 
-            // TODO: Send to UI somehow.
+            // TODO: Send to Portal somehow, so that it can also be shown in UI (e.g., photos uploading progress).
         }
     }
 
