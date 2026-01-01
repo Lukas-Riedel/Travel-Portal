@@ -38,7 +38,7 @@ export default function PlacePage() {
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length }}
-                onHighlightsSelectingTriggered={place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, (place?.highlights ?? []).length + highlightsCount))}
+                onHighlightsSelectingTriggered={place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, highlightsCount, true))}
                 onNameChanged={updatePlaceName} />
             <HighlightCarousel
                 place={place}

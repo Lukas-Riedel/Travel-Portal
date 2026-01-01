@@ -84,7 +84,7 @@ export default function CategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={attributes}
-                onHighlightsSelectingTriggered={totalScore > 0 && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Category, categoryId, (category?.highlights ?? []).length + highlightsCount))}
+                onHighlightsSelectingTriggered={totalScore > 0 && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Category, categoryId, highlightsCount, true))}
                 onNameChanged={updateCategoryName}
                 onRemoved={category?.category !== "country" && removeCategory} />
             <HighlightCarouselAndPlaceMapToggle

@@ -30,13 +30,13 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
 
     const handleHighlightsSelectingTriggered = () => {
         showFormToast(
-            "Zadej počet highlightů k přidání:",
+            "Zadej počet highlightů pro tuto entitu:",
             [
                 { type: "number", required: true, min: 1 }
             ],
             highlightsCount => onHighlightsSelectingTriggered(Number(highlightsCount)),
-            "Přidávání highlightů bude brzy zahájeno",
-            "Při přidávání highlightů došlo k chybě"
+            "Vybírání highlightů bude brzy zahájeno",
+            "Při vybírání highlightů došlo k chybě"
         )
     }
 

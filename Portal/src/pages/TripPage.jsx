@@ -49,7 +49,7 @@ export default function TripPage() {
                 name={trip && trip.getFullName()}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={{ "Počet highlightů": trip?.highlights?.length }}
-                onHighlightsSelectingTriggered={places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Trip, tripId, (trip?.highlights ?? []).length + highlightsCount))}
+                onHighlightsSelectingTriggered={places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Trip, tripId, highlightsCount, true))}
                 onNameChanged={updateTripName}
                 onRemoved={removeTrip} />
             <HighlightCarouselAndPlaceMapToggle
