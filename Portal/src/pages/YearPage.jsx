@@ -47,6 +47,7 @@ export default function YearPage() {
             <PageHeader
                 name={year?.id}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
+                internalAttributes={{ "Počet highlightů": year?.highlights?.length }}
                 onHighlightsSelectingTriggered={yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Year, yearParameter, (year?.highlights ?? []).length + highlightsCount))}
             />
             <HighlightCarouselAndPlaceMapToggle

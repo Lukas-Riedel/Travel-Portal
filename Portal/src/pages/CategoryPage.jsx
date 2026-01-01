@@ -46,7 +46,8 @@ export default function CategoryPage() {
     const attributes = {
         "Kategorie": categoryCategories[category?.category] ?? category?.category,
         "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / places.length)}%`,
-        "Celkové skóre": totalScore
+        "Celkové skóre": totalScore,
+        "Počet highlightů": category?.highlights?.length
     }
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
