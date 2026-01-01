@@ -1,6 +1,6 @@
 import requests
 import time
-from typing import Final
+from typing import Final, Optional, List
 from src.core.logger import logger, transaction_id
 
 ACCESS_TOKEN_VALIDITY_MULTIPLIER: Final[float] = 0.95
@@ -34,12 +34,27 @@ class CoreClient:
         self.token = None
         self.token_expires_at = 0
 
-    def get_places(self) -> dict:
+    def get_trip(self, trip_id: str) -> dict:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/trips/{trip_id}"
+        response = self.session.get(url, **self._get_request_kwargs())
+        response.raise_for_status()
+        return response.json()
+
+    def get_places(self, trip_id: Optional[str] = None, include: Optional[str] = None) -> List[dict]:
         self._ensure_authenticated()
 
         url = f"{self._get_core_base_url()}/places"
 
-        response = self.session.get(url, **self._get_request_kwargs())
+        params = {}
+        if trip_id is not None:
+            params["tripId"] = trip_id
+            
+        if include is not None:
+            params["include"] = include
+
+        response = self.session.get(url, params=params, **self._get_request_kwargs())
         response.raise_for_status()
         return response.json()
 
@@ -63,7 +78,18 @@ class CoreClient:
         self._ensure_authenticated()
 
         url = f"{self._get_core_base_url()}/places/{place_id}/highlights"
-        response = self.session.post(url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs())
+        response = self.session.post(
+            url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
+        )
+        response.raise_for_status()
+
+    def create_trip_highlight(self, trip_id: str, photo_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/trips/{trip_id}/highlights"
+        response = self.session.post(
+            url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
+        )
         response.raise_for_status()
 
     def _ensure_authenticated(self) -> None:
@@ -75,7 +101,11 @@ class CoreClient:
                 "clientId": self.iam_backend_client_id,
                 "clientSecret": self.iam_backend_client_secret,
             }
-            response = requests.post(f"{self._get_iam_base_url()}/token", json=payload, **self._get_request_kwargs())
+            response = requests.post(
+                f"{self._get_iam_base_url()}/token",
+                json=payload,
+                **self._get_request_kwargs(),
+            )
             response.raise_for_status()
             data = response.json()
 

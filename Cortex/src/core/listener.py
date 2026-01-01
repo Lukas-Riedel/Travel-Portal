@@ -13,7 +13,7 @@ from pika.channel import Channel
 from types import FrameType
 
 
-class CortexListener:
+class EventListener:
     def __init__(
         self,
         handlers: List[BaseHandler],

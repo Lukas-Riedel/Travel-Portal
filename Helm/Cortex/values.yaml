@@ -6,8 +6,8 @@ cortex:
   threads: 2
   scaling:
     items: "5"
-    cooldown: 300
-    grace: 900
+    cooldown: 120
+    grace: 60
   model: clip-ViT-B-32
   # model: clip-ViT-L-14
   engine: cpu

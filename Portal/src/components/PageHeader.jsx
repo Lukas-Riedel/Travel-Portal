@@ -34,7 +34,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
             [
                 { type: "number", required: true, min: 1 }
             ],
-            onHighlightsSelectingTriggered,
+            highlightsCount => onHighlightsSelectingTriggered(Number(highlightsCount)),
             "Přidávání highlightů bude brzy zahájeno",
             "Při přidávání highlightů došlo k chybě"
         )

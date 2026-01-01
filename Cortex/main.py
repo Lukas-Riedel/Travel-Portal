@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from src.core.listener import CortexListener
+from src.core.listener import EventListener
 from src.core.core_client import CoreClient
 from src.core.distributed_cache import DistributedCache
 from src.core.ai_engine import AiEngine
@@ -42,7 +42,7 @@ def main():
         )
     ]
 
-    listener = CortexListener(
+    listener = EventListener(
         handlers,
         os.getenv("RMQ_HOST"),
         int(os.getenv("RMQ_PORT")),
