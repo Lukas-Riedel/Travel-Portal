@@ -1,6 +1,7 @@
 package cz.lriedel.agent.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.lriedel.agent.LoggingContext;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,10 +13,12 @@ import java.util.function.Supplier;
 public final class HttpEntityProvider {
 
     private final ObjectMapper objectMapper;
+    private final LoggingContext loggingContext;
     private final Supplier<String> tokenSupplier;
 
-    public HttpEntityProvider(ObjectMapper objectMapper, Supplier<String> tokenSupplier) {
+    public HttpEntityProvider(ObjectMapper objectMapper, LoggingContext loggingContext, Supplier<String> tokenSupplier) {
         this.objectMapper = objectMapper;
+        this.loggingContext = loggingContext;
         this.tokenSupplier = tokenSupplier;
     }
 
@@ -31,6 +34,7 @@ public final class HttpEntityProvider {
     private HttpHeaders getHttpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(tokenSupplier.get());
+        httpHeaders.set(LoggingContext.TRANSACTION_ID_HEADER, loggingContext.getTransactionId());
         return httpHeaders;
     }
 }

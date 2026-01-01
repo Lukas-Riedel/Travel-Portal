@@ -4,15 +4,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.lriedel.agent.client.HttpEntityProvider;
 import cz.lriedel.agent.client.ServiceClient;
-import cz.lriedel.agent.client.UserTokenSupplier;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.config.AbstractRabbitListenerContainerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -112,6 +117,28 @@ public class AgentApplicationConfiguration {
             configurationRepository.save(new Configuration(DEVICE_ID_CONFIGURATION_KEY, UUID.randomUUID().toString()));
         }
         return configurationRepository.findById(DEVICE_ID_CONFIGURATION_KEY).map(Configuration::getValue).orElseThrow();
+    }
+
+    @Bean
+    public BeanPostProcessor beanPostProcessor(LoggingContext loggingContext) {
+        return new BeanPostProcessor() {
+
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                if (bean instanceof AbstractRabbitListenerContainerFactory<?> factory) {
+                    MessagePostProcessor messagePostProcessor = message -> {
+                        MessageProperties messageProperties = message.getMessageProperties();
+                        String transactionId = messageProperties.getHeader(LoggingContext.TRANSACTION_ID_HEADER);
+                        if (StringUtils.isNotBlank(transactionId)) {
+                            loggingContext.setTransactionId(transactionId);
+                        }
+                        return message;
+                    };
+                    factory.setAfterReceivePostProcessors(messagePostProcessor);
+                }
+                return bean;
+            }
+        };
     }
 
     @Bean

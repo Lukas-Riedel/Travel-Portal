@@ -36,6 +36,7 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
 
     private static final String AGENT_CONFIGURATION_KEY = "agent";
 
+    private final LoggingContext loggingContext = new LoggingContext();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -52,7 +53,8 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
                 () -> iamClient.createUserToken(DEFAULT_USERNAME, DEFAULT_PASSWORD).accessToken(),
                 properties -> (Map<String, Object>) properties.get(AGENT_CONFIGURATION_KEY)));
         sources.addFirst(createPropertySource(INTERNAL_CONFIGURATION_PROPERTY_SOURCE, coreUrl,
-                () -> iamClient.createClientToken(environment.getProperty(SERVICE_IAM_CLIENT_ID), environment.getProperty(SERVICE_IAM_CLIENT_SECRET)).accessToken(),
+                () -> iamClient.createClientToken(environment.getProperty(SERVICE_IAM_CLIENT_ID),
+                        environment.getProperty(SERVICE_IAM_CLIENT_SECRET)).accessToken(),
                 Function.identity()));
     }
 
@@ -61,7 +63,7 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
         RestTemplate coreRestTemplate = new RestTemplateBuilder().rootUri(coreBaseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
         ServiceClient serviceClient = new ServiceClient(coreRestTemplate, new RetryTemplate(),
-                new HttpEntityProvider(objectMapper, tokenSupplier));
+                new HttpEntityProvider(objectMapper, loggingContext, tokenSupplier));
 
         return new MapPropertySource(name, propertiesExtractor.apply(serviceClient.getConfiguration()));
     }

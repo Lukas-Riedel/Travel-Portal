@@ -27,10 +27,10 @@ public class MozJpegService {
 
     private static final String ZIP_FILE_EXTENSION = ".zip";
 
-    private final Path mozjpegDirectory;
+    private final Path mozJpegDirectory;
 
     public MozJpegService(@Value("${agent.core.data.directory}") Path dataDirectory) {
-        this.mozjpegDirectory = dataDirectory.resolve(MOJZPEG_DIRECTORY_NAME);
+        this.mozJpegDirectory = dataDirectory.resolve(MOJZPEG_DIRECTORY_NAME);
     }
 
     @SneakyThrows
@@ -41,7 +41,7 @@ public class MozJpegService {
             return;
         }
 
-        Files.createDirectories(mozjpegDirectory);
+        Files.createDirectories(mozJpegDirectory);
         Path tempZip = Files.createTempFile(UUID.randomUUID().toString(), ZIP_FILE_EXTENSION);
 
         try (InputStream in = new URL(MOZJPEG_URL).openStream()) {
@@ -51,7 +51,7 @@ public class MozJpegService {
         try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(tempZip))) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
-                Path outPath = mozjpegDirectory.resolve(entry.getName());
+                Path outPath = mozJpegDirectory.resolve(entry.getName());
                 if (entry.isDirectory()) {
                     Files.createDirectories(outPath);
                 }
@@ -94,6 +94,6 @@ public class MozJpegService {
     }
 
     private Path getCJpegExeFilePath() {
-        return mozjpegDirectory.resolve("mozjpeg_4.1.1_x64").resolve("shared").resolve("tools").resolve("cjpeg.exe");
+        return mozJpegDirectory.resolve("mozjpeg_4.1.1_x64").resolve("shared").resolve("tools").resolve("cjpeg.exe");
     }
 }
