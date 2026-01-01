@@ -100,6 +100,7 @@
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {
                     if ($date->getTrip() === null) {
+                        // TODO: This will consider the UTC midnight as the start of the day. Not the timezone set in the PHP config.
                         $currentTimestamp = $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS);
                         while ($currentTimestamp + CommonConstants::FITNESS_RECORD_DURATION_SECONDS
                             <= min(time(), $date->getEnd() - ($date->getEnd() % CommonConstants::ONE_DAY_SECONDS) + CommonConstants::ONE_DAY_SECONDS)) {

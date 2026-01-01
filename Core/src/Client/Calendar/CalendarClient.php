@@ -167,6 +167,7 @@
                         null,
                         null,
                         isset($event["DESCRIPTION"]) ? $this->getEventAttributes($event["DESCRIPTION"]) : array(),
+                        // TODO: This doesn't work for days switching from/to DST.
                         ($this->getEventTimestamp($event["DTEND"]) - $this->getEventTimestamp($event["DTSTART"])) % CommonConstants::ONE_DAY_SECONDS === 0
                     );
                 }

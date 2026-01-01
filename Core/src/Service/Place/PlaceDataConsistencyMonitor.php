@@ -42,6 +42,7 @@
                 time(), null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
+                // TODO: This doesn't work for days switching from/to DST.
                 fn($date) => $date->getTrip() !== null && ($date->getEnd() - $date->getStart()) % CommonConstants::ONE_DAY_SECONDS === 0)), $relevantPlaces);
             foreach ($placesWithDatesWithoutTime as &$placeWithDatesWithoutTime) {
                 foreach ($placeWithDatesWithoutTime->getDates() as &$dateWithoutTime) {

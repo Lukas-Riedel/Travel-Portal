@@ -61,10 +61,7 @@
                     $fitness = array();
                     if (in_array(YearIncludedEntity::Fitness->value, $includedEntities)) {
                         $startOfDay = mktime(0, 0, 0, 1, 1, $yearRow["id"]);
-                        $startOfDay -= $startOfDay % CommonConstants::ONE_DAY_SECONDS;
-
                         $endOfYear = mktime(0, 0, 0, 1, 1, $yearRow["id"] + 1);
-                        $endOfYear -= $endOfYear % CommonConstants::ONE_DAY_SECONDS;
 
                         while ($startOfDay < $endOfYear) {
                             $fitness[] = $this->fitnessService->getFitnessRecordForInterval($startOfDay, $startOfDay + CommonConstants::ONE_DAY_SECONDS);
