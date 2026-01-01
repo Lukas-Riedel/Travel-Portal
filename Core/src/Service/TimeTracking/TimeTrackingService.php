@@ -44,19 +44,19 @@
             $this->timeTrackingMapper->deleteUsedOvertimeEvents();
         }
 
-        public function resetOpeningBalances(string $beginningOfYearDate) : void {
+        public function resetOpeningBalances(int $beginningOfYearTimestamp) : void {
             foreach ($this->configurationService->getConfigurationEntry("timeTracking")["timeOffHours"] as $eventType => $openingBalance) {
                 $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);                
-                $this->transactionManager->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearDate) {
+                $this->transactionManager->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearTimestamp) {
                     $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 
                     if ($wasReset) {    
                         if ($carryOverBalance !== null && $carryOverBalance > 0) {
-                            $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearDate);
+                            $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearTimestamp);
                         }
                         
                         if ($openingBalance > 0) {
-                            $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearDate);
+                            $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearTimestamp);
                         }
                     }
                 });

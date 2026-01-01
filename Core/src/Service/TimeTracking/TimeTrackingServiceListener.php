@@ -8,7 +8,7 @@
 
     class TimeTrackingServiceListener {
         
-        private const BEGINNING_OF_YEAR_DATE_FORMAT = "1.1.%s";
+        private const BEGINNING_OF_YEAR_DATE_FORMAT = "1.1.%s 3:00 AM";
 
         private const RESET_OPENING_BALANCES_ACTION_NAME = "RESET_OPENING_BALANCES";
         
@@ -35,7 +35,7 @@
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
-            $beginningOfCurrentYearTimestamp = strtotime($this->getBeginningOfCurrentYear());
+            $beginningOfCurrentYearTimestamp = $this->getBeginningOfCurrentYear();
             $intervalSelector = fn($lastTriggered) => $lastTriggered < $beginningOfCurrentYearTimestamp ? 0 : PHP_INT_MAX;
             if ($this->scheduler->requestDynamicExecution(self::RESET_OPENING_BALANCES_ACTION_NAME, $intervalSelector)) {
                 $this->eventPublisher->publish(Event::VacationReset());                  
@@ -46,8 +46,8 @@
             }
         }
 
-        private function getBeginningOfCurrentYear() : string {
-            return sprintf(self::BEGINNING_OF_YEAR_DATE_FORMAT, date("Y"));
+        private function getBeginningOfCurrentYear() : int {
+            return strtotime(sprintf(self::BEGINNING_OF_YEAR_DATE_FORMAT, date("Y")));
         }
     }
 ?>
