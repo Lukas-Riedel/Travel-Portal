@@ -68,7 +68,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                     }
                 }
 
-                if (days[i].getDate() === 1 && days[i].getMonth() === 0 && openingTimeOffHours) {
+                if (days[i].getDate() === 1 && days[i].getMonth() === 0 && days[i].getFullYear() !== new Date().getFullYear() && openingTimeOffHours) {
                     currentTimeOffHoursBalance += openingTimeOffHours
                 }
 
