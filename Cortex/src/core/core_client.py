@@ -82,6 +82,13 @@ class CoreClient:
             url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
         )
         response.raise_for_status()
+        
+    def remove_place_highlight(self, place_id: str, highlight_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/places/{place_id}/highlights/{highlight_id}"
+        response = self.session.delete(url, **self._get_request_kwargs())
+        response.raise_for_status()
 
     def create_trip_highlight(self, trip_id: str, photo_id: str) -> None:
         self._ensure_authenticated()
@@ -90,6 +97,13 @@ class CoreClient:
         response = self.session.post(
             url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
         )
+        response.raise_for_status()
+        
+    def remove_trip_highlight(self, trip_id: str, highlight_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/trips/{trip_id}/highlights/{highlight_id}"
+        response = self.session.delete(url, **self._get_request_kwargs())
         response.raise_for_status()
 
     def _ensure_authenticated(self) -> None:

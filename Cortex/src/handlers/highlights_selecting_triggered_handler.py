@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from src.core.logger import logger
 from src.handlers.base_handler import BaseHandler
@@ -10,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 CONTENT_QUERY: Final[str] = (
     "Famous landmarks and iconic monuments, street life, cinematic soft lighting, high quality, sunny weather, "
-    "clear blue sky, breathtaking composition, beautiful landscapes."
+    "clear blue sky, breathtaking composition, beautiful landscapes, unique formations."
 )
 
 PLACE_CONTENT_QUERY_FORMAT: Final[str] = (
@@ -43,13 +44,18 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     def handle(self, args: dict) -> None:
         entity_id = args.get("entityId")
         highlights_count = int(args.get("highlightsCount"))
+        highlights_removal_allowed = args.get("highlightsRemovalAllowed", False)
 
         match args.get("highlightType"):
             case "place":
-                self._handle_place(entity_id, highlights_count)
+                self._handle_place(
+                    entity_id, highlights_count, highlights_removal_allowed
+                )
                 return
             case "trip":
-                self._handle_trip(entity_id, highlights_count)
+                self._handle_trip(
+                    entity_id, highlights_count, highlights_removal_allowed
+                )
                 return
             case "category":
                 # TODO: Implement.
@@ -62,39 +68,63 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                     f"Unknown highlight type '{args.get('highlightType')}' encountered."
                 )
 
-    def _handle_trip(self, trip_id: str, highlights_count: int) -> None:
+    def _handle_trip(
+        self, trip_id: str, highlights_count: int, highlights_removal_allowed: bool
+    ) -> None:
         trip = self.core_client.get_trip(trip_id)
         trip_places = self.core_client.get_places(trip_id=trip_id, include="dates")
 
         selected_photo_ids = self._handle_entity(
-            f"{trip.get('name')} {trip.get('year')}",
-            highlights_count,
-            trip_places,
-            trip.get("highlights", []),
-            CONTENT_QUERY,
+            entity_name=f"{trip.get('name')} {trip.get('year')}",
+            highlights_count=highlights_count,
+            places=trip_places,
+            existing_highlights=trip.get("highlights", []),
+            content_query=CONTENT_QUERY,
+            main_highlight_photo_id=trip.get("mainHighlight", {})
+            .get("photo", {})
+            .get("id"),
+            highlights_removal_allowed=highlights_removal_allowed,
         )
 
-        if selected_photo_ids is not None:
-            for selected_photo_id in selected_photo_ids:
-                self.core_client.create_trip_highlight(trip_id, selected_photo_id)
+        for h_id in self._get_highlight_ids_to_remove(
+            trip.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.remove_trip_highlight(trip_id, h_id)
 
-    def _handle_place(self, place_id: str, highlights_count: int) -> None:
+        for p_id in self._get_photo_ids_to_create(
+            trip.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.create_trip_highlight(trip_id, p_id)
+
+    def _handle_place(
+        self, place_id: str, highlights_count: int, highlights_removal_allowed: bool
+    ) -> None:
         place = self.core_client.get_place(place_id)
         content_query = PLACE_CONTENT_QUERY_FORMAT.format(
             place_name=place.get("name"), country_name=place.get("country")
         )
 
         selected_photo_ids = self._handle_entity(
-            place.get("name"),
-            highlights_count,
-            [place],
-            place.get("highlights", []),
-            content_query,
+            entity_name=place.get("name"),
+            highlights_count=highlights_count,
+            places=[place],
+            existing_highlights=place.get("highlights", []),
+            content_query=content_query,
+            main_highlight_photo_id=place.get("mainHighlight", {})
+            .get("photo", {})
+            .get("id"),
+            highlights_removal_allowed=highlights_removal_allowed,
         )
 
-        if selected_photo_ids is not None:
-            for selected_photo_id in selected_photo_ids:
-                self.core_client.create_place_highlight(place_id, selected_photo_id)
+        for h_id in self._get_highlight_ids_to_remove(
+            place.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.remove_place_highlight(place_id, h_id)
+
+        for p_id in self._get_photo_ids_to_create(
+            place.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.create_place_highlight(place_id, p_id)
 
     def _handle_entity(
         self,
@@ -103,15 +133,36 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         places: List[dict],
         existing_highlights: List[dict],
         content_query: str,
+        main_highlight_photo_id: Optional[str],
+        highlights_removal_allowed: bool,
     ) -> Optional[List[str]]:
         try:
-            # Preprocess photos in all albums.
+            delta = highlights_count - len(existing_highlights)
+            if (not highlights_removal_allowed and delta < 0) or delta == 0:
+                logger.warning(
+                    f"There are already {len(existing_highlights)} highlights for {entity_name}. No new highlights will be created."
+                )
+                return None
+
+            # Preprocess relevant photos.
+            width, height = get_thumbnail_size()
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 preprocessed_photos = list(
                     filter(
                         None,
                         executor.map(
-                            self._preprocess_photo, self._get_all_photos(places)
+                            self._preprocess_photo,
+                            (
+                                [
+                                    {**p, "url": f"{p['url']}=w{width}-h{height}"}
+                                    for p in self._get_all_photos(places)
+                                ]
+                                if delta > 0
+                                else [
+                                    highlight.get("photo")
+                                    for highlight in existing_highlights
+                                ]
+                            ),
                         ),
                     )
                 )
@@ -122,42 +173,48 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 )
                 return None
 
-            if len(existing_highlights) >= highlights_count:
-                logger.warning(
-                    f"There are already {len(existing_highlights)} highlights for {entity_name}. No new highlights will be created."
+            if delta < 0:
+                logger.debug(
+                    f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (removing {(-1) * delta} highlights)..."
                 )
-                return None
-
-            logger.debug(
-                f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (selecting {highlights_count - len(existing_highlights)} highlights)..."
-            )
+            else:
+                logger.debug(
+                    f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (creating {delta} highlights)..."
+                )
 
             # Compute embeddings for all photos, select embeddings for already existing highlights.
             img_embeddings = self.ai_engine.get_image_embedding(
                 [p.get("img") for p in preprocessed_photos]
             )
 
-            existing_highlight_photo_ids = [
-                h.get("photo").get("id") for h in existing_highlights
-            ]
+            # Compute score for all photos and prepare a sorted list of highlight candidates.
+            scores = self._calculate_scores(
+                content_query, img_embeddings, preprocessed_photos
+            )
+
+            existing_highlight_photo_ids = (
+                [h.get("photo").get("id") for h in existing_highlights]
+                if delta > 0
+                else (
+                    [main_highlight_photo_id]
+                    if main_highlight_photo_id is not None
+                    else []
+                )
+            )
+
+            selected_photo_ids = existing_highlight_photo_ids
             selected_embeddings = self._get_existing_image_embeddings(
                 existing_highlight_photo_ids, img_embeddings, preprocessed_photos
             )
 
+            skipped_indices = []
             candidate_indices = [
                 i
                 for i, p in enumerate(preprocessed_photos)
                 if p.get("id") not in existing_highlight_photo_ids
             ]
-            skipped_indices = []
-
-            # Compute score for all photos and prepare a sorted list of highlight candidates.
-            scores = self._calculate_scores(
-                content_query, img_embeddings, preprocessed_photos
-            )
             candidate_indices.sort(key=lambda i: scores[i], reverse=True)
 
-            selected_photo_ids = []
             for candidate_idx in candidate_indices:
                 if len(selected_embeddings) >= highlights_count:
                     break
@@ -178,7 +235,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 # If the highlight candidate passed the similarity filter, create the highlight and write down its embeddings for the next similarity filter iteration.
                 if not is_too_similar:
                     logger.debug(
-                        f"Creating a unique highlight with score {scores[candidate_idx]} for {entity_name} ({preprocessed_photos[candidate_idx].get('url')})..."
+                        f"Selecting a unique highlight with score {scores[candidate_idx]} for {entity_name} ({preprocessed_photos[candidate_idx].get('url')})..."
                     )
 
                     selected_photo_ids.append(
@@ -194,10 +251,10 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                     break
 
                 logger.debug(
-                    f"Creating a similar highlight with score {scores[skipped_idx]} for {entity_name} ({preprocessed_photos[skipped_idx].get('url')})..."
+                    f"Selecting a similar highlight with score {scores[skipped_idx]} for {entity_name} ({preprocessed_photos[skipped_idx].get('url')})..."
                 )
 
-                selected_photo_ids.append(preprocessed_photos[candidate_idx].get("id"))
+                selected_photo_ids.append(preprocessed_photos[skipped_idx].get("id"))
                 selected_embeddings.append(img_embeddings[skipped_idx])
 
             return selected_photo_ids
@@ -210,8 +267,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
 
     @staticmethod
     def _preprocess_photo(p: dict) -> Optional[dict]:
-        width, length = get_thumbnail_size()
-        img = get_thumbnail(f"{p['url']}=w{width}-h{length}")
+        img = get_thumbnail(p["url"])
         if img is None:
             return None
 
@@ -294,3 +350,28 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                     all_photos.extend(photos)
 
         return all_photos
+
+    def _get_photo_ids_to_create(
+        self, existing_highlights: List[dict], selected_photo_ids: Optional[List[str]]
+    ) -> List[str]:
+        if selected_photo_ids is None:
+            return []
+
+        existing_photo_ids = {h.get("photo").get("id") for h in existing_highlights}
+        return [
+            photo_id
+            for photo_id in selected_photo_ids
+            if photo_id not in existing_photo_ids
+        ]
+
+    def _get_highlight_ids_to_remove(
+        self, existing_highlights: List[dict], selected_photo_ids: Optional[List[str]]
+    ) -> List[str]:
+        if selected_photo_ids is None:
+            return []
+
+        return [
+            highlight.get("id")
+            for highlight in existing_highlights
+            if highlight.get("photo").get("id") not in selected_photo_ids
+        ]

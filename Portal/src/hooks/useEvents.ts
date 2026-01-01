@@ -20,8 +20,8 @@ export const useEvents = (eventType: EventType): UseEventsResult => {
 
     return {
         events,
-        publishHighlightsSelectingTriggeredEvent: (highlightType: HighlightType, entityId: string, highlightsCount: number, allowHighlightsRemoval: boolean) =>
-            createEvent(EventType.HighlightsSelectingTriggered, { highlightType, entityId, highlightsCount, allowHighlightsRemoval }),
+        publishHighlightsSelectingTriggeredEvent: (highlightType: HighlightType, entityId: string, highlightsCount: number, highlightsRemovalAllowed: boolean) =>
+            createEvent(EventType.HighlightsSelectingTriggered, { highlightType, entityId, highlightsCount, highlightsRemovalAllowed }),
         publishPhotosUploadingTriggeredEvent: (agentId: string, placeId: string, placeName: string, path: string, albumId?: string, timestamp?: number, mainPhotoPosition?: number) =>
             createEvent(EventType.PhotosUploadingTriggered, { agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition }),
         publishPhotoReplacingTriggeredEvent: (agentId: string, placeId: string, albumId: string, placeName: string, replacedPhotoId: string, path: string) =>
