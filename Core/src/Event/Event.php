@@ -114,7 +114,7 @@
             int $scheduledArrival, int $actualArrival, string $timezone) : Event {
             return (new CompositeEvent(Event::getEventName(), array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture, 
                 "scheduledArrival" => $scheduledArrival, "actualArrival" => $actualArrival, "timezone" => $timezone)))
-                ->addCloudMessagingEvent(array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addCloudMessagingEvent(array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX))
                 ->addWorkerEvent(EventPriority::Medium);
         }
 

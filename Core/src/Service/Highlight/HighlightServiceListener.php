@@ -27,7 +27,8 @@
         }
 
         public function onHighlightRemoved(mixed $message) : void {
-            if ($message["highlightType"] === HighlightType::Place->value || $message["highlightType"] === HighlightType::Trip->value) {
+            // Removing the highlight also removes its identifier if it is no longer used by any entity.
+            if ($this->highlightService->getHighlight($message["highlightId"]) === null) {
                 $this->highlightService->deleteHighlightObject($message["highlightId"]);
             }
         }

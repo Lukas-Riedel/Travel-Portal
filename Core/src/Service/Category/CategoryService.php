@@ -15,8 +15,6 @@
         private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
         private readonly CategoryMapper $categoryMapper;
-
-        private readonly ConfigurationService $configurationService;
         
         private readonly EventPublisher $eventPublisher;
 
@@ -29,7 +27,6 @@
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
             HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $configurationService);
-            $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
         }

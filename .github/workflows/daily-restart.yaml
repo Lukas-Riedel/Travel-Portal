@@ -1,0 +1,20 @@
+name: Daily Deployment Restart
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+jobs:
+  restart:
+    name: Restart Deployment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Set Up Kubectl
+        uses: azure/setup-kubectl@v3
+      - name: Rollout Core Restart
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl rollout restart deployment core-worker

@@ -1,4 +1,4 @@
-import sys
+import math
 from datetime import datetime
 from src.core.logger import logger
 from src.handlers.base_handler import BaseHandler
@@ -77,7 +77,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         selected_photo_ids = self._handle_entity(
             entity_name=f"{trip.get('name')} {trip.get('year')}",
             highlights_count=highlights_count,
-            places=trip_places,
+            places=[p for p in trip_places if not p.get("layover")],
             existing_highlights=trip.get("highlights", []),
             content_query=CONTENT_QUERY,
             main_highlight_photo_id=trip.get("mainHighlight", {})
@@ -138,7 +138,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     ) -> Optional[List[str]]:
         try:
             delta = highlights_count - len(existing_highlights)
-            if (not highlights_removal_allowed and delta < 0) or delta == 0:
+            if (
+                (not highlights_removal_allowed and delta < 0)
+                or delta == 0
+                or highlights_count == 0
+            ):
                 logger.warning(
                     f"There are already {len(existing_highlights)} highlights for {entity_name}. No new highlights will be created."
                 )
@@ -189,7 +193,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
 
             # Compute score for all photos and prepare a sorted list of highlight candidates.
             scores = self._calculate_scores(
-                content_query, img_embeddings, preprocessed_photos
+                content_query, img_embeddings, preprocessed_photos, places
             )
 
             existing_highlight_photo_ids = (
@@ -206,6 +210,18 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             selected_embeddings = self._get_existing_image_embeddings(
                 existing_highlight_photo_ids, img_embeddings, preprocessed_photos
             )
+            selected_place_ids = {}
+
+            total_place_score = sum(place.get("score", 1) for place in places)
+            fair_caps = {
+                place.get("id"): max(
+                    1,
+                    math.ceil(
+                        (place.get("score", 1) / total_place_score) * highlights_count
+                    ),
+                )
+                for place in places
+            }
 
             skipped_indices = []
             candidate_indices = [
@@ -219,6 +235,14 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 if len(selected_embeddings) >= highlights_count:
                     break
 
+                photo_place_id = preprocessed_photos[candidate_idx].get("placeId")
+                if photo_place_id is None:
+                    places = self.core_client.get_places(
+                        photo_id=preprocessed_photos[candidate_idx].get("id")
+                    )
+                    if len(places) == 1:
+                        photo_place_id = places[0].get("id")
+
                 # Evaluate whether the current highlight candidate is "too similar" to already existing highlights.
                 is_too_similar = False
                 if selected_embeddings:
@@ -226,7 +250,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                         img_embeddings[candidate_idx], selected_embeddings
                     )
 
-                    if max_similarity > self.similarity_threshold:
+                    if max_similarity > self.similarity_threshold or (
+                        photo_place_id is not None
+                        and selected_place_ids.get(photo_place_id, 0)
+                        >= fair_caps.get(photo_place_id, 1)
+                    ):
                         is_too_similar = True
                         logger.debug(
                             f"The photo with score {scores[candidate_idx]} is too similar ({int(100.0 * max_similarity)}%) to already selected highlights for {entity_name} and will therefore be skipped ({preprocessed_photos[candidate_idx].get('url')})."
@@ -242,6 +270,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                         preprocessed_photos[candidate_idx].get("id")
                     )
                     selected_embeddings.append(img_embeddings[candidate_idx])
+                    selected_place_ids[photo_place_id] = (
+                        selected_place_ids.get(photo_place_id, 0) + 1
+                    )
                 else:
                     skipped_indices.append(candidate_idx)
 
@@ -256,6 +287,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
 
                 selected_photo_ids.append(preprocessed_photos[skipped_idx].get("id"))
                 selected_embeddings.append(img_embeddings[skipped_idx])
+                selected_place_ids[photo_place_id] = (
+                    selected_place_ids.get(photo_place_id, 0) + 1
+                )
 
             return selected_photo_ids
         except Exception as e:
@@ -265,6 +299,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             )
             return None
 
+    def get_handled_event_names(self) -> List[str]:
+        return ["HighlightsSelectingTriggered"]
+
     @staticmethod
     def _preprocess_photo(p: dict) -> Optional[dict]:
         img = get_thumbnail(p["url"])
@@ -272,9 +309,6 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             return None
 
         return {**p, "img": img}
-
-    def get_handled_event_names(self) -> List[str]:
-        return ["HighlightsSelectingTriggered"]
 
     def _get_existing_image_embeddings(
         self,
@@ -295,6 +329,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         content_query: str,
         img_embeddings: Tensor,
         preprocessed_photos: List[dict],
+        places: List[dict],
     ) -> List[Tensor]:
         style_vector = self._get_style_vector()
         content_emb = self.ai_engine.get_text_embedding(content_query)
@@ -315,6 +350,10 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         max_year = max(years) if years else 1
         year_range = max_year - min_year if max_year > min_year else 1
 
+        main_highlight_photo_ids = main_ids = {
+            p.get("mainHighlight", {}).get("photo", {}).get("id") for p in places if p.get("mainHighlight")
+        }
+
         final_scores = []
         for i, p in enumerate(preprocessed_photos):
             base_quality = float(scores[i])
@@ -322,7 +361,10 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 (datetime.fromtimestamp(p.get("timestamp")).year - min_year)
                 / year_range
             ) * self.age_coeff
-            final_scores.append(base_quality + time_bonus)
+            main_highlight_bonus = (
+                base_quality if p.get("id") in main_highlight_photo_ids else 0.0
+            )
+            final_scores.append(base_quality + time_bonus + main_highlight_bonus)
 
         return final_scores
 
@@ -347,7 +389,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                     photos = self.core_client.get_place_album_photos(
                         place.get("id"), album_id
                     )
-                    all_photos.extend(photos)
+                    all_photos.extend(
+                        [{**p, "placeId": place.get("id")} for p in photos]
+                    )
 
         return all_photos
 

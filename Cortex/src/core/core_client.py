@@ -42,7 +42,7 @@ class CoreClient:
         response.raise_for_status()
         return response.json()
 
-    def get_places(self, trip_id: Optional[str] = None, include: Optional[str] = None) -> List[dict]:
+    def get_places(self, trip_id: Optional[str] = None, photo_id: Optional[str] = None, include: Optional[str] = None) -> List[dict]:
         self._ensure_authenticated()
 
         url = f"{self._get_core_base_url()}/places"
@@ -50,6 +50,9 @@ class CoreClient:
         params = {}
         if trip_id is not None:
             params["tripId"] = trip_id
+            
+        if photo_id is not None:
+            params["photoId"] = photo_id
             
         if include is not None:
             params["include"] = include

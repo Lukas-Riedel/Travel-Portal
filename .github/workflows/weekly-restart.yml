@@ -1,11 +1,11 @@
-name: Weekly Deployment Respin
+name: Weekly Deployment Restart
 on:
   schedule:
     - cron: '0 3 * * 5'
   workflow_dispatch:
 jobs:
-  respin:
-    name: Respin Deployment
+  restart:
+    name: Restart Deployment
     runs-on: ubuntu-latest
     permissions:
       contents: read

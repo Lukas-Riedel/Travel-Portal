@@ -41,7 +41,7 @@ export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => 
 
 async function fetchAllPublicHolidays(countryCode: string, maxYear?: number): Promise<PublicHolidaysResponse> {
     const currentYear = getCurrentYear()
-    const years = [...Array((maxYear ?? currentYear) - currentYear + 1)].map((_, i) => currentYear + i)
+    const years = [...Array((maxYear ?? currentYear) - currentYear + 2)].map((_, i) => currentYear - 1 + i)
     return (await Promise.all(years.map(year => fetchPublicHolidays(year, countryCode)))).flat()
 }
 
