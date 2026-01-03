@@ -16,16 +16,16 @@
         
         private readonly MessagingClient $messagingClient;
         private readonly CloudMessagingClient $cloudMessagingClient;
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly string $workerQueueName;
         private readonly string $cortexQueueName;
 
         public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient,
-            CacheClient $cacheClient, string $workerQueueName, string $cortexQueueName) {
+            CacheClient $distributedCacheClient, string $workerQueueName, string $cortexQueueName) {
             $this->messagingClient = $messagingClient;
             $this->cloudMessagingClient = $cloudMessagingClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->workerQueueName = $workerQueueName;
             $this->cortexQueueName = $cortexQueueName;
         }
@@ -35,7 +35,7 @@
         }
 
         public function publishStoredEvent(string $eventId) : ?string {
-            $rawEvent = $this->cacheClient->get(sprintf(self::WEBHOOK_EVENT_CACHE_KEY_FORMAT, $eventId));
+            $rawEvent = $this->distributedCacheClient->get(sprintf(self::WEBHOOK_EVENT_CACHE_KEY_FORMAT, $eventId));
             if ($rawEvent === null) {
                 throw new \RuntimeException("The stored event with the identifier '$eventId' does not exist.");
             }
@@ -61,7 +61,7 @@
         // TODO: Go through all events and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
         public function publish(Event $event, ?int $publishTimestamp = null) : ?string {
             if ($publishTimestamp !== null) {
-                $this->cacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->add($event, $publishTimestamp);
+                $this->distributedCacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->add($event, $publishTimestamp);
                 return null;
             }
 
@@ -114,7 +114,7 @@
             if ($event instanceof WebhookEvent) {
                 $eventId = Uuid::uuid4()->toString();
                 $eventCacheKey = sprintf(self::WEBHOOK_EVENT_CACHE_KEY_FORMAT, $eventId);
-                $this->cacheClient->set($eventCacheKey, $event, $event->getTtl());
+                $this->distributedCacheClient->set($eventCacheKey, $event, $event->getTtl());
                 return $eventId;
             }
 

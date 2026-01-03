@@ -18,12 +18,12 @@
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly GoogleClient $googleClient;
 
-        public function __construct(CacheClient $cacheClient, GoogleClient $googleClient) {
-            $this->cacheClient = $cacheClient;
+        public function __construct(CacheClient $distributedCacheClient, GoogleClient $googleClient) {
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->googleClient = $googleClient;
         }
 
@@ -69,7 +69,7 @@
         }
 
         private function tryGetCachedLocation(string $address) : ?Location {
-            $location = $this->cacheClient->get($this->getAddressCacheKey($address), self::ADDRESS_CACHE_TTL);
+            $location = $this->distributedCacheClient->get($this->getAddressCacheKey($address), self::ADDRESS_CACHE_TTL);
             if ($location === null) {
                 return null;
             }
@@ -78,7 +78,7 @@
         }
 
         private function tryGetCachedAddress(float $latitude, float $longitude) : ?Address {
-            $address = $this->cacheClient->get($this->getLocationCacheKey($latitude, $longitude), self::LOCATION_CACHE_TTL);
+            $address = $this->distributedCacheClient->get($this->getLocationCacheKey($latitude, $longitude), self::LOCATION_CACHE_TTL);
             if ($address === null) {
                 return null;
             }
@@ -115,7 +115,7 @@
             }
 
             $convertedLocation = new Location($country, $latitude, $longitude, $timezone);
-            $this->cacheClient->set($this->getAddressCacheKey($address), $convertedLocation, self::ADDRESS_CACHE_TTL);
+            $this->distributedCacheClient->set($this->getAddressCacheKey($address), $convertedLocation, self::ADDRESS_CACHE_TTL);
 
             return $convertedLocation;
         }
@@ -134,7 +134,7 @@
             $address = $this->googleClient->getAddress($latitude, $longitude);
 
             $convertedAddress = new Address($address);
-            $this->cacheClient->set($this->getLocationCacheKey($latitude, $longitude), $convertedAddress, self::LOCATION_CACHE_TTL);
+            $this->distributedCacheClient->set($this->getLocationCacheKey($latitude, $longitude), $convertedAddress, self::LOCATION_CACHE_TTL);
 
             return $convertedAddress;
         }

@@ -44,7 +44,7 @@
         private const FOLDER_LOCK_FORMAT = "GoogleClient:Lock:Folder:%s";
         private const FOLDER_LOCK_TTL = 10;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
         private readonly HttpClient $httpClient;
 
         private readonly Logger $logger;
@@ -54,8 +54,8 @@
         private ?ConfigurationService $configurationService;
         private ?AuthenticationService $authenticationService;
 
-        public function __construct(CacheClient $cacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey) {
-            $this->cacheClient = $cacheClient;
+        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey) {
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->httpClient = $httpClient;
             $this->logger = $logger;
             $this->googleMapsApiKey = $googleMapsApiKey;
@@ -152,7 +152,7 @@
                 return $folder;
             }
 
-            $this->cacheClient->lock(sprintf(self::FOLDER_LOCK_FORMAT, $name), self::FOLDER_LOCK_TTL, 
+            $this->distributedCacheClient->lock(sprintf(self::FOLDER_LOCK_FORMAT, $name), self::FOLDER_LOCK_TTL, 
                 function() use(&$name, &$folderId, &$folder) {
                     $folder = $this->getFolder($name, $folderId);
                     if ($folder === null) {

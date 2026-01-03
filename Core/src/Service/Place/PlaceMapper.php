@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Place;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
@@ -13,6 +14,9 @@
     use Core\Client\Database\DatabaseClient;
 
     class PlaceMapper {
+
+        private const COUNTRY_NAMES_CACHE_KEY = "PlaceMapper:CountryNames";
+        private const COUNTRY_NAMES_CACHE_TTL = CommonConstants::ONE_HOUR_SECONDS;
 
         private const VISITED_CATEGORIES_TEMPORARY_TABLE_NAME = "visited_categories";
 
@@ -27,11 +31,10 @@
         private readonly HighlightService $highlightService;
         private readonly NoteService $noteService;
 
-        // TODO: Evaluate the benefit of having this cache as a field (instead of a local variable).
-        private array $countryNames = array();
+        private readonly CacheClient $memoryCacheClient;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,
-            ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService, NoteService $noteService) {
+            ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService, NoteService $noteService, CacheClient $memoryCacheClient) {
             $this->databaseClient = $databaseClient;
             $this->categoryService = $categoryService;
             $this->labelService = $labelService;
@@ -40,6 +43,7 @@
             $this->highlightService = $highlightService;
             $this->configurationService = $configurationService;
             $this->noteService = $noteService;
+            $this->memoryCacheClient = $memoryCacheClient;
         }
 
         public function selectDatesForTripAndCountry(string $tripId, string $countryCategoryId) : array {
@@ -1003,13 +1007,18 @@
         }
 
         private function getCountryName(?string $countryCategoryId) : ?string {
-            if (empty($this->countryNames)) {
-                foreach ($this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array()) as &$country) {
-                    $this->countryNames[$country->getId()] = $country->getName();
-                }
+            $cachedCountryNames = $this->memoryCacheClient->get(self::COUNTRY_NAMES_CACHE_KEY);
+            if ($cachedCountryNames !== null) {
+                return $cachedCountryNames[$countryCategoryId] ?? null;
             }
 
-            return $this->countryNames[$countryCategoryId] ?? null;
+            $countryNames = array();
+            foreach ($this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array()) as &$country) {
+                $countryNames[$country->getId()] = $country->getName();
+            }
+
+            $this->memoryCacheClient->set(self::COUNTRY_NAMES_CACHE_KEY, $countryNames, self::COUNTRY_NAMES_CACHE_TTL);
+            return $countryNames[$countryCategoryId] ?? null;
         }
     }
 ?>

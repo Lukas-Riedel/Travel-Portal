@@ -23,16 +23,16 @@
         private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
 
         private readonly HttpClient $httpClient;
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly string $iamBackendClientId;
         private readonly string $iamBackendClientSecret;
         private readonly string $iamHost;
         private readonly string $iamPort;
 
-        public function __construct(HttpClient $httpClient, CacheClient $cacheClient, string $iamBackendClientId, string $iamBackendClientSecret, string $host, string $port) {
+        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, string $iamBackendClientId, string $iamBackendClientSecret, string $host, string $port) {
             $this->httpClient = $httpClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->iamBackendClientId = $iamBackendClientId;
             $this->iamBackendClientSecret = $iamBackendClientSecret;
             $this->iamHost = $host;
@@ -51,7 +51,7 @@
         }
 
         public function getGoogleApiAccessToken() : string {
-            $cachedGoogleApiAccessToken = $this->cacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
+            $cachedGoogleApiAccessToken = $this->distributedCacheClient->get(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedGoogleApiAccessToken !== null) {
                 return $cachedGoogleApiAccessToken;
             }
@@ -63,12 +63,12 @@
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            $this->cacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
+            $this->distributedCacheClient->set(self::GOOGLE_API_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
             return $response["accessToken"];
         }
 
         public function getGoogleFcmAccessToken() : string {
-            $cachedGoogleFcmAccessToken = $this->cacheClient->get(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY);
+            $cachedGoogleFcmAccessToken = $this->distributedCacheClient->get(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedGoogleFcmAccessToken !== null) {
                 return $cachedGoogleFcmAccessToken;
             }
@@ -80,12 +80,12 @@
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            $this->cacheClient->set(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
+            $this->distributedCacheClient->set(self::GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
             return $response["accessToken"];
         }
 
         public function getIbmCloudAccessToken() : string {
-            $cachedIbmCloudAccessToken = $this->cacheClient->get(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY);
+            $cachedIbmCloudAccessToken = $this->distributedCacheClient->get(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedIbmCloudAccessToken !== null) {
                 return $cachedIbmCloudAccessToken;
             }
@@ -97,12 +97,12 @@
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            $this->cacheClient->set(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
+            $this->distributedCacheClient->set(self::IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
             return $response["accessToken"];
         }
 
         private function getServiceAccessToken() : string {
-            $cachedServiceAccessToken = $this->cacheClient->get(self::SERVICE_ACCESS_TOKEN_CACHE_KEY);
+            $cachedServiceAccessToken = $this->distributedCacheClient->get(self::SERVICE_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedServiceAccessToken !== null) {
                 return $cachedServiceAccessToken;
             }
@@ -118,7 +118,7 @@
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            $this->cacheClient->set(self::SERVICE_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
+            $this->distributedCacheClient->set(self::SERVICE_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
             return $response["accessToken"];
         }
 

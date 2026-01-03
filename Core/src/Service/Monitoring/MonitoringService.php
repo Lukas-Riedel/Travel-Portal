@@ -12,7 +12,7 @@
         private const DATA_CONSISTENCY_ISSUES_CACHE_KEY = "MonitoringService:DataConsistencyIssues";
         private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
         
         private readonly EventPublisher $eventPublisher;
 
@@ -20,8 +20,8 @@
 
         private array $dataConsistencyMonitors = array();
 
-        public function __construct(CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
-            $this->cacheClient = $cacheClient;
+        public function __construct(CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Logger $logger) {
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
         }
@@ -31,7 +31,7 @@
         }
 
         public function getDataConsistencyIssues() : array {
-            $rawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
+            $rawIssues = $this->distributedCacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
             if ($rawIssues !== null) {
                 return array_map(fn($dataConsistencyIssue) => new DataConsistencyIssue($dataConsistencyIssue["name"],
                     $dataConsistencyIssue["key"], $dataConsistencyIssue["context"], $dataConsistencyIssue["timestamp"]), $rawIssues);
@@ -52,7 +52,7 @@
                 }
             }
 
-            $previousRawIssues = $this->cacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
+            $previousRawIssues = $this->distributedCacheClient->get(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY);
             if ($previousRawIssues !== null) {
                 $currentIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue->getName() . "/" . $dataConsistencyIssue->getKey(), $dataConsistencyIssues);
                 $previousIssues = array_map(fn($dataConsistencyIssue) => $dataConsistencyIssue["name"] . "/" . $dataConsistencyIssue["key"], $previousRawIssues);
@@ -64,7 +64,7 @@
                 }
             }
             
-            $this->cacheClient->set(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY, $dataConsistencyIssues, self::DATA_CONSISTENCY_ISSUES_CACHE_TTL);
+            $this->distributedCacheClient->set(self::DATA_CONSISTENCY_ISSUES_CACHE_KEY, $dataConsistencyIssues, self::DATA_CONSISTENCY_ISSUES_CACHE_TTL);
         }
     }
 ?>

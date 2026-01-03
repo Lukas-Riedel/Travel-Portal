@@ -29,7 +29,7 @@
         private ?ProgressReporter $progressReporter;
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly Logger $logger;
         
@@ -37,11 +37,11 @@
 
         private array $preparedStatements;
 
-        public function __construct(string $host, int $port, string $user, string $password, string $database, CacheClient $cacheClient, Logger $logger) {
+        public function __construct(string $host, int $port, string $user, string $password, string $database, CacheClient $distributedCacheClient, Logger $logger) {
             $this->connection = \pg_connect(sprintf(self::CONNECTION_CONFIGURATION_STRING_FORMAT, $host, $port, $database, $user, $password));
             $this->host = $host;
             $this->database = $database;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->logger = $logger;
             $this->progressReporter = null;
             $this->openLineageEventManager = null;
@@ -212,7 +212,7 @@
 
         private function fetchTableColumns(string $table) : array {
             $cacheKey = $this->getTableColumnsCacheKey($table);
-            $tableColumns = $this->cacheClient->get($cacheKey);
+            $tableColumns = $this->distributedCacheClient->get($cacheKey);
             if ($tableColumns !== null) {
                 return $tableColumns;
             }
@@ -229,7 +229,7 @@
                 ->withParameters(self::DEFAULT_SCHEMA_NAME, $table)
                 ->getResultSetForColumn("column_name");
 
-            $this->cacheClient->set($cacheKey, $tableColumns, self::TABLE_COLUMNS_CACHE_TTL);
+            $this->distributedCacheClient->set($cacheKey, $tableColumns, self::TABLE_COLUMNS_CACHE_TTL);
 
             return $tableColumns;
         }

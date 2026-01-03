@@ -34,26 +34,26 @@
 
         private readonly GoogleClient $googleClient;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly EventPublisher $eventPublisher;
         
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,
-            FlightClient $flightClient, CalendarClient $calendarClient, GoogleClient $googleClient, CacheClient $cacheClient, EventPublisher $eventPublisher) {
+            FlightClient $flightClient, CalendarClient $calendarClient, GoogleClient $googleClient, CacheClient $distributedCacheClient, EventPublisher $eventPublisher) {
             $this->flightMapper = new FlightMapper($databaseClient, $categoryService, $geocodingService);
             $this->geocodingService = $geocodingService;
             $this->flightClient = $flightClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
         }
 
         public function getEstimatedArrivalTime(string $flight) : ?int {
-            return $this->cacheClient->get(sprintf(self::FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT, $flight));
+            return $this->distributedCacheClient->get(sprintf(self::FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT, $flight));
         }
 
         public function getLoggedFlightsWithoutEvent() : array {
@@ -119,7 +119,7 @@
             if ($fetchedFlight->getActualArrival() === null) {
                 $estimatedArrival = $fetchedFlight->getEstimatedArrival();
                 if ($estimatedArrival !== null) {
-                    $this->cacheClient->set(sprintf(self::FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT, $flight), $estimatedArrival,
+                    $this->distributedCacheClient->set(sprintf(self::FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT, $flight), $estimatedArrival,
                         $estimatedArrival - time() + CommonConstants::ONE_HOUR_SECONDS);
                 }
 

@@ -21,15 +21,15 @@
         private const MODELS_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private readonly HttpClient $httpClient;
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly Logger $logger;
 
         private readonly string $googleGeminiApiKey;
 
-        public function __construct(HttpClient $httpClient, CacheClient $cacheClient, Logger $logger, string $googleGeminiApiKey) {
+        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, Logger $logger, string $googleGeminiApiKey) {
             $this->httpClient = $httpClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->logger = $logger;
             $this->googleGeminiApiKey = $googleGeminiApiKey;
         }
@@ -65,7 +65,7 @@
         }
 
         private function getModels() : array {
-            $cachedModels = $this->cacheClient->get(self::MODELS_CACHE_KEY);
+            $cachedModels = $this->distributedCacheClient->get(self::MODELS_CACHE_KEY);
             if ($cachedModels !== null) {
                 return $cachedModels;
             }
@@ -74,7 +74,7 @@
             $models = array_map(fn($model) => $model["name"], array_values(array_filter($response, fn($model) => isset($model["thinking"]) && $model["thinking"]
                 && !str_contains($model["name"], self::LATEST_MODEL_TAG) && in_array(self::GENERATE_CONTENT_GENERATION_METHOD, $model["supportedGenerationMethods"]))));
 
-            $this->cacheClient->set(self::MODELS_CACHE_KEY, $models, self::MODELS_CACHE_TTL);
+            $this->distributedCacheClient->set(self::MODELS_CACHE_KEY, $models, self::MODELS_CACHE_TTL);
 
             return $models;
         }

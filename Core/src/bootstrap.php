@@ -4,6 +4,7 @@
     use Common\Client\Encryption\EncryptionClient;
     use Common\LoggingContext;
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
+    use Core\Client\Cache\MemoryCacheClient;
     use Core\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
@@ -106,12 +107,13 @@
     $logger->pushHandler($handler);
 
     // Clients.
-    $cacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
-    $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $cacheClient, $logger); 
+    $distributedCacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
+    $memoryCacheClient = new MemoryCacheClient();
+    $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $distributedCacheClient, $logger); 
     $httpClient = new HttpClient($loggingContext, $logger);
-    $googleClient = new GoogleClient($cacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
-    $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $cacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
-    $calendarClient = new CalendarClient($googleClient, $cacheClient, $logger, getenv("CORE_BASE_URL")); 
+    $googleClient = new GoogleClient($distributedCacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
+    $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
+    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $logger, getenv("CORE_BASE_URL")); 
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);
@@ -123,16 +125,16 @@
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
     $healthCheckables = array(
-        $cacheClient,
+        $distributedCacheClient,
         $databaseClient,
         $messagingClient
     );
 
     // Event producers.
-    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $cacheClient, getenv("WORKER_QUEUE_NAME"), getenv("CORTEX_QUEUE_NAME"));
+    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $distributedCacheClient, getenv("WORKER_QUEUE_NAME"), getenv("CORTEX_QUEUE_NAME"));
     $calendarClient->setEventPublisher($eventPublisher);
 
-    $scheduler = new Scheduler($databaseClient, $cacheClient, $eventPublisher);
+    $scheduler = new Scheduler($databaseClient, $distributedCacheClient, $eventPublisher);
 
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
@@ -141,29 +143,29 @@
 
     // Authentication service.
     $commonAuthenticationService = new CommonAuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY"));
-    $authenticationService = new AuthenticationService($httpClient, $cacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+    $authenticationService = new AuthenticationService($httpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $geocodingService = new GeocodingService($cacheClient, $googleClient);
+    $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
-    $statisticsService = new StatisticsService($cacheClient, $eventPublisher, $logger);
+    $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger);
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $cacheClient, $httpClient, getenv("CORE_BASE_URL"));
+    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"));
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $cloudStorageClient, $httpClient);
-    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $eventPublisher);
-    $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $cacheClient, $encryptionClient);
+    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $memoryCacheClient, $eventPublisher);
+    $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
-    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $cacheClient, $eventPublisher);
+    $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $configurationService, $actualForecastClient, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $fitnessService, $highlightService, $statisticsService);
-    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $cacheClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
+    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $distributedCacheClient, $memoryCacheClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
-    $monitoringService = new MonitoringService($cacheClient, $eventPublisher, $logger);
+    $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
 
     // Statistics providers.
@@ -200,7 +202,7 @@
         $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
         $messagingClient->setOpenLineageEventManager($openLineageEventManager);
         $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
-        $cacheClient->setOpenLineageEventManager($openLineageEventManager);
+        $distributedCacheClient->setOpenLineageEventManager($openLineageEventManager);
         $databaseClient->setOpenLineageEventManager($openLineageEventManager);
         $httpClient->setOpenLineageEventManager($openLineageEventManager);        
     }

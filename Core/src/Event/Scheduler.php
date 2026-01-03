@@ -10,19 +10,19 @@
     class Scheduler {
 
         private readonly DatabaseClient $databaseClient;
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
         private readonly EventPublisher $eventPublisher;
 
-        public function __construct(DatabaseClient $databaseClient, CacheClient $cacheClient, EventPublisher $eventPublisher) {
+        public function __construct(DatabaseClient $databaseClient, CacheClient $distributedCacheClient, EventPublisher $eventPublisher) {
             $this->databaseClient = $databaseClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
         }
 
         public function schedule() {
             $this->eventPublisher->publish(Event::SchedulerTriggered());
 
-            $rawEvents = $this->cacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->remove(0, time());
+            $rawEvents = $this->distributedCacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->remove(0, time());
             foreach ($rawEvents as &$rawEvent) {
                 $this->eventPublisher->publishRawEvent($rawEvent["name"], $rawEvent["args"]);
             }

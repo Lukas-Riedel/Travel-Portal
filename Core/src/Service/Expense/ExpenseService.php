@@ -24,18 +24,18 @@
 
         private readonly ExchangeRateClient $exchangeRateClient;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
-            EventPublisher $eventPublisher, ExchangeRateClient $exchangeRateClient, CacheClient $cacheClient,
+            EventPublisher $eventPublisher, ExchangeRateClient $exchangeRateClient, CacheClient $distributedCacheClient,
             EncryptionClient $encryptionClient) {
             $this->expenseMapper = new ExpenseMapper($databaseClient, $encryptionClient);
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->exchangeRateClient = $exchangeRateClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->transactionManager = $databaseClient;
         }
 
@@ -165,13 +165,13 @@
                 return 1;
             }
 
-            $cachedExchangeRates = $this->cacheClient->get(self::EXCHANGE_RATE_CACHE_KEY);
+            $cachedExchangeRates = $this->distributedCacheClient->get(self::EXCHANGE_RATE_CACHE_KEY);
             if ($cachedExchangeRates !== null) {
                 return $cachedExchangeRates[$currency] ?? 0;
             }        
 
             $exchangeRates = $this->exchangeRateClient->getExchangeRates($mainCurrency);
-            $this->cacheClient->set(self::EXCHANGE_RATE_CACHE_KEY, $exchangeRates, self::EXCHANGE_RATE_CACHE_TTL);
+            $this->distributedCacheClient->set(self::EXCHANGE_RATE_CACHE_KEY, $exchangeRates, self::EXCHANGE_RATE_CACHE_TTL);
 
             return $exchangeRates[$currency] ?? 0;
         }

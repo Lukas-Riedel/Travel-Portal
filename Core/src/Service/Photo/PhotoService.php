@@ -33,7 +33,7 @@
 
         private readonly CloudStorageClient $cloudStorageClient;
         
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly HttpClient $httpClient;
 
@@ -42,13 +42,13 @@
         private readonly string $coreBaseUrl;
 
         public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
-            EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, CacheClient $cacheClient,
+            EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, CacheClient $distributedCacheClient,
             HttpClient $httpClient, string $coreBaseUrl) {
             $this->photoMapper = new PhotoMapper($databaseClient, $googleClient);
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cloudStorageClient = $cloudStorageClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->transactionManager = $databaseClient;
             $this->httpClient = $httpClient;
             $this->coreBaseUrl = $coreBaseUrl;
@@ -133,10 +133,10 @@
         public function getPhotosForAlbum(string $albumId, float $latitude, float $longitude, bool $forceRefetch = false) : array {
             $fetchedAlbumKey = sprintf(self::ALBUM_PHOTOS_CACHE_KEY_FORMAT, $albumId);
             if ($forceRefetch) {
-                $this->cacheClient->delete($fetchedAlbumKey);
+                $this->distributedCacheClient->delete($fetchedAlbumKey);
             }
 
-            $cachedPhotos = $this->cacheClient->get($fetchedAlbumKey);
+            $cachedPhotos = $this->distributedCacheClient->get($fetchedAlbumKey);
             if ($cachedPhotos !== null) {
                 return $cachedPhotos;
             }            
@@ -193,7 +193,7 @@
             });
 
             // Cache photos for faster access in the future.
-            $this->cacheClient->set($fetchedAlbumKey, $photos, self::ALBUM_PHOTOS_CACHE_TTL);
+            $this->distributedCacheClient->set($fetchedAlbumKey, $photos, self::ALBUM_PHOTOS_CACHE_TTL);
 
             return $photos;
         }

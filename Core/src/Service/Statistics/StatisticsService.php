@@ -21,7 +21,7 @@
         private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
         private const STATISTICS_COLLECTION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
         
         private readonly EventPublisher $eventPublisher;
 
@@ -29,8 +29,8 @@
 
         private array $statisticsProviders = array();
 
-        public function __construct(CacheClient $cacheClient, EventPublisher $eventPublisher, Logger $logger) {
-            $this->cacheClient = $cacheClient;
+        public function __construct(CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Logger $logger) {
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
         }
@@ -77,7 +77,7 @@
         // TODO: Remove the categoryId parameter.
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
             $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
-            $cachedStatisticsCollection = $this->cacheClient->get($statisticsCollectionCacheKey);            
+            $cachedStatisticsCollection = $this->distributedCacheClient->get($statisticsCollectionCacheKey);            
             if ($cachedStatisticsCollection !== null) {
                 $secondsSinceLastUpdate = time() - $cachedStatisticsCollection["timestamp"];
 
@@ -102,7 +102,7 @@
             }
 
             if ($cachedStatisticsCollection === null || count($updatedStatisticsRecords) > 0) {
-                $this->cacheClient->set($statisticsCollectionCacheKey, new StatisticsCollection($updatedStatisticsRecords, time()),
+                $this->distributedCacheClient->set($statisticsCollectionCacheKey, new StatisticsCollection($updatedStatisticsRecords, time()),
                     self::STATISTICS_COLLECTION_CACHE_TTL);
             }
         }
@@ -121,7 +121,7 @@
             }
 
             $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
-            $statisticsCollection = $this->cacheClient->get($statisticsCollectionCacheKey);
+            $statisticsCollection = $this->distributedCacheClient->get($statisticsCollectionCacheKey);
             if ($statisticsCollection !== null) {
                 return $statisticsCollection["statistics"];
             }

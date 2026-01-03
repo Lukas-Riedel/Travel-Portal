@@ -41,7 +41,7 @@
 
         private readonly GoogleClient $googleClient;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly ConfigurationService $configurationService;
 
@@ -56,15 +56,15 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, CalendarClient $calendarClient,
-            GoogleClient $googleClient, CacheClient $cacheClient, ConfigurationService $configurationService, CategoryService $categoryService,
-            LabelService $labelService, ForecastService $forecastService, PhotoService $photoService, HighlightService $highlightService,
-            NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
+            GoogleClient $googleClient, CacheClient $distributedCacheClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService,
+            CategoryService $categoryService, LabelService $labelService, ForecastService $forecastService, PhotoService $photoService,
+            HighlightService $highlightService, NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
-                $photoService, $highlightService, $noteService);
+                $photoService, $highlightService, $noteService, $memoryCacheClient);
             $this->generativeContentClient = $generativeContentClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->configurationService = $configurationService;
             $this->categoryService = $categoryService;
             $this->photoService = $photoService;
@@ -75,7 +75,7 @@
 
         public function getPlaceSignificance(string $placeId) : int {
             $cacheKey = sprintf(self::PLACE_SIGNIFICANCE_CACHE_KEY_FORMAT, $placeId);
-            $placeSignificance = $this->cacheClient->get($cacheKey);
+            $placeSignificance = $this->distributedCacheClient->get($cacheKey);
             if ($placeSignificance !== null) {
                 return intval($placeSignificance);
             }
@@ -84,7 +84,7 @@
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeSignificance"];
             $placeSignificance = intval($this->generativeContentClient->getResponse($prompt, array("name" => $placeIdentifier->getName(), "country" => $placeIdentifier->getCountry() ?? "")));
 
-            $this->cacheClient->set($cacheKey, $placeSignificance, self::PLACE_SIGNIFICANCE_CACHE_TTL);
+            $this->distributedCacheClient->set($cacheKey, $placeSignificance, self::PLACE_SIGNIFICANCE_CACHE_TTL);
 
             return $placeSignificance;
         }

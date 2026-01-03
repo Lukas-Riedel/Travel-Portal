@@ -82,9 +82,9 @@
             return $wasSet;
         }
 
-        public function tryLock(string $key, int $ttl) : ?DistributedLock {
+        public function tryLock(string $key, int $ttl) : ?Lock {
             $lockValue = Uuid::uuid4()->toString();
-            return $this->trySet($key, $lockValue, $ttl) ? new DistributedLock($this, $key, $lockValue) : null;
+            return $this->trySet($key, $lockValue, $ttl) ? new Lock($this, $key, $lockValue) : null;
         }
 
         public function unlock(string $key, string $value) : void {

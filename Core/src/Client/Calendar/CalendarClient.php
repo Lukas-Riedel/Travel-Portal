@@ -22,7 +22,7 @@
 
         private readonly GoogleClient $googleClient;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
         
         private readonly string $coreBaseUrl;
 
@@ -30,9 +30,9 @@
 
         private ?EventPublisher $eventPublisher;
 
-        public function __construct(GoogleClient $googleClient, CacheClient $cacheClient, Logger $logger, string $coreBaseUrl) {
+        public function __construct(GoogleClient $googleClient, CacheClient $distributedCacheClient, Logger $logger, string $coreBaseUrl) {
             $this->googleClient = $googleClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->logger = $logger;
             $this->coreBaseUrl = $coreBaseUrl;
             $this->eventPublisher = null;
@@ -117,7 +117,7 @@
 
         public function getPublicHolidaysForCategory(CategoryIdentifier $categoryIdentifier) : array {
             $cacheKey = $this->getPublicHolidaysCacheKey($categoryIdentifier);
-            $cachedHolidays = $this->cacheClient->get($cacheKey);
+            $cachedHolidays = $this->distributedCacheClient->get($cacheKey);
             if ($cachedHolidays !== null) {
                 return array_map(fn($publicHoliday) => new PublicHoliday($publicHoliday["name"], $publicHoliday["category"], $publicHoliday["date"]), $cachedHolidays);
             }
@@ -138,7 +138,7 @@
                 $fetchedHolidaysValiditySeconds = CommonConstants::ONE_HOUR_SECONDS;
             }
 
-            $this->cacheClient->set($cacheKey, $fetchedHolidays, $fetchedHolidaysValiditySeconds);
+            $this->distributedCacheClient->set($cacheKey, $fetchedHolidays, $fetchedHolidaysValiditySeconds);
             return $fetchedHolidays;
         }
 

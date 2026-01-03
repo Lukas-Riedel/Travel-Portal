@@ -1,7 +1,7 @@
 <?php
     namespace Core\Client\Cache;
 
-    class DistributedLock {
+    class Lock {
 
         private readonly CacheClient $cacheClient;
 

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Category;
 
+    use Core\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Service\Configuration\ConfigurationService;
@@ -12,22 +13,27 @@
 
     class CategoryService {
 
+        private const CATEGORY_IDENTIFIER_CACHE_KEY_FORMAT = "CategoryService:CategoryIdentifier:%s";
+        private const CATEGORY_IDENTIFIER_CACHE_TTL = 60;
+
+        private const PLACE_CATEGORIES_CACHE_KEY = "CategoryService:PlaceCategories";
+        private const PLACE_CATEGORIES_CACHE_TTL = 60;
+
         private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
         private readonly CategoryMapper $categoryMapper;
         
         private readonly EventPublisher $eventPublisher;
 
+        private readonly CacheClient $memoryCacheClient;
+
         private readonly TransactionManager $transactionManager;
 
-        // TODO: Evaluate the benefit of having these caches as a field (instead of a local variable).
-        private array $categoryIdToCategoryIdentifierCache = array();
-        private array $placeIdToCategoryIdsCache = array();
-
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
-            HighlightService $highlightService, StatisticsService $statisticsService, EventPublisher $eventPublisher) {
+            HighlightService $highlightService, StatisticsService $statisticsService, CacheClient $memoryCacheClient, EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $configurationService);
             $this->eventPublisher = $eventPublisher;
+            $this->memoryCacheClient = $memoryCacheClient;
             $this->transactionManager = $databaseClient;
         }
 
@@ -87,11 +93,15 @@
         }
 
         public function getCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
-            if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
-                $this->categoryIdToCategoryIdentifierCache[$categoryId] = $this->categoryMapper->selectCategoryIdentifierById($categoryId);
+            $cacheKey = $this->getCategoryIdentifierCacheKey($categoryId);
+            $cachedCategoryIdentifier = $this->memoryCacheClient->get($cacheKey);
+            if ($cachedCategoryIdentifier !== null) {
+                return $cachedCategoryIdentifier;
             }
-            
-            return $this->categoryIdToCategoryIdentifierCache[$categoryId];
+
+            $categoryIdentifier = $this->categoryMapper->selectCategoryIdentifierById($categoryId);
+            $this->memoryCacheClient->set($cacheKey, $categoryIdentifier, self::CATEGORY_IDENTIFIER_CACHE_TTL);
+            return $categoryIdentifier;
         }
 
         public function getCategoryIdsForPlace(string $placeId) : array { 
@@ -107,17 +117,21 @@
         }
 
         public function getCategoryIdentifiersForPlace(string $placeId) : array {
-            if (empty($this->placeIdToCategoryIdsCache)) {
-                $this->placeIdToCategoryIdsCache = $this->categoryMapper->selectCategoryIdsForAllPlaceIds();
+            $cachedPlaceCategories = $this->memoryCacheClient->get(self::PLACE_CATEGORIES_CACHE_KEY);
+            if ($cachedPlaceCategories !== null) {
+                return $this->getCategoryIdentifiersByIds($cachedPlaceCategories[$placeId] ?? array());
             }
 
-            return $this->getCategoryIdentifiersByIds($this->placeIdToCategoryIdsCache[$placeId] ?? array());
+            $placeCategories = $this->categoryMapper->selectCategoryIdsForAllPlaceIds();
+            $this->memoryCacheClient->set(self::PLACE_CATEGORIES_CACHE_KEY, $placeCategories, self::PLACE_CATEGORIES_CACHE_TTL);
+
+            return $this->getCategoryIdentifiersByIds($placeCategories[$placeId] ?? array());
         }
 
         public function getCategoryIdentifiersByIds(array $categoryIds) : array {            
             $categoryIdsToFetch = array();
             foreach ($categoryIds as &$categoryId) {
-                if (!isset($this->categoryIdToCategoryIdentifierCache[$categoryId])) {
+                if ($this->memoryCacheClient->get($this->getCategoryIdentifierCacheKey($categoryId), self::CATEGORY_IDENTIFIER_CACHE_TTL) === null) {
                     $categoryIdsToFetch[] = $categoryId;
                 }
             }
@@ -125,13 +139,13 @@
             if (!empty($categoryIdsToFetch)) {
                 $fetchedCategoryIdentifiers = $this->categoryMapper->selectCategoryIdentifiersByIds($categoryIdsToFetch);
                 foreach ($fetchedCategoryIdentifiers as &$fetchedCategoryIdentifier) {
-                    $this->categoryIdToCategoryIdentifierCache[$fetchedCategoryIdentifier->getId()] = $fetchedCategoryIdentifier;
+                    $this->memoryCacheClient->set($this->getCategoryIdentifierCacheKey($fetchedCategoryIdentifier->getId()), $fetchedCategoryIdentifier, self::CATEGORY_IDENTIFIER_CACHE_TTL);
                 }
             }
             
             $categoryIdentifiers = array();
             foreach ($categoryIds as &$categoryId) {
-                $categoryIdentifiers[] = $this->categoryIdToCategoryIdentifierCache[$categoryId] ?? null;
+                $categoryIdentifiers[] = $this->memoryCacheClient->get($this->getCategoryIdentifierCacheKey($categoryId));
             }
             
             return $categoryIdentifiers;
@@ -429,6 +443,10 @@
                 }
             }
             return true;
+        }
+
+        private function getCategoryIdentifierCacheKey(string $categoryId) : string {
+            return sprintf(self::CATEGORY_IDENTIFIER_CACHE_KEY_FORMAT, $categoryId);
         }
     }
 ?>
