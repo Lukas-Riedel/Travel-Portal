@@ -7,7 +7,6 @@ import { useConfiguration } from "../contexts/ConfigContext"
 import { useAuth } from "../contexts/AuthContext"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useSubscriptions } from "../hooks/useSubscriptions"
-import { format, fromUnixTime } from "date-fns"
 import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useVouchers } from "../hooks/useVouchers"
@@ -29,45 +28,20 @@ const expenseTypes = {
         label: "Ubytování",
         color: "text-amber-800"
     },
-    intercityTransport: {
+    transport: {
         icon: TrainFront,
-        label: "Meziměstská doprava",
-        color: "text-fuchsia-500"
-    },
-    publicTransport: {
-        icon: BusFront,
-        label: "Městská doprava",
+        label: "Doprava",
         color: "text-indigo-700"
-    },
-    airportTransfer: {
-        icon: CarTaxiFront,
-        label: "Letištní transfery",
-        color: "text-orange-600"
     },
     organizedTour: {
         icon: Users,
         label: "Organizované zájezdy",
         color: "text-rose-700"
     },
-    carRental: {
+    car: {
         icon: CarFront,
-        label: "Půjčení auta",
+        label: "Provoz auta",
         color: "text-emerald-700"
-    },
-    fuel: {
-        icon: Fuel,
-        label: "Palivo",
-        color: "text-red-700"
-    },
-    cityTax: {
-        icon: Building2,
-        label: "Městské daně",
-        color: "text-stone-600"
-    },
-    parking: {
-        icon: SquareParking,
-        label: "Parkování",
-        color: "text-blue-900"
     },
     visa: {
         icon: Landmark,

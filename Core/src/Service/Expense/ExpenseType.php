@@ -10,16 +10,11 @@
     )]
     enum ExpenseType : string {
         case Flight = "flight";
+        case Transport = "transport";
+        case Car = "car";
         case Hotel = "hotel";
         case Attraction = "attraction";
-        case IntercityTransport = "intercityTransport";
-        case PublicTransport = "publicTransport";
         case OrganizedTour = "organizedTour";
-        case CarRental = "carRental";
-        case Fuel = "fuel";
-        case CityTax = "cityTax";
-        case Parking = "parking";
-        case AirportTransfer = "airportTransfer";
         case Visa = "visa";
         case Other = "other";
 
