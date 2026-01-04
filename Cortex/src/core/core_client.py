@@ -42,18 +42,47 @@ class CoreClient:
         response.raise_for_status()
         return response.json()
 
-    def get_places(self, trip_id: Optional[str] = None, photo_id: Optional[str] = None, include: Optional[str] = None) -> List[dict]:
+    def get_category(self, category_id: str) -> dict:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/categories/{category_id}"
+        response = self.session.get(url, **self._get_request_kwargs())
+        response.raise_for_status()
+        return response.json()
+
+    def get_year(self, year: int) -> dict:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/years/{year}"
+        response = self.session.get(url, **self._get_request_kwargs())
+        response.raise_for_status()
+        return response.json()
+
+    def get_places(
+        self,
+        category_id: Optional[str] = None,
+        year: Optional[int] = None,
+        trip_id: Optional[str] = None,
+        photo_id: Optional[str] = None,
+        include: Optional[str] = None,
+    ) -> List[dict]:
         self._ensure_authenticated()
 
         url = f"{self._get_core_base_url()}/places"
 
         params = {}
+        if category_id is not None:
+            params["categoryId"] = category_id
+
+        if year is not None:
+            params["year"] = year
+
         if trip_id is not None:
             params["tripId"] = trip_id
-            
+
         if photo_id is not None:
             params["photoId"] = photo_id
-            
+
         if include is not None:
             params["include"] = include
 
@@ -85,7 +114,7 @@ class CoreClient:
             url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
         )
         response.raise_for_status()
-        
+
     def remove_place_highlight(self, place_id: str, highlight_id: str) -> None:
         self._ensure_authenticated()
 
@@ -101,11 +130,43 @@ class CoreClient:
             url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
         )
         response.raise_for_status()
-        
+
     def remove_trip_highlight(self, trip_id: str, highlight_id: str) -> None:
         self._ensure_authenticated()
 
         url = f"{self._get_core_base_url()}/trips/{trip_id}/highlights/{highlight_id}"
+        response = self.session.delete(url, **self._get_request_kwargs())
+        response.raise_for_status()
+
+    def create_category_highlight(self, category_id: str, photo_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/categories/{category_id}/highlights"
+        response = self.session.post(
+            url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
+        )
+        response.raise_for_status()
+
+    def remove_category_highlight(self, category_id: str, highlight_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/categories/{category_id}/highlights/{highlight_id}"
+        response = self.session.delete(url, **self._get_request_kwargs())
+        response.raise_for_status()
+
+    def create_year_highlight(self, year: int, photo_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/years/{year}/highlights"
+        response = self.session.post(
+            url, json={"photo": {"id": photo_id}}, **self._get_request_kwargs()
+        )
+        response.raise_for_status()
+
+    def remove_year_highlight(self, year: int, highlight_id: str) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/years/{year}/highlights/{highlight_id}"
         response = self.session.delete(url, **self._get_request_kwargs())
         response.raise_for_status()
 

@@ -19,6 +19,10 @@ PLACE_CONTENT_QUERY_FORMAT: Final[str] = (
     + CONTENT_QUERY
 )
 
+CATEGORY_CONTENT_QUERY_FORMAT: Final[str] = (
+    "Professional exterior travel photography of {category_name}. " + CONTENT_QUERY
+)
+
 NEGATIVE_QUERY: Final[str] = (
     "Macro photography, close-up, single object detail, stairs, interiors, overcast sky, "
     "museum exhibits, interior furniture, blurry background, gesturing people, "
@@ -58,15 +62,86 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 )
                 return
             case "category":
-                # TODO: Implement.
+                self._handle_category(
+                    entity_id, highlights_count, highlights_removal_allowed
+                )
                 return
             case "year":
-                # TODO: Implement.
+                self._handle_year(
+                    int(entity_id), highlights_count, highlights_removal_allowed
+                )
                 return
             case _:
                 raise ValueError(
                     f"Unknown highlight type '{args.get('highlightType')}' encountered."
                 )
+
+    def _handle_year(
+        self, year_id: int, highlights_count: int, highlights_removal_allowed: bool
+    ) -> None:
+        year = self.core_client.get_year(year_id)
+        year_places = self.core_client.get_places(year=year_id, include="dates")
+
+        selected_photo_ids = self._handle_entity(
+            entity_name=str(year_id),
+            highlights_count=highlights_count,
+            places=year_places,
+            existing_highlights=year.get("highlights", []),
+            photos=self._fetch_photos_for_category_or_year(
+                year_places, year.get("highlights", []), highlights_count
+            ),
+            content_query=CONTENT_QUERY,
+            main_highlight_photo_id=year.get("mainHighlight", {})
+            .get("photo", {})
+            .get("id"),
+            highlights_removal_allowed=highlights_removal_allowed,
+        )
+
+        for h_id in self._get_highlight_ids_to_remove(
+            year.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.remove_year_highlight(year_id, h_id)
+
+        for p_id in self._get_photo_ids_to_create(
+            year.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.create_year_highlight(year_id, p_id)
+
+    def _handle_category(
+        self, category_id: str, highlights_count: int, highlights_removal_allowed: bool
+    ) -> None:
+        category = self.core_client.get_category(category_id)
+        category_places = self.core_client.get_places(
+            category_id=category_id, include="dates"
+        )
+        content_query = CATEGORY_CONTENT_QUERY_FORMAT.format(
+            category_name=category.get("name"),
+        )
+
+        selected_photo_ids = self._handle_entity(
+            entity_name=category.get("name"),
+            highlights_count=highlights_count,
+            places=category_places,
+            existing_highlights=category.get("highlights", []),
+            photos=self._fetch_photos_for_category_or_year(
+                category_places, category.get("highlights", []), highlights_count
+            ),
+            content_query=content_query,
+            main_highlight_photo_id=category.get("mainHighlight", {})
+            .get("photo", {})
+            .get("id"),
+            highlights_removal_allowed=highlights_removal_allowed,
+        )
+
+        for h_id in self._get_highlight_ids_to_remove(
+            category.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.remove_category_highlight(category_id, h_id)
+
+        for p_id in self._get_photo_ids_to_create(
+            category.get("highlights", []), selected_photo_ids
+        ):
+            self.core_client.create_category_highlight(category_id, p_id)
 
     def _handle_trip(
         self, trip_id: str, highlights_count: int, highlights_removal_allowed: bool
@@ -79,6 +154,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             highlights_count=highlights_count,
             places=[p for p in trip_places if not p.get("layover")],
             existing_highlights=trip.get("highlights", []),
+            photos=self._fetch_photos_for_place_or_trip(
+                trip_places, trip.get("highlights", []), highlights_count
+            ),
             content_query=CONTENT_QUERY,
             main_highlight_photo_id=trip.get("mainHighlight", {})
             .get("photo", {})
@@ -109,6 +187,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             highlights_count=highlights_count,
             places=[place],
             existing_highlights=place.get("highlights", []),
+            photos=self._fetch_photos_for_place_or_trip(
+                [place], place.get("highlights", []), highlights_count
+            ),
             content_query=content_query,
             main_highlight_photo_id=place.get("mainHighlight", {})
             .get("photo", {})
@@ -126,12 +207,35 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         ):
             self.core_client.create_place_highlight(place_id, p_id)
 
+    def _fetch_photos_for_place_or_trip(
+        self, places: List[dict], existing_highlights: List[dict], highlights_count: int
+    ) -> List[dict]:
+        width, height = get_thumbnail_size()
+        return (
+            [
+                {**p, "url": f"{p['url']}=w{width}-h{height}"}
+                for p in self._get_all_photos(places)
+            ]
+            if highlights_count > len(existing_highlights)
+            else [highlight.get("photo") for highlight in existing_highlights]
+        )
+
+    def _fetch_photos_for_category_or_year(
+        self, places: List[dict], existing_highlights: List[dict], highlights_count: int
+    ) -> List[dict]:
+        return (
+            [h.get("photo") for p in places for h in p.get("highlights", [])]
+            if highlights_count > len(existing_highlights)
+            else [highlight.get("photo") for highlight in existing_highlights]
+        )
+
     def _handle_entity(
         self,
         entity_name: str,
         highlights_count: int,
         places: List[dict],
         existing_highlights: List[dict],
+        photos: List[dict],
         content_query: str,
         main_highlight_photo_id: Optional[str],
         highlights_removal_allowed: bool,
@@ -149,26 +253,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 return None
 
             # Preprocess relevant photos.
-            width, height = get_thumbnail_size()
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 preprocessed_photos = list(
-                    filter(
-                        None,
-                        executor.map(
-                            self._preprocess_photo,
-                            (
-                                [
-                                    {**p, "url": f"{p['url']}=w{width}-h{height}"}
-                                    for p in self._get_all_photos(places)
-                                ]
-                                if delta > 0
-                                else [
-                                    highlight.get("photo")
-                                    for highlight in existing_highlights
-                                ]
-                            ),
-                        ),
-                    )
+                    filter(None, executor.map(self._preprocess_photo, photos))
                 )
 
             if not preprocessed_photos:
@@ -351,7 +438,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         year_range = max_year - min_year if max_year > min_year else 1
 
         main_highlight_photo_ids = main_ids = {
-            p.get("mainHighlight", {}).get("photo", {}).get("id") for p in places if p.get("mainHighlight")
+            p.get("mainHighlight", {}).get("photo", {}).get("id")
+            for p in places
+            if p.get("mainHighlight")
         }
 
         final_scores = []
