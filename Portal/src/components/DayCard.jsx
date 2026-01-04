@@ -106,7 +106,9 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
         )
     }
 
-    const requiresAttention = event => isAdmin && event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold)
+    const requiresAttention = event => isAdmin
+        && ((event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold))
+            || (event.from && event.to && !event.confirmed))
 
     return (day && events) ? ((events.length > 0 || stay) && (
         <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
@@ -153,23 +155,23 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                         <div className="flex items-center space-x-2">
                             {event.from && event.to && (
                                 <>
-                                    <span className="text-sky-600">
+                                    <span className={requiresAttention(event) ? "text-red-600" : "text-sky-600"}>
                                         <PlaneTakeoff size={16} />
                                     </span>
-                                    <span className="font-medium text-sky-600">
+                                    <span className={`font-medium ${requiresAttention(event) ? "text-red-600" : "text-sky-600"}`}>
                                         {formatTimestamp(event.start, event.from.timezone)}
                                     </span>
-                                    <span className="whitespace-nowrap text-sky-600">
+                                    <span className={`whitespace-nowrap ${requiresAttention(event) ? "text-red-600" : "text-sky-600"}`}>
                                         {event.from.id ? (
                                             <Link
                                                 to={`/airport/${event.from.id}`}
-                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
                                                 {event.from.shortName}
                                             </Link>
                                         ) : (
                                             <a
                                                 href={`https://www.google.com/maps/search/Letiště ${event.from.shortName}`}
-                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
                                                 {event.from.shortName}
                                             </a>
                                         )}
@@ -177,17 +179,22 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                         {event.to.id ? (
                                             <Link
                                                 to={`/airport/${event.to.id}`}
-                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
                                                 {event.to.shortName}
                                             </Link>
                                         ) : (
                                             <a
                                                 href={`https://www.google.com/maps/search/Letiště ${event.to.shortName}`}
-                                                className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
                                                 {event.to.shortName}
                                             </a>
                                         )}
                                     </span>
+                                    {requiresAttention(event) && (
+                                        <span className="text-red-600">
+                                            <OctagonAlert size={16} />
+                                        </span>
+                                    )}
                                 </>
                             )}
                             {event.name && (
@@ -209,8 +216,8 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                         className={`${requiresAttention(event) ? "text-red-600" : "text-indigo-600"} hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-indigo-300"} transition-colors duration-200`}>
                                         {getPrettyName(event.name)}
                                     </Link>
-                                    {isAdmin && event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold) && (
-                                        <span className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}>
+                                    {requiresAttention(event) && (
+                                        <span className="text-red-600">
                                             <OctagonAlert size={16} />
                                         </span>
                                     )}
@@ -223,12 +230,12 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                 </>
                             )}
                         </div>
-                        {event.from && event.to && renderDescriptionRow("text-sky-600", [
+                        {event.from && event.to && renderDescriptionRow(requiresAttention(event) ? "text-red-600" : "text-sky-600", [
                             formatDuration(event.end - event.start),
                             event.flight && (
                                 <a
                                     href={`https://www.flightradar24.com/data/flights/${event.flight}`}
-                                    className="hover:underline hover:text-sky-300 transition-colors duration-200">
+                                    className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
                                     {event.flight}
                                 </a>
                             ),

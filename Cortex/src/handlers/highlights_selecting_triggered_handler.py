@@ -437,7 +437,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         max_year = max(years) if years else 1
         year_range = max_year - min_year if max_year > min_year else 1
 
-        main_highlight_photo_ids = main_ids = {
+        main_highlight_photo_ids = {
             p.get("mainHighlight", {}).get("photo", {}).get("id")
             for p in places
             if p.get("mainHighlight")

@@ -50,10 +50,14 @@ export class Trip implements ITrip {
     public getCalendarEvents(date: globalThis.Date, places: Place[], timezone?: string): (Flight | (Place & Date))[] {
         const flightEvents = (this.flights ?? [])
             .filter(f => isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
+            .map(flight => ({ ...flight, confirmed: true }))
+        const watchedFlightEvents = (this.watchedFlights ?? [])
+            .filter(f => isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
+            .map(flight => ({ ...flight, confirmed: false }))
         const placeEvents = (places ?? []).flatMap(place => place.dates
             .filter(d => isSameDay(date, getZonedDate(d.start, timezone || place.timezone)))
             .map(date => ({ ...date, ...place })))
-        return [...flightEvents, ...placeEvents].sort((a, b) => a.start - b.start)
+        return [...flightEvents, ...watchedFlightEvents, ...placeEvents].sort((a, b) => a.start - b.start)
     }
 
     public getStay(date: globalThis.Date, timezone?: string): Stay | undefined {
