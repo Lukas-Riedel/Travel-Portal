@@ -34,6 +34,25 @@ class CoreClient:
         self.token = None
         self.token_expires_at = 0
 
+    def get_highlight(self, highlight_id: str) -> dict:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/highlights/{highlight_id}"
+        response = self.session.get(url, **self._get_request_kwargs())
+        response.raise_for_status()
+        return response.json()
+
+    def update_highlight_quality_attributes(
+        self, highlight_id: str, attributes: dict
+    ) -> None:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/highlights/{highlight_id}"
+        response = self.session.patch(
+            url, json={"attributes": attributes}, **self._get_request_kwargs()
+        )
+        response.raise_for_status()
+
     def get_trip(self, trip_id: str) -> dict:
         self._ensure_authenticated()
 

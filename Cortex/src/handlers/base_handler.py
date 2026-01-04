@@ -6,6 +6,7 @@ class BaseHandler(ABC):
     def handle(self, args: dict) -> None:
         pass
     
+    # TODO: Get rid of this method, determine the event name from the class name.
     @abstractmethod
     def get_handled_event_names(self) -> List[str]:
         pass

@@ -170,7 +170,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                     ]
                 },
                 {
-                    label: "Atmosféra", value: highlight.attributes?.atmosphere, required: true, type: "select", options: [
+                    label: "Atmosféra", defaultValue: highlight.attributes?.atmosphere, required: true, type: "select", options: [
                         { id: 30, name: "Znečištěný nebo zakalený vzduch (opar, smog, inverze)" },
                         { id: 80, name: "Mírný opar (snížená čirost, ale přijatelná)" },
                         { id: 95, name: "Čistý vzduch (dobrá viditelnost, přirozené barvy)" },

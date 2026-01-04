@@ -26,6 +26,13 @@
             $this->highlightService->updateHighlights();
         }
 
+        public function onHighlightCreated(mixed $message) : void {
+            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
+            if ($highlight !== null && $highlight->getQuality() === null) {
+                $this->eventPublisher->publish(Event::HighlightAttributesSettingTriggered($highlight->getId()));
+            }
+        }
+
         public function onHighlightRemoved(mixed $message) : void {
             // Removing the highlight also removes its identifier if it is no longer used by any entity.
             if ($this->highlightService->getHighlight($message["highlightId"]) === null) {

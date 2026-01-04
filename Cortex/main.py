@@ -4,7 +4,12 @@ from src.core.listener import EventListener
 from src.core.core_client import CoreClient
 from src.core.distributed_cache import DistributedCache
 from src.core.ai_engine import AiEngine
-from src.handlers.highlights_selecting_triggered_handler import HighlightsSelectingTriggeredHandler
+from src.handlers.highlights_selecting_triggered_handler import (
+    HighlightsSelectingTriggeredHandler,
+)
+from src.handlers.highlight_attributes_setting_triggered_handler import (
+    HighlightAttributesSettingTriggeredHandler,
+)
 
 load_dotenv()
 
@@ -24,7 +29,7 @@ def main():
         os.getenv("REDIS_HOST"),
         int(os.getenv("REDIS_PORT")),
         os.getenv("REDIS_PASSWORD"),
-        os.getenv("REDIS_SSL", "false").lower() == "true"
+        os.getenv("REDIS_SSL", "false").lower() == "true",
     )
     ai_engine = AiEngine(
         distributed_cache,
@@ -39,7 +44,8 @@ def main():
             int(os.getenv("MAX_THREADS")),
             float(os.getenv("AGE_COEFFICIENT")),
             float(os.getenv("SIMILARITY_THRESHOLD")),
-        )
+        ),
+        HighlightAttributesSettingTriggeredHandler(ai_engine, core_client),
     ]
 
     listener = EventListener(
@@ -48,7 +54,7 @@ def main():
         int(os.getenv("RMQ_PORT")),
         os.getenv("RMQ_VHOST"),
         os.getenv("RMQ_USER"),
-        os.getenv("RMQ_PASSWORD"),        
+        os.getenv("RMQ_PASSWORD"),
         os.getenv("RMQ_SSL", "false").lower() == "true",
         int(os.getenv("RMQ_HEARTBEAT")),
         os.getenv("CORTEX_QUEUE_NAME"),

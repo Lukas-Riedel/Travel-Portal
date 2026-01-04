@@ -114,60 +114,96 @@ export const useUserInput = (): UseUserInputResult => {
                                             {message}
                                         </div>
                                     )}
-                                    {fields.filter(Boolean).map((field, index) => (
-                                        <div key={index}>
-                                            {field.label && (
-                                                <label className="block mb-1 text-gray-600 text-sm">
-                                                    {field.label}
-                                                    {field.required && (
-                                                        <span className="text-red-600">
-                                                            {"*"}
-                                                        </span>
-                                                    )}
-                                                </label>
-                                            )}
-                                            {isSelectFormField(field) ? (
-                                                <select
-                                                    ref={element => {
-                                                        if (element) {
-                                                            inputRefs.current[index] = element
-                                                        }
-                                                    }}
-                                                    className="border rounded px-2 py-1 w-full text-sm"
-                                                    defaultValue={field.defaultValue ?? ""}
-                                                    multiple={field.multiple}
-                                                    disabled={field.disabled}>
-                                                    {!field.required && (
-                                                        <option key="empty">
-                                                            {""}
-                                                        </option>
-                                                    )}
-                                                    {field.options.map(option => (
-                                                        <option
-                                                            key={option.id}
-                                                            value={option.id}>
-                                                            {option.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            ) : (
-                                                <input
-                                                    ref={element => {
-                                                        if (element) {
-                                                            inputRefs.current[index] = element
-                                                        }
-                                                    }}
-                                                    className="border rounded px-2 py-1 w-full text-sm"
-                                                    type={field.type ?? "text" /** TODO: Remove the default type after the transition to TypeScript is done. */}
-                                                    min={field.min}
-                                                    max={field.max}
-                                                    placeholder={field.placeholder}
-                                                    defaultValue={field.defaultValue}
-                                                    disabled={field.disabled}
-                                                    autoFocus={index === 0} />
-                                            )}
-                                        </div>
-                                    ))}
+                                    {fields.filter(Boolean).map((field, index) => {
+                                        const roundedDefaultValue = (() => {
+                                            if (!isSelectFormField(field)) {
+                                                return undefined
+                                            }
+
+                                            const dv = field.defaultValue
+                                            if (dv == null) {
+                                                return ""
+                                            }
+
+                                            const options = field.options.map(o => ({
+                                                id: String(o.id),
+                                                num: Number(o.id),
+                                            }))
+
+                                            if (typeof dv === "number") {
+                                                const numeric = options
+                                                    .filter(o => !Number.isNaN(o.num))
+                                                    .sort((a, b) => a.num - b.num)
+
+                                                const hit = numeric.find(o => o.num >= dv)
+                                                if (hit) {
+                                                    return hit.id
+                                                }
+                                            }
+
+                                            const exact = options.find(o => o.id === String(dv))
+                                            if (exact) {
+                                                return exact.id
+                                            }
+
+                                            return ""
+                                        })()
+
+                                        return (
+                                            <div key={index}>
+                                                {field.label && (
+                                                    <label className="block mb-1 text-gray-600 text-sm">
+                                                        {field.label}
+                                                        {field.required && (
+                                                            <span className="text-red-600">
+                                                                {"*"}
+                                                            </span>
+                                                        )}
+                                                    </label>
+                                                )}
+                                                {isSelectFormField(field) ? (
+                                                    <select
+                                                        ref={element => {
+                                                            if (element) {
+                                                                inputRefs.current[index] = element
+                                                            }
+                                                        }}
+                                                        className="border rounded px-2 py-1 w-full text-sm"
+                                                        defaultValue={roundedDefaultValue}
+                                                        multiple={field.multiple}
+                                                        disabled={field.disabled}>
+                                                        {!field.required && (
+                                                            <option key="empty" value="">
+                                                                {""}
+                                                            </option>
+                                                        )}
+                                                        {field.options.map(option => (
+                                                            <option
+                                                                key={option.id}
+                                                                value={option.id}>
+                                                                {option.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    <input
+                                                        ref={element => {
+                                                            if (element) {
+                                                                inputRefs.current[index] = element
+                                                            }
+                                                        }}
+                                                        className="border rounded px-2 py-1 w-full text-sm"
+                                                        type={field.type ?? "text" /** TODO: Remove the default type after the transition to TypeScript is done. */}
+                                                        min={field.min}
+                                                        max={field.max}
+                                                        placeholder={field.placeholder}
+                                                        defaultValue={field.defaultValue}
+                                                        disabled={field.disabled}
+                                                        autoFocus={index === 0} />
+                                                )}
+                                            </div>
+                                        )
+                                    })}
                                     <div className="flex justify-end gap-2">
                                         <button
                                             className="px-3 py-1 rounded bg-gray-200"
