@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: pgadmin
 spec:
-  replicas: {{ .Values.pgadmin.replicas }}
+  replicas: 0
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -22,7 +22,23 @@ spec:
         - name: pgadmin
           image: "{{ .Values.pgadmin.image }}:{{ .Values.pgadmin.tag }}"
           ports:
-            - containerPort: {{ .Values.pgadmin.service.port }}
+            - containerPort: {{ .Values.pgadmin.service.port }}             
+          readinessProbe:
+            httpGet:
+              path: /misc/ping
+              port: {{ .Values.pgadmin.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /misc/ping
+              port: {{ .Values.pgadmin.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 1         
           env:
             - name: PGADMIN_DEFAULT_EMAIL
               value: {{ .Values.pgadmin.email }}

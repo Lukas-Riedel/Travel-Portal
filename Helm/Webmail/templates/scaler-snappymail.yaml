@@ -1,0 +1,19 @@
+{{- if .Values.snappymail.enabled }}
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: snappymail-scaler
+spec:
+  hosts:
+    - {{ .Values.snappymail.service.host }}
+  scaleTargetRef:
+    name: snappymail
+    kind: Deployment
+    apiVersion: apps/v1
+    service: snappymail
+    port: {{ .Values.snappymail.service.port }}
+  replicas:
+    min: 0
+    max: {{ .Values.snappymail.replicas }}
+  scaledownPeriod: 1800
+{{- end }}

@@ -1,0 +1,19 @@
+{{- if .Values.pgadmin.enabled }}
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: pgadmin-scaler
+spec:
+  hosts:
+    - {{ .Values.pgadmin.service.host }}
+  scaleTargetRef:
+    name: pgadmin
+    kind: Deployment
+    apiVersion: apps/v1
+    service: pgadmin
+    port: {{ .Values.pgadmin.service.port }}
+  replicas:
+    min: 0
+    max: {{ .Values.pgadmin.replicas }}
+  scaledownPeriod: 14400
+{{- end }}

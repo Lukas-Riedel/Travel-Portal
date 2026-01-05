@@ -27,4 +27,5 @@ spec:
         - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
         - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
         - "--entrypoints.smtp.address=:25/tcp"
+        - "--providers.kubernetescrd.allowCrossNamespace=true"
         

@@ -1,0 +1,19 @@
+{{- if .Values.rediscommander.enabled }}
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: rediscommander-scaler
+spec:
+  hosts:
+    - {{ .Values.rediscommander.service.host }}
+  scaleTargetRef:
+    name: rediscommander
+    kind: Deployment
+    apiVersion: apps/v1
+    service: rediscommander
+    port: {{ .Values.rediscommander.service.port }}
+  replicas:
+    min: 0
+    max: {{ .Values.rediscommander.replicas }}
+  scaledownPeriod: 14400
+{{- end }}

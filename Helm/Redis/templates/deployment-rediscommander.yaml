@@ -1,0 +1,52 @@
+{{- if .Values.rediscommander.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rediscommander
+spec:
+  replicas: 0
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: rediscommander
+  template:
+    metadata:
+      labels:
+        app: rediscommander
+    spec:
+      containers:
+        - name: rediscommander
+          image: "{{ .Values.rediscommander.image }}:{{ .Values.rediscommander.tag }}"
+          ports:
+            - containerPort: {{ .Values.rediscommander.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.rediscommander.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.rediscommander.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 1  
+          env:
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "{{ .Values.redis.service.port }}"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-password
+                  key: redis-password
+{{- end }}

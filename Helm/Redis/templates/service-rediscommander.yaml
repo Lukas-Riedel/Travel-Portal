@@ -1,0 +1,13 @@
+{{- if .Values.rediscommander.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: rediscommander
+spec:
+  type: {{ .Values.rediscommander.service.type }}
+  ports:
+    - port: {{ .Values.rediscommander.service.port }}
+      targetPort: {{ .Values.rediscommander.service.port }}
+  selector:
+    app: rediscommander
+{{- end }}

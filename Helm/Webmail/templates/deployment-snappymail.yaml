@@ -6,7 +6,7 @@ metadata:
   labels:
     app: snappymail
 spec:
-  replicas: {{ .Values.snappymail.replicas }}
+  replicas: 0
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -25,6 +25,22 @@ spec:
           image: "{{ .Values.snappymail.image }}:{{ .Values.snappymail.tag }}"
           ports:
             - containerPort: {{ .Values.snappymail.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /index.php
+              port: {{ .Values.snappymail.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /index.php
+              port: {{ .Values.snappymail.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 1     
           volumeMounts:
             - name: snappymail-data
               mountPath: /var/lib/snappymail

@@ -10,8 +10,9 @@ spec:
     - match: Host(`{{ .Values.pgadmin.service.host }}`)
       kind: Rule
       services:
-        - name: pgadmin
-          port: {{ .Values.pgadmin.service.port }}
+        - name: keda-add-ons-http-interceptor-proxy
+          namespace: keda
+          port: 8080
   tls:
     certResolver: letsencrypt
 {{- end }}
