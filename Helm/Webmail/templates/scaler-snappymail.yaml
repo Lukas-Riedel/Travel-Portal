@@ -15,5 +15,5 @@ spec:
   replicas:
     min: 0
     max: {{ .Values.snappymail.replicas }}
-  scaledownPeriod: 1800
+  scaledownPeriod: 300
 {{- end }}

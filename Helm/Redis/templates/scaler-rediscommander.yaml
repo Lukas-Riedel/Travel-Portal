@@ -15,5 +15,5 @@ spec:
   replicas:
     min: 0
     max: {{ .Values.rediscommander.replicas }}
-  scaledownPeriod: 14400
+  scaledownPeriod: 300
 {{- end }}

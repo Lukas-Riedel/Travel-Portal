@@ -64,7 +64,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
                         className="btn-large-gray">
                         <SendToBack size={16} />
                     </button>
-                    {onMainPhotoUpdated && photoPosition && album.mainPhoto.id !== photo.id && (
+                    {onMainPhotoUpdated && photoPosition && album?.mainPhoto?.id !== photo.id && (
                         <button
                             onClick={handleMainPhotoUpdated}
                             className="btn-large-gray">
