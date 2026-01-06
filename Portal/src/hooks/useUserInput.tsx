@@ -131,13 +131,16 @@ export const useUserInput = (): UseUserInputResult => {
                                             }))
 
                                             if (typeof dv === "number") {
-                                                const numeric = options
-                                                    .filter(o => !Number.isNaN(o.num))
-                                                    .sort((a, b) => a.num - b.num)
+                                                const numeric = options.filter(o => !Number.isNaN(o.num))
 
-                                                const hit = numeric.find(o => o.num >= dv)
-                                                if (hit) {
-                                                    return hit.id
+                                                if (numeric.length > 0) {
+                                                    const closest = numeric.reduce((prev, curr) => {
+                                                        const prevDiff = Math.abs(prev.num - dv)
+                                                        const currDiff = Math.abs(curr.num - dv)
+                                                        return currDiff < prevDiff ? curr : prev
+                                                    })
+
+                                                    return closest.id
                                                 }
                                             }
 

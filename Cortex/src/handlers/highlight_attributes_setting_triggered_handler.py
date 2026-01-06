@@ -5,7 +5,7 @@ from src.handlers.base_handler import BaseHandler
 from src.core.ai_engine import AiEngine
 from src.core.core_client import CoreClient
 
-REFERENCE_HIGHLIGHTS_MIN_COUNT: Final[int] = 20
+REFERENCE_HIGHLIGHTS_MIN_COUNT: Final[int] = 100
 
 
 class HighlightAttributesSettingTriggeredHandler(BaseHandler):

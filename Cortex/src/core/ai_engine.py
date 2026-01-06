@@ -22,7 +22,8 @@ PHOTO_EMBEDDING_CACHE_TTL: Final[int] = 365 * 86400
 PHOTO_CHECKSUM_CACHE_KEY_FORMAT = "AiEngine:PhotoChecksum:{photo_id}"
 PHOTO_CHECKSUM_CACHE_TTL: Final[int] = 365 * 86400
 
-ATTRIBUTES_ESTIMATION_NEAREST_NEIGHBOURS_COUNT: Final[int] = 5
+# TODO: Propagate the value from the environment variable.
+ATTRIBUTES_ESTIMATION_NEAREST_NEIGHBOURS_COUNT: Final[int] = 9
 
 
 class AiEngine:
@@ -84,7 +85,7 @@ class AiEngine:
 
                 if key in neighbor_attrs:
                     val = neighbor_attrs[key]
-                    weight = top_k_values[i].item()
+                    weight = pow(top_k_values[i].item(), 10)
 
                     weighted_sum += val * weight
                     sum_weights_for_key += weight
