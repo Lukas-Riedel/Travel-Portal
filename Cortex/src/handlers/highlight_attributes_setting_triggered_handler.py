@@ -35,6 +35,7 @@ class HighlightAttributesSettingTriggeredHandler(BaseHandler):
             or len(reference_highlights) < REFERENCE_HIGHLIGHTS_MIN_COUNT
         ):
             logger.warning("There are not enough reference highlights. Quality attributes will not be set.")
+            return
 
         candidate_emb = self.ai_engine.get_or_create_photo_embedding(
             highlight.get("photo")

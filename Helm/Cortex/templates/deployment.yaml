@@ -39,6 +39,8 @@ spec:
               value: "{{ .Values.cortex.highlights.coefficient.negative }}"
             - name: AGE_COEFFICIENT
               value: "{{ .Values.cortex.highlights.coefficient.age }}"
+            - name: QUALITY_COEFFICIENT
+              value: "{{ .Values.cortex.highlights.coefficient.quality }}"
             - name: SIMILARITY_THRESHOLD
               value: "{{ .Values.cortex.highlights.threshold.similarity }}"
             - name: CORE_HOST
