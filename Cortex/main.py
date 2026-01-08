@@ -43,7 +43,6 @@ def main():
             core_client,
             int(os.getenv("MAX_THREADS")),
             float(os.getenv("AGE_COEFFICIENT")),
-            float(os.getenv("QUALITY_COEFFICIENT")),
             float(os.getenv("SIMILARITY_THRESHOLD")),
         ),
         HighlightAttributesSettingTriggeredHandler(ai_engine, core_client),

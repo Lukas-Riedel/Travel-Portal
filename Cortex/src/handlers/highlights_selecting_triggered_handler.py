@@ -37,14 +37,12 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         core_client: CoreClient,
         max_threads: int,
         age_coeff: float,
-        quality_coeff: float,
         similarity_threshold: float,
     ) -> None:
         self.ai_engine = ai_engine
         self.core_client = core_client
         self.max_workers = 2 * max_threads
         self.age_coeff = age_coeff
-        self.quality_coeff = quality_coeff
         self.similarity_threshold = similarity_threshold
 
     def handle(self, args: dict) -> None:
@@ -444,44 +442,18 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             for p in places
             if p.get("mainHighlight")
         }
-        
-        # TODO: This is duplicated in HighlightAttributesSettingTriggeredHandler.
-        ## Start of duplicated code.
-        all_places = self.core_client.get_places()
-        reference_highlights = []
-
-        for p in all_places:
-            mh = p.get("mainHighlight")
-            if mh and mh.get("attributes"):
-                reference_highlights.append(mh)
-        ## End of duplicated code.
 
         final_scores = []
         for i, p in enumerate(preprocessed_photos):
             base_quality = float(scores[i])
-
             time_bonus = (
                 (datetime.fromtimestamp(p.get("timestamp")).year - min_year)
                 / year_range
             ) * self.age_coeff
-
-            quality_attributes = {}
-            if reference_highlights:
-                photo_emb = self.ai_engine.get_or_create_photo_embedding(p)
-
-                if photo_emb is not None:
-                    quality_attributes = self.ai_engine.estimate_attributes_from_references(
-                        photo_emb, reference_highlights
-                    )
-
-            quality_bonus = (
-                (sum(quality_attributes.values()) / len(quality_attributes)) / 100.0 * self.quality_coeff
-                if quality_attributes else 0.0
+            main_highlight_bonus = (
+                base_quality if p.get("id") in main_highlight_photo_ids else 0.0
             )
-
-            main_highlight_bonus = float(p.get("id") in main_highlight_photo_ids)
-
-            final_scores.append(base_quality + time_bonus + quality_bonus + main_highlight_bonus)
+            final_scores.append(base_quality + time_bonus + main_highlight_bonus)
 
         return final_scores
 
