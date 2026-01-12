@@ -87,7 +87,7 @@
         }
 
         public static function AlbumInvalidated(string $albumId) : Event {
-            return new WorkerEvent(Event::getName(), EventPriority::Medium, array("albumId" => $albumId));
+            return new WorkerEvent(Event::getEventName(), EventPriority::Medium, array("albumId" => $albumId));
         }
 
         public static function AllAlbumsInvalidated() : Event {
