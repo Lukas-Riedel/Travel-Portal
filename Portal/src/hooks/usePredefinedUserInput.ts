@@ -36,10 +36,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
 
     const showRefreshAlbumToast = (refreshAlbum: () => Promise<Album>) =>
         showConfirmToast(
-            t("album.prompt.refresh.message"),
+            t("album.prompt.refresh.selected.message"),
             refreshAlbum,
-            t("album.prompt.refresh.confirmed"),
-            t("album.prompt.refresh.failed")
+            t("album.prompt.refresh.selected.confirmed"),
+            t("album.prompt.refresh.selected.failed")
         )
 
     const showRemoveAlbumToast = (removeAlbum: () => Promise<void>) =>
