@@ -48,13 +48,13 @@ public class AgentApplicationConfiguration {
     public static final String IAM_SERVICE_QUALIFIER = "iam";
 
     @Bean
-    public ObjectMapper objectMapper() {
+    public static ObjectMapper objectMapper() {
         return new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     @Bean
     @Qualifier(CORE_SERVICE_QUALIFIER)
-    public RestTemplate coreRestTemplate(@Value("${service.core.url}") String serviceUrl) {
+    public static RestTemplate coreRestTemplate(@Value("${service.core.url}") String serviceUrl) {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -63,7 +63,7 @@ public class AgentApplicationConfiguration {
 
     @Bean
     @Qualifier(IAM_SERVICE_QUALIFIER)
-    public RestTemplate iamRestTemplate(@Value("${service.iam.url}") String serviceUrl) {
+    public static RestTemplate iamRestTemplate(@Value("${service.iam.url}") String serviceUrl) {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -71,13 +71,13 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public ServiceClient serviceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate,
+    public static ServiceClient serviceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate,
                                        HttpEntityProvider httpEntityProvider) {
         return new ServiceClient(restTemplate, retryTemplate, httpEntityProvider);
     }
 
     @Bean
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler(@Value("${agent.core.scheduler.thread.count:4}") int threadCount) {
+    public static ThreadPoolTaskScheduler threadPoolTaskScheduler(@Value("${agent.core.scheduler.thread.count:4}") int threadCount) {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(threadCount);
         scheduler.initialize();
@@ -85,12 +85,12 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public Queue agentQueue(String agentQueueName) {
+    public static Queue agentQueue(String agentQueueName) {
         return QueueBuilder.nonDurable(agentQueueName).autoDelete().build();
     }
 
     @Bean
-    public RetryTemplate retryTemplate(@Value("${agent.core.retry.attempts:5}") int maxAttempts,
+    public static RetryTemplate retryTemplate(@Value("${agent.core.retry.attempts:5}") int maxAttempts,
         @Value("${agent.core.retry.interval:2000}") long initialInterval,
         @Value("${agent.core.retry.multiplier:2}") int backoffMultiplier) {
         RetryTemplate retryTemplate = new RetryTemplate();
@@ -107,12 +107,12 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public String agentQueueName(@Value("${agent.core.queue.name}") String agentQueuePrefix, String agentIdentifier) {
+    public static String agentQueueName(@Value("${agent.core.queue.name}") String agentQueuePrefix, String agentIdentifier) {
         return agentQueuePrefix + "_" + agentIdentifier;
     }
 
     @Bean
-    public String agentIdentifier(ConfigurationRepository configurationRepository) {
+    public static String agentIdentifier(ConfigurationRepository configurationRepository) {
         if (!configurationRepository.existsById(DEVICE_ID_CONFIGURATION_KEY)) {
             configurationRepository.save(new Configuration(DEVICE_ID_CONFIGURATION_KEY, UUID.randomUUID().toString()));
         }
@@ -120,7 +120,7 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public BeanPostProcessor beanPostProcessor(LoggingContext loggingContext) {
+    public static BeanPostProcessor beanPostProcessor(LoggingContext loggingContext) {
         return new BeanPostProcessor() {
 
             @Override
@@ -142,7 +142,7 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public ExifRewriter exifRewriter() {
+    public static ExifRewriter exifRewriter() {
         return new ExifRewriter();
     }
 }
