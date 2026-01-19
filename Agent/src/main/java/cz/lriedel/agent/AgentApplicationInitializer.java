@@ -1,11 +1,12 @@
 package cz.lriedel.agent;
 
-import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.client.UserTokenSupplier;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,25 +17,26 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.QUEUE_NAME_CONFIGURATION_KEY;
 
 @Slf4j
 @Component
-public class AgentApplicationInitializer implements CommandLineRunner {
-
-    private static final String QUEUE_NAME_CONFIGURATION_KEY = "queueName";
+class AgentApplicationInitializer implements CommandLineRunner {
 
     private final ConfigurationRepository configurationRepository;
     private final UserTokenSupplier userTokenSupplier;
-    private final ServiceClient serviceClient;
+    private final CoreClient coreClient;
+    private final RetryTemplate retryTemplate;
     private final List<AgentContextDataProvider> agentContextDataProviders;
 
     private final String agentQueueName;
 
-    public AgentApplicationInitializer(ConfigurationRepository configurationRepository, ServiceClient serviceClient,
-                                       UserTokenSupplier userTokenSupplier, List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName) {
+    AgentApplicationInitializer(ConfigurationRepository configurationRepository, CoreClient coreClient, UserTokenSupplier userTokenSupplier,
+            RetryTemplate retryTemplate, List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName) {
         this.configurationRepository = configurationRepository;
-        this.serviceClient = serviceClient;
+        this.coreClient = coreClient;
         this.userTokenSupplier = userTokenSupplier;
+        this.retryTemplate = retryTemplate;
         this.agentContextDataProviders = agentContextDataProviders;
         this.agentQueueName = agentQueueName;
     }
@@ -51,7 +53,10 @@ public class AgentApplicationInitializer implements CommandLineRunner {
             data.putAll(agentContextDataProvider.getContextData());
         }
 
-        serviceClient.registerDevice(agentId, data);
+        retryTemplate.execute(context -> {
+            coreClient.registerDevice(agentId, data);
+            return null;
+        });
     }
 
     @Override

@@ -29,8 +29,7 @@ class EventListener {
     @RabbitHandler
     public void onPhotosUploadingTriggered(PhotosUploadingTriggeredEventArgs args) {
         log.info("Received a request to upload photos...");
-        photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(),
-            args.mainPhotoPosition(), args.path());
+        photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(), args.mainPhotoPosition(), args.path());
     }
 
     @RabbitHandler

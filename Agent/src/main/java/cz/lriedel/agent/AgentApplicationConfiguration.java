@@ -2,8 +2,6 @@ package cz.lriedel.agent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import cz.lriedel.agent.client.HttpEntityProvider;
-import cz.lriedel.agent.client.ServiceClient;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
@@ -31,9 +29,12 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriBuilderFactory;
 
 import java.util.UUID;
 
+import static cz.lriedel.agent.LoggingContext.TRANSACTION_ID_HEADER;
 import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
 
 @EnableRabbit
@@ -53,27 +54,20 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
+    public static UriBuilderFactory uriBuilderFactory() {
+        return new DefaultUriBuilderFactory();
+    }
+
+    @Bean
     @Qualifier(CORE_SERVICE_QUALIFIER)
     public static RestTemplate coreRestTemplate(@Value("${service.core.url}") String serviceUrl) {
-        return new RestTemplateBuilder()
-            .rootUri(serviceUrl)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .build();
+        return new RestTemplateBuilder().rootUri(serviceUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
     }
 
     @Bean
     @Qualifier(IAM_SERVICE_QUALIFIER)
     public static RestTemplate iamRestTemplate(@Value("${service.iam.url}") String serviceUrl) {
-        return new RestTemplateBuilder()
-            .rootUri(serviceUrl)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .build();
-    }
-
-    @Bean
-    public static ServiceClient serviceClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, RetryTemplate retryTemplate,
-                                       HttpEntityProvider httpEntityProvider) {
-        return new ServiceClient(restTemplate, retryTemplate, httpEntityProvider);
+        return new RestTemplateBuilder().rootUri(serviceUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
     }
 
     @Bean
@@ -91,8 +85,7 @@ public class AgentApplicationConfiguration {
 
     @Bean
     public static RetryTemplate retryTemplate(@Value("${agent.core.retry.attempts:5}") int maxAttempts,
-        @Value("${agent.core.retry.interval:2000}") long initialInterval,
-        @Value("${agent.core.retry.multiplier:2}") int backoffMultiplier) {
+            @Value("${agent.core.retry.interval:2000}") long initialInterval, @Value("${agent.core.retry.multiplier:2}") int backoffMultiplier) {
         RetryTemplate retryTemplate = new RetryTemplate();
 
         SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(maxAttempts);
@@ -108,7 +101,7 @@ public class AgentApplicationConfiguration {
 
     @Bean
     public static String agentQueueName(@Value("${agent.core.queue.name}") String agentQueuePrefix, String agentIdentifier) {
-        return agentQueuePrefix + "_" + agentIdentifier;
+        return String.join("_", agentQueuePrefix, agentIdentifier);
     }
 
     @Bean
@@ -128,7 +121,7 @@ public class AgentApplicationConfiguration {
                 if (bean instanceof AbstractRabbitListenerContainerFactory<?> factory) {
                     MessagePostProcessor messagePostProcessor = message -> {
                         MessageProperties messageProperties = message.getMessageProperties();
-                        String transactionId = messageProperties.getHeader(LoggingContext.TRANSACTION_ID_HEADER);
+                        String transactionId = messageProperties.getHeader(TRANSACTION_ID_HEADER);
                         if (StringUtils.isNotBlank(transactionId)) {
                             loggingContext.setTransactionId(transactionId);
                         }

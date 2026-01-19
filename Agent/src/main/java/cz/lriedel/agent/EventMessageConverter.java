@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Component
-final class EventMessageConverter extends Jackson2JsonMessageConverter {
+class EventMessageConverter extends Jackson2JsonMessageConverter {
 
     private static final String EVENT_NAME_PROPERTY_KEY = "name";
     private static final String EVENT_ARGS_PROPERTY_KEY = "args";
@@ -34,10 +34,9 @@ final class EventMessageConverter extends Jackson2JsonMessageConverter {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(EventArgs.class));
 
-        return scanner.findCandidateComponents(EventMessageConverter.class.getPackageName()).stream()
-            .map(EventMessageConverter::getCandidateName)
-            .filter(aClass -> aClass.getSimpleName().endsWith(EventArgs.class.getSimpleName()))
-            .collect(Collectors.toMap(aClass -> aClass.getSimpleName().replaceAll(EventArgs.class.getSimpleName(), EMPTY), Function.identity()));
+        return scanner.findCandidateComponents(EventMessageConverter.class.getPackageName()).stream().map(EventMessageConverter::getCandidateName)
+                .filter(aClass -> aClass.getSimpleName().endsWith(EventArgs.class.getSimpleName()))
+                .collect(Collectors.toMap(aClass -> aClass.getSimpleName().replaceAll(EventArgs.class.getSimpleName(), EMPTY), Function.identity()));
     }
 
     @SneakyThrows
@@ -51,6 +50,6 @@ final class EventMessageConverter extends Jackson2JsonMessageConverter {
         Map<String, Object> map = objectMapper.readValue(message.getBody(), Map.class);
 
         return objectMapper.readValue(objectMapper.writeValueAsBytes(map.get(EVENT_ARGS_PROPERTY_KEY)),
-            supportedEvents.getOrDefault(map.get(EVENT_NAME_PROPERTY_KEY), Map.class));
+                supportedEvents.getOrDefault(map.get(EVENT_NAME_PROPERTY_KEY), Map.class));
     }
 }

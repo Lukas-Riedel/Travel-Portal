@@ -9,8 +9,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
+import static cz.lriedel.agent.LoggingContext.TRANSACTION_ID_HEADER;
+
 @Component
-public final class HttpEntityProvider {
+public class HttpEntityProvider {
 
     private final ObjectMapper objectMapper;
     private final LoggingContext loggingContext;
@@ -34,7 +36,7 @@ public final class HttpEntityProvider {
     private HttpHeaders getHttpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(tokenSupplier.get());
-        httpHeaders.set(LoggingContext.TRANSACTION_ID_HEADER, loggingContext.getTransactionId());
+        httpHeaders.set(TRANSACTION_ID_HEADER, loggingContext.getTransactionId());
         return httpHeaders;
     }
 }

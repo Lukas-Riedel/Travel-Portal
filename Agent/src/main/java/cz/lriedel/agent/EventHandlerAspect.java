@@ -1,6 +1,6 @@
 package cz.lriedel.agent;
 
-import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.model.args.EventArgs;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,15 +16,19 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Slf4j
 @Aspect
 @Component
-final class EventHandlerAspect {
+class EventHandlerAspect {
+
+    private static final String PROCESSING_STARTED_EVENT_NAME = "ProcessingStarted";
+    private static final String PROCESSING_ENDED_EVENT_NAME = "ProcessingEnded";
+    private static final String PROCESSING_FAILED_EVENT_NAME = "ProcessingFailed";
 
     private static final String EVENT_NAME_PROPERTY_KEY = "name";
     private static final String EVENT_ARGS_PROPERTY_KEY = "args";
 
-    private final ServiceClient serviceClient;
+    private final CoreClient coreClient;
 
-    public EventHandlerAspect(ServiceClient serviceClient) {
-        this.serviceClient = serviceClient;
+    EventHandlerAspect(CoreClient coreClient) {
+        this.coreClient = coreClient;
     }
 
     @Nullable
@@ -36,15 +40,15 @@ final class EventHandlerAspect {
 
         long start = System.currentTimeMillis();
         log.info("Starting processing of '{} ({})'...", eventName, eventArgs);
-        serviceClient.createEvent("ProcessingStarted", event);
+        coreClient.createEvent(PROCESSING_STARTED_EVENT_NAME, event);
 
         try {
-            Object result = pjp.proceed();        
-            serviceClient.createEvent("ProcessingEnded", event);
+            Object result = pjp.proceed();
+            coreClient.createEvent(PROCESSING_ENDED_EVENT_NAME, event);
             return result;
         }
         catch (Exception e) {
-            serviceClient.createEvent("ProcessingFailed", event);
+            coreClient.createEvent(PROCESSING_FAILED_EVENT_NAME, event);
             log.error(String.format("An exception occurred when processing '%s (%s)'.", eventName, eventArgs), e);
             return null;
         }

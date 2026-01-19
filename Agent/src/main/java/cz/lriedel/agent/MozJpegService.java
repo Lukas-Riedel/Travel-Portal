@@ -66,30 +66,24 @@ public class MozJpegService {
         Files.delete(tempZip);
 
         Validate.isTrue(getCJpegExeFilePath().toFile().exists(), "Installation failed. Unable to locate '" + getCJpegExeFilePath() + "'.");
-        log.info("MozJPEG has successfully been installed...");
+        log.info("MozJPEG has been successfully installed...");
     }
 
     @SneakyThrows
     public void compress(Path input, Path output, int quality) {
-        ProcessBuilder pb = new ProcessBuilder(
-            getCJpegExeFilePath().toAbsolutePath().toString(),
-            "-quality", String.valueOf(quality),
-            "-progressive",
-            "-optimize",
-            "-outfile", output.toAbsolutePath().toString()
-        );
+        ProcessBuilder pb = new ProcessBuilder(getCJpegExeFilePath().toAbsolutePath().toString(), "-quality", String.valueOf(quality), "-progressive",
+                "-optimize", "-outfile", output.toAbsolutePath().toString());
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
 
-        try (OutputStream stdin = process.getOutputStream();
-            InputStream fis = Files.newInputStream(input)) {
+        try (OutputStream stdin = process.getOutputStream(); InputStream fis = Files.newInputStream(input)) {
             fis.transferTo(stdin);
         }
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            throw new RuntimeException("MozJPEG failed with exit code " + exitCode + ".");
+            throw new IllegalStateException("MozJPEG failed with exit code " + exitCode + ".");
         }
     }
 

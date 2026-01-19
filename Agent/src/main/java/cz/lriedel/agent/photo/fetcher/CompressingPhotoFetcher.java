@@ -19,9 +19,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @ConditionalOnMissingBean(StandardPhotoFetcher.class)
-final class CompressingPhotoFetcher implements PhotoFetcher {
-
-    private static final String JPG_FILE_EXTENSION = ".jpg";
+class CompressingPhotoFetcher implements PhotoFetcher {
 
     private final MozJpegService mozJpegService;
     private final ExifRewriter exifRewriter;
@@ -36,11 +34,11 @@ final class CompressingPhotoFetcher implements PhotoFetcher {
     @SneakyThrows
     @Override
     public byte[] fetch(Path path) {
-        Path tempOutputWithoutMetadata = Files.createTempFile(UUID.randomUUID().toString(), JPG_FILE_EXTENSION);
-        Path tempOutputWithMetadata = Files.createTempFile(UUID.randomUUID().toString(), JPG_FILE_EXTENSION);
+        Path tempOutputWithoutMetadata = Files.createTempFile(UUID.randomUUID().toString(), null);
+        Path tempOutputWithMetadata = Files.createTempFile(UUID.randomUUID().toString(), null);
 
         try {
-            mozJpegService.compress(path, tempOutputWithoutMetadata, (int)(100 * outputQuality));
+            mozJpegService.compress(path, tempOutputWithoutMetadata, (int) (100 * outputQuality));
 
             JpegImageMetadata sourceMetadata = (JpegImageMetadata) Imaging.getMetadata(path.toFile());
             TiffImageMetadata imageMetadata = sourceMetadata.getExif();

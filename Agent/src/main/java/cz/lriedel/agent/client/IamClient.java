@@ -18,31 +18,41 @@ public class IamClient {
 
     private static final String DEFAULT_TOKEN_SCOPE = "openid offline_access";
 
-    private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String CREATE_TOKEN_ENDPOINT_PATH = "/token";
 
-    public IamClient(@Qualifier(IAM_SERVICE_QUALIFIER) RestTemplate restTemplate) {
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    public IamClient(@Qualifier(IAM_SERVICE_QUALIFIER) RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @SneakyThrows
     public IamResponse createUserToken(String username, String password) {
         TokenPrototype tokenPrototype = TokenPrototype.builder().username(username).password(password).scope(DEFAULT_TOKEN_SCOPE).build();
-        return Objects.requireNonNull(restTemplate.postForObject("/token",
-                new HttpEntity<>(objectMapper.writeValueAsBytes(tokenPrototype)), IamResponse.class));
+
+        return sendTokenRequest(tokenPrototype);
     }
 
     @SneakyThrows
     public IamResponse createClientToken(String clientId, String clientSecret) {
         TokenPrototype tokenPrototype = TokenPrototype.builder().clientId(clientId).clientSecret(clientSecret).build();
-        return Objects.requireNonNull(restTemplate.postForObject("/token",
-                new HttpEntity<>(objectMapper.writeValueAsBytes(tokenPrototype)), IamResponse.class));
+
+        return sendTokenRequest(tokenPrototype);
     }
 
     @SneakyThrows
     public IamResponse createToken(String refreshToken) {
         TokenPrototype tokenPrototype = TokenPrototype.builder().refreshToken(refreshToken).scope(DEFAULT_TOKEN_SCOPE).build();
-        return Objects.requireNonNull(restTemplate.postForObject("/token",
-                new HttpEntity<>(objectMapper.writeValueAsBytes(tokenPrototype)), IamResponse.class));
+
+        return sendTokenRequest(tokenPrototype);
+    }
+
+    @SneakyThrows
+    private IamResponse sendTokenRequest(TokenPrototype tokenPrototype) {
+        return Objects.requireNonNull(
+                restTemplate.postForObject(CREATE_TOKEN_ENDPOINT_PATH, new HttpEntity<>(objectMapper.writeValueAsBytes(tokenPrototype)),
+                        IamResponse.class));
     }
 }

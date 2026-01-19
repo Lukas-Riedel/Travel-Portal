@@ -10,7 +10,7 @@ import java.nio.file.Path;
 
 @Component
 @ConditionalOnProperty(value = "agent.photo.compression.rate", havingValue = "1")
-final class StandardPhotoFetcher implements PhotoFetcher {
+class StandardPhotoFetcher implements PhotoFetcher {
 
     @SneakyThrows
     @Override

@@ -7,7 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 
 public interface UploadedPhotoRepository extends JpaRepository<UploadedPhoto, String> {
+
     @Modifying
     @Transactional
-    long deleteByUploadedBefore(Instant instant);
+    long deleteByUploadedBefore(Instant timestamp);
 }

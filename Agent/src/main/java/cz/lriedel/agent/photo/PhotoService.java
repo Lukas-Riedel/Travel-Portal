@@ -3,11 +3,10 @@ package cz.lriedel.agent.photo;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.lriedel.agent.AgentContextDataProvider;
-import cz.lriedel.agent.client.ServiceClient;
+import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.model.Album;
 import cz.lriedel.agent.model.Place;
 import cz.lriedel.agent.persistance.Configuration;
@@ -20,6 +19,7 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.lang.Nullable;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -38,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
 import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
@@ -45,26 +55,48 @@ import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public final class PhotoService implements AgentContextDataProvider {
+public class PhotoService implements AgentContextDataProvider {
 
     private static final int AVAILABLE_WORKERS = 16;
     private static final Duration MIN_PHOTO_AGE = Duration.ofSeconds(10);
-    private static final Duration UPLOADED_PHOTOS_RETENTION_POLICY = Duration.ofDays(30);
+    private static final Duration UPLOADED_PHOTOS_RETENTION_POLICY = Duration.ofDays(365);
     private static final String JPG_SUFFIX = ".jpg";
-    
-    private final ServiceClient serviceClient;
+
+    private final CoreClient coreClient;
+    private final RetryTemplate retryTemplate;
     private final PhotoFetcher photoFetcher;
     private final ConfigurationRepository configurationRepository;
     private final UploadedPhotoRepository uploadedPhotoRepository;
     private final ObjectMapper objectMapper;
-    
-    public PhotoService(ServiceClient serviceClient, PhotoFetcher photoFetcher, ConfigurationRepository configurationRepository,
-                        UploadedPhotoRepository uploadedPhotoRepository, ObjectMapper objectMapper) {
-        this.serviceClient = serviceClient;
+
+    public PhotoService(CoreClient coreClient, RetryTemplate retryTemplate, PhotoFetcher photoFetcher,
+            ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository, ObjectMapper objectMapper) {
+        this.coreClient = coreClient;
+        this.retryTemplate = retryTemplate;
         this.photoFetcher = photoFetcher;
         this.configurationRepository = configurationRepository;
         this.uploadedPhotoRepository = uploadedPhotoRepository;
         this.objectMapper = objectMapper;
+    }
+
+    @SneakyThrows
+    private static Date getPhotoCreationTime(Path path) {
+        Metadata metadata = ImageMetadataReader.readMetadata(path.toFile());
+        for (Directory directory : metadata.getDirectories()) {
+            if (directory.containsTag(TAG_DATETIME_ORIGINAL)) {
+                return directory.getDate(TAG_DATETIME_ORIGINAL);
+            }
+        }
+
+        throw new IllegalStateException("Could not obtain creation date for '" + path + "'.");
+    }
+
+    private static String getPhotoName() {
+        return UUID.randomUUID() + JPG_SUFFIX;
+    }
+
+    private static String getExpectedAlbumName(String placeName, Instant start) {
+        return String.join(" ", placeName, start.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d.M.yyyy")));
     }
 
     @Scheduled(fixedDelayString = "${agent.photo.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
@@ -74,7 +106,7 @@ public final class PhotoService implements AgentContextDataProvider {
         if (!synchronizedFolders.isEmpty()) {
             Set<String> uploadedPaths = uploadedPhotoRepository.findAll().stream().map(UploadedPhoto::getPath).collect(toSet());
 
-            for (Place place : serviceClient.getPlaces()) {
+            for (Place place : coreClient.getPlaces()) {
                 for (cz.lriedel.agent.model.Date date : place.dates()) {
                     String expectedAlbumName = getExpectedAlbumName(place.name(), date.start());
 
@@ -86,13 +118,17 @@ public final class PhotoService implements AgentContextDataProvider {
                             Album album = date.album();
 
                             if (album == null) {
-                                album = serviceClient.createAlbum(place.id(), date.start());
+                                album = coreClient.createAlbum(place.id(), date.start());
                             }
 
                             boolean anyUploaded = uploadPhotos(place.id(), album.id(), albumFolder,
-                                path -> !uploadedPaths.contains(path.toString()) && isPathCreated(path));
+                                    path -> !uploadedPaths.contains(path.toString()) && isPathCreated(path));
                             if (anyUploaded) {
-                                serviceClient.refreshAlbum(place.id(), album.id());
+                                String albumId = album.id();
+                                retryTemplate.execute(context -> {
+                                    coreClient.refreshAlbum(place.id(), albumId, null);
+                                    return null;
+                                });
                             }
                         }
                     }
@@ -112,33 +148,40 @@ public final class PhotoService implements AgentContextDataProvider {
 
     public void replacePhoto(String placeId, String albumId, String replacedPhotoId, Path path) {
         log.info("Uploading a replacement for the photo {}...", replacedPhotoId);
-        serviceClient.uploadPhoto(placeId, albumId, getPhotoName(path),
-                replacedPhotoId, photoFetcher.fetch(path));
+        byte[] data = photoFetcher.fetch(path);
+        retryTemplate.execute(context -> {
+            coreClient.uploadPhoto(placeId, albumId, getPhotoName(), replacedPhotoId, data);
+            return null;
+        });
+
         log.info("Uploading of the replacement has finished. Refreshing the album...");
-        serviceClient.refreshAlbum(placeId, albumId);
+        retryTemplate.execute(context -> {
+            coreClient.refreshAlbum(placeId, albumId, null);
+            return null;
+        });
     }
-    
-    public void uploadPhotos(String placeId, @Nullable Long timestamp, @Nullable String albumId,
-                             @Nullable Integer mainPhotoPosition, Path path) {
+
+    public void uploadPhotos(String placeId, @Nullable Instant timestamp, @Nullable String albumId, @Nullable Integer mainPhotoPosition, Path path) {
         if (albumId == null) {
             log.info("Album for place {} does not exist. Creating a new album...", placeId);
-            albumId = serviceClient.createAlbum(placeId, Objects.requireNonNull(timestamp)).id();
+            albumId = coreClient.createAlbum(placeId, Objects.requireNonNull(timestamp)).id();
         }
+
         log.info("Starting photos uploading for album {}...", albumId);
         uploadPhotos(placeId, albumId, path, whatever -> true);
+
         log.info("Uploading has finished. Refreshing the album...");
-        if (mainPhotoPosition != null) {
-            serviceClient.refreshAlbum(placeId, albumId, mainPhotoPosition);
-        }
-        else {
-            serviceClient.refreshAlbum(placeId, albumId);
-        }
+        String effectiveAlbumId = albumId;
+        retryTemplate.execute(context -> {
+            coreClient.refreshAlbum(placeId, effectiveAlbumId, mainPhotoPosition);
+            return null;
+        });
     }
 
     @SneakyThrows
-    private boolean uploadPhotos(String placeId, String albumId, Path path, Predicate<Path> predicate) {
+    private boolean uploadPhotos(String placeId, String albumId, Path path, Predicate<Path> pathFiter) {
         try (Stream<Path> paths = Files.list(path)) {
-            return uploadPhotos(placeId, albumId, paths.filter(predicate));
+            return uploadPhotos(placeId, albumId, paths.filter(pathFiter));
         }
         finally {
             uploadedPhotoRepository.deleteByUploadedBefore(Instant.now().minus(UPLOADED_PHOTOS_RETENTION_POLICY));
@@ -147,64 +190,54 @@ public final class PhotoService implements AgentContextDataProvider {
 
     @SneakyThrows
     private boolean uploadPhotos(String placeId, String albumId, Stream<Path> paths) {
-        ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
-        Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime))
-            .collect(toCollection(LinkedList::new));
+        try (ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS)) {
+            Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime)).collect(toCollection(LinkedList::new));
 
-        int expectedBatchSize = queue.size();
-        String batchId = UUID.randomUUID().toString();
+            int expectedBatchSize = queue.size();
+            String batchId = UUID.randomUUID().toString();
 
-        int currentParallelRequestsCount = 1;
-        int position = 1;
+            int currentParallelRequestsCount = 1;
+            int position = 1;
 
-        while (!queue.isEmpty()) {
-            List<Future<Double>> futures = new ArrayList<>();
-            for (int i = 0; i < currentParallelRequestsCount && !queue.isEmpty(); ++i) {
-                final Path submittedPath = queue.remove();
-                final int submittedPosition = position++;
+            while (!queue.isEmpty()) {
+                List<Future<Double>> futures = new ArrayList<>();
+                for (int i = 0; i < currentParallelRequestsCount && !queue.isEmpty(); ++i) {
+                    Path submittedPath = queue.remove();
+                    int submittedPosition = position++;
 
-                futures.add(executorService.submit(() -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath)));
+                    futures.add(executorService.submit(
+                            () -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath)));
+                }
+
+                double sum = 0;
+                for (Future<Double> future : futures) {
+                    sum += future.get();
+                }
+                double averageProcessingSpeed = sum / futures.size();
+                currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
+
+                log.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
             }
 
-            double sum = 0;
-            for (Future<Double> future : futures) {
-                sum += future.get();
-            }
-            double averageProcessingSpeed = sum / futures.size();
-            currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
+            executorService.shutdown();
+            Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
 
-            log.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
+            return position > 1;
         }
-
-        executorService.shutdown();
-        Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
-
-        return position > 1;
     }
 
     @SneakyThrows
     private double uploadPhoto(String placeId, String albumId, String batchId, int expectedBatchSize, int batchPosition, Path path) {
         long start = System.currentTimeMillis();
-        serviceClient.uploadPhoto(placeId, albumId, getPhotoName(path), batchId, expectedBatchSize, batchPosition, photoFetcher.fetch(path));
+        byte[] data = photoFetcher.fetch(path);
+        retryTemplate.execute(context -> {
+            coreClient.uploadPhoto(placeId, albumId, getPhotoName(), batchId, expectedBatchSize, batchPosition, data);
+            return null;
+        });
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;
         double fileSize = FileChannel.open(path).size() / (1024.0 * 1024.0);
         uploadedPhotoRepository.save(new UploadedPhoto(path.toString(), Instant.now()));
         return 8 * fileSize / uploadDuration;
-    }
-
-    @SneakyThrows
-    private static Date getPhotoCreationTime(Path path) {
-        Metadata metadata = ImageMetadataReader.readMetadata(path.toFile());
-        for (Directory directory : metadata.getDirectories()) {
-            if (directory.containsTag(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)) {
-                return directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-            }
-        }
-        throw new IllegalStateException("Could not obtain creation date for '" + path + "'.");
-    }
-    
-    private static String getPhotoName(Path path) {
-        return UUID.randomUUID() + JPG_SUFFIX;
     }
 
     @SneakyThrows
@@ -214,30 +247,27 @@ public final class PhotoService implements AgentContextDataProvider {
             return List.of();
         }
 
-        return objectMapper.readValue(configuration.get().getValue(), new TypeReference<>() {});
+        return objectMapper.readValue(configuration.get().getValue(), new TypeReference<>() {
+
+        });
     }
 
     @Synchronized
     private List<SynchronizedFolder> getAndUpdateNonExpiredSynchronizedFolders() {
         List<SynchronizedFolder> nonExpiredSynchronizedFolders = getSynchronizedFolders().stream()
-            .filter(folder -> folder.expiration().isAfter(Instant.now())).toList();
+                .filter(folder -> folder.expiration().isAfter(Instant.now())).toList();
         saveSynchronizedFolders(nonExpiredSynchronizedFolders);
         return nonExpiredSynchronizedFolders;
     }
 
     @SneakyThrows
     private void saveSynchronizedFolders(List<SynchronizedFolder> synchronizedFolders) {
-        configurationRepository.save(new Configuration(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY,
-            objectMapper.writeValueAsString(synchronizedFolders)));
+        configurationRepository.save(new Configuration(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, objectMapper.writeValueAsString(synchronizedFolders)));
     }
 
     @Override
     public Map<String, Object> getContextData() {
         return Map.of(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders());
-    }
-
-    private static String getExpectedAlbumName(String placeName, long start) {
-        return placeName + " " + Instant.ofEpochSecond(start).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d.M.yyyy"));
     }
 
     @SneakyThrows
@@ -249,8 +279,7 @@ public final class PhotoService implements AgentContextDataProvider {
 
     private boolean isPathCreated(Path path) {
         try {
-            return Duration.between(Files.getLastModifiedTime(path).toInstant(), Instant.now())
-                    .compareTo(MIN_PHOTO_AGE) > 0;
+            return Duration.between(Files.getLastModifiedTime(path).toInstant(), Instant.now()).compareTo(MIN_PHOTO_AGE) > 0;
         }
         catch (Exception e) {
             return false;

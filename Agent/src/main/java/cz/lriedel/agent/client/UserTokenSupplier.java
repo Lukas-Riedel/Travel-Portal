@@ -6,18 +6,20 @@ import cz.lriedel.agent.persistance.ConfigurationRepository;
 import lombok.Synchronized;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 import static cz.lriedel.agent.persistance.ConfigurationRepository.REFRESH_TOKEN_CONFIGURATION_KEY;
 
 @Component
-public final class UserTokenSupplier implements Supplier<String> {
+public class UserTokenSupplier implements Supplier<String> {
 
     private static final double ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95;
 
     private final IamClient iamClient;
     private final ConfigurationRepository configurationRepository;
 
+    @Nullable
     private String cachedAccessToken;
     private long cachedAccessTokenExpiration;
 
@@ -27,7 +29,7 @@ public final class UserTokenSupplier implements Supplier<String> {
     }
 
     public void login(String username, String password) {
-        extractIamResponse(iamClient.createUserToken(username, password));
+        processIamResponse(iamClient.createUserToken(username, password));
     }
 
     @Override
@@ -41,16 +43,15 @@ public final class UserTokenSupplier implements Supplier<String> {
 
     @Synchronized
     private String doGetAccessToken() {
-        String refreshToken = configurationRepository.findById(REFRESH_TOKEN_CONFIGURATION_KEY)
-                .map(Configuration::getValue)
+        String refreshToken = configurationRepository.findById(REFRESH_TOKEN_CONFIGURATION_KEY).map(Configuration::getValue)
                 .orElseThrow(() -> new IllegalStateException("Refresh token is not set in session."));
 
-        extractIamResponse(iamClient.createToken(refreshToken));
+        processIamResponse(iamClient.createToken(refreshToken));
 
         return cachedAccessToken;
     }
 
-    private void extractIamResponse(IamResponse iamResponse) {
+    private void processIamResponse(IamResponse iamResponse) {
         try {
             cachedAccessToken = iamResponse.accessToken();
             cachedAccessTokenExpiration = System.currentTimeMillis() + (long) (ACCESS_TOKEN_VALIDITY_MULTIPLIER * iamResponse.expiresIn() * 1000);
