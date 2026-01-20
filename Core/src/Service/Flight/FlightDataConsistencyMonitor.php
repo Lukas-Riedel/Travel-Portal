@@ -31,13 +31,13 @@
             $pastNonLoggedFlights = array_filter($this->flightService->getAllNonLoggedFlights(), fn($flight) => $flight->getStart() < time());
             foreach ($pastNonLoggedFlights as &$pastNonLoggedFlight) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::NON_LOGGED_FLIGHT_ISSUE_NAME, 
-                    $pastNonLoggedFlight->getFlight() + "/" + $pastNonLoggedFlight->getStart(), $pastNonLoggedFlight, time());
+                    $pastNonLoggedFlight->getFlight() . "/" . $pastNonLoggedFlight->getStart(), $pastNonLoggedFlight, time());
             }
 
             $loggedFlightsWithoutEvent = $this->flightService->getLoggedFlightsWithoutEvent();
             foreach ($loggedFlightsWithoutEvent as &$loggedFlightWithoutEvent) {
                 $dataConsistencyIssues[] = new DataConsistencyIssue(self::LOGGED_FLIGHT_WITHOUT_FLIGHT_EVENT_ISSUE_NAME,
-                    $loggedFlightWithoutEvent->getFlight() + "/" + $loggedFlightWithoutEvent->getStart(), $loggedFlightWithoutEvent, time());
+                    $loggedFlightWithoutEvent->getFlight() . "/" . $loggedFlightWithoutEvent->getStart(), $loggedFlightWithoutEvent, time());
             }
 
             $airportsWithoutLongName = array_filter($this->flightService->getAllAirports(), fn($airport) => $airport->getCode() !== null && $airport->getLongName() === null);
