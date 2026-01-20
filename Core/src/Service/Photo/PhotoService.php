@@ -120,7 +120,7 @@
                     $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
                 }
                 catch (\Throwable $e) {
-                    // Avoid getting quota exceeded for concurrent writes, retry fater a few seconds.
+                    // Avoid getting quota exceeded for concurrent writes, retry after a few seconds.
                     sleep(5);
                     $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
                 }

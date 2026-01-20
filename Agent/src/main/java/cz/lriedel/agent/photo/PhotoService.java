@@ -1,27 +1,9 @@
 package cz.lriedel.agent.photo;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.lriedel.agent.AgentContextDataProvider;
-import cz.lriedel.agent.client.CoreClient;
-import cz.lriedel.agent.model.Album;
-import cz.lriedel.agent.model.Place;
-import cz.lriedel.agent.persistance.Configuration;
-import cz.lriedel.agent.persistance.ConfigurationRepository;
-import cz.lriedel.agent.persistance.UploadedPhoto;
-import cz.lriedel.agent.persistance.UploadedPhotoRepository;
-import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
-import lombok.SneakyThrows;
-import lombok.Synchronized;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
-import org.springframework.lang.Nullable;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
 
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -47,11 +29,30 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
-import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toSet;
+import org.apache.commons.lang3.Validate;
+import org.springframework.lang.Nullable;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.lriedel.agent.AgentContextDataProvider;
+import cz.lriedel.agent.client.CoreClient;
+import cz.lriedel.agent.model.Album;
+import cz.lriedel.agent.model.Place;
+import cz.lriedel.agent.persistance.Configuration;
+import cz.lriedel.agent.persistance.ConfigurationRepository;
+import cz.lriedel.agent.persistance.UploadedPhoto;
+import cz.lriedel.agent.persistance.UploadedPhotoRepository;
+import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
+import lombok.SneakyThrows;
+import lombok.Synchronized;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -190,40 +191,39 @@ public class PhotoService implements AgentContextDataProvider {
 
     @SneakyThrows
     private boolean uploadPhotos(String placeId, String albumId, Stream<Path> paths) {
-        try (ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS)) {
-            Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime)).collect(toCollection(LinkedList::new));
+        ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
+        Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime)).collect(toCollection(LinkedList::new));
 
-            int expectedBatchSize = queue.size();
-            String batchId = UUID.randomUUID().toString();
+        int expectedBatchSize = queue.size();
+        String batchId = UUID.randomUUID().toString();
 
-            int currentParallelRequestsCount = 1;
-            int position = 1;
+        int currentParallelRequestsCount = 1;
+        int position = 1;
 
-            while (!queue.isEmpty()) {
-                List<Future<Double>> futures = new ArrayList<>();
-                for (int i = 0; i < currentParallelRequestsCount && !queue.isEmpty(); ++i) {
-                    Path submittedPath = queue.remove();
-                    int submittedPosition = position++;
+        while (!queue.isEmpty()) {
+            List<Future<Double>> futures = new ArrayList<>();
+            for (int i = 0; i < currentParallelRequestsCount && !queue.isEmpty(); ++i) {
+                Path submittedPath = queue.remove();
+                int submittedPosition = position++;
 
-                    futures.add(executorService.submit(
-                            () -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath)));
-                }
-
-                double sum = 0;
-                for (Future<Double> future : futures) {
-                    sum += future.get();
-                }
-                double averageProcessingSpeed = sum / futures.size();
-                currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
-
-                log.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
+                futures.add(
+                    executorService.submit(() -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath)));
             }
 
-            executorService.shutdown();
-            Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
+            double sum = 0;
+            for (Future<Double> future : futures) {
+                sum += future.get();
+            }
+            double averageProcessingSpeed = sum / futures.size();
+            currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
 
-            return position > 1;
+            log.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
         }
+
+        executorService.shutdown();
+        Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
+
+        return position > 1;
     }
 
     @SneakyThrows
