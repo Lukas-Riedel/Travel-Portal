@@ -116,7 +116,14 @@
                     throw new \InvalidArgumentException("A photo with the identifier '" . $photos[$mainPhotoPosition]->getId() . "' does not exist.");
                 }
     
-                $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
+                try {
+                    $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
+                }
+                catch (\Throwable $e) {
+                    // Avoid getting quota exceeded for concurrent writes, retry fater a few seconds.
+                    sleep(5);
+                    $this->googleClient->updateAlbumMainPhoto($externalAlbumId, $externalPhotoId);
+                }
             }
 
             $this->doUpdateAlbums($albumId, true);
