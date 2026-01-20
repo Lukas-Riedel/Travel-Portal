@@ -67,9 +67,10 @@
                 new Airport(null, $message["from"], null, null, null, null, null, null),
                 new Airport(null, $message["to"], null, null, null, null, null, null),
                 $message["scheduledDeparture"], $message["scheduledArrival"], null);
+            
             $tripId = $this->flightService->getTripIdForFlight($flight);
             if ($tripId !== null) {
-                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
+                $this->eventPublisher->publish(Event::TripStatisticsInvalidated($tripId));
             }
         }
 
