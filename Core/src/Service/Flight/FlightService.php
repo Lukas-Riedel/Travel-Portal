@@ -275,11 +275,8 @@
                         $toTimezone = $this->geocodingService->getLocation(sprintf(self::AIRPORT_LOCATION_FORMAT, $to->getShortName()))?->getTimezone();
                     }
                     
-                    // TODO: Fix the issue. This has something to do with the timezone offset.
-                    // '{\"dateTime\":\"2023-01-16T11:15:00+01:00\",\"timeZone\":\"Atlantic\\/Canary\"}' - '{\"dateTime\":\"2023-01-16T14:35:00+01:00\",\"timeZone\":\"Europe\\/Madrid\"}' -> '{\"dateTime\":\"2023-01-16T10:15:00+00:00\",\"timeZone\":\"Atlantic\\/Canary\"}' - '{\"dateTime\":\"2023-01-16T13:35:00+00:00\",\"timeZone\":\"Europe\\/Madrid\"}'
-                    if (false && $flightEvent->shouldBeNormalized($fromTimezone, $toTimezone)) {
-                        $this->googleClient->updateCalendarEventStartEnd($flightType->getCalendar(), $flightEvent->getId(),
-                            $flightEvent->getStart(), $flightEvent->getEnd(), $fromTimezone, $toTimezone);                        
+                    if ($flightEvent->shouldBeNormalized($fromTimezone, $toTimezone)) {
+                        $this->googleClient->updateCalendarEventStartEnd($flightType->getCalendar(), $flightEvent->getId(), null, null, $fromTimezone, $toTimezone);                        
                     }
                 }   
             });      

@@ -327,11 +327,7 @@
                     
                     // The time is considered normalized if the event timezone is the same as the place timezone.
                     $isTimeNormalized = !$placeEvent->shouldBeNormalized($placeIdentifier->getTimezone(), $placeIdentifier->getTimezone());
-                    
-                    // TODO: Fix the issue. This has something to do with the timezone offset. Note that timezones are not set in the events! Run the timezone normalization first before normalizing the time.
-                    // '{\"dateTime\":\"2026-01-14T20:00:00+01:00\",\"timeZone\":\"America\\/New_York\"}' - '{\"dateTime\":\"2026-01-14T22:00:00+01:00\",\"timeZone\":\"America\\/New_York\"}' -> '{\"dateTime\":\"2026-01-15T01:00:00+00:00\",\"timeZone\":\"America\\/New_York\"}' - '{\"dateTime\":\"2026-01-15T03:00:00+00:00\",\"timeZone\":\"America\\/New_York\"}'
-                    $isTimeNormalized = true;
-                    
+                                        
                     if (!$isTimeNormalized) {
                         // TODO: For the offset computation, should we prioritize the timezone from the event? Like '$placeEvent->getStartTimezone() ?? $homeTimezone'.
                         // This should ensure that creating an event on a device in a different timezone will not cause any discrepancies, but it should be verified.

@@ -144,11 +144,11 @@
         }
 
         public function hasNormalizedStart() : bool {
-            return date(DATE_RFC3339, $this->start) === $this->rawStart;
+            return $this->start === strtotime($this->rawStart);
         }
 
         public function hasNormalizedEnd() : bool {
-            return date(DATE_RFC3339, $this->end) === $this->rawEnd;
+            return $this->end === strtotime($this->rawEnd);
         }
 
         public function hasSameEffectiveStartTimezone(string $otherTimezone) : bool {

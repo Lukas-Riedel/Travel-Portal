@@ -55,7 +55,7 @@
 
                     if (!$stayEvent->isAllDay()) {
                         $this->googleClient->updateCalendarEventAllDayDates(Calendar::Stays, $stayEvent->getId(),
-                            // If the event ends at 14:00, make it end at midnight the next day.
+                            // If the event ends at 14:00, make it ends at midnight the next day.
                             $stayEvent->getStart(), $stayEvent->getEnd() + CommonConstants::ONE_DAY_SECONDS - 1);
                     }
                 }

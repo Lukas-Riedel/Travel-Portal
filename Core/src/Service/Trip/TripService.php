@@ -190,8 +190,7 @@
                     
                     $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
                     if ($tripEvent->shouldBeNormalized($homeTimezone, $homeTimezone)) {
-                        $this->googleClient->updateCalendarEventStartEnd(Calendar::Trips, $tripEvent->getId(),
-                            $tripEvent->getStart(), $tripEvent->getEnd(), $homeTimezone, $homeTimezone);                        
+                        $this->googleClient->updateCalendarEventStartEnd(Calendar::Trips, $tripEvent->getId(), null, null, $homeTimezone, $homeTimezone);                        
                     }
                 }
             });
