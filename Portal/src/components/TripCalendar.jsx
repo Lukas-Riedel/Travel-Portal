@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react"
 import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
-import { toZonedTime } from "date-fns-tz"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
@@ -27,7 +27,7 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
             [
                 { type: "date", required: true }
             ],
-            async start => onTripMoved(Math.round(toZonedTime(new Date(start), configuration?.homeLocation?.timezone).getTime() / 1000)),
+            async start => onTripMoved(Math.round(fromZonedTime(new Date(start).toISOString().slice(0, -1), configuration?.homeLocation?.timezone).getTime() / 1000)),
             "Výlet byl úspěšně přesunut",
             "Nepodařilo se přesunout výlet"
         )

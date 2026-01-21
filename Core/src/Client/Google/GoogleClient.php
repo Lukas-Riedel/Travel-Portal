@@ -271,14 +271,18 @@
             }
 
             $original = $payload;
+            
+            $homeTimezone = new \DateTimeZone($this->configurationService->getConfigurationEntry("homeLocation")["timezone"]);
 
             if ($start !== null) {
+                $startDt = (new \DateTimeImmutable())->setTimestamp($start)->setTimezone($homeTimezone);
+
                 if (array_key_exists("dateTime", $payload["start"])) {
-                    $payload["start"]["dateTime"] = date(DATE_RFC3339, $start);
+                    $payload["start"]["dateTime"] = $startDt->format(\DateTime::RFC3339);
                 }
                 else {
-                    $payload["start"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $start);
-                }                
+                    $payload["start"]["date"] = $startDt->format(CommonConstants::YMD_DATE_FORMAT);
+                }
             }
 
             if ($startTimezone !== null && array_key_exists("dateTime", $payload["start"])) {
@@ -286,11 +290,13 @@
             }
 
             if ($end !== null) {
+                $endDt = (new \DateTimeImmutable())->setTimestamp($end)->setTimezone($homeTimezone);
+
                 if (array_key_exists("dateTime", $payload["end"])) {
-                    $payload["end"]["dateTime"] = date(DATE_RFC3339, $end);
+                    $payload["end"]["dateTime"] = $endDt->format(\DateTime::RFC3339);
                 }
                 else {
-                    $payload["end"]["date"] = date(CommonConstants::YMD_DATE_FORMAT, $end);
+                    $payload["end"]["date"] = $endDt->format(CommonConstants::YMD_DATE_FORMAT);
                 }
             }
 
