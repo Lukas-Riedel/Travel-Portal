@@ -237,7 +237,7 @@
         }
 
         public function loadPlaces(string $candidateTripId, int $startOffset) : array {
-            $places = $this->doGetCandidatePlacesForTrip(null, $candidateTripId, null, array());
+            $places = $this->doGetCandidatePlacesForTrip(null, $candidateTripId, null, array(PlaceIncludedEntity::Dates->value));
 
             foreach ($places as &$place) {
                 $address = $this->geocodingService->getFormattedAddress($place->getName(), $place->getPlaceIdentifier()->getLocation());

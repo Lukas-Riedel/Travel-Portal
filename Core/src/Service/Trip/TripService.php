@@ -136,6 +136,7 @@
                 $this->noteService->updateTripNoteOwner($candidateTripId, $targetTripId);
             });
 
+            $this->tripMapper->deleteCandidateTrip($candidateTripId);
             $this->tripMapper->deleteStaleTripIdentifiers();
             
             return $targetTrip;
@@ -163,9 +164,9 @@
 
         public function removeCandidateTrip(string $tripId) : bool {
             $wasRemoved = true;
-            $this->transactionManager->executeAtomically(function() use(&$wasRemoved, &$tripId) {                
-                $wasRemoved &= $this->placeService->removeCandidateEventsForCandidateTrip($tripId) 
-                    && $this->tripMapper->deleteCandidateTrip($tripId);
+            $this->transactionManager->executeAtomically(function() use(&$wasRemoved, &$tripId) {
+                $this->placeService->removeCandidateEventsForCandidateTrip($tripId);             
+                $wasRemoved &= $this->tripMapper->deleteCandidateTrip($tripId);
             });
 
             if ($wasRemoved) {

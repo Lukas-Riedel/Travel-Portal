@@ -415,7 +415,7 @@
                         SELECT 1 
                         FROM trip_event te
                         WHERE te.trip_id = ti.id
-                    ) AND NOT EXISTS(
+                    ) AND NOT EXISTS (
                         SELECT 1 
                         FROM trip_candidate tc
                         WHERE tc.trip_id = ti.id
