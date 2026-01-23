@@ -59,10 +59,10 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
 
         MutablePropertySources sources = environment.getPropertySources();
         sources.addFirst(createPropertySource(USER_CONFIGURATION_PROPERTY_SOURCE, coreUrl,
-                () -> iamClient.createUserToken(DEFAULT_USERNAME, DEFAULT_PASSWORD).accessToken(),
+                () -> iamClient.createUserToken(DEFAULT_USERNAME, DEFAULT_PASSWORD).getAccessToken(),
                 properties -> (Map<String, Object>) properties.get(AGENT_CONFIGURATION_KEY)));
         sources.addFirst(createPropertySource(INTERNAL_CONFIGURATION_PROPERTY_SOURCE, coreUrl,
-                () -> iamClient.createClientToken(agentClientId, agentClientSecret).accessToken(), UnaryOperator.identity()));
+                () -> iamClient.createClientToken(agentClientId, agentClientSecret).getAccessToken(), UnaryOperator.identity()));
     }
 
     private PropertySource<?> createPropertySource(String name, String coreBaseUrl, Supplier<String> tokenSupplier,

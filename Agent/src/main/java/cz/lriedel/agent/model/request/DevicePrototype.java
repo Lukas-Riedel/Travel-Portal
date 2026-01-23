@@ -1,6 +1,7 @@
 package cz.lriedel.agent.model.request;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import cz.lriedel.agent.model.api.DeviceType;
 import lombok.Builder;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.Validate;
@@ -15,13 +16,12 @@ public record DevicePrototype(String id, @Nullable Object data) {
         Validate.notBlank(id, "The device identifier cannot be blank.");
     }
 
-    @JsonValue
+    @JsonProperty
     public String type() {
-        // TODO: Use enum constant for Agent.
-        return "agent";
+        return DeviceType.AGENT.getValue();
     }
 
-    @JsonValue
+    @JsonProperty
     @SneakyThrows
     public String name() {
         return InetAddress.getLocalHost().getHostName();

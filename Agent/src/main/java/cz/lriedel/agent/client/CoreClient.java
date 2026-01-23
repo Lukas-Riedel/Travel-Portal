@@ -1,7 +1,7 @@
 package cz.lriedel.agent.client;
 
-import cz.lriedel.agent.model.Album;
-import cz.lriedel.agent.model.Place;
+import cz.lriedel.agent.model.api.Album;
+import cz.lriedel.agent.model.api.Place;
 import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
 import cz.lriedel.agent.model.request.PhotoPrototype;

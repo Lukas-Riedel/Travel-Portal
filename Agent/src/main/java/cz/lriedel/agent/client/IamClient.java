@@ -1,7 +1,7 @@
 package cz.lriedel.agent.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.lriedel.agent.model.IamResponse;
+import cz.lriedel.agent.model.api.IamResponse;
 import cz.lriedel.agent.model.request.TokenPrototype;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Qualifier;

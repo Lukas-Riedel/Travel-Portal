@@ -1,6 +1,6 @@
 package cz.lriedel.agent.client;
 
-import cz.lriedel.agent.model.IamResponse;
+import cz.lriedel.agent.model.api.IamResponse;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
 import lombok.Synchronized;
@@ -53,9 +53,9 @@ public class UserTokenSupplier implements Supplier<String> {
 
     private void processIamResponse(IamResponse iamResponse) {
         try {
-            cachedAccessToken = iamResponse.accessToken();
-            cachedAccessTokenExpiration = System.currentTimeMillis() + (long) (ACCESS_TOKEN_VALIDITY_MULTIPLIER * iamResponse.expiresIn() * 1000);
-            configurationRepository.save(new Configuration(REFRESH_TOKEN_CONFIGURATION_KEY, iamResponse.refreshToken()));
+            cachedAccessToken = iamResponse.getAccessToken();
+            cachedAccessTokenExpiration = System.currentTimeMillis() + (long) (ACCESS_TOKEN_VALIDITY_MULTIPLIER * iamResponse.getExpiresIn() * 1000);
+            configurationRepository.save(new Configuration(REFRESH_TOKEN_CONFIGURATION_KEY, iamResponse.getRefreshToken()));
         }
         catch (Exception e) {
             configurationRepository.deleteById(REFRESH_TOKEN_CONFIGURATION_KEY);

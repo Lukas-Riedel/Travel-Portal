@@ -229,7 +229,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Verify
-        run: mvn verify -f Agent/pom.xml
+        run: mvn verify -f Agent/pom.xml -Dservice.core.url=${{ vars.CORE_BASE_URL }}
   deploy-bridgex:
     name: Deploy BridgeX
     needs: detect-changes

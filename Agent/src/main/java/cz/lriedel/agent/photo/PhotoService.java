@@ -1,9 +1,27 @@
 package cz.lriedel.agent.photo;
 
-import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
-import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.lriedel.agent.AgentContextDataProvider;
+import cz.lriedel.agent.client.CoreClient;
+import cz.lriedel.agent.model.api.Album;
+import cz.lriedel.agent.model.api.Place;
+import cz.lriedel.agent.persistance.Configuration;
+import cz.lriedel.agent.persistance.ConfigurationRepository;
+import cz.lriedel.agent.persistance.UploadedPhoto;
+import cz.lriedel.agent.persistance.UploadedPhotoRepository;
+import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
+import lombok.SneakyThrows;
+import lombok.Synchronized;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
+import org.springframework.lang.Nullable;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -29,30 +47,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Validate;
-import org.springframework.lang.Nullable;
-import org.springframework.retry.support.RetryTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cz.lriedel.agent.AgentContextDataProvider;
-import cz.lriedel.agent.client.CoreClient;
-import cz.lriedel.agent.model.Album;
-import cz.lriedel.agent.model.Place;
-import cz.lriedel.agent.persistance.Configuration;
-import cz.lriedel.agent.persistance.ConfigurationRepository;
-import cz.lriedel.agent.persistance.UploadedPhoto;
-import cz.lriedel.agent.persistance.UploadedPhotoRepository;
-import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
-import lombok.SneakyThrows;
-import lombok.Synchronized;
-import lombok.extern.slf4j.Slf4j;
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
@@ -108,26 +107,26 @@ public class PhotoService implements AgentContextDataProvider {
             Set<String> uploadedPaths = uploadedPhotoRepository.findAll().stream().map(UploadedPhoto::getPath).collect(toSet());
 
             for (Place place : coreClient.getPlaces()) {
-                for (cz.lriedel.agent.model.Date date : place.dates()) {
-                    String expectedAlbumName = getExpectedAlbumName(place.name(), date.start());
+                for (cz.lriedel.agent.model.api.Date date : place.getDates()) {
+                    String expectedAlbumName = getExpectedAlbumName(place.getName(), Instant.ofEpochSecond(date.getStart()));
 
                     for (SynchronizedFolder synchronizedFolder : synchronizedFolders) {
                         Path albumFolder = getAlbumFolder(synchronizedFolder, expectedAlbumName);
 
                         if (albumFolder != null) {
                             log.info("Synchronizing '{}'...", albumFolder);
-                            Album album = date.album();
+                            Album album = date.getAlbum();
 
                             if (album == null) {
-                                album = coreClient.createAlbum(place.id(), date.start());
+                                album = coreClient.createAlbum(place.getId(), Instant.ofEpochSecond(date.getStart()));
                             }
 
-                            boolean anyUploaded = uploadPhotos(place.id(), album.id(), albumFolder,
+                            boolean anyUploaded = uploadPhotos(place.getId(), album.getId(), albumFolder,
                                     path -> !uploadedPaths.contains(path.toString()) && isPathCreated(path));
                             if (anyUploaded) {
-                                String albumId = album.id();
+                                String albumId = album.getId();
                                 retryTemplate.execute(context -> {
-                                    coreClient.refreshAlbum(place.id(), albumId, null);
+                                    coreClient.refreshAlbum(place.getId(), albumId, null);
                                     return null;
                                 });
                             }
@@ -165,7 +164,7 @@ public class PhotoService implements AgentContextDataProvider {
     public void uploadPhotos(String placeId, @Nullable Instant timestamp, @Nullable String albumId, @Nullable Integer mainPhotoPosition, Path path) {
         if (albumId == null) {
             log.info("Album for place {} does not exist. Creating a new album...", placeId);
-            albumId = coreClient.createAlbum(placeId, Objects.requireNonNull(timestamp)).id();
+            albumId = coreClient.createAlbum(placeId, Objects.requireNonNull(timestamp)).getId();
         }
 
         log.info("Starting photos uploading for album {}...", albumId);
