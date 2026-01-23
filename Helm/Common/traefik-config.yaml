@@ -12,11 +12,6 @@ spec:
       websecure:
         expose:
           default: true
-      smtp:
-        port: 25
-        exposedPort: 25
-        expose:
-          default: true
       amqpsecure:
         port: 5671
         exposedPort: 5671
@@ -26,6 +21,5 @@ spec:
         - "--certificatesresolvers.letsencrypt.acme.email=admin@lriedel.cz"
         - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
         - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-        - "--entrypoints.smtp.address=:25/tcp"
         - "--providers.kubernetescrd.allowCrossNamespace=true"
         
