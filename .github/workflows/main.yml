@@ -69,11 +69,18 @@ jobs:
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:${{ github.run_number }}
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
     - name: Set Up Helm
       uses: azure/setup-helm@v3
     - name: Deploy IAM with Helm
       run: |
-        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
         helm upgrade iam ./Helm/Iam \
           -f ./Helm/Iam/values.yaml \
@@ -109,11 +116,18 @@ jobs:
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:${{ github.run_number }}
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
     - name: Set Up Helm
       uses: azure/setup-helm@v3
     - name: Deploy Core with Helm
       run: |
-        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
         helm upgrade core ./Helm/Core \
           -f ./Helm/Core/values.yaml \
@@ -149,11 +163,18 @@ jobs:
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:${{ github.run_number }}
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
     - name: Set Up Helm
       uses: azure/setup-helm@v3
     - name: Deploy Cortex with Helm
       run: |
-        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
         helm upgrade cortex ./Helm/Cortex \
           -f ./Helm/Cortex/values.yaml \
@@ -203,11 +224,18 @@ jobs:
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:${{ github.run_number }}
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
     - name: Set Up Helm
       uses: azure/setup-helm@v3
     - name: Deploy Portal with Helm
       run: |
-        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
         helm upgrade portal ./Helm/Portal \
           -f ./Helm/Portal/values.yaml \
