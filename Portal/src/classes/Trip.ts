@@ -1,7 +1,7 @@
 import { format, isSameDay } from "date-fns"
 import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay } from "../types/CoreSwaggerTypes.ts"
 import { fromZonedTime } from "date-fns-tz"
-import { getCurrentTimestamp, getEndOfTodayTimestamp, getStartOfTodayTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { getCurrentTimestamp, getEndOfTodayTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"
 
@@ -32,11 +32,11 @@ export class Trip implements ITrip {
     }
 
     public isPast(): boolean {
-        return this.end < getCurrentTimestamp()
+        return this.end < getCurrentOrMaximumAllowedTimestamp()
     }
 
     public isFuture(): boolean {
-        return this.start > getCurrentTimestamp()
+        return this.start > getCurrentOrMaximumAllowedTimestamp()
     }
 
     public isCurrent(): boolean {

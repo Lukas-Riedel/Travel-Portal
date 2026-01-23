@@ -14,6 +14,11 @@ export function getCurrentTimestamp(): number {
     return Math.floor(Date.now() / 1000)
 }
 
+export function getCurrentOrMaximumAllowedTimestamp(): number {
+    const maximumAllowedTimestamp = window.env?.VITE_MAXIMUM_ALLOWED_TIMESTAMP || import.meta.env.VITE_MAXIMUM_ALLOWED_TIMESTAMP
+    return Math.min(getCurrentTimestamp(), maximumAllowedTimestamp);
+}
+
 export function getStartOfTodayTimestamp(): number {
     return startOfDay(new Date()).getTime() / 1000
 }
