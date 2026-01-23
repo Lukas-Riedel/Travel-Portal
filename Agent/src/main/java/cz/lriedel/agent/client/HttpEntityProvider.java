@@ -35,8 +35,17 @@ public class HttpEntityProvider {
 
     private HttpHeaders getHttpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth(tokenSupplier.get());
-        httpHeaders.set(TRANSACTION_ID_HEADER, loggingContext.getTransactionId());
+
+        String token = tokenSupplier.get();
+        if (token != null) {
+            httpHeaders.setBearerAuth(token);
+        }
+
+        String transactionId = loggingContext.getTransactionId();
+        if (transactionId != null) {
+            httpHeaders.add(TRANSACTION_ID_HEADER, transactionId);
+        }
+
         return httpHeaders;
     }
 }
