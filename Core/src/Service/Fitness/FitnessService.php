@@ -12,6 +12,9 @@
     class FitnessService {
 
         private const ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT = 0.95;
+        private const ALLOW_OVERWRITE_STEPS_THRESHOLD = 100;
+        private const ALLOW_OVERWRITE_DISTANCE_THRESHOLD = 0.1;
+        private const ALLOW_OVERWRITE_DURATION_THRESHOLD = 120;
 
         private readonly FitnessMapper $fitnessMapper;
 
@@ -60,9 +63,10 @@
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
             $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
             
-            if (!$forceUpdate && $existingFitnessRecord !== null && ($steps < $existingFitnessRecord->getSteps() * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT
-                || $seconds < $existingFitnessRecord->getSeconds() * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT 
-                || round($distance, 3) < round($existingFitnessRecord->getDistance(), 3) * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT)) {
+            if (!$forceUpdate && $existingFitnessRecord !== null && (
+                ($existingFitnessRecord->getSteps() > self::ALLOW_OVERWRITE_STEPS_THRESHOLD && $steps < $existingFitnessRecord->getSteps() * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT)
+                || ($existingFitnessRecord->getSeconds() > self::ALLOW_OVERWRITE_DURATION_THRESHOLD && $seconds < $existingFitnessRecord->getSeconds() * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT)
+                || (round($existingFitnessRecord->getDistance(), 3) > self::ALLOW_OVERWRITE_DISTANCE_THRESHOLD && round($distance, 3) < round($existingFitnessRecord->getDistance(), 3) * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT))) {
                 $context = array(
                     "steps" => array(
                         "actual" => $steps,
