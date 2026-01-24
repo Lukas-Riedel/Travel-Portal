@@ -47,7 +47,7 @@ public class CoreClient {
     private final UriBuilderFactory uriBuilderFactory;
 
     public CoreClient(@Qualifier(CORE_SERVICE_QUALIFIER) RestTemplate restTemplate, HttpEntityProvider httpEntityProvider,
-            UriBuilderFactory uriBuilderFactory) {
+            @Qualifier(CORE_SERVICE_QUALIFIER) UriBuilderFactory uriBuilderFactory) {
         this.restTemplate = restTemplate;
         this.httpEntityProvider = httpEntityProvider;
         this.uriBuilderFactory = uriBuilderFactory;

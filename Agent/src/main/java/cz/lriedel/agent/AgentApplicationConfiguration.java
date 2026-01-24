@@ -54,8 +54,9 @@ public class AgentApplicationConfiguration {
     }
 
     @Bean
-    public static UriBuilderFactory uriBuilderFactory() {
-        return new DefaultUriBuilderFactory();
+    @Qualifier(CORE_SERVICE_QUALIFIER)
+    public static UriBuilderFactory coreUriBuilderFactory(@Value("${service.core.url}") String serviceUrl) {
+        return new DefaultUriBuilderFactory(serviceUrl);
     }
 
     @Bean
