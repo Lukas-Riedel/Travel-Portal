@@ -2,6 +2,7 @@
 
     namespace Core\Service\Device;
 
+    use Common\Service\Authentication\UserRole;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Common\CommonConstants;
@@ -25,7 +26,7 @@
             $this->geocodingService = $geocodingService;
         }
         
-        public function getDevices(?DeviceType $deviceType, ?string $requiredRole) : array {
+        public function getDevices(?DeviceType $deviceType, ?UserRole $requiredRole) : array {
             return $this->deviceMapper->selectDevices($deviceType, $requiredRole);
         }
 

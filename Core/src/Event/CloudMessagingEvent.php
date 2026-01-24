@@ -12,6 +12,7 @@
             $this->supportedDeviceTypes = $supportedDeviceTypes;
         }
         
+        // TODO: Evaluate whether it makes sense to have the array here.
         public function getRequiredRoles() : array {
             return $this->requiredRoles;
         }

@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -156,7 +157,7 @@
             ]
         )]
         public function createFlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::FlightEdit);
 
             $flight = $this->requireJsonBodyField($request, "flight");
             $from = $this->requireJsonBodyField($request, "from");

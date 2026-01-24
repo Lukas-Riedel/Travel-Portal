@@ -7,6 +7,7 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Common\Routing\NotUpdatedException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Fitness\FitnessService;
 
     #[OA\Tag(name: "Fitness")]
@@ -100,7 +101,7 @@
             ]
         )]
         public function replaceFitness(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::FitnessEdit);
 
             $timestamp = $this->requirePathArgument($routeArguments, "timestamp");
             $steps = $this->requireJsonBodyField($request, "steps");

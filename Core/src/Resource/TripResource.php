@@ -8,6 +8,7 @@
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
     use Common\Routing\NotUpdatedException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseType;
     use Core\Service\Highlight\HighlightService;
@@ -138,15 +139,34 @@
                 )
             ]
         )]
-        public function listTrips(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function listTrips(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::TripRead);
+
             $year = $this->getQueryParameter($request, "year");
             $type = $this->getQueryParameter($request, "type") ?? TripType::Regular->value;
             $include = $this->getQueryParameter($request, "include") ?? "";
             $sort = $this->getQueryParameter($request, "sort") ?? TripSortingStrategy::OldestAscending->value;
+            
+            $requestedIncludes = array_map(fn($entity) => TripIncludedEntity::from($entity), array_filter(explode(",", $include)));
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+                $requiredRole = match($entity) {
+                    TripIncludedEntity::Expenses => UserRole::TripExpenseRead,
+                    TripIncludedEntity::Fitness => UserRole::TripFitnessRead,
+                    TripIncludedEntity::Flights => UserRole::TripFlightRead,
+                    TripIncludedEntity::WatchedFlights => UserRole::TripFlightRead,
+                    TripIncludedEntity::Highlights => UserRole::TripHighlightRead,
+                    TripIncludedEntity::Notes => UserRole::TripNoteRead,
+                    TripIncludedEntity::Statistics => UserRole::TripStatisticsRead,
+                    TripIncludedEntity::Stays => UserRole::TripStayRead,
+                    TripIncludedEntity::PublicHolidays => UserRole::TripPublicHolidayRead,
+                    default => null
+                };
+
+                return $requiredRole === null || $this->hasRole($request, $requiredRole);
+            });
 
             // TODO: Do not use the backing value, refactor the service code first.
-            $mappedInclude = array_map(fn($entity) => TripIncludedEntity::from($entity)->value, 
-                array_filter(explode(",", $include)));
+            $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             $mappedSort = TripSortingStrategy::from($sort);
             $mappedType = TripType::from($type);
             
@@ -233,9 +253,11 @@
             ]
         )]
         public function getTrip(Request $request, Response $response, array $routeArguments) : mixed {    
+            $this->requireRole($request, UserRole::TripRead);
+
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
 
-            return $this->doGetTrip($tripId);
+            return $this->filterTripPermissions($this->doGetTrip($tripId), $request);
         }
 
         #[OA\Put(
@@ -330,7 +352,7 @@
             ]
         )]
         public function replaceTrip(Request $request, Response $response, array $routeArguments) : mixed {    
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $candidateTripId = $this->requireJsonBodyField($request, "id");
@@ -340,7 +362,7 @@
                 throw new NotUpdatedException($tripId);
             }
 
-            return $trip;
+            return $this->filterTripPermissions($trip, $request);
         }
 
         #[OA\Patch(
@@ -454,8 +476,9 @@
                 )
             ]
         )]
-        public function updateTrip(Request $request, Response $response, array $routeArguments) : mixed {           
-            $this->requireAdmin($request);
+        public function updateTrip(Request $request, Response $response, array $routeArguments) : mixed {     
+            $this->requireRole($request, UserRole::TripEdit);
+
             $wasUpdated = false;
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
@@ -479,7 +502,7 @@
                 $this->logger->warning("The trip with the identifier '{$tripId}' was not updated.");
             }
 
-            return $this->doGetTrip($tripId);
+            return $this->filterTripPermissions($this->doGetTrip($tripId), $request);
         }
 
         #[OA\Delete(
@@ -558,7 +581,7 @@
             ]
         )]
         public function removeTrip(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
 
@@ -705,7 +728,7 @@
             ]
         )]
         public function createTripExpense(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripExpenseEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $description = $this->requireJsonBodyField($request, "description");
@@ -837,7 +860,8 @@
             ]
         )]
         public function updateTripExpense(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripExpenseEdit);
+
             $wasUpdated = false;
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
@@ -954,7 +978,7 @@
             ]
         )]
         public function removeTripExpense(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripExpenseEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $expenseId = $this->requirePathArgument($routeArguments, "expenseId");
@@ -1059,7 +1083,7 @@
             ]
         )]
         public function createTripNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripNoteEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $content = $this->requireJsonBodyField($request, "content");
@@ -1166,7 +1190,8 @@
             ]
         )]
         public function updateTripNote(Request $request, Response $response, array $routeArguments) : mixed {           
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripNoteEdit);
+
             $wasUpdated = false;
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
@@ -1268,7 +1293,7 @@
             ]
         )]
         public function removeTripNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripNoteEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $noteId = $this->requirePathArgument($routeArguments, "noteId");
@@ -1381,7 +1406,7 @@
             ]
         )]
         public function createTripHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripHighlightEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $photo = $this->requireJsonBodyField($request, "photo");
@@ -1476,7 +1501,7 @@
             ]
         )]
         public function removeTripHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TripHighlightEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
@@ -1501,6 +1526,36 @@
             }
 
             throw new NotFoundException($tripId);
+        }
+        
+
+        private function filterTripPermissions(Trip $trip, Request $request) : Trip {
+            if (!$this->hasRole($request, UserRole::TripExpenseRead)) {
+                $trip->resetExpenses();
+            }
+            if (!$this->hasRole($request, UserRole::TripFlightRead)) {
+                $trip->resetFlights();
+                $trip->resetWatchedFlights();
+            }
+            if (!$this->hasRole($request, UserRole::TripStayRead)) {
+                $trip->resetStays();
+            }
+            if (!$this->hasRole($request, UserRole::TripHighlightRead)) {
+                $trip->resetHighlights();
+            }
+            if (!$this->hasRole($request, UserRole::TripNoteRead)) {
+                $trip->resetNotes();
+            }
+            if (!$this->hasRole($request, UserRole::TripFitnessRead)) {
+                $trip->resetFitness();
+            }
+            if (!$this->hasRole($request, UserRole::TripStatisticsRead)) {
+                $trip->resetStatistics();
+            }
+            if (!$this->hasRole($request, UserRole::TripPublicHolidayRead)) {
+                $trip->resetPublicHolidays();
+            }
+            return $trip;
         }
     }
 ?>

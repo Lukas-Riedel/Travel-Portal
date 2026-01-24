@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Expense\ExpenseService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -124,7 +125,7 @@
             ]
         )]
         public function createVoucher(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::VoucherEdit);
 
             $code = $this->requireJsonBodyField($request, "code");
             $issuer = $this->requireJsonBodyField($request, "issuer");
@@ -192,7 +193,7 @@
             ]
         )]
         public function listVouchers(Request $request, Response $response, array $routeArguments) : mixed {  
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::VoucherRead);
 
             return $this->expenseService->getAllVouchers();
         }  
@@ -274,7 +275,7 @@
             ]
         )]
         public function getVoucher(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::VoucherRead);
 
             $voucherId = $this->requirePathArgument($routeArguments, "voucherId");
             
@@ -378,7 +379,8 @@
             ]
         )]
         public function updateVoucher(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::VoucherEdit);
+
             $wasUpdated = false;
 
             $voucherId = $this->requirePathArgument($routeArguments, "voucherId");
@@ -472,7 +474,7 @@
             ]
         )]
         public function removeVoucher(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::VoucherEdit);
 
             $voucherId = $this->requirePathArgument($routeArguments, "voucherId");
             

@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Device;
 
+    use Common\Service\Authentication\UserRole;
     use Core\Client\Database\DatabaseClient;
     use Core\Service\Authentication\AuthenticationService;
 
@@ -15,7 +16,7 @@
             $this->authenticationService = $authenticationService;
         }
 
-        public function selectDevices(?DeviceType $deviceType, ?string $requiredRole) : array {
+        public function selectDevices(?DeviceType $deviceType, ?UserRole $requiredRole) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM device

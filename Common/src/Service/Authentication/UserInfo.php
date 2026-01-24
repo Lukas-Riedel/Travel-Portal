@@ -25,8 +25,8 @@
                 property: "roles",
                 type: "array",
                 description: "The roles of the user",
-                items: new OA\Items(type: "string"),
-                example: []
+                items: new OA\Items(ref: "#/components/schemas/UserRole"),
+                example: [UserRole::AirlineRead->value, UserRole::PlaceRead->value]
             ),
         ]
     )]
@@ -51,10 +51,6 @@
 
         public function getRoles() : array {
             return $this->roles;
-        }
-
-        public function isAdmin() : bool {
-            return in_array("ADMIN", $this->roles);
         }
 
         #[\ReturnTypeWillChange]

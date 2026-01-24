@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Document\DocumentService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -116,7 +117,7 @@
             ]
         )]
         public function createDocument(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::DocumentEdit);
 
             $name = $this->requireJsonBodyField($request, "name");
             $code = $this->requireJsonBodyField($request, "code");
@@ -182,8 +183,8 @@
                 )
             ]
         )]
-        public function listDocuments(Request $request, Response $response, array $routeArguments) : mixed {         
-            $this->requireAdmin($request);
+        public function listDocuments(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::DocumentRead);
 
             return $this->documentService->getAllDocuments();
         }  
@@ -265,7 +266,7 @@
             ]
         )]
         public function getDocument(Request $request, Response $response, array $routeArguments) : mixed {  
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::DocumentRead);
 
             $documentId = $this->requirePathArgument($routeArguments, "documentId");
             
@@ -353,7 +354,7 @@
             ]
         )]
         public function removeDocument(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::DocumentEdit);
 
             $documentId = $this->requirePathArgument($routeArguments, "documentId");
             

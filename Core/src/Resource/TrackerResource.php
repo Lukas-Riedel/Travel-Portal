@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\TimeTracking\TimeTrackingService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -115,7 +116,7 @@
             ]
         )]
         public function createTimeTrackingEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TrackerEdit);
 
             $type = $this->requireJsonBodyField($request, "type");
             $hours = $this->requireJsonBodyField($request, "hours");
@@ -190,6 +191,8 @@
             ]
         )]
         public function listTimeTrackingEvents(Request $request, Response $response, array $routeArguments) : mixed {    
+            $this->requireRole($request, UserRole::TrackerRead);
+
             $type = $this->getQueryParameter($request, "type");
 
             return $this->timeTrackingService->getTimeTrackingEvents($type);
@@ -271,7 +274,7 @@
             ]
         )]
         public function removeTimeTrackingEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::TrackerEdit);
 
             $timeTrackingEventId = $this->requirePathArgument($routeArguments, "timeTrackingEventId");
             

@@ -9,6 +9,7 @@
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
     use Common\Routing\NotUpdatedException;
+    use Common\Service\Authentication\UserRole;
 
     #[OA\Tag(name: "Configuration")]
     class ConfigurationResource extends AbstractResource {
@@ -72,9 +73,12 @@
             ]
         )]
         public function listConfiguration(Request $request, Response $response) : mixed {
-            return $this->isAgentServiceAccount($request)
-                ? $this->configurationService->getAgentConfigurationEntries()
-                : $this->configurationService->getAllConfigurationEntries($this->isAdmin($request));
+            if ($this->isAgentServiceAccount($request)) {
+                return $this->configurationService->getAgentConfigurationEntries();
+            }
+
+            $this->requireRole($request, UserRole::ConfigurationRead);
+            return $this->configurationService->getAllConfigurationEntries($this->hasRole($request, UserRole::ConfigurationEdit));
         }
 
         #[OA\Put(
@@ -167,7 +171,7 @@
             ]
         )]
         public function replaceConfiguration(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::ConfigurationEdit);
 
             $configurationKey = $this->requirePathArgument($routeArguments, "configurationKey");
             $newValue = $this->requireJsonBody($request);

@@ -45,8 +45,8 @@
         private readonly int $id;
         private readonly ?Highlight $mainHighlight;
         private readonly array $fitness;
-        private readonly array $highlights;
-        private readonly array $statistics;
+        private array $highlights;
+        private array $statistics;
 
         public function __construct(int $id, ?Highlight $mainHighlight, array $fitness, array $highlights, array $statistics) {
             $this->id = $id;
@@ -68,12 +68,24 @@
             return $this->fitness;
         }
 
+        public function resetFitness() : void {
+            $this->fitness = array();
+        }
+
         public function getHighlights() : array {
             return $this->highlights;
         }
 
-        public function getStats() : array {
+        public function resetHighlights() : void {
+            $this->highlights = array();
+        }
+
+        public function getStatistics() : array {
             return $this->statistics;
+        }
+
+        public function resetStatistics() : void {
+            $this->statistics = array();
         }
 
         #[\ReturnTypeWillChange]

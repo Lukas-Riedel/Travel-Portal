@@ -3,6 +3,7 @@
 
     use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
+    use Common\Service\Authentication\UserRole;
     use Iam\Service\Token\TokenService;
 
     class UserService {
@@ -28,7 +29,7 @@
             $this->internalAdminIamBaseUrl = $internalAdminIamBaseUrl;
         }
 
-        public function getUserIdsWithRole(string $role) : array {
+        public function getUserIdsWithRole(UserRole $role) : array {
             $accessToken = $this->tokenService->getIamResponseWithClientCredentials($this->iamBackendClientId, $this->iamBackendClientSecret)->getAccessToken();
 
             $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, $this->iamAppClientId),
@@ -38,7 +39,7 @@
                 throw new \RuntimeException("There must be exactly one client with the specified identifier. Response: " . json_encode($response));
             }
 
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $response[0]["id"], $role),
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT, $response[0]["id"], $role->value),
                 array("Authorization: Bearer " . $accessToken));
                 
             if (!is_array($response)) {

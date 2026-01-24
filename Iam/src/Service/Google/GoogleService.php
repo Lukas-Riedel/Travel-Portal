@@ -6,13 +6,12 @@
     use Common\Client\Http\HttpClient;
     use Common\Service\Authentication\IamResponse;
     use Common\Client\Encryption\EncryptionClient;
+    use Common\Service\Authentication\UserRole;
     use Iam\Service\User\UserService;
 
     class GoogleService {
         
         public const GOOGLE_AUTH_CALLBACK_API_ENDPOINT_PATH = "/google/auth/callback";
-
-        private const REQUIRED_AUTHENTICATION_ROLE = "ADMIN";
 
         private const GOOGLE_API_IAM_TOKEN_URL = "https://oauth2.googleapis.com/token";
         
@@ -148,7 +147,7 @@
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            if (!in_array($userId, $this->userService->getUserIdsWithRole(self::REQUIRED_AUTHENTICATION_ROLE))) {
+            if (!in_array($userId, $this->userService->getUserIdsWithRole(UserRole::GoogleTokenEdit))) {
                 throw new \RuntimeException("The user '$userId' is not authorized to perform the authentication.");
             }
 

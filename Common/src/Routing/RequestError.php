@@ -42,6 +42,7 @@
             ),
         ]
     )]
+    // TODO: Remove stacktrace from the class. It shouldn't be displayed to the user.
     class RequestError implements \JsonSerializable {
         private readonly int $code;
         private readonly string $type;

@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -106,9 +107,11 @@
             ]
         )]
         public function getCoordinates(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::GeocodingRead);
+
             $address = $this->requireQueryParameter($request, "address");
             
-            $location = $this->geocodingService->getLocation($address, $this->isAdmin($request));
+            $location = $this->geocodingService->getLocation($address, $this->hasRole($request, UserRole::GeocodingEdit));
             if ($location === null) {
                 throw new NotFoundException($address);
             }
@@ -198,10 +201,12 @@
             ]
         )]
         public function getAddress(Request $request, Response $response, array $routeArguments) : mixed {       
+            $this->requireRole($request, UserRole::GeocodingRead);
+
             $latitude = $this->requireQueryParameter($request, "latitude");
             $longitude = $this->requireQueryParameter($request, "longitude");
 
-            $address = $this->geocodingService->getAddress($latitude, $longitude, $this->isAdmin($request));
+            $address = $this->geocodingService->getAddress($latitude, $longitude, $this->hasRole($request, UserRole::GeocodingEdit));
             if ($address === null) {
                 throw new NotFoundException("$latitude $longitude");
             }

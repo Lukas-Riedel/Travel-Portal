@@ -2,7 +2,7 @@ import { useCategories } from "../hooks/useCategories.js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
-import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
@@ -18,7 +18,7 @@ export default function RecentPlacesPage() {
     const isFetching = useRef(false)
 
     // TODO: Add support for skipping and just append new places.
-    const { places } = useRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, maxEnd: Math.round(Date.now() / 1000), sort: "-oldest" })
+    const { places } = useTimeFilteredRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, sort: "-oldest" })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()

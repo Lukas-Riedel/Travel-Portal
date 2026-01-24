@@ -4,6 +4,7 @@
     use Common\Service\Authentication\AuthenticationException;
     use Core\Client\Cache\CacheClient;
     use Common\Client\Http\HttpMethod;
+    use Common\Service\Authentication\UserRole;
     use Core\Client\Http\HttpClient;
 
     class AuthenticationService {
@@ -39,8 +40,8 @@
             $this->iamPort = $port;
         }
 
-        public function getUserIdsWithRole(string $role) : array {
-            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->getIamBaseUrl() . sprintf(self::USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT, $role),
+        public function getUserIdsWithRole(UserRole $role) : array {
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->getIamBaseUrl() . sprintf(self::USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT, $role->value),
                 array("Authorization: Bearer " . $this->getServiceAccessToken()));
                 
             if (!is_array($response)) {

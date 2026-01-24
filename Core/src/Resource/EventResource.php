@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Core\Event\EventPublisher;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -25,7 +26,7 @@
         }
 
         public function createEvent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::EventEdit);
 
             $name = $this->requireJsonBodyField($request, "name");
             $args = $this->getJsonBodyField($request, "args");

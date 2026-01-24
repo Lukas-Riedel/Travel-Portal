@@ -7,6 +7,7 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Flight\FlightService;
     use Monolog\Logger;
 
@@ -110,7 +111,7 @@
             ]
         )]
         public function createAirline(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::AirlineEdit);
 
             $name = $this->requireJsonBodyField($request, "name");
             $logo = $this->getJsonBodyField($request, "logo");
@@ -174,7 +175,9 @@
                 )
             ]
         )]
-        public function listAirlines(Request $request, Response $response, array $routeArguments) : mixed {            
+        public function listAirlines(Request $request, Response $response, array $routeArguments) : mixed {     
+            $this->requireRole($request, UserRole::AirlineRead);
+
             return $this->flightService->getAllAirlines();
         }
         
@@ -254,7 +257,9 @@
                 )
             ]
         )]
-        public function getAirline(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function getAirline(Request $request, Response $response, array $routeArguments) : mixed {   
+            $this->requireRole($request, UserRole::AirlineRead);
+
             $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
             
             $airline = $this->flightService->getAirline($airlineId);
@@ -362,7 +367,8 @@
             ]
         )]
         public function updateAirline(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::AirlineEdit);
+            
             $wasUpdated = false;
 
             $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
@@ -465,7 +471,7 @@
             ]
         )]
         public function removeAirline(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::AirlineEdit);
 
             $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
             
@@ -556,7 +562,7 @@
             ]
         )]
         public function createAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::AirlineEdit);
 
             $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
             $airlineCode = $this->requireJsonBodyField($request, "code");
@@ -645,7 +651,7 @@
             ]
         )]
         public function removeAirlineCode(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::AirlineEdit);
 
             $airlineId = $this->requirePathArgument($routeArguments, "airlineId");
             $airlineCode = $this->requirePathArgument($routeArguments, "airlineCode");

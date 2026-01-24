@@ -7,7 +7,9 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
-    use Core\Service\Category\CategoryCategory;
+    use Common\Service\Authentication\UserRole;
+use Core\Service\Category\Category;
+use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryIncludedEntity;
     use Core\Service\Category\CategoryService;
     use Core\Service\Highlight\HighlightService;
@@ -116,16 +118,28 @@
             ]
         )]
         public function listCategories(Request $request, Response $response, array $routeArguments) : mixed {    
+            $this->requireRole($request, UserRole::CategoryRead);
+
             $country = $this->getQueryParameter($request, "country");
             $categories = $this->getQueryParameter($request, "categories") ?? "";
             $include = $this->getQueryParameter($request, "include") ?? "";
+
+            $requestedIncludes = array_map(fn($entity) => CategoryIncludedEntity::from($entity), array_filter(explode(",", $include)));
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+                $requiredRole = match($entity) {
+                    CategoryIncludedEntity::Statistics => UserRole::CategoryStatisticsRead,
+                    CategoryIncludedEntity::Highlights => UserRole::CategoryHighlightRead,
+                    default => null
+                };
+
+                return $requiredRole === null || $this->hasRole($request, $requiredRole);
+            });
 
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedCategories = array_map(fn($category) => CategoryCategory::from($category)->value, 
                 array_filter(explode(",", $categories)));
             // TODO: Do not use the backing value, refactor the service code first.
-            $mappedInclude = array_map(fn($entity) => CategoryIncludedEntity::from($entity)->value, 
-                array_filter(explode(",", $include)));
+            $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             
             return $this->categoryService->getCategories($country, $mappedCategories, $mappedInclude);
         }
@@ -206,7 +220,9 @@
                 )
             ]
         )]
-        public function getCategory(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function getCategory(Request $request, Response $response, array $routeArguments) : mixed {  
+            $this->requireRole($request, UserRole::CategoryRead);
+              
             $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
             
             $category = $this->categoryService->getCategory($categoryId);
@@ -214,7 +230,7 @@
                 throw new NotFoundException($categoryId);
             }
 
-            return $category;
+            return $this->filterCategoryPermissions($category, $request);
         }
 
         #[OA\Patch(
@@ -351,7 +367,8 @@
             ]
         )]
         public function updateCategory(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::CategoryEdit);
+
             $wasUpdated = false;
 
             $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
@@ -394,8 +411,8 @@
             if ($category === null) {
                 throw new NotFoundException($categoryId);
             }
-
-            return $category;
+            
+            return $this->filterCategoryPermissions($category, $request);
         }
 
         #[OA\Delete(
@@ -474,7 +491,7 @@
             ]
         )]
         public function removeCategory(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::CategoryEdit);
 
             $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
             
@@ -586,7 +603,7 @@
             ]
         )]
         public function createCategoryHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::CategoryHighlightEdit);
 
             $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
             $photo = $this->requireJsonBodyField($request, "photo");
@@ -681,7 +698,7 @@
             ]
         )]
         public function removeCategoryHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::CategoryHighlightEdit);
 
             $categoryId = $this->requirePathArgument($routeArguments, "categoryId");
             $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
@@ -692,6 +709,16 @@
             }
 
             return null;
+        }
+
+        private function filterCategoryPermissions(Category $category, Request $request) : Category {
+            if (!$this->hasRole($request, UserRole::CategoryStatisticsRead)) {
+                $category->resetStatistics();
+            }
+            if (!$this->hasRole($request, UserRole::CategoryHighlightRead)) {
+                $category->resetHighlights();
+            }
+            return $category;
         }
     }
 ?>

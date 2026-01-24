@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -115,6 +116,8 @@
             ]
         )]
         public function createDevice(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::DeviceEdit);
+
             $deviceId = $this->requireJsonBodyField($request, "id");
             $deviceType = $this->requireJsonBodyField($request, "type");
             $deviceName = $this->requireJsonBodyField($request, "name");
@@ -178,6 +181,8 @@
             ]
         )]
         public function listDevices(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::DeviceRead);
+
             $type = $this->getQueryParameter($request, "type");
 
             $mappedType = $type === null ? null : DeviceType::from($type);

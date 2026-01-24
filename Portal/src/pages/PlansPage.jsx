@@ -11,7 +11,7 @@ import { useAuth } from "../contexts/AuthContext"
 import FloatingButton from "../components/FloatingButton"
 import { Plus } from "lucide-react"
 import TabMenu from "../components/TabMenu"
-import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { endOfDay } from "date-fns"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 
@@ -23,7 +23,7 @@ export default function PlansPage() {
     const { showFormToast } = useUserInput()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
-    const { places: visitedPlaces } = useRegularPlaces({ maxEnd: Math.round(endOfDay(new Date()).getTime() / 1000), sort: "quality" })
+    const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality" })
     const { trips, removeTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: ["country"] })
 

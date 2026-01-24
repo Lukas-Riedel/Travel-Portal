@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -180,7 +181,7 @@
             ]
         )]
         public function createRegion(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::RegionEdit);
 
             $category = $this->requireJsonBodyField($request, "category");
             
@@ -271,7 +272,9 @@
                 )
             ]
         )]
-        public function listRegions(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function listRegions(Request $request, Response $response, array $routeArguments) : mixed {  
+            $this->requireRole($request, UserRole::RegionRead);
+
             $name = $this->getQueryParameter($request, "name");
             
             return $this->categoryService->getRegions($name);

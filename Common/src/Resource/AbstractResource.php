@@ -4,6 +4,7 @@
     use Common\Service\Authentication\UserInfo;
     use Common\CommonConstants;
     use Common\Routing\AuthorizationException;
+    use Common\Service\Authentication\UserRole;
     use Slim\Psr7\Request;
     
     abstract class AbstractResource {
@@ -12,31 +13,40 @@
             return $request->getAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY);
         }
 
-        public function isAdmin(Request $request) : bool {
-            $accessToken = $this->getUserInfo($request);
-            return $accessToken->isAdmin();
-        }
-
         public function isBackendServiceAccount(Request $request) : bool {
-            $accessToken = $this->getUserInfo($request);
+            $userInfo = $this->getUserInfo($request);
             // TODO: Propagate Client ID to a field and use here.
-            return $accessToken->getClient() === getenv("IAM_BACKEND_CLIENT_ID");
+            return $userInfo->getClient() === getenv("IAM_BACKEND_CLIENT_ID");
         }
 
         public function isAgentServiceAccount(Request $request) : bool {
-            $accessToken = $this->getUserInfo($request);
+            $userInfo = $this->getUserInfo($request);
             // TODO: Propagate Client ID to a field and use here.
-            return $accessToken->getClient() === getenv("IAM_AGENT_CLIENT_ID");
+            return $userInfo->getClient() === getenv("IAM_AGENT_CLIENT_ID");
         }
 
-        public function requireAdmin(Request $request) : void {          
-            if (!$this->isAdmin($request) && !$this->isBackendServiceAccount($request)) {
-                throw new AuthorizationException($this->getUserInfo($request));
+        public function hasRole(Request $request, UserRole $requiredRole) : bool {
+            $userInfo = $this->getUserInfo($request);
+    
+            foreach ($userInfo->getRoles() as $assignedRoleValue) {
+                $assignedRole = UserRole::tryFrom($assignedRoleValue);
+                
+                if ($assignedRole && $assignedRole->implies($requiredRole)) {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         public function requireBackendServiceAccount(Request $request) : void {          
             if (!$this->isBackendServiceAccount($request)) {
+                throw new AuthorizationException($this->getUserInfo($request));
+            }
+        }
+
+        public function requireRole(Request $request, UserRole $requiredRole) : void {
+            if (!$this->hasRole($request, $requiredRole) && !$this->isBackendServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }

@@ -121,15 +121,15 @@
         private readonly ?int $start;
         private readonly ?int $end;
         private readonly array $countries;
-        private readonly array $expenses;
-        private readonly array $stays;
-        private readonly array $flights;
-        private readonly array $watchedFlights;
-        private readonly array $fitness;
-        private readonly array $notes;
-        private readonly array $highlights;
-        private readonly array $statistics;
-        private readonly array $publicHolidays;
+        private array $expenses;
+        private array $stays;
+        private array $flights;
+        private array $watchedFlights;
+        private array $fitness;
+        private array $notes;
+        private array $highlights;
+        private array $statistics;
+        private array $publicHolidays;
 
         public function __construct(string $id, string $name, ?int $year, ?Highlight $mainHighlight, ?int $start, ?int $end,
             array $countries, array $expenses, array $stays, array $flights, array $watchedFlights, array $fitness, array $notes,
@@ -194,36 +194,72 @@
             return $this->expenses;
         }
 
+        public function resetExpenses() : void {
+            $this->expenses = array();
+        }
+
         public function getStays() : array {
             return $this->stays;
+        }
+
+        public function resetStays() : void {
+            $this->stays = array();
         }
 
         public function getFlights() : array {
             return $this->flights;
         }
 
+        public function resetFlights() : void {
+            $this->flights = array();
+        }
+
         public function getWatchedFlights() : array {
             return $this->watchedFlights;
+        }
+
+        public function resetWatchedFlights() : void {
+            $this->watchedFlights = array();
         }
 
         public function getFitness() : array {
             return $this->fitness;
         }
 
+        public function resetFitness() : void {
+            $this->fitness = array();
+        }
+
         public function getNotes() : array {
             return $this->notes;
+        }
+
+        public function resetNotes() : void {
+            $this->notes = array();
         }
 
         public function getHighlights() : array {
             return $this->highlights;
         }
 
-        public function getStats() : array {
+        public function resetHighlights() : void {
+            $this->highlights = array();
+        }
+
+        public function getStatistics() : array {
             return $this->statistics;
+        }
+
+        public function resetStatistics() : void {
+            $this->statistics = array();
         }
 
         public function getPublicHolidays() : array {
             return $this->publicHolidays;
+        }
+
+        public function resetPublicHolidays() : void {
+            $this->publicHolidays = array();
         }
 
         public function withOffset(int $offset) : Trip {

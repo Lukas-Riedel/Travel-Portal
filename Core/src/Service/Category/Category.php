@@ -57,8 +57,8 @@
         private readonly CategoryCategory $category;
         private readonly ?CategoryMetadata $metadata;
         private readonly ?Highlight $mainHighlight;
-        private readonly array $highlights;
-        private readonly array $statistics;
+        private array $highlights;
+        private array $statistics;
 
         public function __construct(string $id, string $name, CategoryCategory $category, ?CategoryMetadata $metadata,
             ?Highlight $mainHighlight, array $highlights, array $statistics) {
@@ -95,8 +95,16 @@
             return $this->highlights;
         }
 
-        public function getStats() : array {
+        public function resetHighlights() : void {
+            $this->highlights = array();
+        }
+
+        public function getStatistics() : array {
             return $this->statistics;
+        }
+
+        public function resetStatistics() : void {
+            $this->statistics = array();
         }
 
         #[\ReturnTypeWillChange]

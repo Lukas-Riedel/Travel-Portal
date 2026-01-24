@@ -123,11 +123,11 @@
         private readonly float $score;
         private readonly ?float $quality;
         private readonly ?string $excerpt;
-        private readonly array $categories;
-        private readonly array $highlights;
-        private readonly array $labels;
-        private readonly array $notes;
-        private readonly array $nearbyPlaces;
+        private array $categories;
+        private array $highlights;
+        private array $labels;
+        private array $notes;
+        private array $nearbyPlaces;
         private array $dates;
 
         public function __construct(string $id, string $name, ?string $country, float $latitude, float $longitude,
@@ -195,16 +195,32 @@
             return $this->categories;
         }
 
+        public function resetCategories() : void {
+            $this->categories = array();
+        }
+
         public function getHighlights() : array {
             return $this->highlights;
+        }
+
+        public function resetHighlights() : void {
+            $this->highlights = array();
         }
 
         public function getLabels() : array {
             return $this->labels;
         }
 
+        public function resetLabels() : void {
+            $this->labels = array();
+        }
+
         public function getNotes() : array {
             return $this->notes;
+        }
+
+        public function resetNotes() : void {
+            $this->notes = array();
         }
 
         public function getNearbyPlaces() : array {
@@ -213,6 +229,10 @@
 
         public function getDates() : array {
             return $this->dates;
+        }
+
+        public function resetDates() : void {
+            $this->dates = array();
         }
 
         public function addDate(Date $date) : void {

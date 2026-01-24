@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Highlight\HighlightService;
     use Monolog\Logger;
     use Slim\App;
@@ -106,7 +107,9 @@
                 )
             ]
         )]
-        public function getHighlight(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function getHighlight(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::HighlightRead);
+
             $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
             
             $highlight = $this->highlightService->getHighlight($highlightId);
@@ -244,7 +247,8 @@
             ]
         )]
         public function updateHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::HighlightEdit);
+
             $wasUpdated = false;
 
             $highlightId = $this->requirePathArgument($routeArguments, "highlightId");

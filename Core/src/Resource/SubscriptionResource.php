@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Expense\ExpenseService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -117,7 +118,7 @@
             ]
         )]
         public function createSubscription(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::SubscriptionEdit);
 
             $description = $this->requireJsonBodyField($request, "description");
             $value = $this->requireJsonBodyField($request, "value");
@@ -183,7 +184,9 @@
                 )
             ]
         )]
-        public function listSubscriptions(Request $request, Response $response, array $routeArguments) : mixed {            
+        public function listSubscriptions(Request $request, Response $response, array $routeArguments) : mixed { 
+            $this->requireRole($request, UserRole::SubscriptionRead);
+
             return $this->expenseService->getActiveSubscriptions();
         }  
 
@@ -264,6 +267,8 @@
             ]
         )]
         public function getSubscription(Request $request, Response $response, array $routeArguments) : mixed {    
+            $this->requireRole($request, UserRole::SubscriptionRead);
+
             $subscriptionId = $this->requirePathArgument($routeArguments, "subscriptionId");
             
             $subscription = $this->expenseService->getActiveSubscription($subscriptionId);
@@ -350,7 +355,7 @@
             ]
         )]
         public function removeSubscription(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::SubscriptionEdit);
 
             $subscriptionId = $this->requirePathArgument($routeArguments, "subscriptionId");
             

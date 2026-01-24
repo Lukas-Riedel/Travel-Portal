@@ -1,6 +1,7 @@
 <?php
     namespace Core\Event;
 
+    use Common\Service\Authentication\UserRole;
     use Core\Client\Calendar\Calendar;
     use Core\Service\Device\DeviceType;
     use Core\Service\Highlight\HighlightType;
@@ -118,7 +119,7 @@
             int $scheduledArrival, int $actualArrival, string $timezone) : Event {
             return (new CompositeEvent(Event::getEventName(), array("flight" => $flight, "from" => $from, "to" => $to, "scheduledDeparture" => $scheduledDeparture, 
                 "scheduledArrival" => $scheduledArrival, "actualArrival" => $actualArrival, "timezone" => $timezone)))
-                ->addCloudMessagingEvent(array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addCloudMessagingEvent(array(UserRole::EventFlightLoggedRead), array(DeviceType::Portal, DeviceType::BridgeX))
                 ->addWorkerEvent(EventPriority::Medium);
         }
 
@@ -267,29 +268,29 @@
         }
 
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventNewDataConsistencyIssueDetectedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
         }
 
         public static function ProcessingStarted(string $name, mixed $args) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventProcessingStartedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }
 
         public static function ProcessingEnded(string $name, mixed $args) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN", "USER"), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventProcessingEndedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }
 
         public static function ProcessingFailed(string $name, mixed $args) : Event {
             return (new CompositeEvent(Event::getEventName(), array("name" => $name, "args" => $args)))
-                ->addCloudMessagingEvent(array("ADMIN"), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addCloudMessagingEvent(array(UserRole::EventProcessingFailedRead), array(DeviceType::Portal, DeviceType::BridgeX))
                 ->addWorkerEvent(EventPriority::Highest);
         }
 
         public static function FitnessActivityDetected(array $intervals) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array("intervals" => $intervals));
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventFitnessActivityDetectedRead), array(DeviceType::BridgeX), array("intervals" => $intervals));
         }
 
         public static function DeviceLogOnRequested() : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array("ADMIN"), array(DeviceType::BridgeX), array());
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDeviceLogonRequestedRead), array(DeviceType::BridgeX), array());
         }
 
         private static function getEventName() : string {

@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Label\LabelService;
     use Monolog\Logger;
     use Slim\App;
@@ -87,7 +88,9 @@
                 )
             ]
         )]
-        public function listLabels(Request $request, Response $response, array $routeArguments) : mixed {            
+        public function listLabels(Request $request, Response $response, array $routeArguments) : mixed { 
+            $this->requireRole($request, UserRole::LabelRead);
+
             return $this->labelService->getAllLabels();
         }        
 
@@ -167,7 +170,9 @@
                 )
             ]
         )]
-        public function getLabel(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function getLabel(Request $request, Response $response, array $routeArguments) : mixed { 
+            $this->requireRole($request, UserRole::LabelRead);
+
             $labelId = $this->requirePathArgument($routeArguments, "labelId");
             
             $label = $this->labelService->getLabel($labelId);
@@ -269,7 +274,8 @@
             ]
         )]
         public function updateLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::LabelEdit);
+
             $wasUpdated = false;
 
             $labelId = $this->requirePathArgument($routeArguments, "labelId");

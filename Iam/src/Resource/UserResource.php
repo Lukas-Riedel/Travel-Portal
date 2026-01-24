@@ -2,6 +2,7 @@
     namespace Iam\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Iam\Service\User\UserService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -27,7 +28,7 @@
             
             $role = $this->requireQueryParameter($request, "role");
 
-            return $this->userService->getUserIdsWithRole($role);
+            return $this->userService->getUserIdsWithRole(UserRole::from($role));
         }
     }
 ?>

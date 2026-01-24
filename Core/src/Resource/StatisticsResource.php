@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Statistics\StatisticsService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -81,7 +82,9 @@
                 )
             ]
         )]
-        public function listStatistics(Request $request, Response $response, array $routeArguments) : mixed {            
+        public function listStatistics(Request $request, Response $response, array $routeArguments) : mixed {   
+            $this->requireRole($request, UserRole::StatisticsRead);
+
             return $this->statisticsService->getOverallStatistics();
         }  
     }

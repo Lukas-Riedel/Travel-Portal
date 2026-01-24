@@ -7,11 +7,13 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Label\LabelService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Note\NoteService;
     use Core\Service\Photo\PhotoService;
-    use Core\Service\Place\Place;
+use Core\Service\Place\Date;
+use Core\Service\Place\Place;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -147,7 +149,7 @@
             ]
         )]
         public function createPlace(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceEdit);
 
             $name = $this->requireJsonBodyField($request, "name");
             $address = $this->requireQueryParameter($request, "address");
@@ -244,7 +246,7 @@
                     name: "include",
                     in: "query",
                     description: "The comma-separated list of included entities",
-                    example: "highlights,statistics"
+                    example: "highlights"
                 ),
                 new OA\Parameter(
                     name: "sort",
@@ -304,6 +306,8 @@
             ]
         )]
         public function listPlaces(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::PlaceRead);
+
             $year = $this->getQueryParameter($request, "year");
             $tripId = $this->getQueryParameter($request, "tripId");
             $categoryId = $this->getQueryParameter($request, "categoryId");
@@ -318,17 +322,38 @@
             $limit = $this->getQueryParameter($request, "limit");
             $include = $this->getQueryParameter($request, "include") ?? "";
             $sort = $this->getQueryParameter($request, "sort") ?? PlaceSortingStrategy::OldestAscending->value;
+            
+            $requestedIncludes = array_map(fn($entity) => PlaceIncludedEntity::from($entity), array_filter(explode(",", $include)));
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+                $requiredRole = match($entity) {
+                    PlaceIncludedEntity::Categories => UserRole::PlaceCategoryRead,
+                    PlaceIncludedEntity::Dates => UserRole::PlaceDateRead,
+                    PlaceIncludedEntity::Highlights => UserRole::PlaceHighlightRead,
+                    PlaceIncludedEntity::Labels => UserRole::PlaceLabelRead,
+                    PlaceIncludedEntity::Notes => UserRole::PlaceNoteRead,
+                    default => null
+                };
+
+                return $requiredRole === null || $this->hasRole($request, $requiredRole);
+            });
 
             // TODO: Do not use the backing value, refactor the service code first.
-            $mappedInclude = array_map(fn($entity) => PlaceIncludedEntity::from($entity)->value, 
-                array_filter(explode(",", $include)));
+            $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             $mappedSort = PlaceSortingStrategy::from($sort);
             $mappedType = PlaceType::from($type);
             
-            return match ($mappedType) {
+            $places = match ($mappedType) {
                 PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
                 PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $nearbyPlaces, $mappedInclude)
             };
+
+            foreach ($places as &$place) {
+                foreach ($place->getDates() as &$date) {
+                    $this->filterDatePermissions($date, $request);
+                }
+            }
+
+            return $places;
         }
 
         #[OA\Get(
@@ -413,11 +438,13 @@
                 )
             ]
         )]
-        public function getPlace(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function getPlace(Request $request, Response $response, array $routeArguments) : mixed {  
+            $this->requireRole($request, UserRole::PlaceRead);
+
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $nearbyPlaces = $this->getQueryParameter($request, "nearbyPlaces");
 
-            return $this->doGetPlace($placeId, $nearbyPlaces);
+            return $this->filterPlacePermissions($this->doGetPlace($placeId, $nearbyPlaces), $request);
         }
         
         #[OA\Patch(
@@ -551,7 +578,8 @@
             ]
         )]
         public function updatePlace(Request $request, Response $response, array $routeArguments) : mixed {           
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceEdit);
+
             $wasUpdated = false;
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
@@ -586,7 +614,7 @@
                 $this->logger->warning("The place with the identifier '{$placeId}' was not updated.");
             }
 
-            return $this->doGetPlace($placeId);
+            return $this->filterPlacePermissions($this->doGetPlace($placeId), $request);
         }
 
         #[OA\Delete(
@@ -672,7 +700,7 @@
             ]
         )]
         public function removePlace(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $type = $this->requireQueryParameter($request, "type");
@@ -783,7 +811,7 @@
             ]
         )]
         public function createPlaceNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceNoteEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $content = $this->requireJsonBodyField($request, "content");
@@ -890,7 +918,8 @@
             ]
         )]
         public function updatePlaceNote(Request $request, Response $response, array $routeArguments) : mixed {           
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceNoteEdit);
+
             $wasUpdated = false;
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
@@ -992,7 +1021,7 @@
             ]
         )]
         public function removePlaceNote(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceNoteEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $noteId = $this->requirePathArgument($routeArguments, "noteId");
@@ -1105,7 +1134,7 @@
             ]
         )]
         public function createPlaceHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceHighlightEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $photo = $this->requireJsonBodyField($request, "photo");
@@ -1200,7 +1229,7 @@
             ]
         )]
         public function removePlaceHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceHighlightEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
@@ -1305,7 +1334,7 @@
             ]
         )]
         public function createPlaceLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceLabelEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $name = $this->requireJsonBodyField($request, "name");
@@ -1397,7 +1426,7 @@
             ]
         )]
         public function removePlaceLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceLabelEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $labelId = $this->requirePathArgument($routeArguments, "labelId");
@@ -1495,7 +1524,7 @@
             ]
         )]
         public function createPlaceAlbum(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceAlbumEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $timestamp = $this->requireQueryParameter($request, "timestamp");
@@ -1604,7 +1633,8 @@
             ]
         )]
         public function updatePlaceAlbum(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceAlbumEdit);
+            
             $wasUpdated = false;
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
@@ -1728,7 +1758,7 @@
             ]
         )]
         public function refreshPlaceAlbum(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceAlbumEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $albumId = $this->requirePathArgument($routeArguments, "albumId");
@@ -1877,7 +1907,7 @@
             ]
         )]
         public function createPlaceAlbumPhoto(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::PlaceAlbumEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $albumId = $this->requirePathArgument($routeArguments, "albumId");
@@ -1991,6 +2021,8 @@
             ]
         )]
         public function listPlaceAlbumPhotos(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::PlaceAlbumRead);
+
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $albumId = $this->requirePathArgument($routeArguments, "albumId");
             
@@ -2016,6 +2048,40 @@
             }
 
             throw new NotFoundException($placeId);
+        }
+
+        private function filterPlacePermissions(Place $place, Request $request) : Place {
+            if (!$this->hasRole($request, UserRole::PlaceCategoryRead)) {
+                $place->resetCategories();
+            }
+            if (!$this->hasRole($request, UserRole::PlaceHighlightRead)) {
+                $place->resetHighlights();
+            }
+            if (!$this->hasRole($request, UserRole::PlaceLabelRead)) {
+                $place->resetLabels();
+            }
+            if (!$this->hasRole($request, UserRole::PlaceNoteRead)) {
+                $place->resetNotes();
+            }
+            if (!$this->hasRole($request, UserRole::PlaceDateRead)) {
+                $place->resetDates();
+            }
+            else {
+                foreach ($place->getDates() as &$date) {
+                    $this->filterDatePermissions($date, $request);
+                }
+            }
+            return $place;
+        }
+
+        private function filterDatePermissions(Date $date, Request $request) : Date {
+            if (!$this->hasRole($request, UserRole::TripRead)) {
+                $date->resetTrip();
+            }
+            if (!$this->hasRole($request, UserRole::PlaceAlbumRead)) {
+                $date->resetAlbum();
+            }
+            return $date;
         }
     }
 ?>

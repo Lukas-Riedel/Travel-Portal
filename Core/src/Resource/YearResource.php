@@ -7,8 +7,10 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
-    use Core\Service\Highlight\HighlightService;
-    use Core\Service\Year\YearIncludedEntity;
+use Common\Service\Authentication\UserRole;
+use Core\Service\Highlight\HighlightService;
+use Core\Service\Year\Year;
+use Core\Service\Year\YearIncludedEntity;
     use Core\Service\Year\YearService;
     use Monolog\Logger;
 
@@ -102,11 +104,24 @@
             ]
         )]
         public function listYears(Request $request, Response $response, array $routeArguments) : mixed { 
+            $this->requireRole($request, UserRole::YearRead);
+
             $include = $this->getQueryParameter($request, "include") ?? "";
             
+            $requestedIncludes = array_map(fn($entity) => YearIncludedEntity::from($entity), array_filter(explode(",", $include)));
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+                $requiredRole = match($entity) {
+                    YearIncludedEntity::Fitness => UserRole::YearFitnessRead,
+                    YearIncludedEntity::Statistics => UserRole::YearStatisticsRead,
+                    YearIncludedEntity::Highlights => UserRole::YearHighlightRead,
+                    default => null
+                };
+
+                return $requiredRole === null || $this->hasRole($request, $requiredRole);
+            });
+            
             // TODO: Do not use the backing value, refactor the service code first.
-            $mappedInclude = array_map(fn($entity) => YearIncludedEntity::from($entity)->value, 
-                array_filter(explode(",", $include)));
+            $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             
             return $this->yearService->getYears($mappedInclude);
         }
@@ -187,7 +202,9 @@
                 )
             ]
         )]
-        public function getYear(Request $request, Response $response, array $routeArguments) : mixed {    
+        public function getYear(Request $request, Response $response, array $routeArguments) : mixed { 
+            $this->requireRole($request, UserRole::YearRead);
+
             $yearId = $this->requirePathArgument($routeArguments, "year");
             
             $year = $this->yearService->getYear($yearId);
@@ -195,7 +212,7 @@
                 throw new NotFoundException($yearId);
             }
 
-            return $year;
+            return $this->filterYearPermissions($year, $request);
         }
 
         #[OA\Patch(
@@ -297,7 +314,8 @@
             ]
         )]
         public function updateYear(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::YearEdit);
+
             $wasUpdated = false;
 
             $yearId = $this->requirePathArgument($routeArguments, "year");
@@ -316,7 +334,7 @@
                 throw new NotFoundException($yearId);
             }
 
-            return $year;
+            return $this->filterYearPermissions($year, $request);
         }
 
         #[OA\Post(
@@ -419,7 +437,7 @@
             ]
         )]
         public function createYearHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::YearHighlightEdit);
 
             $yearId = $this->requirePathArgument($routeArguments, "year");
             $photo = $this->requireJsonBodyField($request, "photo");
@@ -514,7 +532,7 @@
             ]
         )]
         public function removeYearHighlight(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::YearHighlightEdit);
 
             $yearId = $this->requirePathArgument($routeArguments, "year");
             $highlightId = $this->requirePathArgument($routeArguments, "highlightId");
@@ -525,6 +543,19 @@
             }
 
             return null;
+        }
+        
+        private function filterYearPermissions(Year $year, Request $request) : Year {
+            if (!$this->hasRole($request, UserRole::YearStatisticsRead)) {
+                $year->resetStatistics();
+            }
+            if (!$this->hasRole($request, UserRole::YearHighlightRead)) {
+                $year->resetHighlights();
+            }
+            if (!$this->hasRole($request, UserRole::YearFitnessRead)) {
+                $year->resetFitness();
+            }
+            return $year;
         }
     }
 ?>

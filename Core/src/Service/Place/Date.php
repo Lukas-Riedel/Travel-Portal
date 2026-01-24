@@ -55,8 +55,8 @@
         private readonly bool $layover;
         private readonly ?Weather $weather;
         private readonly ?Sun $sun;
-        private readonly ?Album $album;
-        private readonly ?TripIdentifier $trip;
+        private ?Album $album;
+        private ?TripIdentifier $trip;
 
         public function __construct(int $start, int $end, bool $layover, ?Weather $weather,
             ?Sun $sun, ?Album $album, ?TripIdentifier $trip) {
@@ -93,8 +93,16 @@
             return $this->album;
         }
 
+        public function resetAlbum() : void {
+            $this->album = null;
+        }
+
         public function getTrip() : ?TripIdentifier {
             return $this->trip;
+        }
+
+        public function resetTrip() : void {
+            $this->trip = null;
         }
 
         #[\ReturnTypeWillChange]

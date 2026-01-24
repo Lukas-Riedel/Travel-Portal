@@ -3,6 +3,7 @@
 
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Flight\FlightService;
     use Monolog\Logger;
     use Slim\App;
@@ -87,7 +88,9 @@
                 )
             ]
         )]
-        public function listAirports(Request $request, Response $response, array $routeArguments) : mixed {            
+        public function listAirports(Request $request, Response $response, array $routeArguments) : mixed {   
+            $this->requireRole($request, UserRole::AirportRead);
+
             return $this->flightService->getAllAirports();
         }        
 
@@ -168,6 +171,8 @@
             ]
         )]
         public function getAirport(Request $request, Response $response, array $routeArguments) : mixed {    
+            $this->requireRole($request, UserRole::AirportRead);
+
             $airportId = $this->requirePathArgument($routeArguments, "airportId");
             
             $airport = $this->flightService->getAirport($airportId);
@@ -275,7 +280,8 @@
             ]
         )]
         public function updateAirport(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAdmin($request);
+            $this->requireRole($request, UserRole::AirportEdit);
+            
             $wasUpdated = false;
 
             $airportId = $this->requirePathArgument($routeArguments, "airportId");
