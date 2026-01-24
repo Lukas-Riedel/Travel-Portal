@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: portal
+  name: {{ .Release.Name }}
   labels:
-    app: portal
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.portal.replicas }}
   strategy:
@@ -14,14 +14,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: portal
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: portal
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: portal
+        - name: {{ .Release.Name }}
           image: "{{ .Values.portal.image }}:{{ .Values.portal.tag }}" 
           ports:
             - containerPort: {{ .Values.portal.service.port }}    
@@ -42,11 +42,11 @@ spec:
             failureThreshold: 3
             timeoutSeconds: 1         
           volumeMounts:
-            - name: portal-config
+            - name: {{ .Release.Name }}-config
               mountPath: /usr/share/nginx/html/env.js
               subPath: env.js
       volumes:
-        - name: portal-config
+        - name: {{ .Release.Name }}-config
           configMap:
-            name: portal-configmap
+            name: {{ .Release.Name }}-configmap
 {{- end }}

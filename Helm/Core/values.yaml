@@ -73,5 +73,5 @@ core:
       name: travel-portal-service
     username: "1287508"
   origins:
-    whitelist: https://travel-portal.eu,https://lriedel.cz
+    whitelist: https://travel-portal.eu,https://lriedel.cz,https://lriedel.fun
   timezone: Europe/Prague

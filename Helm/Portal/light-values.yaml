@@ -1,0 +1,14 @@
+portal:
+  enabled: true
+  service:
+    host: lriedel.fun
+  credentials:
+    default:
+      username: light
+      password: light
+  url:
+    base:
+      public: https://lriedel.fun
+  content:
+    range:
+      max: 0
