@@ -4,8 +4,6 @@ import PhotoTile from "./PhotoTile"
 import { useState } from "react"
 
 export default function HighlightCandidateTile({ name, description, categories, photo, onHighlightCandidateCreated }) {
-    const { isAdmin } = useAuth()
-
     const [overlayType, setOverlayType] = useState(0)
 
     return (
@@ -33,7 +31,7 @@ export default function HighlightCandidateTile({ name, description, categories, 
                     firstLineText={name}
                     secondLineText={description} />
             )}
-            {isAdmin && (
+            {onHighlightCandidateCreated && (
                 <div className="flex justify-center gap-2 mt-2">
                     {onHighlightCandidateCreated && (
                         <button

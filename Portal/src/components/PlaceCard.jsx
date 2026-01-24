@@ -8,7 +8,6 @@ import { formatKilometers } from "../utils/formatters"
 import LoadingCard from "./LoadingCard"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast } = useUserInput()
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("country"), [place])
@@ -37,7 +36,7 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
                     className="ml-2 hover:underline text-lg font-semibold truncate">
                     {getPrettyName(place.name)}
                 </Link>
-                {isAdmin && onPlaceRemoved && (
+                {onPlaceRemoved && (
                     <button
                         onClick={() => handleDelete(place)}
                         className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">

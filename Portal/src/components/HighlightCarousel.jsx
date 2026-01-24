@@ -26,7 +26,6 @@ const defaultXPosition = 0
 const defaultYPosition = 0
 
 export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
-    const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const agents = useDevices({ type: "agent" })
     const { showFormToast } = useUserInput()
@@ -37,7 +36,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const { places: currentHighlightPlaces } = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? invalidPhotoId, include: ["dates"] })
     const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
         ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
-    const [isPaused, setIsPaused] = useState(isAdmin)
+    const slideshowAutostartEnabled = !(onPhotoReplaced || onPhotoCorrected || onHighlightRemoved || onMainHighlightUpdated || onHighlightQualityAttributesUpdated)
+    const [isPaused, setIsPaused] = useState(!slideshowAutostartEnabled)
     const [showEditor, setShowEditor] = useState(false)
     const [crop, setCrop] = useState({ x: defaultXPosition, y: defaultYPosition })
     const [zoom, setZoom] = useState(defaultZoom)
@@ -64,7 +64,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }, [])
 
     useEffect(() => {
-        if (!isAdmin) {
+        if (slideshowAutostartEnabled) {
             setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
         }
         else {
@@ -273,35 +273,35 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 </div>
             )}
             <div className="absolute top-3 right-3 flex space-x-2">
-                {onHighlightCreated && isAdmin && (
+                {onHighlightCreated && (
                     <button
                         onClick={handleHighlightCreated}
                         className="btn-chip-gray">
                         <Plus size={16} />
                     </button>
                 )}
-                {isAdmin && showEditor && (rotation !== defaultRotation || zoom !== defaultZoom || crop.x !== defaultXPosition || crop.y !== defaultYPosition) && (
+                {onPhotoCorrected && showEditor && (rotation !== defaultRotation || zoom !== defaultZoom || crop.x !== defaultXPosition || crop.y !== defaultYPosition) && (
                     <button
                         onClick={handlePhotoCorrected}
                         className="btn-chip-gray">
                         <Check size={16} />
                     </button>
                 )}
-                {onPhotoCorrected && isAdmin && currentHighlightReferencePhotoUrl && (
+                {onPhotoCorrected && currentHighlightReferencePhotoUrl && (
                     <button
                         onClick={() => setShowEditor(prev => !prev)}
                         className="btn-chip-gray">
                         <Edit2 size={16} />
                     </button>
                 )}
-                {onHighlightQualityAttributesUpdated && isAdmin && (
+                {onHighlightQualityAttributesUpdated && (
                     <button
                         onClick={handleHighlightQualityAttributesUpdated}
                         className="btn-chip-gray">
                         <SlidersVertical size={16} />
                     </button>
                 )}
-                {onPhotoReplaced && place && currentHighlightAlbumId && isAdmin && (
+                {onPhotoReplaced && place && currentHighlightAlbumId && (
                     <button
                         onClick={handlePhotoReplaced}
                         className="btn-chip-gray">
@@ -315,14 +315,14 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                             className="btn-chip-gray">
                             {isPaused ? <Play size={16} /> : <Pause size={16} />}
                         </button>
-                        {onMainHighlightUpdated && isAdmin && (
+                        {onMainHighlightUpdated && (
                             <button
                                 onClick={handleMainHighlightUpdated}
                                 className="btn-chip-gray">
                                 <Star size={16} />
                             </button>
                         )}
-                        {onHighlightRemoved && isAdmin && (
+                        {onHighlightRemoved && (
                             <button
                                 onClick={handleHighlightRemoved}
                                 className="btn-chip-gray">

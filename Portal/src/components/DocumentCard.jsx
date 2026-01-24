@@ -6,7 +6,6 @@ import { getDateString } from "../utils/helpers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function DocumentCard({ document, onDocumentRemoved }) {
-    const { isAdmin } = useAuth()
     const { showRemoveDocumentToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
@@ -25,7 +24,7 @@ export default function DocumentCard({ document, onDocumentRemoved }) {
                 <span className="text-lg font-semibold">
                     {document.name}
                 </span>
-                {isAdmin && onDocumentRemoved && (
+                {onDocumentRemoved && (
                     <button
                         onClick={() => handleDelete(document)}
                         className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">

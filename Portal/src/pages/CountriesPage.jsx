@@ -3,8 +3,12 @@ import CategoryTileGrid from "../components/CategoryTileGrid.jsx"
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function CountriesPage() {
+    const { hasRole } = useAuth()
+
     const { places } = useTimeFilteredRegularPlaces({ sort: "-score" })
     const countryCategories = useCategories({ categories: ["country"] })
 
@@ -32,7 +36,7 @@ export default function CountriesPage() {
             .filter(Boolean)
     }, [places, countryCategoriesMap, countryCategories])
 
-    return (
+    return hasRole(UserRole.CategoryRead) && (
         <>
             <div className="h-[400px] md:h-[700px] my-4">
                 <PlaceMap

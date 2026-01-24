@@ -6,6 +6,7 @@ import { TailSpin } from "react-loader-spinner"
 import { getTime, parseISO } from "date-fns"
 import { useDevices } from "../hooks/useDevices.js"
 import { useEffect, useState } from "react"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 const agentOnlineStatusThresholdSeconds = 60
 
@@ -22,7 +23,8 @@ const checklistItems = [
 ]
 
 export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onAddressChanged, onExcerptRefreshed, onLocationChanged, onPlaceReviewed }) {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
+
     const agents = useDevices({ type: "agent" })
     const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
@@ -63,10 +65,6 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     }
 
     const handleLocationUpdated = (latitude, longitude) => {
-        if (!isAdmin) {
-            return
-        }
-
         showConfirmToast(
             "Opravdu chceš změnit polohu místa na zvolené souřadnice?",
             async () => onLocationChanged(latitude, longitude)),
@@ -119,7 +117,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                     <p className="text-justify">
                         {place.excerpt}
                     </p>
-                    {isAdmin && (
+                    {!!(onAddressChanged || onExcerptRefreshed || onExcerptChanged || onPhotosAdded) && (
                         <div className="flex justify-end space-x-2 mt-2">
                             {onAddressChanged && (
                                 <button
@@ -155,9 +153,9 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                 <PlaceMap
                     places={[place]}
                     placeMainCategorySelector={place => place?.getCategory("mostSpecificWithMetadata")}
-                    onRightClick={handleLocationUpdated} />
+                    onRightClick={onLocationChanged && handleLocationUpdated} />
             </div>
-            {isAdmin && place.dates?.map(date => date.album)?.filter(Boolean)?.some(album => !album.reviewed) && (
+            {hasRole(UserRole.UiWarningRead) && onPlaceReviewed && place.dates?.map(date => date.album)?.filter(Boolean)?.some(album => !album.reviewed) && (
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mt-4 mb-6">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-2 text-orange-600">

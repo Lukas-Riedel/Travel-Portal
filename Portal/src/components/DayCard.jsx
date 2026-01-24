@@ -13,6 +13,7 @@ import { useDevices } from "../hooks/useDevices"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import ReactMarkdown from "react-markdown"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -61,7 +62,7 @@ const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
 
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const agents = useDevices({ type: "agent" })
     const { showFormToast } = useUserInput()
     const { showCreateNoteToast, showRemoveNoteToast } = usePredefinedUserInput()
@@ -106,7 +107,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
         )
     }
 
-    const requiresAttention = event => isAdmin
+    const requiresAttention = event => hasRole(UserRole.UiWarningRead)
         && ((event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold))
             || (event.from && event.to && !event.confirmed))
 
@@ -115,8 +116,8 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
             <div className="mb-4">
                 <div className="flex justify-between items-start">
                     <span
-                        className={`font-bold whitespace-nowrap leading-none ${isAdmin && onNoteAdded ? "hover:underline hover:text-gray-600 hover:cursor-pointer transition-colors duration-200" : ""}"`}
-                        onClick={isAdmin && onNoteAdded && handleNoteCreated}>
+                        className={`font-bold whitespace-nowrap leading-none ${onNoteAdded ? "hover:underline hover:text-gray-600 hover:cursor-pointer transition-colors duration-200" : ""}"`}
+                        onClick={onNoteAdded && handleNoteCreated}>
                         {day?.getFullYear() > 1970 ? format(day, "EEE d.M.", { locale: cs }) : `Den ${Math.floor(day.getTime() / (1000 * 60 * 60 * 24)) + 2}`}
                     </span>
                     {stay && (
@@ -221,7 +222,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                             <OctagonAlert size={16} />
                                         </span>
                                     )}
-                                    {onPhotosAdded && isAdmin && (
+                                    {onPhotosAdded && (
                                         <button className={requiresAttention(event) ? "btn-icon-hover text-red-600" : "btn-icon-hover text-indigo-600"}
                                             onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start)}>
                                             <ImagePlus size={16} />
@@ -278,7 +279,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                 </div>
                             )
                         })()}
-                        {isAdmin && event.album?.uploadingStart && event.album?.uploadingProgress && (
+                        {onPhotosAdded && event.album?.uploadingStart && event.album?.uploadingProgress && (
                             <div className="relative group inline-block">
                                 {renderDescriptionRow("text-yellow-500", [
                                     (
@@ -299,7 +300,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                     </li>
                 ))}
             </ul>
-            {isAdmin && notes?.length > 0 && (
+            {notes?.length > 0 && (
                 <ul className="mt-3 text-xs text-gray-500 space-y-2 leading-5">
                     {notes.map(note => (
                         <li
@@ -319,7 +320,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                     </ReactMarkdown>
                                 </Tooltip>
                             </div>
-                            {isAdmin && onNoteRemoved && (
+                            {onNoteRemoved && (
                                 <button
                                     className="btn-icon-hover"
                                     onClick={() => handleNoteRemoved(note)}>

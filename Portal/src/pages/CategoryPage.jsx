@@ -11,7 +11,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { Edit2, Folder } from "lucide-react"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import { useUserInput } from "../hooks/useUserInput.tsx"
-import { HighlightType } from "../types/CoreSwaggerTypes.ts"
+import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 const categoryCategories = {
     continent: "Kontinent",
@@ -29,7 +29,7 @@ export default function CategoryPage() {
     const { publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
     const { showFormToast } = useUserInput()
 
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
 
     const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategory,
         removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
@@ -78,44 +78,44 @@ export default function CategoryPage() {
         )
     }
 
-    return (
+    return hasRole(UserRole.CategoryRead) && (
         <>
             <PageHeader
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={attributes}
-                onHighlightsSelectingTriggered={totalScore > 0 && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Category, categoryId, highlightsCount, true))}
-                onNameChanged={updateCategoryName}
-                onRemoved={category?.category !== "country" && removeCategory} />
+                internalAttributes={hasRole(UserRole.CategoryEdit) && attributes}
+                onHighlightsSelectingTriggered={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Category, categoryId, highlightsCount, true))}
+                onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName}
+                onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== "country" && removeCategory} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={category}
                 places={places}
                 placeMainCategorySelector={getPlaceCategory}
-                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
-                onPhotoCorrected={handlePhotoCorrected}
-                onHighlightRemoved={removeCategoryHighlight}
-                onMainHighlightUpdated={updateCategoryMainHighlight}
-                onHighlightQualityAttributesUpdated={updateCategoryHighlightQualityAttributes} />
+                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
+                onHighlightRemoved={hasRole(UserRole.CategoryHighlightEdit) && removeCategoryHighlight}
+                onMainHighlightUpdated={hasRole(UserRole.CategoryEdit) && updateCategoryMainHighlight}
+                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updateCategoryHighlightQualityAttributes} />
             <StatisticsPanel statistics={category && (category.statistics ?? [])} />
             <PlaceTileGrid
                 places={places}
                 placeMainCategorySelector={getPlaceCategory} />
-            {isAdmin && (
-                <div className="flex justify-end">
-                    <div className="flex items-center gap-2">
-                        <a
-                            href={`/plan/category/${category?.id}`}
-                            className="btn-chip-gray">
-                            <Folder size={16} />
-                        </a>
+            <div className="flex justify-end">
+                <div className="flex items-center gap-2">
+                    <a
+                        href={`/plan/category/${category?.id}`}
+                        className="btn-chip-gray">
+                        <Folder size={16} />
+                    </a>
+                    {hasRole(UserRole.CategoryEdit) && (
                         <button
                             onClick={handleMetadataChanged}
                             className="btn-chip-gray">
                             <Edit2 size={16} />
                         </button>
-                    </div>
+                    )}
                 </div>
-            )}
+            </div>
         </>
     )
 }

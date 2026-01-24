@@ -3,14 +3,12 @@ import { getPrettyName } from "../utils/helpers"
 import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { formatKilometers, formatNextPlaces } from "../utils/formatters"
-import { useAuth } from "../contexts/AuthContext"
 import LoadingCard from "./LoadingCard"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const maximumPlacesCount = 5
 
 export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }) {
-    const { isAdmin } = useAuth()
     const { showRemovePlaceToast } = usePredefinedUserInput()
 
     const visiblePlaces = useMemo(() => [...(places ?? [])]?.sort((a, b) => a.distance - b.distance)?.slice(0, maximumPlacesCount), [places])
@@ -60,7 +58,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 {getPrettyName(place.name)}
                                 {place.quality && place.quality >= 0 && ` (${Math.round(place.quality)} %)`}
                             </Link>
-                            {isAdmin && onPlaceRemoved && (
+                            {onPlaceRemoved && (
                                 <button
                                     onClick={() => handleDelete(place)}
                                     className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">

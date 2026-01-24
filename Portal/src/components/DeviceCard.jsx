@@ -7,8 +7,6 @@ import { FolderSync } from "lucide-react"
 const onlineStatusThresholdSeconds = 60
 
 export default function DeviceCard({ device, onFolderSynchronizationRequested }) {
-    const { isAdmin } = useAuth()
-
     const isOnline = useMemo(() => device.lastSeen + onlineStatusThresholdSeconds > Date.now() / 1000, [device])
 
     return device ? (
@@ -47,7 +45,7 @@ export default function DeviceCard({ device, onFolderSynchronizationRequested })
                     )}
                 </ul>
             </div>
-            {onFolderSynchronizationRequested && isOnline && isAdmin && (
+            {onFolderSynchronizationRequested && isOnline && (
                 <button
                     onClick={() => onFolderSynchronizationRequested(device.id)}
                     className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">

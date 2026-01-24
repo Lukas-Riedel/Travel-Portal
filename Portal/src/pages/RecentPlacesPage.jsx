@@ -7,18 +7,20 @@ import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
 import TripSummary from "../components/TripSummary.jsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const limitStep = 10
 
 export default function RecentPlacesPage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
 
     const [displayedPlaces, setDisplayedPlaces] = useState(undefined)
     const [currentLimit, setCurrentLimit] = useState(limitStep)
     const isFetching = useRef(false)
 
-    // TODO: Add support for skipping and just append new places.
-    const { places } = useTimeFilteredRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, sort: "-oldest" })
+    const { places } = useRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, maxEnd: getCurrentOrMaximumAllowedTimestamp(), sort: "-oldest" })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()
@@ -54,7 +56,7 @@ export default function RecentPlacesPage() {
         return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])
 
-    return (
+    return hasRole(UserRole.PlaceRead) && (
         <>
             <div className="h-[400px] md:h-[700px] my-4">
                 <PlaceMap
@@ -62,11 +64,11 @@ export default function RecentPlacesPage() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
-            {(isAdmin || upcomingOrCurrentTrip?.isCurrent()) && (
+            {(hasRole(UserRole.UiFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}
-                    onNoteAdded={createTripNote}
-                    onNoteRemoved={removeTripNote} />
+                    onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
+                    onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
             )}
             <PlaceSummaryList places={displayedPlaces} />
             {displayedPlaces && isFetching.current && (

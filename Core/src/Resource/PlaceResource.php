@@ -12,8 +12,8 @@
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Note\NoteService;
     use Core\Service\Photo\PhotoService;
-use Core\Service\Place\Date;
-use Core\Service\Place\Place;
+    use Core\Service\Place\Date;
+    use Core\Service\Place\Place;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -246,7 +246,7 @@ use Core\Service\Place\Place;
                     name: "include",
                     in: "query",
                     description: "The comma-separated list of included entities",
-                    example: "highlights"
+                    example: "highlights,dates"
                 ),
                 new OA\Parameter(
                     name: "sort",

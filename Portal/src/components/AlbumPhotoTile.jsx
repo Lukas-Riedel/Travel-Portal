@@ -1,5 +1,4 @@
 import { Edit2, SendToBack, Star } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
 import PhotoTile from "./PhotoTile"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useState } from "react"
@@ -10,7 +9,6 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 const agentOnlineStatusThresholdSeconds = 60
 
 export default function AlbumPhotoTile({ place, album, photo, photoPosition, onPhotoReplaced, onMainPhotoUpdated }) {
-    const { isAdmin } = useAuth()
     const agents = useDevices({ type: "agent" })
     const { showFormToast } = useUserInput()
     const { showUpdateAlbumMainPhotoToast } = usePredefinedUserInput()
@@ -50,7 +48,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
                     firstLineText={place.name}
                     secondLineText={getDateString(Date.now() / 1000)} />
             )}
-            {isAdmin && (
+            {(onPhotoReplaced || onMainPhotoUpdated) && (
                 <div className="flex justify-center gap-2 mt-2">
                     {onPhotoReplaced && (
                         <button

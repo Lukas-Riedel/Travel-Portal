@@ -7,14 +7,12 @@ import "yet-another-react-lightbox/plugins/counter.css"
 import PhotoTile from "./PhotoTile"
 import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
-import { useAuth } from "../contexts/AuthContext"
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
 import { Link } from "react-router-dom"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function DateTile({ place, date, onAlbumRefreshed }) {
-    const { isAdmin } = useAuth()
     const { showRefreshAlbumToast } = usePredefinedUserInput()
 
     const photos = usePlaceAlbumPhotos(place?.id, date?.album?.id)
@@ -53,7 +51,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 secondLineText={getDateString(date?.start)}
                 categories={place && [place.getCategory("mostSpecificWithMetadata")]}
                 onClick={openGallery} />
-            {isAdmin && date?.album && (
+            {onAlbumRefreshed && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">
                     <a
                         href={date.album.permalink}

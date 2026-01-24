@@ -1,14 +1,14 @@
 portal:
   enabled: true
   service:
-    host: lriedel.fun
+    host: travel-portal.eu
   credentials:
     default:
       username: light
       password: light
   url:
     base:
-      public: https://lriedel.fun
+      public: https://travel-portal.eu
   content:
     range:
       max: 0

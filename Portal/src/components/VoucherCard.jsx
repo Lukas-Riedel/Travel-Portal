@@ -6,7 +6,6 @@ import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 
 export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherRemoved }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast, showFormToast } = useUserInput()
 
     const handleDelete = () => {
@@ -42,7 +41,7 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
                 <span className="text-lg font-semibold">
                     {voucher.issuer}
                 </span>
-                {isAdmin && (
+                {!!(onVoucherValueUpdated || onVoucherRemoved) && (
                     <ul className="flex justify-end gap-1 ml-auto">
                         {onVoucherValueUpdated && (
                             <li>

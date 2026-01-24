@@ -14,12 +14,13 @@ import { useEvents } from "../hooks/useEvents.js"
 import { useMemo } from "react"
 import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
-import { HighlightType } from "../types/CoreSwaggerTypes.ts"
+import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const nearbyPlacesCount = 3
 
 export default function PlacePage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const { placeId } = useParams()
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
 
@@ -32,44 +33,44 @@ export default function PlacePage() {
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(albumId))
 
-    return (
+    return hasRole(UserRole.PlaceRead) && (
         <>
             <PageHeader
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
-                internalAttributes={{ "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length }}
-                onHighlightsSelectingTriggered={place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, highlightsCount, true))}
-                onNameChanged={updatePlaceName} />
+                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length }}
+                onHighlightsSelectingTriggered={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, highlightsCount, true))}
+                onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel
                 place={place}
-                highlights={place && (place.highlights ?? [])}
-                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
-                onPhotoCorrected={handlePhotoCorrected}
-                onHighlightRemoved={removePlaceHighlight}
-                onMainHighlightUpdated={updatePlaceMainHighlight}
-                onHighlightQualityAttributesUpdated={updatePlaceHighlightQualityAttributes} />
+                highlights={place && (place.highlights ?? []).filter(highlight => highlight.photo.timestamp < getCurrentOrMaximumAllowedTimestamp())}
+                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
+                onHighlightRemoved={hasRole(UserRole.PlaceHighlightEdit) && removePlaceHighlight}
+                onMainHighlightUpdated={hasRole(UserRole.PlaceEdit) && updatePlaceMainHighlight}
+                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updatePlaceHighlightQualityAttributes} />
             <CategoryBar categories={place && (place.categories ?? [])} />
             <LabelBar
                 labels={place && (place.labels ?? [])}
-                onLabelAdded={createPlaceLabel}
-                onLabelRemoved={removePlaceLabel} />
+                onLabelAdded={hasRole(UserRole.PlaceLabelEdit) && createPlaceLabel}
+                onLabelRemoved={hasRole(UserRole.PlaceLabelEdit) && removePlaceLabel} />
             <PlaceContent
                 place={place}
-                onPhotosAdded={publishPhotosUploadingTriggeredEvent}
-                onExcerptChanged={updatePlaceExcerpt}
-                onExcerptRefreshed={refreshPlaceExcerpt}
-                onAddressChanged={updatePlaceAddress}
-                onLocationChanged={updatePlaceLocation}
-                onPlaceReviewed={updatePlaceAlbumReviewed} />
+                onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent}
+                onExcerptChanged={hasRole(UserRole.PlaceEdit) && updatePlaceExcerpt}
+                onExcerptRefreshed={hasRole(UserRole.PlaceEdit) && refreshPlaceExcerpt}
+                onAddressChanged={hasRole(UserRole.PlaceEdit) && updatePlaceAddress}
+                onLocationChanged={hasRole(UserRole.PlaceEdit) && updatePlaceLocation}
+                onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && updatePlaceAlbumReviewed} />
             <DateTileGrid
                 place={place}
-                onAlbumRefreshed={refreshPlaceAlbum} />
-            <TripBar trips={isAdmin ? place?.getAllTrips() : place?.getPastTrips()} />
+                onAlbumRefreshed={hasRole(UserRole.PlaceAlbumEdit) && refreshPlaceAlbum} />
+            <TripBar trips={hasRole(UserRole.UiFutureRead) ? place?.getAllTrips() : place?.getPastTrips()} />
             {place?.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid place={place} />
             <SunAltitudeBar place={place} />
-            {isAdmin && (
+            {hasRole(UserRole.PlaceNoteRead) && (
                 <NoteCardGrid
                     notes={place && (place.notes ?? [])}
                     onNoteCreated={createPlaceNote}

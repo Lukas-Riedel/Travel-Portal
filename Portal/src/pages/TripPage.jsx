@@ -15,10 +15,10 @@ import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
-import { HighlightType } from "../types/CoreSwaggerTypes.ts"
+import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function TripPage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
 
     const { tripId } = useParams()
@@ -43,34 +43,34 @@ export default function TripPage() {
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
 
-    return (
+    return hasRole(UserRole.TripRead) && (
         <>
             <PageHeader
                 name={trip && trip.getFullName()}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={{ "Počet highlightů": trip?.highlights?.length }}
-                onHighlightsSelectingTriggered={places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Trip, tripId, highlightsCount, true))}
-                onNameChanged={updateTripName}
-                onRemoved={removeTrip} />
+                internalAttributes={hasRole(UserRole.TripEdit) && { "Počet highlightů": trip?.highlights?.length }}
+                onHighlightsSelectingTriggered={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Trip, tripId, highlightsCount, true))}
+                onNameChanged={hasRole(UserRole.TripEdit) && updateTripName}
+                onRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
             <HighlightCarouselAndPlaceMapToggle
                 entity={trip}
                 places={tripPlacesWithoutLayover}
                 placeMainCategorySelector={getPlaceCategory}
-                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
-                onPhotoCorrected={handlePhotoCorrected}
-                onHighlightRemoved={removeTripHighlight}
-                onMainHighlightUpdated={updateTripMainHighlight}
-                onHighlightQualityAttributesUpdated={updateTripHighlightQualityAttributes} />
+                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
+                onHighlightRemoved={hasRole(UserRole.TripHighlightEdit) && removeTripHighlight}
+                onMainHighlightUpdated={hasRole(UserRole.TripEdit) && updateTripMainHighlight}
+                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updateTripHighlightQualityAttributes} />
             <StatisticsPanel statistics={trip && (trip.statistics ?? [])} />
             <TripCalendar
                 trip={trip}
                 places={tripPlaces}
                 tripCandidates={candidateTrips}
-                onPhotosAdded={!trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
-                onNoteAdded={createTripNote}
-                onNoteRemoved={removeTripNote}
-                onTripMoved={moveTrip}
-                onTripLoaded={loadTrip} />
+                onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
+                onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
+                onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
+                onTripMoved={hasRole(UserRole.TripEdit) && moveTrip}
+                onTripLoaded={hasRole(UserRole.TripEdit) && loadTrip} />
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />
@@ -81,17 +81,17 @@ export default function TripPage() {
                         ...(trip?.flights?.map(flight => ({ type: "flight", description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
                         ...(trip?.stays?.map(stay => ({ type: "hotel", description: stay.name })) ?? [])
                     ]}
-                    onExpenseCreated={createTripExpense}
-                    onExpenseDescriptionUpdated={updateTripExpenseDescription}
-                    onExpenseValueUpdated={updateTripExpenseValue}
-                    onExpenseRemoved={removeTripExpense} />
+                    onExpenseCreated={hasRole(UserRole.TripExpenseEdit) && createTripExpense}
+                    onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseDescription}
+                    onExpenseValueUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseValue}
+                    onExpenseRemoved={hasRole(UserRole.TripExpenseEdit) && removeTripExpense} />
             )}
-            {isAdmin && (
+            {hasRole(UserRole.TripNoteRead) && (
                 <NoteCardGrid
                     notes={trip && (trip.notes ?? [])}
-                    onNoteCreated={createTripNote}
-                    onNoteContentUpdated={updateTripNoteContent}
-                    onNoteRemoved={removeTripNote} />
+                    onNoteCreated={hasRole(UserRole.TripNoteEdit) && createTripNote}
+                    onNoteContentUpdated={hasRole(UserRole.TripNoteEdit) && updateTripNoteContent}
+                    onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
             )}
             <TripNavigation trip={trip} />
         </>

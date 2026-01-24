@@ -4,9 +4,12 @@ import AlbumPhotoTileGrid from "../components/AlbumPhotoTileGrid"
 import { usePlace } from "../hooks/usePlace"
 import { useEvents } from "../hooks/useEvents"
 import { useMemo } from "react"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function AlbumPage() {
     const { placeId, albumId } = useParams()
+    const { hasRole } = useAuth()
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { place, refreshPlaceAlbum } = usePlace(placeId)
@@ -14,12 +17,12 @@ export default function AlbumPage() {
 
     const date = useMemo(() => place?.getDateByAlbumId(albumId), [place, albumId])
 
-    return (
+    return hasRole(UserRole.PlaceAlbumRead) && (
         <AlbumPhotoTileGrid
             place={place}
             album={date?.album}
             photos={photos}
-            onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
-            onMainPhotoUpdated={refreshPlaceAlbum} />
+            onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
+            onMainPhotoUpdated={hasRole(UserRole.PlaceAlbumEdit) && refreshPlaceAlbum} />
     )
 }

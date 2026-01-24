@@ -5,15 +5,16 @@ import { useAuth } from "../contexts/AuthContext";
 import { usePublicHolidays } from "../hooks/usePublicHolidays";
 import { useRegularTrips } from "../hooks/useRegularTrips";
 import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents";
+import { UserRole } from "../types/CoreSwaggerTypes.ts";
 
 export default function TrackerPage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
 
     const trips = useRegularTrips({ include: ["flights"] })
     const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["overtime", "vacation", "selfcare", "tenure", "plannedWork"])
     const { isFreeDay } = usePublicHolidays(trips?.at(-1)?.year)
 
-    return (
+    return hasRole(UserRole.TrackerRead) && (
         <>
             <TrackerCalendar
                 trips={trips}
@@ -23,14 +24,14 @@ export default function TrackerPage() {
                 vacationEvents={timeTrackingEvents["vacation"]}
                 selfcareEvents={timeTrackingEvents["selfcare"]}
                 tenureEvents={timeTrackingEvents["tenure"]}
-                onEventCreated={createTimeTrackingEvent}
-                onEventRemoved={removeTimeTrackingEvent} />
+                onEventCreated={hasRole(UserRole.TrackerEdit) && createTimeTrackingEvent}
+                onEventRemoved={hasRole(UserRole.TrackerEdit) && removeTimeTrackingEvent} />
             <TimeOffBalanceSummary
                 overtimeEvents={timeTrackingEvents["overtime"]}
                 vacationEvents={timeTrackingEvents["vacation"]}
                 selfcareEvents={timeTrackingEvents["selfcare"]}
                 tenureEvents={timeTrackingEvents["tenure"]} />
-            {isAdmin && (
+            {hasRole(UserRole.UiFutureRead) && (
                 <TripTable
                     trips={trips?.filter(trip => trip?.isFuture())}
                     isFreeDay={isFreeDay}

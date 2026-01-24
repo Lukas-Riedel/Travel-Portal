@@ -38,6 +38,7 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 
 ### 🔐 Security & Identity
 * **Iam (PHP / Keycloak Wrapper):** A dedicated REST API service acting as a security gateway. It interfaces with **Keycloak** for robust authentication.
+* **Role-Based Access Control (RBAC)**: Access management is handled through a fine-grained RBAC system. Permissions are defined as specific resource-action pairs, providing consistent authorization across all services.
 * **Token-Based Auth:** Every microservice in the cluster must communicate with the **Iam** service to obtain a valid **Bearer Token**. This ensures that the internal communication follows a strict "Security-First" approach.
 
 ### 🧱 Specialized Services

@@ -8,8 +8,8 @@
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
-use Core\Service\Category\Category;
-use Core\Service\Category\CategoryCategory;
+    use Core\Service\Category\Category;
+    use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryIncludedEntity;
     use Core\Service\Category\CategoryService;
     use Core\Service\Highlight\HighlightService;

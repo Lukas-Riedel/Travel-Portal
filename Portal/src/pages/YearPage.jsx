@@ -17,10 +17,10 @@ import DayCard from "../components/DayCard"
 import { fromUnixTime, startOfDay } from "date-fns"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Trip } from "../classes/Trip.ts"
-import { HighlightType } from "../types/CoreSwaggerTypes.ts"
+import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function YearPage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
     const { year: yearParameter } = useParams()
     const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
@@ -42,28 +42,28 @@ export default function YearPage() {
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
 
     // TODO: Introduce Calendar instead of CardGrid, use TripCalendar as base. Also make sure that loading tail spins are displayed correctly.
-    return (
+    return hasRole(UserRole.YearRead) && (
         <>
             <PageHeader
                 name={year?.id}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={{ "Počet highlightů": year?.highlights?.length }}
-                onHighlightsSelectingTriggered={yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Year, yearParameter, highlightsCount, true))}
+                internalAttributes={hasRole(UserRole.YearEdit) && { "Počet highlightů": year?.highlights?.length }}
+                onHighlightsSelectingTriggered={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Year, yearParameter, highlightsCount, true))}
             />
             <HighlightCarouselAndPlaceMapToggle
                 entity={year}
                 places={places}
                 placeMainCategorySelector={getPlaceCategory}
-                onPhotoReplaced={publishPhotoReplacingTriggeredEvent}
-                onPhotoCorrected={handlePhotoCorrected}
-                onHighlightRemoved={removeYearHighlight}
-                onMainHighlightUpdated={updateYearMainHighlight}
-                onHighlightQualityAttributesUpdated={updateYearHighlightQualityAttributes} />
+                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
+                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
+                onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) && removeYearHighlight}
+                onMainHighlightUpdated={hasRole(UserRole.YearEdit) && updateYearMainHighlight}
+                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updateYearHighlightQualityAttributes} />
             <StatisticsPanel statistics={year && (year.statistics ?? [])} />
-            {isAdmin && (
-                <TripTable trips={yearTrips?.filter(trip => trip?.isFuture())} />
+            {hasRole(UserRole.UiFutureRead) && (
+                <TripTable trips={yearTrips?.filter(trip => trip.isFuture())} />
             )}
-            <TripTileGrid trips={yearTrips?.slice()?.reverse()} />
+            <TripTileGrid trips={yearTrips?.filter(trip => trip.isPast())?.slice()?.reverse()} />
             <CardGrid cardsPerRowCount={4}>
                 {days?.map((day, index) => (
                     <DayCard
@@ -73,10 +73,10 @@ export default function YearPage() {
                         events={placesWithoutTrip && new Trip({}).getCalendarEvents(day, placesWithoutTrip, timezone)}
                         fitness={year?.fitness && year.fitness[getDayOfYear(day)]}
                         timezone={timezone}
-                        onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
+                        onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
                 ))}
             </CardGrid>
-            <ExpenseSummary expenses={yearTrips?.flatMap(trip => trip.expenses ?? [])} />
+            <ExpenseSummary expenses={yearTrips?.filter(trip => trip.isPast() || trip.isCurrent())?.flatMap(trip => trip.expenses ?? [])} />
         </>
     )
 }

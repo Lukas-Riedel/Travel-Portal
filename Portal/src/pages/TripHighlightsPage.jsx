@@ -6,9 +6,12 @@ import HighlightCarousel from "../components/HighlightCarousel"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { getDateRangeString } from "../utils/helpers"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useAuth } from "../contexts/AuthContext.tsx"
 
 export default function TripHighlightsPage() {
     const { tripId } = useParams()
+    const { hasRole } = useAuth()
 
     const { trip, createTripHighlight } = useTrip(tripId)
     const { places } = useRegularPlaces({ tripId, include: ["categories", "dates"], sort: "-oldest" })
@@ -41,20 +44,20 @@ export default function TripHighlightsPage() {
         }
     }
 
-    return (
+    return hasRole(UserRole.TripHighlightRead) && (
         <>
             {currentHighlights && (
                 <HighlightCarousel
                     highlights={currentHighlights?.map((currentHighlightCandidate, index) => ({ id: index, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url + "=w1200-h800", thumbnail: currentHighlightCandidate.url + "=w350-h233" } }))}
-                    onHighlightCreated={handleHighlightCreated}
-                    onHighlightRemoved={async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1))} />
+                    onHighlightCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCreated}
+                    onHighlightRemoved={hasRole(UserRole.TripHighlightEdit) && (async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1)))} />
             )}
             <HighlightCandidateTileGrid
                 name={trip?.getFullName()}
                 description={getDateRangeString(trip?.start, trip?.end)}
                 categories={places?.map(p => p.getCategory("mostSpecificWithMetadata")).filter(Boolean).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
                 highlightCandidates={highlightCandidates}
-                onHighlightCandidateCreated={handleHighlightCandidateCreated} />
+                onHighlightCandidateCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )
 }

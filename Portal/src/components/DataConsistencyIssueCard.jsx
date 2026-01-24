@@ -12,7 +12,6 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }) {
-    const { isAdmin } = useAuth()
     const navigate = useNavigate()
     const { showInputToast, showFormToast } = useUserInput()
     const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast } = usePredefinedUserInput()
@@ -375,7 +374,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             <div className="text-gray-400 text-sm">
                 Poslední sken: {getDateTimeString(dataConsistencyIssue.timestamp)}
             </div>
-            {dataConsistencyIssues[dataConsistencyIssue.name]?.resolve && isAdmin && (
+            {dataConsistencyIssues[dataConsistencyIssue.name]?.resolve && (
                 <button
                     onClick={() => dataConsistencyIssues[dataConsistencyIssue.name]?.resolve(dataConsistencyIssue.context)}
                     className="absolute bottom-2 right-2 p-1 rounded text-orange-600 hover:bg-gray-100 transition-colors">

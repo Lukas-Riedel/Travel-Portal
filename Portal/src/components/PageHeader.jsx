@@ -6,7 +6,6 @@ import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
 export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsSelectingTriggered }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
@@ -116,14 +115,14 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                     {name && (
                         <>
                             {getPrettyName(name)}
-                            {isAdmin && (
+                            {!!(onHighlightsSelectingTriggered || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
                                 </span>)}
                         </>
                     )}
                 </h1>
-                {internalAttributes && isAdmin && Object.values(internalAttributes).filter(Boolean).length > 0 && (
+                {internalAttributes && Object.values(internalAttributes).filter(Boolean).length > 0 && (
                     <div className="flex items-center text-md mt-1 text-gray-600 space-x-2">
                         {renderInternalAttributes()}
                     </div>
@@ -147,7 +146,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                     {name && (
                         <>
                             {getPrettyName(name)}
-                            {isAdmin && (
+                            {!!(onHighlightsSelectingTriggered || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
                                 </span>)}
@@ -164,7 +163,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                         className="w-10 h-auto flex-shrink-0" />
                 ))}
             </div>
-            {internalAttributes && isAdmin && Object.values(internalAttributes).filter(Boolean).length > 0 && (
+            {internalAttributes && Object.values(internalAttributes).filter(Boolean).length > 0 && (
                 <div className="flex justify-center items-center text-md my-2 text-gray-600 space-x-2">
                     {renderInternalAttributes()}
                 </div>

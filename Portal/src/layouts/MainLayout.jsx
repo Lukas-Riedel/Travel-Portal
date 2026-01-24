@@ -4,23 +4,26 @@ import { useAuth } from "../contexts/AuthContext"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useUserInput } from "../hooks/useUserInput.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function MainLayout({ children }) {
-    const { login, logout, isAdmin } = useAuth()
+    const { isLoggedIn, login, logout, hasRole } = useAuth()
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
     const { showConfirmToast, showFormToast } = useUserInput()
 
     const navigationItems = [
-        { label: t("menu.feed"), to: "/feed", isProtected: false, allowedPrefixes: ["/feed"] },
-        { label: t("menu.trips"), to: "/trip", isProtected: false, allowedPrefixes: ["/trip", "/year"] },
-        { label: t("menu.places"), to: "/place", isProtected: false, allowedPrefixes: ["/place", "/category"] },
-        { label: t("menu.flights"), to: "/flight", isProtected: false, allowedPrefixes: ["/flight", "/airport", "/airline"] },
-        { label: t("menu.statistics"), to: "/statistics", isProtected: false, allowedPrefixes: ["/statistics"] },
-        { label: t("menu.plan"), to: "/plan", isProtected: true, allowedPrefixes: ["/plan"] },
-        { label: t("menu.tracker"), to: "/tracker", isProtected: true, allowedPrefixes: ["/tracker"] },
-        { label: t("menu.admin"), to: "/admin", isProtected: true, allowedPrefixes: ["/admin"] }
+        { label: t("menu.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
+        { label: t("menu.trips"), to: "/trip", requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
+        { label: t("menu.places"), to: "/place", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
+        { label: t("menu.flights"), to: "/flight", requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
+        { label: t("menu.statistics"), to: "/statistics", requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
+        // TODO: Find a better required role.
+        { label: t("menu.plan"), to: "/plan", requiredRole: UserRole.UiFutureRead, allowedPrefixes: ["/plan"] },
+        { label: t("menu.tracker"), to: "/tracker", requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
+        // TODO: Find a better requried role.
+        { label: t("menu.admin"), to: "/admin", requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] }
     ]
 
     const handleLogin = () => {
@@ -45,7 +48,7 @@ export default function MainLayout({ children }) {
         )
     }
 
-    const filteredItems = navigationItems.filter(({ to, isProtected }) => !isProtected || isAdmin || location.pathname.startsWith(to))
+    const filteredItems = navigationItems.filter(({ to, requiredRole }) => hasRole(requiredRole) || location.pathname.startsWith(to))
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-900">
@@ -113,8 +116,8 @@ export default function MainLayout({ children }) {
                 <div className="flex justify-center mt-5">
                     <button
                         className="btn-large-gray"
-                        onClick={isAdmin ? handleLogout : handleLogin}>
-                        {isAdmin ? <LogOut size={16} /> : <LogIn size={16} />}
+                        onClick={isLoggedIn ? handleLogout : handleLogin}>
+                        {isLoggedIn ? <LogOut size={16} /> : <LogIn size={16} />}
                     </button>
                 </div>
             </main>

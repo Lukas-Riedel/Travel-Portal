@@ -30,6 +30,7 @@ import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import StatisticsPage from "./pages/StatisticsPage"
 import { TailSpin } from "react-loader-spinner"
+import { UserRole } from "./types/CoreSwaggerTypes.ts"
 
 export default function App() {
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
@@ -101,11 +102,12 @@ export default function App() {
 }
 
 function AppContent() {
-    const { accessToken, isAdmin } = useAuth()
+    const { accessToken, hasRole } = useAuth()
 
+    // TODO: Find a better rule for redirect to the admin page.
     return accessToken ? (
         <Routes>
-            <Route path="/" element={<Navigate to={isAdmin ? "/admin" : "/feed"} replace />} />
+            <Route path="/" element={<Navigate to={hasRole(UserRole.ConfigurationEdit) ? "/admin" : "/feed"} replace />} />
             <Route path="/feed" element={<MainLayout><RecentPlacesPage /></MainLayout>} />
             <Route path="/statistics" element={<MainLayout><StatisticsPage /></MainLayout>} />
             <Route path="/trip" element={<MainLayout><YearsPage /></MainLayout>} />

@@ -7,10 +7,10 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
-use Common\Service\Authentication\UserRole;
-use Core\Service\Highlight\HighlightService;
-use Core\Service\Year\Year;
-use Core\Service\Year\YearIncludedEntity;
+    use Common\Service\Authentication\UserRole;
+    use Core\Service\Highlight\HighlightService;
+    use Core\Service\Year\Year;
+    use Core\Service\Year\YearIncludedEntity;
     use Core\Service\Year\YearService;
     use Monolog\Logger;
 

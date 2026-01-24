@@ -290,7 +290,7 @@
         }
 
         public static function DeviceLogOnRequested() : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDeviceLogonRequestedRead), array(DeviceType::BridgeX), array());
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDeviceLogOnRequestedRead), array(DeviceType::BridgeX), array());
         }
 
         private static function getEventName() : string {

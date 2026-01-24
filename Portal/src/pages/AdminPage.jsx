@@ -39,6 +39,7 @@ import { useRegions } from "../hooks/useRegions.ts"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
@@ -56,7 +57,7 @@ const categoryCategories = {
 }
 
 export default function AdminPage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
     const { showInputToast, showFormToast } = useUserInput()
@@ -92,47 +93,47 @@ export default function AdminPage() {
     const labels = [
         {
             name: "Aktuální výlet",
-            enabled: upcomingOrCurrentTrip !== null
+            enabled: upcomingOrCurrentTrip !== null && hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead)
         },
         {
             name: "Sledované lety",
-            enabled: true
+            enabled: hasRole(UserRole.TripFlightRead) && hasRole(UserRole.UiFutureRead)
         },
         {
             name: "Aerolinky",
-            enabled: true
+            enabled: hasRole(UserRole.AirlineEdit)
         },
         {
             name: "Hlášené problémy",
-            enabled: dataConsistencyIssues && dataConsistencyIssues.length > 0
+            enabled: dataConsistencyIssues && dataConsistencyIssues.length > 0 && hasRole(UserRole.MonitoringRead)
         },
         {
             name: "Konfigurace",
-            enabled: configuration !== null
+            enabled: configuration !== null && hasRole(UserRole.ConfigurationEdit)
         },
         {
             name: "Zařízení",
-            enabled: devices && devices.length > 0
+            enabled: devices && devices.length > 0 && hasRole(UserRole.DeviceRead)
         },
         {
             name: "Trvalá místa",
-            enabled: true
+            enabled: hasRole(UserRole.PlaceEdit)
         },
         {
             name: "Aktivní předplatná",
-            enabled: true
+            enabled: hasRole(UserRole.SubscriptionEdit)
         },
         {
             name: "Regiony",
-            enabled: true
+            enabled: hasRole(UserRole.RegionEdit)
         },
         {
             name: "Dokumenty",
-            enabled: true
+            enabled: hasRole(UserRole.DocumentEdit)
         },
         {
             name: "Poukazy",
-            enabled: true
+            enabled: hasRole(UserRole.VoucherEdit)
         }
     ]
 
@@ -354,32 +355,35 @@ export default function AdminPage() {
         )
     }
 
-    return isAdmin && (
+    return labels.some(label => label.enabled) && (
         <>
             <TabMenu
                 labels={labels}
                 onActiveTabChanged={setActiveTab} />
-            {activeTab === 0 && (
+            {activeTab === 0 && hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead) && (
                 <>
                     <TripSummary
                         trip={upcomingOrCurrentTrip}
-                        onNoteAdded={createTripNote}
-                        onNoteRemoved={removeTripNote}
-                    />
-                    <NoteCardGrid
-                        notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
-                        onNoteCreated={createTripNote}
-                        onNoteContentUpdated={updateTripNoteContent}
-                        onNoteRemoved={removeTripNote} />
-                    <ExpenseSummary
-                        expenses={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.expenses ?? [])}
-                        onExpenseCreated={createTripExpense}
-                        onExpenseDescriptionUpdated={updateTripExpenseDescription}
-                        onExpenseValueUpdated={updateTripExpenseValue}
-                        onExpenseRemoved={removeTripExpense} />
+                        onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
+                        onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
+                    {hasRole(UserRole.TripNoteRead) && (
+                        <NoteCardGrid
+                            notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
+                            onNoteCreated={createTripNote}
+                            onNoteContentUpdated={updateTripNoteContent}
+                            onNoteRemoved={removeTripNote} />
+                    )}
+                    {hasRole(UserRole.TripExpenseRead) && (
+                        <ExpenseSummary
+                            expenses={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.expenses ?? [])}
+                            onExpenseCreated={hasRole(UserRole.TripExpenseEdit) && createTripExpense}
+                            onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseDescription}
+                            onExpenseValueUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseValue}
+                            onExpenseRemoved={hasRole(UserRole.TripExpenseEdit) && removeTripExpense} />
+                    )}
                 </>
             )}
-            {activeTab === 1 && (
+            {activeTab === 1 && hasRole(UserRole.TripFlightRead) && hasRole(UserRole.UiFutureRead) && (
                 <>
                     <FlightCardGrid flights={watchedFlights} />
                     <FloatingButton
@@ -387,7 +391,7 @@ export default function AdminPage() {
                         onClick={handleFlightCreated} />
                 </>
             )}
-            {activeTab === 2 && (
+            {activeTab === 2 && hasRole(UserRole.AirlineEdit) && (
                 <>
                     <AirlineCardGrid
                         airlines={airlines}
@@ -400,7 +404,7 @@ export default function AdminPage() {
                         onClick={handleAirlineCreated} />
                 </>
             )}
-            {activeTab === 3 && (
+            {activeTab === 3 && hasRole(UserRole.MonitoringRead) && (
                 <DataConsistencyIssueCardGrid
                     dataConsistencyIssues={dataConsistencyIssues}
                     airlines={airlines}
@@ -418,17 +422,17 @@ export default function AdminPage() {
                     onPlaceCountryChanged={updatePlaceCountry}
                     onAirportCountryChanged={updateAirportCountry} />
             )}
-            {activeTab === 4 && (
+            {activeTab === 4 && hasRole(UserRole.ConfigurationEdit) && (
                 <ConfigurationEditor
                     configuration={configuration}
                     onConfigurationUpdated={updateConfigurationEntry} />
             )}
-            {activeTab === 5 && (
+            {activeTab === 5 && hasRole(UserRole.DeviceRead) && (
                 <DeviceCardGrid
                     devices={devices}
-                    onFolderSynchronizationRequested={handleFolderSynchronizationRequested} />
+                    onFolderSynchronizationRequested={hasRole(UserRole.PlaceAlbumEdit) && handleFolderSynchronizationRequested} />
             )}
-            {activeTab === 6 && (
+            {activeTab === 6 && hasRole(UserRole.PlaceEdit) && (
                 <>
                     <PlaceCardGrid
                         places={permanentPlaces}
@@ -438,7 +442,7 @@ export default function AdminPage() {
                         onClick={handlePermanentPlaceCreated} />
                 </>
             )}
-            {activeTab === 7 && (
+            {activeTab === 7 && hasRole(UserRole.SubscriptionEdit) && (
                 <>
                     <SubscriptionCardGrid
                         subscriptions={subscriptions}
@@ -448,7 +452,7 @@ export default function AdminPage() {
                         onClick={handleSubscriptionCreated} />
                 </>
             )}
-            {activeTab === 8 && (
+            {activeTab === 8 && hasRole(UserRole.RegionEdit) && (
                 <>
                     <RegionEditor
                         categories={categoriesWithRegions} />
@@ -457,17 +461,17 @@ export default function AdminPage() {
                         onClick={handleRegionCreated} />
                 </>
             )}
-            {activeTab === 9 && (
+            {activeTab === 9 && hasRole(UserRole.DocumentEdit) && (
                 <>
                     <DocumentCardGrid
                         documents={documents}
-                        onDocumentRemoved={removeDocument} />
+                        onDocumentRemoved={hasRole(UserRole.DocumentEdit) && removeDocument} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleDocumentCreated} />
                 </>
             )}
-            {activeTab === 10 && (
+            {activeTab === 10 && hasRole(UserRole.VoucherEdit) && (
                 <>
                     <VoucherCardGrid
                         vouchers={vouchers}

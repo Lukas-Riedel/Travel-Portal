@@ -79,9 +79,11 @@
         case EventProcessingEndedRead = "event.processingended.read";
         case EventProcessingFailedRead = "event.processingfailed.read";
         case EventFitnessActivityDetectedRead = "event.fitnessactivitydetected.read";
-        case EventDeviceLogonRequestedRead = "event.devicelogonrequested.read";
+        case EventDeviceLogOnRequestedRead = "event.devicelogonrequested.read";
         case EventFlightLoggedRead = "event.flightlogged.read";
-        case GoogleTokenEdit = "google.token.edit";
+        case ExternalAuthEdit = "external.auth.edit";
+        case UiFutureRead = "ui.future.read";
+        case UiWarningRead = "ui.warning.read";
 
         public function implies(UserRole $role) : bool {
             if ($this === $role) {

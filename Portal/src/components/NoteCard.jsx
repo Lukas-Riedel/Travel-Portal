@@ -7,7 +7,6 @@ import ReactMarkdown from "react-markdown"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, onNoteRemoved }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast } = useUserInput()
     const { showCreateNoteToast, showRemoveNoteToast } = usePredefinedUserInput()
 
@@ -103,7 +102,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                         {getDateTimeString(note.timestamp)}
                     </span>
                 )}
-                {isAdmin && (
+                {!!(onNoteCreated || onNoteContentUpdated || onNoteRemoved) && (
                     <>
                         <div className="flex space-x-1">
                             {isBeingEdited && (

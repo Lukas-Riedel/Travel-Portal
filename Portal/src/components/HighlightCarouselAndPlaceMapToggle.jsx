@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react"
 import { Map as MapIcon, Images } from "lucide-react"
 import HighlightCarousel from "./HighlightCarousel"
 import PlaceMap from "./PlaceMap"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 export default function HighlightCarouselAndPlaceMapToggle({ entity, places, placeMainCategorySelector, onPhotoReplaced, onPhotoCorrected,
     onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
@@ -22,7 +23,7 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
         }
     }, [])
 
-    if (entity && (!Array.isArray(entity.highlights) || entity.highlights.length === 0)) {
+    if (entity && (!Array.isArray(entity.highlights) || entity.highlights.filter(highlight => highlight.photo.timestamp < getCurrentOrMaximumAllowedTimestamp()).length === 0)) {
         return (
             <div className="h-[365px] sm:h-[730px] my-4">
                 <PlaceMap
@@ -38,7 +39,7 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
                 ref={carouselRef}
                 style={showMap ? { position: "absolute", left: "-9999px", top: 0, width: "100%" } : { width: "100%" }}>
                 <HighlightCarousel
-                    highlights={entity && (entity.highlights ?? [])}
+                    highlights={entity && (entity.highlights ?? []).filter(highlight => highlight.photo.timestamp < getCurrentOrMaximumAllowedTimestamp())}
                     onPhotoReplaced={onPhotoReplaced}
                     onPhotoCorrected={onPhotoCorrected}
                     onHighlightRemoved={onHighlightRemoved}

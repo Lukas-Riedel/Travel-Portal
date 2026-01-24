@@ -4,9 +4,12 @@ import HighlightCarousel from "../components/HighlightCarousel"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useCategory } from "../hooks/useCategory"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function CategoryHighlightsPage() {
     const { categoryId } = useParams()
+    const { hasRole } = useAuth()
 
     const { category, createCategoryHighlight } = useCategory(categoryId)
     const { places } = useRegularPlaces({ categoryId, include: ["highlights"], sort: "-score" })
@@ -29,19 +32,19 @@ export default function CategoryHighlightsPage() {
         }
     }
 
-    return (!highlightCandidates || highlightCandidates.length > 0) && (
+    return hasRole(UserRole.CategoryHighlightRead) && (!highlightCandidates || highlightCandidates.length > 0) && (
         <>
             {currentHighlights && (
                 <HighlightCarousel
                     highlights={currentHighlights?.map((currentHighlightCandidate, index) => ({ id: index, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url + "=w1200-h800", thumbnail: currentHighlightCandidate.url + "=w350-h233" } }))}
-                    onHighlightCreated={handleHighlightCreated}
-                    onHighlightRemoved={async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1))} />
+                    onHighlightCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCreated}
+                    onHighlightRemoved={hasRole(UserRole.CategoryHighlightEdit) && (async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1)))} />
             )}
             <HighlightCandidateTileGrid
                 name={category?.name}
                 categories={category && [category]}
                 highlightCandidates={highlightCandidates}
-                onHighlightCandidateCreated={handleHighlightCandidateCreated} />
+                onHighlightCandidateCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )
 }

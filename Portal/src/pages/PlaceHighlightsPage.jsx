@@ -5,9 +5,12 @@ import { listPlaceAlbumPhotos } from "../clients/coreClient"
 import HighlightCarousel from "../components/HighlightCarousel"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
 import { getDateString } from "../utils/helpers"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useAuth } from "../contexts/AuthContext.tsx"
 
 export default function PlaceHighlightsPage() {
     const { placeId } = useParams()
+    const { hasRole } = useAuth()
 
     const { place, createPlaceHighlight } = usePlace(placeId)
 
@@ -36,20 +39,20 @@ export default function PlaceHighlightsPage() {
         }
     }
 
-    return (
+    return hasRole(UserRole.PlaceHighlightRead) && (
         <>
             {currentHighlights && (
                 <HighlightCarousel
                     highlights={currentHighlights?.map((currentHighlightCandidate, index) => ({ id: index, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url + "=w1200-h800", thumbnail: currentHighlightCandidate.url + "=w350-h233" } }))}
-                    onHighlightCreated={handleHighlightCreated}
-                    onHighlightRemoved={async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1))} />
+                    onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCreated}
+                    onHighlightRemoved={hasRole(UserRole.PlaceHighlightEdit) && (async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1)))} />
             )}
             <HighlightCandidateTileGrid
                 name={place?.name}
                 description={getDateString(Date.now() / 1000)}
                 categories={place && [place.getCategory("mostSpecificWithMetadata")]}
                 highlightCandidates={highlightCandidates}
-                onHighlightCandidateCreated={handleHighlightCandidateCreated} />
+                onHighlightCandidateCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )
 }

@@ -12,18 +12,19 @@ import FloatingButton from "../components/FloatingButton"
 import { Plus } from "lucide-react"
 import TabMenu from "../components/TabMenu"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { endOfDay } from "date-fns"
 import { useUserInput } from "../hooks/useUserInput.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
 
 export default function PlansPage() {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const { showFormToast } = useUserInput()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
-    const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality" })
+    const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality", maxEnd: getCurrentTimestamp() })
     const { trips, removeTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: ["country"] })
 
@@ -60,15 +61,15 @@ export default function PlansPage() {
     const labels = [
         {
             name: "Zvažovaná místa",
-            enabled: true
+            enabled: hasRole(UserRole.PlaceRead)
         },
         {
             name: "Navštívená místa",
-            enabled: isAdmin
+            enabled: hasRole(UserRole.PlaceRead) && hasRole(UserRole.UiFutureRead)
         },
         {
             name: "Návrhy výletů",
-            enabled: isAdmin
+            enabled: hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead)
         }
     ]
 
@@ -85,12 +86,12 @@ export default function PlansPage() {
         )
     }
 
-    return (
+    return labels.some(label => label.enabled) && (
         <>
             <TabMenu
                 labels={labels}
                 onActiveTabChanged={setActiveTab} />
-            {activeTab === 0 && (
+            {hasRole(UserRole.PlaceRead) && activeTab === 0 && (
                 <>
                     <div className="h-[400px] md:h-[700px] my-4">
                         <PlaceMap
@@ -112,10 +113,10 @@ export default function PlansPage() {
                         categoriesPlaces={countriesCandidatePlaces}
                         onCurrentLocationChanged={changeCurrentLocation}
                         onMaximumDistanceChanged={setMaxDistance}
-                        onPlaceRemoved={removeCandidatePlace} />
+                        onPlaceRemoved={hasRole(UserRole.PlaceEdit) && removeCandidatePlace} />
                 </>
             )}
-            {activeTab === 1 && (
+            {hasRole(UserRole.PlaceRead) && hasRole(UserRole.UiFutureRead) && activeTab === 1 && (
                 <>
                     <div className="h-[400px] md:h-[700px] my-4">
                         <PlaceMap
@@ -135,12 +136,12 @@ export default function PlansPage() {
                         categoriesPlaces={countriesVisitedPlaces} />
                 </>
             )}
-            {activeTab === 2 && (
+            {hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead) && activeTab === 2 && (
                 <TripCardGrid
                     trips={trips}
-                    onTripRemoved={removeTrip} />
+                    onTripRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
             )}
-            {isAdmin && (
+            {hasRole(UserRole.PlaceEdit) && (
                 <FloatingButton
                     icon={Plus}
                     onClick={handleCandidatePlaceCreated} />

@@ -6,9 +6,13 @@ import { useRegularTrips } from "../hooks/useRegularTrips"
 import FlightCardGrid from "../components/FlightCardGrid"
 import FlightMap from "../components/FlightMap"
 import { useAirport } from "../hooks/useAirport"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 export default function AirportPage() {
     const { airportId } = useParams()
+    const { hasRole } = useAuth()
 
     const trips = useRegularTrips({ include: ["flights"] })
     const countryCategories = useCategories({ categories: ["country"] })
@@ -17,6 +21,7 @@ export default function AirportPage() {
     const flights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)
             ?.filter(flight => flight.from.id === airportId || flight.to.id === airportId)
+            ?.filter(flight => flight.end < getCurrentOrMaximumAllowedTimestamp())
         return filteredFlights && [...filteredFlights].reverse()
     }, [trips])
 
@@ -24,12 +29,12 @@ export default function AirportPage() {
         return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])
 
-    return (
+    return hasRole(UserRole.AirportRead) && (
         <>
             <PageHeader
                 name={airport && (airport.longName ?? airport.code)}
                 categories={airport?.country ? [countryCategoriesMap.get(airport.country)] : []}
-                onNameChanged={updateAirportLongName} />
+                onNameChanged={hasRole(UserRole.AirportEdit) && updateAirportLongName} />
             <div className="h-[400px] md:h-[700px] my-4">
                 <FlightMap
                     flights={flights}

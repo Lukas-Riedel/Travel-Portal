@@ -6,7 +6,6 @@ import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 import { useAuth } from "../contexts/AuthContext.jsx"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast, showFormToast } = useUserInput()
 
     const regionProperties = region && {
@@ -113,7 +112,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                                 </button>
                             </li>
                         )}
-                        {isAdmin && region.geoJson?.geometry?.type !== "Point" && (
+                        {region.geoJson?.geometry?.type !== "Point" && (
                             <>
                                 <li>
                                     <button
@@ -136,7 +135,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                     </>
                 ) : (
                     <>
-                        {isAdmin && onCompositeRegionUpdated && (
+                        {onCompositeRegionUpdated && (
                             <li>
                                 <button
                                     onClick={handleOverwriteCompositeRegion}

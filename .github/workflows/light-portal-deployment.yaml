@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       custom-timestamp:
-        description: 'Enter maximum timestamp for the context. Leave empty for the current timestamp.'
+        description: 'Enter maximum timestamp for the content (leave empty for the current timestamp):'
         required: false
         default: ''
 jobs:
@@ -66,9 +66,9 @@ jobs:
         else
           FINAL_TIMESTAMP=$USER_INPUT
         fi
-        helm upgrade light-portal ./Helm/Portal \
+        helm upgrade portal-light ./Helm/Portal \
           -f ./Helm/Portal/values.yaml \
-          -f ./Helm/Portal/light-values.yaml \
+          -f ./Helm/Portal/values-light.yaml \
           --set portal.tag=${{ github.run_number }} \
           --set portal.content.range.max=$FINAL_TIMESTAMP \
           --install \

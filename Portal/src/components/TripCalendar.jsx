@@ -10,7 +10,6 @@ import { useUserInput } from "../hooks/useUserInput.tsx"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
-    const { isAdmin } = useAuth()
     const { showFormToast } = useUserInput()
 
     const [timezone, setTimezone] = useState(undefined)
@@ -63,21 +62,21 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                 ))}
             </CardGrid>
             <div className="absolute bottom-3 right-3 flex items-center gap-2 z-50">
-                {onTripMoved && isAdmin && (
+                {onTripMoved && (
                     <button
                         onClick={handleMoved}
                         className="btn-chip-gray">
                         <ArrowRightLeft size={16} />
                     </button>
                 )}
-                {onTripLoaded && isAdmin && (
+                {onTripLoaded && (
                     <button
                         onClick={handleLoaded}
                         className="btn-chip-gray">
                         <Upload size={16} />
                     </button>
                 )}
-                {isAdmin && (
+                {onTripMoved && (
                     <button
                         onClick={() => window.open((d => `https://calendar.google.com/calendar/u/0/r/week/${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`)(fromUnixTime(trip.start)), "_blank")}
                         className="btn-chip-gray">

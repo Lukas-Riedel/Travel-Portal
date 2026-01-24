@@ -6,7 +6,6 @@ import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 
 export default function SubscriptionCard({ subscription, onSubscriptionRemoved }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast } = useUserInput()
 
     const handleDelete = () => {
@@ -30,7 +29,7 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
                 <span className="text-lg font-semibold">
                     {subscription.description}
                 </span>
-                {isAdmin && onSubscriptionRemoved && (
+                {onSubscriptionRemoved && (
                     <button
                         onClick={() => handleDelete(subscription)}
                         className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">

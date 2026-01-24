@@ -12,7 +12,6 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 const loadingLabelsCount = 3
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
-    const { isAdmin } = useAuth()
     const { showInputToast } = useUserInput()
     const { showAssignLabelToast, showUnassignLabelToast } = usePredefinedUserInput()
 
@@ -39,7 +38,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
         showUnassignLabelToast(label, () => onLabelRemoved(label.id))
     }
 
-    return (!labels || labels.length > 0 || isAdmin) && (
+    return (!labels || labels.length > 0 || onLabelAdded) && (
         <div className="flex flex-col lg:flex-row justify-center gap-3 px-4 my-4">
             {labels ? (
                 <>
@@ -51,11 +50,11 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                                 to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/label/${label.id}`}
                                 className={clsx(
                                     "text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full",
-                                    isAdmin ? "lg:pr-5" : "lg:pr-0"
+                                    onLabelAdded ? "lg:pr-5" : "lg:pr-0"
                                 )}>
                                 {label.name}
                             </Link>
-                            {onLabelRemoved && isAdmin && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name) && (
+                            {onLabelRemoved && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name) && (
                                 <button
                                     onClick={() => handleLabelRemoved(label)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
@@ -64,7 +63,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                             )}
                         </div>
                     ))}
-                    {onLabelAdded && isAdmin && unassignedLabels?.map(label => (
+                    {onLabelAdded && unassignedLabels?.map(label => (
                         <div
                             key={label.id}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center hover:bg-gray-100 transition">
@@ -80,7 +79,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                             </button>
                         </div>
                     ))}
-                    {onLabelAdded && isAdmin && (
+                    {onLabelAdded && (
                         <button
                             onClick={handleUnknownLabelAdded}
                             className="relative bg-white shadow px-4 py-2 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">

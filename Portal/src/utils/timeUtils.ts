@@ -14,17 +14,20 @@ export function getCurrentTimestamp(): number {
     return Math.floor(Date.now() / 1000)
 }
 
+export function getMaximumAllowedTimetamp(): number {
+    return window.env?.VITE_MAXIMUM_ALLOWED_TIMESTAMP || import.meta.env.VITE_MAXIMUM_ALLOWED_TIMESTAMP
+}
+
 export function getCurrentOrMaximumAllowedTimestamp(): number {
-    const maximumAllowedTimestamp = window.env?.VITE_MAXIMUM_ALLOWED_TIMESTAMP || import.meta.env.VITE_MAXIMUM_ALLOWED_TIMESTAMP
-    return Math.min(getCurrentTimestamp(), maximumAllowedTimestamp);
+    return Math.min(getCurrentTimestamp(), getMaximumAllowedTimetamp())
 }
 
-export function getStartOfTodayTimestamp(): number {
-    return startOfDay(new Date()).getTime() / 1000
+export function getStartOfTodayOrMaximumAllowedTimestamp(): number {
+    return Math.min(startOfDay(new Date()).getTime() / 1000, getMaximumAllowedTimetamp())
 }
 
-export function getEndOfTodayTimestamp(): number {
-    return endOfDay(new Date()).getTime() / 1000
+export function getEndOfTodayOrMaximumAllowedTimestamp(): number {
+    return Math.min(endOfDay(new Date()).getTime() / 1000, getMaximumAllowedTimetamp())
 }
 
 export function getZonedDate(dateOrTimestamp: number | Date, timezone: string): Date {

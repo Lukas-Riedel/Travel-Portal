@@ -15,9 +15,10 @@ import { formatTimeAgo } from "../utils/formatters"
 import { getCoordinates } from "../clients/coreClient"
 import SunCalc from "suncalc"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
@@ -106,7 +107,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                 <div className="text-xl text-gray-700">
                     {getDateRangeString(trip.start, trip.end)}
                 </div>
-                {lastSeenBridgeXDevice && (isAdmin || trip.isCurrent()) && (
+                {lastSeenBridgeXDevice && (hasRole(UserRole.UiFutureRead) || trip.isCurrent()) && (
                     <>
                         {lastSeenBridgeXDevice.lastSeen + 1800 > Date.now() / 1000 ? (
                             <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-6 hover:underline hover:text-green-400 transition-colors duration-200">
@@ -192,7 +193,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                     timezone={timezone}
                     onNoteAdded={onNoteAdded}
                     onNoteRemoved={onNoteRemoved}
-                    onPhotosAdded={publishPhotosUploadingTriggeredEvent} />
+                    onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
             ))?.filter(Boolean)?.slice(0, count)}
             <button
                 onClick={() => setTimezone(prev => prev ? undefined : configuration?.homeLocation?.timezone)}

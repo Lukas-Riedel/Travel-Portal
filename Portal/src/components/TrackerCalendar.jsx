@@ -12,7 +12,6 @@ import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
-    const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { showConfirmToast, showFormToast } = useUserInput()
 
@@ -169,7 +168,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                     <span className="font-medium truncate">
                         {formatDuration((-1) * event.hours * 3600)}
                     </span>
-                    {isAdmin && (
+                    {onEventRemoved && (
                         <button
                             className="p-0.5 btn-icon-hover"
                             onClick={() => handleRemoveEvent(event)}>
@@ -428,7 +427,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                                                     ${startOfDay(dayDate).getTime() === startOfDay(now).getTime() ? "text-yellow-300 font-extrabold drop-shadow-[0_0_1px_yellow]" : ""}`}>
                                                     {dayDate.getDate()}
                                                 </span>
-                                                {isAdmin && (
+                                                {onEventCreated && (
                                                     <div className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto w-full transition-opacity duration-200">
                                                         {renderButtons(dayDate, daySummary)}
                                                     </div>
@@ -453,10 +452,10 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                                                                     <div className="flex items-center space-x-1">
                                                                         <span
                                                                             className="text-2xs text-ellipsis truncate"
-                                                                            onClick={isAdmin ? () => handleCopyToClipboard(event) : undefined}>
+                                                                            onClick={() => handleCopyToClipboard(event)}>
                                                                             {event.description}
                                                                         </span>
-                                                                        {isAdmin && (
+                                                                        {onEventRemoved && (
                                                                             <button
                                                                                 className="p-0.5 btn-icon-hover"
                                                                                 onClick={() => handleRemoveEvent(event)}>

@@ -11,6 +11,7 @@ import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useVouchers } from "../hooks/useVouchers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 const expenseTypes = {
     attraction: {
@@ -62,9 +63,9 @@ const loadingRowsCount = 5
 export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseCreated,
     onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }) {
     const { configuration } = useConfiguration()
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
 
-    const [detailedView, setDetailedView] = useState(isAdmin)
+    const [detailedView, setDetailedView] = useState(!!onExpenseCreated)
     const [duplicatedExpense, setDuplicatedExpense] = useState({})
     const totalCost = useMemo(() => expenses?.reduce((sum, e) => sum + (e.mainCurrencyValue || 0), 0) ?? 0, [expenses])
 
@@ -75,9 +76,9 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 expense={expense}
                 onExpenseDescriptionUpdated={onExpenseDescriptionUpdated}
                 onExpenseValueUpdated={onExpenseValueUpdated}
-                onExpenseDuplicated={setDuplicatedExpense}
+                onExpenseDuplicated={onExpenseCreated && setDuplicatedExpense}
                 onExpenseRemoved={onExpenseRemoved} />
-        )), [expenses, configuration, isAdmin, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved])
+        )), [expenses, configuration, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved])
 
     const aggregatedRows = useMemo(() => Object.entries((expenses ?? [])
         .reduce((acc, e) => ((acc[e?.type] = (acc[e?.type] || 0) + (e?.mainCurrencyValue || 0)), acc), {}))
@@ -89,7 +90,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 type={type}
                 cost={cost}
                 totalCost={totalCost} />
-        )), [expenses, configuration, totalCost, isAdmin])
+        )), [expenses, configuration, totalCost])
 
     const loadingRows = Array.from({ length: loadingRowsCount })
         .map((_, index) => (
@@ -115,16 +116,16 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
             return loadingRows
         }
         if (detailedView) {
-            return [...detailedRows, ...(isAdmin && onExpenseCreated ? expenseCandidateRows : [])]
+            return [...detailedRows, ...(onExpenseCreated ? expenseCandidateRows : [])]
         }
         return aggregatedRows
-    }, [loadingRows, detailedRows, expenseCandidateRows, detailedView, expenses])
+    }, [loadingRows, detailedRows, expenseCandidateRows, detailedView, expenses, onExpenseCreated])
 
     return (
         <div className="w-full rounded-xl my-4">
             <table className="w-full table-fixed divide-y divide-gray-200">
                 <colgroup>
-                    {isAdmin ? (
+                    {hasRole(UserRole.TripExpenseEdit) ? (
                         onExpenseRemoved ? (
                             <>
                                 <col className="w-[14%]" />
@@ -178,7 +179,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                             className="w-36 p-3 text-center hidden sm:table-cell">
                             {detailedView ? "Přepočet" : "Podíl"}
                         </th>
-                        {isAdmin && detailedView && onExpenseRemoved && (
+                        {detailedView && onExpenseRemoved && (
                             <th
                                 key="management"
                                 className="w-12 text-center" />
@@ -194,7 +195,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                                 <td className="p-3 text-center font-semibold hidden sm:table-cell">
                                     {`${totalCost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                                 </td>
-                                {isAdmin && onExpenseRemoved && <td />}
+                                {onExpenseRemoved && <td />}
                             </>
                         ) : (
                             <>
@@ -241,7 +242,6 @@ function AggregatedExpenseRow({ type, cost, totalCost }) {
 }
 
 function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
-    const { isAdmin } = useAuth()
     const { configuration } = useConfiguration()
     const { showRemoveExpenseToast, showUpdateExpenseDescriptionToast, showUpdateExpenseValueToast } = usePredefinedUserInput()
 
@@ -266,7 +266,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
             key={expense.id}
             className="hover:bg-gray-100">
             <td className={`align-middle text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
-                {isAdmin && onExpenseDuplicated ? (
+                {onExpenseDuplicated ? (
                     <button onClick={() => onExpenseDuplicated(expense)}>
                         <Icon className="w-5 h-5" />
                     </button>
@@ -280,7 +280,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                         {expense.description}
                         {expense.subscription && ` (${expense.subscription.description} do ${getDateString(expense.subscription.expiration)})`}
                     </span>
-                    {isAdmin && onExpenseDescriptionUpdated && (
+                    {onExpenseDescriptionUpdated && (
                         <button
                             className="p-1 btn-icon-hover"
                             onClick={handleEditDescription}>
@@ -294,7 +294,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     <span>
                         {`${expense?.value} ${expense?.currency}`}
                     </span>
-                    {isAdmin && onExpenseValueUpdated && (
+                    {onExpenseValueUpdated && (
                         <button
                             className="p-1 btn-icon-hover"
                             onClick={handleEditValue}>
@@ -306,17 +306,15 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
             <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color} hidden sm:table-cell`}>
                 {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
             </td>
-            {
-                isAdmin && onExpenseRemoved && (
-                    <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
-                        <button
-                            className="p-1 btn-icon-hover"
-                            onClick={handleRemove}>
-                            <Trash2 size={16} />
-                        </button>
-                    </td>
-                )
-            }
+            {onExpenseRemoved && (
+                <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+                    <button
+                        className="p-1 btn-icon-hover"
+                        onClick={handleRemove}>
+                        <Trash2 size={16} />
+                    </button>
+                </td>
+            )}
         </tr>
     )
 }
@@ -348,7 +346,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const handleExpenseCreated = () => {
         showCreateExpenseToast(subscriptions, vouchers.filter(voucher => voucher.currency === newCurrency),
             (subscriptionId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId),
-            (voucherId, value) => updateVoucherValue(voucherId, value),  (voucherId) => removeVoucher(voucherId))
+            (voucherId, value) => updateVoucherValue(voucherId, value), (voucherId) => removeVoucher(voucherId))
     }
 
     return (
@@ -425,16 +423,16 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
 }
 
 function LoadingExpenseRow({ detailedView }) {
-    const { isAdmin } = useAuth()
+    const { hasRole } = useAuth()
 
     return (
         <tr>
-            <td className="p-3 sm:hidden" colSpan={isAdmin && detailedView ? 4 : 3}>
+            <td className="p-3 sm:hidden" colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 4 : 3}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>
             </td>
-            <td className="p-3 hidden sm:table-cell" colSpan={isAdmin && detailedView ? 5 : 4}>
+            <td className="p-3 hidden sm:table-cell" colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 5 : 4}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>

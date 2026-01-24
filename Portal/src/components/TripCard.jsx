@@ -10,7 +10,6 @@ import { getPrettyName } from "../utils/helpers"
 import LoadingCard from "./LoadingCard"
 
 export default function TripCard({ trip, onTripRemoved }) {
-    const { isAdmin } = useAuth()
     const { showConfirmToast } = useUserInput()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
@@ -55,7 +54,7 @@ export default function TripCard({ trip, onTripRemoved }) {
                     className="ml-2 hover:underline text-lg font-semibold truncate">
                     {trip.name}
                 </Link>
-                {isAdmin && onTripRemoved && (
+                {onTripRemoved && (
                     <button
                         onClick={() => handleDelete(trip)}
                         className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">

@@ -6,9 +6,12 @@ import { useYear } from "../hooks/useYear"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { listPlaceAlbumPhotos } from "../clients/coreClient"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useAuth } from "../contexts/AuthContext.tsx"
 
 export default function YearHighlightsPage() {
     const { year: yearParameter } = useParams()
+    const { hasRole } = useAuth()
 
     const { year, createYearHighlight } = useYear(yearParameter)
     const trips = useRegularTrips({ year: yearParameter, include: ["highlights"] })
@@ -51,17 +54,17 @@ export default function YearHighlightsPage() {
         }
     }
 
-    return (!highlightCandidates || highlightCandidates.length > 0) && (
+    return hasRole(UserRole.YearHighlightRead) && (!highlightCandidates || highlightCandidates.length > 0) && (
         <>
             {currentHighlights && (
                 <HighlightCarousel
                     highlights={currentHighlights?.map((currentHighlightCandidate, index) => ({ id: index, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url + "=w1200-h800", thumbnail: currentHighlightCandidate.url + "=w350-h233" } }))}
-                    onHighlightCreated={handleHighlightCreated}
-                    onHighlightRemoved={async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1))} />
+                    onHighlightCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCreated}
+                    onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) && (async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1)))} />
             )}
             <HighlightCandidateTileGrid
                 highlightCandidates={highlightCandidates}
-                onHighlightCandidateCreated={handleHighlightCandidateCreated} />
+                onHighlightCandidateCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )
 }
