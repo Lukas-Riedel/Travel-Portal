@@ -79,26 +79,6 @@ public class PhotoService implements AgentContextDataProvider {
         this.objectMapper = objectMapper;
     }
 
-    @SneakyThrows
-    private static Date getPhotoCreationTime(Path path) {
-        Metadata metadata = ImageMetadataReader.readMetadata(path.toFile());
-        for (Directory directory : metadata.getDirectories()) {
-            if (directory.containsTag(TAG_DATETIME_ORIGINAL)) {
-                return directory.getDate(TAG_DATETIME_ORIGINAL);
-            }
-        }
-
-        throw new IllegalStateException("Could not obtain creation date for '" + path + "'.");
-    }
-
-    private static String getPhotoName() {
-        return UUID.randomUUID() + JPG_SUFFIX;
-    }
-
-    private static String getExpectedAlbumName(String placeName, Instant start) {
-        return String.join(" ", placeName, start.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d.M.yyyy")));
-    }
-
     @Scheduled(fixedDelayString = "${agent.photo.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
     public void synchronizeFolders() {
         List<SynchronizedFolder> synchronizedFolders = getAndUpdateNonExpiredSynchronizedFolders();
@@ -176,6 +156,18 @@ public class PhotoService implements AgentContextDataProvider {
             coreClient.refreshAlbum(placeId, effectiveAlbumId, mainPhotoPosition);
             return null;
         });
+    }
+
+    @SneakyThrows
+    private static Date getPhotoCreationTime(Path path) {
+        Metadata metadata = ImageMetadataReader.readMetadata(path.toFile());
+        for (Directory directory : metadata.getDirectories()) {
+            if (directory.containsTag(TAG_DATETIME_ORIGINAL)) {
+                return directory.getDate(TAG_DATETIME_ORIGINAL);
+            }
+        }
+
+        throw new IllegalStateException("Could not obtain creation date for '" + path + "'.");
     }
 
     @SneakyThrows
@@ -264,11 +256,6 @@ public class PhotoService implements AgentContextDataProvider {
         configurationRepository.save(new Configuration(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, objectMapper.writeValueAsString(synchronizedFolders)));
     }
 
-    @Override
-    public Map<String, Object> getContextData() {
-        return Map.of(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders());
-    }
-
     @SneakyThrows
     @Nullable
     private Path getAlbumFolder(SynchronizedFolder synchronizedFolder, String expectedAlbumName) {
@@ -283,5 +270,18 @@ public class PhotoService implements AgentContextDataProvider {
         catch (Exception e) {
             return false;
         }
+    }
+
+    private static String getPhotoName() {
+        return UUID.randomUUID() + JPG_SUFFIX;
+    }
+
+    private static String getExpectedAlbumName(String placeName, Instant start) {
+        return String.join(" ", placeName, start.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d.M.yyyy")));
+    }
+
+    @Override
+    public Map<String, Object> getContextData() {
+        return Map.of(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders());
     }
 }
