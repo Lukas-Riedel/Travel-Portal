@@ -6,6 +6,7 @@ from sentence_transformers import SentenceTransformer, util
 from typing import List, Union, Final, Optional
 from torch import Tensor
 import numpy as np
+from sklearn.cluster import AgglomerativeClustering
 from src.core.logger import logger
 from src.core.distributed_cache import DistributedCache
 from src.utils.image_utils import get_thumbnail
@@ -32,11 +33,13 @@ class AiEngine:
         distributed_cache: DistributedCache,
         content_coeff: float,
         negative_coeff: float,
+        cluster_coeff: float,
     ) -> None:
         self.model = SentenceTransformer(MODEL_NAME, device=ENGINE_DEVICE)
         self.distributed_cache = distributed_cache
         self.content_coeff = content_coeff
         self.negative_coeff = negative_coeff
+        self.cluster_coeff = cluster_coeff
 
     def estimate_attributes_from_references(
         self,
@@ -111,6 +114,17 @@ class AiEngine:
         combined_style = torch.mean(torch.stack(safe_style_embs), dim=0)
         combined_style = combined_style / combined_style.norm(dim=-1, keepdim=True)
         return combined_style.unsqueeze(0)
+
+    def cluster_embeddings(self, highlights_count: int, embeddings: Tensor) -> List[int]:
+        emb_np = embeddings.cpu().numpy()
+        
+        clusterer = AgglomerativeClustering(
+            n_clusters=max(1, min(len(embeddings), int(highlights_count * self.cluster_coeff))),
+            distance_threshold=None,
+            linkage="average",
+            metric="cosine"
+        )
+        return clusterer.fit_predict(emb_np).tolist()
 
     def get_image_embedding(
         self, pil_images: Union[Image.Image, List[Image.Image]]

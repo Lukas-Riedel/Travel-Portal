@@ -3,13 +3,13 @@ cortex:
   image: ghcr.io/lukas-riedel/cortex
   # tag: latest
   workers: 1
-  threads: 2
+  threads: 4
   scaling:
     items: "5"
     cooldown: 120
     grace: 60
-  model: clip-ViT-B-32
-  # model: clip-ViT-L-14
+  # model: clip-ViT-B-32
+  model: clip-ViT-L-14
   engine: cpu
   core:
     host: core
@@ -18,9 +18,8 @@ cortex:
     coefficient:
       content: "0.75"
       age: "0.1"
-      negative: "0.3"
-    threshold:
-      similarity: "0.9"
+      negative: "0.4"
+      cluster: "3.0"
   rabbitmq:
     hostname: rabbitmq
     port: 

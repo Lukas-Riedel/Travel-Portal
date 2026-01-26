@@ -8,6 +8,7 @@ from src.utils.image_utils import get_thumbnail, get_thumbnail_size
 from typing import List, Optional, Final
 from torch import Tensor
 from concurrent.futures import ThreadPoolExecutor
+import torch
 
 CONTENT_QUERY: Final[str] = (
     "Famous landmarks and iconic monuments, street life, cinematic soft lighting, high quality, sunny weather, "
@@ -37,13 +38,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         core_client: CoreClient,
         max_threads: int,
         age_coeff: float,
-        similarity_threshold: float,
     ) -> None:
         self.ai_engine = ai_engine
         self.core_client = core_client
         self.max_workers = 2 * max_threads
         self.age_coeff = age_coeff
-        self.similarity_threshold = similarity_threshold
 
     def handle(self, args: dict) -> None:
         entity_id = args.get("entityId")
@@ -252,7 +251,6 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 )
                 return None
 
-            # Preprocess relevant photos.
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 preprocessed_photos = list(
                     filter(None, executor.map(self._preprocess_photo, photos))
@@ -273,112 +271,50 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                     f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (creating {delta} highlights)..."
                 )
 
-            # Compute embeddings for all photos, select embeddings for already existing highlights.
             img_embeddings = self.ai_engine.get_image_embedding(
                 [p.get("img") for p in preprocessed_photos]
             )
+            cluster_labels = self.ai_engine.cluster_embeddings(highlights_count, img_embeddings)
 
-            # Compute score for all photos and prepare a sorted list of highlight candidates.
             scores = self._calculate_scores(
                 content_query, img_embeddings, preprocessed_photos, places
+            )            
+
+            clusters = {}
+            for idx, label in enumerate(cluster_labels):
+                clusters.setdefault(label, []).append(idx)
+
+            main_highlight_photo_idx = None
+            if main_highlight_photo_id:
+                for idx, p in enumerate(preprocessed_photos):
+                    if p.get("id") == main_highlight_photo_id:
+                        main_highlight_photo_idx = idx
+                        break
+
+            all_photos_indices = sorted(
+                range(len(preprocessed_photos)),
+                key=lambda i: (i != main_highlight_photo_idx, -scores[i])
             )
 
-            existing_highlight_photo_ids = (
-                [h.get("photo").get("id") for h in existing_highlights]
-                if delta > 0
-                else (
-                    [main_highlight_photo_id]
-                    if main_highlight_photo_id is not None
-                    else []
-                )
-            )
+            selected_indices = []
+            used_clusters = set()
 
-            selected_photo_ids = existing_highlight_photo_ids
-            selected_embeddings = self._get_existing_image_embeddings(
-                existing_highlight_photo_ids, img_embeddings, preprocessed_photos
-            )
-            selected_place_ids = {}
-
-            total_place_score = sum(place.get("score", 1) for place in places)
-            fair_caps = {
-                place.get("id"): max(
-                    1,
-                    math.ceil(
-                        (place.get("score", 1) / total_place_score) * highlights_count
-                    ),
-                )
-                for place in places
-            }
-
-            skipped_indices = []
-            candidate_indices = [
-                i
-                for i, p in enumerate(preprocessed_photos)
-                if p.get("id") not in existing_highlight_photo_ids
-            ]
-            candidate_indices.sort(key=lambda i: scores[i], reverse=True)
-
-            for candidate_idx in candidate_indices:
-                if len(selected_embeddings) >= highlights_count:
+            for idx in all_photos_indices:
+                if len(selected_indices) >= highlights_count:
                     break
 
-                photo_place_id = preprocessed_photos[candidate_idx].get("placeId")
-                if photo_place_id is None:
-                    places = self.core_client.get_places(
-                        photo_id=preprocessed_photos[candidate_idx].get("id")
-                    )
-                    if len(places) == 1:
-                        photo_place_id = places[0].get("id")
+                cid = cluster_labels[idx]                
+                if cid in used_clusters:
+                    continue
 
-                # Evaluate whether the current highlight candidate is "too similar" to already existing highlights.
-                is_too_similar = False
-                if selected_embeddings:
-                    max_similarity = self.ai_engine.calculate_max_similarity(
-                        img_embeddings[candidate_idx], selected_embeddings
-                    )
-
-                    if max_similarity > self.similarity_threshold or (
-                        photo_place_id is not None
-                        and selected_place_ids.get(photo_place_id, 0)
-                        >= fair_caps.get(photo_place_id, 1)
-                    ):
-                        is_too_similar = True
-                        logger.debug(
-                            f"The photo with score {scores[candidate_idx]} is too similar ({int(100.0 * max_similarity)}%) to already selected highlights for {entity_name} and will therefore be skipped ({preprocessed_photos[candidate_idx].get('url')})."
-                        )
-
-                # If the highlight candidate passed the similarity filter, create the highlight and write down its embeddings for the next similarity filter iteration.
-                if not is_too_similar:
-                    logger.debug(
-                        f"Selecting a unique highlight with score {scores[candidate_idx]} for {entity_name} ({preprocessed_photos[candidate_idx].get('url')})..."
-                    )
-
-                    selected_photo_ids.append(
-                        preprocessed_photos[candidate_idx].get("id")
-                    )
-                    selected_embeddings.append(img_embeddings[candidate_idx])
-                    selected_place_ids[photo_place_id] = (
-                        selected_place_ids.get(photo_place_id, 0) + 1
-                    )
-                else:
-                    skipped_indices.append(candidate_idx)
-
-            # If there are not enough photos for the place to pass the similarity filter, create highlights for the best photos even though they didn't pass the filter.
-            for skipped_idx in skipped_indices:
-                if len(selected_embeddings) >= highlights_count:
-                    break
+                selected_indices.append(idx)
+                used_clusters.add(cid)
 
                 logger.debug(
-                    f"Selecting a similar highlight with score {scores[skipped_idx]} for {entity_name} ({preprocessed_photos[skipped_idx].get('url')})..."
+                    f"Selecting a highlight with score {scores[idx]} for {entity_name} ({preprocessed_photos[idx].get('url')})..."
                 )
-
-                selected_photo_ids.append(preprocessed_photos[skipped_idx].get("id"))
-                selected_embeddings.append(img_embeddings[skipped_idx])
-                selected_place_ids[photo_place_id] = (
-                    selected_place_ids.get(photo_place_id, 0) + 1
-                )
-
-            return selected_photo_ids
+                
+            return [preprocessed_photos[i].get("id") for i in selected_indices]
         except Exception as e:
             logger.error(
                 f"Unable to create highlights for {entity_name}. Reason: {e}",

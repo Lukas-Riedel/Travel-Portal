@@ -35,6 +35,7 @@ def main():
         distributed_cache,
         float(os.getenv("CONTENT_COEFFICIENT")),
         float(os.getenv("NEGATIVE_COEFFICIENT")),
+        float(os.getenv("CLUSTER_COEFFICIENT")),
     )
 
     handlers = [
@@ -43,7 +44,6 @@ def main():
             core_client,
             int(os.getenv("MAX_THREADS")),
             float(os.getenv("AGE_COEFFICIENT")),
-            float(os.getenv("SIMILARITY_THRESHOLD")),
         ),
         HighlightAttributesSettingTriggeredHandler(ai_engine, core_client),
     ]
