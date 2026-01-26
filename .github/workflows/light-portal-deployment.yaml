@@ -68,8 +68,11 @@ jobs:
         fi
         helm upgrade portal-light ./Helm/Portal \
           -f ./Helm/Portal/values.yaml \
-          -f ./Helm/Portal/values-light.yaml \
           --set portal.tag=${{ github.run_number }} \
+          --set portal.service.host=travel-portal.eu \
+          --set portal.credentials.default.username=light \
+          --set portal.credentials.default.password=light \
+          --set portal.url.base.public=https://travel-portal.eu \
           --set portal.content.range.max=$FINAL_TIMESTAMP \
           --install \
           --wait \
