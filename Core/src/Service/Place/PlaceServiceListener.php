@@ -17,6 +17,9 @@
         private const HIGHLIGHT_SCORE_MULTIPLIER = 0;
         private const PHOTO_SCORE_MULTIPLIER = 1;
 
+        private const MIN_HIGHLIGHTS_PER_PLACE_COUNT = 3;
+        private const MAX_HIGHLIGHTS_PER_PLACE_COUNT = 10;
+
         private const MAIN_HIGHLIGHT_QUALITY_MULTIPLIER = 3;
 
         private readonly PlaceService $placeService;
@@ -139,7 +142,8 @@
 
         private function getSuggestedHighlightsCount(string $placeId) : int {
             $v = max(0.0, min(1.0, $this->placeService->getPlaceSignificance($placeId) / 100.0));
-            return (int) round(3 + 27 * pow($v, 1.4));
+            $range = self::MAX_HIGHLIGHTS_PER_PLACE_COUNT - self::MIN_HIGHLIGHTS_PER_PLACE_COUNT;
+            return (int) round(self::MIN_HIGHLIGHTS_PER_PLACE_COUNT + $range * pow($v, 1.4));
         }
 
         private function updatePlaceQuality(string $placeId) : void {
