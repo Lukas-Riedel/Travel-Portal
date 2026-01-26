@@ -26,6 +26,10 @@
         }
 
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
+            if ($this->isBackendServiceAccount($request)) {
+                return true;
+            }
+            
             $userInfo = $this->getUserInfo($request);
     
             foreach ($userInfo->getRoles() as $assignedRoleValue) {
@@ -46,7 +50,7 @@
         }
 
         public function requireRole(Request $request, UserRole $requiredRole) : void {
-            if (!$this->hasRole($request, $requiredRole) && !$this->isBackendServiceAccount($request)) {
+            if (!$this->hasRole($request, $requiredRole)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }
