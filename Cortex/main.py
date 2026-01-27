@@ -34,6 +34,8 @@ def main():
     )
     ai_engine = AiEngine(
         distributed_cache,
+        os.getenv("MODEL_NAME"),
+        os.getenv("ENGINE_DEVICE"),
         float(os.getenv("CONTENT_COEFFICIENT")),
         float(os.getenv("NEGATIVE_COEFFICIENT")),
         float(os.getenv("CLUSTER_COEFFICIENT")),

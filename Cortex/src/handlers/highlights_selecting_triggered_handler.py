@@ -10,20 +10,6 @@ from torch import Tensor
 from concurrent.futures import ThreadPoolExecutor
 import torch
 
-CONTENT_QUERY: Final[str] = (
-    "Famous landmarks and iconic monuments, street life, cinematic soft lighting, high quality, sunny weather, "
-    "clear blue sky, breathtaking composition, beautiful landscapes, unique formations."
-)
-
-PLACE_CONTENT_QUERY_FORMAT: Final[str] = (
-    "Professional exterior travel photography of {place_name} in {country_name}. "
-    + CONTENT_QUERY
-)
-
-CATEGORY_CONTENT_QUERY_FORMAT: Final[str] = (
-    "Professional exterior travel photography of {category_name}. " + CONTENT_QUERY
-)
-
 NEGATIVE_QUERY: Final[str] = (
     "Macro photography, close-up, single object detail, stairs, interiors, overcast sky, "
     "museum exhibits, interior furniture, blurry background, gesturing people, "
@@ -82,6 +68,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         year_places = self.core_client.get_places(
             year=year_id, include="highlights"
         )
+        content_query = self.core_client.create_generative_content(
+            prompt_template="yearHighlightsSelecting",
+            context={"model": self.ai_engine.model_name, "places": ", ".join(p["name"] for p in sorted(year_places, key=lambda x: x.get("score", 0), reverse=True) if p.get("name"))},
+        )
+        logger.debug(f"Using the content query '{content_query}'...")
 
         selected_photo_ids = self._handle_entity(
             entity_name=str(year_id),
@@ -91,7 +82,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             photos=self._fetch_photos_for_category_or_year(
                 year_places, year.get("highlights", []), highlights_count
             ),
-            content_query=CONTENT_QUERY,
+            content_query=content_query,
             main_highlight_photo_id=year.get("mainHighlight", {})
             .get("photo", {})
             .get("id"),
@@ -115,9 +106,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         category_places = self.core_client.get_places(
             category_id=category_id, include="highlights"
         )
-        content_query = CATEGORY_CONTENT_QUERY_FORMAT.format(
-            category_name=category.get("name"),
+        content_query = self.core_client.create_generative_content(
+            prompt_template="categoryHighlightsSelecting",
+            context={"model": self.ai_engine.model_name, "name": category.get("name")},
         )
+        logger.debug(f"Using the content query '{content_query}'...")
 
         selected_photo_ids = self._handle_entity(
             entity_name=category.get("name"),
@@ -149,6 +142,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     ) -> None:
         trip = self.core_client.get_trip(trip_id)
         trip_places = self.core_client.get_places(trip_id=trip_id, include="dates")
+        content_query = self.core_client.create_generative_content(
+            prompt_template="tripHighlightsSelecting",
+            context={"model": self.ai_engine.model_name, "places": ", ".join(p["name"] for p in sorted(trip_places, key=lambda x: x.get("score", 0), reverse=True) if p.get("name"))},
+        )
+        logger.debug(f"Using the content query '{content_query}'...")
 
         selected_photo_ids = self._handle_entity(
             entity_name=f"{trip.get('name')} {trip.get('year')}",
@@ -158,7 +156,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             photos=self._fetch_photos_for_place_or_trip(
                 trip_places, trip.get("highlights", []), highlights_count
             ),
-            content_query=CONTENT_QUERY,
+            content_query=content_query,
             main_highlight_photo_id=trip.get("mainHighlight", {})
             .get("photo", {})
             .get("id"),
@@ -179,9 +177,11 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         self, place_id: str, highlights_count: int, highlights_removal_allowed: bool
     ) -> None:
         place = self.core_client.get_place(place_id)
-        content_query = PLACE_CONTENT_QUERY_FORMAT.format(
-            place_name=place.get("name"), country_name=place.get("country")
+        content_query = self.core_client.create_generative_content(
+            prompt_template="placeHighlightsSelecting",
+            context={"model": self.ai_engine.model_name, "name": place.get("name"), "country": place.get("country")},
         )
+        logger.debug(f"Using the content query '{content_query}'...")
 
         selected_photo_ids = self._handle_entity(
             entity_name=place.get("name"),

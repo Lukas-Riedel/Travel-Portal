@@ -36,6 +36,16 @@ class CoreClient:
         self.token = None
         self.token_expires_at = 0
 
+    def create_generative_content(self, prompt_template: str, context: dict) -> dict:
+        self._ensure_authenticated()
+
+        url = f"{self._get_core_base_url()}/generativecontent"
+        response = self.session.post(
+            url, json={"promptTemplate": prompt_template, "context": context}, **self._get_request_kwargs()
+        )
+        response.raise_for_status()
+        return response.json()
+
     def get_highlight(self, highlight_id: str) -> dict:
         self._ensure_authenticated()
 

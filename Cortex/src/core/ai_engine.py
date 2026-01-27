@@ -14,9 +14,6 @@ from src.utils.image_utils import get_thumbnail
 torch.set_num_threads(int(os.getenv("MAX_THREADS")))
 torch.set_num_interop_threads(int(os.getenv("MAX_THREADS")))
 
-MODEL_NAME: Final[str] = os.getenv("MODEL_NAME")
-ENGINE_DEVICE: Final[str] = os.getenv("ENGINE_DEVICE")
-
 PHOTO_EMBEDDING_CACHE_KEY_FORMAT = "AiEngine:PhotoEmbedding:{model_name}:{photo_id}"
 PHOTO_EMBEDDING_CACHE_TTL: Final[int] = 365 * 86400
 
@@ -31,11 +28,15 @@ class AiEngine:
     def __init__(
         self,
         distributed_cache: DistributedCache,
+        model_name: str,
+        engine_device: str,
         content_coeff: float,
         negative_coeff: float,
         cluster_coeff: float,
     ) -> None:
-        self.model = SentenceTransformer(MODEL_NAME, device=ENGINE_DEVICE)
+        self.model = SentenceTransformer(model_name, device=engine_device)
+        self.model_name = model_name
+        self.engine_device = engine_device
         self.distributed_cache = distributed_cache
         self.content_coeff = content_coeff
         self.negative_coeff = negative_coeff
@@ -141,7 +142,7 @@ class AiEngine:
     def get_or_create_photo_embedding(self, photo: dict) -> Optional[Tensor]:
         photo_id = photo.get("id")
         embedding_cache_key = PHOTO_EMBEDDING_CACHE_KEY_FORMAT.format(
-            model_name=MODEL_NAME, photo_id=photo_id
+            model_name=self.model_name, photo_id=photo_id
         )
         checksum_cache_key = PHOTO_CHECKSUM_CACHE_KEY_FORMAT.format(photo_id=photo_id)
 
@@ -156,7 +157,7 @@ class AiEngine:
         if cached_emb and cached_checksum == actual_checksum:
             emb = torch.from_numpy(
                 np.frombuffer(cached_emb, dtype=np.float32).copy()
-            ).to(ENGINE_DEVICE)
+            ).to(self.engine_device)
             return emb.unsqueeze(0) if emb.ndimension() == 1 else emb
 
         try:

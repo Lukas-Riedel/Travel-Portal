@@ -13,6 +13,7 @@
     use Core\Resource\HighlightResource;
     use Core\Resource\LabelResource;
     use Common\Resource\ManagementResource;
+    use Core\Resource\GenerativeContentResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
     use Core\Resource\RegionResource;
@@ -25,9 +26,8 @@
     use Slim\App;
 
     return function(App $app, string $appName, string $versionTag, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
-        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
-        $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService, $documentService,
-        $photoService, $eventPublisher, $logger, $healthCheckables) {
+        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService, $statisticsService, $timeTrackingService,
+        $yearService, $tripService, $placeService, $noteService, $documentService, $generativeContentClient, $photoService, $eventPublisher, $logger, $healthCheckables) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService, $logger);
@@ -49,6 +49,7 @@
         AirportResource::register($app, $flightService, $logger);
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
+        GenerativeContentResource::register($app, $generativeContentClient, $configurationService);
         SwaggerResource::register($app, $coreBaseUrl);
         ManagementResource::register($app, $appName, $versionTag, $healthCheckables);
     };
