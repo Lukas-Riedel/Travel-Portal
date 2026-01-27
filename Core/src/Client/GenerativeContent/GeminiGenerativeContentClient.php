@@ -53,7 +53,7 @@
                         array("Content-Type: application/json"), json_encode($payload))["candidates"][0]["content"]["parts"][0]["text"]);
                 }
                 catch (\Throwable $e) {
-                    $this->logger->error("The {$model} generative content request was not successful. Reason: " . $e->getMessage(), array("response" => $response));
+                    $this->logger->error("The {$model} generative content request was not successful. Reason: " . $e->getMessage(), array("error" => $e));
                 }                
             }
 

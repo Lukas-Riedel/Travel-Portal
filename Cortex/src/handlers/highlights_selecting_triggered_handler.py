@@ -79,7 +79,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         self, year_id: int, highlights_count: int, highlights_removal_allowed: bool
     ) -> None:
         year = self.core_client.get_year(year_id)
-        year_places = self.core_client.get_places(year=year_id, include="dates")
+        year_places = self.core_client.get_places(
+            year=year_id, include="highlights"
+        )
 
         selected_photo_ids = self._handle_entity(
             entity_name=str(year_id),
@@ -111,7 +113,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     ) -> None:
         category = self.core_client.get_category(category_id)
         category_places = self.core_client.get_places(
-            category_id=category_id, include="dates"
+            category_id=category_id, include="highlights"
         )
         content_query = CATEGORY_CONTENT_QUERY_FORMAT.format(
             category_name=category.get("name"),
