@@ -11,18 +11,18 @@
         private const SERVICE_UP = "up";
         private const SERVICE_DOWN = "down";
         
-        private readonly string $serviceName;
+        private readonly string $appName;
         private readonly string $serviceVersion;
         private readonly array $healthCheckables;
 
-        public function __construct(string $serviceName, string $serviceVersion, array $healthCheckables) {
-            $this->serviceName = $serviceName;
+        public function __construct(string $appName, string $serviceVersion, array $healthCheckables) {
+            $this->appName = $appName;
             $this->serviceVersion = $serviceVersion;
             $this->healthCheckables = $healthCheckables;
         }
 
-        public static function register(App $app, string $serviceName, string $serviceVersion, array $healthCheckables) : void {
-            $resource = new self($serviceName, $serviceVersion, $healthCheckables);
+        public static function register(App $app, string $appName, string $serviceVersion, array $healthCheckables) : void {
+            $resource = new self($appName, $serviceVersion, $healthCheckables);
 
             $app->group("/management", function($group) use($resource) {
                 $group->get("/liveness", [$resource, "checkLiveness"]);
@@ -68,7 +68,7 @@
         }
 
         private function getFormattedServiceName() : string {
-            $tokens = explode("/", $this->serviceName);
+            $tokens = explode("/", $this->appName);
             return $tokens[count($tokens) - 1];
         }
     }

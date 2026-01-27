@@ -25,7 +25,7 @@
     $app->add(new ErrorHandlingMiddleware($logger));
     $app->add(new CorsMiddleware(explode(",", getenv("ALLOWED_REQUEST_ORIGINS"))));
 
-    (require_once(__DIR__ . "/../src/routes.php"))($app, getenv("SERVICE_NAME"), getenv("VERSION_TAG"), 
+    (require_once(__DIR__ . "/../src/routes.php"))($app, getenv("APP_NAME"), getenv("VERSION_TAG"), 
         getenv("GOOGLE_API_CLIENT_ID"), getenv("IAM_BASE_URL"));
 
     $app->any("/{path:.*}", function(ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) {

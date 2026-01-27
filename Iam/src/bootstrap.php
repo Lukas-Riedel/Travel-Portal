@@ -21,12 +21,12 @@
 
     // Logger.
     $loggingContext = new LoggingContext();
-    $logger = new Logger("iam");
+    $logger = new Logger(getenv("APP_NAME"));
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
             "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
             "labels" => array(
-                "service" => "iam",
+                "service" => getenv("APP_NAME"),
                 "version_tag" => getenv("VERSION_TAG")
             ),
             "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
@@ -41,7 +41,7 @@
     $logger->pushHandler($handler);
 
     // Clients.
-    $httpClient = new HttpClient($loggingContext, $logger);
+    $httpClient = new HttpClient(getenv("APP_NAME"), $loggingContext, $logger);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $healthCheckables = array();
     

@@ -14,6 +14,7 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -39,16 +40,17 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
 
     private static final String EXIF_DATE_TIME_FORMAT = "yyyy:MM:dd HH:mm:ss";
 
+    private final CoreClient coreClient;
     private final PhotoFetcher photoFetcher;
     private final ExifRewriter exifRewriter;
 
-    private final ZoneId timezone;
+    @Nullable
+    private ZoneId timezone;
 
     public MetadataAlteringPhotoFetcherDecorator(CoreClient coreClient, PhotoFetcher photoFetcher, ExifRewriter exifRewriter) {
+        this.coreClient = coreClient;
         this.photoFetcher = photoFetcher;
         this.exifRewriter = exifRewriter;
-        this.timezone = ZoneId.of(((Map<String, Object>) coreClient.getConfiguration().get(HOME_LOCATION_CONFIGURATION_KEY)).get(
-                TIMEZONE_HOME_LOCATION_CONFIGURATION_KEY).toString());
     }
 
     @SneakyThrows
@@ -76,7 +78,7 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
 
             DateTimeFormatter exifFormatter = DateTimeFormatter.ofPattern(EXIF_DATE_TIME_FORMAT);
             LocalDateTime localDateTime = LocalDateTime.parse(rawDateTime.trim().replaceAll("\u0000", ""), exifFormatter);
-            String offset = timezone.getRules().getOffset(localDateTime).getId();
+            String offset = getTimezone().getRules().getOffset(localDateTime).getId();
 
             TagInfoAscii offsetTagInfo = new TagInfoAscii(TAG_OFFSET_TIME_ORIGINAL_NAME, TAG_OFFSET_TIME_ORIGINAL, -1,
                     TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);
@@ -90,5 +92,14 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
             exifRewriter.updateExifMetadataLossy(data, os, outputSet);
             return os.toByteArray();
         }
+    }
+
+    private ZoneId getTimezone() {
+        if (timezone != null) {
+            timezone = ZoneId.of(((Map<String, Object>) coreClient.getConfiguration().get(HOME_LOCATION_CONFIGURATION_KEY)).get(
+                TIMEZONE_HOME_LOCATION_CONFIGURATION_KEY).toString());
+        }
+        
+        return timezone;
     }
 }

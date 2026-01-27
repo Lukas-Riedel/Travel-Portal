@@ -1,6 +1,7 @@
 <?php
     namespace Common\Routing;
 
+    use Common\CommonConstants;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use Psr\Http\Server\MiddlewareInterface;
@@ -23,7 +24,7 @@
                     ->withHeader("Access-Control-Allow-Origin", $origin)
                     ->withHeader("Access-Control-Allow-Credentials", "true")
                     ->withHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-                    ->withHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                    ->withHeader("Access-Control-Allow-Headers", implode(", ", array("Content-Type", "Authorization", CommonConstants::TRANSACTION_ID_HEADER, CommonConstants::REQUEST_ORIGIN_HEADER)))
                     ->withStatus(200);
             }
 
@@ -34,7 +35,7 @@
                     ->withHeader("Access-Control-Allow-Origin", $origin)
                     ->withHeader("Access-Control-Allow-Credentials", "true")
                     ->withHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-                    ->withHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                    ->withHeader("Access-Control-Allow-Headers", implode(", ", array("Content-Type", "Authorization", CommonConstants::TRANSACTION_ID_HEADER, CommonConstants::REQUEST_ORIGIN_HEADER)));
             }
 
             return $response;

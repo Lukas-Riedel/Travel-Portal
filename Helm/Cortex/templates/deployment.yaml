@@ -27,6 +27,8 @@ spec:
           env:
             - name: VERSION_TAG
               value: "{{ .Values.cortex.tag }}"
+            - name: APP_NAME
+              value: "{{ .Release.Name }}"
             - name: MAX_THREADS
               value: "{{ .Values.cortex.threads }}"
             - name: MODEL_NAME

@@ -27,7 +27,7 @@
     $app->add(new OpenLineageMiddleware($openLineageEventManager));
     $app->add(new CorsMiddleware(explode(",", getenv("ALLOWED_REQUEST_ORIGINS"))));
 
-    (require_once(__DIR__ . "/../src/routes.php"))($app, getenv("SERVICE_NAME"), getenv("VERSION_TAG"), getenv("CORE_BASE_URL"));
+    (require_once(__DIR__ . "/../src/routes.php"))($app, getenv("APP_NAME"), getenv("VERSION_TAG"), getenv("CORE_BASE_URL"));
 
     $app->any("/{path:.*}", function(ServerRequestInterface $request, ResponseInterface $response, array $routeArguments) use(&$basePath) {
         $acceptHeader = $request->getHeaderLine("Accept");

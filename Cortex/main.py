@@ -16,6 +16,7 @@ load_dotenv()
 
 def main():
     core_client = CoreClient(
+        os.getenv("APP_NAME"),
         os.getenv("CORE_HOST"),
         int(os.getenv("CORE_PORT")),
         os.getenv("CORE_SSL", "false").lower() == "true",

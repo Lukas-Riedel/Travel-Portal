@@ -10,6 +10,7 @@ ACCESS_TOKEN_VALIDITY_MULTIPLIER: Final[float] = 0.95
 class CoreClient:
     def __init__(
         self,
+        app_name: str,
         core_host: str,
         core_port: int,
         core_ssl: bool,
@@ -19,6 +20,7 @@ class CoreClient:
         iam_backend_client_id: str,
         iam_backend_client_secret: str,
     ) -> None:
+        self.app_name = app_name
         self.core_host = core_host
         self.core_port = core_port
         self.core_ssl = core_ssl
@@ -223,6 +225,8 @@ class CoreClient:
         tx_id = transaction_id.get()
         if tx_id:
             kwargs["headers"]["Transaction-Id"] = tx_id
+
+        kwargs["headers"]["Request-Origin"] = self.app_name
 
         return kwargs
 

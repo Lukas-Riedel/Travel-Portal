@@ -17,7 +17,7 @@ cortex:
   highlights:
     coefficient:
       content: "0.75"
-      age: "0.1"
+      age: "0.0"
       negative: "0.4"
       cluster: "3.0"
   rabbitmq:

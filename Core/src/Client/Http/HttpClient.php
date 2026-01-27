@@ -17,8 +17,8 @@
 
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(LoggingContext $loggingContext, Logger $logger) {
-            parent::__construct($loggingContext, $logger);
+        public function __construct(string $appName, LoggingContext $loggingContext, Logger $logger) {
+            parent::__construct($appName, $loggingContext, $logger);
             $this->progressReporter = null;
             $this->openLineageEventManager = null;
         }

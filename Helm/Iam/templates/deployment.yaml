@@ -42,10 +42,10 @@ spec:
             failureThreshold: 3
             timeoutSeconds: 3    
           env:
-            - name: SERVICE_NAME
-              value: "{{ .Values.iam.image }}"
             - name: VERSION_TAG
-              value: "{{ .Values.iam.tag }}"
+              value: "{{ .Values.iam.tag }}"            
+            - name: APP_NAME
+              value: "{{ .Release.Name }}"
             - name: ENCRYPTION_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:

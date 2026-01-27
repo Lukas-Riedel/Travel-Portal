@@ -10,8 +10,6 @@ from typing import Final
 
 load_dotenv()
 
-SERVICE_NAME: Final[str] = "cortex"
-
 transaction_id = contextvars.ContextVar("transaction_id", default="")
 
 
@@ -47,12 +45,14 @@ class JsonFormatter(logging.Formatter):
 class CortexLogger:
     def __init__(
         self,
+        app_name : str,
         version_tag: str,
         grafana_base_url: str,
         grafana_client_name: str,
         grafana_user: str,
         grafana_password: str,
     ) -> None:
+        self.app_name = app_name
         self.version_tag = version_tag
         self.grafana_base_url = grafana_base_url
         self.grafana_client_name = grafana_client_name
@@ -60,7 +60,7 @@ class CortexLogger:
         self.grafana_password = grafana_password
 
     def get_logger(self) -> Logger:
-        logger = logging.getLogger(SERVICE_NAME)
+        logger = logging.getLogger(self.app_name)
         logger.setLevel(logging.DEBUG)
 
         if logger.hasHandlers():
@@ -75,7 +75,7 @@ class CortexLogger:
                 url=loki_url,
                 tags={
                     "host": self.grafana_client_name,
-                    "service": SERVICE_NAME,
+                    "service": self.app_name,
                     "version_tag": self.version_tag,
                 },
                 auth=(auth_user, auth_pass) if auth_user else None,
@@ -89,6 +89,7 @@ class CortexLogger:
 
 
 logger_provider = CortexLogger(
+    os.getenv("APP_NAME"),
     os.getenv("VERSION_TAG"),
     os.getenv("GRAFANA_LOKI_ENTRYPOINT"),
     os.getenv("GRAFANA_LOKI_CLIENT_NAME"),

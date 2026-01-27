@@ -29,9 +29,25 @@
                 $this->loggingContext->resetTransactionId();
             }
 
+            $requestOriginHeader = $request->getHeaderLine(CommonConstants::REQUEST_ORIGIN_HEADER);
+            if ($requestOriginHeader !== "") {
+                $this->loggingContext->setRequestOrigin($requestOriginHeader);
+            }
+            else {
+                $this->loggingContext->resetRequestOrigin();
+            }
+
             $this->logger->pushProcessor(function($record) {
-                $record["context"]["transaction_id"] = $this->loggingContext->getTransactionId();
-                $record["extra"]["transaction_id"] = $this->loggingContext->getTransactionId();
+                $transactionId = $this->loggingContext->getTransactionId();
+                $record["context"]["transaction_id"] = $transactionId;
+                $record["extra"]["transaction_id"] = $transactionId;
+
+                $requestOrigin = $this->loggingContext->getRequestOrigin();
+                if ($requestOrigin !== null) {
+                    $record["context"]["request_origin"] = $requestOrigin;
+                    $record["extra"]["request_origin"] = $requestOrigin;
+                }
+                
                 return $record;
             });       
 

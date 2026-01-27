@@ -87,12 +87,12 @@
 
     // Logger.
     $loggingContext = new LoggingContext();
-    $logger = new Logger("core");
+    $logger = new Logger(getenv("APP_NAME"));
     $handler = new WhatFailureGroupHandler(array(
         new LokiHandler(array(
             "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
             "labels" => array(
-                "service" => "core",
+                "service" => getenv("APP_NAME"),
                 "version_tag" => getenv("VERSION_TAG")
             ),
             "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
@@ -110,7 +110,7 @@
     $distributedCacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $memoryCacheClient = new MemoryCacheClient();
     $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $distributedCacheClient, $logger); 
-    $httpClient = new HttpClient($loggingContext, $logger);
+    $httpClient = new HttpClient(getenv("APP_NAME"), $loggingContext, $logger);
     $googleClient = new GoogleClient($distributedCacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $logger, getenv("CORE_BASE_URL")); 

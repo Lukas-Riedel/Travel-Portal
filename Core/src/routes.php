@@ -24,7 +24,7 @@
     use Core\Resource\YearResource;
     use Slim\App;
 
-    return function(App $app, string $serviceName, string $versionTag, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
+    return function(App $app, string $appName, string $versionTag, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService,
         $statisticsService, $timeTrackingService, $yearService, $tripService, $placeService, $noteService, $documentService,
         $photoService, $eventPublisher, $logger, $healthCheckables) {
@@ -50,6 +50,6 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         SwaggerResource::register($app, $coreBaseUrl);
-        ManagementResource::register($app, $serviceName, $versionTag, $healthCheckables);
+        ManagementResource::register($app, $appName, $versionTag, $healthCheckables);
     };
 ?>

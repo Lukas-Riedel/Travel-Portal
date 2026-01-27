@@ -15,10 +15,13 @@
             "Cache-Control: max-age=0"
         );
 
+        private readonly string $appName;
+        
         private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
 
-        public function __construct(LoggingContext $loggingContext, Logger $logger) {
+        public function __construct(string $appName, LoggingContext $loggingContext, Logger $logger) {
+            $this->appName = $appName;
             $this->loggingContext = $loggingContext;
             $this->logger = $logger;
         }
@@ -35,6 +38,8 @@
             if ($transactionId !== null) {
                 $finalHeaders[] = CommonConstants::TRANSACTION_ID_HEADER . ": " . $transactionId;
             }
+
+            $finalHeaders[] = CommonConstants::REQUEST_ORIGIN_HEADER . ": " . $this->appName;
 
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
             curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
