@@ -5,16 +5,25 @@ from src.handlers.base_handler import BaseHandler
 from src.core.ai_engine import AiEngine
 from src.core.core_client import CoreClient
 from src.utils.image_utils import get_thumbnail, get_thumbnail_size
+from src.core.distributed_cache import DistributedCache
 from typing import List, Optional, Final
 from torch import Tensor
 from concurrent.futures import ThreadPoolExecutor
 import torch
+import numpy as np
+from collections import Counter
+import time
 
 NEGATIVE_QUERY: Final[str] = (
     "Macro photography, close-up, single object detail, stairs, interiors, overcast sky, "
-    "museum exhibits, interior furniture, blurry background, gesturing people, "
+    "museum exhibits, interior furniture, blurry background, gesturing people, flags, "
     "insects, textured surfaces, night darkness, running children."
 )
+
+CONTENT_QUERY_CACHE_KEY_FORMAT = (
+    "HighlightsSelectingTriggeredHandler:ContentQuery:{prompt_template}:{entity_id}"
+)
+CONTENT_QUERY_CACHE_TTL: Final[int] = 365 * 86400
 
 
 class HighlightsSelectingTriggeredHandler(BaseHandler):
@@ -22,13 +31,17 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         self,
         ai_engine: AiEngine,
         core_client: CoreClient,
+        distributed_cache: DistributedCache,
         max_threads: int,
         age_coeff: float,
+        iso_coeff: float,
     ) -> None:
         self.ai_engine = ai_engine
         self.core_client = core_client
+        self.distributed_cache = distributed_cache
         self.max_workers = 2 * max_threads
         self.age_coeff = age_coeff
+        self.iso_coeff = iso_coeff
 
     def handle(self, args: dict) -> None:
         entity_id = args.get("entityId")
@@ -66,11 +79,20 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     ) -> None:
         year = self.core_client.get_year(year_id)
         year_places = self.core_client.get_places(
-            year=year_id, include="highlights"
+            year=year_id, max_end=int(time.time()), include="highlights"
         )
-        content_query = self.core_client.create_generative_content(
+        content_query = self._get_or_create_content_prompt(
             prompt_template="yearHighlightsSelecting",
-            context={"model": self.ai_engine.model_name, "places": ", ".join(p["name"] for p in sorted(year_places, key=lambda x: x.get("score", 0), reverse=True) if p.get("name"))},
+            entity_id=str(year_id),
+            context={
+                "model": self.ai_engine.model_name,
+                "places": ", ".join(
+                    p["name"]
+                    for p in sorted(
+                        year_places, key=lambda x: x.get("score", 0), reverse=True
+                    )
+                ),
+            },
         )
         logger.debug(f"Using the content query '{content_query}'...")
 
@@ -104,11 +126,21 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     ) -> None:
         category = self.core_client.get_category(category_id)
         category_places = self.core_client.get_places(
-            category_id=category_id, include="highlights"
+            category_id=category_id, max_end=int(time.time()), include="highlights"
         )
-        content_query = self.core_client.create_generative_content(
+        content_query = self._get_or_create_content_prompt(
             prompt_template="categoryHighlightsSelecting",
-            context={"model": self.ai_engine.model_name, "name": category.get("name")},
+            entity_id=category_id,
+            context={
+                "model": self.ai_engine.model_name,
+                "name": category.get("name"),
+                "places": ", ".join(
+                    p["name"]
+                    for p in sorted(
+                        category_places, key=lambda x: x.get("score", 0), reverse=True
+                    )
+                ),
+            },
         )
         logger.debug(f"Using the content query '{content_query}'...")
 
@@ -141,17 +173,32 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         self, trip_id: str, highlights_count: int, highlights_removal_allowed: bool
     ) -> None:
         trip = self.core_client.get_trip(trip_id)
-        trip_places = self.core_client.get_places(trip_id=trip_id, include="dates")
-        content_query = self.core_client.create_generative_content(
+        trip_places = [
+            p
+            for p in self.core_client.get_places(
+                trip_id=trip_id, max_end=int(time.time()), include="dates"
+            )
+            if not p.get("layover")
+        ]
+        content_query = self._get_or_create_content_prompt(
             prompt_template="tripHighlightsSelecting",
-            context={"model": self.ai_engine.model_name, "places": ", ".join(p["name"] for p in sorted(trip_places, key=lambda x: x.get("score", 0), reverse=True) if p.get("name"))},
+            entity_id=trip_id,
+            context={
+                "model": self.ai_engine.model_name,
+                "places": ", ".join(
+                    p["name"]
+                    for p in sorted(
+                        trip_places, key=lambda x: x.get("score", 0), reverse=True
+                    )
+                ),
+            },
         )
         logger.debug(f"Using the content query '{content_query}'...")
 
         selected_photo_ids = self._handle_entity(
             entity_name=f"{trip.get('name')} {trip.get('year')}",
             highlights_count=highlights_count,
-            places=[p for p in trip_places if not p.get("layover")],
+            places=trip_places,
             existing_highlights=trip.get("highlights", []),
             photos=self._fetch_photos_for_place_or_trip(
                 trip_places, trip.get("highlights", []), highlights_count
@@ -177,9 +224,14 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         self, place_id: str, highlights_count: int, highlights_removal_allowed: bool
     ) -> None:
         place = self.core_client.get_place(place_id)
-        content_query = self.core_client.create_generative_content(
+        content_query = self._get_or_create_content_prompt(
             prompt_template="placeHighlightsSelecting",
-            context={"model": self.ai_engine.model_name, "name": place.get("name"), "country": place.get("country")},
+            entity_id=place_id,
+            context={
+                "model": self.ai_engine.model_name,
+                "name": place.get("name"),
+                "country": place.get("country"),
+            },
         )
         logger.debug(f"Using the content query '{content_query}'...")
 
@@ -276,46 +328,71 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             img_embeddings = self.ai_engine.get_image_embedding(
                 [p.get("img") for p in preprocessed_photos]
             )
-            cluster_labels = self.ai_engine.cluster_embeddings(highlights_count, img_embeddings)
-
             scores = self._calculate_scores(
                 content_query, img_embeddings, preprocessed_photos, places
-            )            
+            )
 
-            clusters = {}
-            for idx, label in enumerate(cluster_labels):
-                clusters.setdefault(label, []).append(idx)
+            photo_data = []
+            for i in range(len(preprocessed_photos)):
+                photo_data.append(
+                    {
+                        "photo": preprocessed_photos[i],
+                        "score": scores[i],
+                        "emb": img_embeddings[i],
+                    }
+                )
 
-            main_highlight_photo_idx = None
-            if main_highlight_photo_id:
-                for idx, p in enumerate(preprocessed_photos):
-                    if p.get("id") == main_highlight_photo_id:
-                        main_highlight_photo_idx = idx
-                        break
+            cluster_labels = self.ai_engine.cluster_embeddings(img_embeddings)
+            cluster_counts = Counter(cluster_labels)
 
-            all_photos_indices = sorted(
-                range(len(preprocessed_photos)),
-                key=lambda i: (i != main_highlight_photo_idx, -scores[i])
+            enriched_data = []
+            for i in range(len(preprocessed_photos)):
+                label = cluster_labels[i]
+                size = cluster_counts[label]
+                priority = scores[i] * (size**2)
+
+                enriched_data.append(
+                    {
+                        "idx": i,
+                        "label": label,
+                        "size": size,
+                        "score": scores[i],
+                        "priority": priority,
+                        "photo": preprocessed_photos[i],
+                    }
+                )
+
+            enriched_data.sort(
+                key=lambda d: (
+                    d["photo"].get("id") != main_highlight_photo_id,
+                    -d["priority"],
+                )
             )
 
             selected_indices = []
             used_clusters = set()
 
-            for idx in all_photos_indices:
+            for d in enriched_data:
                 if len(selected_indices) >= highlights_count:
                     break
 
-                cid = cluster_labels[idx]                
-                if cid in used_clusters:
-                    continue
+                if d["label"] not in used_clusters:
+                    selected_indices.append(d["idx"])
+                    used_clusters.add(d["label"])
+                    logger.debug(
+                        f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
+                    )
 
-                selected_indices.append(idx)
-                used_clusters.add(cid)
+            for d in enriched_data:
+                if len(selected_indices) >= highlights_count:
+                    break
 
-                logger.debug(
-                    f"Selecting a highlight with score {scores[idx]} for {entity_name} ({preprocessed_photos[idx].get('url')})..."
-                )
-                
+                if d["idx"] not in selected_indices:
+                    selected_indices.append(d["idx"])
+                    logger.debug(
+                        f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
+                    )
+
             return [preprocessed_photos[i].get("id") for i in selected_indices]
         except Exception as e:
             logger.error(
@@ -375,6 +452,14 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         max_year = max(years) if years else 1
         year_range = max_year - min_year if max_year > min_year else 1
 
+        min_iso_log = math.log2(
+            max(min(p.get("iso", 100) for p in preprocessed_photos), 1)
+        )
+        max_iso_log = math.log2(
+            max(max(p.get("iso", 100) for p in preprocessed_photos), 1)
+        )
+        iso_log_range = max_iso_log - min_iso_log if max_iso_log > min_iso_log else 1
+
         main_highlight_photo_ids = {
             p.get("mainHighlight", {}).get("photo", {}).get("id")
             for p in places
@@ -388,10 +473,15 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 (datetime.fromtimestamp(p.get("timestamp")).year - min_year)
                 / year_range
             ) * self.age_coeff
+            iso_bonus = (
+                (max_iso_log - math.log2(max(p.get("iso", 100), 1))) / iso_log_range
+            ) * self.iso_coeff
             main_highlight_bonus = (
                 base_quality if p.get("id") in main_highlight_photo_ids else 0.0
             )
-            final_scores.append(base_quality + time_bonus + main_highlight_bonus)
+            final_scores.append(
+                base_quality + time_bonus + main_highlight_bonus + iso_bonus
+            )
 
         return final_scores
 
@@ -446,3 +536,30 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             for highlight in existing_highlights
             if highlight.get("photo").get("id") not in selected_photo_ids
         ]
+
+    def _get_or_create_content_prompt(
+        self, prompt_template: str, entity_id: str, context: dict
+    ) -> str:
+        content_query_cache_key = CONTENT_QUERY_CACHE_KEY_FORMAT.format(
+            prompt_template=prompt_template, entity_id=entity_id
+        )
+
+        content_query = self.distributed_cache.get(
+            content_query_cache_key, CONTENT_QUERY_CACHE_TTL
+        )
+
+        if content_query is not None and content_query["context"] == context:
+            return content_query["query"]
+
+        content_query = {
+            "query": self.core_client.create_generative_content(
+                prompt_template=prompt_template, context=context
+            ),
+            "context": context,
+        }
+
+        self.distributed_cache.set(
+            content_query_cache_key, content_query, CONTENT_QUERY_CACHE_TTL
+        )
+
+        return content_query["query"]

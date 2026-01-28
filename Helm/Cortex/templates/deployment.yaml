@@ -36,13 +36,15 @@ spec:
             - name: ENGINE_DEVICE
               value: "{{ .Values.cortex.engine }}"
             - name: CONTENT_COEFFICIENT
-              value: "{{ .Values.cortex.highlights.coefficient.content }}"
+              value: "{{ .Values.cortex.highlight.coefficient.content }}"
             - name: NEGATIVE_COEFFICIENT
-              value: "{{ .Values.cortex.highlights.coefficient.negative }}"
+              value: "{{ .Values.cortex.highlight.coefficient.negative }}"
             - name: AGE_COEFFICIENT
-              value: "{{ .Values.cortex.highlights.coefficient.age }}"
+              value: "{{ .Values.cortex.highlight.coefficient.age }}"
             - name: CLUSTER_COEFFICIENT
-              value: "{{ .Values.cortex.highlights.coefficient.cluster }}"
+              value: "{{ .Values.cortex.highlight.coefficient.cluster }}"
+            - name: ISO_COEFFICIENT
+              value: "{{ .Values.cortex.highlight.coefficient.iso }}"
             - name: CORE_HOST
               value: "{{ .Values.cortex.core.host }}"
             - name: CORE_PORT

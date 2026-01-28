@@ -14,12 +14,13 @@ cortex:
   core:
     host: core
     port: 8080
-  highlights:
+  highlight:
     coefficient:
-      content: "0.75"
+      content: "0.7"
       age: "0.0"
-      negative: "0.4"
-      cluster: "3.0"
+      negative: "0.8"
+      cluster: "3.5"
+      iso: "0.7"
   rabbitmq:
     hostname: rabbitmq
     port: 

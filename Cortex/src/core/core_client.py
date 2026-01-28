@@ -95,6 +95,7 @@ class CoreClient:
         year: Optional[int] = None,
         trip_id: Optional[str] = None,
         photo_id: Optional[str] = None,
+        max_end: Optional[int] = None,
         include: Optional[str] = None,
     ) -> List[dict]:
         self._ensure_authenticated()
@@ -113,6 +114,9 @@ class CoreClient:
 
         if photo_id is not None:
             params["photoId"] = photo_id
+
+        if max_end is not None:
+            params["maxEnd"] = max_end
 
         if include is not None:
             params["include"] = include

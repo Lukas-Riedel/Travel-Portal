@@ -1,6 +1,7 @@
 import torch
 import os
 import gc
+import math
 from PIL import Image
 from sentence_transformers import SentenceTransformer, util
 from typing import List, Union, Final, Optional
@@ -116,11 +117,11 @@ class AiEngine:
         combined_style = combined_style / combined_style.norm(dim=-1, keepdim=True)
         return combined_style.unsqueeze(0)
 
-    def cluster_embeddings(self, highlights_count: int, embeddings: Tensor) -> List[int]:
+    def cluster_embeddings(self, embeddings: Tensor) -> List[int]:
         emb_np = embeddings.cpu().numpy()
         
         clusterer = AgglomerativeClustering(
-            n_clusters=max(1, min(len(embeddings), int(highlights_count * self.cluster_coeff))),
+            n_clusters=max(1, min(int(math.sqrt(len(embeddings)) * self.cluster_coeff), len(embeddings))),
             distance_threshold=None,
             linkage="average",
             metric="cosine"
