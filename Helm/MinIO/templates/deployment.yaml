@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: minio
+  name: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.minio.replicas }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: minio
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: minio
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: minio
+        - name: {{ .Release.Name }}
           image: "{{ .Values.minio.image }}:{{ .Values.minio.tag }}"
           args:
             - server
@@ -47,15 +47,15 @@ spec:
             - name: MINIO_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: minio-password
+                  name: {{ .Release.Name }}-password
                   key: minio-password
             - name: MINIO_BROWSER_REDIRECT_URL
               value: "https://{{ .Values.minio.service.console.host }}"
           volumeMounts:
-            - name: minio-data
+            - name: {{ .Release.Name }}-data
               mountPath: /data
       volumes:
-        - name: minio-data
+        - name: {{ .Release.Name }}-data
           persistentVolumeClaim:
-            claimName: minio-pvc
+            claimName: {{ .Release.Name }}-pvc
 {{- end }}

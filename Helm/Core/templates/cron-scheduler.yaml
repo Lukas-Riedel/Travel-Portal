@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: core-scheduler-cronjob
+  name: {{ .Release.Name }}-scheduler-cronjob
 spec:
   schedule: "*/1 * * * *"
   successfulJobsHistoryLimit: 0
@@ -15,7 +15,7 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - name: core-scheduler
+          - name: {{ .Release.Name }}-scheduler
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
             command: ["php", "-d", "max_execution_time=3600", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
             env:

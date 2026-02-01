@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: core
+  name: {{ .Release.Name }}
   labels:
-    app: core
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.core.replicas }}
   strategy:
@@ -14,14 +14,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: core
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: core
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: core
+        - name: {{ .Release.Name }}
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           ports:
             - containerPort: {{ .Values.core.service.port }}    

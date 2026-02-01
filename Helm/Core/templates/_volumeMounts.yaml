@@ -1,7 +1,7 @@
 {{- define "core.volumeMounts" }}
-- name: core-data
+- name: {{ .Release.Name }}-data
   mountPath: /var/tmp
-- name: core-config
+- name: {{ .Release.Name }}-config
   mountPath: /usr/local/etc/php/conf.d/zz-custom.ini
   subPath: custom.ini
 {{- end }}

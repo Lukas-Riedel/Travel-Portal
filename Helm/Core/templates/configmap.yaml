@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: core-configmap
+  name: {{ .Release.Name }}-configmap
 data:
   custom.ini: |
     date.timezone={{ .Values.core.timezone }}

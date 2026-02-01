@@ -6,7 +6,7 @@
 - name: ENCRYPTION_PRIVATE_KEY
   valueFrom:
     secretKeyRef:
-      name: core-encryption-key
+      name: {{ .Release.Name }}-encryption-key
       key: core-encryption-key
 - name: CORE_BASE_URL
   value: "{{ .Values.core.url.base.public }}"
@@ -71,19 +71,19 @@
 - name: BACKEND_GOOGLE_MAPS_API_KEY
   valueFrom:
     secretKeyRef:
-      name: core-google-maps-api-key
+      name: {{ .Release.Name }}-google-maps-api-key
       key: core-google-maps-api-key
 - name: GOOGLE_GEMINI_API_KEY
   valueFrom:
     secretKeyRef:
-      name: core-google-gemini-api-key
+      name: {{ .Release.Name }}-google-gemini-api-key
       key: core-google-gemini-api-key
 - name: FCM_PROJECT_ID
   value: "{{ .Values.core.fcm.project.id }}"
 - name: EXCHANGE_RATE_API_KEY
   valueFrom:
     secretKeyRef:
-      name: core-exchange-rate-api-key
+      name: {{ .Release.Name }}-exchange-rate-api-key
       key: core-exchange-rate-api-key
 - name: WORKER_QUEUE_NAME
   value: "{{ .Values.core.rabbitmq.queue.worker }}"

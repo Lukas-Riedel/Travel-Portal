@@ -2,10 +2,10 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: cortex-worker-scaler
+  name: {{ .Release.Name }}-worker-scaler
 spec:
   scaleTargetRef:
-    name: cortex-worker
+    name: {{ .Release.Name }}-worker
   minReplicaCount: 0
   maxReplicaCount: {{ .Values.cortex.workers }}
   pollingInterval: 15
@@ -17,5 +17,5 @@ spec:
         value: "{{ .Values.cortex.scaling.items }}"
         queueName: "{{ .Values.cortex.rabbitmq.queue.cortex }}"
       authenticationRef:
-        name: cortex-worker-scaler-auth
+        name: {{ .Release.Name }}-worker-scaler-auth
 {{- end }}

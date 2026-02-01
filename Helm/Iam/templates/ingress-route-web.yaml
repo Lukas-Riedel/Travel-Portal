@@ -2,7 +2,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: iam-web-router
+  name: {{ .Release.Name }}-web-router
 spec:
   entryPoints:
     - websecure
@@ -10,7 +10,7 @@ spec:
     - match: Host(`{{ .Values.iam.service.host }}`)
       kind: Rule
       services:
-        - name: iam
+        - name: {{ .Release.Name }}
           port: {{ .Values.iam.service.port }}
   tls:
     certResolver: letsencrypt

@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cortex-worker
+  name: {{ .Release.Name }}-worker
   labels:
-    app: cortex-worker
+    app: {{ .Release.Name }}-worker
 spec:
   replicas: 1
   strategy:
@@ -14,15 +14,15 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: cortex-worker
+      app: {{ .Release.Name }}-worker
   template:
     metadata:
       labels:
-        app: cortex-worker
+        app: {{ .Release.Name }}-worker
     spec:
       terminationGracePeriodSeconds: {{ .Values.cortex.scaling.grace }}
       containers:
-        - name: cortex-worker
+        - name: {{ .Release.Name }}-worker
           image: "{{ .Values.cortex.image }}:{{ .Values.cortex.tag }}"
           env:
             - name: VERSION_TAG

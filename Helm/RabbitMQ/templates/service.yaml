@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rabbitmq
+  name: {{ .Release.Name }}
   labels:
-    app: rabbitmq
+    app: {{ .Release.Name }}
 spec:
   type: {{ .Values.rabbitmq.service.type }}   
   ports:
@@ -18,5 +18,5 @@ spec:
       protocol: TCP
       name: http-management
   selector:
-    app: rabbitmq
+    app: {{ .Release.Name }}
 {{- end }}

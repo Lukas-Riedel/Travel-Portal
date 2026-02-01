@@ -2,23 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rabbitmq
-  labels:
-    app: rabbitmq
+  name: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.rabbitmq.replicas }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: rabbitmq
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: rabbitmq
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: rabbitmq
+        - name: {{ .Release.Name }}
           image: "{{ .Values.rabbitmq.image }}:{{ .Values.rabbitmq.tag }}"
           ports:
             - name: amqp
@@ -49,14 +47,14 @@ spec:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef:
-                  name: rabbitmq-password
+                  name: {{ .Release.Name }}-password
                   key: rabbitmq-password 
           volumeMounts:
-            - name: rabbitmq-data
+            - name: {{ .Release.Name }}-data
               mountPath: /var/lib/rabbitmq/mnesia
       volumes:
-        - name: rabbitmq-data
+        - name: {{ .Release.Name }}-data
           persistentVolumeClaim:
-            claimName: rabbitmq-pvc
+            claimName: {{ .Release.Name }}-pvc
       hostname: rmq-host
 {{- end }}

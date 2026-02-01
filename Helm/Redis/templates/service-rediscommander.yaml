@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rediscommander
+  name: {{ .Release.Name }}-rediscommander
 spec:
   type: {{ .Values.rediscommander.service.type }}
   ports:
     - port: {{ .Values.rediscommander.service.port }}
       targetPort: {{ .Values.rediscommander.service.port }}
   selector:
-    app: rediscommander
+    app: {{ .Release.Name }}-rediscommander
 {{- end }}

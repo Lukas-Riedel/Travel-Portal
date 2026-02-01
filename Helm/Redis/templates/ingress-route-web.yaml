@@ -2,7 +2,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: rediscommander-web-router
+  name: {{ .Release.Name }}-rediscommander-web-router
 spec:
   entryPoints:
     - websecure
@@ -14,7 +14,7 @@ spec:
           namespace: keda
           port: 8080
       middlewares:
-        - name: rediscommander-auth-middleware
+        - name: {{ .Release.Name }}-rediscommander-auth-middleware
   tls:
     certResolver: letsencrypt
 {{- end }}

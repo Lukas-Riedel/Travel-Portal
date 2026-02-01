@@ -2,15 +2,15 @@
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: pgadmin-scaler
+  name: {{ .Release.Name }}-pgadmin-scaler
 spec:
   hosts:
     - {{ .Values.pgadmin.service.host }}
   scaleTargetRef:
-    name: pgadmin
+    name: {{ .Release.Name }}-pgadmin
     kind: Deployment
     apiVersion: apps/v1
-    service: pgadmin
+    service: {{ .Release.Name }}-pgadmin
     port: {{ .Values.pgadmin.service.port }}
   replicas:
     min: 0

@@ -2,7 +2,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: rabbitmq-web-router
+  name: {{ .Release.Name }}-web-router
 spec:
   entryPoints:
     - websecure
@@ -10,7 +10,7 @@ spec:
     - match: Host(`{{ .Values.rabbitmq.service.management.host }}`)
       kind: Rule
       services:
-        - name: rabbitmq
+        - name: {{ .Release.Name }}
           port: {{ .Values.rabbitmq.service.management.port }}
   tls:
     certResolver: letsencrypt

@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rediscommander
+  name: {{ .Release.Name }}-rediscommander
 spec:
   replicas: 0
   strategy:
@@ -12,14 +12,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: rediscommander
+      app: {{ .Release.Name }}-rediscommander
   template:
     metadata:
       labels:
-        app: rediscommander
+        app: {{ .Release.Name }}-rediscommander
     spec:
       containers:
-        - name: rediscommander
+        - name: {{ .Release.Name }}-rediscommander
           image: "{{ .Values.rediscommander.image }}:{{ .Values.rediscommander.tag }}"
           ports:
             - containerPort: {{ .Values.rediscommander.service.port }}

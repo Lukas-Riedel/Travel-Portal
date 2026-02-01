@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: core-worker
+  name: {{ .Release.Name }}-worker
   labels:
-    app: core-worker
+    app: {{ .Release.Name }}-worker
 spec:
   replicas: 1
   strategy:
@@ -14,15 +14,15 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: core-worker
+      app: {{ .Release.Name }}-worker
   template:
     metadata:
       labels:
-        app: core-worker
+        app: {{ .Release.Name }}-worker
     spec:
       terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
       containers:
-        - name: core-worker
+        - name: {{ .Release.Name }}-worker
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           command: ["/usr/bin/tini", "-g", "--"]
           args:
@@ -37,9 +37,9 @@ spec:
           volumeMounts:
 {{ include "core.volumeMounts" . | nindent 12 }}
       volumes:
-      - name: core-data
+      - name: {{ .Release.Name }}-data
         emptyDir: {}
-      - name: core-config
+      - name: {{ .Release.Name }}-config
         configMap:
-          name: core-configmap
+          name: {{ .Release.Name }}-configmap
 {{- end }}

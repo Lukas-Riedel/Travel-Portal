@@ -2,15 +2,15 @@
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: rediscommander-scaler
+  name: {{ .Release.Name }}-rediscommander-scaler
 spec:
   hosts:
     - {{ .Values.rediscommander.service.host }}
   scaleTargetRef:
-    name: rediscommander
+    name: {{ .Release.Name }}-rediscommander
     kind: Deployment
     apiVersion: apps/v1
-    service: rediscommander
+    service: {{ .Release.Name }}-rediscommander
     port: {{ .Values.rediscommander.service.port }}
   replicas:
     min: 0

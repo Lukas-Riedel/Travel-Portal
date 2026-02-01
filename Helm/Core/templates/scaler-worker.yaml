@@ -2,10 +2,10 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: core-worker-scaler
+  name: {{ .Release.Name }}-worker-scaler
 spec:
   scaleTargetRef:
-    name: core-worker
+    name: {{ .Release.Name }}-worker
   minReplicaCount: 1
   maxReplicaCount: {{ .Values.core.workers }}
   pollingInterval: 15
@@ -17,5 +17,5 @@ spec:
         value: "{{ .Values.core.scaling.items }}"
         queueName: "{{ .Values.core.rabbitmq.queue.worker }}"
       authenticationRef:
-        name: core-worker-scaler-auth
+        name: {{ .Release.Name }}-worker-scaler-auth
 {{- end }}

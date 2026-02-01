@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.postgres.replicas }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: postgres
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: postgres
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: postgres
+        - name: {{ .Release.Name }}
           image: "{{ .Values.postgres.image }}:{{ .Values.postgres.tag }}"
           command: ["/usr/local/bin/docker-entrypoint.sh"]
           args:
@@ -56,23 +56,23 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-password
+                  name: {{ .Release.Name }}-password
                   key: postgres-password
           volumeMounts:
-            - name: postgres-data
+            - name: {{ .Release.Name }}-data
               mountPath: /var/lib/postgresql/data
-            - name: postgres-init
+            - name: {{ .Release.Name }}-init
               mountPath: /docker-entrypoint-initdb.d
-            - name: postgres-config
+            - name: {{ .Release.Name }}-config
               mountPath: /etc/postgresql/custom/
       volumes:
-        - name: postgres-data
+        - name: {{ .Release.Name }}-data
           persistentVolumeClaim:
-            claimName: postgres-pvc
-        - name: postgres-init
+            claimName: {{ .Release.Name }}-pvc
+        - name: {{ .Release.Name }}-init
           configMap:
-            name: postgres-configmap
-        - name: postgres-config
+            name: {{ .Release.Name }}-configmap
+        - name: {{ .Release.Name }}-config
           configMap:
-            name: postgres-configmap
+            name: {{ .Release.Name }}-configmap
 {{- end }}

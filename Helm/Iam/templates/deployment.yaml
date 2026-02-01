@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iam
+  name: {{ .Release.Name }}
   labels:
-    app: iam
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.iam.replicas }}
   strategy:
@@ -14,14 +14,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: iam
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: iam
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: iam
+        - name: {{ .Release.Name }}
           image: "{{ .Values.iam.image }}:{{ .Values.iam.tag }}" 
           ports:
             - containerPort: {{ .Values.iam.service.port }}
@@ -49,7 +49,7 @@ spec:
             - name: ENCRYPTION_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: iam-encryption-key
+                  name: {{ .Release.Name }}-encryption-key
                   key: iam-encryption-key
             - name: IAM_APP_CLIENT_ID
               value: "{{ .Values.iam.client.app.id }}"
@@ -58,7 +58,7 @@ spec:
             - name: IAM_BACKEND_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: iam-client-backend-secret
+                  name: {{ .Release.Name }}-client-backend-secret
                   key: iam-client-backend-secret
             - name: JWKS_PUBLIC_KEY
               value: "{{ .Values.iam.jwks.key.public }}"
@@ -73,12 +73,12 @@ spec:
             - name: FCM_PRIVATE_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: iam-fcm-private-key-id
+                  name: {{ .Release.Name }}-fcm-private-key-id
                   key: iam-fcm-private-key-id
             - name: FCM_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: iam-fcm-private-key
+                  name: {{ .Release.Name }}-fcm-private-key
                   key: iam-fcm-private-key
             - name: FCM_CLIENT_EMAIL
               value: "{{ .Values.iam.fcm.client.email }}"
@@ -91,12 +91,12 @@ spec:
             - name: GOOGLE_API_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: iam-google-client-secret
+                  name: {{ .Release.Name }}-google-client-secret
                   key: iam-google-client-secret
             - name: IBM_CLOUD_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: iam-ibm-cloud-api-key
+                  name: {{ .Release.Name }}-ibm-cloud-api-key
                   key: iam-ibm-cloud-api-key
             - name: GRAFANA_LOKI_ENTRYPOINT
               value: "{{ .Values.iam.grafana.entrypoint }}"
@@ -112,10 +112,10 @@ spec:
             - name: ALLOWED_REQUEST_ORIGINS
               value: "{{ .Values.iam.origins.whitelist }}"
           volumeMounts:
-            - name: iam-data
+            - name: {{ .Release.Name }}-data
               mountPath: /var/tmp
       volumes:
-        - name: iam-data
+        - name: {{ .Release.Name }}-data
           persistentVolumeClaim:
-            claimName: iam-pvc
+            claimName: {{ .Release.Name }}-pvc
 {{- end }}

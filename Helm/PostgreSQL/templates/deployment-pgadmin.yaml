@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pgadmin
+  name: {{ .Release.Name }}-pgadmin
 spec:
   replicas: 0
   strategy:
@@ -12,14 +12,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: pgadmin
+      app: {{ .Release.Name }}-pgadmin
   template:
     metadata:
       labels:
-        app: pgadmin
+        app: {{ .Release.Name }}-pgadmin
     spec:
       containers:
-        - name: pgadmin
+        - name: {{ .Release.Name }}-pgadmin
           image: "{{ .Values.pgadmin.image }}:{{ .Values.pgadmin.tag }}"
           ports:
             - containerPort: {{ .Values.pgadmin.service.port }}             
@@ -45,13 +45,13 @@ spec:
             - name: PGADMIN_DEFAULT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: pgadmin-password
+                  name: pgadmin-password # TODO: Change to {{ .Release.Name }}-pgadmin-password
                   key: pgadmin-password
           volumeMounts:
-            - name: pgadmin-data
+            - name: {{ .Release.Name }}-pgadmin-data
               mountPath: /var/lib/pgadmin
       volumes:
-        - name: pgadmin-data
+        - name: {{ .Release.Name }}-pgadmin-data
           persistentVolumeClaim:
-            claimName: pgadmin-pvc
+            claimName: {{ .Release.Name }}-pgadmin-pvc
 {{- end }}
