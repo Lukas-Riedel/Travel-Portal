@@ -14,7 +14,7 @@ export default function TripHighlightsPage() {
     const { hasRole } = useAuth()
 
     const { trip, createTripHighlight } = useTrip(tripId)
-    const { places } = useRegularPlaces({ tripId, include: ["categories", "dates"], sort: "-oldest" })
+    const { places } = useRegularPlaces({ tripId, include: ["categories", "dates", "highlights"], sort: "-oldest" })
 
     const [currentHighlights, setCurrentHighlights] = useState(null)
 
@@ -30,6 +30,23 @@ export default function TripHighlightsPage() {
                     .then(photos => photos
                         .filter(photo => !trip.highlights
                             ?.some(highlight => highlight.photo.id === photo.id)))
+                    .then(photos => {
+                        const highlightIds = new Set(places?.flatMap(place => place.highlights ?? []).map(h => h.photo.id))
+
+                        return photos.slice().sort((a, b) => {
+                            const aIsHighlighted = highlightIds.has(a.id)
+                            const bIsHighlighted = highlightIds.has(b.id)
+
+                            if (aIsHighlighted && !bIsHighlighted) {
+                                return -1
+                            }
+                            if (!aIsHighlighted && bIsHighlighted) {
+                                return 1
+                            }
+
+                            return 0
+                        });
+                    })
             }))
         ), [places, trip])
 
