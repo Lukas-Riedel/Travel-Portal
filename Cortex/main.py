@@ -54,6 +54,7 @@ def main():
     ]
 
     listener = EventListener(
+        core_client,
         handlers,
         os.getenv("RMQ_HOST"),
         int(os.getenv("RMQ_PORT")),

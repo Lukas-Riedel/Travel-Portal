@@ -51,7 +51,6 @@ onBackgroundMessage(messaging, payload => {
             timeZone: args.timezone
         }).format(new Date(args.actualArrival * 1000))
 
-
         self.registration.showNotification("Let přistál", {
             body: "Let " + args.flight + " přistál na letišti " + args.to + " v " + formattedActualArrival + " místního času",
             icon: "icon-192.png"
@@ -79,6 +78,7 @@ onBackgroundMessage(messaging, payload => {
 
     if (payload.data.event === "ProcessingFailed") {
         const wrappedEvent = JSON.parse(payload.data.args)
+
         if (wrappedEvent.name === "PhotosUploadingTriggered") {
             self.registration.showNotification("Fotky nebyly nahrány", {
                 body: "Nahrávání fotek pro místo " + wrappedEvent.args.placeName + " se nezdařilo",

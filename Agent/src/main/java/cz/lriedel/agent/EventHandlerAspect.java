@@ -48,8 +48,8 @@ class EventHandlerAspect {
             return result;
         }
         catch (Exception e) {
-            coreClient.createEvent(PROCESSING_FAILED_EVENT_NAME, event);
             log.error(String.format("An exception occurred when processing '%s (%s)'.", eventName, eventArgs), e);
+            coreClient.createEvent(PROCESSING_FAILED_EVENT_NAME, event);
             return null;
         }
         finally {

@@ -11,11 +11,17 @@ from src.handlers.base_handler import BaseHandler
 from src.core.logger import transaction_id
 from pika.channel import Channel
 from types import FrameType
+from src.core.core_client import CoreClient
+
+PROCESSING_STARTED_EVENT_NAME: str = "ProcessingStarted"
+PROCESSING_ENDED_EVENT_NAME: str = "ProcessingEnded"
+PROCESSING_FAILED_EVENT_NAME: str = "ProcessingFailed"
 
 
 class EventListener:
     def __init__(
         self,
+        core_client: CoreClient,
         handlers: List[BaseHandler],
         rmq_host: str,
         rmq_port: int,
@@ -26,6 +32,7 @@ class EventListener:
         rmq_heartbeat: int,
         rmq_queue: str,
     ) -> None:
+        self.core_client = core_client
         self.handlers: dict[str, BaseHandler] = {}
 
         for handler in handlers:
@@ -155,9 +162,7 @@ class EventListener:
         )
         worker_thread.start()
 
-    def _process_in_thread(
-        self, delivery_tag: int, tx_id: str, body: bytes
-    ) -> None:
+    def _process_in_thread(self, delivery_tag: int, tx_id: str, body: bytes) -> None:
         with self.processing_lock:
             token = transaction_id.set(tx_id)
             start_time = time.time()
@@ -169,12 +174,15 @@ class EventListener:
                 f"Received the '{event_name}' event...",
                 extra={"event": event},
             )
+            self.core_client.create_event(PROCESSING_STARTED_EVENT_NAME, event)
 
             try:
                 if event_name in self.handlers:
                     self.handlers[event_name].handle(args)
                 else:
                     logger.error(f"No handler can process the '{event_name}' event.")
+
+                self.core_client.create_event(PROCESSING_ENDED_EVENT_NAME, event)
 
                 self.connection.ioloop.add_callback_threadsafe(
                     lambda: self.channel.basic_ack(delivery_tag=delivery_tag)
@@ -185,6 +193,7 @@ class EventListener:
                     f"The processing of the '{event_name} failed. Reason: {str(e)}",
                     extra={"event": event},
                 )
+                self.core_client.create_event(PROCESSING_FAILED_EVENT_NAME, event)
 
                 self.connection.ioloop.add_callback_threadsafe(
                     lambda: self.channel.basic_nack(

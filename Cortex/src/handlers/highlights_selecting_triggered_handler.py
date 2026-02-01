@@ -297,125 +297,118 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         main_highlight_photo_id: Optional[str],
         highlights_removal_allowed: bool,
     ) -> Optional[List[str]]:
-        try:
-            delta = highlights_count - len(existing_highlights)
-            if (
-                (not highlights_removal_allowed and delta < 0)
-                or delta == 0
-                or highlights_count == 0
-            ):
-                logger.warning(
-                    f"There are already {len(existing_highlights)} highlights for {entity_name}. No new highlights will be created."
-                )
-                return None
-            
-            fingerprint = f"{self.model_name}|{entity_name}|{highlights_count}|{content_query}|{main_highlight_photo_id}" \
-                f"{sorted(p['id'] for p in places)}|" \
-                f"{sorted(p['id'] for p in photos)}|" \
-                f"{sorted(eh['id'] for eh in existing_highlights)}"
-
-            cache_key = SELECTED_HIGHLIGHTS_CACHE_KEY_FORMAT.format(fingerprint=hashlib.md5(fingerprint.encode()).hexdigest())
-            cached_highlights = self.distributed_cache.get(cache_key, SELECTED_HIGHLIGHTS_CACHE_TTL)
-            if cached_highlights:
-                return cached_highlights        
-
-            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                preprocessed_photos = list(
-                    filter(None, executor.map(self._preprocess_photo, photos))
-                )
-
-            if not preprocessed_photos:
-                logger.warning(
-                    f"There are no photos for {entity_name}. No new highlights will be created."
-                )
-                return None
-
-            if delta < 0:
-                logger.debug(
-                    f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (removing {(-1) * delta} highlights)..."
-                )
-            else:
-                logger.debug(
-                    f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (creating {delta} highlights)..."
-                )
-
-            img_embeddings = self.ai_engine.get_image_embedding(
-                [p.get("img") for p in preprocessed_photos]
-            )
-            scores = self._calculate_scores(
-                content_query, img_embeddings, preprocessed_photos, places
-            )
-
-            photo_data = []
-            for i in range(len(preprocessed_photos)):
-                photo_data.append(
-                    {
-                        "photo": preprocessed_photos[i],
-                        "score": scores[i],
-                        "emb": img_embeddings[i],
-                    }
-                )
-
-            cluster_labels = self.ai_engine.cluster_embeddings(img_embeddings)
-            cluster_counts = Counter(cluster_labels)
-
-            enriched_data = []
-            for i in range(len(preprocessed_photos)):
-                label = cluster_labels[i]
-                size = cluster_counts[label]
-                priority = scores[i] * (size**2)
-
-                enriched_data.append(
-                    {
-                        "idx": i,
-                        "label": label,
-                        "size": size,
-                        "score": scores[i],
-                        "priority": priority,
-                        "photo": preprocessed_photos[i],
-                    }
-                )
-
-            enriched_data.sort(
-                key=lambda d: (
-                    d["photo"].get("id") != main_highlight_photo_id,
-                    -d["priority"],
-                )
-            )
-
-            selected_indices = []
-            used_clusters = set()
-
-            for d in enriched_data:
-                if len(selected_indices) >= highlights_count:
-                    break
-
-                if d["label"] not in used_clusters:
-                    selected_indices.append(d["idx"])
-                    used_clusters.add(d["label"])
-                    logger.debug(
-                        f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
-                    )
-
-            for d in enriched_data:
-                if len(selected_indices) >= highlights_count:
-                    break
-
-                if d["idx"] not in selected_indices:
-                    selected_indices.append(d["idx"])
-                    logger.debug(
-                        f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
-                    )
-
-            result = [preprocessed_photos[i].get("id") for i in selected_indices]
-            self.distributed_cache.set(cache_key, result, SELECTED_HIGHLIGHTS_CACHE_TTL)
-            return result
-        except Exception as e:
-            logger.error(
-                f"Unable to create highlights for {entity_name}. Reason: {e}",
-                exc_info=True,
+        delta = highlights_count - len(existing_highlights)
+        if (
+            (not highlights_removal_allowed and delta < 0)
+            or delta == 0
+            or highlights_count == 0
+        ):
+            logger.warning(
+                f"There are already {len(existing_highlights)} highlights for {entity_name}. No new highlights will be created."
             )
             return None
+        
+        fingerprint = f"{self.ai_engine.model_name}|{entity_name}|{highlights_count}|{content_query}|{main_highlight_photo_id}" \
+            f"{sorted(p['id'] for p in places)}|" \
+            f"{sorted(p['id'] for p in photos)}|" \
+            f"{sorted(eh['id'] for eh in existing_highlights)}"
+
+        cache_key = SELECTED_HIGHLIGHTS_CACHE_KEY_FORMAT.format(fingerprint=hashlib.md5(fingerprint.encode()).hexdigest())
+        cached_highlights = self.distributed_cache.get(cache_key, SELECTED_HIGHLIGHTS_CACHE_TTL)
+        if cached_highlights:
+            return cached_highlights        
+
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            preprocessed_photos = list(
+                filter(None, executor.map(self._preprocess_photo, photos))
+            )
+
+        if not preprocessed_photos:
+            logger.warning(
+                f"There are no photos for {entity_name}. No new highlights will be created."
+            )
+            return None
+
+        if delta < 0:
+            logger.debug(
+                f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (removing {(-1) * delta} highlights)..."
+            )
+        else:
+            logger.debug(
+                f"Analyzing {len(preprocessed_photos)} photos for {entity_name} (creating {delta} highlights)..."
+            )
+
+        img_embeddings = self.ai_engine.get_image_embedding(
+            [p.get("img") for p in preprocessed_photos]
+        )
+        scores = self._calculate_scores(
+            content_query, img_embeddings, preprocessed_photos, places
+        )
+
+        photo_data = []
+        for i in range(len(preprocessed_photos)):
+            photo_data.append(
+                {
+                    "photo": preprocessed_photos[i],
+                    "score": scores[i],
+                    "emb": img_embeddings[i],
+                }
+            )
+
+        cluster_labels = self.ai_engine.cluster_embeddings(img_embeddings)
+        cluster_counts = Counter(cluster_labels)
+
+        enriched_data = []
+        for i in range(len(preprocessed_photos)):
+            label = cluster_labels[i]
+            size = cluster_counts[label]
+            priority = scores[i] * (size**2)
+
+            enriched_data.append(
+                {
+                    "idx": i,
+                    "label": label,
+                    "size": size,
+                    "score": scores[i],
+                    "priority": priority,
+                    "photo": preprocessed_photos[i],
+                }
+            )
+
+        enriched_data.sort(
+            key=lambda d: (
+                d["photo"].get("id") != main_highlight_photo_id,
+                -d["priority"],
+            )
+        )
+
+        selected_indices = []
+        used_clusters = set()
+
+        for d in enriched_data:
+            if len(selected_indices) >= highlights_count:
+                break
+
+            if d["label"] not in used_clusters:
+                selected_indices.append(d["idx"])
+                used_clusters.add(d["label"])
+                logger.debug(
+                    f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
+                )
+
+        for d in enriched_data:
+            if len(selected_indices) >= highlights_count:
+                break
+
+            if d["idx"] not in selected_indices:
+                selected_indices.append(d["idx"])
+                logger.debug(
+                    f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
+                )
+
+        result = [preprocessed_photos[i].get("id") for i in selected_indices]
+        self.distributed_cache.set(cache_key, result, SELECTED_HIGHLIGHTS_CACHE_TTL)
+        return result
 
     def get_handled_event_names(self) -> List[str]:
         return ["HighlightsSelectingTriggered"]
