@@ -370,6 +370,19 @@
                 ->execute();
         }
 
+        public function updateTripYear(string $tripId, int $year) : bool {
+            $sql = <<<'SQL'
+                UPDATE trip_identifier
+                SET year = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($year, $tripId)
+                ->execute() === 1;
+        }
+
         public function updateTripMainHighlight(string $tripId, string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE trip_identifier

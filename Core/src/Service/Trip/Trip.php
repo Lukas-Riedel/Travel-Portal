@@ -113,6 +113,7 @@
     class Trip implements \JsonSerializable {    
               
         private const FULL_TRIP_NAME_FORMAT = "%s %d";
+        private const YEAR_FORMAT = "Y";
 
         private readonly string $id;
         private readonly string $name;
@@ -263,9 +264,9 @@
         }
 
         public function withOffset(int $offset) : Trip {
-            return new Trip($this->id, $this->name, $this->year, $this->mainHighlight, $this->start + $offset, $this->end + $offset, $this->countries,
-                $this->expenses, $this->stays, $this->flights, $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics,
-                $this->publicHolidays);
+            return new Trip($this->id, $this->name, date(self::YEAR_FORMAT, $this->start + $offset), $this->mainHighlight,
+                $this->start + $offset, $this->end + $offset, $this->countries, $this->expenses, $this->stays, $this->flights,
+                $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->publicHolidays);
         }
 
         public function isCurrent() : bool {

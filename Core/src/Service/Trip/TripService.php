@@ -120,6 +120,7 @@
 
             $offset = $start - $trip->getStart();
             $this->placeService->movePlaces($tripId, $offset);
+            $this->tripMapper->updateTripYear($tripId, date(self::YEAR_FORMAT, $start));
             $this->googleClient->updateCalendarEventStartEnd(Calendar::Trips, $this->getTripEventId($tripId), $start, $trip->getEnd() + $offset, null, null);
 
             return $trip->withOffset($offset);
