@@ -18,7 +18,7 @@
         private const PHOTO_SCORE_MULTIPLIER = 1;
 
         private const MIN_HIGHLIGHTS_PER_PLACE_COUNT = 3;
-        private const MAX_HIGHLIGHTS_PER_PLACE_COUNT = 10;
+        private const MAX_HIGHLIGHTS_PER_PLACE_COUNT = 15;
 
         private const MAIN_HIGHLIGHT_QUALITY_MULTIPLIER = 3;
 

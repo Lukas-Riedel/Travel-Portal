@@ -9,10 +9,9 @@ from src.core.distributed_cache import DistributedCache
 from typing import List, Optional, Final
 from torch import Tensor
 from concurrent.futures import ThreadPoolExecutor
-import torch
-import numpy as np
 from collections import Counter
 import time
+import hashlib
 
 NEGATIVE_QUERY: Final[str] = (
     "Macro photography, close-up, single object detail, stairs, interiors, overcast sky, "
@@ -24,6 +23,11 @@ CONTENT_QUERY_CACHE_KEY_FORMAT = (
     "HighlightsSelectingTriggeredHandler:ContentQuery:{prompt_template}:{entity_id}"
 )
 CONTENT_QUERY_CACHE_TTL: Final[int] = 365 * 86400
+
+SELECTED_HIGHLIGHTS_CACHE_KEY_FORMAT = (
+    "HighlightsSelectingTriggeredHandler:SelectedHighlights:{fingerprint}"
+)
+SELECTED_HIGHLIGHTS_CACHE_TTL: Final[int] = 86400
 
 
 class HighlightsSelectingTriggeredHandler(BaseHandler):
@@ -304,6 +308,16 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                     f"There are already {len(existing_highlights)} highlights for {entity_name}. No new highlights will be created."
                 )
                 return None
+            
+            fingerprint = f"{self.model_name}|{entity_name}|{highlights_count}|{content_query}|{main_highlight_photo_id}" \
+                f"{sorted(p['id'] for p in places)}|" \
+                f"{sorted(p['id'] for p in photos)}|" \
+                f"{sorted(eh['id'] for eh in existing_highlights)}"
+
+            cache_key = SELECTED_HIGHLIGHTS_CACHE_KEY_FORMAT.format(fingerprint=hashlib.md5(fingerprint.encode()).hexdigest())
+            cached_highlights = self.distributed_cache.get(cache_key, SELECTED_HIGHLIGHTS_CACHE_TTL)
+            if cached_highlights:
+                return cached_highlights        
 
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 preprocessed_photos = list(
@@ -393,7 +407,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                         f"Selecting a highlight with score {scores[d['idx']]} for {entity_name} ({preprocessed_photos[d['idx']].get('url')})..."
                     )
 
-            return [preprocessed_photos[i].get("id") for i in selected_indices]
+            result = [preprocessed_photos[i].get("id") for i in selected_indices]
+            self.distributed_cache.set(cache_key, result, SELECTED_HIGHLIGHTS_CACHE_TTL)
+            return result
         except Exception as e:
             logger.error(
                 f"Unable to create highlights for {entity_name}. Reason: {e}",

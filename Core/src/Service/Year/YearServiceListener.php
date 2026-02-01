@@ -11,6 +11,8 @@
         
         private const UPDATE_YEAR_STATISTICS_ACTION_NAME = "UPDATE_YEAR_STATISTICS";
         private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
+        
+        private const MAX_HIGHLIGHTS_PER_YEAR_COUNT = 30;
 
         private readonly YearService $yearService;
 
@@ -29,6 +31,9 @@
                 if ($yearIdentifier !== null && $yearIdentifier->getMainHighlight() === null) {
                     $this->yearService->updateYearMainHighlight($message["entityId"], $message["highlightId"]);
                 }
+                    
+                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"],
+                    self::MAX_HIGHLIGHTS_PER_YEAR_COUNT, true));
             }
         }
 
@@ -43,6 +48,9 @@
                         $this->yearService->updateYearMainHighlight($year->getId(), null);
                     }
                 }
+                
+                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"],
+                    self::MAX_HIGHLIGHTS_PER_YEAR_COUNT, true));
             }
         }
 

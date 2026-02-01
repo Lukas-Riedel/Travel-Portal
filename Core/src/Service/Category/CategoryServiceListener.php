@@ -12,6 +12,8 @@
         
         private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
         private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
+        
+        private const MAX_HIGHLIGHTS_PER_CATEGORY_COUNT = 30;
 
         private readonly CategoryService $categoryService;
 
@@ -44,6 +46,9 @@
                 $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["entityId"]);
                 if ($categoryIdentifier !== null && $categoryIdentifier->getMainHighlight() === null) {
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
+                    
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"],
+                        self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
                 }
             }
         }
@@ -59,6 +64,9 @@
                         $this->categoryService->updateCategoryMainHighlight($category->getId(), null);
                     }
                 }
+                
+                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"],
+                    self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
             }
         }
 

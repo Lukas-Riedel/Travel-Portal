@@ -5,7 +5,6 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-    use Core\Service\Highlight\HighlightService;
     use Core\Service\Place\PlaceService;
 
     class PhotoServiceListener {
@@ -17,19 +16,14 @@
         private const FETCH_ALBUMS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly PhotoService $photoService;
-
         private readonly PlaceService $placeService;
-
-        private readonly HighlightService $highlightService;
         
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(PhotoService $photoService, PlaceService $placeService, HighlightService $highlightService,
-            EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(PhotoService $photoService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->photoService = $photoService;
             $this->placeService = $placeService;
-            $this->highlightService = $highlightService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -47,19 +41,6 @@
             if ($album !== null) {
                 $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
                 $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
-
-                if ($place !== null && count($photos) > 0) {
-                    if ($place->getMainHighlight() === null) {
-                        $this->highlightService->createPlaceHighlight($place->getId(), $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
-                    }
-
-                    $tripIdsWithoutHighlights = array_unique(array_map(fn($trip) => $trip->getId(),
-                        array_filter(array_map(fn($date) => $date->getTrip(), $place->getDates()),
-                        fn($trip) => $trip !== null && $trip->getMainHighlight() === null)));
-                    foreach ($tripIdsWithoutHighlights as &$tripId) {
-                        $this->highlightService->createTripHighlight($tripId, $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
-                    }
-                }
     
                 if (count($photos) !== $album->getImagesCount()) {
                     $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));

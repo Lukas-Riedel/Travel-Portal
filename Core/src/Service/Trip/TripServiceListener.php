@@ -14,17 +14,23 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Highlight\HighlightService;
+    use Core\Service\Photo\PhotoService;
 
     class TripServiceListener {
         
         private const UPDATE_TRIP_STATISTICS_ACTION_NAME = "UPDATE_TRIP_STATISTICS";
         private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
+        
+        private const MAX_HIGHLIGHTS_PER_TRIP_COUNT = 30;
 
         private readonly TripService $tripService;
 
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
         private readonly FlightService $flightService;
+        private readonly PhotoService $photoService;
+        private readonly HighlightService $highlightService;
 
         private readonly CalendarClient $calendarClient;
 
@@ -34,11 +40,14 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, TripService $tripService, PlaceService $placeService, StayService $stayService,
-            FlightService $flightService, CalendarClient $calendarClient, EventPublisher $eventPublisher, Scheduler $scheduler) {
+            FlightService $flightService, PhotoService $photoService, HighlightService $highlightService, CalendarClient $calendarClient,
+            EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
             $this->flightService = $flightService;
+            $this->photoService = $photoService;
+            $this->highlightService = $highlightService;
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -77,6 +86,35 @@
                 $trip = $this->tripService->getRegularTrip($message["entityId"]);
                 if ($trip != null && $trip->getMainHighlight() === null && count($trip->getHighlights()) > 0) {
                     $this->tripService->updateTripMainHighlight($trip->getId(), $trip->getHighlights()[0]->getId());
+                }
+            }
+        }
+        
+        public function onAlbumUpdated(mixed $message) : void {
+            $album = $this->photoService->getAlbum($message["albumId"]);
+            if ($album !== null) {
+                $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
+                $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
+
+                if ($place !== null && count($photos) > 0) {
+                    if ($place->getMainHighlight() === null) {
+                        $this->highlightService->createPlaceHighlight($place->getId(), $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
+                    }
+
+                    $tripIdsWithoutHighlights = array_unique(array_map(fn($trip) => $trip->getId(),
+                        array_filter(array_map(fn($date) => $date->getTrip(), $place->getDates()),
+                        fn($trip) => $trip !== null && $trip->getMainHighlight() === null)));
+                    foreach ($tripIdsWithoutHighlights as &$tripId) {
+                        $this->highlightService->createTripHighlight($tripId, $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
+                    }
+                    
+                    $activeTripIds = array_unique(array_map(fn($trip) => $trip->getId(),
+                        array_filter(array_map(fn($date) => $date->getTrip(), $place->getDates()),
+                        fn($trip) => $trip !== null && ($this->tripService->getRegularTrip($trip->getId())?->isCurrent() ?? false))));
+                    foreach ($activeTripIds as &$tripId) {
+                        $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId,
+                            self::MAX_HIGHLIGHTS_PER_TRIP_COUNT, true));
+                    }
                 }
             }
         }
