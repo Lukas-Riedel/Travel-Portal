@@ -299,8 +299,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
     ) -> Optional[List[str]]:
         delta = highlights_count - len(existing_highlights)
         if (
-            (not highlights_removal_allowed and delta < 0)
-            or delta == 0
+            (not highlights_removal_allowed and delta <= 0)
             or highlights_count == 0
         ):
             logger.warning(

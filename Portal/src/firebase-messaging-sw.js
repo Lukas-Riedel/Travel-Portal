@@ -74,10 +74,10 @@ onBackgroundMessage(messaging, payload => {
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
-        else if (wrappedEvent.name === "HighlightsSelectingTriggered") {
+        else if (wrappedEvent.name === "HighlightsSelectingTriggered" && wrappedEvent.args.isExplicit) {
             if (wrappedEvent.args.highlightType === "place") {
                 self.registration.showNotification("Highlighty byly vytvořeny", {
-                    body: "Místo " + wrappedEvent.args.placeName + " má nové highlighty",
+                    body: "Místo " + wrappedEvent.args.entityName + " má nové highlighty",
                     icon: "icon-192.png",
                     data: "/place/" + wrappedEvent.args.placeId
                 })
@@ -123,7 +123,7 @@ onBackgroundMessage(messaging, payload => {
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
-        else if (wrappedEvent.name === "HighlightsSelectingTriggered") {
+        else if (wrappedEvent.name === "HighlightsSelectingTriggered" && wrappedEvent.args.isExplicit) {
             if (wrappedEvent.args.highlightType === "place") {
                 self.registration.showNotification("Highlighty nebyly vytvořeny", {
                     body: "Vytvoření highlightů pro místo " + wrappedEvent.args.placeName + " se nezdařilo",

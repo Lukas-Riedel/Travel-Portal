@@ -62,7 +62,7 @@ export default function App() {
             else if (event.name === "PhotoReplacingTriggered") {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo zahájeno`)
             }
-            else if (event.name === "HighlightsSelectingTriggered") {
+            else if (event.name === "HighlightsSelectingTriggered" && event.args.isExplicit) {
                 if (event.args.highlightType === "place") {
                     toast.success(`Vybírání highlightů pro místo ${event.args.entityName} bylo zahájeno`)
                 }
@@ -90,7 +90,7 @@ export default function App() {
             else if (event.name === "PhotoReplacingTriggered") {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo dokončeno`)
             }
-            else if (event.name === "HighlightsSelectingTriggered") {
+            else if (event.name === "HighlightsSelectingTriggered" && event.args.isExplicit) {
                 if (event.args.highlightType === "place") {
                     toast.success(`Vybírání highlightů pro místo ${event.args.entityName} bylo dokončeno`)
                 }
@@ -118,7 +118,7 @@ export default function App() {
             else if (event.name === "PhotoReplacingTriggered") {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} se nezdařilo`)
             }
-            else if (event.name === "HighlightsSelectingTriggered") {
+            else if (event.name === "HighlightsSelectingTriggered" && event.args.isExplicit) {
                 if (event.args.highlightType === "place") {
                     toast.success(`Vybírání highlightů pro místo ${event.args.entityName} se nezdařilo`)
                 }

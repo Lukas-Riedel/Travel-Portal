@@ -35,6 +35,10 @@ class ProcessingEndedNotificationFactory(
     }
 
     private fun createHighlightsSelectingTriggeredNotification(args: Map<*, *>): Notification? {
+        if (args["isExplicit"] != true) {
+            return null
+        }
+
         val title = context.getString(R.string.title_highlights_created)
         val type = args["highlightType"] as? String ?: return null
         val entityName = args["entityName"] as? String ?: return null
