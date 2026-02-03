@@ -24,6 +24,14 @@ PHOTO_CHECKSUM_CACHE_TTL: Final[int] = 365 * 86400
 # TODO: Propagate the value from the environment variable.
 ATTRIBUTES_ESTIMATION_NEAREST_NEIGHBOURS_COUNT: Final[int] = 9
 
+ATTRIBUTE_EXPONENT: Final[dict] = {
+    "composition": 4,
+    "sky": 10,
+    "shadows": 10,
+    "circumstances": 4,
+    "atmosphere": 10
+}
+DEFAULT_EXPONENT: Final[int] = 10
 
 class AiEngine:
     def __init__(
@@ -90,7 +98,7 @@ class AiEngine:
 
                 if key in neighbor_attrs:
                     val = neighbor_attrs[key]
-                    weight = pow(top_k_values[i].item(), 10)
+                    weight = pow(top_k_values[i].item(), ATTRIBUTE_EXPONENT.get(key, DEFAULT_EXPONENT))
 
                     weighted_sum += val * weight
                     sum_weights_for_key += weight
