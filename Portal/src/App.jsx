@@ -59,6 +59,23 @@ export default function App() {
             if (event.name === "PhotosUploadingTriggered") {
                 toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo zahájeno`)
             }
+            else if (event.name === "PhotoReplacingTriggered") {
+                toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo zahájeno`)
+            }
+            else if (event.name === "HighlightsSelectingTriggered") {
+                if (event.args.highlightType === "place") {
+                    toast.success(`Vybírání highlightů pro místo ${event.args.entityName} bylo zahájeno`)
+                }
+                else if (event.args.highlightType === "trip") {
+                    toast.success(`Vybírání highlightů pro výlet ${event.args.entityName} bylo zahájeno`)
+                }
+                else if (event.args.highlightType === "category") {
+                    toast.success(`Vybírání highlightů pro kategorii ${event.args.entityName} bylo zahájeno`)
+                }
+                else if (event.args.highlightType === "year") {
+                    toast.success(`Vybírání highlightů pro rok ${event.args.entityName} bylo zahájeno`)
+                }
+            }
         })
     }, [processingStartedEvents])
 
@@ -73,6 +90,20 @@ export default function App() {
             else if (event.name === "PhotoReplacingTriggered") {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo dokončeno`)
             }
+            else if (event.name === "HighlightsSelectingTriggered") {
+                if (event.args.highlightType === "place") {
+                    toast.success(`Vybírání highlightů pro místo ${event.args.entityName} bylo dokončeno`)
+                }
+                else if (event.args.highlightType === "trip") {
+                    toast.success(`Vybírání highlightů pro výlet ${event.args.entityName} bylo dokončeno`)
+                }
+                else if (event.args.highlightType === "category") {
+                    toast.success(`Vybírání highlightů pro kategorii ${event.args.entityName} bylo dokončeno`)
+                }
+                else if (event.args.highlightType === "year") {
+                    toast.success(`Vybírání highlightů pro rok ${event.args.entityName} bylo dokončeno`)
+                }
+            }
         })
     }, [processingEndedEvents])
 
@@ -86,6 +117,20 @@ export default function App() {
             }
             else if (event.name === "PhotoReplacingTriggered") {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} se nezdařilo`)
+            }
+            else if (event.name === "HighlightsSelectingTriggered") {
+                if (event.args.highlightType === "place") {
+                    toast.success(`Vybírání highlightů pro místo ${event.args.entityName} se nezdařilo`)
+                }
+                else if (event.args.highlightType === "trip") {
+                    toast.success(`Vybírání highlightů pro výlet ${event.args.entityName} se nezdařilo`)
+                }
+                else if (event.args.highlightType === "category") {
+                    toast.success(`Vybírání highlightů pro kategorii ${event.args.entityName} se nezdařilo`)
+                }
+                else if (event.args.highlightType === "year") {
+                    toast.success(`Vybírání highlightů pro rok ${event.args.entityName} se nezdařilo`)
+                }
             }
         })
     }, [processingFailedEvents])

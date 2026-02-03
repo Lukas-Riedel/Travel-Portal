@@ -47,7 +47,7 @@
                 if ($categoryIdentifier !== null && $categoryIdentifier->getMainHighlight() === null) {
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                     
-                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"],
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $categoryIdentifier->getName(),
                         self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
                 }
             }
@@ -56,17 +56,19 @@
         public function onHighlightRemoved(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Category->value) {
                 $category = $this->categoryService->getCategory($message["entityId"]);
-                if ($category != null && ($category->getMainHighlight() === null || $category->getMainHighlight()->getId() === $message["highlightId"])) {
-                    if (count($category->getHighlights()) > 0) {
-                        $this->categoryService->updateCategoryMainHighlight($category->getId(), $category->getHighlights()[0]->getId());
-                    } 
-                    else {
-                        $this->categoryService->updateCategoryMainHighlight($category->getId(), null);
+                if ($category !== null) {
+                    if ($category->getMainHighlight() === null || $category->getMainHighlight()->getId() === $message["highlightId"]) {
+                        if (count($category->getHighlights()) > 0) {
+                            $this->categoryService->updateCategoryMainHighlight($category->getId(), $category->getHighlights()[0]->getId());
+                        } 
+                        else {
+                            $this->categoryService->updateCategoryMainHighlight($category->getId(), null);
+                        }
                     }
+                    
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $category->getName(),
+                        self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
                 }
-                
-                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"],
-                    self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
             }
         }
 

@@ -112,7 +112,8 @@
                         array_filter(array_map(fn($date) => $date->getTrip(), $place->getDates()),
                         fn($trip) => $trip !== null && ($this->tripService->getRegularTrip($trip->getId())?->isCurrent() ?? false))));
                     foreach ($activeTripIds as &$tripId) {
-                        $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId,
+                        $trip = $this->tripService->getRegularTrip($tripId);
+                        $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId, $trip->getFullName(),
                             self::MAX_HIGHLIGHTS_PER_TRIP_COUNT, true));
                     }
                 }

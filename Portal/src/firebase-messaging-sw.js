@@ -74,6 +74,36 @@ onBackgroundMessage(messaging, payload => {
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
+        else if (wrappedEvent.name === "HighlightsSelectingTriggered") {
+            if (wrappedEvent.args.highlightType === "place") {
+                self.registration.showNotification("Highlighty byly vytvořeny", {
+                    body: "Místo " + wrappedEvent.args.placeName + " má nové highlighty",
+                    icon: "icon-192.png",
+                    data: "/place/" + wrappedEvent.args.placeId
+                })
+            }
+            else if (wrappedEvent.args.highlightType === "trip") {
+                self.registration.showNotification("Highlighty byly vytvořeny", {
+                    body: "Výlet " + wrappedEvent.args.entityName + " má nové highlighty",
+                    icon: "icon-192.png",
+                    data: "/trip/" + wrappedEvent.args.entityId
+                })
+            }
+            else if (wrappedEvent.args.highlightType === "category") {
+                self.registration.showNotification("Highlighty byly vytvořeny", {
+                    body: "Kategorie " + wrappedEvent.args.entityName + " má nové highlighty",
+                    icon: "icon-192.png",
+                    data: "/category/" + wrappedEvent.args.entityId
+                })
+            }
+            else if (wrappedEvent.args.highlightType === "year") {
+                self.registration.showNotification("Highlighty byly vytvořeny", {
+                    body: "Rok " + wrappedEvent.args.entityName + " má nové highlighty",
+                    icon: "icon-192.png",
+                    data: "/year/" + wrappedEvent.args.entityId
+                })
+            }
+        }
     }
 
     if (payload.data.event === "ProcessingFailed") {
@@ -92,6 +122,36 @@ onBackgroundMessage(messaging, payload => {
                 icon: "icon-192.png",
                 data: "/place/" + wrappedEvent.args.placeId
             })
+        }
+        else if (wrappedEvent.name === "HighlightsSelectingTriggered") {
+            if (wrappedEvent.args.highlightType === "place") {
+                self.registration.showNotification("Highlighty nebyly vytvořeny", {
+                    body: "Vytvoření highlightů pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
+                    icon: "icon-192.png",
+                    data: "/place/" + wrappedEvent.args.placeId
+                })
+            }
+            else if (wrappedEvent.args.highlightType === "trip") {
+                self.registration.showNotification("Highlighty nebyly vytvořeny", {
+                    body: "Vytvoření highlightů pro výlet " + wrappedEvent.args.entityName + " se nezdařilo",
+                    icon: "icon-192.png",
+                    data: "/trip/" + wrappedEvent.args.entityId
+                })
+            }
+            else if (wrappedEvent.args.highlightType === "category") {
+                self.registration.showNotification("Highlighty nebyly vytvořeny", {
+                    body: "Vytvoření highlightů pro kategorii " + wrappedEvent.args.entityName + " se nezdařilo",
+                    icon: "icon-192.png",
+                    data: "/category/" + wrappedEvent.args.entityId
+                })
+            }
+            else if (wrappedEvent.args.highlightType === "year") {
+                self.registration.showNotification("Highlighty nebyly vytvořeny", {
+                    body: "Vytvoření highlightů pro rok " + wrappedEvent.args.entityName + " se nezdařilo",
+                    icon: "icon-192.png",
+                    data: "/year/" + wrappedEvent.args.entityId
+                })
+            }
         }
     }
 })

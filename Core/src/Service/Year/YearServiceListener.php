@@ -32,7 +32,7 @@
                     $this->yearService->updateYearMainHighlight($message["entityId"], $message["highlightId"]);
                 }
                     
-                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"],
+                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
                     self::MAX_HIGHLIGHTS_PER_YEAR_COUNT, true));
             }
         }
@@ -49,7 +49,7 @@
                     }
                 }
                 
-                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"],
+                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
                     self::MAX_HIGHLIGHTS_PER_YEAR_COUNT, true));
             }
         }

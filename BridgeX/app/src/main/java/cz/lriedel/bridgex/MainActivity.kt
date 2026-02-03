@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
-        loadWebViewUrl(savedInstanceState, intent.getStringExtra("placeId"))
+        loadWebViewUrl(savedInstanceState, intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"), intent.getStringExtra("year"))
         CoroutineScope(Dispatchers.IO).launch {
             deviceInitializer.initialize()
         }
@@ -69,8 +69,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadWebViewUrl(savedInstanceState: Bundle?, placeId: String?) {
-        val url = BuildConfig.PORTAL_BASE_URL + placeId?.let { "place/$it" }.orEmpty()
+    private fun loadWebViewUrl(savedInstanceState: Bundle?, placeId: String?, tripId: String?, categoryId: String?, year: String?) {
+        val path = when {
+            placeId != null -> "place/$placeId"
+            tripId != null -> "trip/$tripId"
+            categoryId != null -> "category/$categoryId"
+            year != null -> "year/$year"
+            else -> "" 
+        }
+
+        val url = "${BuildConfig.PORTAL_BASE_URL}$path"
+        
         if (savedInstanceState == null) {
             val bustParam = System.currentTimeMillis() / (3600 * 1000)
             webView.loadUrl("$url?t=$bustParam")

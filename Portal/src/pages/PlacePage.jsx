@@ -39,7 +39,7 @@ export default function PlacePage() {
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length }}
-                onHighlightsSelectingTriggered={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, highlightsCount, true))}
+                onHighlightsSelectingTriggered={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, place.name, highlightsCount, true))}
                 onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel
                 place={place}
