@@ -272,16 +272,19 @@
         }
 
         public static function ProcessingStarted(string $name, mixed $args) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventProcessingStartedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+            $requiredrole = (new \ReflectionEnum(UserRole::class))->getCase($name . "EventProcessingStartedRead")->getValue();
+            return new CloudMessagingEvent(Event::getEventName(), array($requiredrole), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }
 
         public static function ProcessingEnded(string $name, mixed $args) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventProcessingEndedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
+            $requiredrole = (new \ReflectionEnum(UserRole::class))->getCase($name . "EventProcessingEndedRead")->getValue();
+            return new CloudMessagingEvent(Event::getEventName(), array($requiredrole), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "args" => $args));
         }
 
         public static function ProcessingFailed(string $name, mixed $args) : Event {
+            $requiredrole = (new \ReflectionEnum(UserRole::class))->getCase($name . "EventProcessingFailedRead")->getValue();
             return (new CompositeEvent(Event::getEventName(), array("name" => $name, "args" => $args)))
-                ->addCloudMessagingEvent(array(UserRole::EventProcessingFailedRead), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addCloudMessagingEvent(array($requiredrole), array(DeviceType::Portal, DeviceType::BridgeX))
                 ->addWorkerEvent(EventPriority::Highest);
         }
 
