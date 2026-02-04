@@ -8,8 +8,7 @@
 
     class RedisCacheClient implements CacheClient, HealthCheckable {
 
-        private const REDIS_SCHEME = "redis";
-        
+        private const REDIS_SCHEME = "redis";        
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = self::REDIS_SCHEME . "://%s:%s";
 
         private readonly string $host;

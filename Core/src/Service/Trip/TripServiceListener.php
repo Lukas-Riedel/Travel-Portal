@@ -21,8 +21,6 @@
         
         private const UPDATE_TRIP_STATISTICS_ACTION_NAME = "UPDATE_TRIP_STATISTICS";
         private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
-        
-        private const MAX_HIGHLIGHTS_PER_TRIP_COUNT = 30;
 
         private readonly TripService $tripService;
 
@@ -39,9 +37,11 @@
 
         private readonly TransactionManager $transactionManager;
 
+        private readonly int $maxHighlightsPerTripCount;
+
         public function __construct(DatabaseClient $databaseClient, TripService $tripService, PlaceService $placeService, StayService $stayService,
             FlightService $flightService, PhotoService $photoService, HighlightService $highlightService, CalendarClient $calendarClient,
-            EventPublisher $eventPublisher, Scheduler $scheduler) {
+            EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerTripCount) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
@@ -52,6 +52,7 @@
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
             $this->transactionManager = $databaseClient;
+            $this->maxHighlightsPerTripCount = $maxHighlightsPerTripCount;
         }
         
         public function onCalendarInvalidated(mixed $message) : void {
@@ -114,7 +115,7 @@
                     foreach ($activeTripIds as &$tripId) {
                         $trip = $this->tripService->getRegularTrip($tripId);
                         $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId, $trip->getFullName(),
-                            self::MAX_HIGHLIGHTS_PER_TRIP_COUNT, true));
+                            $this->maxHighlightsPerTripCount, true));
                     }
                 }
             }

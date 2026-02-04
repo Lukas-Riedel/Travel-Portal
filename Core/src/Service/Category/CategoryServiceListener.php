@@ -12,8 +12,6 @@
         
         private const UPDATE_CATEGORY_STATISTICS_ACTION_NAME = "UPDATE_CATEGORY_STATISTICS";
         private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
-        
-        private const MAX_HIGHLIGHTS_PER_CATEGORY_COUNT = 30;
 
         private readonly CategoryService $categoryService;
 
@@ -22,11 +20,14 @@
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(CategoryService $categoryService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        private readonly int $maxHighlightsPerCategoryCount;
+
+        public function __construct(CategoryService $categoryService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerCategoryCount) {
             $this->categoryService = $categoryService;
             $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->maxHighlightsPerCategoryCount = $maxHighlightsPerCategoryCount;
         }
 
         public function onCategoryCreated(mixed $message) : void {
@@ -48,7 +49,7 @@
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                     
                     $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $categoryIdentifier->getName(),
-                        self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
+                        $this->maxHighlightsPerCategoryCount, true));
                 }
             }
         }
@@ -67,7 +68,7 @@
                     }
                     
                     $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $category->getName(),
-                        self::MAX_HIGHLIGHTS_PER_CATEGORY_COUNT, true));
+                        $this->maxHighlightsPerCategoryCount, true));
                 }
             }
         }

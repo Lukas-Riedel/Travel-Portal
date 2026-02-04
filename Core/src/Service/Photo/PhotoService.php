@@ -21,10 +21,6 @@
         private const ALBUM_PHOTOS_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:%s";
         private const ALBUM_PHOTOS_CACHE_TTL = 1800;
 
-        private const ALBUM_THUMBNAIL_WIDTH = 350;
-        private const ALBUM_THUMBNAIL_HEIGHT = 233;
-        private const ALBUM_THUMBNAIL_BUCKET = "album-thumbnails";
-
         private readonly PhotoMapper $photoMapper;
 
         private readonly GoogleClient $googleClient;
@@ -40,11 +36,15 @@
         private readonly TransactionManager $transactionManager;
 
         private readonly string $coreBaseUrl;
+        private readonly string $albumThumbnailBucket;
+        private readonly int $thumbnailWidth;
+        private readonly int $thumbnailHeight;
 
         public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
             EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, CacheClient $distributedCacheClient,
-            HttpClient $httpClient, string $coreBaseUrl) {
-            $this->photoMapper = new PhotoMapper($databaseClient, $googleClient);
+            HttpClient $httpClient, string $coreBaseUrl, string $albumThumbnailBucket, int $thumbnailWidth, int $thumbnailHeight,
+            int $indoorPhotoIsoThreshold) {
+            $this->photoMapper = new PhotoMapper($databaseClient, $googleClient, $indoorPhotoIsoThreshold);
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cloudStorageClient = $cloudStorageClient;
@@ -52,6 +52,9 @@
             $this->transactionManager = $databaseClient;
             $this->httpClient = $httpClient;
             $this->coreBaseUrl = $coreBaseUrl;
+            $this->albumThumbnailBucket = $albumThumbnailBucket;
+            $this->thumbnailWidth = $thumbnailWidth;
+            $this->thumbnailHeight = $thumbnailHeight;
         }
 
         public function getAllAlbums() : array {
@@ -250,14 +253,14 @@
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $objectKey = $album["coverPhotoMediaItemId"] . CommonConstants::JPG_FILE_EXTENSION;
             
-                        if ($overwrite || !$this->cloudStorageClient->exists(self::ALBUM_THUMBNAIL_BUCKET, $objectKey)) {
+                        if ($overwrite || !$this->cloudStorageClient->exists($this->albumThumbnailBucket, $objectKey)) {
                             $data = $this->httpClient->executeRequest(HttpMethod::GET,
-                                $album["coverPhotoBaseUrl"] . "=w" . self::ALBUM_THUMBNAIL_WIDTH . "-h" . self::ALBUM_THUMBNAIL_HEIGHT);
-                            $this->cloudStorageClient->put(self::ALBUM_THUMBNAIL_BUCKET, $objectKey, $data);
+                                $album["coverPhotoBaseUrl"] . "=w" . $this->thumbnailWidth . "-h" . $this->thumbnailHeight);
+                            $this->cloudStorageClient->put($this->albumThumbnailBucket, $objectKey, $data);
                         }
 
                         $objectKeys[] = $objectKey;
-                        $mainImageUrl = $this->cloudStorageClient->getPath(self::ALBUM_THUMBNAIL_BUCKET, $objectKey);
+                        $mainImageUrl = $this->cloudStorageClient->getPath($this->albumThumbnailBucket, $objectKey);
                         
                         $mainPhotoId = $this->getOrCreatePhotoId($album["coverPhotoMediaItemId"]);
                     }
@@ -358,10 +361,10 @@
         }
 
         private function pruneUnusedObjects(array $usedObjectKeys) : void {
-            $existingObjectKeys = $this->cloudStorageClient->list(self::ALBUM_THUMBNAIL_BUCKET);
+            $existingObjectKeys = $this->cloudStorageClient->list($this->albumThumbnailBucket);
             $unusedObjectKeys = array_diff($existingObjectKeys, $usedObjectKeys);
             foreach ($unusedObjectKeys as $objectKey) {
-                $this->cloudStorageClient->delete(self::ALBUM_THUMBNAIL_BUCKET, $objectKey);
+                $this->cloudStorageClient->delete($this->albumThumbnailBucket, $objectKey);
             }
         }
 

@@ -5,12 +5,12 @@
 
     class FitnessMapper {
 
-        private const UPDATE_THRESHOLD_DAYS = 7;
-
         private readonly DatabaseClient $databaseClient;
+        private readonly int $updateThresholdDays;
 
-        public function __construct(DatabaseClient $databaseClient) {
+        public function __construct(DatabaseClient $databaseClient, int $updateThresholdDays) {
             $this->databaseClient = $databaseClient;
+            $this->updateThresholdDays = $updateThresholdDays;
         }
 
         public function selectAverageFitnessRecordForInterval(int $start, int $end) : Fitness { 
@@ -154,7 +154,7 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters(self::UPDATE_THRESHOLD_DAYS, self::UPDATE_THRESHOLD_DAYS)
+                ->withParameters($this->updateThresholdDays, $this->updateThresholdDays)
                 ->getResultSetForColumn("timestamp");
         }
 

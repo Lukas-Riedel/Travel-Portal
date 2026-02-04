@@ -21,7 +21,6 @@ PHOTO_EMBEDDING_CACHE_TTL: Final[int] = 365 * 86400
 PHOTO_CHECKSUM_CACHE_KEY_FORMAT = "AiEngine:PhotoChecksum:{photo_id}"
 PHOTO_CHECKSUM_CACHE_TTL: Final[int] = 365 * 86400
 
-# TODO: Propagate the value from the environment variable.
 ATTRIBUTES_ESTIMATION_NEAREST_NEIGHBOURS_COUNT: Final[int] = 9
 
 ATTRIBUTE_EXPONENT: Final[dict] = {

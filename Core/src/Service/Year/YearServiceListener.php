@@ -11,18 +11,19 @@
         
         private const UPDATE_YEAR_STATISTICS_ACTION_NAME = "UPDATE_YEAR_STATISTICS";
         private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
-        
-        private const MAX_HIGHLIGHTS_PER_YEAR_COUNT = 30;
 
         private readonly YearService $yearService;
 
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(YearService $yearService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        private readonly int $maxHighlightsPerYearCount;
+
+        public function __construct(YearService $yearService, EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerYearCount) {
             $this->yearService = $yearService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->maxHighlightsPerYearCount = $maxHighlightsPerYearCount;
         }
 
         public function onHighlightCreated(mixed $message) : void {
@@ -33,7 +34,7 @@
                 }
                     
                 $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
-                    self::MAX_HIGHLIGHTS_PER_YEAR_COUNT, true));
+                    $this->maxHighlightsPerYearCount, true));
             }
         }
 
@@ -50,7 +51,7 @@
                 }
                 
                 $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
-                    self::MAX_HIGHLIGHTS_PER_YEAR_COUNT, true));
+                    $this->maxHighlightsPerYearCount, true));
             }
         }
 

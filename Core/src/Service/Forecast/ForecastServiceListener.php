@@ -17,7 +17,6 @@
         private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
         private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
         private const FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL = 300;
-        private const ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE = 9;
 
         private readonly ForecastService $forecastService;
 
@@ -26,11 +25,14 @@
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(ForecastService $forecastService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        private readonly int $actualWeatherForecastDaysToCache;
+
+        public function __construct(ForecastService $forecastService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler, int $actualWeatherForecastDaysToCache) {
             $this->forecastService = $forecastService;
             $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->actualWeatherForecastDaysToCache = $actualWeatherForecastDaysToCache;
         }
 
         public function onActualWeatherForecastUpdated(mixed $message) : void {
@@ -52,7 +54,7 @@
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
-                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
+                    if (time() + $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
                         $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                     }
                             
@@ -66,7 +68,7 @@
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
-                    if (time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
+                    if (time() + $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
                         $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                     }
                             
@@ -79,7 +81,7 @@
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
                 $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(),
-                    time() + self::ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE * CommonConstants::ONE_DAY_SECONDS, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                    time() + $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {

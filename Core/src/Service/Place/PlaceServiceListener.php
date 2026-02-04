@@ -13,15 +13,6 @@
 
     class PlaceServiceListener {
 
-        // TODO: Set the value.
-        private const HIGHLIGHT_SCORE_MULTIPLIER = 0;
-        private const PHOTO_SCORE_MULTIPLIER = 1;
-
-        private const MIN_HIGHLIGHTS_PER_PLACE_COUNT = 3;
-        private const MAX_HIGHLIGHTS_PER_PLACE_COUNT = 15;
-
-        private const MAIN_HIGHLIGHT_QUALITY_MULTIPLIER = 3;
-
         private readonly PlaceService $placeService;
 
         private readonly TripService $tripService;
@@ -31,13 +22,25 @@
 
         private readonly EventPublisher $eventPublisher;
 
+        private readonly int $minHighlightsPerPlaceCount;
+        private readonly int $maxHighlightsPerPlaceCount;
+        private readonly int $highlightScoreMultiplier;
+        private readonly int $photoScoreMultiplier;
+        private readonly int $mainHighlightQualityMultiplier;
+
         public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService,
-            CalendarClient $calendarClient, EventPublisher $eventPublisher) {
+            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $minHighlightsPerPlaceCount, int $maxHighlightsPerPlaceCount,
+            int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->categoryService = $categoryService;
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
+            $this->minHighlightsPerPlaceCount = $minHighlightsPerPlaceCount;
+            $this->maxHighlightsPerPlaceCount = $maxHighlightsPerPlaceCount;
+            $this->highlightScoreMultiplier = $highlightScoreMultiplier;
+            $this->photoScoreMultiplier = $photoScoreMultiplier;
+            $this->mainHighlightQualityMultiplier = $mainHighlightQualityMultiplier;
         }
 
         public function onCategoryRenamed(mixed $message) : void {
@@ -142,8 +145,8 @@
 
         private function getSuggestedHighlightsCount(string $placeId) : int {
             $v = max(0.0, min(1.0, $this->placeService->getPlaceSignificance($placeId) / 100.0));
-            $range = self::MAX_HIGHLIGHTS_PER_PLACE_COUNT - self::MIN_HIGHLIGHTS_PER_PLACE_COUNT;
-            return (int) round(self::MIN_HIGHLIGHTS_PER_PLACE_COUNT + $range * pow($v, 1.4));
+            $range = $this->maxHighlightsPerPlaceCount - $this->minHighlightsPerPlaceCount;
+            return (int) round($this->minHighlightsPerPlaceCount + $range * pow($v, 1.4));
         }
 
         private function updatePlaceQuality(string $placeId) : void {
@@ -154,7 +157,7 @@
                 foreach ($place->getHighlights() as &$highlight) {
                     $highlightQuality = $highlight->getQuality();
                     if ($highlightQuality !== null) {
-                        $count = ($highlight->getId() === $place->getMainHighlight()?->getId()) ? self::MAIN_HIGHLIGHT_QUALITY_MULTIPLIER : 1;
+                        $count = ($highlight->getId() === $place->getMainHighlight()?->getId()) ? $this->mainHighlightQualityMultiplier : 1;
                         $highlightQualities = array_merge($highlightQualities, array_fill(0, $count, $highlightQuality));
                     }
                 }
@@ -191,8 +194,8 @@
                     }                    
                 }
 
-                $this->placeService->updatePlaceScore($placeId, self::PHOTO_SCORE_MULTIPLIER * (empty($buckets) ? 0 : max(array_values($buckets)))
-                    + self::HIGHLIGHT_SCORE_MULTIPLIER * count($place->getHighlights()));
+                $this->placeService->updatePlaceScore($placeId, $this->photoScoreMultiplier * (empty($buckets) ? 0 : max(array_values($buckets)))
+                    + $this->highlightScoreMultiplier * count($place->getHighlights()));
             }
         }
     }

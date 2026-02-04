@@ -3,11 +3,9 @@
     
     use AurorasLive\SunCalc;
     use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-    use Common\Client\Http\HttpMethod;
     use Core\Client\Forecast\ForecastClient;
 
     class ForecastService {
@@ -16,17 +14,13 @@
 
         private readonly ForecastMapper $forecastMapper;
 
-        private readonly ConfigurationService $configurationService;
-
         private readonly ForecastClient $actualForecastClient;
         private readonly ForecastClient $historicalForecastClient;
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
-            ForecastClient $actualForecastClient, ForecastClient $historicalForecastClient) {
+        public function __construct(DatabaseClient $databaseClient, ForecastClient $actualForecastClient, ForecastClient $historicalForecastClient) {
             $this->forecastMapper = new ForecastMapper($databaseClient);
-            $this->configurationService = $configurationService;
             $this->actualForecastClient = $actualForecastClient;
             $this->historicalForecastClient = $historicalForecastClient;
             $this->transactionManager = $databaseClient;

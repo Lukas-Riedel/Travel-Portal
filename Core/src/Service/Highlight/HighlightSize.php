@@ -8,6 +8,7 @@
         type: "string",
         description: "An enum representing a highlight size"
     )]
+    // TODO: Get rid of environment variables used within the enum methods -> move to the caller.
     enum HighlightSize : string {
         case Full = "full";
         case Thumbnail = "thumbnail";
@@ -21,22 +22,22 @@
 
         public function getWidth() : int {
             return match ($this) {
-                self::Full => 2400,
-                self::Thumbnail => 350
+                self::Full => getenv("PHOTO_FULL_WIDTH"),
+                self::Thumbnail => getenv("PHOTO_THUMBNAIL_WIDTH")
             };
         }
 
         public function getHeight() : int {
             return match ($this) {
-                self::Full => 1600,
-                self::Thumbnail => 233
+                self::Full => getenv("PHOTO_FULL_HEIGHT"),
+                self::Thumbnail => getenv("PHOTO_THUMBNAIL_HEIGHT")
             };
         }
 
         public function getBucket() : string {
             return match ($this) {
-                self::Full => "highlight-photos",
-                self::Thumbnail => "highlight-thumbnails"
+                self::Full => getenv("HIGHLIGHT_PHOTO_BUCKET"),
+                self::Thumbnail => getenv("HIGHLIGHT_THUMBNAIL_BUCKET")
             };
         }
     }

@@ -3,18 +3,12 @@
 
     use Core\Common\CommonConstants;
     use Monolog\Logger;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
 
     class FitnessService {
-
-        private const ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT = 0.95;
-        private const ALLOW_OVERWRITE_STEPS_THRESHOLD = 100;
-        private const ALLOW_OVERWRITE_DISTANCE_THRESHOLD = 0.1;
-        private const ALLOW_OVERWRITE_DURATION_THRESHOLD = 120;
 
         private readonly FitnessMapper $fitnessMapper;
 
@@ -23,12 +17,22 @@
         private readonly TransactionManager $transactionManager;
 
         private readonly Logger $logger;
+        
+        private readonly float $allowOverwriteThresholdCoefficient;
+        private readonly int $allowOverwriteStepsThreshold;
+        private readonly float $allowOverwriteDistanceThreshold;
+        private readonly int $allowOverwriteDurationThreshold;
 
-        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher, ConfigurationService $configurationService, Logger $logger) {
-            $this->fitnessMapper = new FitnessMapper($databaseClient);
+        public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher, Logger $logger, float $allowOverwriteThresholdCoefficient,
+            int $allowOverwriteStepsThreshold, float $allowOverwriteDistanceThreshold, int $allowOverwriteDurationThreshold, int $updateThresholdDays) {
+            $this->fitnessMapper = new FitnessMapper($databaseClient, $updateThresholdDays);
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
             $this->logger = $logger;
+            $this->allowOverwriteThresholdCoefficient = $allowOverwriteThresholdCoefficient;
+            $this->allowOverwriteStepsThreshold = $allowOverwriteStepsThreshold;
+            $this->allowOverwriteDistanceThreshold = $allowOverwriteDistanceThreshold;
+            $this->allowOverwriteDurationThreshold = $allowOverwriteDurationThreshold;
         }
         
         public function getConflictingFitnessRecords() : array {
@@ -64,9 +68,9 @@
             $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
             
             if (!$forceUpdate && $existingFitnessRecord !== null && (
-                ($existingFitnessRecord->getSteps() > self::ALLOW_OVERWRITE_STEPS_THRESHOLD && $steps < $existingFitnessRecord->getSteps() * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT)
-                || ($existingFitnessRecord->getSeconds() > self::ALLOW_OVERWRITE_DURATION_THRESHOLD && $seconds < $existingFitnessRecord->getSeconds() * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT)
-                || (round($existingFitnessRecord->getDistance(), 3) > self::ALLOW_OVERWRITE_DISTANCE_THRESHOLD && round($distance, 3) < round($existingFitnessRecord->getDistance(), 3) * self::ALLOW_OVERWRITE_THRESHOLD_COEFFICIENT))) {
+                ($existingFitnessRecord->getSteps() > $this->allowOverwriteStepsThreshold && $steps < $existingFitnessRecord->getSteps() * $this->allowOverwriteThresholdCoefficient)
+                || ($existingFitnessRecord->getSeconds() > $this->allowOverwriteDurationThreshold && $seconds < $existingFitnessRecord->getSeconds() * $this->allowOverwriteThresholdCoefficient)
+                || (round($existingFitnessRecord->getDistance(), 3) > $this->allowOverwriteDistanceThreshold && round($distance, 3) < round($existingFitnessRecord->getDistance(), 3) * $this->allowOverwriteThresholdCoefficient))) {
                 $context = array(
                     "steps" => array(
                         "actual" => $steps,

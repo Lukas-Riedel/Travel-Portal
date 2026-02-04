@@ -50,6 +50,8 @@
   value: "{{ .Values.core.rabbitmq.username }}"
 - name: RMQ_HEARTBEAT
   value: "{{ .Values.core.rabbitmq.heartbeat }}"
+- name: RMQ_PREFETCH_COUNT
+  value: "{{ .Values.core.rabbitmq.prefetch }}"
 - name: RMQ_PASSWORD
   valueFrom:
     secretKeyRef:
@@ -118,5 +120,51 @@
       name: grafana-password
       key: grafana-password
 - name: ALLOWED_REQUEST_ORIGINS
-  value: "{{ .Values.core.origins.whitelist }}"
+  value: "{{ .Values.core.origin.whitelist }}"
+- name: MAX_HIGHLIGHTS_PER_TRIP_COUNT
+  value: "{{ .Values.core.highlight.selecting.trip.max }}"
+- name: MAX_HIGHLIGHTS_PER_YEAR_COUNT
+  value: "{{ .Values.core.highlight.selecting.year.max }}"
+- name: MAX_HIGHLIGHTS_PER_CATEGORY_COUNT
+  value: "{{ .Values.core.highlight.selecting.category.max }}"
+- name: MIN_HIGHLIGHTS_PER_PLACE_COUNT
+  value: "{{ .Values.core.highlight.selecting.place.min }}"
+- name: MAX_HIGHLIGHTS_PER_PLACE_COUNT
+  value: "{{ .Values.core.highlight.selecting.place.max }}"
+- name: HIGHLIGHT_SCORE_MULTIPLIER
+  value: "{{ .Values.core.place.score.multiplier.highlight }}"
+- name: PHOTO_SCORE_MULTIPLIER
+  value: "{{ .Values.core.place.score.multiplier.photo }}"
+- name: MAIN_HIGHLIGHT_QUALITY_MULTIPLIER
+  value: "{{ .Values.core.place.quality.multiplier.highlight.main }}"
+- name: STATISTICS_VALUES_COUNT_LIMIT
+  value: "{{ .Values.core.statistics.values.limit }}"
+- name: ALBUM_THUMBNAIL_BUCKET
+  value: "{{ .Values.core.bucket.album.thumbnail }}"
+- name: HIGHLIGHT_PHOTO_BUCKET
+  value: "{{ .Values.core.bucket.highlight.full }}"
+- name: HIGHLIGHT_THUMBNAIL_BUCKET
+  value: "{{ .Values.core.bucket.highlight.thumbnail }}"
+- name: PHOTO_THUMBNAIL_WIDTH
+  value: "{{ .Values.core.photo.thumbnail.width }}"
+- name: PHOTO_THUMBNAIL_HEIGHT
+  value: "{{ .Values.core.photo.thumbnail.height }}"
+- name: PHOTO_FULL_WIDTH
+  value: "{{ .Values.core.photo.full.width }}"
+- name: PHOTO_FULL_HEIGHT
+  value: "{{ .Values.core.photo.full.height }}"
+- name: INDOOR_PHOTO_ISO_THRESHOLD
+  value: "{{ .Values.core.photo.indoor.threshold.iso }}"
+- name: ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE
+  value: "{{ .Values.core.forecast.actual.days }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
+  value: "{{ .Values.core.fitness.overwrite.threshold.coefficient }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE
+  value: "{{ .Values.core.fitness.overwrite.threshold.distance }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION
+  value: "{{ .Values.core.fitness.overwrite.threshold.duration }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS
+  value: "{{ .Values.core.fitness.overwrite.threshold.step }}"
+- name: UPDATE_FITNESS_THRESHOLD_DAYS
+  value: "{{ .Values.core.fitness.update.threshold.days }}"
 {{- end }}

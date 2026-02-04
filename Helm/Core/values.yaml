@@ -43,6 +43,7 @@ core:
     vhost: /
     username: admin
     heartbeat: "60"
+    prefetch: "1"
     queue:
       worker: WorkerQueue
       cortex: CortexQueue
@@ -72,6 +73,58 @@ core:
     client:
       name: travel-portal-service
     username: "1287508"
-  origins:
+  origin:
     whitelist: https://travel-portal.eu,https://lriedel.cz
+  bucket:
+    album:
+      thumbnail: album-thumbnails
+    highlight:
+      full: highlight-photos
+      thumbnail: highlight-thumbnails
+  highlight:
+    selecting:
+      trip:
+        max: "30"
+      year:
+        max: "30"
+      category:
+        max: "30"
+      place:
+        min: "3"
+        max: "15"
+  place:
+    score:
+      multiplier:
+        highlight: "0"
+        photo: "1"
+    quality:
+      multiplier:
+        highlight:
+          main: "3"
+  statistics:
+    values:
+      limit: "10"
+  photo:
+    thumbnail:
+      width: "350"
+      height: "233"
+    full:
+      width: "2400"
+      height: "1600"
+    indoor:
+      threshold:
+        iso: "640"
+  forecast:
+    actual:
+      days: "9"
+  fitness:
+    overwrite:
+      threshold:
+        step: "100"
+        distance: "0.1"
+        duration: "120"
+        coefficient: "0.95"
+    update:
+      threshold:
+        days: "7"
   timezone: Europe/Prague

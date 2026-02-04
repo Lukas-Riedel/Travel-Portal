@@ -11,8 +11,6 @@
 
     class StatisticsService {
 
-        private const STATISTICS_VALUES_COUNT_LIMIT = 10;
-
         private const BEGINNING_OF_YEAR_DATE_FORMAT = "1/1/%s 12:00:00 AM";
         private const END_OF_YEAR_DATE_FORMAT = "12/31/%s 11:59:59 PM";
 
@@ -27,12 +25,15 @@
 
         private readonly Logger $logger;
 
+        private readonly int $statisticsValuesLimit;
+
         private array $statisticsProviders = array();
 
-        public function __construct(CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Logger $logger) {
+        public function __construct(CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Logger $logger, int $statisticsValuesLimit) {
             $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->logger = $logger;
+            $this->statisticsValuesLimit = $statisticsValuesLimit;
         }
 
         public function getCategoryStatistics(string $categoryId) : array {    
@@ -95,7 +96,7 @@
                     $fetchedStatisticsRecords = $statisticsProvider->fetchStatistics($statisticsType, $statisticsKind, $start, $end, $categoryId, $entityId);
                     foreach ($fetchedStatisticsRecords as &$fetchedStatisticsRecord) {
                         if ($fetchedStatisticsRecord->hasValue()) {
-                            $updatedStatisticsRecords[] = $fetchedStatisticsRecord->withLimitedValuesCount(self::STATISTICS_VALUES_COUNT_LIMIT);
+                            $updatedStatisticsRecords[] = $fetchedStatisticsRecord->withLimitedValuesCount($this->statisticsValuesLimit);
                         }
                     }
                 }

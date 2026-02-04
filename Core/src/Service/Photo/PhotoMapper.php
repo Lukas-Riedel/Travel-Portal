@@ -6,15 +6,16 @@
 
     class PhotoMapper {
 
-        private const INDOOR_PHOTO_ISO_THRESHOLD = 640;
-
         private readonly DatabaseClient $databaseClient;
 
         private readonly GoogleClient $googleClient;
 
-        public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient) {
+        private readonly int $indoorPhotoIsoThreshold;
+
+        public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient, int $indoorPhotoIsoThreshold) {
             $this->databaseClient = $databaseClient;
             $this->googleClient = $googleClient;
+            $this->indoorPhotoIsoThreshold = $indoorPhotoIsoThreshold;
         }
 
         public function selectReplacedPhotos() : array {
@@ -567,7 +568,7 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($albumId, self::INDOOR_PHOTO_ISO_THRESHOLD)
+                ->withParameters($albumId, $this->indoorPhotoIsoThreshold)
                 ->getSingleColumn("count");
         }
 

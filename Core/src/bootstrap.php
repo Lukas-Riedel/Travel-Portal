@@ -120,7 +120,7 @@
     $actualForecastClient = new YrNoActualForecastClient($httpClient, getenv("CORE_BASE_URL"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
-    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), $databaseClient, $loggingContext, $logger);
+    $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), getenv("RMQ_PREFETCH_COUNT"), $databaseClient, $loggingContext, $logger);
     $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
@@ -151,20 +151,24 @@
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
-    $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger);
+    $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"));
+    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
+        getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $cloudStorageClient, $httpClient);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $memoryCacheClient, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
-    $fitnessService = new FitnessService($databaseClient, $eventPublisher, $configurationService, $logger);
+    $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
+        getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
-    $forecastService = new ForecastService($databaseClient, $configurationService, $actualForecastClient, $historicalForecastClient);
+    $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService);
     $yearService = new YearService($databaseClient, $fitnessService, $highlightService, $statisticsService);
-    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $distributedCacheClient, $memoryCacheClient, $configurationService, $categoryService, $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
-    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService, $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
+    $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $distributedCacheClient, $memoryCacheClient, $configurationService, $categoryService,
+        $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
+    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
+        $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
 
@@ -209,18 +213,19 @@
     
     // Event listeners.
     $listeners = array(
-        new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler),
+        new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
         new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
-        new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler),
+        new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $placeService, $eventPublisher, $scheduler),
-        new PlaceServiceListener($placeService, $tripService, $categoryService, $calendarClient, $eventPublisher),
+        new PlaceServiceListener($placeService, $tripService, $categoryService, $calendarClient, $eventPublisher, getenv("MIN_HIGHLIGHTS_PER_PLACE_COUNT"), getenv("MAX_HIGHLIGHTS_PER_PLACE_COUNT"), 
+            getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER")),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
-        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $flightService, $photoService, $highlightService, $calendarClient, $eventPublisher, $scheduler),
-        new YearServiceListener($yearService, $eventPublisher, $scheduler),
+        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $flightService, $photoService, $highlightService, $calendarClient, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_TRIP_COUNT")),
+        new YearServiceListener($yearService, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),

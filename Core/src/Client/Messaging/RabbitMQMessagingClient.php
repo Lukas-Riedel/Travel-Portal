@@ -16,7 +16,6 @@
 
     class RabbitMQMessagingClient implements MessagingClient, HealthCheckable {
 
-        private const PREFETCH_COUNT = 1;
         private const SEND_HEARTBEAT_THRESHOLD_SECONDS = 10;
 
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
@@ -28,6 +27,7 @@
         private readonly string $user;
         private readonly string $password;
         private readonly int $heartbeatSeconds;
+        private readonly int $prefetchCount;
 
         private readonly TransactionManager $transactionManager;
 
@@ -41,7 +41,7 @@
 
         private ?int $lastHeartbeatTimestamp;
 
-        public function __construct(string $host, string $port, string $vhost, string $user, string $password, int $heartbeatSeconds,
+        public function __construct(string $host, string $port, string $vhost, string $user, string $password, int $heartbeatSeconds, int $prefetchCount,
             TransactionManager $transactionManager, LoggingContext $loggingContext, Logger $logger) {
             $this->host = $host;
             $this->port = $port;
@@ -49,6 +49,7 @@
             $this->user = $user;
             $this->password = $password;
             $this->heartbeatSeconds = $heartbeatSeconds;
+            $this->prefetchCount = $prefetchCount;
             $this->connection = null;
             $this->producerChannel = null;
             $this->consumerChannel = null;
@@ -152,7 +153,7 @@
                     null, true, $this->heartbeatSeconds);
                 $this->producerChannel = $this->connection->channel();
                 $this->consumerChannel = $this->connection->channel();
-                $this->consumerChannel->basic_qos(null, self::PREFETCH_COUNT, null);
+                $this->consumerChannel->basic_qos(null, $this->prefetchCount, null);
                 $this->lastHeartbeatTimestamp = time();
             }
         }
