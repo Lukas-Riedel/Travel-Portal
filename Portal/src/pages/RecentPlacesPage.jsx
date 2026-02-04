@@ -2,7 +2,6 @@ import { useCategories } from "../hooks/useCategories.js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
-import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
@@ -12,6 +11,7 @@ import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const limitStep = 10
+const maxDistance = 500
 
 export default function RecentPlacesPage() {
     const { hasRole } = useAuth()
@@ -27,7 +27,15 @@ export default function RecentPlacesPage() {
 
     useEffect(() => {
         if (places?.length) {
-            setDisplayedPlaces(places)
+            if (places.length === limitStep) {
+                const breakIndex = places.findIndex((place, i) => i === 0 ? false : place.getHaversineDistanceTo(places[i - 1]) > maxDistance)
+
+                const filteredPlaces = breakIndex === -1 ? places : places.slice(0, breakIndex)
+                setDisplayedPlaces(filteredPlaces)
+            }
+            else {
+                setDisplayedPlaces(places)
+            }
         }
     }, [places?.length])
 
