@@ -2,7 +2,7 @@
     namespace Core\Service\Authentication;
 
     use Common\Service\Authentication\AuthenticationException;
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Common\Client\Http\HttpMethod;
     use Common\Service\Authentication\UserRole;
     use Core\Client\Http\HttpClient;
@@ -31,13 +31,13 @@
         private readonly string $iamHost;
         private readonly string $iamPort;
 
-        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, string $iamBackendClientId, string $iamBackendClientSecret, string $host, string $port) {
+        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, string $iamBackendClientId, string $iamBackendClientSecret, string $iamHost, string $iamPort) {
             $this->httpClient = $httpClient;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->iamBackendClientId = $iamBackendClientId;
             $this->iamBackendClientSecret = $iamBackendClientSecret;
-            $this->iamHost = $host;
-            $this->iamPort = $port;
+            $this->iamHost = $iamHost;
+            $this->iamPort = $iamPort;
         }
 
         public function getUserIdsWithRole(UserRole $role) : array {

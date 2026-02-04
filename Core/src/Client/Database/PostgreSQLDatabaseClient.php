@@ -2,7 +2,7 @@
     namespace Core\Client\Database;
 
     use Common\Client\HealthCheckable;
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Messaging\ProgressReporter;
     use Core\Common\CommonConstants;
     use Core\OpenLineage\OpenLineageEventManager;

@@ -2,7 +2,7 @@
     namespace Core\Service\Statistics;
 
     use Monolog\Logger;
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryIdentifier;
     use Core\Service\Trip\Trip;

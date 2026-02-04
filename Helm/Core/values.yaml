@@ -65,9 +65,6 @@ core:
         id: admin-cli
       agent:
         id: travel-portal-agent
-    jwks:
-      key:
-        public: -----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWwmkfjL3R6lTrYpzuc8c6xhEonmJKUll5JNfVgvaMTmi6TfEsmOCJsaJoLy5TVozoCcjGs+01wRr6X93l4dj20Y1dXE8P7SLX9BiPVgbOR7P5oWQxgMQ4pogDaUNY784Y0wtVHkIPN/U+uDzs8IIPDnCLpIkf/P3f8gubB31fD3UkRah2ppifTqUVK3hI1/fFCxKCsegwJu1rqoUAypehf7uLGKMfZpcZsLYwaLc2WnvVf7kEqrCtr1jhGt8oUcjYX+hje3y6hPhPNpBPaRsjqT+C/RZGaCSImwA5zIc//G/Q5aYqiD72rHa3tbFTAo/j+/fhOpKGnKq4oBqYUBXQIDAQAB\n-----END PUBLIC KEY-----\n
   grafana:
     entrypoint: https://logs-prod-012.grafana.net
     client:

@@ -87,7 +87,8 @@ jobs:
           --set iam.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m
+          --timeout 5m \
+          --atomic
   deploy-core:
     name: Deploy Core
     needs: detect-changes
@@ -134,7 +135,8 @@ jobs:
           --set core.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m
+          --timeout 5m \
+          --atomic
   deploy-cortex:
     name: Deploy Cortex
     needs: detect-changes
@@ -181,7 +183,8 @@ jobs:
           --set cortex.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m
+          --timeout 5m \
+          --atomic
   deploy-portal:
     name: Deploy Portal
     needs: detect-changes
@@ -242,7 +245,8 @@ jobs:
           --set portal.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m
+          --timeout 5m \
+          --atomic
   verify-agent:
     name: Verify Agent
     needs: detect-changes

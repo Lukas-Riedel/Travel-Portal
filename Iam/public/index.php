@@ -18,7 +18,7 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthMiddleware($authenticationService, $basePath, array("/token", "/google/auth", "/management/liveness", "/management/readiness")));
+    $app->add(new AuthMiddleware($authenticationService, $basePath, array("/token", "/certificates", "/google/auth", "/management/liveness", "/management/readiness")));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($loggingContext, $logger));
     $app->addBodyParsingMiddleware();

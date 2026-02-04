@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Client\Cache;
+    namespace Common\Client\Cache;
 
     use Ramsey\Uuid\Uuid;
 

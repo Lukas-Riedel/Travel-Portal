@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Flight;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryService;

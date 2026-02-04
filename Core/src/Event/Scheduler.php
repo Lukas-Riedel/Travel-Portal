@@ -1,7 +1,7 @@
 <?php
     namespace Core\Event;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;

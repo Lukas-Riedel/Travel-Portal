@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Category;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Service\Configuration\ConfigurationService;

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a873bd072d182c49c638e5a9706906d",
+    "content-hash": "9fa7c91f7f560e9aaf61c885aa1e032f",
     "packages": [
         {
             "name": "auroras-live/suncalc-php",

@@ -2,7 +2,7 @@
     namespace Core\Service\Expense;
 
     use Common\Client\Encryption\EncryptionClient;
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Event\Event;

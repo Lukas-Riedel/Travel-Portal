@@ -76,4 +76,5 @@ jobs:
           --set portal.content.range.max=$FINAL_TIMESTAMP \
           --install \
           --wait \
-          --timeout 5m
+          --timeout 5m \
+          --atomic

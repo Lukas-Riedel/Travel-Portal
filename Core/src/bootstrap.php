@@ -4,8 +4,8 @@
     use Common\Client\Encryption\EncryptionClient;
     use Common\LoggingContext;
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
-    use Core\Client\Cache\MemoryCacheClient;
-    use Core\Client\Cache\RedisCacheClient;
+    use Common\Client\Cache\MemoryCacheClient;
+    use Common\Client\Cache\RedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Core\Client\CloudStorage\S3CloudStorageClient;
@@ -142,7 +142,7 @@
     $actualForecastClient->setConfigurationService($configurationService);
 
     // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService(getenv("IAM_APP_CLIENT_ID"), getenv("JWKS_PUBLIC_KEY"));
+    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $httpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));
     $authenticationService = new AuthenticationService($httpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);

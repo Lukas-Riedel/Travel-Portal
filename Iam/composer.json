@@ -20,6 +20,7 @@
         "lriedel/common": "*@dev",
         "google/auth": "^1.47",
         "itspire/monolog-loki": "^2.1",
-        "ramsey/uuid": "^4.9"
+        "ramsey/uuid": "^4.9",
+        "predis/predis": "^3.3"
     }
 }

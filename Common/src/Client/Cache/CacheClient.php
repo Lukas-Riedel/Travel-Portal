@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Client\Cache;
+    namespace Common\Client\Cache;
     
     interface CacheClient {
         public function get(string $key, ?int $newTtl = null) : mixed;

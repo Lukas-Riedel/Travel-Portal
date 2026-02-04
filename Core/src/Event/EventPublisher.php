@@ -1,7 +1,7 @@
 <?php
     namespace Core\Event;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\CloudMessaging\CloudMessagingClient;
     use Core\Client\Messaging\MessagingClient;
     use Core\Common\CommonConstants;

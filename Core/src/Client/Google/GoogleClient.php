@@ -1,7 +1,7 @@
 <?php
     namespace Core\Client\Google;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Calendar\Calendar;
     use Core\Client\Http\HttpClient;
     use Core\Common\CommonConstants;

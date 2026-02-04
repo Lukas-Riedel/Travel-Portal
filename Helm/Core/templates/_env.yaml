@@ -106,8 +106,6 @@
     secretKeyRef:
       name: iam-client-backend-secret
       key: iam-client-backend-secret
-- name: JWKS_PUBLIC_KEY
-  value: "{{ .Values.core.iam.jwks.key.public }}"
 - name: GRAFANA_LOKI_ENTRYPOINT
   value: "{{ .Values.core.grafana.entrypoint }}"
 - name: GRAFANA_LOKI_CLIENT_NAME

@@ -1,7 +1,7 @@
 <?php
     namespace Core\Client\Calendar;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;

@@ -3,7 +3,7 @@
 
     use AurorasLive\SunCalc;
     use Common\Client\Http\HttpMethod;
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIdentifier;

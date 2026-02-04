@@ -2,7 +2,7 @@
     namespace Core\Client\GenerativeContent;
 
     use Common\Client\Http\HttpMethod;
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Monolog\Logger;
     use Core\Client\Http\HttpClient;
     use Core\Common\CommonConstants;

@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Place;
 
-    use Core\Client\Cache\CacheClient;
+    use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;

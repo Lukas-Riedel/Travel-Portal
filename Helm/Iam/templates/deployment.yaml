@@ -46,11 +46,22 @@ spec:
               value: "{{ .Values.iam.tag }}"            
             - name: APP_NAME
               value: "{{ .Release.Name }}"
+            - name: SERVICE_PORT
+              value: "{{ .Values.iam.service.port }}"
             - name: ENCRYPTION_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-encryption-key
                   key: iam-encryption-key
+            - name: REDIS_HOST
+              value: "{{ .Values.iam.redis.hostname }}"            
+            - name: REDIS_PORT
+              value: "{{ .Values.iam.redis.port }}"  
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-password
+                  key: redis-password
             - name: IAM_APP_CLIENT_ID
               value: "{{ .Values.iam.client.app.id }}"
             - name: IAM_BACKEND_CLIENT_ID
@@ -60,8 +71,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-client-backend-secret
                   key: iam-client-backend-secret
-            - name: JWKS_PUBLIC_KEY
-              value: "{{ .Values.iam.jwks.key.public }}"
             - name: IAM_BASE_URL
               value: "{{ .Values.iam.url.base.public }}"
             - name: INTERNAL_IAM_BASE_URL
