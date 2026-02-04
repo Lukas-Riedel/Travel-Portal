@@ -10,6 +10,8 @@
     use Core\Client\Calendar\CalendarClient;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class PlaceServiceListener {
 
@@ -146,6 +148,36 @@
 
         public function onPlaceUpdated(mixed $message) : void {
             $this->updatePlaceQuality($message["placeId"]);
+        }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            global $scheduler, $distributedCacheClient;
+
+            if ($scheduler->requestExecution("TMP_SELECT_HIGHLIGHTS", CommonConstants::ONE_DAY_SECONDS)) {
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), null, null, array(PlaceIncludedEntity::Highlights->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestDescending);
+                $ids = array();
+                foreach ($places as &$place) {
+                    if (count($place->getHighlights()) !== 1) {
+                        continue;
+                    }
+                    
+                    if ($distributedCacheClient->get("HighlightsSelectingTriggeredHandler:ContentQuery:placeHighlightsSelecting:" . $place->getId()) === null && !in_array($place->getId(), $ids)) {
+                        $ids[] = $place->getId();
+                    }
+
+                    foreach ($place->getCategories() as &$category) {
+                        if ($distributedCacheClient->get("HighlightsSelectingTriggeredHandler:ContentQuery:categoryHighlightsSelecting:" . $category->getId()) === null && !in_array($category->getId(), $ids)) {
+                            $ids[] = $category->getId();
+                        }
+                    }
+                    
+                    if (count($ids) > 40) {
+                        break;
+                    }
+
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Place->value, $place->getId(), $place->getName(), $this->getSuggestedHighlightsCount($place->getId()), false, true));
+                }
+            }
         }
 
         private function getSuggestedHighlightsCount(string $placeId) : int {
