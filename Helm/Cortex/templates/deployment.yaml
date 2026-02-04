@@ -39,8 +39,6 @@ spec:
               value: "{{ .Values.cortex.highlight.coefficient.content }}"
             - name: NEGATIVE_COEFFICIENT
               value: "{{ .Values.cortex.highlight.coefficient.negative }}"
-            - name: AGE_COEFFICIENT
-              value: "{{ .Values.cortex.highlight.coefficient.age }}"
             - name: CLUSTER_COEFFICIENT
               value: "{{ .Values.cortex.highlight.coefficient.cluster }}"
             - name: ISO_COEFFICIENT

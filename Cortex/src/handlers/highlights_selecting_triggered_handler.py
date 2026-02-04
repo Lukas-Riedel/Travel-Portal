@@ -37,14 +37,12 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         core_client: CoreClient,
         distributed_cache: DistributedCache,
         max_threads: int,
-        age_coeff: float,
         iso_coeff: float,
     ) -> None:
         self.ai_engine = ai_engine
         self.core_client = core_client
         self.distributed_cache = distributed_cache
         self.max_workers = 2 * max_threads
-        self.age_coeff = age_coeff
         self.iso_coeff = iso_coeff
 
     def handle(self, args: dict) -> None:
@@ -453,13 +451,6 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             .numpy()
         )
 
-        years = [
-            datetime.fromtimestamp(p.get("timestamp")).year for p in preprocessed_photos
-        ]
-        min_year = min(years) if years else 0
-        max_year = max(years) if years else 1
-        year_range = max_year - min_year if max_year > min_year else 1
-
         min_iso_log = math.log2(
             max(min(p.get("iso", 100) for p in preprocessed_photos), 1)
         )
@@ -477,10 +468,6 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         final_scores = []
         for i, p in enumerate(preprocessed_photos):
             base_quality = float(scores[i])
-            time_bonus = (
-                (datetime.fromtimestamp(p.get("timestamp")).year - min_year)
-                / year_range
-            ) * self.age_coeff
             iso_bonus = (
                 (max_iso_log - math.log2(max(p.get("iso", 100), 1))) / iso_log_range
             ) * self.iso_coeff
@@ -488,7 +475,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
                 base_quality if p.get("id") in main_highlight_photo_ids else 0.0
             )
             final_scores.append(
-                base_quality + time_bonus + main_highlight_bonus + iso_bonus
+                base_quality + main_highlight_bonus + iso_bonus
             )
 
         return final_scores

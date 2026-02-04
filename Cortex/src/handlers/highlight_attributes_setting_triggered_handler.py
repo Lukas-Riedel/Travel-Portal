@@ -5,9 +5,6 @@ from src.handlers.base_handler import BaseHandler
 from src.core.ai_engine import AiEngine
 from src.core.core_client import CoreClient
 
-REFERENCE_HIGHLIGHTS_MIN_COUNT: Final[int] = 50
-
-
 class HighlightAttributesSettingTriggeredHandler(BaseHandler):
     def __init__(self, ai_engine: AiEngine, core_client: CoreClient) -> None:
         self.ai_engine = ai_engine
@@ -29,12 +26,6 @@ class HighlightAttributesSettingTriggeredHandler(BaseHandler):
             mh = p.get("mainHighlight")
             if mh and mh.get("attributes"):
                 reference_highlights.append(mh)
-
-        if (
-            not reference_highlights
-            or len(reference_highlights) < REFERENCE_HIGHLIGHTS_MIN_COUNT
-        ):
-            logger.warning("There are not enough reference highlights. Quality attributes will not be set.")
 
         candidate_emb = self.ai_engine.get_or_create_photo_embedding(
             highlight.get("photo")

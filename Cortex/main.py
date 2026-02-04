@@ -47,7 +47,6 @@ def main():
             core_client,
             distributed_cache,
             int(os.getenv("MAX_THREADS")),
-            float(os.getenv("AGE_COEFFICIENT")),
             float(os.getenv("ISO_COEFFICIENT")),
         ),
         HighlightAttributesSettingTriggeredHandler(ai_engine, core_client),
