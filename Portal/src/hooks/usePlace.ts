@@ -2,7 +2,7 @@ import {
     getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
     updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
     updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote,
-    updatePlaceAlbumReviewed,
+    updatePlaceAlbumsReviewed,
     updatePlaceNoteContent,
     updatePlaceCountry
 } from "../clients/coreClient.ts"
@@ -28,7 +28,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
 
     useEffect(() => {
         if (response) {
-            refetchResponse()
+            refetchResponse(response)
         }
     }, [startedUploadingsCount])
 
@@ -46,7 +46,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         updatePlaceExcerpt: (excerpt: string) => updatePlaceExcerpt(placeId, excerpt).then(setResponse),
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId, null).then(setResponse),
         updatePlaceLocation: (latitude: number, longitude: number) => updatePlaceLocation(placeId, latitude, longitude).then(setResponse),
-        updatePlaceAlbumReviewed: () => Promise.all(response?.dates?.map(date => date.album)?.filter(Boolean)?.filter(album => !album.reviewed)?.map(album => updatePlaceAlbumReviewed(placeId, album.id))).then(refetchResponse),
+        updatePlaceAlbumsReviewed: () => Promise.all(response?.dates?.map(date => date.album)?.filter(Boolean)?.filter(album => !album.reviewed)?.map(album => updatePlaceAlbumsReviewed(placeId, album.id))).then(refetchResponse),
         refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number) => refreshPlaceAlbum(placeId, albumId, mainPhotoPosition ? { mainPhotoPosition } : {}).then(refetchResponse),
         createPlaceNote: (name: string) => createPlaceNote(placeId, name).then(refetchResponse),
         updatePlaceNoteContent: (noteId: string, content: string) => updatePlaceNoteContent(placeId, noteId, content).then(refetchResponse),

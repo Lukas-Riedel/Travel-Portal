@@ -88,7 +88,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     if (voucherId) {
                         const voucher = vouchers.find(voucher => voucher.id === voucherId)
                         if (voucher.currency !== expense.currency) {
-                            return Promise.reject("The voucher currency must match the expense currency.")
+                            return Promise.reject("The voucher currency (" + voucher.currency + ") must match the expense currency (" + expense.currency + ").")
                         }
 
                         if (voucher.value <= expense.value) {

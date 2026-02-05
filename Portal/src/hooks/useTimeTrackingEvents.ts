@@ -15,7 +15,7 @@ export const useTimeTrackingEvents = (allowedTypes: TimeTrackingEventType[]): Us
     )
 
     const refetchTimeTrackingEvents = async () => {
-        await Promise.all(queries.map(query => query.refetchResponse()))
+        await Promise.all(queries.map(query => query.refetchResponse(query)))
     }
 
     return {

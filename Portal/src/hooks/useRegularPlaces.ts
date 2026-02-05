@@ -37,7 +37,7 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
 
     useEffect(() => {
         if (response) {
-            refetchResponse()
+            refetchResponse(response)
         }
     }, [startedUploadingsCount])
 

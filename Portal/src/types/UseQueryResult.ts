@@ -1,6 +1,6 @@
 export interface UseQueryResult<T> {
     response?: T
     isLoading: boolean
-    setResponse: (response: T) => void
-    refetchResponse: () => void
+    setResponse: <V>(response: V) => V
+    refetchResponse: <V>(value: V) => V
 }

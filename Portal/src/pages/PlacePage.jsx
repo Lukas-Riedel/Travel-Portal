@@ -24,7 +24,7 @@ export default function PlacePage() {
     const { placeId } = useParams()
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
 
-    const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumReviewed,
+    const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote } = usePlace(placeId, nearbyPlacesCount)
@@ -61,7 +61,7 @@ export default function PlacePage() {
                 onExcerptRefreshed={hasRole(UserRole.PlaceEdit) && refreshPlaceExcerpt}
                 onAddressChanged={hasRole(UserRole.PlaceEdit) && updatePlaceAddress}
                 onLocationChanged={hasRole(UserRole.PlaceEdit) && updatePlaceLocation}
-                onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && updatePlaceAlbumReviewed} />
+                onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && updatePlaceAlbumsReviewed} />
             <DateTileGrid
                 place={place}
                 onAlbumRefreshed={hasRole(UserRole.PlaceAlbumEdit) && refreshPlaceAlbum} />

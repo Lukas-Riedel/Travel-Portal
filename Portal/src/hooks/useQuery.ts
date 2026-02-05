@@ -18,7 +18,13 @@ export const useQuery = <T>(options: UndefinedInitialDataOptions<T, Error, T, st
     return {
         response: query.data,
         isLoading: query.isLoading,
-        setResponse: (response: T) => queryClient.setQueryData(options.queryKey, response),
-        refetchResponse: () => query.refetch()
+        setResponse: <V>(response: V) => {
+            queryClient.setQueryData(options.queryKey, response)
+            return response
+        },
+        refetchResponse: <V>(response: V) => {
+            query.refetch()
+            return response
+        }
     }
 }

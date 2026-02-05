@@ -439,7 +439,7 @@ export const refreshPlaceAlbum = async (placeId: string, albumId: string, { main
         }
     )).then(extractData)
 
-export const updatePlaceAlbumReviewed = async (placeId: string, albumId: string): Promise<Album> =>
+export const updatePlaceAlbumsReviewed = async (placeId: string, albumId: string): Promise<Album> =>
     coreClient.patch<Album>(`places/${placeId}/albums/${albumId}`,
         {
             reviewed: true

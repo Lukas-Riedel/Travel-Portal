@@ -329,8 +329,6 @@
                     $isTimeNormalized = !$placeEvent->shouldBeNormalized($placeIdentifier->getTimezone(), $placeIdentifier->getTimezone());
                                         
                     if (!$isTimeNormalized) {
-                        // TODO: For the offset computation, should we prioritize the timezone from the event? Like '$placeEvent->getStartTimezone() ?? $homeTimezone'.
-                        // This should ensure that creating an event on a device in a different timezone will not cause any discrepancies, but it should be verified.
                         $timeOffset = $this->getTimezoneOffset($start, $this->configurationService->getConfigurationEntry("homeLocation")["timezone"], $placeIdentifier->getTimezone());
                         $start += $timeOffset;
                         $end += $timeOffset;
