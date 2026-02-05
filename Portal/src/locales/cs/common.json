@@ -117,7 +117,7 @@
             }
         }
     },
-    "labels": {
+    "label": {
         "prompt": {
             "assign": {
                 "message": "Opravdu chceš přiřadit štítek {{name}}?",

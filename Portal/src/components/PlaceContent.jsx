@@ -18,8 +18,7 @@ const checklistItems = [
     "Nastavit hlavní highlight",
     "Nastavit atributy highlightů",
     "Nastavit úvodní fotky alb",
-    "Nastavit štítky",
-    "Upravit highlighty kategorií"
+    "Nastavit štítky"
 ]
 
 export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onAddressChanged, onExcerptRefreshed, onLocationChanged, onPlaceReviewed }) {

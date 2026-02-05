@@ -412,10 +412,10 @@
         public function updateAlbumReviewed(string $albumId) : bool {
             $sql = <<<'SQL'
                 UPDATE photo_identifier pi
-                INNER JOIN photo p
-                    ON pi.id = p.id
-                SET pi.reviewed = ROUND(EXTRACT(EPOCH FROM NOW()))
-                WHERE p.album_id = ?
+                SET reviewed = ROUND(EXTRACT(EPOCH FROM NOW()))
+                FROM photo p
+                WHERE pi.id = p.id 
+                AND p.album_id = ?
             SQL;
 
             return $this->databaseClient
