@@ -58,15 +58,16 @@ public class BackupService {
                 Path folder = Files.createDirectories(
                         targetFolder.resolve(Instant.now().atZone(ZoneId.systemDefault()).format(TARGET_FOLDER_DATE_TIME_FORMAT)));
 
-                log.info("Synchronizing {} files to '{}'...", nonSynchronizedFiles.size(), folder);
+                log.info("Copying {} files to '{}'...", nonSynchronizedFiles.size(), folder);
                 for (Path nonSynchronizedFile : nonSynchronizedFiles) {
                     Files.copy(nonSynchronizedFile, folder.resolve(nonSynchronizedFile.getFileName()), StandardCopyOption.REPLACE_EXISTING);
                     synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString(), Instant.now()));
                 }
+                log.info("Copied {} files to '{}'.", nonSynchronizedFiles.size(), folder);
             }
         }
         catch (IOException e) {
-            log.warn("The folder '{}' is not available, no files will be synchronized.", sourceFolder);
+            // Do nothing.
         }
         finally {
             synchronizedFileRepository.deleteByUploadedBefore(Instant.now().minus(SYNCHRONIZED_FILES_RETENTION_POLICY));
