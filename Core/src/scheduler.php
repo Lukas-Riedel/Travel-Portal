@@ -1,7 +1,4 @@
 <?php
-
-    use Ramsey\Uuid\Uuid;
-
     require_once(__DIR__ . "/bootstrap.php");
     
     $logger->pushProcessor(function($record) use(&$loggingContext) {
@@ -10,6 +7,5 @@
         return $record;
     });
 
-    $scheduler->schedule();
-    
+    $scheduler->schedule();    
 ?>
