@@ -95,7 +95,7 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
     }
 
     private ZoneId getTimezone() {
-        if (timezone != null) {
+        if (timezone == null) {
             timezone = ZoneId.of(((Map<String, Object>) coreClient.getConfiguration().get(HOME_LOCATION_CONFIGURATION_KEY)).get(
                 TIMEZONE_HOME_LOCATION_CONFIGURATION_KEY).toString());
         }
