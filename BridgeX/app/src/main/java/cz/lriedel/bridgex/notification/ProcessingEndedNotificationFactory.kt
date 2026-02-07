@@ -13,7 +13,7 @@ class ProcessingEndedNotificationFactory(
         return when (name) {
             PHOTOS_UPLOADING_TRIGGERED_EVENT_NAME -> {
                 val placeId = innerArgs["placeId"] as? String ?: return null
-                val placeName = innerArgs["placeId"] as? String ?: return null
+                val placeName = innerArgs["placeName"] as? String ?: return null
                 Notification(
                     context.getString(R.string.title_photos_uploaded),
                     context.getString(R.string.message_photos_uploaded, placeName),
@@ -22,7 +22,7 @@ class ProcessingEndedNotificationFactory(
             }
             PHOTO_REPLACING_TRIGGERED_EVENT_NAME -> {
                 val placeId = innerArgs["placeId"] as? String ?: return null
-                val placeName = innerArgs["placeId"] as? String ?: return null
+                val placeName = innerArgs["placeName"] as? String ?: return null
                 Notification(
                     context.getString(R.string.title_photo_replaced),
                     context.getString(R.string.message_photo_replaced, placeName),
