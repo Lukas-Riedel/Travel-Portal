@@ -12,7 +12,7 @@
     class LabelServiceListener {
         
         private const UPDATE_DYNAMIC_LABELS_ACTION_NAME = "UPDATE_DYNAMIC_LABELS";
-        private const UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
+        private const UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly LabelService $labelService;
 
