@@ -180,7 +180,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             for p in self.core_client.get_places(
                 trip_id=trip_id, max_end=int(time.time()), include="dates"
             )
-            if not p.get("layover")
+            if not any(d.get("layover") for d in p.get("dates", []))
         ]
         content_query = self._get_or_create_content_prompt(
             prompt_template="tripHighlightsSelecting",
