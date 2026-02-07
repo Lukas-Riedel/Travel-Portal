@@ -5,7 +5,7 @@ import uuid
 import ssl
 import threading
 import signal
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Final
 from src.core.logger import logger
 from src.handlers.base_handler import BaseHandler
 from src.core.logger import transaction_id
@@ -13,9 +13,10 @@ from pika.channel import Channel
 from types import FrameType
 from src.core.core_client import CoreClient
 
-PROCESSING_STARTED_EVENT_NAME: str = "ProcessingStarted"
-PROCESSING_ENDED_EVENT_NAME: str = "ProcessingEnded"
-PROCESSING_FAILED_EVENT_NAME: str = "ProcessingFailed"
+PROCESSING_STARTED_EVENT_NAME: Final[str] = "ProcessingStarted"
+PROCESSING_ENDED_EVENT_NAME: Final[str] = "ProcessingEnded"
+PROCESSING_FAILED_EVENT_NAME: Final[str] = "ProcessingFailed"
+MAX_PRIORITY: Final[int] = 5
 
 
 class EventListener:
@@ -126,7 +127,12 @@ class EventListener:
         self.channel.add_on_close_callback(self._on_channel_closed)
 
         self.channel.queue_declare(
-            queue=self.rmq_queue, durable=True, callback=self._on_queue_declared
+            queue=self.rmq_queue,
+            durable=True,
+            callback=self._on_queue_declared,
+            arguments={
+                "x-max-priority": MAX_PRIORITY
+            }
         )
 
     def _on_queue_declared(self, _unused_frame: Any) -> None:

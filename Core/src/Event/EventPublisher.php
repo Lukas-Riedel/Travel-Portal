@@ -71,7 +71,7 @@
             }
 
             if ($event instanceof CortexEvent) {
-                $this->messagingClient->publish($this->cortexQueueName, $event);
+                $this->messagingClient->publish($this->cortexQueueName, $event, $event->getPriority());
                 return null;
             }
 

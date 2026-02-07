@@ -44,7 +44,7 @@
         }
 
         public static function HighlightAttributesSettingTriggered(string $highlightId) : Event {
-            return new CortexEvent(Event::getEventName(), array("highlightId" => $highlightId));
+            return new CortexEvent(Event::getEventName(), EventPriority::High, array("highlightId" => $highlightId));
         }
 
         public static function HighlightUpdated(string $highlightType, string $entityId, string $highlightId) : Event {
@@ -264,7 +264,7 @@
         }
 
         public static function HighlightsSelectingTriggered(string $highlightType, string $entityId, string $entityName, int $highlightsCount, ?bool $highlightsRemovalAllowed = null, ?bool $isExplicit = false) : Event {
-            return new CortexEvent(Event::getEventName(), array("highlightType" => $highlightType, "entityId" => $entityId, "entityName" => $entityName, "highlightsCount" => $highlightsCount, "highlightsRemovalAllowed" => $highlightsRemovalAllowed, "isExplicit" => $isExplicit));
+            return new CortexEvent(Event::getEventName(), $isExplicit === true ?  EventPriority::Highest : EventPriority::Medium, array("highlightType" => $highlightType, "entityId" => $entityId, "entityName" => $entityName, "highlightsCount" => $highlightsCount, "highlightsRemovalAllowed" => $highlightsRemovalAllowed, "isExplicit" => $isExplicit));
         }
 
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
