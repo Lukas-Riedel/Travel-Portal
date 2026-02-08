@@ -1,4 +1,6 @@
 {{- define "core.volumes" }}
+- name: {{ .Release.Name }}-tmp
+  emptyDir: {}
 - name: {{ .Release.Name }}-data
   persistentVolumeClaim:
     claimName: {{ .Release.Name }}-pvc

@@ -21,6 +21,12 @@ spec:
         app: {{ .Release.Name }}-worker
     spec:
       terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
+      initContainers:
+        - name: {{ .Release.Name }}-worker-cleanup
+          image: busybox
+          command: ["sh", "-c", "rm -f /tmp/heartbeat"]
+          volumeMounts:
+{{ include "core.volumeMounts" . | nindent 12 }}
       containers:
         - name: {{ .Release.Name }}-worker
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
@@ -32,11 +38,33 @@ spec:
             - -d
             - memory_limit=512M
             - /var/www/html/src/worker.php
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/heartbeat"
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(($(date +%s) - $(stat -c %Y /tmp/heartbeat))) -lt 600"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
           env:
 {{ include "core.env" . | nindent 12 }}
           volumeMounts:
 {{ include "core.volumeMounts" . | nindent 12 }}
       volumes:
+      - name: {{ .Release.Name }}-tmp
+        emptyDir: {}
       - name: {{ .Release.Name }}-data
         emptyDir: {}
       - name: {{ .Release.Name }}-config

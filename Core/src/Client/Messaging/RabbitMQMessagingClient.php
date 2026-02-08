@@ -16,6 +16,7 @@
 
     class RabbitMQMessagingClient implements MessagingClient, HealthCheckable {
 
+        private const SEND_HEARTBEAT_FILE = "/tmp/heartbeat";
         private const SEND_HEARTBEAT_THRESHOLD_SECONDS = 10;
 
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
@@ -95,6 +96,7 @@
                 $secondsSinceLastHeartbeat = time() - ($this->lastHeartbeatTimestamp ?? 0);
 
                 if ($secondsSinceLastHeartbeat > self::SEND_HEARTBEAT_THRESHOLD_SECONDS) {
+                    file_put_contents(self::SEND_HEARTBEAT_FILE, time());
                     $this->connection->checkHeartBeat();
                     $this->lastHeartbeatTimestamp = time();
                 }

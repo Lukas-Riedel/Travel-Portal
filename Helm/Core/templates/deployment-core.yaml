@@ -24,7 +24,7 @@ spec:
         - name: {{ .Release.Name }}
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           ports:
-            - containerPort: {{ .Values.core.service.port }}    
+            - containerPort: {{ .Values.core.service.port }}
           readinessProbe:
             httpGet:
               path: /management/readiness

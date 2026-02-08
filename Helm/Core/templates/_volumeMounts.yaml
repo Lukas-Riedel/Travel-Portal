@@ -1,4 +1,6 @@
 {{- define "core.volumeMounts" }}
+- name: {{ .Release.Name }}-tmp
+  mountPath: /tmp
 - name: {{ .Release.Name }}-data
   mountPath: /var/tmp
 - name: {{ .Release.Name }}-config

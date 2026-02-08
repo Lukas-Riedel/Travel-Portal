@@ -12,6 +12,8 @@
 
     class RabbitMQEventListener extends AbstractEventListener {
 
+        private const SEND_HEARTBEAT_INTERVAL_SECONDS = 30;
+
         private readonly RabbitMQMessagingClient $messagingClient;
 
         private readonly string $workerQueueName;
@@ -67,10 +69,14 @@
 
             while ($this->isRunning) {
                 try {
-                    $channel->wait(null, false);
+                    $this->messagingClient->heartbeat();
+                    $channel->wait(null, false, self::SEND_HEARTBEAT_INTERVAL_SECONDS);
                 }
                 catch (AMQPTimeoutException $e) {
-                    $this->logger->warning("The AMQP process timed out. Reason: " . $e->getMessage());
+                    continue;
+                }
+                catch (\Throwable $e) {
+                    $this->logger->error("Unexpected error ocurred in the listener loop: " . $e->getMessage());
                     return;
                 }
             }
