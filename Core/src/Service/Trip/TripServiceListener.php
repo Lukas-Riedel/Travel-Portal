@@ -88,6 +88,9 @@
                 if ($trip != null && $trip->getMainHighlight() === null && count($trip->getHighlights()) > 0) {
                     $this->tripService->updateTripMainHighlight($trip->getId(), $trip->getHighlights()[0]->getId());
                 }
+                
+                // TODO: At this point, the highlight is already removed and we don't know if it was also in the year or not.
+                $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Year->value, $trip->getYear(), $message["highlightId"]));
             }
         }
         

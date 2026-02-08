@@ -103,9 +103,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             highlights_count=highlights_count,
             places=year_places,
             existing_highlights=year.get("highlights", []),
-            photos=self._fetch_photos_for_category_or_year(
-                year_places, year.get("highlights", []), highlights_count
-            ),
+            photos=self._fetch_photos_for_category_or_year(year_places),
             content_query=content_query,
             main_highlight_photo_id=year.get("mainHighlight", {})
             .get("photo", {})
@@ -151,9 +149,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             highlights_count=highlights_count,
             places=category_places,
             existing_highlights=category.get("highlights", []),
-            photos=self._fetch_photos_for_category_or_year(
-                category_places, category.get("highlights", []), highlights_count
-            ),
+            photos=self._fetch_photos_for_category_or_year(category_places),
             content_query=content_query,
             main_highlight_photo_id=category.get("mainHighlight", {})
             .get("photo", {})
@@ -202,9 +198,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             highlights_count=highlights_count,
             places=trip_places,
             existing_highlights=trip.get("highlights", []),
-            photos=self._fetch_photos_for_place_or_trip(
-                trip_places, trip.get("highlights", []), highlights_count
-            ),
+            photos=self._fetch_photos_for_place_or_trip(trip_places),
             content_query=content_query,
             main_highlight_photo_id=trip.get("mainHighlight", {})
             .get("photo", {})
@@ -242,9 +236,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             highlights_count=highlights_count,
             places=[place],
             existing_highlights=place.get("highlights", []),
-            photos=self._fetch_photos_for_place_or_trip(
-                [place], place.get("highlights", []), highlights_count
-            ),
+            photos=self._fetch_photos_for_place_or_trip([place]),
             content_query=content_query,
             main_highlight_photo_id=place.get("mainHighlight", {})
             .get("photo", {})
@@ -263,26 +255,18 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             self.core_client.create_place_highlight(place_id, p_id)
 
     def _fetch_photos_for_place_or_trip(
-        self, places: List[dict], existing_highlights: List[dict], highlights_count: int
+        self, places: List[dict]
     ) -> List[dict]:
         width, height = get_thumbnail_size()
-        return (
-            [
+        return [
                 {**p, "url": f"{p['url']}=w{width}-h{height}"}
                 for p in self._get_all_photos(places)
             ]
-            if highlights_count > len(existing_highlights)
-            else [highlight.get("photo") for highlight in existing_highlights]
-        )
 
     def _fetch_photos_for_category_or_year(
-        self, places: List[dict], existing_highlights: List[dict], highlights_count: int
+        self, places: List[dict]
     ) -> List[dict]:
-        return (
-            [h.get("photo") for p in places for h in p.get("highlights", [])]
-            if highlights_count > len(existing_highlights)
-            else [highlight.get("photo") for highlight in existing_highlights]
-        )
+        return [h.get("photo") for p in places for h in p.get("highlights", [])]
 
     def _handle_entity(
         self,
@@ -307,8 +291,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         
         fingerprint = f"{self.ai_engine.model_name}|{entity_name}|{highlights_count}|{content_query}|{main_highlight_photo_id}" \
             f"{sorted(p['id'] for p in places)}|" \
-            f"{sorted(p['id'] for p in photos)}|" \
-            f"{sorted(eh['id'] for eh in existing_highlights)}"
+            f"{sorted(p['id'] for p in photos)}|"
 
         cache_key = SELECTED_HIGHLIGHTS_CACHE_KEY_FORMAT.format(fingerprint=hashlib.md5(fingerprint.encode()).hexdigest())
         cached_highlights = self.distributed_cache.get(cache_key, SELECTED_HIGHLIGHTS_CACHE_TTL)

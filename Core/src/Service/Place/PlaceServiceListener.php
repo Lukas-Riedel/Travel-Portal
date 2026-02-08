@@ -126,6 +126,11 @@
                 if ($place != null && $place->getMainHighlight() === null && count($place->getHighlights()) > 0) {
                     $this->placeService->updatePlaceMainHighlight($place->getId(), $place->getHighlights()[0]->getId());
                 }
+
+                foreach ($place->getCategories() as &$category) {
+                    // TODO: At this point, the highlight is already removed and we don't know if it was also in the category or not.
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Category->value, $category->getId(), $message["highlightId"]));
+                }
             }
         }
 

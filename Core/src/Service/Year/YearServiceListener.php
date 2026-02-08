@@ -32,7 +32,7 @@
                 if ($yearIdentifier !== null && $yearIdentifier->getMainHighlight() === null) {
                     $this->yearService->updateYearMainHighlight($message["entityId"], $message["highlightId"]);
                 }
-                    
+                
                 $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
                     $this->maxHighlightsPerYearCount, true));
             }
@@ -41,17 +41,19 @@
         public function onHighlightRemoved(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Year->value) {
                 $year = $this->yearService->getYear($message["entityId"]);
-                if ($year != null && ($year->getMainHighlight() === null || $year->getMainHighlight()->getId() === $message["highlightId"])) {
-                    if (count($year->getHighlights()) > 0) {
-                        $this->yearService->updateYearMainHighlight($year->getId(), $year->getHighlights()[0]->getId());
-                    } 
-                    else {
-                        $this->yearService->updateYearMainHighlight($year->getId(), null);
+                if ($year != null) {
+                    if ($year->getMainHighlight() === null || $year->getMainHighlight()->getId() === $message["highlightId"]) {
+                        if (count($year->getHighlights()) > 0) {
+                            $this->yearService->updateYearMainHighlight($year->getId(), $year->getHighlights()[0]->getId());
+                        } 
+                        else {
+                            $this->yearService->updateYearMainHighlight($year->getId(), null);
+                        }
                     }
-                }
                 
-                $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
-                    $this->maxHighlightsPerYearCount, true));
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
+                        $this->maxHighlightsPerYearCount, true));
+                }
             }
         }
 

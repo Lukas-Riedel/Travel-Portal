@@ -78,7 +78,7 @@
                 property: "categories",
                 description: "The categories of the place",
                 type: "array",
-                items: new OA\Items(ref: "#/components/schemas/Category")
+                items: new OA\Items(ref: "#/components/schemas/CategoryIdentifier")
             ),
             new OA\Property(
                 property: "highlights",
