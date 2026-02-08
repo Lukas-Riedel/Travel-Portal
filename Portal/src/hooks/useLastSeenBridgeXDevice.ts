@@ -11,9 +11,13 @@ import type { KnownAddress } from "../types/KnownAddress.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import { useTranslation } from "react-i18next"
 import type { UseLastSeenBridgeXDeviceResult } from "../types/UseLastSeenBridgeXDeviceResult.ts"
+import { KnownAddressType } from "../types/KnownAddressType.ts"
 
-const AIRPORT_RADIUS_KILOMETERS = 3.0
-const DEFAULT_RADIUS_KILOMETERS = 0.1
+const RADIUSES = {
+    [KnownAddressType.Airport]: 3.0,
+    [KnownAddressType.Stay]: 0.5,
+    [KnownAddressType.Other]: 0.1
+}
 
 export const useLastSeenBridgeXDevice = (knownAddresses: KnownAddress[] = []): UseLastSeenBridgeXDeviceResult => {
     const { t } = useTranslation()
@@ -26,34 +30,27 @@ export const useLastSeenBridgeXDevice = (knownAddresses: KnownAddress[] = []): U
     const lastSeenBridgeXDevice = useMemo(() => devices?.reduce((lastSeenCandidate, current) => (!lastSeenCandidate || current.lastSeen > lastSeenCandidate.lastSeen ? current : lastSeenCandidate), undefined) as SpecificDevice<BridgeXDeviceData> | undefined, [devices])
 
     useEffect(() => {
-        if (!lastSeenBridgeXDevice?.data) {
+        if (!lastSeenBridgeXDevice?.data || !lastSeenBridgeXDevice.data.latitude || !lastSeenBridgeXDevice.data.longitude) {
             return
         }
 
         (async () => {
-            if (lastSeenBridgeXDevice.data.latitude && lastSeenBridgeXDevice.data.longitude) {
-                for (const visitedAirport of (airports ?? [])) {
-                    const distance = getEuclideanDistance(visitedAirport as Coordinates, lastSeenBridgeXDevice.data as Coordinates)
+            const candidates = [
+                ...knownAddresses.filter(address => address.type === KnownAddressType.Stay),
+                ...((airports ?? []).map(airport => ({ type: KnownAddressType.Airport, name: airport.longName ?? t("airport.format", { name: airport.shortName }), address: airport.longName ?? t("airport.format", { name: airport.shortName }) }))),
+                ...knownAddresses.filter(address => address.type === KnownAddressType.Airport),
+                ...knownAddresses.filter(address => address.type === KnownAddressType.Other)
+            ]
 
-                    if (distance <= AIRPORT_RADIUS_KILOMETERS) {
-                        setCurrentAddress({
-                            name: visitedAirport.longName ?? t("airport.format", { name: visitedAirport.shortName }),
-                            address: visitedAirport.longName ?? t("airport.format", { name: visitedAirport.shortName })
-                        })
+            for (const candidate of candidates) {
+                const candidateCoordinates = await getCachedCoordinates(candidate.address, getCoordinates)
+
+                if (candidateCoordinates) {
+                    const distance = getEuclideanDistance(candidateCoordinates, lastSeenBridgeXDevice.data as Coordinates)
+
+                    if (distance <= RADIUSES[candidate.type]) {
+                        setCurrentAddress(candidate)
                         return
-                    }
-                }
-
-                for (const knownAddress of knownAddresses) {
-                    const knownAddressCoordinates = await getCachedCoordinates(knownAddress.address, getCoordinates)
-
-                    if (knownAddressCoordinates) {
-                        const distance = getEuclideanDistance(knownAddressCoordinates, lastSeenBridgeXDevice.data as Coordinates)
-
-                        if (distance <= (knownAddress?.radius ?? DEFAULT_RADIUS_KILOMETERS)) {
-                            setCurrentAddress(knownAddress)
-                            return
-                        }
                     }
                 }
             }

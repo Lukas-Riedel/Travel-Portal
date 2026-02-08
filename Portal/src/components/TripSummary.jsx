@@ -16,6 +16,7 @@ import { getCoordinates } from "../clients/coreClient"
 import SunCalc from "suncalc"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { KnownAddressType } from "../types/KnownAddressType.ts"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
@@ -24,9 +25,9 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
-        ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, radius: 0.5 })) ?? []),
-        ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, radius: 3.0 })) ?? []),
-        ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, radius: 3.0 })) ?? [])
+        ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, type: KnownAddressType.Stay })) ?? []),
+        ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, type: KnownAddressType.Airport })) ?? []),
+        ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, type: KnownAddressType.Airport })) ?? [])
     ])
 
     const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data && Math.round((SunCalc.getPosition(new Date(), lastSeenBridgeXDevice.data.latitude, lastSeenBridgeXDevice.data.longitude).altitude * 180) / Math.PI), [lastSeenBridgeXDevice])
