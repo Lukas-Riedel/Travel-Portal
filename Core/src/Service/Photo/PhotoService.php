@@ -245,7 +245,11 @@
         
             // Fetch albums.
             $response = $this->getAlbumsResponse($albumId);
-            while (isset($response["albums"])) {
+            if ($response === null && $albumId !== null) {
+                $this->photoMapper->deleteAlbums($albumId);
+            }
+
+            while ($response !== null && isset($response["albums"])) {
                 foreach ($response["albums"] as &$album) {
                     $mainPhotoId = null;
                     $mainImageUrl = null;
@@ -394,7 +398,7 @@
             return $this->photoMapper->selectPhotoId($externalId);
         }
 
-        private function getAlbumsResponse(?string $albumId, ?string $pageToken = null) : array {
+        private function getAlbumsResponse(?string $albumId, ?string $pageToken = null) : ?array {
             if ($albumId === null) {
                 return $this->googleClient->getAlbums($pageToken);
             }
@@ -404,7 +408,13 @@
                     throw new \InvalidArgumentException("An album with the identifier " . $albumId . " does not exist.");
                 }
 
-                $album = $this->googleClient->getAlbum($externalAlbumId);
+                try {
+                    $album = $this->googleClient->getAlbum($externalAlbumId);
+                }
+                catch (\Throwable $e) {
+                    return null;
+                }
+
                 return array("albums" => array($album));
             }
         }
