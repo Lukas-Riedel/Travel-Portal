@@ -40,7 +40,7 @@ spec:
                 - check_local_alarms
             initialDelaySeconds: 60
             periodSeconds: 30
-            timeoutSeconds: 10
+            timeoutSeconds: 5
           env:
             - name: RABBITMQ_DEFAULT_USER
               value: "{{ .Values.rabbitmq.username }}"

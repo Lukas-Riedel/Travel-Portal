@@ -5,6 +5,10 @@ class BaseHandler(ABC):
     @abstractmethod
     def handle(self, args: dict) -> None:
         pass
+
+    @abstractmethod
+    def get_timeout_seconds(self) -> int:
+        pass
     
     # TODO: Get rid of this method, determine the event name from the class name.
     @abstractmethod

@@ -389,6 +389,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         result = [preprocessed_photos[i].get("id") for i in selected_indices]
         self.distributed_cache.set(cache_key, result, SELECTED_HIGHLIGHTS_CACHE_TTL)
         return result
+    
+    def get_timeout_seconds(self) -> int:
+        return 7200
 
     def get_handled_event_names(self) -> List[str]:
         return ["HighlightsSelectingTriggered"]

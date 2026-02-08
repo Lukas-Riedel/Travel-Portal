@@ -41,6 +41,9 @@ class HighlightAttributesSettingTriggeredHandler(BaseHandler):
             self.core_client.update_highlight_quality_attributes(
                 highlight_id, predicted_attributes
             )
+    
+    def get_timeout_seconds(self) -> int:
+        return 300
 
     def get_handled_event_names(self) -> List[str]:
         return ["HighlightAttributesSettingTriggered"]

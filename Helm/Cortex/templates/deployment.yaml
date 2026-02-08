@@ -21,9 +21,39 @@ spec:
         app: {{ .Release.Name }}-worker
     spec:
       terminationGracePeriodSeconds: {{ .Values.cortex.scaling.grace }}
+      initContainers:
+        - name: {{ .Release.Name }}-worker-cleanup
+          image: busybox
+          command: ["sh", "-c", "rm -f /tmp/timeout"]
+          volumeMounts:
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
       containers:
         - name: {{ .Release.Name }}-worker
           image: "{{ .Values.cortex.image }}:{{ .Values.cortex.tag }}"
+          volumeMounts:
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/timeout"
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(date +%s) -lt $(cat /tmp/timeout)"
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
           env:
             - name: VERSION_TAG
               value: "{{ .Values.cortex.tag }}"
@@ -95,4 +125,7 @@ spec:
                 secretKeyRef:
                   name: grafana-password
                   key: grafana-password
+      volumes:
+        - name: {{ .Release.Name }}-tmp
+          emptyDir: {}
 {{- end }}

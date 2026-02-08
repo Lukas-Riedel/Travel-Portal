@@ -13,9 +13,14 @@ from pika.channel import Channel
 from types import FrameType
 from src.core.core_client import CoreClient
 
+SEND_HEARTBEAT_FILE: Final[str] = "/tmp/timeout"
+SEND_HEARTBEAT_THRESHOLD_SECONDS: Final[int] = 10
+APPLICATION_TIMEOUT_SECONDS: Final[int] = 600
+
 PROCESSING_STARTED_EVENT_NAME: Final[str] = "ProcessingStarted"
 PROCESSING_ENDED_EVENT_NAME: Final[str] = "ProcessingEnded"
 PROCESSING_FAILED_EVENT_NAME: Final[str] = "ProcessingFailed"
+
 MAX_PRIORITY: Final[int] = 5
 
 
@@ -31,7 +36,7 @@ class EventListener:
         rmq_password: str,
         rmq_ssl: bool,
         rmq_heartbeat: int,
-        rmq_queue: str,
+        rmq_queue: str
     ) -> None:
         self.core_client = core_client
         self.handlers: dict[str, BaseHandler] = {}
@@ -74,6 +79,8 @@ class EventListener:
         signal.signal(signal.SIGINT, self._handle_exit_signal)
         if hasattr(signal, "SIGQUIT"):
             signal.signal(signal.SIGQUIT, self._handle_exit_signal)
+
+        threading.Thread(target=self._heartbeat_watchdog, daemon=True).start()
 
         self.connection = pika.SelectConnection(
             self.params,
@@ -168,6 +175,17 @@ class EventListener:
         )
         worker_thread.start()
 
+    def _heartbeat_watchdog(self) -> None:
+        while not self.should_stop:
+            lock_acquired = self.processing_lock.acquire(blocking=False)
+            if lock_acquired:
+                try:
+                    self._update_heartbeat(APPLICATION_TIMEOUT_SECONDS)
+                finally:
+                    self.processing_lock.release()
+            
+            time.sleep(SEND_HEARTBEAT_THRESHOLD_SECONDS)
+
     def _process_in_thread(self, delivery_tag: int, tx_id: str, body: bytes) -> None:
         with self.processing_lock:
             token = transaction_id.set(tx_id)
@@ -184,7 +202,9 @@ class EventListener:
 
             try:
                 if event_name in self.handlers:
-                    self.handlers[event_name].handle(args)
+                    handler = self.handlers[event_name]
+                    self._update_heartbeat(handler.get_timeout_seconds())
+                    handler.handle(args)
                 else:
                     logger.error(f"No handler can process the '{event_name}' event.")
 
@@ -212,3 +232,11 @@ class EventListener:
                     f"The '{event_name}' event was processed in {duration} milliseconds."
                 )
                 transaction_id.reset(token)
+
+    def _update_heartbeat(self, timeout_seconds: int) -> None:
+        try:
+            deadline = int(time.time()) + timeout_seconds
+            with open(SEND_HEARTBEAT_FILE, "w") as f:
+                f.write(str(deadline))
+        except Exception as e:
+            logger.error(f"Failed to update heartbeat: {e}")

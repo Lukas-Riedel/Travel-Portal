@@ -24,7 +24,7 @@ spec:
       initContainers:
         - name: {{ .Release.Name }}-worker-cleanup
           image: busybox
-          command: ["sh", "-c", "rm -f /tmp/heartbeat"]
+          command: ["sh", "-c", "rm -f /tmp/timeout"]
           volumeMounts:
 {{ include "core.volumeMounts" . | nindent 12 }}
       containers:
@@ -43,7 +43,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - "test -f /tmp/heartbeat"
+                - "test -f /tmp/timeout"
             initialDelaySeconds: 15
             periodSeconds: 15
             failureThreshold: 3
@@ -53,7 +53,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - "test $(($(date +%s) - $(stat -c %Y /tmp/heartbeat))) -lt 600"
+                - "test $(date +%s) -lt $(cat /tmp/timeout)"
             initialDelaySeconds: 60
             periodSeconds: 30
             failureThreshold: 3
