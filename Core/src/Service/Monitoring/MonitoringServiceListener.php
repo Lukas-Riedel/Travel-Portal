@@ -9,7 +9,7 @@
     class MonitoringServiceListener {
         
         private const RUN_DATA_CONSISTENCY_SCAN_ACTION_NAME = "RUN_DATA_CONSISTENCY_SCAN";
-        private const RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL = 2 * CommonConstants::ONE_HOUR_SECONDS;
+        private const RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly MonitoringService $monitoringService;
 
