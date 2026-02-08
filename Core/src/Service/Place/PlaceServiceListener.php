@@ -175,7 +175,7 @@
                         break;
                     }
 
-                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Place->value, $place->getId(), $place->getName(), $this->getSuggestedHighlightsCount($place->getId()), false, true));
+                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Place->value, $place->getId(), $place->getName(), $this->getSuggestedHighlightsCount($place->getId()), false, false));
                 }
             }
         }
