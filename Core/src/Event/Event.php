@@ -243,8 +243,8 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("placeId" => $placeId));
         }
 
-        public static function FlightEventUpdated(string $placeId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("placeId" => $placeId));
+        public static function FlightEventUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
         }
 
         public static function OpenLineageEventPublished(mixed $event) : Event {
