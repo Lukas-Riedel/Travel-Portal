@@ -121,12 +121,12 @@
         "prompt": {
             "assign": {
                 "message": "Opravdu chceš přiřadit štítek {{name}}?",
-                "confirmed": "Štítek bylo úspěšně přiřazen",
+                "confirmed": "Štítek byl úspěšně přiřazen",
                 "failed": "Nepodařilo se přiřadit štítek"
             },
             "unassign": {
                 "message": "Opravdu chceš odstranit štítek {{name}}?",
-                "confirmed": "Štítek bylo úspěšně odstraněn",
+                "confirmed": "Štítek byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit štítek"
             }
         }
