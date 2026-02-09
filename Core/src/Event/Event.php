@@ -263,7 +263,7 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function HighlightsSelectingTriggered(string $highlightType, string $entityId, string $entityName, int $highlightsCount, ?bool $highlightsRemovalAllowed = false, ?bool $isExplicit = false) : Event {
+        public static function HighlightsSelectingTriggered(string $highlightType, string $entityId, string $entityName, int $highlightsCount, bool $highlightsRemovalAllowed, bool $isExplicit) : Event {
             return new CortexEvent(Event::getEventName(), $isExplicit === true ?  EventPriority::Highest : EventPriority::Medium, array("highlightType" => $highlightType, "entityId" => $entityId, "entityName" => $entityName, "highlightsCount" => $highlightsCount, "highlightsRemovalAllowed" => $highlightsRemovalAllowed, "isExplicit" => $isExplicit));
         }
 

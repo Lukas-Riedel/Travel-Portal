@@ -49,7 +49,7 @@
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                     
                     $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $categoryIdentifier->getName(),
-                        $this->maxHighlightsPerCategoryCount, true));
+                        $this->maxHighlightsPerCategoryCount, true, false));
                 }
             }
         }
@@ -68,7 +68,7 @@
                     }
                     
                     $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $category->getName(),
-                        $this->maxHighlightsPerCategoryCount, true));
+                        $this->maxHighlightsPerCategoryCount, true, false));
                 }
             }
         }

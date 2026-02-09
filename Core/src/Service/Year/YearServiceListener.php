@@ -34,7 +34,7 @@
                 }
                 
                 $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
-                    $this->maxHighlightsPerYearCount, true));
+                    $this->maxHighlightsPerYearCount, true, false));
             }
         }
 
@@ -52,7 +52,7 @@
                     }
                 
                     $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Year->value, $message["entityId"], $message["entityId"],
-                        $this->maxHighlightsPerYearCount, true));
+                        $this->maxHighlightsPerYearCount, true, false));
                 }
             }
         }

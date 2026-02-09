@@ -106,7 +106,7 @@
                 if ($placeIdentifier !== null && $placeIdentifier->getMainHighlight() === null) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
                     $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Place->value, $message["entityId"], $placeIdentifier->getName(),
-                        $this->getSuggestedHighlightsCount($message["entityId"])));
+                        $this->getSuggestedHighlightsCount($message["entityId"]), false, true));
                 }
                 $this->updatePlaceScore($message["entityId"]);
             }
