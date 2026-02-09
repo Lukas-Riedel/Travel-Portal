@@ -24,12 +24,12 @@
             catch (\Throwable $e) {
                 $code = $this->getErrorCode($e);
                 
-                $requestError = new RequestError($code, basename(str_replace("\\", "/", get_class($e))), $e->getMessage(), explode("\n", $e->getTraceAsString()), 
+                $requestError = new RequestError($code, basename(str_replace("\\", "/", get_class($e))), $e->getMessage(), 
                     $request->getUri()->getPath());
 
                 $response = new Response($code);
                 $response->getBody()->write(json_encode($requestError, JSON_UNESCAPED_UNICODE));
-                $this->logger->error($requestError->getType() . ": " . $requestError->getMessage(), array("error" => $requestError));
+                $this->logger->error($requestError->getType() . ": " . $requestError->getMessage(), array("error" => $requestError, "stacktrace" => explode("\n", $e->getTraceAsString())));
 
                 return $response->withHeader("Content-Type", "application/json");
             }

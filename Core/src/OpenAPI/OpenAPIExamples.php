@@ -12,7 +12,6 @@
                     "code" => 401,
                     "type" => "AuthenticationException",
                     "message" => "The access token expired at 2025-08-02T18:08:35.269Z.",
-                    "trace" => [],
                     "path" => "/configuration"
                 ]
             ),
@@ -23,7 +22,6 @@
                     "code" => 403,
                     "type" => "AuthorizationException",
                     "message" => "The user '89754ffa-c9bb-478c-afbd-8122742815f7' is not authorized to access this resource.",
-                    "trace" => [],
                     "path" => "/inconsistencies"
                 ]
             ),
@@ -34,7 +32,6 @@
                     "code" => 400,
                     "type" => "RuntimeException",
                     "message" => "The configuration key is missing.",
-                    "trace" => [],
                     "path" => "/trips/34e5658b-d0c8-47e0-8ec7-846f1e28835b/notes"
                 ]
             ),
@@ -45,7 +42,6 @@
                     "code" => 400,
                     "type" => "NotFoundException",
                     "message" => "The entity with the key 'eb332f42-d5de-43d3-a90b-6f1b37ead81e' could not be found.",
-                    "trace" => [],
                     "path" => "/places/eb332f42-d5de-43d3-a90b-6f1b37ead81e"
                 ]
             )

@@ -7,7 +7,7 @@
         schema: "RequestError",
         type: "object",
         description: "A class representing a request error",
-        required: ["code", "type", "message", "trace", "path"],
+        required: ["code", "type", "message", "path"],
         properties: [
             new OA\Property(
                 property: "code",
@@ -28,13 +28,6 @@
                 example: "The access token expired at 2025-08-02T18:08:35.269Z."
             ),
             new OA\Property(
-                property: "trace",
-                type: "array",
-                description: "The stack trace of the error",
-                items: new OA\Items(type: "string"),
-                example: []
-            ),
-            new OA\Property(
                 property: "path",
                 type: "string",
                 description: "The path where the error occurred",
@@ -42,19 +35,16 @@
             ),
         ]
     )]
-    // TODO: Remove stacktrace from the class. It shouldn't be displayed to the user.
     class RequestError implements \JsonSerializable {
         private readonly int $code;
         private readonly string $type;
         private readonly string $message;
-        private readonly array $trace;
         private readonly string $path;
 
-        public function __construct(int $code, string $type, string $message, array $trace, string $path) {
+        public function __construct(int $code, string $type, string $message, string $path) {
             $this->code = $code;
             $this->type = $type;
             $this->message = $message;
-            $this->trace = $trace;
             $this->path = $path;
         }
 
@@ -68,10 +58,6 @@
 
         public function getMessage() : string {
             return $this->message;
-        }
-
-        public function getTrace() : array {
-            return $this->trace;
         }
 
         public function getPath() : string {

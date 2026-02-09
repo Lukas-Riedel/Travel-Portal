@@ -39,7 +39,7 @@
 
         $error = new RequestError(404, "RouteNotFoundException",
             "The resource '" . $request->getUri()->getPath() . "' does not exist.",
-            array(), $request->getUri()->getPath());
+            $request->getUri()->getPath());
         $response->getBody()->write(json_encode($error));
 
         return $response
