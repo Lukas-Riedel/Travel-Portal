@@ -241,6 +241,9 @@
         
         private function doUpdateAlbums(?string $albumId, bool $overwrite) : array {        
             $objectKeys = array();
+            $existingObjectKeys = $this->cloudStorageClient->list($this->albumThumbnailBucket);
+            $existingKeysMap = array_flip($existingObjectKeys);
+
             $albums = array();
         
             // Fetch albums.
@@ -257,7 +260,7 @@
                     if (isset($album["coverPhotoMediaItemId"])) {
                         $objectKey = $album["coverPhotoMediaItemId"] . CommonConstants::JPG_FILE_EXTENSION;
             
-                        if ($overwrite || !$this->cloudStorageClient->exists($this->albumThumbnailBucket, $objectKey)) {
+                        if ($overwrite || !isset($existingKeysMap[$objectKey])) {
                             $data = $this->httpClient->executeRequest(HttpMethod::GET,
                                 $album["coverPhotoBaseUrl"] . "=w" . $this->thumbnailWidth . "-h" . $this->thumbnailHeight);
                             $this->cloudStorageClient->put($this->albumThumbnailBucket, $objectKey, $data);

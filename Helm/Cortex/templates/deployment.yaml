@@ -50,7 +50,7 @@ spec:
                 - /bin/sh
                 - -c
                 - "test $(date +%s) -lt $(cat /tmp/timeout)"
-            initialDelaySeconds: 90
+            initialDelaySeconds: 60
             periodSeconds: 30
             failureThreshold: 3
             timeoutSeconds: 3

@@ -25,17 +25,15 @@
             $this->s3BaseUrl = $s3BaseUrl;
             $this->s3Client = null;
         }
-        
-        public function exists(string $bucket, string $key) : bool {
-            $this->init();
-            
-            return $this->s3Client->doesBucketExist($bucket) && $this->s3Client->doesObjectExist($bucket, $key);
-        }
 
         public function list(string $bucket) : array {
             $this->init();
 
             $keys = array();
+
+            if (!$this->s3Client->doesBucketExist($bucket)) {
+                return $keys;
+            }
 
             try {
                 $results = $this->s3Client->getPaginator("ListObjectsV2", array(

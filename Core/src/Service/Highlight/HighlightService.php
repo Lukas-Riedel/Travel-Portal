@@ -370,12 +370,14 @@
 
         private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $overwrite) : array {
             $objectKeys = array();
+            $existingObjectKeys = $this->cloudStorageClient->list($highlightSize->getBucket());
+            $existingKeysMap = array_flip($existingObjectKeys);
 
             $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
             foreach ($highlights as &$highlight) {
                 $objectKey = $this->getHighlightObjectKey($highlight->getId());
     
-                if ($overwrite || !$this->cloudStorageClient->exists($highlightSize->getBucket(), $objectKey)) {
+                if ($overwrite || !isset($existingKeysMap[$objectKey])) {
                     $photoId = $this->highlightMapper->selectPhotoId($highlight->getId());
 
                     if ($photoId !== null) {
@@ -387,12 +389,12 @@
                             $this->cloudStorageClient->put($highlightSize->getBucket(), $objectKey, $data);
                         }
                     }
+
+                    $imageUrl = $this->cloudStorageClient->getPath($highlightSize->getBucket(), $objectKey);
+                    $this->highlightMapper->updateHighlightImageUrl($highlightSize, $highlight->getId(), $imageUrl);
                 }
     
                 $objectKeys[] = $objectKey;
-                $imageUrl = $this->cloudStorageClient->getPath($highlightSize->getBucket(), $objectKey);
-
-                $this->highlightMapper->updateHighlightImageUrl($highlightSize, $highlight->getId(), $imageUrl);
             }
             
             return $objectKeys;
