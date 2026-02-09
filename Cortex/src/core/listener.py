@@ -188,19 +188,19 @@ class EventListener:
 
     def _process_in_thread(self, delivery_tag: int, tx_id: str, body: bytes) -> None:
         with self.processing_lock:
-            token = transaction_id.set(tx_id)
-            start_time = time.time()
-            event = json.loads(body)
-            event_name = event.get("name")
-            args = event.get("args")
-
-            logger.info(
-                f"Received the '{event_name}' event...",
-                extra={"event": event},
-            )
-            self.core_client.create_event(PROCESSING_STARTED_EVENT_NAME, event)
-
             try:
+                token = transaction_id.set(tx_id)
+                start_time = time.time()
+                event = json.loads(body)
+                event_name = event.get("name")
+                args = event.get("args")
+
+                logger.info(
+                    f"Received the '{event_name}' event...",
+                    extra={"event": event},
+                )
+                self.core_client.create_event(PROCESSING_STARTED_EVENT_NAME, event)
+
                 if event_name in self.handlers:
                     handler = self.handlers[event_name]
                     self._update_heartbeat(handler.get_timeout_seconds())
