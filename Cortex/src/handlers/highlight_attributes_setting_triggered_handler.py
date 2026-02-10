@@ -1,5 +1,5 @@
 from src.handlers.base_handler import BaseHandler
-from typing import List, Final
+from typing import List, Union
 from src.core.logger import logger
 from src.handlers.base_handler import BaseHandler
 from src.core.ai_engine import AiEngine
@@ -12,11 +12,9 @@ class HighlightAttributesSettingTriggeredHandler(BaseHandler):
 
     def handle(self, args: dict) -> None:
         highlight_id = args.get("highlightId")
-
         highlight = self.core_client.get_highlight(highlight_id)
-        if not highlight or (
-            highlight.get("attributes") and any(highlight["attributes"].values())
-        ):
+
+        if self._has_attributes_set(highlight):
             return
 
         all_places = self.core_client.get_places()
@@ -37,7 +35,8 @@ class HighlightAttributesSettingTriggeredHandler(BaseHandler):
             candidate_emb, reference_highlights
         )
 
-        if predicted_attributes:
+        # TODO: Replace this fake race condition prevention by adding a new 'overwrite' query parameter to the update endpoint.
+        if predicted_attributes and not self._has_attributes_set(highlight_id):
             self.core_client.update_highlight_quality_attributes(
                 highlight_id, predicted_attributes
             )
@@ -47,3 +46,10 @@ class HighlightAttributesSettingTriggeredHandler(BaseHandler):
 
     def get_handled_event_names(self) -> List[str]:
         return ["HighlightAttributesSettingTriggered"]
+
+    def _has_attributes_set(self, highlight_or_id: Union[str, dict]) -> bool:
+        if isinstance(highlight_or_id, str):
+            highlight = self.core_client.get_highlight(highlight_or_id)
+        else:
+            highlight = highlight_or_id
+        return not highlight or (highlight.get("attributes") and any(highlight["attributes"].values()))
