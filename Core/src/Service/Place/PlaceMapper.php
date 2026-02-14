@@ -302,6 +302,18 @@
                     if (($albumId !== null || $photoId !== null) && count($permanentPlaceAlbums) === 0) {
                         continue;
                     }
+
+                    usort($permanentPlaceAlbums, function($a, $b) use(&$placeSortingStrategy) {
+                        $dateA = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $a->getPlaceDateString());
+                        $dateB = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $b->getPlaceDateString());
+                        
+                        if ($placeSortingStrategy === PlaceSortingStrategy::OldestDescending) {
+                            return $dateB <=> $dateA;
+                        }
+                        else {
+                            return $dateA <=> $dateB;
+                        }
+                    });
                 }
 
                 if (!isset($places[$placeRow["id"]])) {
@@ -369,6 +381,7 @@
                 }
             }
 
+            // TODO: Permanent places are always at the end of the list, regardless of the sorting strategy.
             return array_values($places);
         }
         
