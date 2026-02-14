@@ -10,6 +10,8 @@
 
     class FitnessService {
 
+        private const STEPS_PER_MINUTE_THRESHOLD = 30;
+
         private readonly FitnessMapper $fitnessMapper;
 
         private readonly EventPublisher $eventPublisher;
@@ -63,6 +65,7 @@
             }
 
             $distance = $this->getCorrectedDistance($distance, $steps);
+            $seconds = $this->getCorrectedDuration($seconds, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
             $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
@@ -123,12 +126,20 @@
         }
 
         private function getCorrectedDistance(float $distance, int $steps) : float {
-            // Distance is recorded incorrectly, scale steps by average step length.
+            // TODO: Create constants for the magic numbers.
             if ($steps > 0 && (($distance / $steps < max(0.5, $this->fitnessMapper->selectMinimumDistancePerStep() * 0.85))
-                || ($distance / $steps > min($this->fitnessMapper->selectMaximumDistancePerStep() > 1.15, 1.5)))) {
+                || ($distance / $steps > min($this->fitnessMapper->selectMaximumDistancePerStep() * 1.15, 1.5)))) {
                 return $steps * $this->fitnessMapper->selectAverageDistancePerStep();
             }
             return $distance;
+        }
+
+        private function getCorrectedDuration(int $seconds, int $steps): int {
+            if ($steps > 0 && ($steps / ($seconds / 60.0)) < self::STEPS_PER_MINUTE_THRESHOLD) {
+                return min($seconds, round($steps * $this->fitnessMapper->selectAverageSecondsPerStep()));
+            }
+
+            return $seconds;
         }
     }
 ?>

@@ -102,11 +102,25 @@
             return $fitnessRow === null ? null : new Fitness(intval($fitnessRow["steps"]), intval($fitnessRow["seconds"]), doubleval($fitnessRow["distance"]));
         }
 
+        public function selectAverageSecondsPerStep() : float {
+            $sql = <<<'SQL'
+                SELECT AVG(seconds::float / NULLIF(steps, 0)) AS average_seconds_per_step
+                FROM fitness
+                WHERE steps > 100
+            SQL;
+
+            $fitnessRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->getSingleRow();
+
+            return doubleval($fitnessRow["average_seconds_per_step"]);
+        }
+
         public function selectMinimumDistancePerStep() : float {
             $sql = <<<'SQL'
-                SELECT MIN(distance / steps) AS minimum_distance_per_step
+                SELECT MIN(distance / NULLIF(steps, 0)) AS minimum_distance_per_step
                 FROM fitness
-                WHERE steps > 0
+                WHERE steps > 100
             SQL;
 
             $fitnessRow = $this->databaseClient
@@ -118,9 +132,9 @@
 
         public function selectMaximumDistancePerStep() : float {
             $sql = <<<'SQL'
-                SELECT MAX(distance / steps) AS maximum_distance_per_step
+                SELECT MAX(distance / NULLIF(steps, 0)) AS maximum_distance_per_step
                 FROM fitness
-                WHERE steps > 0
+                WHERE steps > 100
             SQL;
 
             $fitnessRow = $this->databaseClient
@@ -132,9 +146,9 @@
 
         public function selectAverageDistancePerStep() : float {
             $sql = <<<'SQL'
-                SELECT AVG(distance / steps) AS average_distance_per_step
+                SELECT AVG(distance / NULLIF(steps, 0)) AS average_distance_per_step
                 FROM fitness
-                WHERE steps > 0
+                WHERE steps > 100
             SQL;
 
             $fitnessRow = $this->databaseClient
