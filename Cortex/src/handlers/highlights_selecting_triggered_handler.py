@@ -108,6 +108,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             main_highlight_photo_id=year.get("mainHighlight", {})
             .get("photo", {})
             .get("id"),
+            prioritized_photo_ids=None,
             highlights_removal_allowed=highlights_removal_allowed,
         )
 
@@ -154,6 +155,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             main_highlight_photo_id=category.get("mainHighlight", {})
             .get("photo", {})
             .get("id"),
+            prioritized_photo_ids=None,
             highlights_removal_allowed=highlights_removal_allowed,
         )
 
@@ -174,7 +176,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         trip_places = [
             p
             for p in self.core_client.get_places(
-                trip_id=trip_id, max_end=int(time.time()), include="dates"
+                trip_id=trip_id, max_end=int(time.time()), include="dates,highlights"
             )
             if not any(d.get("layover") for d in p.get("dates", []))
         ]
@@ -203,6 +205,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             main_highlight_photo_id=trip.get("mainHighlight", {})
             .get("photo", {})
             .get("id"),
+            prioritized_photo_ids=[h.get("photo", {}).get("id") for place in (trip_places or []) for h in place.get("highlights", [])],
             highlights_removal_allowed=highlights_removal_allowed,
         )
 
@@ -241,6 +244,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
             main_highlight_photo_id=place.get("mainHighlight", {})
             .get("photo", {})
             .get("id"),
+            prioritized_photo_ids=None,
             highlights_removal_allowed=highlights_removal_allowed,
         )
 
@@ -277,6 +281,7 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         photos: List[dict],
         content_query: str,
         main_highlight_photo_id: Optional[str],
+        prioritized_photo_ids: Optional[List[str]],
         highlights_removal_allowed: bool,
     ) -> Optional[List[str]]:
         delta = highlights_count - len(existing_highlights)
@@ -296,11 +301,21 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
         cache_key = SELECTED_HIGHLIGHTS_CACHE_KEY_FORMAT.format(fingerprint=hashlib.md5(fingerprint.encode()).hexdigest())
         cached_highlights = self.distributed_cache.get(cache_key, SELECTED_HIGHLIGHTS_CACHE_TTL)
         if cached_highlights:
-            return cached_highlights        
+            return cached_highlights
+        
+        prioritized_photo_ids_set = set(prioritized_photo_ids or []) & {p.get("id") for p in photos}
+
+        effective_photos = photos
+        if (len(prioritized_photo_ids_set) + (1 if main_highlight_photo_id else 0) >= highlights_count):
+            effective_photos = [
+                p
+                for p in photos 
+                if p.get("id") == main_highlight_photo_id or p.get("id") in prioritized_photo_ids_set
+            ]
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             preprocessed_photos = list(
-                filter(None, executor.map(self._preprocess_photo, photos))
+                filter(None, executor.map(self._preprocess_photo, effective_photos))
             )
 
         if not preprocessed_photos:
@@ -357,8 +372,9 @@ class HighlightsSelectingTriggeredHandler(BaseHandler):
 
         enriched_data.sort(
             key=lambda d: (
-                d["photo"].get("id") != main_highlight_photo_id,
-                -d["priority"],
+                0 if d["photo"].get("id") == main_highlight_photo_id 
+                else (1 if d["photo"].get("id") in prioritized_photo_ids_set else 2),
+                -d["priority"]
             )
         )
 
