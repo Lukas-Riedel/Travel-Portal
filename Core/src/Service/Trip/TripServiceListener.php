@@ -117,8 +117,10 @@
                         fn($trip) => $trip !== null && ($this->tripService->getRegularTrip($trip->getId())?->isCurrent() ?? false))));
                     foreach ($activeTripIds as &$tripId) {
                         $trip = $this->tripService->getRegularTrip($tripId);
-                        $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId, $trip->getFullName(),
-                            $this->maxHighlightsPerTripCount, true, false));
+                        if (count($trip->getHighlights()) < $this->maxHighlightsPerTripCount) {
+                            $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId, $trip->getFullName(),
+                                $this->maxHighlightsPerTripCount, true, false));
+                        }
                     }
                 }
             }
