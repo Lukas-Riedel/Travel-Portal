@@ -49,7 +49,6 @@
                     usort($mostExpensiveTrips, fn($a, $b) => $b->getValue() <=> $a->getValue());
                     if (count($mostExpensiveTrips) > 0) {
                         $statistics[] = new Statistics(StatisticsName::MostExpensiveTrips, $mostExpensiveTrips, StatisticsUnit::MainCurrency);
-                        $statistics[] = new Statistics(StatisticsName::LeastExpensiveTrips, array_reverse($mostExpensiveTrips), StatisticsUnit::MainCurrency);
                     }
 
                     $mostExpensiveTripsPerDay = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), intval($this->getTripCost($trip->getId()) / $trip->getDaysCount())), 

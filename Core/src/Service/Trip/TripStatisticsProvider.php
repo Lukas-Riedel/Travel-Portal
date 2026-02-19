@@ -38,12 +38,6 @@
                     if (count($longestTrips) > 0) {
                         $statistics[] = new Statistics(StatisticsName::LongestTrips, $longestTrips, StatisticsUnit::Days);
                     }
-                    
-                    $shortestTrips = array_map(fn($trip) => new KeyValuePair($trip->getFullName(), $trip->getDaysCount()),
-                        $this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::LongestDescending));
-                    if (count($shortestTrips) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::ShortestTrips, $shortestTrips, StatisticsUnit::Days);
-                    }
                 }
             }
 

@@ -31,7 +31,6 @@
         case TotalExpenses = "TOTAL_EXPENSES";
         case AverageExpensesPerDay = "AVERAGE_EXPENSES_PER_DAY";
         case MostExpensiveTrips = "MOST_EXPENSIVE_TRIPS";
-        case LeastExpensiveTrips = "LEAST_EXPENSIVE_TRIPS";
         case MostExpensiveTripsPerDay = "MOST_EXPENSIVE_TRIPS_PER_DAY";
         case LeastExpensiveTripsPerDay = "LEAST_EXPENSIVE_TRIPS_PER_DAY";
         case MostExpensiveHotelStaysPerNight = "MOST_EXPENSIVE_HOTEL_STAYS_PER_NIGHT";
@@ -78,7 +77,6 @@
 
         case AverageTripLength = "AVERAGE_TRIP_LENGTH";
         case LongestTrips = "LONGEST_TRIPS";
-        case ShortestTrips = "SHORTEST_TRIPS";
 
         public function getRequiredRole() : UserRole {
             return match($this) {
@@ -103,7 +101,6 @@
                 self::TotalExpenses,
                 self::AverageExpensesPerDay,
                 self::MostExpensiveTrips,
-                self::LeastExpensiveTrips,
                 self::MostExpensiveTripsPerDay,
                 self::LeastExpensiveTripsPerDay,
                 self::MostExpensiveHotelStaysPerNight,
@@ -149,8 +146,7 @@
                 self::LongestHotelStays => UserRole::TripStayRead,
 
                 self::AverageTripLength,
-                self::LongestTrips,
-                self::ShortestTrips => UserRole::TripRead,
+                self::LongestTrips => UserRole::TripRead,
             };
         }
     }

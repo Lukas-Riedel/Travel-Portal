@@ -62,6 +62,22 @@ export function formatNights(value) {
     return format(value, ["noc", "noci", "nocí"])
 }
 
+export function formatLatitude(val) {
+    const abs = Math.abs(val);
+    const d = Math.floor(abs);
+    const m = Math.floor((abs - d) * 60);
+    const s = Math.round((abs - d - m / 60) * 3600);
+    return `${d}° ${m}' ${s}" ${val >= 0 ? "N" : "S"}`;
+}
+
+export function formatLongitude(val) {
+    const abs = Math.abs(val);
+    const d = Math.floor(abs);
+    const m = Math.floor((abs - d) * 60);
+    const s = Math.round((abs - d - m / 60) * 3600);
+    return `${d}° ${m}' ${s}" ${val >= 0 ? "E" : "W"}`;
+}
+
 export function formatBeforeDays(value) {
     return format(Math.floor((Date.now() / 1000 - value) / 86400), ["dnem", "dny", "dny"])
 }
@@ -89,7 +105,7 @@ export function formatTimeAgo(timestamp) {
     if (hours < 24) {
         return formatBeforeHours(timestamp)
     }
-    
+
     return formatBeforeDays(timestamp);
 }
 
@@ -111,7 +127,9 @@ export function formatStatisticsUnit(unit, value, mainCurrency) {
         "beforeDaysTimestamp": v => "Před " + formatBeforeDays(v),
         "visits": formatVisits,
         "airports": formatAirports,
-        "nights": formatNights
+        "nights": formatNights,
+        "latitude": formatLatitude,
+        "longitude": formatLongitude
     }
 
     return statisticsUnits[unit] ? statisticsUnits[unit](value) : (value + " " + unit)

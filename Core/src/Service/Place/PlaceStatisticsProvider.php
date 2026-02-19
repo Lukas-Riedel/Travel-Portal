@@ -86,11 +86,13 @@
                     $travelDaysCountByCountry = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
                         count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $visitedCategory->getPlaces())))))),
-                        $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Country, VisitedCategoriesSortingStrategy::TravelDaysCountDescending));
+                        array_filter($this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Country, VisitedCategoriesSortingStrategy::TravelDaysCountDescending),
+                            fn($visitedCategory) => $visitedCategory->getCategory()->getName() !== $homeLocation["country"]));
                     if (count($travelDaysCountByCountry) > 0) {
                         $statistics[] = new Statistics(StatisticsName::TotalTravelDaysPerCountry, $travelDaysCountByCountry, StatisticsUnit::Days);
                     }
                     
+                    // TODO: Exclude days spent by traveling in the home country.
                     $travelDaysCountByContinent = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
                         count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $visitedCategory->getPlaces())))))),
@@ -121,33 +123,34 @@
                         $furthestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]), $relevantPlaces);
                         $statistics[] = new Statistics(StatisticsName::FurthestPlaces, $furthestPlaces, StatisticsUnit::Kilometers);
 
-                        $furthestCountries = array_map(fn($place) => new KeyValuePair($place->getCountry(),
-                            $distances[$place->getId()]), array_values(array_reduce($relevantPlaces, fn($carry, $place) => $carry + [$place->getCountry() => $place], array())));
+                        $rawFurthestCountries = array_values(array_reduce($relevantPlaces, fn($carry, $place) => array_merge($carry, [$place->getCountry() => $place]), array()));
+                        usort($rawFurthestCountries, fn($a, $b) => $distances[$b->getId()] <=> $distances[$a->getId()]);
+                        $furthestCountries = array_map(fn($place) => new KeyValuePair($place->getCountry(), $distances[$place->getId()]), $rawFurthestCountries);
                         $statistics[] = new Statistics(StatisticsName::FurthestCountries, $furthestCountries, StatisticsUnit::Kilometers);
                     }
                                         
-                    $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLatitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeDescending));
                     if (count($northernmostPlaces) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::NorthernmostPlaces, $northernmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::NorthernmostPlaces, $northernmostPlaces, StatisticsUnit::Latitude);
                     }
 
-                    $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLatitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeAscending));
                     if (count($southernmostPlaces) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::SouthernmostPlaces, $southernmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::SouthernmostPlaces, $southernmostPlaces, StatisticsUnit::Latitude);
                     }
 
-                    $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLongitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeDescending));
                     if (count($easternmostPlaces) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::EasternmostPlaces, $easternmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::EasternmostPlaces, $easternmostPlaces, StatisticsUnit::Longitude);
                     }
 
-                    $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLongitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeAscending));
                     if (count($westernmostPlaces) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::WesternmostPlaces, $westernmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::WesternmostPlaces, $westernmostPlaces, StatisticsUnit::Longitude);
                     }
                 }
                 
