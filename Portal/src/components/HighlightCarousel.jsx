@@ -112,6 +112,12 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         showUpdateHighlightToast(() => getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
             .then(base64Data => onPhotoCorrected(place.id, currentHighlightAlbumId, uuidv4() + ".jpg", base64Data, highlight.photo.id))
             .then(() => window.open(highlight.photo.permalink, "_blank")))
+            .then(() => {
+                setCrop({ x: defaultXPosition, y: defaultYPosition })
+                setZoom(defaultZoom)
+                setRotation(defaultRotation)
+                setShowEditor(false)
+            })
     }
 
     const handleHighlightRemoved = () => {
