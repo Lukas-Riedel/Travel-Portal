@@ -2,7 +2,7 @@ import { fromUnixTime, isSameDay } from "date-fns"
 import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album, PlaceIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
 import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUtils.ts"
-import { getCurrentTimestamp, getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 
@@ -12,6 +12,7 @@ export class Place implements IPlace {
     country: string
     latitude: number
     longitude: number
+    elevation: number
     timezone: string
     mainHighlight?: Highlight
     score: number

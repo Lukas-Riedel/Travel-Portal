@@ -18,6 +18,10 @@ export function formatKilometers(value) {
     return format(Math.round(value), ["kilometr", "kilometry", "kilometrů"])
 }
 
+export function formatMeters(value) {
+    return format(Math.round(value), ["metr", "metry", "metrů"])
+}
+
 export function formatPhotos(value) {
     return format(value, ["fotka", "fotky", "fotek"])
 }

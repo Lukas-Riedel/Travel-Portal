@@ -9,11 +9,14 @@
 
         private const EARTH_RADIUS_KM = 6378;
         
-        private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+) (.+)\) \[(.+)\]}";
-        private const CACHED_ADDRESS_FORMAT = "%s, %s (%s %s) [%s]";
+        private const CACHED_ADDRESS_PATTERN = "{.+, (.+) \((.+) (.+) (.+)\) \[(.+)\]}";
+        private const CACHED_ADDRESS_FORMAT = "%s, %s (%s %s %s) [%s]";
         
         private const ADDRESS_CACHE_KEY_FORMAT = "GeocodingService:Address:%s";
         private const ADDRESS_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
+
+        private const ELEVATION_CACHE_KEY_FORMAT = "GeocodingService:Elevation:%s-%s";
+        private const ELEVATION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
         
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
@@ -56,7 +59,7 @@
             // For example, it translates Asia/Muscat into Asia/Dubai.
             return $location->getCountry() === null ? null
                 : sprintf(self::CACHED_ADDRESS_FORMAT, $placeName, $location->getCountry(),
-                    $location->getLatitude(), $location->getLongitude(), $location->getTimezone());
+                    $location->getLatitude(), $location->getLongitude(), $location->getElevation(), $location->getTimezone());
         }
 
         public function getDistance(float $aLatitude, float $aLongitude, float $bLatitude, float $bLongitude) : float {
@@ -68,13 +71,25 @@
             return 2 * self::EARTH_RADIUS_KM * $c;
         }
 
+        public function getElevation(float $latitude, float $longitude) : int {
+            $cacheKey = $this->getElevationCacheKey($latitude, $longitude);
+            $elevation = $this->distributedCacheClient->get($cacheKey, self::ELEVATION_CACHE_TTL);
+            if ($elevation !== null) {
+                return $elevation;
+            }
+
+            $elevation = round($this->googleClient->getElevation($latitude, $longitude));
+            $this->distributedCacheClient->set($cacheKey, $elevation, self::ELEVATION_CACHE_TTL);
+            return $elevation;
+        }
+
         private function tryGetCachedLocation(string $address) : ?Location {
             $location = $this->distributedCacheClient->get($this->getAddressCacheKey($address), self::ADDRESS_CACHE_TTL);
             if ($location === null) {
                 return null;
             }
 
-            return new Location($location["country"], $location["latitude"], $location["longitude"], $location["timezone"]);
+            return new Location($location["country"], $location["latitude"], $location["longitude"], $location["elevation"], $location["timezone"]);
         }
 
         private function tryGetCachedAddress(float $latitude, float $longitude) : ?Address {
@@ -88,17 +103,18 @@
 
         private function tryParseLocation(string $address) : ?Location {
             preg_match(self::CACHED_ADDRESS_PATTERN, $address, $tokens);
-            if (count($tokens) !== 5) {
+            if (count($tokens) !== 6) {
                 return null;
             }
             
-            return new Location($tokens[1], $tokens[2], $tokens[3], $tokens[4]);
+            return new Location($tokens[1], $tokens[2], $tokens[3], $tokens[4], $tokens[5]);
         }
 
         private function createLocation(string $address) : Location {
             $country = null;
             $latitude = null;
             $longitude = null;
+            $elevation = null;
             $timezone = null;
 
             // Geocoding request.
@@ -114,7 +130,12 @@
                 $timezone = $this->googleClient->getTimezone($latitude, $longitude);
             }
 
-            $convertedLocation = new Location($country, $latitude, $longitude, $timezone);
+            // Elevation request.
+            if ($latitude !== null && $longitude !== null) {
+                $elevation = $this->getElevation($latitude, $longitude);
+            }
+
+            $convertedLocation = new Location($country, $latitude, $longitude, $elevation, $timezone);
             $this->distributedCacheClient->set($this->getAddressCacheKey($address), $convertedLocation, self::ADDRESS_CACHE_TTL);
 
             return $convertedLocation;
@@ -141,6 +162,10 @@
 
         private function getAddressCacheKey(string $address) : string {
             return sprintf(self::ADDRESS_CACHE_KEY_FORMAT, $address);
+        }
+
+        private function getElevationCacheKey(float $latitude, float $longitude) : string {
+            return sprintf(self::ELEVATION_CACHE_KEY_FORMAT, round($latitude, 3), round($longitude, 3));
         }
 
         private function getLocationCacheKey(float $latitude, float $longitude) : string {
