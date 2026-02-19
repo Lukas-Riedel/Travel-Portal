@@ -148,8 +148,17 @@
 
             $cachedPhotos = $this->distributedCacheClient->get($fetchedAlbumKey);
             if ($cachedPhotos !== null) {
-                return $cachedPhotos;
-            }            
+                if (count($cachedPhotos) === 0) {
+                    return $cachedPhotos;
+                }
+                
+                $photo = $cachedPhotos[0];
+                if ($this->httpClient->returns2xx(HttpMethod::HEAD, $photo["url"])) {
+                    return $cachedPhotos;
+                }
+                
+                $this->distributedCacheClient->delete($fetchedAlbumKey);
+            }
 
             $photos = array();
 
