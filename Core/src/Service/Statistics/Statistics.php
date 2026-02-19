@@ -12,8 +12,7 @@
             new OA\Property(
                 property: "name",
                 description: "The name of the statistics record",
-                type: "string",
-                example: "TOTAL_PHOTOS_COUNT"
+                ref: "#/components/schemas/StatisticsName"
             ),
             new OA\Property(
                 property: "value",
@@ -34,17 +33,17 @@
         ]
     )]
     class Statistics implements \JsonSerializable {        
-        private readonly string $name;
+        private readonly StatisticsName $name;
         private readonly mixed $value;
         private readonly StatisticsUnit $unit;
 
-        public function __construct(string $name, mixed $value, StatisticsUnit $unit) {
+        public function __construct(StatisticsName $name, mixed $value, StatisticsUnit $unit) {
             $this->name = $name;
             $this->value = $this->convert($value);
             $this->unit = $unit;
         }
 
-        public function getName() : string {
+        public function getName() : StatisticsName {
             return $this->name;
         }
 

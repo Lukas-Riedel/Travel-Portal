@@ -255,6 +255,10 @@
             $this->statistics = array();
         }
 
+        public function setStatistics(array $statistics) : void {
+            $this->statistics = $statistics;
+        }
+
         public function getPublicHolidays() : array {
             return $this->publicHolidays;
         }

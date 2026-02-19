@@ -123,7 +123,7 @@
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             
-            return $this->yearService->getYears($mappedInclude);
+            return array_map(fn($year) => $this->filterYearPermissions($year, $request), $this->yearService->getYears($mappedInclude));
         }
 
         #[OA\Get(
@@ -548,6 +548,9 @@
         private function filterYearPermissions(Year $year, Request $request) : Year {
             if (!$this->hasRole($request, UserRole::YearStatisticsRead)) {
                 $year->resetStatistics();
+            }
+            else {
+                $year->setStatistics(array_values(array_filter($year->getStatistics(), fn($statistics) => $this->hasRole($request, $statistics->getName()->getRequiredRole()))));
             }
             if (!$this->hasRole($request, UserRole::YearHighlightRead)) {
                 $year->resetHighlights();

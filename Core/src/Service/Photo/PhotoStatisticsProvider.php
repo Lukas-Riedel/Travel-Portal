@@ -8,19 +8,12 @@
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
     use Core\Service\Statistics\StatisticsKind;
+    use Core\Service\Statistics\StatisticsName;
     use Core\Service\Statistics\StatisticsProvider;
     use Core\Service\Statistics\StatisticsType;
     use Core\Service\Statistics\StatisticsUnit;
 
     class PhotoStatisticsProvider implements StatisticsProvider {
-        
-        private const TOTAL_PHOTOS_COUNT_STATISTICS_NAME = "TOTAL_PHOTOS_COUNT";
-        private const AVERAGE_PHOTOS_PER_ALBUM_STATISTICS_NAME = "AVERAGE_PHOTOS_PER_ALBUM";
-        private const MOST_PHOTOS_PER_PLACE_STATISTICS_NAME = "MOST_PHOTOS_PER_PLACE";
-        private const MOST_PHOTOS_PER_DAY_STATISTICS_NAME = "MOST_PHOTOS_PER_DAY";
-        private const MOST_PHOTOS_PER_COUNTRY_STATISTICS_NAME = "MOST_PHOTOS_PER_COUNTRY";
-        private const MOST_PHOTOS_PER_CATEGORY_STATISTICS_NAME = "MOST_PHOTOS_PER_CATEGORY";
-        private const MOST_PHOTOS_PER_TRIP_STATISTICS_NAME = "MOST_PHOTOS_PER_TRIP";
 
         private const PHOTOS_DATE_STATISTICS_FORMAT = "%s @ %s";
 
@@ -44,8 +37,8 @@
                 if (count($albums) > 0) {
                     $totalPhotosCount = array_sum(array_map(fn($album) => $album->getImagesCount(), $albums));
 
-                    $statistics[] = new Statistics(self::TOTAL_PHOTOS_COUNT_STATISTICS_NAME, $totalPhotosCount, StatisticsUnit::Photos);
-                    $statistics[] = new Statistics(self::AVERAGE_PHOTOS_PER_ALBUM_STATISTICS_NAME, intval($totalPhotosCount / count($albums)), StatisticsUnit::Photos);
+                    $statistics[] = new Statistics(StatisticsName::TotalPhotosCount, $totalPhotosCount, StatisticsUnit::Photos);
+                    $statistics[] = new Statistics(StatisticsName::AveragePhotosPerAlbum, intval($totalPhotosCount / count($albums)), StatisticsUnit::Photos);
                 }
             }
             
@@ -58,7 +51,7 @@
                     usort($mostPhotosPerPlace, fn($a, $b) => $b->getValue() <=> $a->getValue());
 
                     if (count($mostPhotosPerPlace) > 0) {
-                        $statistics[] = new Statistics(self::MOST_PHOTOS_PER_PLACE_STATISTICS_NAME, $mostPhotosPerPlace, StatisticsUnit::Photos);
+                        $statistics[] = new Statistics(StatisticsName::MostPhotosPerPlace, $mostPhotosPerPlace, StatisticsUnit::Photos);
                     }
                 }
 
@@ -76,24 +69,24 @@
                         array_unique(array_map(fn($place) => $place->getName(), $placesByDay[date(CommonConstants::DMY_DATE_FORMAT, $date->getStart())]))),
                         date(CommonConstants::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {
-                        $statistics[] = new Statistics(self::MOST_PHOTOS_PER_DAY_STATISTICS_NAME, $mostPhotosPerDay, StatisticsUnit::Photos);
+                        $statistics[] = new Statistics(StatisticsName::MostPhotosPerDay, $mostPhotosPerDay, StatisticsUnit::Photos);
                     }
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $mostPhotosPerCountry = $this->getStandingsStatistics(fn($place, $date) => array($place->getCountry()), $relevantPlaces);
                     if (count($mostPhotosPerCountry) > 0) {
-                        $statistics[] = new Statistics(self::MOST_PHOTOS_PER_COUNTRY_STATISTICS_NAME, $mostPhotosPerCountry, StatisticsUnit::Photos);
+                        $statistics[] = new Statistics(StatisticsName::MostPhotosPerCountry, $mostPhotosPerCountry, StatisticsUnit::Photos);
                     }
 
                     $mostPhotosPerCategory = $this->getStandingsStatistics(fn($place, $date) => array_map(fn($category) => $category->getName(), $place->getCategories()), $relevantPlaces);
                     if (count($mostPhotosPerCategory) > 0) {
-                        $statistics[] = new Statistics(self::MOST_PHOTOS_PER_CATEGORY_STATISTICS_NAME, $mostPhotosPerCategory, StatisticsUnit::Photos);
+                        $statistics[] = new Statistics(StatisticsName::MostPhotosPerCategory, $mostPhotosPerCategory, StatisticsUnit::Photos);
                     }
 
                     $mostPhotosPerTrip = $this->getStandingsStatistics(fn($place, $date) => array($date->getTrip()?->getFullName()), $relevantPlaces);
                     if (count($mostPhotosPerTrip) > 0) {
-                        $statistics[] = new Statistics(self::MOST_PHOTOS_PER_TRIP_STATISTICS_NAME, $mostPhotosPerTrip, StatisticsUnit::Photos);
+                        $statistics[] = new Statistics(StatisticsName::MostPhotosPerTrip, $mostPhotosPerTrip, StatisticsUnit::Photos);
                     }
                 }
             }

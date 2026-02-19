@@ -8,6 +8,7 @@
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
     use Core\Service\Statistics\StatisticsKind;
+    use Core\Service\Statistics\StatisticsName;
     use Core\Service\Statistics\StatisticsProvider;
     use Core\Service\Statistics\StatisticsType;
     use Core\Service\Statistics\StatisticsUnit;
@@ -17,19 +18,6 @@
     class FitnessStatisticsProvider implements StatisticsProvider {
 
         private const PLACES_AND_DATE_FORMAT = "%s @ %s";
-
-        private const TOTAL_STEPS_COUNT_STATISTICS_NAME = "TOTAL_STEPS_COUNT";
-        private const AVERAGE_STEPS_PER_DAY_STATISTICS_NAME = "AVERAGE_STEPS_PER_DAY";
-        private const TOTAL_TIME_IN_MOTION_STATISTICS_NAME = "TOTAL_TIME_IN_MOTION";
-        private const AVERAGE_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME = "AVERAGE_TIME_IN_MOTION_PER_DAY";
-        private const MOST_STEPS_PER_DAY_STATISTICS_NAME = "MOST_STEPS_PER_DAY";
-        private const LEAST_STEPS_PER_DAY_STATISTICS_NAME = "LEAST_STEPS_PER_DAY";
-        private const MOST_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME = "MOST_TIME_IN_MOTION_PER_DAY";
-        private const LEAST_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME = "LEAST_TIME_IN_MOTION_PER_DAY";
-        private const MOST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME = "MOST_AVERAGE_STEPS_PER_DAY_TRIPS";
-        private const LEAST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME = "LEAST_AVERAGE_STEPS_PER_DAY_TRIPS";
-        private const MOST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME = "MOST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS";
-        private const LEAST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME = "LEAST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS";
 
         private readonly FitnessService $fitnessService;
 
@@ -52,19 +40,19 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     if ($totalFitness->getSteps() > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_STEPS_COUNT_STATISTICS_NAME, $totalFitness->getSteps(), StatisticsUnit::Steps);
+                        $statistics[] = new Statistics(StatisticsName::TotalStepsCount, $totalFitness->getSteps(), StatisticsUnit::Steps);
                     }
                     
                     if ($averageFitness->getSteps() > 0) {
-                        $statistics[] = new Statistics(self::AVERAGE_STEPS_PER_DAY_STATISTICS_NAME, $averageFitness->getSteps(), StatisticsUnit::Steps);
+                        $statistics[] = new Statistics(StatisticsName::AverageStepsPerDay, $averageFitness->getSteps(), StatisticsUnit::Steps);
                     }
                     
                     if ($totalFitness->getSeconds() > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_TIME_IN_MOTION_STATISTICS_NAME, $totalFitness->getSeconds(), StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::TotalTimeInMotion, $totalFitness->getSeconds(), StatisticsUnit::Duration);
                     }
                     
                     if ($averageFitness->getSeconds() > 0) {
-                        $statistics[] = new Statistics(self::AVERAGE_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, $averageFitness->getSeconds(), StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::AverageTimeInMotionPerDay, $averageFitness->getSeconds(), StatisticsUnit::Duration);
                     }
                 }
             }
@@ -74,25 +62,25 @@
                 $mostStepsPerDayRecords = $this->getStandingsStatisticsForDayRecords($placesCache, $this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::StepsDescending),
                     fn($record) => $record->getFitness()->getSteps(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($mostStepsPerDayRecords) > 0) {
-                    $statistics[] = new Statistics(self::MOST_STEPS_PER_DAY_STATISTICS_NAME, $mostStepsPerDayRecords, StatisticsUnit::Steps);
+                    $statistics[] = new Statistics(StatisticsName::MostStepsPerDay, $mostStepsPerDayRecords, StatisticsUnit::Steps);
                 }
                 
                 $leastStepsPerDayRecords = $this->getStandingsStatisticsForDayRecords($placesCache, $this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::StepsAscending),
                     fn($record) => $record->getFitness()->getSteps(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($leastStepsPerDayRecords) > 0) {
-                    $statistics[] = new Statistics(self::LEAST_STEPS_PER_DAY_STATISTICS_NAME, $leastStepsPerDayRecords, StatisticsUnit::Steps);
+                    $statistics[] = new Statistics(StatisticsName::LeastStepsPerDay, $leastStepsPerDayRecords, StatisticsUnit::Steps);
                 }
                 
                 $mostTimeInMotionPerDayRecords = $this->getStandingsStatisticsForDayRecords($placesCache, $this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::TimeInMotionDescending),
                     fn($record) => $record->getFitness()->getSeconds(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($mostTimeInMotionPerDayRecords) > 0) {
-                    $statistics[] = new Statistics(self::MOST_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, $mostTimeInMotionPerDayRecords, StatisticsUnit::Duration);
+                    $statistics[] = new Statistics(StatisticsName::MostTimeInMotionPerDay, $mostTimeInMotionPerDayRecords, StatisticsUnit::Duration);
                 }
                 
                 $leastTimeInMotionPerDayRecords = $this->getStandingsStatisticsForDayRecords($placesCache, $this->fitnessService->getTimeBasedFitnessRecordsPerDayForInterval($start, $end, FitnessSortingStrategy::TimeInMotionAscending),
                     fn($record) => $record->getFitness()->getSeconds(), $categoryId, $statisticsType === StatisticsType::Trip ? $entityId : null);
                 if (count($leastTimeInMotionPerDayRecords) > 0) {
-                    $statistics[] = new Statistics(self::LEAST_TIME_IN_MOTION_PER_DAY_STATISTICS_NAME, $leastTimeInMotionPerDayRecords, StatisticsUnit::Duration);
+                    $statistics[] = new Statistics(StatisticsName::LeastTimeInMotionPerDay, $leastTimeInMotionPerDayRecords, StatisticsUnit::Duration);
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
@@ -100,12 +88,12 @@
                         $this->tripService->getRegularTrips(null, $start, $end, array(), TripSortingStrategy::OldestAscending));
                     if (count($tripFitnessRecords) > 0) {
                         $mostAverageSteps = $this->getStandingsStatisticsForTripRecords($tripFitnessRecords, fn($fitness) => $fitness->getSteps());
-                        $statistics[] = new Statistics(self::MOST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME, $mostAverageSteps, StatisticsUnit::Steps);
-                        $statistics[] = new Statistics(self::LEAST_AVERAGE_STEPS_PER_DAY_TRIPS_STATISTICS_NAME, array_reverse($mostAverageSteps), StatisticsUnit::Steps);
+                        $statistics[] = new Statistics(StatisticsName::MostAverageStepsPerDayTrips, $mostAverageSteps, StatisticsUnit::Steps);
+                        $statistics[] = new Statistics(StatisticsName::LeastAverageStepsPerDayTrips, array_reverse($mostAverageSteps), StatisticsUnit::Steps);
                         
                         $mostTimeInMotion = $this->getStandingsStatisticsForTripRecords($tripFitnessRecords, fn($fitness) => $fitness->getSeconds());
-                        $statistics[] = new Statistics(self::MOST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME, $mostTimeInMotion, StatisticsUnit::Duration);
-                        $statistics[] = new Statistics(self::LEAST_AVERAGE_TIME_IN_MOTION_PER_DAY_TRIPS_STATISTICS_NAME, array_reverse($mostTimeInMotion), StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::MostAverageTimeInMotionPerDayTrips, $mostTimeInMotion, StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::LeastAverageTimeInMotionPerDayTrips, array_reverse($mostTimeInMotion), StatisticsUnit::Duration);
                     }
                 }
             }

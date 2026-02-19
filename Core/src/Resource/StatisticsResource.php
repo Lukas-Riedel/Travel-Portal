@@ -85,7 +85,7 @@
         public function listStatistics(Request $request, Response $response, array $routeArguments) : mixed {   
             $this->requireRole($request, UserRole::StatisticsRead);
 
-            return $this->statisticsService->getOverallStatistics();
+            return array_values(array_filter($this->statisticsService->getOverallStatistics(), fn($statistics) => $this->hasRole($request, $statistics->getName()->getRequiredRole())));
         }  
     }
 ?>

@@ -88,6 +88,10 @@
             $this->statistics = array();
         }
 
+        public function setStatistics(array $statistics) : void {
+            $this->statistics = $statistics;
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);
