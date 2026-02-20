@@ -32,6 +32,11 @@ iam:
   google:
     client:
       id: 260891677871-n02h7nhapeelp4jkkgejsj5m54ramkoq.apps.googleusercontent.com
+  ibm:
+    iam:
+      base:
+        # public: https://iam.cloud.ibm.com
+        public: https://iam.test.cloud.ibm.com
   grafana:
     entrypoint: https://logs-prod-012.grafana.net
     client:

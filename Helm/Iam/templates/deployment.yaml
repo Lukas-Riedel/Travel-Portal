@@ -77,6 +77,8 @@ spec:
               value: "{{ .Values.iam.url.base.private.user }}"
             - name: INTERNAL_ADMIN_IAM_BASE_URL
               value: "{{ .Values.iam.url.base.private.admin }}"
+            - name: IBM_CLOUD_IAM_BASE_URL
+              value: "{{ .Values.iam.ibm.iam.base.public }}"
             - name: FCM_PROJECT_ID
               value: "{{ .Values.iam.fcm.project.id }}"
             - name: FCM_PRIVATE_KEY_ID
@@ -105,8 +107,10 @@ spec:
             - name: IBM_CLOUD_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ibm-cloud-api-key
-                  key: iam-ibm-cloud-api-key
+                  # name: {{ .Release.Name }}-ibm-cloud-api-key
+                  # key: iam-ibm-cloud-api-key
+                  name: {{ .Release.Name }}-ibm-test-cloud-api-key
+                  key: iam-ibm-test-cloud-api-key
             - name: GRAFANA_LOKI_ENTRYPOINT
               value: "{{ .Values.iam.grafana.entrypoint }}"
             - name: GRAFANA_LOKI_CLIENT_NAME
