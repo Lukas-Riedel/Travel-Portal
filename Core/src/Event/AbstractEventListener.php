@@ -51,8 +51,10 @@
             $this->logger->debug("Received the '" . $event["name"] . "' event...", $event);
             try {
                 $handlerMethod = self::EVENT_HANDLER_METHOD_PREFIX . $event["name"];
-                foreach ($this->eventHandlers[$event["name"]] as $eventHandler) {
-                    $eventHandler->$handlerMethod($event["args"]);
+                if (isset($this->eventHandlers[$event["name"]])) {
+                    foreach ($this->eventHandlers[$event["name"]] as $eventHandler) {
+                        $eventHandler->$handlerMethod($event["args"]);
+                    }
                 }
             }
             catch (\Throwable $e) {
