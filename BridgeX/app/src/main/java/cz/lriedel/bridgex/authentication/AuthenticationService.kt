@@ -2,12 +2,15 @@ package cz.lriedel.bridgex.authentication
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Base64
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import cz.lriedel.bridgex.IamClient
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import cz.lriedel.bridgex.BuildConfig
+import com.google.gson.Gson
 
 class AuthenticationService private constructor(context: Context) {
     private val sharedPreferences: SharedPreferences = EncryptedSharedPreferences.create(
@@ -17,7 +20,8 @@ class AuthenticationService private constructor(context: Context) {
 
     private val iamClient: IamClient = IamClient.getOrCreate()
 
-    private val tokenMutex = Mutex()
+    private val tokenMutex: Mutex = Mutex()
+    private val gson: Gson = Gson()
 
     private var cachedAccessToken: String? = null
     private var cachedAccessTokenExpiration: Long = 0L
@@ -40,7 +44,7 @@ class AuthenticationService private constructor(context: Context) {
             }
 
             Log.d(AuthenticationService::class.java.simpleName, "Received a request to obtain an access token...")
-            
+
             val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null) ?: return@withLock try {
                 login(FALLBACK_USERNAME, FALLBACK_PASSWORD)
             } catch (e: Exception) {
@@ -59,14 +63,35 @@ class AuthenticationService private constructor(context: Context) {
         }
     }
 
+    suspend fun getUserRoles(): List<String> {
+        val token = getAccessToken() ?: return emptyList()
+        return try {
+            val parts = token.split(".")
+            if (parts.size < 2) {
+                return emptyList()
+            }
+
+            val decoded = gson.fromJson(String(Base64.decode(parts[1], Base64.URL_SAFE)), JwtPayload::class.java)
+            decoded.resourceAccess?.get(BuildConfig.IAM_APP_CLIENT_ID)?.roles ?: emptyList()
+        } catch (e: Exception) {
+            Log.e(AuthenticationService::class.java.simpleName, "An error occurred when obtaining user roles.", e)
+            emptyList()
+        }
+    }
+
+    suspend fun hasUserRoles(vararg roles: String): Boolean {
+        val userRoles = getUserRoles()
+        return roles.all { it in userRoles }
+    }
+
     private fun extractIamResponse(iamResponse: IamResponse?) {
         if (iamResponse == null) {
             cachedAccessToken = null
         }
-        else {            
+        else {
             cachedAccessToken = iamResponse.accessToken
             cachedAccessTokenExpiration = System.currentTimeMillis() + (iamResponse.expiresIn * 1000 * ACCESS_TOKEN_VALIDITY_MULTIPLIER).toLong()
-            
+
             with(sharedPreferences.edit()) {
                 iamResponse.refreshToken?.let { putString(REFRESH_TOKEN_KEY, it) } ?: remove(REFRESH_TOKEN_KEY)
                 apply()
@@ -79,6 +104,7 @@ class AuthenticationService private constructor(context: Context) {
         private const val REFRESH_TOKEN_KEY = "RefreshToken"
         private const val DEFAULT_TOKEN_SCOPE = "openid offline_access"
         private const val ACCESS_TOKEN_VALIDITY_MULTIPLIER = 0.95
+        // TODO: Propagate from the environment variables.
         private const val FALLBACK_USERNAME = "guest"
         private const val FALLBACK_PASSWORD = "guest"
 

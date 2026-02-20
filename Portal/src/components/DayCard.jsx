@@ -107,7 +107,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
         )
     }
 
-    const requiresAttention = event => hasRole(UserRole.UiWarningRead)
+    const requiresAttention = event => hasRole(UserRole.PortalWarningRead)
         && ((event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold))
             || (event.from && event.to && !event.confirmed))
 

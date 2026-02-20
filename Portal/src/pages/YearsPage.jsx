@@ -28,7 +28,7 @@ export default function YearsPage() {
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
-            {hasRole(UserRole.UiFutureRead) && (
+            {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
             )}
             {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [new Date().getFullYear()]).map(year => (

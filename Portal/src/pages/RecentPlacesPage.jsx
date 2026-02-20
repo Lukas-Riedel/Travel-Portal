@@ -72,7 +72,7 @@ export default function RecentPlacesPage() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
-            {(hasRole(UserRole.UiFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (
+            {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}
                     onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}

@@ -9,18 +9,22 @@
     use OpenApi\Attributes as OA;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceType;
+    use Core\Service\Geocoding\GeocodingService;
 
     #[OA\Tag(name: "Devices")]
     class DeviceResource extends AbstractResource {
 
         private readonly DeviceService $deviceService;
 
-        public function __construct(DeviceService $deviceService) {
+        private readonly GeocodingService $geocodingService;
+
+        public function __construct(DeviceService $deviceService, GeocodingService $geocodingService) {
             $this->deviceService = $deviceService;
+            $this->geocodingService = $geocodingService;
         }
 
-        public static function register(App $app, DeviceService $deviceService) : void {
-            $resource = new self($deviceService);
+        public static function register(App $app, DeviceService $deviceService, GeocodingService $geocodingService) : void {
+            $resource = new self($deviceService, $geocodingService);
 
             $app->group("/devices", function($group) use($resource) {
                 $group->post("", [$resource, "createDevice"]);
@@ -190,3 +194,4 @@
             return $this->deviceService->getDevices($mappedType, null);
         }
     }
+?>

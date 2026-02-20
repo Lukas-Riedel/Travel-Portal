@@ -24,6 +24,7 @@ android {
 
         val portalUrl = (project.findProperty("PORTAL_BASE_URL") ?: System.getenv("PORTAL_BASE_URL")) as String
         val iamUrl = (project.findProperty("IAM_BASE_URL") ?: System.getenv("IAM_BASE_URL")) as String
+        val iamAppClientId = (project.findProperty("IAM_APP_CLIENT_ID") ?: System.getenv("IAM_APP_CLIENT_ID")) as String
         val coreUrl = (project.findProperty("CORE_BASE_URL") ?: System.getenv("CORE_BASE_URL")) as String
         val firebaseApiKey = (project.findProperty("FIREBASE_API_KEY") ?: System.getenv("FIREBASE_API_KEY")) as String
         val firebaseAuthDomain = (project.findProperty("FIREBASE_AUTH_DOMAIN") ?: System.getenv("FIREBASE_AUTH_DOMAIN")) as String
@@ -36,6 +37,7 @@ android {
 
         buildConfigField("String", "PORTAL_BASE_URL", "\"$portalUrl/\"")
         buildConfigField("String", "IAM_BASE_URL", "\"$iamUrl/\"")
+        buildConfigField("String", "IAM_APP_CLIENT_ID", "\"$iamAppClientId\"")
         buildConfigField("String", "CORE_BASE_URL", "\"$coreUrl/\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"$firebaseApiKey\"")
         buildConfigField("String", "FIREBASE_AUTH_DOMAIN", "\"$firebaseAuthDomain\"")
