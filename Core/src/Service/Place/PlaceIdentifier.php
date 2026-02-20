@@ -9,7 +9,7 @@
         schema: "PlaceIdentifier",
         type: "object",
         description: "A class representing a place identifier",
-        required: ["id", "name", "latitude", "longitude", "timezone", "score"],
+        required: ["id", "name", "latitude", "longitude", "elevation", "timezone", "score"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -42,6 +42,13 @@
                 format: "float",
                 description: "The longitude of the place",
                 example: 14.4378
+            ),            
+            new OA\Property(
+                property: "elevation",
+                type: "number",
+                format: "integer",
+                description: "The elevation of the place in meters",
+                example: 140
             ),
             new OA\Property(
                 property: "timezone",
@@ -82,19 +89,21 @@
         private readonly ?string $country;
         private readonly float $latitude;
         private readonly float $longitude;
+        private readonly int $elevation;
         private readonly string $timezone;
         private readonly ?Highlight $mainHighlight;
         private readonly float $score;
         private readonly ?float $quality;
         private readonly ?string $excerpt;
 
-        public function __construct(?string $id, string $name, ?string $country, float $latitude,
-            float $longitude, string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt) {
+        public function __construct(?string $id, string $name, ?string $country, float $latitude, float $longitude, int $elevation,
+            string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt) {
             $this->id = $id;
             $this->name = $name;
             $this->country = $country;
             $this->latitude = $latitude;
             $this->longitude = $longitude;
+            $this->elevation = $elevation;
             $this->timezone = $timezone;
             $this->mainHighlight = $mainHighlight;
             $this->score = $score;
@@ -126,6 +135,10 @@
             return $this->longitude;
         }
 
+        public function getElevation() : int {
+            return $this->elevation;
+        }
+
         public function getTimezone() : string {
             return $this->timezone;
         }
@@ -147,7 +160,7 @@
         }
 
         public function getLocation() : Location {
-            return new Location($this->country, $this->latitude, $this->longitude, $this->timezone);
+            return new Location($this->country, $this->latitude, $this->longitude, $this->elevation, $this->timezone);
         }
 
         #[\ReturnTypeWillChange]

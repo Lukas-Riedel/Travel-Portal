@@ -141,7 +141,7 @@
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             
-            return $this->categoryService->getCategories($country, $mappedCategories, $mappedInclude);
+            return array_map(fn($category) => $this->filterCategoryPermissions($category, $request), $this->categoryService->getCategories($country, $mappedCategories, $mappedInclude));
         }
 
         #[OA\Get(
@@ -714,6 +714,9 @@
         private function filterCategoryPermissions(Category $category, Request $request) : Category {
             if (!$this->hasRole($request, UserRole::CategoryStatisticsRead)) {
                 $category->resetStatistics();
+            }
+            else {
+                $category->setStatistics(array_values(array_filter($category->getStatistics(), fn($statistics) => $this->hasRole($request, $statistics->getName()->getRequiredRole()))));
             }
             if (!$this->hasRole($request, UserRole::CategoryHighlightRead)) {
                 $category->resetHighlights();

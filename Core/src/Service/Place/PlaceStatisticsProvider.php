@@ -8,29 +8,12 @@
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
     use Core\Service\Statistics\StatisticsKind;
+    use Core\Service\Statistics\StatisticsName;
     use Core\Service\Statistics\StatisticsProvider;
     use Core\Service\Statistics\StatisticsType;
     use Core\Service\Statistics\StatisticsUnit;
 
     class PlaceStatisticsProvider implements StatisticsProvider {
-
-        private const TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_COUNTRIES_COUNT";
-        private const TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME = "TOTAL_VISITED_PLACES_COUNT";
-        private const FURTHEST_PLACES_STATISTICS_NAME = "FURTHEST_PLACES";
-        private const FURTHEST_COUNTRIES_STATISTICS_NAME = "FURTHEST_COUNTRIES";
-        private const VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME = "VISITED_PLACES_PER_COUNTRY";
-        private const VISITED_PLACES_PER_CONTINENT_STATISTICS_NAME = "VISITED_PLACES_PER_CONTINENT";
-        private const VISITED_PLACES_PER_CATEGORY_STATISTICS_NAME = "VISITED_PLACES_PER_CATEGORY";
-        private const WESTERNMOST_PLACES_STATISTICS_NAME = "WESTERNMOST_PLACES";
-        private const EASTERNMOST_PLACES_STATISTICS_NAME = "EASTERNMOST_PLACES";
-        private const NORTHERNMOST_PLACES_STATISTICS_NAME = "NORTHERNMOST_PLACES";
-        private const SOUTHERNMOST_PLACES_STATISTICS_NAME = "SOUTHERNMOST_PLACES";
-        private const LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME = "LEAST_RECENTLY_VISITED_PLACES";
-        private const TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_COUNT";
-        private const TOTAL_TRAVEL_DAYS_PER_COUNTRY_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_PER_COUNTRY";
-        private const TOTAL_TRAVEL_DAYS_PER_CONTINENT_STATISTICS_NAME = "TOTAL_TRAVEL_DAYS_PER_CONTINENT";
-        private const LAST_VISIT_STATISTICS_NAME = "LAST_VISIT";
-        private const MOST_VISITED_PLACES_STATISTICS_NAME = "MOST_VISITED_PLACES";
 
         private readonly PlaceService $placeService;
 
@@ -58,7 +41,7 @@
                 }
 
                 if ($visitedPlacesCount > 0) {
-                    $statistics[] = new Statistics(self::TOTAL_VISITED_PLACES_COUNT_STATISTICS_NAME, $visitedPlacesCount, StatisticsUnit::Places);
+                    $statistics[] = new Statistics(StatisticsName::TotalVisitedPlacesCount, $visitedPlacesCount, StatisticsUnit::Places);
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
@@ -66,14 +49,14 @@
                     if ($visitedPlacesCount > 0) {
                         $totalTravelDaysCount = count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces)))));
-                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_COUNT_STATISTICS_NAME, $totalTravelDaysCount, StatisticsUnit::Days);
+                        $statistics[] = new Statistics(StatisticsName::TotalTravelDaysCount, $totalTravelDaysCount, StatisticsUnit::Days);
                     }
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     if ($visitedPlacesCount > 0) {
                         $visitedCountriesCount = count(array_unique(array_filter(array_map(fn($place) => $place->getCountry(), $relevantPlaces), fn($country) => $country !== null)));
-                        $statistics[] = new Statistics(self::TOTAL_VISITED_COUNTRIES_COUNT_STATISTICS_NAME, $visitedCountriesCount, StatisticsUnit::Countries);
+                        $statistics[] = new Statistics(StatisticsName::TotalVisitedCountriesCount, $visitedCountriesCount, StatisticsUnit::Countries);
                     }
                 }
 
@@ -82,7 +65,7 @@
                         $dates = array_merge(...array_map(fn($place) => $place->getDates(), $relevantPlaces));
                         if (count($dates) > 0) {
                             $lastVisit = max(array_map(fn($place) => $place->getStart(), $dates));
-                            $statistics[] = new Statistics(self::LAST_VISIT_STATISTICS_NAME, $lastVisit, StatisticsUnit::BeforeDaysTimestamp);
+                            $statistics[] = new Statistics(StatisticsName::LastVisit, $lastVisit, StatisticsUnit::BeforeDaysTimestamp);
                         }
                     }
                 }
@@ -103,68 +86,71 @@
                     $travelDaysCountByCountry = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
                         count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $visitedCategory->getPlaces())))))),
-                        $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Country, VisitedCategoriesSortingStrategy::TravelDaysCountDescending));
+                        array_filter($this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Country, VisitedCategoriesSortingStrategy::TravelDaysCountDescending),
+                            fn($visitedCategory) => $visitedCategory->getCategory()->getName() !== $homeLocation["country"]));
                     if (count($travelDaysCountByCountry) > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_PER_COUNTRY_STATISTICS_NAME, $travelDaysCountByCountry, StatisticsUnit::Days);
+                        $statistics[] = new Statistics(StatisticsName::TotalTravelDaysPerCountry, $travelDaysCountByCountry, StatisticsUnit::Days);
                     }
                     
+                    // TODO: Exclude days spent by traveling in the home country.
                     $travelDaysCountByContinent = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(),
                         count(array_unique(array_map(fn($date) => $date->getStart() - ($date->getStart() % CommonConstants::ONE_DAY_SECONDS),
                             array_merge(...array_map(fn($place) => $place->getDates(), $visitedCategory->getPlaces())))))),
                         $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Continent, VisitedCategoriesSortingStrategy::TravelDaysCountDescending));
                     if (count($travelDaysCountByContinent) > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_TRAVEL_DAYS_PER_CONTINENT_STATISTICS_NAME, $travelDaysCountByContinent, StatisticsUnit::Days);
+                        $statistics[] = new Statistics(StatisticsName::TotalTravelDaysPerContinent, $travelDaysCountByContinent, StatisticsUnit::Days);
                     }
 
                     $visitedPlacesCountByCountry = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(), count($visitedCategory->getPlaces())),
                         $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Country, VisitedCategoriesSortingStrategy::VisitedPlacesCountDescending));
                     if (count($visitedPlacesCountByCountry) > 0) {
-                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_COUNTRY_STATISTICS_NAME, $visitedPlacesCountByCountry, StatisticsUnit::Places);
+                        $statistics[] = new Statistics(StatisticsName::VisitedPlacesPerCountry, $visitedPlacesCountByCountry, StatisticsUnit::Places);
                     }
 
                     $visitedPlacesCountByContinent = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(), count($visitedCategory->getPlaces())),
                         $this->placeService->getVisitedCategoriesForInterval($start, $end, CategoryCategory::Continent, VisitedCategoriesSortingStrategy::VisitedPlacesCountDescending));
                     if (count($visitedPlacesCountByContinent) > 0) {
-                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_CONTINENT_STATISTICS_NAME, $visitedPlacesCountByContinent, StatisticsUnit::Places);
+                        $statistics[] = new Statistics(StatisticsName::VisitedPlacesPerContinent, $visitedPlacesCountByContinent, StatisticsUnit::Places);
                     }
                     
                     $visitedPlacesCountByCategory = array_map(fn($visitedCategory) => new KeyValuePair($visitedCategory->getCategory()->getName(), count($visitedCategory->getPlaces())),
                         $this->placeService->getVisitedCategoriesForInterval($start, $end, null, VisitedCategoriesSortingStrategy::VisitedPlacesCountDescending));
                     if (count($visitedPlacesCountByCategory) > 0) {
-                        $statistics[] = new Statistics(self::VISITED_PLACES_PER_CATEGORY_STATISTICS_NAME, $visitedPlacesCountByCategory, StatisticsUnit::Places);
+                        $statistics[] = new Statistics(StatisticsName::VisitedPlacesPerCategory, $visitedPlacesCountByCategory, StatisticsUnit::Places);
                     }
                     
                     if (count($relevantPlaces) > 0) {
                         $furthestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]), $relevantPlaces);
-                        $statistics[] = new Statistics(self::FURTHEST_PLACES_STATISTICS_NAME, $furthestPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::FurthestPlaces, $furthestPlaces, StatisticsUnit::Kilometers);
 
-                        $furthestCountries = array_map(fn($place) => new KeyValuePair($place->getCountry(),
-                            $distances[$place->getId()]), array_values(array_reduce($relevantPlaces, fn($carry, $place) => $carry + [$place->getCountry() => $place], array())));
-                        $statistics[] = new Statistics(self::FURTHEST_COUNTRIES_STATISTICS_NAME, $furthestCountries, StatisticsUnit::Kilometers);
+                        $rawFurthestCountries = array_values(array_reduce($relevantPlaces, fn($carry, $place) => array_merge($carry, [$place->getCountry() => $place]), array()));
+                        usort($rawFurthestCountries, fn($a, $b) => $distances[$b->getId()] <=> $distances[$a->getId()]);
+                        $furthestCountries = array_map(fn($place) => new KeyValuePair($place->getCountry(), $distances[$place->getId()]), $rawFurthestCountries);
+                        $statistics[] = new Statistics(StatisticsName::FurthestCountries, $furthestCountries, StatisticsUnit::Kilometers);
                     }
                                         
-                    $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLatitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeDescending));
                     if (count($northernmostPlaces) > 0) {
-                        $statistics[] = new Statistics(self::NORTHERNMOST_PLACES_STATISTICS_NAME, $northernmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::NorthernmostPlaces, $northernmostPlaces, StatisticsUnit::Latitude);
                     }
 
-                    $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLatitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeAscending));
                     if (count($southernmostPlaces) > 0) {
-                        $statistics[] = new Statistics(self::SOUTHERNMOST_PLACES_STATISTICS_NAME, $southernmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::SouthernmostPlaces, $southernmostPlaces, StatisticsUnit::Latitude);
                     }
 
-                    $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLongitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeDescending));
                     if (count($easternmostPlaces) > 0) {
-                        $statistics[] = new Statistics(self::EASTERNMOST_PLACES_STATISTICS_NAME, $easternmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::EasternmostPlaces, $easternmostPlaces, StatisticsUnit::Longitude);
                     }
 
-                    $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $distances[$place->getId()]),
+                    $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLongitude()),
                         $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeAscending));
                     if (count($westernmostPlaces) > 0) {
-                        $statistics[] = new Statistics(self::WESTERNMOST_PLACES_STATISTICS_NAME, $westernmostPlaces, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::WesternmostPlaces, $westernmostPlaces, StatisticsUnit::Longitude);
                     }
                 }
                 
@@ -174,7 +160,7 @@
                     $leastRecentlyVisitedPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getDates()[count($place->getDates()) - 1]->getStart()), $leastRecentlyVisitedPlaces);
 
                     if (count($leastRecentlyVisitedPlaces) > 0) {
-                        $statistics[] = new Statistics(self::LEAST_RECENTLY_VISITED_PLACES_STATISTICS_NAME, $leastRecentlyVisitedPlaces, StatisticsUnit::BeforeDaysTimestamp);
+                        $statistics[] = new Statistics(StatisticsName::LeastRecentlyVisitedPlaces, $leastRecentlyVisitedPlaces, StatisticsUnit::BeforeDaysTimestamp);
                     }
                 }
                 
@@ -185,7 +171,7 @@
                     $mostVisitedPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $place->getDates())))), $mostVisitedPlaces);
 
                     if (count($mostVisitedPlaces) > 0) {
-                        $statistics[] = new Statistics(self::MOST_VISITED_PLACES_STATISTICS_NAME, $mostVisitedPlaces, StatisticsUnit::Visits);
+                        $statistics[] = new Statistics(StatisticsName::MostVisitedPlaces, $mostVisitedPlaces, StatisticsUnit::Visits);
                     }
                 }
             }

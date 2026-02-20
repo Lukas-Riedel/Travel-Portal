@@ -124,7 +124,7 @@
             $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
             $statisticsCollection = $this->distributedCacheClient->get($statisticsCollectionCacheKey);
             if ($statisticsCollection !== null) {
-                return $statisticsCollection["statistics"];
+                return array_map(fn($statistics) => new Statistics(StatisticsName::from($statistics["name"]), $statistics["value"], StatisticsUnit::from($statistics["unit"])), $statisticsCollection["statistics"]);
             }
 
             $this->logger->warning("The statistics for the entity '{$statisticsType->name}:{$entityId}' are not available, scheduling an update...");

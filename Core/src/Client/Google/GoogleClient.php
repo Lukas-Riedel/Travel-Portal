@@ -36,6 +36,7 @@
         private const GET_LOCATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&address=%s";
         private const GET_ADDRESS_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/geocode/json?key=%s&language=cs&latlng=%s,%s";
         private const GET_TIMEZONE_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/timezone/json?key=%s&location=%s,%s&timestamp=0";
+        private const GET_ELEVATION_ENDPOINT_FORMAT = "https://maps.googleapis.com/maps/api/elevation/json?key=%s&locations=%s,%s";
 
         private const MULTIPART_SEPARATOR = "mpr_separator";
         private const EVENT_IDENTIFIER_SUFFIX = "@google.com";
@@ -86,6 +87,18 @@
         public function getTimezone(float $latitude, float $longitude) : ?string {
             $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_TIMEZONE_ENDPOINT_FORMAT, $this->googleMapsApiKey, $latitude, $longitude));
             return array_key_exists("timeZoneId", $apiResponse) ? $apiResponse["timeZoneId"] : null;           
+        }
+
+        public function getElevation(float $latitude, float $longitude) : ?float {
+            $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ELEVATION_ENDPOINT_FORMAT, $this->googleMapsApiKey, $latitude, $longitude));
+
+            if ($apiResponse["status"] === "OK") {
+                if (count($apiResponse["results"]) > 0) {
+                    return $apiResponse["results"][0]["elevation"];
+                }
+            }
+
+            return null;
         }
 
         public function getAddress(float $latitude, float $longitude) : ?string {

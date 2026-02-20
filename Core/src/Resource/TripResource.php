@@ -170,10 +170,11 @@
             $mappedSort = TripSortingStrategy::from($sort);
             $mappedType = TripType::from($type);
             
-            return match ($mappedType) {
+            $trips = match ($mappedType) {
                 TripType::Regular => $this->tripService->getRegularTrips($year, null, null, $mappedInclude, $mappedSort),
                 TripType::Candidate => $this->tripService->getCandidateTrips($mappedInclude)
             };
+            return array_map(fn($trip) => $this->filterTripPermissions($trip, $request), $trips);
         }
 
         #[OA\Get(
@@ -1551,6 +1552,9 @@
             }
             if (!$this->hasRole($request, UserRole::TripStatisticsRead)) {
                 $trip->resetStatistics();
+            }
+            else {
+                $trip->setStatistics(array_values(array_filter($trip->getStatistics(), fn($statistics) => $this->hasRole($request, $statistics->getName()->getRequiredRole()))));
             }
             if (!$this->hasRole($request, UserRole::TripPublicHolidayRead)) {
                 $trip->resetPublicHolidays();

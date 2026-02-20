@@ -16,6 +16,7 @@ import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { formatMeters } from "../utils/formatters.js"
 
 const nearbyPlacesCount = 3
 
@@ -38,7 +39,7 @@ export default function PlacePage() {
             <PageHeader
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
-                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length }}
+                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation) }}
                 onHighlightsSelectingTriggered={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, place.name, highlightsCount, true))}
                 onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel

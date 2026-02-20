@@ -413,7 +413,7 @@ export default function AdminPage() {
                     onAirlineLogoChanged={updateAirlineLogo}
                     onAirportNameChanged={updateAirportLongName}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
-                    onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: "dates" })
+                    onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: ["dates"] })
                         .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionRegion}
                     onPlaceRemoved={removeCandidatePlace}

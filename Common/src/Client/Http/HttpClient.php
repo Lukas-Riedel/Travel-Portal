@@ -5,6 +5,7 @@
     use Common\LoggingContext;
     use Monolog\Logger;
 
+    // TODO: Replace cURL with Guzzle.
     class HttpClient {
     
         private const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
@@ -26,30 +27,10 @@
             $this->logger = $logger;
         }
 
-        // TODO: Replace cURL with Guzzle.
         public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) : mixed {
             $this->logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $payload));
 
-            $curl = curl_init($url);
-
-            $finalHeaders = array_merge(self::DEFAULT_HEADERS, $headers);
-            
-            $transactionId = $this->loggingContext->getTransactionId();
-            if ($transactionId !== null) {
-                $finalHeaders[] = CommonConstants::TRANSACTION_ID_HEADER . ": " . $transactionId;
-            }
-
-            $finalHeaders[] = CommonConstants::REQUEST_ORIGIN_HEADER . ": " . $this->appName;
-
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
-            curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
-            curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 300);
-            curl_setopt($curl, CURLOPT_AUTOREFERER, true); 
-            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $finalHeaders);
-            curl_setopt($curl, CURLOPT_ENCODING, "");
+            $curl = $this->prepareCurl($method, $url, $headers, $includeResponseHeaders);
     
             if ($payload !== null) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
@@ -74,6 +55,45 @@
             }
 
             return $result;
+        }
+
+        public function returns2xx(HttpMethod $method, string $url) : bool {
+            $this->logger->debug("Sending the external request to '{$method->value} {$url}'...");
+
+            $curl = $this->prepareCurl($method, $url);
+
+            curl_exec($curl);
+            
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            
+            curl_close($curl);
+
+            return $httpCode >= 200 && $httpCode < 300;
+        }
+
+        private function prepareCurl(HttpMethod $method, string $url, array $headers = array(), bool $includeResponseHeaders = false) : mixed {
+            $curl = curl_init($url);
+
+            $finalHeaders = array_merge(self::DEFAULT_HEADERS, $headers);
+            
+            $transactionId = $this->loggingContext->getTransactionId();
+            if ($transactionId !== null) {
+                $finalHeaders[] = CommonConstants::TRANSACTION_ID_HEADER . ": " . $transactionId;
+            }
+
+            $finalHeaders[] = CommonConstants::REQUEST_ORIGIN_HEADER . ": " . $this->appName;
+
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method->value);
+            curl_setopt($curl, CURLOPT_HEADER, $includeResponseHeaders);
+            curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 300);
+            curl_setopt($curl, CURLOPT_AUTOREFERER, true); 
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $finalHeaders);
+            curl_setopt($curl, CURLOPT_ENCODING, "");
+
+            return $curl;
         }
 
         private function parseHeaders($rawHeaders) {

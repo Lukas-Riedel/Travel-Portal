@@ -214,8 +214,9 @@
 
         public function updatePlaceLocation(string $placeId, float $latitude, float $longitude) : bool {
             $wasUpdated = true;
-            $this->transactionManager->executeAtomically(function() use(&$placeId, &$latitude, &$longitude, &$wasUpdated) {
-                $wasUpdated &= $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude);            
+            $elevation = $this->geocodingService->getElevation($latitude, $longitude);
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$latitude, &$longitude, &$elevation, &$wasUpdated) {
+                $wasUpdated &= $this->placeMapper->updatePlaceLocation($placeId, $latitude, $longitude, $elevation);            
                 if ($wasUpdated) {
                     $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
                 }
@@ -307,7 +308,7 @@
             }
             
             $resolvedLocation = new Location($placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone());
+                $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(), $placeIdentifier->getTimezone());
             $newAddress = $this->geocodingService->getFormattedAddress($placeIdentifier->getName(), $resolvedLocation);
             
             return $this->googleClient->updateCalendarEventLocation(Calendar::Places, $eventId, $newAddress);
@@ -337,7 +338,7 @@
                     $isLayover = array_key_exists(self::LAYOVER_ATTRIBUTE_KEY, $placeEvent->getAttributes());
                     $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($start, $end);
                     $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                        $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
+                        $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
                         $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, null, null, null, $resolvedTripIdentifier)));
 
                     $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
@@ -385,7 +386,7 @@
 
             $location = $this->geocodingService->getLocation($address);
             $placeIdentifier = new PlaceIdentifier(null, $name, $country === null ? null : $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
-                $location->getLatitude(), $location->getLongitude(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
+                $location->getLatitude(), $location->getLongitude(), $location->getElevation(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
             $this->transactionManager->executeAtomically(function() use(&$placeIdentifier) {
                 $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
                 
@@ -433,7 +434,7 @@
             $this->placeMapper->insertSpecialPlace($specialPlaceType, $placeIdentifier->getId());
     
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
+                $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
                 $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array());
         }
         
@@ -445,7 +446,7 @@
             });
 
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
-                $placeIdentifier->getLongitude(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
+                $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
                 $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array());
         }
 

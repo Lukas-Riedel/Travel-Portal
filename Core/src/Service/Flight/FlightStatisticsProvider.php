@@ -5,25 +5,12 @@
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
     use Core\Service\Statistics\StatisticsKind;
+    use Core\Service\Statistics\StatisticsName;
     use Core\Service\Statistics\StatisticsProvider;
     use Core\Service\Statistics\StatisticsType;
     use Core\Service\Statistics\StatisticsUnit;
 
     class FlightStatisticsProvider implements StatisticsProvider {
-        
-        private const TOTAL_FLIGHTS_COUNT_STATISTICS_NAME = "TOTAL_FLIGHTS_COUNT";
-        private const TOTAL_AIRBORNE_DISTANCE_STATISTICS_NAME = "TOTAL_AIRBORNE_DISTANCE";
-        private const TOTAL_AIRBORNE_TIME_STATISTICS_NAME = "TOTAL_AIRBORNE_TIME";
-        private const AVERAGE_FLIGHT_DURATION_STATISTICS_NAME = "AVERAGE_FLIGHT_DURATION";
-        private const TOTAL_VISITED_AIRPORTS_COUNT_STATISTICS_NAME = "TOTAL_VISITED_AIRPORTS_COUNT";
-        private const MOST_USED_AIRCRAFTS_STATISTICS_NAME = "MOST_USED_AIRCRAFTS";
-        private const MOST_USED_AIRLINES_STATISTICS_NAME = "MOST_USED_AIRLINES";
-        private const SHORTEST_FLIGHTS_STATISTICS_NAME = "SHORTEST_FLIGHTS";
-        private const LONGEST_FLIGHTS_STATISTICS_NAME = "LONGEST_FLIGHTS";
-        private const MOST_USED_AIRPORTS_STATISTICS_NAME = "MOST_USED_AIRPORTS";
-        private const MOST_USED_FLIGHTS_STATISTICS_NAME = "MOST_USED_FLIGHTS";
-        private const MOST_USED_AIRCRAFT_REGISTRATIONS_STATISTICS_NAME = "MOST_USED_AIRCRAFT_REGISTRATIONS";
-        private const MOST_DELAYED_FLIGHTS_STATISTICS_NAME = "MOST_DELAYED_FLIGHTS";
 
         private const FLIGHT_CODE_STATISTICS_FORMAT = "%s - %s (%s)";
         private const FLIGHT_DATE_STATISTICS_FORMAT = "%s - %s @ %s";
@@ -44,30 +31,30 @@
             if ($statisticsKind === StatisticsKind::Fact) {                
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     if (count($flights) > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_FLIGHTS_COUNT_STATISTICS_NAME, count($flights), StatisticsUnit::Flights);
+                        $statistics[] = new Statistics(StatisticsName::TotalFlightsCount, count($flights), StatisticsUnit::Flights);
                     }
                     
                     $visitedAirports = array_unique(array_merge(array_map(fn($flight) => $flight->getFrom(), $flights), array_map(fn($flight) => $flight->getTo(), $flights)), SORT_REGULAR);
                     if (count($visitedAirports) > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_VISITED_AIRPORTS_COUNT_STATISTICS_NAME, count($visitedAirports), StatisticsUnit::Airports);
+                        $statistics[] = new Statistics(StatisticsName::TotalVisitedAirportsCount, count($visitedAirports), StatisticsUnit::Airports);
                     }
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {                    
                     $totalAirborneDistance = intval(array_sum(array_map(fn($flight) => $flight->getDistance(), $flights)));
                     if ($totalAirborneDistance > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_AIRBORNE_DISTANCE_STATISTICS_NAME, $totalAirborneDistance, StatisticsUnit::Kilometers);
+                        $statistics[] = new Statistics(StatisticsName::TotalAirborneDistance, $totalAirborneDistance, StatisticsUnit::Kilometers);
                     }
                     
 
                     $totalAirborneTime = array_sum(array_map(fn($flight) => $flight->getDuration(), $flights));
                     if ($totalAirborneTime > 0) {
-                        $statistics[] = new Statistics(self::TOTAL_AIRBORNE_TIME_STATISTICS_NAME, $totalAirborneTime, StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::TotalAirborneTime, $totalAirborneTime, StatisticsUnit::Duration);
                     }
                     
                     $averageFlightDuration = $totalAirborneTime / max(count($flights), 1);
                     if ($averageFlightDuration > 0) {
-                        $statistics[] = new Statistics(self::AVERAGE_FLIGHT_DURATION_STATISTICS_NAME, $averageFlightDuration, StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::AverageFlightDuration, $averageFlightDuration, StatisticsUnit::Duration);
                     }
                 }
             }
@@ -77,54 +64,54 @@
                     $mostUsedFlights = $this->getStandingsStatistics($flights, fn($flight) => sprintf(self::FLIGHT_CODE_STATISTICS_FORMAT, 
                         $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), $flight->getFlight()));
                     if (count($mostUsedFlights) > 0) {
-                        $statistics[] = new Statistics(self::MOST_USED_FLIGHTS_STATISTICS_NAME, $mostUsedFlights, StatisticsUnit::Flights);
+                        $statistics[] = new Statistics(StatisticsName::MostUsedFlights, $mostUsedFlights, StatisticsUnit::Flights);
                     }
                     
                     $mostUsedAircraftRegistrations = $this->getStandingsStatistics($flights, fn($flight) => sprintf(self::AIRCRAFT_REGISTRATION_STATISTICS_FORMAT,
                         $flight->getRegistration(), $this->flightService->getAirlineForFlight($flight->getFlight())->getName()));
                     if (count($mostUsedAircraftRegistrations) > 0) {
-                        $statistics[] = new Statistics(self::MOST_USED_AIRCRAFT_REGISTRATIONS_STATISTICS_NAME, $mostUsedAircraftRegistrations, StatisticsUnit::Flights);
+                        $statistics[] = new Statistics(StatisticsName::MostUsedAircraftRegistrations, $mostUsedAircraftRegistrations, StatisticsUnit::Flights);
                     }
                 }
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
                     $mostUsedAircrafts = $this->getStandingsStatistics($flights, fn($flight) => $flight->getAircraft());
                     if (count($mostUsedAircrafts) > 0) {
-                        $statistics[] = new Statistics(self::MOST_USED_AIRCRAFTS_STATISTICS_NAME, $mostUsedAircrafts, StatisticsUnit::Flights);
+                        $statistics[] = new Statistics(StatisticsName::MostUsedAircrafts, $mostUsedAircrafts, StatisticsUnit::Flights);
                     }
                     
                     $mostUsedAirlines = $this->getStandingsStatistics($flights, fn($flight) => $this->flightService->getAirlineForFlight($flight->getFlight())->getName());
                     if (count($mostUsedAirlines) > 0) {
                         usort($mostUsedAirlines, fn($a, $b) => $b->getValue() - $a->getValue());
-                        $statistics[] = new Statistics(self::MOST_USED_AIRLINES_STATISTICS_NAME, $mostUsedAirlines, StatisticsUnit::Flights);
+                        $statistics[] = new Statistics(StatisticsName::MostUsedAirlines, $mostUsedAirlines, StatisticsUnit::Flights);
                     }
                     
                     $mostUsedAirports = $this->getStandingsStatistics($flights,
                         fn($flight) => $flight->getFrom()->getLongName() !== null ? $flight->getFrom()->getLongName() : $flight->getFrom()->getShortName(), 
                         fn($flight) => $flight->getTo()->getLongName() !== null ? $flight->getTo()->getLongName() : $flight->getTo()->getShortName());
                     if (count($mostUsedAirports) > 0) {
-                        $statistics[] = new Statistics(self::MOST_USED_AIRPORTS_STATISTICS_NAME, $mostUsedAirports, StatisticsUnit::Flights);
+                        $statistics[] = new Statistics(StatisticsName::MostUsedAirports, $mostUsedAirports, StatisticsUnit::Flights);
                     }
 
                     $longestFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
                         $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DurationDescending));
                     if (count($longestFlights) > 0) {
-                        $statistics[] = new Statistics(self::LONGEST_FLIGHTS_STATISTICS_NAME, $longestFlights, StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::LongestFlights, $longestFlights, StatisticsUnit::Duration);
                     }
 
                     $shortestFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
                         $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDuration()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DurationAscending));
                     if (count($shortestFlights) > 0) {
-                        $statistics[] = new Statistics(self::SHORTEST_FLIGHTS_STATISTICS_NAME, $shortestFlights, StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::ShortestFlights, $shortestFlights, StatisticsUnit::Duration);
                     }
 
                     $mostDelayedFlights = array_map(fn($flight) => new KeyValuePair(sprintf(self::FLIGHT_DATE_STATISTICS_FORMAT,
                         $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart())), $flight->getDelay()),
                         $this->flightService->getLoggedFlightsForInterval($start, $end, FlightSortingStrategy::DelayDescending));
                     if (count($mostDelayedFlights) > 0) {
-                        $statistics[] = new Statistics(self::MOST_DELAYED_FLIGHTS_STATISTICS_NAME, $mostDelayedFlights, StatisticsUnit::Duration);
+                        $statistics[] = new Statistics(StatisticsName::MostDelayedFlights, $mostDelayedFlights, StatisticsUnit::Duration);
                     }
                 }
             }

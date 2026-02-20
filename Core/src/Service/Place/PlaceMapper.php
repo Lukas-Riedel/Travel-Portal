@@ -351,7 +351,7 @@
                         $excerpt = $placeRow["excerpt"];
                     }
                     
-                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["timezone"],
+                    $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"],
                         $mainHighlights[$placeRow["main_highlight_id"]] ?? null, $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
                 }
                 
@@ -458,7 +458,8 @@
                 }
 
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
-                    $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
+                    $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt,
+                    $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
             }
             
             return $places;
@@ -531,7 +532,8 @@
                     }
 
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
-                        $placeRow["longitude"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array()); 
+                        $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories,
+                        $highlights, $labels, $notes, $nearbyPlacesArr, array()); 
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -551,7 +553,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($placeIdentifierRow) {
-                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+                    return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["elevation"],
                         $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
                 });
         }
@@ -573,7 +575,7 @@
                 return null;
             }
 
-            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["elevation"],
                 $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
         }
 
@@ -593,7 +595,7 @@
                 return null;
             }
 
-            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"],
+            return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["elevation"],
                 $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
         }
 
@@ -849,17 +851,18 @@
                 ->execute() === 1;
         }
 
-        public function updatePlaceLocation(string $placeId, float $latitude, float $longitude) : bool {
+        public function updatePlaceLocation(string $placeId, float $latitude, float $longitude, int $elevation) : bool {
             $sql = <<<'SQL'
                 UPDATE place_identifier
                 SET latitude = ?,
-                    longitude = ?
+                    longitude = ?,
+                    elevation = ?
                 WHERE id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($latitude, $longitude, $placeId)
+                ->withParameters($latitude, $longitude, $elevation, $placeId)
                 ->execute() === 1;
         }
 

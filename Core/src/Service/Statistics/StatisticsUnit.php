@@ -22,5 +22,7 @@
         case Visits = "visits";
         case Airports = "airports";
         case Nights = "nights";
+        case Latitude = "latitude";
+        case Longitude = "longitude";
     }
 ?>
