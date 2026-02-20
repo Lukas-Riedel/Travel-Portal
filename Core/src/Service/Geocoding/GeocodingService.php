@@ -78,7 +78,12 @@
                 return $elevation;
             }
 
-            $elevation = round($this->googleClient->getElevation($latitude, $longitude));
+            $elevation = $this->googleClient->getElevation($latitude, $longitude);
+            if ($elevation === null) {
+                return 0;
+            }
+
+            $elevation = round($elevation);
             $this->distributedCacheClient->set($cacheKey, $elevation, self::ELEVATION_CACHE_TTL);
             return $elevation;
         }
