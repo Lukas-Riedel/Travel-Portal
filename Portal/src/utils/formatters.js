@@ -120,6 +120,7 @@ export function formatMainCurrency(value, mainCurrency) {
 export function formatStatisticsUnit(unit, value, mainCurrency) {
     const statisticsUnits = {
         "kilometers": formatKilometers,
+        "elevationMeters": v => formatMeters(v) + " nad mořem",
         "photos": formatPhotos,
         "duration": formatDuration,
         "countries": formatCountries,

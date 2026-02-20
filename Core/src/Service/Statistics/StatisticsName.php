@@ -14,6 +14,8 @@
         case TotalVisitedPlacesCount = "TOTAL_VISITED_PLACES_COUNT";
         case FurthestPlaces = "FURTHEST_PLACES";
         case FurthestCountries = "FURTHEST_COUNTRIES";
+        case LowestPlaces = "LOWEST_PLACES";
+        case HighestPlaces = "HIGHEST_PLACES";
         case VisitedPlacesPerCountry = "VISITED_PLACES_PER_COUNTRY";
         case VisitedPlacesPerContinent = "VISITED_PLACES_PER_CONTINENT";
         case VisitedPlacesPerCategory = "VISITED_PLACES_PER_CATEGORY";
@@ -84,6 +86,8 @@
                 self::TotalVisitedPlacesCount,
                 self::FurthestPlaces,
                 self::FurthestCountries,
+                self::LowestPlaces,
+                self::HighestPlaces,
                 self::VisitedPlacesPerCountry,
                 self::VisitedPlacesPerContinent,
                 self::VisitedPlacesPerCategory,

@@ -39,6 +39,8 @@ const statisticsNames = {
     "MOST_USED_AIRCRAFT_REGISTRATIONS": "Nejvyužívanější registrace letadel",
     "FURTHEST_PLACES": "Nejvzdálenější místa",
     "FURTHEST_COUNTRIES": "Nejvzdálenější státy",
+    "LOWEST_PLACES": "Nejníže položená místa",
+    "HIGHEST_PLACES": "Nejvýše položená místa",
     "VISITED_PLACES_PER_COUNTRY": "Počet navštívených míst ve státě",
     "VISITED_PLACES_PER_CONTINENT": "Počet navštívených míst na kontinentu",
     "VISITED_PLACES_PER_CATEGORY": "Počet navštívených míst v oblasti",

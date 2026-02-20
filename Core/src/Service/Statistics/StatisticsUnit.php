@@ -10,6 +10,7 @@
     )]
     enum StatisticsUnit : string {
         case Kilometers = "kilometers";
+        case ElevationMeters = "elevationMeters";
         case Duration = "duration";
         case Photos = "photos";
         case Countries = "countries";
