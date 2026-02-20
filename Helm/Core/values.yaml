@@ -21,7 +21,8 @@ core:
     ibm:
       dataplatform:
         base:
-          public: https://api.eu-de.dataplatform.cloud.ibm.com
+          # public: https://api.eu-de.dataplatform.cloud.ibm.com
+          public: https://api.dataplatform.dev.cloud.ibm.com
   db:
     hostname: postgres
     port: 5432

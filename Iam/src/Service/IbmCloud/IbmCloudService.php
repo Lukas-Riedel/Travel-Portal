@@ -7,17 +7,19 @@
 
     class IbmCloudService {
 
-        private const IBM_CLOUD_IAM_TOKEN_URL = "https://iam.cloud.ibm.com/identity/token";
+        private const IBM_CLOUD_IAM_TOKEN_ENDPOINT = "/identity/token";
 
         private const IBM_CLOUD_GRANT_TYPE = "urn:ibm:params:oauth:grant-type:apikey";
         private const IBM_CLOUD_RESPONSE_TYPE = "cloud_iam";
 
         private readonly HttpClient $httpClient;
 
+        private readonly string $ibmCloudIamBaseUrl;
         private readonly string $ibmCloudApiKey;
 
-        public function __construct(HttpClient $httpClient, string $ibmCloudApiKey) {
+        public function __construct(HttpClient $httpClient, string $ibmCloudIamBaseUrl, string $ibmCloudApiKey) {
             $this->httpClient = $httpClient;
+            $this->ibmCloudIamBaseUrl = $ibmCloudIamBaseUrl;
             $this->ibmCloudApiKey = $ibmCloudApiKey;
         }
 
@@ -28,7 +30,7 @@
                 "apikey" => $this->ibmCloudApiKey
             );     
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, self::IBM_CLOUD_IAM_TOKEN_URL, 
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->ibmCloudIamBaseUrl . self::IBM_CLOUD_IAM_TOKEN_ENDPOINT, 
                 array("Content-Type: application/x-www-form-urlencoded"), http_build_query($payload));
 
             if (!isset($response["access_token"])) {
