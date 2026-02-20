@@ -57,13 +57,13 @@
             foreach ($highlightRows as &$highlightRow) {                
                 if (!isset($photos[$highlightRow["photo_id"]])) {
                     $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                        null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
+                        null, null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
                         $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], null, null, null);
                 }
                 else {
                     $photo = $photos[$highlightRow["photo_id"]];
                     $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                        $photo->getPermalink(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
+                        $photo->getPermalink(), $photo->getCamera(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
                         $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
                         $highlightRow["atmosphere"], $photo->getTimestamp(), $photo->getSunAltitude(), $photo->getSunAzimuth());
                 }
@@ -304,12 +304,12 @@
             $photo = $this->photoService->getPhoto($highlightRow["photo_id"]);
             if ($photo === null) {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                    null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
+                    null, null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
                     $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], null, null, null);
             }
             else {
                 return new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                    $photo->getPermalink(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
+                    $photo->getPermalink(), $photo->getCamera(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
                     $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
                     $highlightRow["atmosphere"], $photo->getTimestamp(), $photo->getSunAltitude(), $photo->getSunAzimuth());
             }

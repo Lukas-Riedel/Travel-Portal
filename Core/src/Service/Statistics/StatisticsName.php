@@ -72,6 +72,7 @@
         case MostPhotosPerCountry = "MOST_PHOTOS_PER_COUNTRY";
         case MostPhotosPerCategory = "MOST_PHOTOS_PER_CATEGORY";
         case MostPhotosPerTrip = "MOST_PHOTOS_PER_TRIP";
+        case MostUsedCameras = "MOST_USED_CAMERAS";
 
         case TotalHotelNightsCount = "TOTAL_HOTEL_NIGHTS_COUNT";
         case AverageNightsPerHotel = "AVERAGE_NIGHTS_PER_HOTEL";
@@ -143,7 +144,8 @@
                 self::MostPhotosPerDay,
                 self::MostPhotosPerCountry,
                 self::MostPhotosPerCategory,
-                self::MostPhotosPerTrip => UserRole::PlaceAlbumRead,
+                self::MostPhotosPerTrip,
+                self::MostUsedCameras => UserRole::PlaceAlbumRead,
 
                 self::TotalHotelNightsCount,
                 self::AverageNightsPerHotel,

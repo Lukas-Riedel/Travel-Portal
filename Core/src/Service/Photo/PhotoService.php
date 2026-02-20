@@ -132,6 +132,14 @@
             $this->doUpdateAlbums($albumId, true);
         }
 
+        public function getUsedCameras() : array {
+            return $this->photoMapper->selectUsedCameras();
+        }
+
+        public function getPhotosCountForCamera(string $camera, int $start, int $end) : int {
+            return $this->photoMapper->selectPhotosCountForcamera($camera, $start, $end);
+        }
+
         public function getPhoto(string $photoId) : ?Photo {
             return $this->photoMapper->selectPhoto($photoId);
         }
@@ -180,6 +188,7 @@
                         $this->getOrCreatePhotoId($mediaItem["id"]), 
                         fn() => $this->getGooglePhotoProxyUrl($mediaItem["baseUrl"]),
                         $mediaItem["productUrl"],
+                        implode(" ", array_filter(array($mediaItem["mediaMetadata"]["photo"]["cameraMake"] ?? null, $mediaItem["mediaMetadata"]["photo"]["cameraModel"] ?? null))) ?: null,
                         $mediaItem["mediaMetadata"]["photo"]["focalLength"] ?? null,
                         $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] ?? null,
                         isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : null,
@@ -288,7 +297,7 @@
 
                     $currentAlbumId = $this->getOrCreateAlbumId($album["id"]);        
                     $albums[] = new Album($currentAlbumId, $album["title"], $mainPhotoId === null ? null : new Photo($mainPhotoId,
-                        fn() => $this->getGooglePhotoProxyUrl($album["coverPhotoBaseUrl"]), null, null, null, null, null, null, null, null),
+                        fn() => $this->getGooglePhotoProxyUrl($album["coverPhotoBaseUrl"]), null, null, null, null, null, null, null, null, null),
                         $mainImageUrl, $album["productUrl"], $imagesCount, 0, false, null, null);                         
                 }
         

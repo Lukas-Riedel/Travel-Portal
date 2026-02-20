@@ -30,6 +30,12 @@
                 example: "https://photos.google.com/lr/album/ADpjswnfN09upo9IvJjWV5E7C_x_rHXBv6MX09Ys20De8FbeKkjYL9HLrDo-lPrLUz8KfnU-Nps7/photo/ADpjswm-BZXKwAifE3JYSadq8aARaZtkHXhr51mZBgrvT1IwozwAgSG8h-viZAnzSlw_fYSzU-APFfbZ8UYCMdK0C091hI64lA"
             ),
             new OA\Property(
+                property: "camera",
+                type: "string",
+                description: "The camera used to take the photo",
+                example: "SONY ILCE-6300"
+            ),
+            new OA\Property(
                 property: "focalLength",
                 type: "number",
                 format: "float",
@@ -82,6 +88,7 @@
         private readonly string $id;
         private readonly mixed $urlProvider;
         private readonly ?string $permalink;
+        private readonly ?string $camera;
         private readonly ?float $focalLength;
         private readonly ?float $aperture;
         private readonly ?float $shutterSpeed;
@@ -90,11 +97,12 @@
         private readonly ?float $sunAltitude;
         private readonly ?float $sunAzimuth;
 
-        public function __construct(string $id, callable $urlProvider, ?string $permalink, ?float $focalLength,
+        public function __construct(string $id, callable $urlProvider, ?string $permalink, ?string $camera, ?float $focalLength,
             ?float $aperture, ?float $shutterSpeed, ?int $iso, ?int $timestamp, ?float $sunAltitude, ?float $sunAzimuth) {
             $this->id = $id;
             $this->urlProvider = $urlProvider;
             $this->permalink = $permalink;
+            $this->camera = $camera;
             $this->focalLength = $focalLength;
             $this->aperture = $aperture;
             $this->shutterSpeed = $shutterSpeed;
@@ -111,6 +119,10 @@
         public function getUrl() : ?string {
             // Compute the URL only when it is needed to avoid unnecessary Google API calls.
             return ($this->urlProvider)();
+        }
+
+        public function getCamera() : ?string {
+            return $this->camera;
         }
 
         public function getPermalink() : ?string {
@@ -146,7 +158,7 @@
         }
     
         public function withReplacedId(string $newId) : Photo {
-            return new Photo($newId, $this->urlProvider, $this->permalink, $this->focalLength,
+            return new Photo($newId, $this->urlProvider, $this->permalink, $this->camera, $this->focalLength,
                 $this->aperture, $this->shutterSpeed, $this->iso, $this->timestamp, $this->sunAltitude, $this->sunAzimuth);
         }
 

@@ -33,6 +33,7 @@ const statisticsNames = {
     "MOST_PHOTOS_PER_COUNTRY": "Nejvíce fotek ve státě",
     "MOST_PHOTOS_PER_TRIP": "Výlety s nejvyšším počtem fotek",
     "MOST_PHOTOS_PER_CATEGORY": "Nejvíce fotek v oblasti",
+    "MOST_USED_CAMERAS": "Nejpoužívanější fotoaparáty",
     "MOST_USED_FLIGHTS": "Nejvyužívanější letové linky",
     "MOST_USED_AIRCRAFT_REGISTRATIONS": "Nejvyužívanější registrace letadel",
     "FURTHEST_PLACES": "Nejvzdálenější místa",
@@ -82,7 +83,8 @@ const chartTypes = {
     "MOST_PHOTOS_PER_COUNTRY": StandingStatisticsPieChart,
     "MOST_USED_AIRPORTS": StandingStatisticsPieChart,
     "MOST_USED_AIRCRAFTS": StandingStatisticsPieChart,
-    "MOST_USED_AIRLINES": StandingStatisticsPieChart
+    "MOST_USED_AIRLINES": StandingStatisticsPieChart,
+    "MOST_USED_CAMERAS": StandingStatisticsPieChart
 }
 
 export default function StatisticsCard({ statistics, years }) {

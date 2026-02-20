@@ -178,7 +178,7 @@
         new FlightStatisticsProvider($flightService),
         new StayStatisticsProvider($stayService),
         new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
-        new PhotoStatisticsProvider($placeService),
+        new PhotoStatisticsProvider($photoService, $placeService),
         new ExpenseStatisticsProvider($expenseService, $tripService),
         new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService),
     );

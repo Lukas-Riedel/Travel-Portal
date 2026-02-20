@@ -152,18 +152,6 @@
                     if (count($westernmostPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::WesternmostPlaces, $westernmostPlaces, StatisticsUnit::Longitude);
                     }
-                            
-                    $lowestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending));
-                    if (count($lowestPlaces) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::LowestPlaces, $lowestPlaces, StatisticsUnit::ElevationMeters);
-                    }
-
-                    $highestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationDescending));
-                    if (count($highestPlaces) > 0) {
-                        $statistics[] = new Statistics(StatisticsName::HighestPlaces, $highestPlaces, StatisticsUnit::ElevationMeters);
-                    }
                 }
                 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
@@ -184,6 +172,21 @@
 
                     if (count($mostVisitedPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::MostVisitedPlaces, $mostVisitedPlaces, StatisticsUnit::Visits);
+                    }
+                }
+
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
+                    || $statisticsType === StatisticsType::Category || $statisticsType === StatisticsType::Trip) {
+                    $lowestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
+                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending));
+                    if (count($lowestPlaces) > 0) {
+                        $statistics[] = new Statistics(StatisticsName::LowestPlaces, $lowestPlaces, StatisticsUnit::ElevationMeters);
+                    }
+
+                    $highestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
+                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationDescending));
+                    if (count($highestPlaces) > 0) {
+                        $statistics[] = new Statistics(StatisticsName::HighestPlaces, $highestPlaces, StatisticsUnit::ElevationMeters);
                     }
                 }
             }
