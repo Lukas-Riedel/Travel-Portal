@@ -8,6 +8,8 @@ import cz.lriedel.agent.persistance.ConfigurationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,8 +37,9 @@ class AgentApplicationInitializer implements ApplicationRunner {
 
     private final String agentQueueName;
 
-    AgentApplicationInitializer(ConfigurationRepository configurationRepository, CoreClient coreClient, UserTokenSupplier userTokenSupplier,
-            RetryTemplate retryTemplate, List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName) {
+    AgentApplicationInitializer(ConfigurationRepository configurationRepository,
+            CoreClient coreClient, UserTokenSupplier userTokenSupplier, RetryTemplate retryTemplate,
+            List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName) {
         this.configurationRepository = configurationRepository;
         this.coreClient = coreClient;
         this.userTokenSupplier = userTokenSupplier;
@@ -72,9 +75,12 @@ class AgentApplicationInitializer implements ApplicationRunner {
                     Iterables.getOnlyElement(args.getOptionValues(USERNAME_ARGUMENT_NAME)),
                     Iterables.getOnlyElement(args.getOptionValues(PASSWORD_ARGUMENT_NAME))
             );
+
+            log.info("Successfully logged in!");
         }
 
         if (!isAuthenticated()) {
+            log.error("The refresh token is not set in session. The 'username' and 'password' arguments needs to be specified. Shutting down the application...");
             System.exit(1);
         }
     }
