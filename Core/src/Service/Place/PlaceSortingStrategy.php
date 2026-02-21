@@ -19,6 +19,8 @@
         case LatitudeDescending = "-latitude";
         case LongitudeAscending = "longitude";
         case LongitudeDescending = "-longitude";
+        case ElevationAscending = "elevation";
+        case ElevationDescending = "-elevation";
 
         public function getOrderByClause() : string {
             return match ($this) {
@@ -31,7 +33,9 @@
                 self::LatitudeAscending => "ORDER BY pi.latitude ASC, pe.\"start\" ASC",
                 self::LatitudeDescending => "ORDER BY pi.latitude DESC, pe.\"start\" ASC",
                 self::LongitudeAscending => "ORDER BY pi.longitude ASC, pe.\"start\" ASC",
-                self::LongitudeDescending => "ORDER BY pi.longitude DESC, pe.\"start\" ASC"
+                self::LongitudeDescending => "ORDER BY pi.longitude DESC, pe.\"start\" ASC",
+                self::ElevationAscending => "ORDER BY pi.elevation ASC, pe.\"start\" ASC",
+                self::ElevationDescending => "ORDER BY pi.elevation DESC, pe.\"start\" ASC"
             };
         }
     }

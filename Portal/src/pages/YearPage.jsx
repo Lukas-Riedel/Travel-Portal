@@ -60,7 +60,7 @@ export default function YearPage() {
                 onMainHighlightUpdated={hasRole(UserRole.YearEdit) && updateYearMainHighlight}
                 onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updateYearHighlightQualityAttributes} />
             <StatisticsPanel statistics={year && (year.statistics ?? [])} />
-            {hasRole(UserRole.UiFutureRead) && (
+            {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable trips={yearTrips?.filter(trip => trip.isFuture())} />
             )}
             <TripTileGrid trips={yearTrips?.filter(trip => trip.isPast())?.slice()?.reverse()} />

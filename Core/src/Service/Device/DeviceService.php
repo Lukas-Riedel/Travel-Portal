@@ -1,5 +1,4 @@
 <?php
-
     namespace Core\Service\Device;
 
     use Common\Service\Authentication\UserRole;
@@ -7,7 +6,6 @@
     use Core\Client\Database\TransactionManager;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
-    use Core\Service\Geocoding\GeocodingService;
 
     class DeviceService {
 
@@ -17,13 +15,9 @@
 
         private readonly TransactionManager $transactionManager;
 
-        private readonly GeocodingService $geocodingService;
-
-        public function __construct(DatabaseClient $databaseClient, AuthenticationService $authenticationService,
-            GeocodingService $geocodingService) {
+        public function __construct(DatabaseClient $databaseClient, AuthenticationService $authenticationService) {
             $this->deviceMapper = new DeviceMapper($databaseClient, $authenticationService);
             $this->transactionManager = $databaseClient;
-            $this->geocodingService = $geocodingService;
         }
         
         public function getDevices(?DeviceType $deviceType, ?UserRole $requiredRole) : array {
@@ -35,19 +29,6 @@
         }
 
         public function registerOrUpdateDevice(string $id, DeviceType $deviceType, string $name, mixed $data, string $userId) : Device {
-            // TODO: This is ugly. This piece of code should be oblivious to the data object contents.
-            if (isset($data["latitude"]) && isset($data["longitude"])) {
-                $address = isset($data["address"]) ? $data["address"] 
-                    : $this->geocodingService->getAddress($data["latitude"], $data["longitude"])?->getAddress();
-
-                if ($address !== null) {
-                    $data["address"] = array(
-                        "name" => $address,
-                        "address" => $address
-                    );
-                }
-            }
-
             $device = new Device($id, $deviceType, $name, $data, $userId, time());
             $this->transactionManager->executeAtomically(function() use($device) {
                 $this->deviceMapper->deleteDevice($device);

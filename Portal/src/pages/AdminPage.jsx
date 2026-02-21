@@ -93,11 +93,11 @@ export default function AdminPage() {
     const labels = [
         {
             name: "Aktuální výlet",
-            enabled: upcomingOrCurrentTrip !== null && hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead)
+            enabled: upcomingOrCurrentTrip !== null && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
             name: "Sledované lety",
-            enabled: hasRole(UserRole.TripFlightRead) && hasRole(UserRole.UiFutureRead)
+            enabled: hasRole(UserRole.TripFlightRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
             name: "Aerolinky",
@@ -360,7 +360,7 @@ export default function AdminPage() {
             <TabMenu
                 labels={labels}
                 onActiveTabChanged={setActiveTab} />
-            {activeTab === 0 && hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead) && (
+            {activeTab === 0 && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && (
                 <>
                     <TripSummary
                         trip={upcomingOrCurrentTrip}
@@ -383,7 +383,7 @@ export default function AdminPage() {
                     )}
                 </>
             )}
-            {activeTab === 1 && hasRole(UserRole.TripFlightRead) && hasRole(UserRole.UiFutureRead) && (
+            {activeTab === 1 && hasRole(UserRole.TripFlightRead) && hasRole(UserRole.PortalFutureRead) && (
                 <>
                     <FlightCardGrid flights={watchedFlights} />
                     <FloatingButton

@@ -93,9 +93,10 @@
         case EventFitnessActivityDetectedRead = "event.fitnessactivitydetected.read";
         case EventDeviceLogOnRequestedRead = "event.devicelogonrequested.read";
         case EventFlightLoggedRead = "event.flightlogged.read";
-        case ExternalAuthEdit = "external.auth.edit";
-        case UiFutureRead = "ui.future.read";
-        case UiWarningRead = "ui.warning.read";
+        case IamAuthEdit = "iam.auth.edit";
+        case PortalFutureRead = "portal.future.read";
+        case PortalWarningRead = "portal.warning.read";
+        case BridgeXLocationRead = "bridgex.location.read";
 
         public function implies(UserRole $role) : bool {
             if ($this === $role) {

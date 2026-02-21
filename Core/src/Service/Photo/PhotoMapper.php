@@ -173,7 +173,7 @@
                     };
                     $urlProvider->bindTo($this);
 
-                    return new Photo($photoRow["id"], $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+                    return new Photo($photoRow["id"], $urlProvider, $photoRow["permalink"], $photoRow["camera"], $photoRow["focal_length"], $photoRow["aperture"],
                         $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"], $photoRow["sun_altitude"], $photoRow["sun_azimuth"]);                    
                 });
         }
@@ -242,6 +242,33 @@
                 ->statementBuilder($sql)
                 ->withParameters($externalId)
                 ->getFirstColumn("id");
+        }
+
+        public function selectUsedCameras() : array {
+            $sql = <<<'SQL'
+                SELECT DISTINCT camera
+                FROM photo
+                WHERE camera IS NOT NULL
+            SQL;
+            
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->getResultSetForColumn("camera");
+        }
+
+        public function selectPhotosCountForcamera(string $camera, int $start, int $end) : int {
+            $sql = <<<'SQL'
+                SELECT COUNT(*) AS count
+                FROM photo
+                WHERE camera = ?
+                    AND timestamp >= ?
+                    AND timestamp <= ?
+            SQL;
+            
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($camera, $start, $end)
+                ->getSingleColumn("count");
         }
 
         public function selectAlbumExternalId(string $albumId) : ?string {            
@@ -320,6 +347,7 @@
                 INSERT INTO photo (
                     id,
                     album_id,
+                    camera,
                     focal_length,
                     aperture,
                     shutter_speed,
@@ -339,13 +367,14 @@
                     ?,
                     ?,
                     ?,
+                    ?,
                     ?
                 )
             SQL;
             
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($photo->getId(), $albumId, $photo->getFocalLength(), $photo->getAperture(),
+                ->withParameters($photo->getId(), $albumId, $photo->getCamera(), $photo->getFocalLength(), $photo->getAperture(),
                     $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink(),
                     $photo->getSunAltitude(), $photo->getSunAzimuth())
                 ->execute() === 1;
@@ -588,7 +617,7 @@
                 return null;
             }
 
-            return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["focal_length"], $photoRow["aperture"],
+            return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["camera"], $photoRow["focal_length"], $photoRow["aperture"],
                 $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"], $photoRow["sun_altitude"], $photoRow["sun_azimuth"]);
         }
 

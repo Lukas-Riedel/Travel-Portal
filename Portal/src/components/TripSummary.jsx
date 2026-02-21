@@ -108,7 +108,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                 <div className="text-xl text-gray-700">
                     {getDateRangeString(trip.start, trip.end)}
                 </div>
-                {lastSeenBridgeXDevice && (hasRole(UserRole.UiFutureRead) || trip.isCurrent()) && (
+                {lastSeenBridgeXDevice && (hasRole(UserRole.PortalFutureRead) || trip.isCurrent()) && (
                     <>
                         {lastSeenBridgeXDevice.lastSeen + 1800 > Date.now() / 1000 ? (
                             <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-6 hover:underline hover:text-green-400 transition-colors duration-200">

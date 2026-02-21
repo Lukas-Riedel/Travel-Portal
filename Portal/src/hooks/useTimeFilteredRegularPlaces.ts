@@ -21,6 +21,6 @@ interface UseTimeFilteredRegularPlacesProps {
 export const useTimeFilteredRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }: UseTimeFilteredRegularPlacesProps = {}): UseTimeFilteredRegularPlacesResult => {
     const { hasRole } = useAuth()
 
-    const adjustedMaxEnd = Math.min(maxEnd ?? Number.MAX_SAFE_INTEGER, hasRole(UserRole.UiFutureRead) ? Number.MAX_SAFE_INTEGER : getCurrentOrMaximumAllowedTimestamp())
+    const adjustedMaxEnd = Math.min(maxEnd ?? Number.MAX_SAFE_INTEGER, hasRole(UserRole.PortalFutureRead) ? Number.MAX_SAFE_INTEGER : getCurrentOrMaximumAllowedTimestamp())
     return useRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd: adjustedMaxEnd, limit, include, sort })
 }

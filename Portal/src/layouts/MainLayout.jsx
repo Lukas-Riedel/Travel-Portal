@@ -20,7 +20,7 @@ export default function MainLayout({ children }) {
         { label: t("menu.flights"), to: "/flight", requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
         { label: t("menu.statistics"), to: "/statistics", requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
         // TODO: Find a better required role.
-        { label: t("menu.plan"), to: "/plan", requiredRole: UserRole.UiFutureRead, allowedPrefixes: ["/plan"] },
+        { label: t("menu.plan"), to: "/plan", requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
         { label: t("menu.tracker"), to: "/tracker", requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
         // TODO: Find a better requried role.
         { label: t("menu.admin"), to: "/admin", requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] }

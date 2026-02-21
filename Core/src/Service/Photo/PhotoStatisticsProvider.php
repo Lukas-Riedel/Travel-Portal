@@ -17,9 +17,11 @@
 
         private const PHOTOS_DATE_STATISTICS_FORMAT = "%s @ %s";
 
+        private readonly PhotoService $photoService;
         private readonly PlaceService $placeService;
 
-        public function __construct(PlaceService $placeService) {
+        public function __construct(PhotoService $photoService, PlaceService $placeService) {
+            $this->photoService = $photoService;
             $this->placeService = $placeService;
         }
 
@@ -87,6 +89,17 @@
                     $mostPhotosPerTrip = $this->getStandingsStatistics(fn($place, $date) => array($date->getTrip()?->getFullName()), $relevantPlaces);
                     if (count($mostPhotosPerTrip) > 0) {
                         $statistics[] = new Statistics(StatisticsName::MostPhotosPerTrip, $mostPhotosPerTrip, StatisticsUnit::Photos);
+                    }
+
+                    $photoCountsByCamera = array();
+                    foreach ($this->photoService->getUsedCameras() as &$camera) {
+                        $photoCountsByCamera[$camera] = $this->photoService->getPhotosCountForCamera($camera, $start, $end);
+                    }
+                    arsort($photoCountsByCamera);
+
+                    if (count($photoCountsByCamera) > 1) {
+                        $statistics[] = new Statistics(StatisticsName::MostUsedCameras, array_map(
+                            fn($camera) => new KeyValuePair($camera, $photoCountsByCamera[$camera]), array_keys($photoCountsByCamera)), StatisticsUnit::Photos);
                     }
                 }
             }

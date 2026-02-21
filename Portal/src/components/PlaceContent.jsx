@@ -154,7 +154,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                     placeMainCategorySelector={place => place?.getCategory("mostSpecificWithMetadata")}
                     onRightClick={onLocationChanged && handleLocationUpdated} />
             </div>
-            {hasRole(UserRole.UiWarningRead) && onPlaceReviewed && place.dates?.map(date => date.album)?.filter(Boolean)?.some(album => !album.reviewed) && (
+            {hasRole(UserRole.PortalWarningRead) && onPlaceReviewed && place.dates?.map(date => date.album)?.filter(Boolean)?.some(album => !album.reviewed) && (
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mt-4 mb-6">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-2 text-orange-600">

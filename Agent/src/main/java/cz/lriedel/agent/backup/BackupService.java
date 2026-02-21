@@ -1,9 +1,11 @@
 package cz.lriedel.agent.backup;
 
+import cz.lriedel.agent.NotificationProvider;
 import cz.lriedel.agent.persistance.SynchronizedFile;
 import cz.lriedel.agent.persistance.SynchronizedFileRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
+@ConditionalOnProperty({"agent.backup.folder.source", "agent.backup.folder.target"})
 public class BackupService {
 
     private static final Duration SYNCHRONIZED_FILES_RETENTION_POLICY = Duration.ofDays(365);
@@ -36,12 +39,16 @@ public class BackupService {
 
     private final SynchronizedFileRepository synchronizedFileRepository;
 
+    private final NotificationProvider notificationProvider;
+
     public BackupService(@Value("${agent.backup.folder.source}") Path sourceFolder, @Value("${agent.backup.folder.target}") Path targetFolder,
-            @Value("${agent.backup.file.extensions}") List<String> supportedExtensions, SynchronizedFileRepository synchronizedFileRepository) {
+            @Value("${agent.backup.file.extensions}") List<String> supportedExtensions, SynchronizedFileRepository synchronizedFileRepository,
+            NotificationProvider notificationProvider) {
         this.sourceFolder = sourceFolder;
         this.targetFolder = targetFolder;
         this.supportedExtensions = supportedExtensions;
         this.synchronizedFileRepository = synchronizedFileRepository;
+        this.notificationProvider = notificationProvider;
     }
 
     @Scheduled(fixedDelayString = "${agent.backup.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
@@ -64,6 +71,8 @@ public class BackupService {
                     synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString(), Instant.now()));
                 }
                 log.info("Copied {} files to '{}'.", nonSynchronizedFiles.size(), folder);
+                notificationProvider.sendSystemNotification("Files back-up finished",
+                        String.format("Copied %d files to '%s'", nonSynchronizedFiles.size(), folder));
             }
         }
         catch (IOException e) {

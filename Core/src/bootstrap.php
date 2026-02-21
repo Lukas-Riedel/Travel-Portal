@@ -149,7 +149,7 @@
 
     // Services.
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
-    $deviceService = new DeviceService($databaseClient, $authenticationService, $geocodingService);
+    $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
@@ -178,7 +178,7 @@
         new FlightStatisticsProvider($flightService),
         new StayStatisticsProvider($stayService),
         new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
-        new PhotoStatisticsProvider($placeService),
+        new PhotoStatisticsProvider($photoService, $placeService),
         new ExpenseStatisticsProvider($expenseService, $tripService),
         new PlaceStatisticsProvider($placeService, $configurationService, $geocodingService),
     );

@@ -65,11 +65,11 @@ export default function PlansPage() {
         },
         {
             name: "Navštívená místa",
-            enabled: hasRole(UserRole.PlaceRead) && hasRole(UserRole.UiFutureRead)
+            enabled: hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
             name: "Návrhy výletů",
-            enabled: hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead)
+            enabled: hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         }
     ]
 
@@ -116,7 +116,7 @@ export default function PlansPage() {
                         onPlaceRemoved={hasRole(UserRole.PlaceEdit) && removeCandidatePlace} />
                 </>
             )}
-            {hasRole(UserRole.PlaceRead) && hasRole(UserRole.UiFutureRead) && activeTab === 1 && (
+            {hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 1 && (
                 <>
                     <div className="h-[400px] md:h-[700px] my-4">
                         <PlaceMap
@@ -136,7 +136,7 @@ export default function PlansPage() {
                         categoriesPlaces={countriesVisitedPlaces} />
                 </>
             )}
-            {hasRole(UserRole.TripRead) && hasRole(UserRole.UiFutureRead) && activeTab === 2 && (
+            {hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 2 && (
                 <TripCardGrid
                     trips={trips}
                     onTripRemoved={hasRole(UserRole.TripEdit) && removeTrip} />

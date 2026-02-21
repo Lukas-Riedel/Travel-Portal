@@ -17,14 +17,12 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.messaging.FirebaseMessaging
 import cz.lriedel.bridgex.CoreClient
 import cz.lriedel.bridgex.authentication.AuthenticationService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import cz.lriedel.bridgex.geocoding.AddressResponse
 import kotlinx.coroutines.tasks.await
 
 class DeviceInitializer(
     private val context: Context,
-    authenticationService: AuthenticationService
+    private val authenticationService: AuthenticationService
 ) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -37,19 +35,9 @@ class DeviceInitializer(
         Log.d(DeviceInitializer::class.java.simpleName, "Received a request to initialize a device...")
 
         try {
-            val batteryStatus: Intent? = ContextCompat.getSystemService(context, BatteryManager::class.java)?.let { _ ->
-                val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-                context.registerReceiver(null, intentFilter)
-            }
-            val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-            val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-
-            val location = getLocation(batteryLevel / batteryScale.toDouble() * 100)
-
+            val deviceData = createData(fcmToken)
             for (deviceType in DeviceType.entries) {
-                coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName,
-                    DeviceData(fcmToken, location?.latitude, location?.longitude,
-                        java.util.TimeZone.getDefault().id, batteryLevel / batteryScale.toDouble() * 100)))
+                coreClient.createDevice(DeviceRequest(deviceId, deviceType.value, deviceName, deviceData))
             }
         }
         catch (e: Exception) {
@@ -63,6 +51,33 @@ class DeviceInitializer(
         if (fcmToken != null) {
             initialize(fcmToken)
         }
+    }
+
+    private suspend fun createData(fcmToken: String): DeviceData {
+        if (!authenticationService.hasUserRoles(BRIDGEX_LOCATION_READ_ROLE)) {
+            return DeviceData(fcmToken, null, null, null, null, null)
+        }
+
+        val batteryStatus: Intent? = ContextCompat.getSystemService(context, BatteryManager::class.java)?.let { _ ->
+            val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            context.registerReceiver(null, intentFilter)
+        }
+        val batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val batteryScale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+
+        val location = getLocation(batteryLevel / batteryScale.toDouble() * 100)
+
+        var address: AddressResponse? = null
+        if (location != null) {
+            try {
+                address = coreClient.getAddress(location.latitude, location.longitude)
+            } catch (e: Exception) {
+                Log.e(DeviceInitializer::class.java.simpleName, "An error occurred when obtaining address.", e)
+            }
+        }
+
+        return DeviceData(fcmToken, location?.latitude, location?.longitude, DeviceAddressData(address?.address, address?.address),
+            java.util.TimeZone.getDefault().id, batteryLevel / batteryScale.toDouble() * 100)
     }
 
     private suspend fun getLocation(batteryLevel: Double): Location? {
@@ -100,6 +115,7 @@ class DeviceInitializer(
         private const val DEVICE_PREFERENCES_NAME = "DevicePreferences"
         private const val DEVICE_ID_KEY = "deviceId"
         private const val DEVICE_NAME_KEY = "device_name"
+        private const val BRIDGEX_LOCATION_READ_ROLE = "bridgex.location.read"
         private const val MAX_LOCATION_AGE_MILLISECONDS = 30 * 60 * 1000L
         private const val LOCATION_FETCH_TIMEOUT_MILLISECONDS = 10 * 1000L
         private const val LOCATION_FETCH_BATTERY_THRESHOLD = 30

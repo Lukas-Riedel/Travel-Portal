@@ -262,8 +262,8 @@ jobs:
           distribution: 'temurin'
       - name: Verify
         run: mvn verify -f Agent/pom.xml -Dservice.core.url=${{ vars.CORE_BASE_URL }}
-  deploy-bridgex:
-    name: Deploy BridgeX
+  release-bridgex:
+    name: Release BridgeX
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.bridgex == 'true' }}
     runs-on: ubuntu-latest
@@ -281,7 +281,7 @@ jobs:
         run: |
           cd BridgeX
           chmod +x ./gradlew
-      - name: Prepare keystore
+      - name: Prepare Keystore
         run: |
           cd BridgeX
           cd app
@@ -299,6 +299,7 @@ jobs:
           PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
           CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
           IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
+          IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
           FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
@@ -312,3 +313,9 @@ jobs:
         with:
           name: bridgex-apk
           path: BridgeX/app/build/outputs/apk/release/app-release.apk
+      - name: Upload to Firebase App Distribution
+        uses: w9jds/firebase-action@master
+        with:
+          args: appdistribution:distribute BridgeX/app/build/outputs/apk/release/app-release.apk --app ${{ vars.FIREBASE_ANDROID_APP_ID }} --groups Users
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}

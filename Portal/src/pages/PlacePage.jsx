@@ -66,7 +66,7 @@ export default function PlacePage() {
             <DateTileGrid
                 place={place}
                 onAlbumRefreshed={hasRole(UserRole.PlaceAlbumEdit) && refreshPlaceAlbum} />
-            <TripBar trips={hasRole(UserRole.UiFutureRead) ? place?.getAllTrips() : place?.getPastTrips()} />
+            <TripBar trips={hasRole(UserRole.PortalFutureRead) ? place?.getAllTrips() : place?.getPastTrips()} />
             {place?.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid place={place} />

@@ -12,7 +12,7 @@ export const useQuery = <T>(options: UndefinedInitialDataOptions<T, Error, T, st
         ...options,
         // Find a better role if this proves to be insufficient.
         // The idea is not to cache if the user can view future events, because they tend to change frequently.
-        staleTime: hasRole(UserRole.UiFutureRead) ? 0 : options.staleTime
+        staleTime: hasRole(UserRole.PortalFutureRead) ? 0 : options.staleTime
     }, queryClient)
 
     return {

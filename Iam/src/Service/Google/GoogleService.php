@@ -147,7 +147,7 @@
                 throw new \RuntimeException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            if (!in_array($userId, $this->userService->getUserIdsWithRole(UserRole::ExternalAuthEdit))) {
+            if (!in_array($userId, $this->userService->getUserIdsWithRole(UserRole::IamAuthEdit))) {
                 throw new \RuntimeException("The user '$userId' is not authorized to perform the authentication.");
             }
 

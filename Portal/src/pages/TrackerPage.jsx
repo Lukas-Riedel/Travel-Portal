@@ -31,7 +31,7 @@ export default function TrackerPage() {
                 vacationEvents={timeTrackingEvents["vacation"]}
                 selfcareEvents={timeTrackingEvents["selfcare"]}
                 tenureEvents={timeTrackingEvents["tenure"]} />
-            {hasRole(UserRole.UiFutureRead) && (
+            {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable
                     trips={trips?.filter(trip => trip?.isFuture())}
                     isFreeDay={isFreeDay}

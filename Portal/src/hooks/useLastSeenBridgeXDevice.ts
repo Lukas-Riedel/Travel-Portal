@@ -27,7 +27,9 @@ export const useLastSeenBridgeXDevice = (knownAddresses: KnownAddress[] = []): U
 
     const [currentAddress, setCurrentAddress] = useState<KnownAddress | null>(null)
 
-    const lastSeenBridgeXDevice = useMemo(() => devices?.reduce((lastSeenCandidate, current) => (!lastSeenCandidate || current.lastSeen > lastSeenCandidate.lastSeen ? current : lastSeenCandidate), undefined) as SpecificDevice<BridgeXDeviceData> | undefined, [devices])
+    const lastSeenBridgeXDevice = useMemo(() => devices
+        ?.filter(device => device.data && device.data.latitude && device.data.longitude && device.data.address)
+        ?.reduce((lastSeenCandidate, current) => (!lastSeenCandidate || current.lastSeen > lastSeenCandidate.lastSeen ? current : lastSeenCandidate), undefined) as SpecificDevice<BridgeXDeviceData> | undefined, [devices])
 
     useEffect(() => {
         if (!lastSeenBridgeXDevice?.data || !lastSeenBridgeXDevice.data.latitude || !lastSeenBridgeXDevice.data.longitude) {

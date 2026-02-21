@@ -29,7 +29,7 @@
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService, $statisticsService, $timeTrackingService,
         $yearService, $tripService, $placeService, $noteService, $documentService, $generativeContentClient, $photoService, $eventPublisher, $logger, $healthCheckables) {
         ConfigurationResource::register($app, $configurationService);
-        DeviceResource::register($app, $deviceService);
+        DeviceResource::register($app, $deviceService, $geocodingService);
         AirlineResource::register($app, $flightService, $logger);
         FlightResource::register($app, $flightService); 
         CategoryResource::register($app, $categoryService, $highlightService, $logger);

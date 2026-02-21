@@ -17,7 +17,7 @@ export default function TripNavigation({ trip }) {
         <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">
             {trip && trips ? (
                 <>
-                    {previousTrip && (previousTrip.start < Date.now() / 1000 || hasRole(UserRole.UiFutureRead)) && (
+                    {previousTrip && (previousTrip.start < Date.now() / 1000 || hasRole(UserRole.PortalFutureRead)) && (
                         <div>
                             <Link
                                 className="flex w-full text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"
@@ -42,7 +42,7 @@ export default function TripNavigation({ trip }) {
             )}
             {trip && trips ? (
                 <>
-                    {nextTrip && (nextTrip.start < Date.now() / 1000 || hasRole(UserRole.UiFutureRead)) && (
+                    {nextTrip && (nextTrip.start < Date.now() / 1000 || hasRole(UserRole.PortalFutureRead)) && (
                         <div>
                             <Link
                                 className="flex w-full text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"
