@@ -29,6 +29,7 @@ The Travel Portal is "data-driven" in its purest form, leveraging an array of AP
 * **Interactive Mapping:** Using the **Google Maps JavaScript API**, the portal renders dynamic markers filterable by **years** or **geographical regions**.
 * **AI-Generated Narratives:** The **Gemini API** analyzes all collected metadata to automatically generate rich, human-like text content.
 * **Smart Media Handling:** Since Google Photos API calls are "expensive" (quotas/latency), the system implements a caching layer. Selected photos are cached in a local **S3 storage (MinIO)** within the cluster for instant loading.
+* **Real-time Notifications**: The system stays proactive. Through integration with **Firebase Cloud Messaging (FCM)**, the portal sends instant push notifications to the mobile device regarding flight updates, successful data synchronizations, or AI processing completions.
 
 ---
 
@@ -42,11 +43,11 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 * **Token-Based Auth:** Every microservice in the cluster must communicate with the **Iam** service to obtain a valid **Bearer Token**. This ensures that the internal communication follows a strict "Security-First" approach.
 
 ### 🧱 Specialized Services
-* **Portal (React):** A high-performance SPA serving as the main interface. Focused on map visualizations and gallery rendering.
+* **Portal (React):** A high-performance PWA serving as the main interface. Focused on map visualizations and gallery rendering. By implementing **Service Workers**, the portal supports offline caching and handles **Web Push Notifications** via **FCM**, ensuring real-time updates reach the desktop even when the browser tab is inactive.
 * **Core (PHP / REST API):** The central brain. Since PHP is single-threaded, Core includes a **dedicated background worker** that consumes **RabbitMQ** tasks to handle complex API integrations without blocking the API response. **Maintained in PHP for historical reasons** (originally built for shared hosting), it has since been modernized into a cloud-native service.
 * **Cortex (Python / AI Worker):** A specialized AI engine for photo evaluation. It has **no public API**; it operates purely as an RMQ consumer.
 * **Agent (Java / RabbitMQ Client):** A worker for heavy lifting, such as high-volume image processing, metadata extraction, and massive data synchronization.
-* **BridgeX (Android / Native):** A native gateway providing access to **GPS tracking** for precise location history and **Health Connect** integration.
+* **BridgeX (Android / Native):** A native gateway providing access to **GPS tracking** for precise location history and **Health Connect** integration. It also serves as a specialized container that renders the **Portal via an optimized WebView**. This allows for a seamless mobile experience while acting as a **native FCM consumer** for low-latency system alerts.
 
 ### 📉 Storage & Caching Strategy
 * **MinIO (S3):** High-speed media caching to bypass Google Photos API limitations.
