@@ -27,6 +27,7 @@ export default function MainLayout({ children }) {
     ]
 
     const handleLogin = () => {
+        requestPermissions()
         showFormToast(
             "Zadej přihlašovací údaje:",
             [
@@ -40,6 +41,7 @@ export default function MainLayout({ children }) {
     }
 
     const handleLogout = () => {
+        requestPermissions()
         showConfirmToast(
             "Opravdu se chceš odhlásit?",
             logout,
@@ -123,4 +125,18 @@ export default function MainLayout({ children }) {
             </main>
         </div>
     )
+}
+
+async function requestPermissions() {
+    if (!("Notification" in window)) {
+        return
+    }
+    
+    if (Notification.permission === "default") {
+        await Notification.requestPermission()
+    }
+    
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(() => {}, () => {})
+    }
 }

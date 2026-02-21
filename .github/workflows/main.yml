@@ -12,35 +12,35 @@ jobs:
       agent: ${{ steps.filter.outputs.agent }}
       bridgex: ${{ steps.filter.outputs.bridgex }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4    
-      - name: Filter Paths
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            core:
-              - 'Core/**'
-              - 'Common/**'
-              - 'Helm/Core/**'
-              - 'Helm/Common/**'
-            cortex:
-              - 'Cortex/**'
-              - 'Helm/Cortex/**'
-              - 'Helm/Common/**'
-            iam:
-              - 'Iam/**'
-              - 'Common/**'
-              - 'Helm/Iam/**'
-              - 'Helm/Common/**'
-            portal:
-              - 'Portal/**'
-              - 'Helm/Portal/**'
-              - 'Helm/Common/**'
-            agent:
-              - 'Agent/**'
-            bridgex:
-              - 'BridgeX/**'
+    - name: Checkout
+      uses: actions/checkout@v4    
+    - name: Filter Paths
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          core:
+            - 'Core/**'
+            - 'Common/**'
+            - 'Helm/Core/**'
+            - 'Helm/Common/**'
+          cortex:
+            - 'Cortex/**'
+            - 'Helm/Cortex/**'
+            - 'Helm/Common/**'
+          iam:
+            - 'Iam/**'
+            - 'Common/**'
+            - 'Helm/Iam/**'
+            - 'Helm/Common/**'
+          portal:
+            - 'Portal/**'
+            - 'Helm/Portal/**'
+            - 'Helm/Common/**'
+          agent:
+            - 'Agent/**'
+          bridgex:
+            - 'BridgeX/**'
   deploy-iam:
     name: Deploy IAM
     needs: detect-changes
@@ -63,10 +63,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build IAM Image
       run: |
-        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:${{ github.run_number }} -f Iam/Dockerfile .
+        docker build \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:${{ github.run_number }} \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:latest \
+          -f Iam/Dockerfile .
     - name: Push IAM Image
       run: |
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/iam:latest
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
     - name: Open SSH Tunnel
@@ -111,10 +115,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Core Image
       run: |
-        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:${{ github.run_number }} -f Core/Dockerfile .
+        docker build \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:${{ github.run_number }} \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:latest \
+          -f Core/Dockerfile .
     - name: Push Core Image
       run: |
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/core:latest
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
     - name: Open SSH Tunnel
@@ -159,10 +167,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Cortex Image
       run: |
-        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:${{ github.run_number }} -f Cortex/Dockerfile .
+        docker build \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:${{ github.run_number }} \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:latest \
+          -f Cortex/Dockerfile .
     - name: Push Cortex Image
       run: |
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/cortex:latest
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
     - name: Open SSH Tunnel
@@ -214,17 +226,21 @@ jobs:
         cd Portal
         npm install --legacy-peer-deps
     - name: Generate Core Swagger types
+      env:
+        CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
       run: |
         cd Portal
         node swagger.config.js
-      env:
-        CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
     - name: Build Portal Image
       run: |
-        docker build -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:${{ github.run_number }} -f Portal/Dockerfile .
+        docker build \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:${{ github.run_number }} \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:latest \
+          -f Portal/Dockerfile .
     - name: Push Portal Image
       run: |
         docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/portal:latest
     - name: Set Up Kubectl
       uses: azure/setup-kubectl@v3
     - name: Open SSH Tunnel
@@ -253,69 +269,69 @@ jobs:
     if: ${{ needs.detect-changes.outputs.agent == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4    
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - name: Verify
-        run: mvn verify -f Agent/pom.xml -Dservice.core.url=${{ vars.CORE_BASE_URL }}
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    - name: Verify
+      run: mvn verify -f Agent/pom.xml -Dservice.core.url=${{ vars.CORE_BASE_URL }}
   release-bridgex:
     name: Release BridgeX
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.bridgex == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set Up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - name: Set Up Android SDK
-        uses: android-actions/setup-android@v2
-      - name: Grant Execute Permission for Gradlew
-        run: |
-          cd BridgeX
-          chmod +x ./gradlew
-      - name: Prepare Keystore
-        run: |
-          cd BridgeX
-          cd app
-          echo "${{ secrets.BRIDGEX_KEYSTORE_BASE64 }}" | base64 --decode > bridgex.jks
-      - name: Build APK
-        run: |
-          cd BridgeX
-          ./gradlew assembleRelease
-        env:
-          VERSION_TAG: ${{ github.run_number }}
-          KEYSTORE_FILE: bridgex.jks
-          KEYSTORE_PASSWORD: ${{ secrets.BRIDGEX_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.BRIDGEX_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.BRIDGEX_KEY_PASSWORD }}
-          PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
-          CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
-          IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
-          IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
-          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-          FIREBASE_STORAGE_BUCKET: ${{ vars.FIREBASE_STORAGE_BUCKET }}
-          FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
-          FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
-          FIREBASE_MEASUREMENT_ID: ${{ vars.FIREBASE_MEASUREMENT_ID }}
-          FIREBASE_VAPID_KEY: ${{ secrets.FIREBASE_VAPID_KEY }}
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: bridgex-apk
-          path: BridgeX/app/build/outputs/apk/release/app-release.apk
-      - name: Upload to Firebase App Distribution
-        uses: w9jds/firebase-action@master
-        with:
-          args: appdistribution:distribute BridgeX/app/build/outputs/apk/release/app-release.apk --app ${{ vars.FIREBASE_ANDROID_APP_ID }} --groups Users
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set Up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    - name: Set Up Android SDK
+      uses: android-actions/setup-android@v2
+    - name: Grant Execute Permission for Gradlew
+      run: |
+        cd BridgeX
+        chmod +x ./gradlew
+    - name: Prepare Keystore
+      run: |
+        cd BridgeX
+        cd app
+        echo "${{ secrets.BRIDGEX_KEYSTORE_BASE64 }}" | base64 --decode > bridgex.jks
+    - name: Build APK
+      run: |
+        cd BridgeX
+        ./gradlew assembleRelease
+      env:
+        VERSION_TAG: ${{ github.run_number }}
+        KEYSTORE_FILE: bridgex.jks
+        KEYSTORE_PASSWORD: ${{ secrets.BRIDGEX_KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.BRIDGEX_KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.BRIDGEX_KEY_PASSWORD }}
+        PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
+        CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
+        IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
+        IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
+        FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
+        FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+        FIREBASE_STORAGE_BUCKET: ${{ vars.FIREBASE_STORAGE_BUCKET }}
+        FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+        FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+        FIREBASE_MEASUREMENT_ID: ${{ vars.FIREBASE_MEASUREMENT_ID }}
+        FIREBASE_VAPID_KEY: ${{ secrets.FIREBASE_VAPID_KEY }}
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: bridgex-apk
+        path: BridgeX/app/build/outputs/apk/release/app-release.apk
+    - name: Upload to Firebase App Distribution
+      uses: w9jds/firebase-action@master
+      with:
+        args: appdistribution:distribute BridgeX/app/build/outputs/apk/release/app-release.apk --app ${{ vars.FIREBASE_ANDROID_APP_ID }} --groups Users
+      env:
+        GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
