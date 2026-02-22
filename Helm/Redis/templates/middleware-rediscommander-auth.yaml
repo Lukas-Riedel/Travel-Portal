@@ -5,5 +5,5 @@ metadata:
   name: {{ .Release.Name }}-rediscommander-auth-middleware
 spec:
   basicAuth:
-    secret: rediscommander-password # TODO: Rename to {{ .Release.Name }}-rediscommander-password
+    secret: {{ .Release.Name }}-rediscommander-auth-middleware-secret
 {{- end }}

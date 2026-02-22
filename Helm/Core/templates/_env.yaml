@@ -6,14 +6,14 @@
 - name: ENCRYPTION_PRIVATE_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ .Release.Name }}-encryption-key
-      key: core-encryption-key
+      name: {{ .Release.Name }}-secret
+      key: encryption-key
 - name: CORE_BASE_URL
-  value: "{{ .Values.core.url.base.public }}"
+  value: "{{ .Values.core.url.base }}"
 - name: S3_BASE_URL
-  value: "{{ .Values.core.url.s3.base.public }}"
+  value: "{{ .Values.core.url.s3.base }}"
 - name: IBM_DATAPLATFORM_BASE_URL
-  value: "{{ .Values.core.url.ibm.dataplatform.base.public }}"
+  value: "{{ .Values.core.url.ibm.dataplatform.base }}"
 - name: DB_HOST
   value: "{{ .Values.core.db.hostname }}"            
 - name: DB_PORT
@@ -21,11 +21,14 @@
 - name: DB_NAME
   value: "{{ .Values.core.db.database }}"  
 - name: DB_USER
-  value: "{{ .Values.core.db.username }}"
+  valueFrom:
+    secretKeyRef:
+      name: postgres-secret
+      key: postgres-username
 - name: DB_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: postgres-password
+      name: postgres-secret
       key: postgres-password
 - name: REDIS_HOST
   value: "{{ .Values.core.redis.hostname }}"            
@@ -34,7 +37,7 @@
 - name: REDIS_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: redis-password
+      name: redis-secret
       key: redis-password
 - name: RMQ_INTERNAL_HOST
   value: "{{ .Values.core.rabbitmq.internal.hostname }}"            
@@ -47,7 +50,10 @@
 - name: RMQ_VHOST
   value: "{{ .Values.core.rabbitmq.vhost }}"  
 - name: RMQ_USER
-  value: "{{ .Values.core.rabbitmq.username }}"
+  valueFrom:
+    secretKeyRef:
+      name: rabbitmq-secret
+      key: rabbitmq-username
 - name: RMQ_HEARTBEAT
   value: "{{ .Values.core.rabbitmq.heartbeat }}"
 - name: RMQ_PREFETCH_COUNT
@@ -55,7 +61,7 @@
 - name: RMQ_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: rabbitmq-password
+      name: rabbitmq-secret
       key: rabbitmq-password
 - name: S3_REGION
   value: "{{ .Values.core.s3.region }}"
@@ -64,29 +70,32 @@
 - name: S3_PORT
   value: "{{ .Values.core.s3.port }}"
 - name: S3_ACCESS_KEY
-  value: "{{ .Values.core.s3.accesskey }}"
+  valueFrom:
+    secretKeyRef:
+      name: minio-secret
+      key: minio-access-key
 - name: S3_SECRET_KEY
   valueFrom:
     secretKeyRef:
-      name: minio-password
+      name: minio-secret
       key: minio-password
 - name: BACKEND_GOOGLE_MAPS_API_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ .Release.Name }}-google-maps-api-key
-      key: core-google-maps-api-key
+      name: {{ .Release.Name }}-secret
+      key: google-maps-api-key
 - name: GOOGLE_GEMINI_API_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ .Release.Name }}-google-gemini-api-key
-      key: core-google-gemini-api-key
+      name: {{ .Release.Name }}-secret
+      key: google-gemini-api-key
 - name: FCM_PROJECT_ID
   value: "{{ .Values.core.fcm.project.id }}"
 - name: EXCHANGE_RATE_API_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ .Release.Name }}-exchange-rate-api-key
-      key: core-exchange-rate-api-key
+      name: {{ .Release.Name }}-secret
+      key: exchange-rate-api-key
 - name: WORKER_QUEUE_NAME
   value: "{{ .Values.core.rabbitmq.queue.worker }}"
 - name: CORTEX_QUEUE_NAME
@@ -104,18 +113,24 @@
 - name: IAM_BACKEND_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
-      name: iam-client-backend-secret
-      key: iam-client-backend-secret
+      name: iam-secret
+      key: backend-client-secret
 - name: GRAFANA_LOKI_ENTRYPOINT
-  value: "{{ .Values.core.grafana.entrypoint }}"
+  valueFrom:
+    secretKeyRef:
+      name: grafana-secret
+      key: grafana-entrypoint
 - name: GRAFANA_LOKI_CLIENT_NAME
   value: "{{ .Values.core.grafana.client.name }}"
 - name: GRAFANA_LOKI_USER
-  value: "{{ .Values.core.grafana.username }}"
+  valueFrom:
+    secretKeyRef:
+      name: grafana-secret
+      key: grafana-username
 - name: GRAFANA_LOKI_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: grafana-password
+      name: grafana-secret
       key: grafana-password
 - name: ALLOWED_REQUEST_ORIGINS
   value: "{{ .Values.core.origin.whitelist }}"
