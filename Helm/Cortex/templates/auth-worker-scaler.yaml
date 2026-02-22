@@ -7,11 +7,11 @@ spec:
   secretTargetRef:
     - parameter: host
       name: {{ .Release.Name }}-worker-scaler-secret
-      key: rmqConnectionString
+      key: rabbitmq-connection-string
     - parameter: username
-      name: {{ .Release.Name }}-worker-scaler-secret
-      key: rmqUser
+      name: rabbitmq-secret
+      key: rabbitmq-username
     - parameter: password
-      name: rabbitmq-password
+      name: rabbitmq-secret
       key: rabbitmq-password
 {{- end }}

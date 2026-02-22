@@ -51,8 +51,8 @@ spec:
             - name: ENCRYPTION_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-encryption-key
-                  key: iam-encryption-key
+                  name: {{ .Release.Name }}-secret
+                  key: encryption-key
             - name: REDIS_HOST
               value: "{{ .Values.iam.redis.hostname }}"            
             - name: REDIS_PORT
@@ -60,7 +60,7 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis-password
+                  name: redis-secret
                   key: redis-password
             - name: IAM_APP_CLIENT_ID
               value: "{{ .Values.iam.client.app.id }}"
@@ -69,58 +69,78 @@ spec:
             - name: IAM_BACKEND_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-client-backend-secret
-                  key: iam-client-backend-secret
+                  name: {{ .Release.Name }}-secret
+                  key: backend-client-secret
             - name: IAM_BASE_URL
-              value: "{{ .Values.iam.url.base.public }}"
+              value: "{{ .Values.iam.url.base }}"
             - name: INTERNAL_IAM_BASE_URL
-              value: "{{ .Values.iam.url.base.private.user }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: internal-iam-base-url
             - name: INTERNAL_ADMIN_IAM_BASE_URL
-              value: "{{ .Values.iam.url.base.private.admin }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: internal-iam-admin-base-url
             - name: IBM_CLOUD_IAM_BASE_URL
-              value: "{{ .Values.iam.ibm.iam.base.public }}"
+              value: "{{ .Values.iam.ibm.iam.url.base }}"
             - name: FCM_PROJECT_ID
               value: "{{ .Values.iam.fcm.project.id }}"
             - name: FCM_PRIVATE_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-fcm-private-key-id
-                  key: iam-fcm-private-key-id
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-private-key-id
             - name: FCM_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-fcm-private-key
-                  key: iam-fcm-private-key
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-private-key
             - name: FCM_CLIENT_EMAIL
-              value: "{{ .Values.iam.fcm.client.email }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-email
             - name: FCM_CLIENT_ID
-              value: "{{ .Values.iam.fcm.client.id }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-client-id
             - name: FCM_CLIENT_X509_CERTIFICATE_URL
-              value: "{{ .Values.iam.fcm.client.certificate.url }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-certificate-url
             - name: GOOGLE_API_CLIENT_ID
               value: "{{ .Values.iam.google.client.id }}"
             - name: GOOGLE_API_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-google-client-secret
-                  key: iam-google-client-secret
+                  name: {{ .Release.Name }}-secret
+                  key: google-client-secret
             - name: IBM_CLOUD_API_KEY
               valueFrom:
                 secretKeyRef:
-                  # name: {{ .Release.Name }}-ibm-cloud-api-key
-                  # key: iam-ibm-cloud-api-key
-                  name: {{ .Release.Name }}-ibm-test-cloud-api-key
-                  key: iam-ibm-test-cloud-api-key
+                  name: {{ .Release.Name }}-secret
+                  # key: ibm-cloud-api-key
+                  key: ibm-test-cloud-api-key
             - name: GRAFANA_LOKI_ENTRYPOINT
-              value: "{{ .Values.iam.grafana.entrypoint }}"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-entrypoint
             - name: GRAFANA_LOKI_CLIENT_NAME
               value: "{{ .Values.iam.grafana.client.name }}"
             - name: GRAFANA_LOKI_USER
-              value: "{{ .Values.iam.grafana.username }}"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-username
             - name: GRAFANA_LOKI_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: grafana-password
+                  name: grafana-secret
                   key: grafana-password
             - name: ALLOWED_REQUEST_ORIGINS
               value: "{{ .Values.iam.origins.whitelist }}"

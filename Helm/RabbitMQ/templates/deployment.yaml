@@ -43,11 +43,14 @@ spec:
             timeoutSeconds: 5
           env:
             - name: RABBITMQ_DEFAULT_USER
-              value: "{{ .Values.rabbitmq.username }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: rabbitmq-username
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-password
+                  name: {{ .Release.Name }}-secret
                   key: rabbitmq-password 
           volumeMounts:
             - name: {{ .Release.Name }}-data

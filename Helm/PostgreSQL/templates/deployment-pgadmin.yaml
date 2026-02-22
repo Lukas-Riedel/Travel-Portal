@@ -41,11 +41,14 @@ spec:
             timeoutSeconds: 1         
           env:
             - name: PGADMIN_DEFAULT_EMAIL
-              value: {{ .Values.pgadmin.email }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: pgadmin-email
             - name: PGADMIN_DEFAULT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: pgadmin-password # TODO: Change to {{ .Release.Name }}-pgadmin-password
+                  name: {{ .Release.Name }}-secret
                   key: pgadmin-password
           volumeMounts:
             - name: {{ .Release.Name }}-pgadmin-data

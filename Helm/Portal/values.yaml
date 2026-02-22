@@ -1,7 +1,7 @@
 portal:
   enabled: true
   image: ghcr.io/lukas-riedel/portal
-  # tag: latest
+  tag: latest
   replicas: 1
   service:
     type: ClusterIP
@@ -12,22 +12,16 @@ portal:
       username: guest
       password: guest
   url:
-    base:
-      public: https://lriedel.cz
+    base: https://lriedel.cz
     iam:
-      base:
-        public: https://iam.lriedel.cz
+      base: https://iam.lriedel.cz
     core:
-      base:
-        public: https://api.lriedel.cz
+      base: https://api.lriedel.cz
   iam:
     client:
       app:
         id: travel-portal-app
   fcm:
-    key:
-      api: AIzaSyDHE5OQxnc9H3MDYvKh_XMDII2aGl1WGbY
-      vapid: BB3b84HrUo70xfMK0D6XU6m_akT5LVYUPLPyVsx4jB2RwLNLWzFsQrNB1X_SQygIqF5lQASHXDW13ysSOlGNqZI
     domain:
       auth: travel-blog-free.firebaseapp.com
     project:
@@ -41,7 +35,3 @@ portal:
       id: 1:917611440173:web:61960e323dd4e730acb0a4
     measurement:
       id: G-TQC1X1T5X2
-  google:
-    maps:
-      key:
-        api: AIzaSyDRmOGaKnOreWBiOeKwfrb5I2qnmff4Su0
