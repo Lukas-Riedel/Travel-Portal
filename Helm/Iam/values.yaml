@@ -1,7 +1,7 @@
 iam:
   enabled: true
   image: ghcr.io/lukas-riedel/iam
-  # tag: latest
+  tag: latest
   replicas: 1
   service:
     type: ClusterIP
@@ -13,34 +13,23 @@ iam:
     backend:
       id: admin-cli
   url:
-    base:
-      public: https://iam.lriedel.cz
-      private:
-        user: https://lemur-9.cloud-iam.com/auth/realms/travel-portal
-        admin: https://lemur-9.cloud-iam.com/auth/admin/realms/travel-portal
+    base: https://iam.lriedel.cz
   redis:
     hostname: redis
     port: 6379
   fcm:
     project:
       id: travel-blog-free
-    client:
-      id: "109261228732220758403"
-      email: firebase-adminsdk-fbsvc@travel-blog-free.iam.gserviceaccount.com
-      certificate:
-        url: https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40travel-blog-free.iam.gserviceaccount.com
   google:
     client:
       id: 260891677871-n02h7nhapeelp4jkkgejsj5m54ramkoq.apps.googleusercontent.com
   ibm:
     iam:
-      base:
-        # public: https://iam.cloud.ibm.com
-        public: https://iam.test.cloud.ibm.com
+      url:
+        # base: https://iam.cloud.ibm.com
+        base: https://iam.test.cloud.ibm.com
   grafana:
-    entrypoint: https://logs-prod-012.grafana.net
     client:
       name: travel-portal-service
-    username: "1287508"
   origins:
     whitelist: https://travel-portal.eu,https://lriedel.cz

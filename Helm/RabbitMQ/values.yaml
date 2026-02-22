@@ -11,4 +11,3 @@ rabbitmq:
     management:
       port: 15672
       host: rmq.lriedel.cz
-  username: admin

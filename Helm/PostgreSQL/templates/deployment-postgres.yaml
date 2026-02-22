@@ -52,11 +52,14 @@ spec:
             - name: POSTGRES_DB
               value: {{ .Values.postgres.database }}
             - name: POSTGRES_USER
-              value: {{ .Values.postgres.user }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: postgres-username
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-password
+                  name: {{ .Release.Name }}-secret
                   key: postgres-password
           volumeMounts:
             - name: {{ .Release.Name }}-data
