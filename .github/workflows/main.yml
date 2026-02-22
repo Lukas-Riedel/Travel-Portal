@@ -1,5 +1,8 @@
 name: Main Pipeline
-on: push
+on:
+  push:
+    branches:
+    - main
 jobs:
   detect-changes:
     name: Detect Changes
