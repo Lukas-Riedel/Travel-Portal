@@ -24,9 +24,9 @@ export interface UsePredefinedUserInputResult {
     showUpdatePlaceReviewedToast: (updatePlaceReviewed: () => Promise<Album[]>) => Promise<boolean>
     showRefreshPlaceExcerptToast: (refreshPlaceExcerpt: () => Promise<Place>) => Promise<boolean>
     showUpdateNoteToast: (updateNote: () => Promise<Note>) => Promise<boolean>
-    showRemoveDocumentToast: (document: Document, removeDocument: () => Promise<void>) => Promise<boolean>
+    showRemoveDocumentToast: (removeDocument: () => Promise<void>) => Promise<boolean>
     showUpdateConfigurationEntryToast: (updateConfigurationEntry: () => Promise<Record<string, any>>) => Promise<boolean>
-    showRemovePlaceToast: (place: Place, removePlace: () => Promise<void>) => Promise<boolean>
+    showRemovePlaceToast: (removePlace: () => Promise<void>) => Promise<boolean>
     showRefreshAlbumToast: (refreshAlbum: () => Promise<Album>) => Promise<boolean>
     showRemoveAlbumToast: (removeAlbum: () => Promise<void>) => Promise<boolean>
     showUpdateAlbumMainPhotoToast: (updateAlbumMainPhoto: () => Promise<Album>) => Promise<boolean>
@@ -38,13 +38,13 @@ export interface UsePredefinedUserInputResult {
     showRemoveNoteToast: (removeNote: () => Promise<void>) => Promise<boolean>
     showCreateAirlineToast: (createAirline: (name: string) => Promise<Airline>) => Promise<boolean>
     showUpdateAirlineToast: (airline: Airline, updateAirlineName: (name: string) => Promise<Airline>, updateAirlineLogo: (logo: string) => Promise<Airline>, removeAirlineCode: (code: string) => Promise<void>) => Promise<boolean>
-    showRemoveAirlineToast: (airline: Airline, removeAirline: () => Promise<void>) => Promise<boolean>
+    showRemoveAirlineToast: (removeAirline: () => Promise<void>) => Promise<boolean>
     showRemovePhotoToast: (removePhoto: () => Promise<void>) => Promise<boolean>
     showLogFlightToast: (logFlight: () => Promise<Flight>) => Promise<boolean>
     showCreateHighlightToast: (createHighlight: () => Promise<Highlight>) => Promise<boolean>
     showUpdateMainHighlightToast: <T extends Highlightable> (updateMainHighlight: () => Promise<T>) => Promise<boolean>
     showUpdateHighlightToast: (updateHighlight: () => Promise<Highlight>) => Promise<boolean>
     showRemoveHighlightToast: (removeHighlight: () => Promise<void>) => Promise<boolean>
-    showAssignLabelToast: (label: Label, createLabel: () => Promise<Label>) => Promise<boolean>
-    showUnassignLabelToast: (label: Label, removeLabel: () => Promise<void>) => Promise<boolean>
+    showAssignLabelToast: (createLabel: () => Promise<Label>) => Promise<boolean>
+    showUnassignLabelToast: (removeLabel: () => Promise<void>) => Promise<boolean>
 }

@@ -86,7 +86,7 @@
                 }
             },
             "remove": {
-                "message": "Opravdu chceš odstranit aerolinku {{name}}?",
+                "message": "Opravdu chceš odstranit tuto aerolinku?",
                 "confirmed": "Aerolinka byla úspěšně odstraněna",
                 "failed": "Nepodařilo se odstranit aerolinku"
             }
@@ -174,7 +174,7 @@
                 }
             },
             "remove": {
-                "message": "Opravdu chceš odstranit výdaj {{description}}?",
+                "message": "Opravdu chceš odstranit tento výdaj?",
                 "confirmed": "Výdaj byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit výdaj"
             }
@@ -188,12 +188,12 @@
                 "failed": "Nepodařilo se přidat štítek"
             },
             "assign": {
-                "message": "Opravdu chceš přiřadit štítek {{name}}?",
+                "message": "Opravdu chceš přiřadit tento štítek?",
                 "confirmed": "Štítek byl úspěšně přiřazen",
                 "failed": "Nepodařilo se přiřadit štítek"
             },
             "unassign": {
-                "message": "Opravdu chceš odstranit štítek {{name}}?",
+                "message": "Opravdu chceš odstranit tento štítek?",
                 "confirmed": "Štítek byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit štítek"
             }
@@ -266,7 +266,7 @@
     "place": {
         "prompt": {
             "remove": {
-                "message": "Opravdu chceš odstranit místo {{name}}?",
+                "message": "Opravdu chceš odstranit toto místo?",
                 "confirmed": "Místo bylo úspěšně odstraněno",
                 "failed": "Nepodařilo se odstranit místo"
             },
@@ -318,7 +318,7 @@
     "document": {
         "prompt": {
             "remove": {
-                "message": "Opravdu chceš odstranit dokument {{name}}?",
+                "message": "Opravdu chceš odstranit tento dokument?",
                 "confirmed": "Dokument byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit dokument"
             }

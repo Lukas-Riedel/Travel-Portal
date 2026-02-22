@@ -20,7 +20,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
         && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name), [allLabels, configuration, labels]))
 
     const handleKnownLabelAdded = label => {
-        showAssignLabelToast(label, () => onLabelAdded(label.name))
+        showAssignLabelToast(() => onLabelAdded(label.name))
     }
 
     const handleUnknownLabelAdded = () => {
@@ -28,7 +28,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     }
 
     const handleLabelRemoved = label => {
-        showUnassignLabelToast(label, () => onLabelRemoved(label.id))
+        showUnassignLabelToast(() => onLabelRemoved(label.id))
     }
 
     return (!labels || labels.length > 0 || onLabelAdded) && (

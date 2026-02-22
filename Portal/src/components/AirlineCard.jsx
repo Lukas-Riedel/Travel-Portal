@@ -16,8 +16,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
     }
 
     const handleAirlineRemoved = () => {
-        showRemoveAirlineToast(airline,
-            () => onAirlineRemoved(airline.id))
+        showRemoveAirlineToast(() => onAirlineRemoved(airline.id))
     }
 
     return airline ? (

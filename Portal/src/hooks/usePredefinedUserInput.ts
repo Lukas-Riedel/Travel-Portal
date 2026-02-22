@@ -5,7 +5,6 @@ import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscr
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
 
-// TODO: Unify all messages (e.g., its context arguments - some confirmations contain context information, some don't).
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
     const { t } = useTranslation()
@@ -74,9 +73,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("note.prompt.update.failed")
         )
 
-    const showRemoveDocumentToast = (document: Document, removeDocument: () => Promise<void>) =>
+    const showRemoveDocumentToast = (removeDocument: () => Promise<void>) =>
         showConfirmToast(
-            t("document.prompt.remove.message", { name: document.name }),
+            t("document.prompt.remove.message"),
             removeDocument,
             t("document.prompt.remove.confirmed"),
             t("document.prompt.remove.failed")
@@ -90,9 +89,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("configuration.prompt.update.failed")
         )
 
-    const showRemovePlaceToast = (place: Place, removePlace: () => Promise<void>) =>
+    const showRemovePlaceToast = (removePlace: () => Promise<void>) =>
         showConfirmToast(
-            t("place.prompt.remove.message", { name: place.name }),
+            t("place.prompt.remove.message"),
             removePlace,
             t("place.prompt.remove.confirmed"),
             t("place.prompt.remove.failed")
@@ -285,9 +284,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("airline.prompt.update.all.failed")
         )
 
-    const showRemoveAirlineToast = (airline: Airline, removeAirline: () => Promise<void>) =>
+    const showRemoveAirlineToast = (removeAirline: () => Promise<void>) =>
         showConfirmToast(
-            t("airline.prompt.remove.message", { name: airline.name }),
+            t("airline.prompt.remove.message"),
             removeAirline,
             t("airline.prompt.remove.confirmed"),
             t("airline.prompt.remove.failed")
@@ -341,17 +340,17 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.remove.failed")
         )
 
-    const showAssignLabelToast = (label: Label, createLabel: () => Promise<Label>) =>
+    const showAssignLabelToast = (createLabel: () => Promise<Label>) =>
         showConfirmToast(
-            t("label.prompt.assign.message", { name: label.name }),
+            t("label.prompt.assign.message"),
             createLabel,
             t("label.prompt.assign.confirmed"),
             t("label.prompt.assign.failed")
         )
 
-    const showUnassignLabelToast = (label: Label, removeLabel: () => Promise<void>) =>
+    const showUnassignLabelToast = (removeLabel: () => Promise<void>) =>
         showConfirmToast(
-            t("label.prompt.unassign.message", { name: label.name }),
+            t("label.prompt.unassign.message"),
             removeLabel,
             t("label.prompt.unassign.confirmed"),
             t("label.prompt.unassign.failed")

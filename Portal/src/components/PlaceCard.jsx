@@ -12,7 +12,7 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
     const mostSpecificCategory = useMemo(() => place?.getCategory("country"), [place])
 
     const handleDelete = () => {
-        showRemovePlaceToast(place, () => onPlaceRemoved(place.id))
+        showRemovePlaceToast(() => onPlaceRemoved(place.id))
     }
 
     return place ? (

@@ -15,7 +15,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
     const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places, visiblePlaces])
 
     const handleDelete = place => {
-        showRemovePlaceToast(place, () => onPlaceRemoved(place.id))
+        showRemovePlaceToast(() => onPlaceRemoved(place.id))
     }
 
     if (category && places && places.length === 0) {
