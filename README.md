@@ -16,6 +16,8 @@ I’ve always wanted a map of all the places I’ve visited, but as a **child of
 
 🚀 **Live Version:** [https://lriedel.cz](https://lriedel.cz)
 
+*A Note on Repository History: This repository originally contained over 1,000 commits documenting years of development. However, due to sensitive data and secrets embedded in the deep history, I decided to start with a clean git history for the public release to ensure maximum security.*
+
 ---
 
 ## ⚙️ Automated Workflow: How it works
