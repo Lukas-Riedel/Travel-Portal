@@ -12,4 +12,3 @@ minio:
       type: ClusterIP
       port: 9001
       host: minio.lriedel.cz
-  username: admin

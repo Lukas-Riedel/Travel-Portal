@@ -88,13 +88,16 @@ spec:
             - name: RMQ_VHOST
               value: "{{ .Values.cortex.rabbitmq.vhost }}"  
             - name: RMQ_USER
-              value: "{{ .Values.cortex.rabbitmq.username }}"
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: rabbitmq-username
             - name: RMQ_HEARTBEAT
               value: "{{ .Values.cortex.rabbitmq.heartbeat }}"
             - name: RMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: rabbitmq-password
+                  name: rabbitmq-secret
                   key: rabbitmq-password
             - name: CORTEX_QUEUE_NAME
               value: "{{ .Values.cortex.rabbitmq.queue.cortex }}"
@@ -105,25 +108,31 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis-password
+                  name: redis-secret
                   key: redis-password
             - name: IAM_BACKEND_CLIENT_ID
               value: "{{ .Values.cortex.iam.client.backend.id }}"
             - name: IAM_BACKEND_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: iam-client-backend-secret
-                  key: iam-client-backend-secret
+                  name: iam-secret
+                  key: backend-client-secret
             - name: GRAFANA_LOKI_ENTRYPOINT
-              value: "{{ .Values.cortex.grafana.entrypoint }}"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-entrypoint
             - name: GRAFANA_LOKI_CLIENT_NAME
               value: "{{ .Values.cortex.grafana.client.name }}"
             - name: GRAFANA_LOKI_USER
-              value: "{{ .Values.cortex.grafana.username }}"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-username
             - name: GRAFANA_LOKI_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: grafana-password
+                  name: grafana-secret
                   key: grafana-password
       volumes:
         - name: {{ .Release.Name }}-tmp

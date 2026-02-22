@@ -17,7 +17,7 @@ spec:
           containers:
           - name: {{ .Release.Name }}-scheduler
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-            command: ["php", "-d", "max_execution_time=3600", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
+            command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
             env:
 {{ include "core.env" . | nindent 14 }}
             volumeMounts:

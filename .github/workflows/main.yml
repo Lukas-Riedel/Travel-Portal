@@ -259,6 +259,9 @@ jobs:
         helm upgrade portal ./Helm/Portal \
           -f ./Helm/Portal/values.yaml \
           --set portal.tag=${{ github.run_number }} \
+          --set portal.fcm.key.api=${{ secrets.FIREBASE_API_KEY }} \
+          --set portal.fcm.key.vapid=${{ secrets.FIREBASE_VAPID_KEY }} \
+          --set portal.google.maps.key.api=${{ secrets.FRONTEND_GOOGLE_MAPS_API_KEY }} \
           --install \
           --wait \
           --timeout 5m \

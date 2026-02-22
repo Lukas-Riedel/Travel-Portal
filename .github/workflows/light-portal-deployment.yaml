@@ -72,7 +72,7 @@ jobs:
           --set portal.service.host=travel-portal.eu \
           --set portal.credentials.default.username=light \
           --set portal.credentials.default.password=light \
-          --set portal.url.base.public=https://travel-portal.eu \
+          --set portal.url.base=https://travel-portal.eu \
           --set portal.content.range.max=$FINAL_TIMESTAMP \
           --install \
           --wait \
