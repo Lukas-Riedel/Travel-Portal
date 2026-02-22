@@ -1,0 +1,13 @@
+rabbitmq:
+  enabled: true
+  image: rabbitmq
+  tag: 3.12-management
+  replicas: 1
+  service:
+    type: ClusterIP
+    amqp:
+      port: 5672
+      host: rmq.lriedel.cz
+    management:
+      port: 15672
+      host: rmq.lriedel.cz

@@ -1,0 +1,9 @@
+{{- if .Values.rediscommander.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Release.Name }}-rediscommander-auth-middleware
+spec:
+  basicAuth:
+    secret: {{ .Release.Name }}-rediscommander-auth-middleware-secret
+{{- end }}

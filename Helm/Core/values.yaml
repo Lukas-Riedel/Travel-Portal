@@ -1,0 +1,120 @@
+core:
+  enabled: true
+  image: ghcr.io/lukas-riedel/core
+  tag: latest
+  replicas: 1
+  workers: 10
+  scaling:
+    items: "100"
+    cooldown: 120
+    grace: 60
+  service:
+    type: ClusterIP
+    port: 8080
+    host: api.lriedel.cz
+  url:
+    base: https://api.lriedel.cz
+    s3:
+      base: https://s3.lriedel.cz
+    ibm:
+      dataplatform:
+        # base: https://api.eu-de.dataplatform.cloud.ibm.com
+        base: https://api.dataplatform.dev.cloud.ibm.com
+  db:
+    hostname: postgres
+    port: 5432
+    database: core
+  redis:
+    hostname: redis
+    port: 6379
+  rabbitmq:
+    internal:
+      hostname: rabbitmq
+      port: 
+        amqp: 5672
+        management: 15672
+    external:
+      hostname: rmq.lriedel.cz
+      port: 
+        management: 5671
+    vhost: /
+    heartbeat: "60"
+    prefetch: "1"
+    queue:
+      worker: WorkerQueue
+      cortex: CortexQueue
+  fcm:
+    project:
+      id: travel-blog-free
+  s3:
+    region: eu-central-1
+    host: minio
+    port: 9000
+  iam:
+    host: iam
+    port: 8080
+    client:
+      app:
+        id: travel-portal-app
+      backend:
+        id: admin-cli
+      agent:
+        id: travel-portal-agent
+  grafana:
+    client:
+      name: travel-portal-service
+  origin:
+    whitelist: https://travel-portal.eu,https://lriedel.cz
+  bucket:
+    album:
+      thumbnail: album-thumbnails
+    highlight:
+      full: highlight-photos
+      thumbnail: highlight-thumbnails
+  highlight:
+    selecting:
+      trip:
+        max: "30"
+      year:
+        max: "30"
+      category:
+        max: "30"
+      place:
+        min: "3"
+        max: "15"
+  place:
+    score:
+      multiplier:
+        highlight: "0"
+        photo: "1"
+    quality:
+      multiplier:
+        highlight:
+          main: "3"
+  statistics:
+    values:
+      limit: "10"
+  photo:
+    thumbnail:
+      width: "350"
+      height: "233"
+    full:
+      width: "2400"
+      height: "1600"
+    indoor:
+      threshold:
+        iso: "640"
+  forecast:
+    actual:
+      days: "9"
+  fitness:
+    overwrite:
+      threshold:
+        step: "100"
+        distance: "0.1"
+        duration: "120"
+        coefficient: "0.95"
+    update:
+      threshold:
+        days: "7"
+  timezone: Europe/Prague

@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Osobní portál</string>
+    <string name="title_synchronization_started">Probíhá synchronizace údajů o aktivitě</string>
+    <string name="title_device_logon_started">Probíhá registrace zařízení</string>
+    <string name="title_photos_uploaded">Fotky byly nahrány</string>
+    <string name="title_photo_replaced">Fotka byla nahrazena</string>
+    <string name="title_photos_not_uploaded">Fotky nebyly nahrány</string>
+    <string name="title_photo_not_replaced">Fotka nebyla nahrazena</string>
+    <string name="title_issues_detected">Vyskytly se nové problémy</string>
+    <string name="title_flight_landed">Let přistál</string>
+    <string name="title_highlights_created">Highlighty byly vytvořeny</string>
+    <string name="title_highlights_not_created">Highlighty nebyly vytvořeny</string>
+    <string name="message_synchronization_started">Bude synchronizováno %1$d záznamů</string>
+    <string name="message_device_logon_started"></string>
+    <string name="message_photos_uploaded">Místo %1$s má nové fotky</string>
+    <string name="message_photo_replaced">Místo %1$s má novou fotku</string>
+    <string name="message_photos_not_uploaded">Nahrávání fotek pro místo %1$s se nezdařilo</string>
+    <string name="message_photo_not_replaced">Nahrazování fotky pro místo %1$s se nezdařilo</string>
+    <string name="message_issues_detected">Hlášeno %1$d nových problémů</string>
+    <string name="message_flight_landed">Let %1$s přistál na letišti %2$s v %3$s místního času</string>
+    <string name="message_highlights_created_place">Místo %1$s má nové highlighty</string>
+    <string name="message_highlights_created_trip">Výlet %1$s má nové highlighty</string>
+    <string name="message_highlights_created_category">Kategorie %1$s má nové highlighty</string>
+    <string name="message_highlights_created_year">Rok %1$s má nové highlighty</string>
+    <string name="message_highlights_not_created_place">Vytvoření highlightů pro místo %1$s se nezdařilo</string>
+    <string name="message_highlights_not_created_trip">Vytvoření highlightů pro výlet %1$s se nezdařilo</string>
+    <string name="message_highlights_not_created_category">Vytvoření highlightů pro kategorii %1$s se nezdařilo</string>
+    <string name="message_highlights_not_created_year">Vytvoření highlightů pro rok %1$s se nezdařilo</string>
+</resources>

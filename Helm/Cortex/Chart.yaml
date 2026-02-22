@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cortex
+description: Cortex Python Service
+type: application
+version: 0.1.0

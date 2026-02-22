@@ -1,0 +1,35 @@
+iam:
+  enabled: true
+  image: ghcr.io/lukas-riedel/iam
+  tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8080
+    host: iam.lriedel.cz
+  client:
+    app:
+      id: travel-portal-app
+    backend:
+      id: admin-cli
+  url:
+    base: https://iam.lriedel.cz
+  redis:
+    hostname: redis
+    port: 6379
+  fcm:
+    project:
+      id: travel-blog-free
+  google:
+    client:
+      id: 260891677871-n02h7nhapeelp4jkkgejsj5m54ramkoq.apps.googleusercontent.com
+  ibm:
+    iam:
+      url:
+        # base: https://iam.cloud.ibm.com
+        base: https://iam.test.cloud.ibm.com
+  grafana:
+    client:
+      name: travel-portal-service
+  origins:
+    whitelist: https://travel-portal.eu,https://lriedel.cz

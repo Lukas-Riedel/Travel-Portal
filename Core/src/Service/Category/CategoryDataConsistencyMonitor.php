@@ -1,0 +1,70 @@
+<?php
+    namespace Core\Service\Category;
+
+    use Core\Service\Monitoring\DataConsistencyIssue;
+    use Core\Service\Monitoring\DataConsistencyMonitor;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
+
+    class CategoryDataConsistencyMonitor implements DataConsistencyMonitor {
+
+        private const COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION_ISSUE_NAME = "COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION";
+        private const GEOGRAPHICAL_REGIONS_WITH_SAME_NAME_ISSUE_NAME = "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME";
+        private const COUNTRY_WITH_INCOMPLETE_METADATA_ISSUE_NAME = "COUNTRY_WITH_INCOMPLETE_METADATA";
+
+        private readonly CategoryService $categoryService;
+
+        private readonly PlaceService $placeService;
+
+        public function __construct(CategoryService $categoryService, PlaceService $placeService) {
+            $this->categoryService = $categoryService;
+            $this->placeService = $placeService;
+        }
+
+        public function fetchDataConsistencyIssues() : array {
+            $dataConsistencyIssues = array();
+
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
+                time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
+            $countryCategories = $this->categoryService->getCategories(null, array(CategoryCategory::Country->value), array());
+            $geographicalRegions = $this->categoryService->getAllGeographicalRegions();
+
+            $visitedCountryNames = array_keys(array_filter(array_count_values(array_filter(array_map(fn($place) => $place->getCountry(),
+                $relevantPlaces), fn($country) => $country !== null)), fn($count) => $count > 1));
+            $visitedCountryCategoryIds = array_map(fn($category) => $category->getId(), array_filter($countryCategories,
+                fn($category) => in_array($category->getName(), $visitedCountryNames)));
+            $visitedCountryCategoryIdsWithoutGeographicalRegions = array_filter($visitedCountryCategoryIds,
+                fn($countryCategoryId) => count(array_filter($geographicalRegions, 
+                    fn($geographicalRegion) => $geographicalRegion->getCountryCategory()?->getId() == $countryCategoryId)) === 0);
+            foreach ($visitedCountryCategoryIdsWithoutGeographicalRegions as &$visitedCountryCategoryIdWithoutGeographicalRegions) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION_ISSUE_NAME,
+                    $visitedCountryCategoryIdWithoutGeographicalRegions, $this->categoryService->getCategoryIdentifierById(
+                        $visitedCountryCategoryIdWithoutGeographicalRegions), time());
+            }
+
+            $allNonTrivialGeographicalRegions = $this->categoryService->getAllNonTrivialGeographicalRegions();
+            $duplicatedCategoryIds = array_keys(array_filter(array_count_values(array_map(fn($region) => $region->getCategory()->getId(),
+                $allNonTrivialGeographicalRegions)), fn($count) => $count > 1));
+            foreach ($duplicatedCategoryIds as &$duplicatedCategoryId) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::GEOGRAPHICAL_REGIONS_WITH_SAME_NAME_ISSUE_NAME,
+                    $duplicatedCategoryId, $this->categoryService->getCategoryIdentifierById($duplicatedCategoryId), time());
+            }
+            
+            $allPlaceIdentifiers = $this->placeService->getAllPlaceIdentifiers();
+            $plannedCountryNames = array_unique(array_filter(array_map(fn($placeIdentifier) => $placeIdentifier->getCountry(),
+                $allPlaceIdentifiers), fn($country) => $country !== null));
+            $plannedCountryCategories = array_filter($countryCategories,
+                fn($category) => in_array($category->getName(), $plannedCountryNames));
+
+            $countryCategoriesWithIncompleteMetadata = array_filter($plannedCountryCategories, 
+                fn($category) => $category->getMetadata() === null || !$category->getMetadata()->isComplete());
+            foreach ($countryCategoriesWithIncompleteMetadata as &$countryCategoryWithIncompleteMetadata) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::COUNTRY_WITH_INCOMPLETE_METADATA_ISSUE_NAME,
+                    $countryCategoryWithIncompleteMetadata->getId(), $countryCategoryWithIncompleteMetadata, time());
+            }
+
+            return $dataConsistencyIssues;
+        }
+    }
+?>

@@ -1,0 +1,17 @@
+{{- if .Values.minio.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Release.Name }}-s3-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.minio.service.s3.host }}`)
+      kind: Rule
+      services:
+        - name: {{ .Release.Name }}
+          port: {{ .Values.minio.service.s3.port }}
+  tls:
+    certResolver: letsencrypt
+{{- end }}

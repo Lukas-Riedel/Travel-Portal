@@ -1,0 +1,14 @@
+minio:
+  enabled: true
+  image: "quay.io/minio/minio"
+  tag: latest
+  replicas: 1
+  service:
+    s3:
+      type: ClusterIP
+      port: 9000
+      host: s3.lriedel.cz
+    console:
+      type: ClusterIP
+      port: 9001
+      host: minio.lriedel.cz

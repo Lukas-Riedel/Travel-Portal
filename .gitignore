@@ -1,0 +1,9 @@
+**/target/
+**/vendor/
+**/.idea/
+**/.vscode/
+*.iws
+*.iml
+*.ipr
+**/application.properties
+private.key

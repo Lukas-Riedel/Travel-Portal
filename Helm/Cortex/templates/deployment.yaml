@@ -1,0 +1,140 @@
+{{- if .Values.cortex.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker
+  labels:
+    app: {{ .Release.Name }}-worker
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-worker
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.cortex.scaling.grace }}
+      initContainers:
+        - name: {{ .Release.Name }}-worker-cleanup
+          image: busybox
+          command: ["sh", "-c", "rm -f /tmp/timeout"]
+          volumeMounts:
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
+      containers:
+        - name: {{ .Release.Name }}-worker
+          image: "{{ .Values.cortex.image }}:{{ .Values.cortex.tag }}"
+          volumeMounts:
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/timeout"
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(date +%s) -lt $(cat /tmp/timeout)"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
+          env:
+            - name: VERSION_TAG
+              value: "{{ .Values.cortex.tag }}"
+            - name: APP_NAME
+              value: "{{ .Release.Name }}"
+            - name: MAX_THREADS
+              value: "{{ .Values.cortex.threads }}"
+            - name: MODEL_NAME
+              value: "{{ .Values.cortex.model }}"
+            - name: ENGINE_DEVICE
+              value: "{{ .Values.cortex.engine }}"
+            - name: CONTENT_COEFFICIENT
+              value: "{{ .Values.cortex.highlight.coefficient.content }}"
+            - name: NEGATIVE_COEFFICIENT
+              value: "{{ .Values.cortex.highlight.coefficient.negative }}"
+            - name: CLUSTER_COEFFICIENT
+              value: "{{ .Values.cortex.highlight.coefficient.cluster }}"
+            - name: ISO_COEFFICIENT
+              value: "{{ .Values.cortex.highlight.coefficient.iso }}"
+            - name: CORE_HOST
+              value: "{{ .Values.cortex.core.host }}"
+            - name: CORE_PORT
+              value: "{{ .Values.cortex.core.port }}"
+            - name: IAM_HOST
+              value: "{{ .Values.cortex.iam.host }}"
+            - name: IAM_PORT
+              value: "{{ .Values.cortex.iam.port }}"
+            - name: RMQ_HOST
+              value: "{{ .Values.cortex.rabbitmq.hostname }}"            
+            - name: RMQ_PORT
+              value: "{{ .Values.cortex.rabbitmq.port.amqp }}"
+            - name: RMQ_VHOST
+              value: "{{ .Values.cortex.rabbitmq.vhost }}"  
+            - name: RMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: rabbitmq-username
+            - name: RMQ_HEARTBEAT
+              value: "{{ .Values.cortex.rabbitmq.heartbeat }}"
+            - name: RMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: rabbitmq-password
+            - name: CORTEX_QUEUE_NAME
+              value: "{{ .Values.cortex.rabbitmq.queue.cortex }}"
+            - name: REDIS_HOST
+              value: "{{ .Values.cortex.redis.hostname }}"            
+            - name: REDIS_PORT
+              value: "{{ .Values.cortex.redis.port }}"  
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
+            - name: IAM_BACKEND_CLIENT_ID
+              value: "{{ .Values.cortex.iam.client.backend.id }}"
+            - name: IAM_BACKEND_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: iam-secret
+                  key: backend-client-secret
+            - name: GRAFANA_LOKI_ENTRYPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-entrypoint
+            - name: GRAFANA_LOKI_CLIENT_NAME
+              value: "{{ .Values.cortex.grafana.client.name }}"
+            - name: GRAFANA_LOKI_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-username
+            - name: GRAFANA_LOKI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-password
+      volumes:
+        - name: {{ .Release.Name }}-tmp
+          emptyDir: {}
+{{- end }}

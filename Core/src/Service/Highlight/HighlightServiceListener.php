@@ -1,0 +1,53 @@
+<?php
+    namespace Core\Service\Highlight;
+
+    use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
+
+    class HighlightServiceListener {
+        
+        private const FETCH_HIGHLIGHTS_ACTION_NAME = "FETCH_HIGHLIGHTS";
+        private const FETCH_HIGHLIGHTS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
+
+        private readonly HighlightService $highlightService;
+
+        private readonly EventPublisher $eventPublisher;
+        private readonly Scheduler $scheduler;
+
+        public function __construct(HighlightService $highlightService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+            $this->highlightService = $highlightService;
+            $this->eventPublisher = $eventPublisher;
+            $this->scheduler = $scheduler;
+        }
+
+        public function onAllHighlightsInvalidated(mixed $message) : void {
+            $this->highlightService->updateHighlights();
+        }
+
+        public function onHighlightCreated(mixed $message) : void {
+            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
+            if ($highlight !== null && $highlight->getQuality() === null) {
+                $this->eventPublisher->publish(Event::HighlightAttributesSettingTriggered($highlight->getId()));
+            }
+        }
+
+        public function onHighlightRemoved(mixed $message) : void {
+            // Removing the highlight also removes its identifier if it is no longer used by any entity.
+            if ($this->highlightService->getHighlight($message["highlightId"]) === null) {
+                $this->highlightService->deleteHighlightObject($message["highlightId"]);
+            }
+        }
+        
+        public function onPhotoInvalidated(mixed $message) : void {
+            $this->highlightService->updateHighlightForPhoto($message["photoId"]);
+        }
+
+        public function onSchedulerTriggered(mixed $message) : void {
+            if ($this->scheduler->requestExecution(self::FETCH_HIGHLIGHTS_ACTION_NAME, self::FETCH_HIGHLIGHTS_ACTION_INTERVAL)) {
+                $this->eventPublisher->publish(Event::AllHighlightsInvalidated());            
+            }
+        }
+    }
+?>

@@ -1,0 +1,27 @@
+name: Daily Deployment Restart
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+jobs:
+  restart:
+    name: Restart Deployment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Set Up Kubectl
+        uses: azure/setup-kubectl@v3
+      - name: Open SSH Tunnel
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+          ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
+      - name: Rollout Core Restart
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl rollout restart deployment core-worker

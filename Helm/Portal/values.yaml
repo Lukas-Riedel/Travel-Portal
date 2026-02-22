@@ -1,0 +1,37 @@
+portal:
+  enabled: true
+  image: ghcr.io/lukas-riedel/portal
+  tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 80
+    host: lriedel.cz
+  credentials:
+    default:
+      username: guest
+      password: guest
+  url:
+    base: https://lriedel.cz
+    iam:
+      base: https://iam.lriedel.cz
+    core:
+      base: https://api.lriedel.cz
+  iam:
+    client:
+      app:
+        id: travel-portal-app
+  fcm:
+    domain:
+      auth: travel-blog-free.firebaseapp.com
+    project:
+      id: travel-blog-free
+    bucket:
+      storage: travel-blog-free.firebasestorage.app
+    messaging:
+      sender:
+        id: "917611440173"
+    app:
+      id: 1:917611440173:web:61960e323dd4e730acb0a4
+    measurement:
+      id: G-TQC1X1T5X2

@@ -1,0 +1,1 @@
+ssh -i private.key -L 6443:localhost:6443 root@lriedel.cz -N

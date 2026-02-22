@@ -1,0 +1,154 @@
+{{- if .Values.iam.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.iam.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.iam.image }}:{{ .Values.iam.tag }}" 
+          ports:
+            - containerPort: {{ .Values.iam.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /management/readiness
+              port: {{ .Values.iam.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /management/liveness
+              port: {{ .Values.iam.service.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3    
+          env:
+            - name: VERSION_TAG
+              value: "{{ .Values.iam.tag }}"            
+            - name: APP_NAME
+              value: "{{ .Release.Name }}"
+            - name: SERVICE_PORT
+              value: "{{ .Values.iam.service.port }}"
+            - name: ENCRYPTION_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: encryption-key
+            - name: REDIS_HOST
+              value: "{{ .Values.iam.redis.hostname }}"            
+            - name: REDIS_PORT
+              value: "{{ .Values.iam.redis.port }}"  
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
+            - name: IAM_APP_CLIENT_ID
+              value: "{{ .Values.iam.client.app.id }}"
+            - name: IAM_BACKEND_CLIENT_ID
+              value: "{{ .Values.iam.client.backend.id }}"
+            - name: IAM_BACKEND_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: backend-client-secret
+            - name: IAM_BASE_URL
+              value: "{{ .Values.iam.url.base }}"
+            - name: INTERNAL_IAM_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: internal-iam-base-url
+            - name: INTERNAL_ADMIN_IAM_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: internal-iam-admin-base-url
+            - name: IBM_CLOUD_IAM_BASE_URL
+              value: "{{ .Values.iam.ibm.iam.url.base }}"
+            - name: FCM_PROJECT_ID
+              value: "{{ .Values.iam.fcm.project.id }}"
+            - name: FCM_PRIVATE_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-private-key-id
+            - name: FCM_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-private-key
+            - name: FCM_CLIENT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-email
+            - name: FCM_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-client-id
+            - name: FCM_CLIENT_X509_CERTIFICATE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: fcm-certificate-url
+            - name: GOOGLE_API_CLIENT_ID
+              value: "{{ .Values.iam.google.client.id }}"
+            - name: GOOGLE_API_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: google-client-secret
+            - name: IBM_CLOUD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  # key: ibm-cloud-api-key
+                  key: ibm-test-cloud-api-key
+            - name: GRAFANA_LOKI_ENTRYPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-entrypoint
+            - name: GRAFANA_LOKI_CLIENT_NAME
+              value: "{{ .Values.iam.grafana.client.name }}"
+            - name: GRAFANA_LOKI_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-username
+            - name: GRAFANA_LOKI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-password
+            - name: ALLOWED_REQUEST_ORIGINS
+              value: "{{ .Values.iam.origins.whitelist }}"
+          volumeMounts:
+            - name: {{ .Release.Name }}-data
+              mountPath: /var/tmp
+      volumes:
+        - name: {{ .Release.Name }}-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+{{- end }}

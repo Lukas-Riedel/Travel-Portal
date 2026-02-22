@@ -1,0 +1,18 @@
+postgres:
+  enabled: true
+  image: postgis/postgis
+  tag: 16-3.4
+  replicas: 1
+  database: core
+  service:
+    type: ClusterIP
+    port: 5432
+pgadmin:
+  enabled: true
+  image: dpage/pgadmin4
+  tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 80
+    host: postgres.lriedel.cz

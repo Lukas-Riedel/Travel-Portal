@@ -1,0 +1,183 @@
+{{- define "core.env" }}
+- name: VERSION_TAG
+  value: "{{ .Values.core.tag }}"
+- name: APP_NAME
+  value: "{{ .Release.Name }}"
+- name: ENCRYPTION_PRIVATE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Release.Name }}-secret
+      key: encryption-key
+- name: CORE_BASE_URL
+  value: "{{ .Values.core.url.base }}"
+- name: S3_BASE_URL
+  value: "{{ .Values.core.url.s3.base }}"
+- name: IBM_DATAPLATFORM_BASE_URL
+  value: "{{ .Values.core.url.ibm.dataplatform.base }}"
+- name: DB_HOST
+  value: "{{ .Values.core.db.hostname }}"            
+- name: DB_PORT
+  value: "{{ .Values.core.db.port }}"  
+- name: DB_NAME
+  value: "{{ .Values.core.db.database }}"  
+- name: DB_USER
+  valueFrom:
+    secretKeyRef:
+      name: postgres-secret
+      key: postgres-username
+- name: DB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: postgres-secret
+      key: postgres-password
+- name: REDIS_HOST
+  value: "{{ .Values.core.redis.hostname }}"            
+- name: REDIS_PORT
+  value: "{{ .Values.core.redis.port }}"  
+- name: REDIS_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: redis-secret
+      key: redis-password
+- name: RMQ_INTERNAL_HOST
+  value: "{{ .Values.core.rabbitmq.internal.hostname }}"            
+- name: RMQ_INTERNAL_PORT
+  value: "{{ .Values.core.rabbitmq.internal.port.amqp }}"  
+- name: RMQ_EXTERNAL_HOST
+  value: "{{ .Values.core.rabbitmq.external.hostname }}"            
+- name: RMQ_EXTERNAL_PORT
+  value: "{{ .Values.core.rabbitmq.external.port.amqp }}"  
+- name: RMQ_VHOST
+  value: "{{ .Values.core.rabbitmq.vhost }}"  
+- name: RMQ_USER
+  valueFrom:
+    secretKeyRef:
+      name: rabbitmq-secret
+      key: rabbitmq-username
+- name: RMQ_HEARTBEAT
+  value: "{{ .Values.core.rabbitmq.heartbeat }}"
+- name: RMQ_PREFETCH_COUNT
+  value: "{{ .Values.core.rabbitmq.prefetch }}"
+- name: RMQ_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: rabbitmq-secret
+      key: rabbitmq-password
+- name: S3_REGION
+  value: "{{ .Values.core.s3.region }}"
+- name: S3_HOST
+  value: "{{ .Values.core.s3.host }}"
+- name: S3_PORT
+  value: "{{ .Values.core.s3.port }}"
+- name: S3_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: minio-secret
+      key: minio-access-key
+- name: S3_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: minio-secret
+      key: minio-password
+- name: BACKEND_GOOGLE_MAPS_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Release.Name }}-secret
+      key: google-maps-api-key
+- name: GOOGLE_GEMINI_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Release.Name }}-secret
+      key: google-gemini-api-key
+- name: FCM_PROJECT_ID
+  value: "{{ .Values.core.fcm.project.id }}"
+- name: EXCHANGE_RATE_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Release.Name }}-secret
+      key: exchange-rate-api-key
+- name: WORKER_QUEUE_NAME
+  value: "{{ .Values.core.rabbitmq.queue.worker }}"
+- name: CORTEX_QUEUE_NAME
+  value: "{{ .Values.core.rabbitmq.queue.cortex }}"
+- name: IAM_HOST
+  value: "{{ .Values.core.iam.host }}"
+- name: IAM_PORT
+  value: "{{ .Values.core.iam.port }}"
+- name: IAM_APP_CLIENT_ID
+  value: "{{ .Values.core.iam.client.app.id }}"
+- name: IAM_BACKEND_CLIENT_ID
+  value: "{{ .Values.core.iam.client.backend.id }}"
+- name: IAM_AGENT_CLIENT_ID
+  value: "{{ .Values.core.iam.client.agent.id }}"
+- name: IAM_BACKEND_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: iam-secret
+      key: backend-client-secret
+- name: GRAFANA_LOKI_ENTRYPOINT
+  valueFrom:
+    secretKeyRef:
+      name: grafana-secret
+      key: grafana-entrypoint
+- name: GRAFANA_LOKI_CLIENT_NAME
+  value: "{{ .Values.core.grafana.client.name }}"
+- name: GRAFANA_LOKI_USER
+  valueFrom:
+    secretKeyRef:
+      name: grafana-secret
+      key: grafana-username
+- name: GRAFANA_LOKI_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: grafana-secret
+      key: grafana-password
+- name: ALLOWED_REQUEST_ORIGINS
+  value: "{{ .Values.core.origin.whitelist }}"
+- name: MAX_HIGHLIGHTS_PER_TRIP_COUNT
+  value: "{{ .Values.core.highlight.selecting.trip.max }}"
+- name: MAX_HIGHLIGHTS_PER_YEAR_COUNT
+  value: "{{ .Values.core.highlight.selecting.year.max }}"
+- name: MAX_HIGHLIGHTS_PER_CATEGORY_COUNT
+  value: "{{ .Values.core.highlight.selecting.category.max }}"
+- name: MIN_HIGHLIGHTS_PER_PLACE_COUNT
+  value: "{{ .Values.core.highlight.selecting.place.min }}"
+- name: MAX_HIGHLIGHTS_PER_PLACE_COUNT
+  value: "{{ .Values.core.highlight.selecting.place.max }}"
+- name: HIGHLIGHT_SCORE_MULTIPLIER
+  value: "{{ .Values.core.place.score.multiplier.highlight }}"
+- name: PHOTO_SCORE_MULTIPLIER
+  value: "{{ .Values.core.place.score.multiplier.photo }}"
+- name: MAIN_HIGHLIGHT_QUALITY_MULTIPLIER
+  value: "{{ .Values.core.place.quality.multiplier.highlight.main }}"
+- name: STATISTICS_VALUES_COUNT_LIMIT
+  value: "{{ .Values.core.statistics.values.limit }}"
+- name: ALBUM_THUMBNAIL_BUCKET
+  value: "{{ .Values.core.bucket.album.thumbnail }}"
+- name: HIGHLIGHT_PHOTO_BUCKET
+  value: "{{ .Values.core.bucket.highlight.full }}"
+- name: HIGHLIGHT_THUMBNAIL_BUCKET
+  value: "{{ .Values.core.bucket.highlight.thumbnail }}"
+- name: PHOTO_THUMBNAIL_WIDTH
+  value: "{{ .Values.core.photo.thumbnail.width }}"
+- name: PHOTO_THUMBNAIL_HEIGHT
+  value: "{{ .Values.core.photo.thumbnail.height }}"
+- name: PHOTO_FULL_WIDTH
+  value: "{{ .Values.core.photo.full.width }}"
+- name: PHOTO_FULL_HEIGHT
+  value: "{{ .Values.core.photo.full.height }}"
+- name: INDOOR_PHOTO_ISO_THRESHOLD
+  value: "{{ .Values.core.photo.indoor.threshold.iso }}"
+- name: ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE
+  value: "{{ .Values.core.forecast.actual.days }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
+  value: "{{ .Values.core.fitness.overwrite.threshold.coefficient }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE
+  value: "{{ .Values.core.fitness.overwrite.threshold.distance }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION
+  value: "{{ .Values.core.fitness.overwrite.threshold.duration }}"
+- name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS
+  value: "{{ .Values.core.fitness.overwrite.threshold.step }}"
+- name: UPDATE_FITNESS_THRESHOLD_DAYS
+  value: "{{ .Values.core.fitness.update.threshold.days }}"
+{{- end }}

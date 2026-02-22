@@ -1,0 +1,17 @@
+redis:
+  enabled: true
+  image: redis
+  tag: 7.4
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 6379
+rediscommander:
+  enabled: true
+  image: rediscommander/redis-commander
+  tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8081
+    host: redis.lriedel.cz

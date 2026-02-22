@@ -1,0 +1,73 @@
+{{- if .Values.core.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker
+  labels:
+    app: {{ .Release.Name }}-worker
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-worker
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
+      initContainers:
+        - name: {{ .Release.Name }}-worker-cleanup
+          image: busybox
+          command: ["sh", "-c", "rm -f /tmp/timeout"]
+          volumeMounts:
+{{ include "core.volumeMounts" . | nindent 12 }}
+      containers:
+        - name: {{ .Release.Name }}-worker
+          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+          command: ["/usr/bin/tini", "-g", "--"]
+          args:
+            - php
+            - -d
+            - max_execution_time=0
+            - -d
+            - memory_limit=512M
+            - /var/www/html/src/worker.php
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/timeout"
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(date +%s) -lt $(cat /tmp/timeout)"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
+          env:
+{{ include "core.env" . | nindent 12 }}
+          volumeMounts:
+{{ include "core.volumeMounts" . | nindent 12 }}
+      volumes:
+      - name: {{ .Release.Name }}-tmp
+        emptyDir: {}
+      - name: {{ .Release.Name }}-data
+        emptyDir: {}
+      - name: {{ .Release.Name }}-config
+        configMap:
+          name: {{ .Release.Name }}-configmap
+{{- end }}

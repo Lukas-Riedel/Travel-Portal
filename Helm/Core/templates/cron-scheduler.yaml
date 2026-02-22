@@ -1,0 +1,27 @@
+{{- if .Values.core.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-scheduler-cronjob
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: {{ .Release.Name }}-scheduler
+            image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+            command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
+            env:
+{{ include "core.env" . | nindent 14 }}
+            volumeMounts:
+{{ include "core.volumeMounts" . | nindent 14 }}
+          volumes:
+{{ include "core.volumes" . | nindent 12 }}
+{{- end }}

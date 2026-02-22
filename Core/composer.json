@@ -1,0 +1,41 @@
+{
+    "name": "lriedel/core",
+    "description": "Backend for Travel Portal",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Core\\": "src/"
+        }
+    },
+    "repositories": [
+      {
+        "type": "path",
+        "url": "../Common",
+        "options": {
+          "symlink": false
+        }
+      },
+      {
+        "type": "vcs",
+        "url": "https://github.com/Lukas-Riedel/geoPHP.git"
+      }
+    ],
+    "require": {
+        "lriedel/common": "*@dev",
+        "phayes/geophp": "dev-master",
+        "johngrogg/ics-parser": "^3.4",
+        "auroras-live/suncalc-php": "*@dev",
+        "php-amqplib/php-amqplib": "3.1",
+        "itspire/monolog-loki": "^2.1",
+        "enshrined/svg-sanitize": "^0.22.0",
+        "greenlion/php-sql-parser": "^4.7",
+        "aws/aws-sdk-php": "^3.368",
+        "ramsey/uuid": "^4.9",
+        "predis/predis": "^3.3"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.29"
+        }
+    }
+}

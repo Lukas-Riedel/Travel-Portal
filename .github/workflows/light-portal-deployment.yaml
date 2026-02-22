@@ -1,0 +1,50 @@
+name: Light Portal Deployment
+on:
+  workflow_dispatch:
+    inputs:
+      custom-timestamp:
+        description: 'Enter maximum timestamp for the content (leave empty for the current timestamp):'
+        required: false
+        default: ''
+jobs:
+  deploy-light-portal:
+    name: Deploy Light Portal
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set Up Kubectl
+      uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
+    - name: Set Up Helm
+      uses: azure/setup-helm@v3
+    - name: Deploy Portal with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        USER_INPUT="${{ github.event.inputs.custom-timestamp }}"
+        if [ -z "$USER_INPUT" ]; then
+          FINAL_TIMESTAMP=$(date +%s)
+        else
+          FINAL_TIMESTAMP=$USER_INPUT
+        fi
+        helm upgrade portal-light ./Helm/Portal \
+          -f ./Helm/Portal/values.yaml \
+          --set portal.service.host=travel-portal.eu \
+          --set portal.credentials.default.username=light \
+          --set portal.credentials.default.password=light \
+          --set portal.url.base=https://travel-portal.eu \
+          --set portal.fcm.key.api=${{ secrets.FIREBASE_API_KEY }} \
+          --set portal.fcm.key.vapid=${{ secrets.FIREBASE_VAPID_KEY }} \
+          --set portal.google.maps.key.api=${{ secrets.FRONTEND_GOOGLE_MAPS_API_KEY }} \
+          --set portal.content.range.max=$FINAL_TIMESTAMP \
+          --install \
+          --wait \
+          --timeout 5m \
+          --atomic

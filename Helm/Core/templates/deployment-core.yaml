@@ -1,0 +1,50 @@
+{{- if .Values.core.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.core.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+          ports:
+            - containerPort: {{ .Values.core.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /management/readiness
+              port: {{ .Values.core.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /management/liveness
+              port: {{ .Values.core.service.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
+          env:
+{{- include "core.env" . | nindent 12 }}
+          volumeMounts:
+{{- include "core.volumeMounts" . | nindent 12 }}
+      volumes:
+{{- include "core.volumes" . | nindent 8 }}
+{{- end }}

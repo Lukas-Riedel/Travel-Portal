@@ -1,0 +1,36 @@
+{{- if .Values.portal.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  env.js: |
+    const envValues = {
+      "VITE_SW_VERSION": {{ .Values.portal.tag | quote }},
+      "VITE_APP_NAME": {{ .Release.Name | quote }},
+      "VITE_DEFAULT_USERNAME": {{ .Values.portal.credentials.default.username | quote }},
+      "VITE_DEFAULT_PASSWORD": {{ .Values.portal.credentials.default.password | quote }},
+      "VITE_PORTAL_BASE_URL": {{ .Values.portal.url.base | quote }},
+      "VITE_CORE_BASE_URL": {{ .Values.portal.url.core.base | quote }},
+      "VITE_IAM_BASE_URL": {{ .Values.portal.url.iam.base | quote }},
+      "VITE_IAM_APP_CLIENT_ID": {{ .Values.portal.iam.client.app.id | quote }},
+      "VITE_FIREBASE_API_KEY": {{ .Values.portal.fcm.key.api | quote }},
+      "VITE_FIREBASE_VAPID_KEY": {{ .Values.portal.fcm.key.vapid | quote }},
+      "VITE_FIREBASE_AUTH_DOMAIN": {{ .Values.portal.fcm.domain.auth | quote }},
+      "VITE_FIREBASE_PROJECT_ID": {{ .Values.portal.fcm.project.id | quote }},
+      "VITE_FIREBASE_STORAGE_BUCKET": {{ .Values.portal.fcm.bucket.storage | quote }},
+      "VITE_FIREBASE_MESSAGING_SENDER_ID": {{ .Values.portal.fcm.messaging.sender.id | quote }},
+      "VITE_FIREBASE_APP_ID": {{ .Values.portal.fcm.app.id | quote }},
+      "VITE_FIREBASE_MEASUREMENT_ID": {{ .Values.portal.fcm.measurement.id | quote }},
+      "VITE_FRONTEND_GOOGLE_MAPS_API_KEY": {{ .Values.portal.google.maps.key.api | quote }},
+      "VITE_MAXIMUM_ALLOWED_TIMESTAMP": {{ (((.Values.portal).content).range).max | default 9007199254740991 }}
+    }
+
+    if (typeof window !== "undefined") {
+      window.env = envValues
+    }
+
+    if (typeof self !== "undefined") {
+      self.env = envValues
+    }
+{{- end }}
