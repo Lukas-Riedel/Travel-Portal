@@ -3,10 +3,11 @@ import { formatKilometers } from "../utils/formatters"
 import { Copy, Map, Wrench } from "lucide-react"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
-import { useAuth } from "../contexts/AuthContext.jsx"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
-    const { showConfirmToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showCopyRegionGeoJsonToast } = usePredefinedUserInput()
 
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
@@ -41,12 +42,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
     }
 
     const handleCopyGeoJsonToClipboard = () => {
-        showConfirmToast(
-            "GeoJSON reprezentace regionu bude vložena do schránky. Přeješ si pokračovat?",
-            async () => navigator.clipboard.writeText(JSON.stringify(region.geoJson)),
-            "GeoJSON reprezentace regionu byla úspěšně vložena do schránky",
-            "Nepodařilo se vložit GeoJSON reprezentaci regionu do schránky"
-        )
+        showCopyRegionGeoJsonToast(() => navigator.clipboard.writeText(JSON.stringify(region.geoJson)))
     }
 
     const handleOverwriteGeographicalRegion = () => {

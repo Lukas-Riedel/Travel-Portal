@@ -5,13 +5,15 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function MainLayout({ children }) {
     const { isLoggedIn, login, logout, hasRole } = useAuth()
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
-    const { showConfirmToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showLogoutToast } = usePredefinedUserInput()
 
     const navigationItems = [
         { label: t("menu.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
@@ -42,12 +44,7 @@ export default function MainLayout({ children }) {
 
     const handleLogout = () => {
         requestPermissions()
-        showConfirmToast(
-            "Opravdu se chceš odhlásit?",
-            logout,
-            "Odhlášení proběhlo úspěšně",
-            "Při odhlašování došlo k chybě"
-        )
+        showLogoutToast(logout)
     }
 
     const filteredItems = navigationItems.filter(({ to, requiredRole }) => hasRole(requiredRole) || location.pathname.startsWith(to))
@@ -131,12 +128,12 @@ async function requestPermissions() {
     if (!("Notification" in window)) {
         return
     }
-    
+
     if (Notification.permission === "default") {
         await Notification.requestPermission()
     }
-    
+
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(() => {}, () => {})
+        navigator.geolocation.getCurrentPosition(() => { }, () => { })
     }
 }

@@ -2,6 +2,13 @@
     "general": {
         "format": {
             "date": "dd.MM.yyyy"
+        },
+        "prompt": {
+            "logout": {
+                "message": "Opravdu se chceš odhlásit?",
+                "confirmed": "Byl jsi odhlášen",
+                "failed": "Při odhlašování došlo k chybě"
+            }
         }
     },
     "menu": {
@@ -21,8 +28,38 @@
         "failed": "Při provádění akce došlo k chybě",
         "loading": "Probíhá zpracování..."
     },
+    "tracker": {
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit tuto událost?",
+                "confirmed": "Událost byla úspěšně odstraněna",
+                "failed": "Nepodařilo se odstranit událost"
+            },
+            "copy": {
+                "description": {
+                    "message": "Text události bude vložen do schránky. Přeješ si pokračovat?",
+                    "confirmed": "Text události byl úspěšně vložen do schránky",
+                    "failed": "Nepodařilo se vložit text události do schránky"
+                }
+            }
+        }
+    },
     "airport": {
-        "format": "Letiště {{name}}"
+        "format": "Letiště {{name}}",
+        "prompt": {
+            "update": {
+                "name": {
+                    "message": "Zadej nové jméno letiště:",
+                    "confirmed": "Jméno letiště bylo úspěšně aktualizováno",
+                    "failed": "Nepodařilo se aktualizovat jméno letiště"
+                },
+                "country": {
+                    "message": "Zadej novou státní příslušnost letiště:",
+                    "confirmed": "Státní příslušnost letiště byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat státní příslušnost letiště"
+                }
+            }
+        }
     },
     "airline": {
         "prompt": {
@@ -32,14 +69,21 @@
                 "failed": "Při vytváření aerolinky došlo k chybě"
             },
             "update": {
-                "message": "Zadej nové údaje o aerolince:",
-                "label": {
-                    "name": "Název",
-                    "logo": "Logo",
-                    "codes": "Kódy"
+                "all": {
+                    "message": "Zadej nové údaje o aerolince:",
+                    "label": {
+                        "name": "Název",
+                        "logo": "Logo",
+                        "codes": "Kódy"
+                    },
+                    "confirmed": "Aerolinka byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat aerolinku"
                 },
-                "confirmed": "Aerolinka byla úspěšně aktualizována",
-                "failed": "Nepodařilo se aktualizovat aerolinku"
+                "logo": {
+                    "message": "Zadej nové logo aerolinky:",
+                    "confirmed": "Logo aerolinky bylo úspěšně aktualizováno",
+                    "failed": "Nepodařilo se aktualizovat logo aerolinky"
+                }
             },
             "remove": {
                 "message": "Opravdu chceš odstranit aerolinku {{name}}?",
@@ -51,7 +95,7 @@
     "flight": {
         "prompt": {
             "log": {
-                "message": "Opravdu chceš zalogovat vybraný let?",
+                "message": "Opravdu chceš zalogovat tento let?",
                 "confirmed": "Let byl úspěšně zalogovan",
                 "failed": "Nepodařilo se zalogovat let"
             }
@@ -67,22 +111,41 @@
                 "confirmed": "Poznámka byla úspěšně vytvořena",
                 "failed": "Nepodařilo se vytvořit poznámku"
             },
+            "update": {
+                "message": "Opravdu chceš upravit tuto poznámku?",
+                "confirmed": "Poznámka byla úspěšně upravena",
+                "failed": "Nepodařilo se upravit poznámku"
+            },
             "remove": {
-                "message": "Opravdu chceš odstranit vybranou poznámku?",
+                "message": "Opravdu chceš odstranit tuto poznámku?",
                 "confirmed": "Poznámka byla úspěšně odstraněna",
                 "failed": "Nepodařilo se odstranit poznámku"
             }
         }
     },
     "subscription": {
-        "format": "{{description}} (do {{expiration}})"
+        "format": "{{description}} (do {{expiration}})",
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit toto předplatné?",
+                "confirmed": "Předplatné bylo úspěšně odstraněno",
+                "failed": "Nepodařilo se odstranit předplatné"
+            }
+        }
     },
     "voucher": {
         "format": {
             "expirable": "{{issuer}} {{value}} {{currency}} (do {{expiration}})",
             "nonexpirable": "{{issuer}} {{value}} {{currency}}"
+        },
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit tento poukaz?",
+                "confirmed": "Poukaz byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit poukaz"
+            }
         }
-    },    
+    },
     "expense": {
         "prompt": {
             "create": {
@@ -119,6 +182,11 @@
     },
     "label": {
         "prompt": {
+            "create": {
+                "message": "Zadej název štítku k přidání:",
+                "confirmed": "Štítek byl úspěšně přidán",
+                "failed": "Nepodařilo se přidat štítek"
+            },
             "assign": {
                 "message": "Opravdu chceš přiřadit štítek {{name}}?",
                 "confirmed": "Štítek byl úspěšně přiřazen",
@@ -128,6 +196,22 @@
                 "message": "Opravdu chceš odstranit štítek {{name}}?",
                 "confirmed": "Štítek byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit štítek"
+            }
+        }
+    },
+    "entity": {
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit tuto entitu?",
+                "confirmed": "Entita byla úspěšně odstraněna",
+                "failed": "Nepodařilo se odstranit entitu"
+            },
+            "update": {
+                "name": {
+                    "message": "Zadej nové jméno:",
+                    "confirmed": "Jméno bylo úspěšně aktualizováno",
+                    "failed": "Nepodařilo se aktualizovat jméno"
+                }
             }
         }
     },
@@ -142,13 +226,13 @@
             },
             "refresh": {
                 "selected": {
-                    "message": "Opravdu chceš aktualizovat vybrané album?",
+                    "message": "Opravdu chceš aktualizovat toto album?",
                     "confirmed": "Album bylo úspěšně aktualizováno",
                     "failed": "Nepodařilo se aktualizovat album"
                 }
             },
             "remove": {
-                "message": "Opravdu chceš odstranit vybrané album?",
+                "message": "Opravdu chceš odstranit toto album?",
                 "confirmed": "Album bylo úspěšně odstraněno",
                 "failed": "Nepodařilo se odstranit album"
             }
@@ -157,9 +241,25 @@
     "photo": {
         "prompt": {
             "remove": {
-                "message": "Operavdu chceš odstranit vybranou fotku?",
+                "message": "Operavdu chceš odstranit tuto fotku?",
                 "confirmed": "Fotka byla úspěšně odstraněna",
                 "failed": "Nepodařilo se odstranit fotku"
+            }
+        }
+    },
+    "region": {
+        "prompt": {
+            "create": {
+                "multiple": {
+                    "message": "Zadej reprezentaci geografických regionů:"
+                }
+            },
+            "copy": {
+                "geojson": {
+                    "message": "GeoJSON reprezentace regionu bude vložena do schránky. Přeješ si pokračovat?",
+                    "confirmed": "GeoJSON reprezentace regionu byla úspěšně vložena do schránky",
+                    "failed": "Nepodařilo se vložit GeoJSON reprezentaci regionu do schránky"
+                }
             }
         }
     },
@@ -169,6 +269,40 @@
                 "message": "Opravdu chceš odstranit místo {{name}}?",
                 "confirmed": "Místo bylo úspěšně odstraněno",
                 "failed": "Nepodařilo se odstranit místo"
+            },
+            "refresh": {
+                "excerpt": {
+                    "message": "Opravdu chceš znovu vygenerovat výňatek?",
+                    "confirmed": "Výňatek byl úspěšně vygenerován",
+                    "failed": "Nepodařilo se vygenerovat výňatek"
+                }
+            },
+            "update": {
+                "excerpt": {
+                    "message": "Zadej nový výňatek:",
+                    "confirmed": "Výňatek byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat výňatek"
+                },
+                "reviewed": {
+                    "message": "Bylo místo zrevidováno dle požadavků?",
+                    "confirmed": "Revize místa byla úspěšně dokončena",
+                    "failed": "Nepodařilo se dokončit revizi místa"
+                },
+                "location": {
+                    "message": "Opravdu chceš změnit polohu místa?",
+                    "confirmed": "Poloha místa byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat polohu místa"
+                },
+                "address": {
+                    "message": "Zadej novou adresu místa:",
+                    "confirmed": "Adresa byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat adresu"
+                },
+                "country": {
+                    "message": "Zadej novou státní příslušnost místa:",
+                    "confirmed": "Státní příslušnost místa byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat státní příslušnost místa"
+                }
             }
         }
     },
@@ -187,6 +321,15 @@
                 "message": "Opravdu chceš odstranit dokument {{name}}?",
                 "confirmed": "Dokument byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit dokument"
+            }
+        }
+    },
+    "trip": {
+        "prompt": {
+            "remove": {
+                "message": "Opravdu chceš odstranit tento výlet?",
+                "confirmed": "Výlet byla úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit výlet"
             }
         }
     },

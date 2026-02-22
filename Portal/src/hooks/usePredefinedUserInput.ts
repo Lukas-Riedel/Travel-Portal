@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { useUserInput } from "./useUserInput.tsx"
-import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscription, Voucher, Place, Trip, Year, Category, Label } from "../types/CoreSwaggerTypes.ts"
+import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscription, Voucher, Place, Trip, Year, Category, Label, Airport } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
 
@@ -9,6 +9,70 @@ import type { Highlightable } from "../types/Highlightable.ts"
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
     const { t } = useTranslation()
+
+    const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
+        showInputToast(
+            t("airport.prompt.update.country.message"),
+            updateAirportCountry,
+            t("airport.prompt.update.country.confirmed"),
+            t("airport.prompt.update.country.failed")
+        )
+
+    const showUpdateAirportNameToast = (updateAirportName: (name: string) => Promise<Airport>) =>
+        showInputToast(
+            t("airport.prompt.update.name.message"),
+            updateAirportName,
+            t("airport.prompt.update.name.confirmed"),
+            t("airport.prompt.update.name.failed")
+        )
+
+    const showUpdatePlaceCountryToast = (updatePlaceCountry: (country: string) => Promise<Place>) =>
+        showInputToast(
+            t("place.prompt.update.country.message"),
+            updatePlaceCountry,
+            t("place.prompt.update.country.confirmed"),
+            t("place.prompt.update.country.failed")
+        )
+
+    const showLogoutToast = (logout: () => Promise<void>) =>
+        showConfirmToast(
+            t("user.prompt.logout.message"),
+            logout,
+            t("user.prompt.logout.confirmed"),
+            t("user.prompt.logout.failed")
+        )
+
+    const showUpdatePlaceLocationToast = (updatePlaceLocation: () => Promise<Place>) =>
+        showConfirmToast(
+            t("place.prompt.update.location.message"),
+            updatePlaceLocation,
+            t("place.prompt.update.location.confirmed"),
+            t("place.prompt.update.location.failed")
+        )
+
+    const showUpdatePlaceReviewedToast = (updatePlaceReviewed: () => Promise<Album[]>) =>
+        showConfirmToast(
+            t("place.prompt.update.reviewed.message"),
+            updatePlaceReviewed,
+            t("place.prompt.update.reviewed.confirmed"),
+            t("place.prompt.update.reviewed.failed")
+        )
+
+    const showRefreshPlaceExcerptToast = (refreshPlaceExcerpt: () => Promise<Place>) =>
+        showConfirmToast(
+            t("place.prompt.refresh.excerpt.message"),
+            refreshPlaceExcerpt,
+            t("place.prompt.refresh.excerpt.confirmed"),
+            t("place.prompt.refresh.excerpt.failed")
+        )
+
+    const showUpdateNoteToast = (updateNote: () => Promise<Note>) =>
+        showConfirmToast(
+            t("note.prompt.update.message"),
+            updateNote,
+            t("note.prompt.update.confirmed"),
+            t("note.prompt.update.failed")
+        )
 
     const showRemoveDocumentToast = (document: Document, removeDocument: () => Promise<void>) =>
         showConfirmToast(
@@ -183,24 +247,24 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const showUpdateAirlineToast = (airline: Airline, updateAirlineName: (name: string) => Promise<Airline>,
         updateAirlineLogo: (logo: string) => Promise<Airline>, removeAirlineCode: (code: string) => Promise<void>) =>
         showFormToast(
-            t("airline.prompt.update.message"),
+            t("airline.prompt.update.all.message"),
             [
                 {
                     type: "text",
                     required: true,
-                    label: t("airline.prompt.update.label.name"),
+                    label: t("airline.prompt.update.all.label.name"),
                     defaultValue: airline.name,
                 },
                 {
                     type: "text",
                     required: false,
-                    label: t("airline.prompt.update.label.logo"),
+                    label: t("airline.prompt.update.all.label.logo"),
                     defaultValue: airline.logo
                 },
                 {
                     type: "select",
                     required: false,
-                    label: t("airline.prompt.update.label.codes"),
+                    label: t("airline.prompt.update.all.label.codes"),
                     defaultValue: airline.codes,
                     multiple: true,
                     options: airline.codes.map(code => ({ id: code, name: code }))
@@ -217,8 +281,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
 
                 await Promise.all(airline.codes.filter(code => !codes.includes(code)).map(code => removeAirlineCode(code)))
             },
-            t("airline.prompt.update.confirmed"),
-            t("airline.prompt.update.failed")
+            t("airline.prompt.update.all.confirmed"),
+            t("airline.prompt.update.all.failed")
         )
 
     const showRemoveAirlineToast = (airline: Airline, removeAirline: () => Promise<void>) =>
@@ -293,7 +357,133 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("label.prompt.unassign.failed")
         )
 
+    const showUpdateAirlineLogoToast = (updateAirlineLogo: (logo: string) => Promise<Airline>) =>
+        showInputToast(
+            t("airline.prompt.update.logo.message"),
+            updateAirlineLogo,
+            t("airline.prompt.update.logo.confirmed"),
+            t("airline.prompt.update.logo.failed")
+        )
+
+    const showCreateLabelToast = (createLabel: (name: string) => Promise<Label>) =>
+        showInputToast(
+            t("label.prompt.create.message"),
+            createLabel,
+            t("label.prompt.create.confirmed"),
+            t("label.prompt.create.failed")
+        )
+
+    const showRemoveEntityToast = (removeEntity: () => Promise<void>) =>
+        showConfirmToast(
+            t("entity.prompt.remove.message"),
+            removeEntity,
+            t("entity.prompt.remove.confirmed"),
+            t("entity.prompt.remove.failed")
+        )
+
+    const showUpdateEntityNameToast = <T>(name: string, updateEntityName: (name: string) => Promise<T>) =>
+        showInputToast(
+            t("entity.prompt.update.name.message"),
+            updateEntityName,
+            t("entity.prompt.update.name.confirmed"),
+            t("entity.prompt.update.name.failed"),
+            name
+        )
+
+    const showUpdatePlaceExcerptToast = (place: Place, updatePlaceExcerpt: (excerpt: string) => Promise<Place>) =>
+        showInputToast(
+            t("place.prompt.update.excerpt.message"),
+            updatePlaceExcerpt,
+            t("place.prompt.update.excerpt.confirmed"),
+            t("place.prompt.update.excerpt.failed"),
+            place.excerpt
+        )
+
+    const showUpdatePlaceAddressToast = (place: Place, updatePlaceAddress: (address: string) => Promise<Place>) =>
+        showInputToast(
+            t("place.prompt.update.address.message"),
+            updatePlaceAddress,
+            t("place.prompt.update.address.confirmed"),
+            t("place.prompt.update.address.failed"),
+            place.name
+        )
+
+    const showCopyRegionGeoJsonToast = (copyRegionGeoJson: () => Promise<void>) =>
+        showConfirmToast(
+            t("region.prompt.copy.geojson.message"),
+            copyRegionGeoJson,
+            t("region.prompt.copy.geojson.confirmed"),
+            t("region.prompt.copy.geojson.failed")
+        )
+
+    const showRemoveSubscriptionToast = (removeSubscription: () => Promise<void>) =>
+        showConfirmToast(
+            t("subscription.prompt.remove.message"),
+            removeSubscription,
+            t("subscription.prompt.remove.confirmed"),
+            t("subscription.prompt.remove.failed")
+        )
+
+    const showRemoveTimeTrackingEventToast = (removeTimeTrackingEvent: () => Promise<void>) =>
+        showConfirmToast(
+            t("tracker.prompt.remove.message"),
+            removeTimeTrackingEvent,
+            t("tracker.prompt.remove.confirmed"),
+            t("tracker.prompt.remove.failed")
+        )
+
+    const showCopyTimeTrackingEventDescriptionToast = (copyTimeTrackingEventDescription: () => Promise<void>) =>
+        showConfirmToast(
+            t("tracker.prompt.copy.description.message"),
+            copyTimeTrackingEventDescription,
+            t("tracker.prompt.copy.description.confirmed"),
+            t("tracker.prompt.copy.description.failed")
+        )
+
+    const showRemoveTripToast = (removeTrip: () => Promise<void>) =>
+        showConfirmToast(
+            t("trip.prompt.remove.message"),
+            removeTrip,
+            t("trip.prompt.remove.confirmed"),
+            t("trip.prompt.remove.failed")
+        )
+
+    const showRemoveVoucherToast = (removeVoucher: () => Promise<void>) =>
+        showConfirmToast(
+            t("voucher.prompt.remove.message"),
+            removeVoucher,
+            t("voucher.prompt.remove.confirmed"),
+            t("voucher.prompt.remove.failed")
+        )
+
+    const showCreateMultipleGeographicalRegionsToast = (createGeographicalRegions: (geoJson: string) => Promise<void>) =>
+        showInputToast(
+            t("region.prompt.create.multiple.message"),
+            createGeographicalRegions
+        )
+
     return {
+        showCreateMultipleGeographicalRegionsToast,
+        showRemoveVoucherToast,
+        showRemoveTripToast,
+        showCopyTimeTrackingEventDescriptionToast,
+        showRemoveTimeTrackingEventToast,
+        showRemoveSubscriptionToast,
+        showCopyRegionGeoJsonToast,
+        showUpdatePlaceAddressToast,
+        showUpdatePlaceExcerptToast,
+        showUpdateEntityNameToast,
+        showRemoveEntityToast,
+        showCreateLabelToast,
+        showUpdateAirlineLogoToast,
+        showUpdateAirportCountryToast,
+        showUpdateAirportNameToast,
+        showUpdatePlaceCountryToast,
+        showLogoutToast,
+        showUpdatePlaceLocationToast,
+        showUpdatePlaceReviewedToast,
+        showRefreshPlaceExcerptToast,
+        showUpdateNoteToast,
         showRemoveDocumentToast,
         showUpdateConfigurationEntryToast,
         showRemovePlaceToast,

@@ -8,9 +8,10 @@ import { formatDays } from "../utils/formatters"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { getPrettyName } from "../utils/helpers"
 import LoadingCard from "./LoadingCard"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function TripCard({ trip, onTripRemoved }) {
-    const { showConfirmToast } = useUserInput()
+    const { showRemoveTripToast } = usePredefinedUserInput()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: ["categories", "dates"] })
@@ -27,12 +28,7 @@ export default function TripCard({ trip, onTripRemoved }) {
         }), acc), {}), [tripPlaces])
 
     const handleDelete = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit výlet '" + trip.name + "'?",
-            async () => onTripRemoved(trip.id),
-            "Výlet byl úspěšně odstraněn",
-            "Nepodařilo se odstranit výlet"
-        )
+        showRemoveTripToast(() => onTripRemoved(trip.id))
     }
 
     return trip && tripPlaces ? (

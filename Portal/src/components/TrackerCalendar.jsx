@@ -10,10 +10,12 @@ import { formatDuration } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { configuration } = useConfiguration()
-    const { showConfirmToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showRemoveTimeTrackingEventToast, showCopyTimeTrackingEventDescriptionToast } = usePredefinedUserInput()
 
     const now = new Date()
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
@@ -264,21 +266,11 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     }
 
     const handleRemoveEvent = event => {
-        showConfirmToast(
-            "Opravdu chceš odstranit tuto událost?",
-            async () => onEventRemoved(event.id),
-            "Událost byla úspěšně odstraněna",
-            "Nepodařilo se odstranit událost"
-        )
+        showRemoveTimeTrackingEventToast(() => onEventRemoved(event.id))
     }
 
     const handleCopyToClipboard = event => {
-        showConfirmToast(
-            "Text události bude vložen do schránky. Přeješ si pokračovat?",
-            async () => navigator.clipboard.writeText(event.description),
-            "Text události byl úspěšně vložen do schránky",
-            "Nepodařilo se vložit text události do schránky"
-        )
+        showCopyTimeTrackingEventDescriptionToast(() => navigator.clipboard.writeText(event.description))
     }
 
     const renderButtons = (day, daySummary) => (

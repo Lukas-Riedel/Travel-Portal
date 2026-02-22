@@ -1,7 +1,5 @@
 import { Plus, Trash2 } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
 import clsx from "clsx"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
@@ -12,8 +10,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 const loadingLabelsCount = 3
 
 export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
-    const { showInputToast } = useUserInput()
-    const { showAssignLabelToast, showUnassignLabelToast } = usePredefinedUserInput()
+    const { showCreateLabelToast, showAssignLabelToast, showUnassignLabelToast } = usePredefinedUserInput()
 
     const { configuration } = useConfiguration();
 
@@ -27,11 +24,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
     }
 
     const handleUnknownLabelAdded = () => {
-        showInputToast(
-            "Zadej jméno štítku k přidání:",
-            async (labelName) => onLabelAdded(labelName)),
-            "Štítek byl úspěšně přidán",
-            "Nepodařilo se přidat štítek"
+        showCreateLabelToast(onLabelAdded)
     }
 
     const handleLabelRemoved = label => {

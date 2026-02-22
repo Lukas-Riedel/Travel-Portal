@@ -2,23 +2,17 @@ import { Link } from "react-router-dom"
 import { getPrettyName } from "../utils/helpers"
 import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.tsx"
-import { useAuth } from "../contexts/AuthContext"
 import { formatKilometers } from "../utils/formatters"
 import LoadingCard from "./LoadingCard"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {
-    const { showConfirmToast } = useUserInput()
+    const { showRemovePlaceToast } = usePredefinedUserInput()
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("country"), [place])
 
     const handleDelete = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit místo '" + place.name + "'?",
-            async () => onPlaceRemoved(place.id),
-            "Místo bylo úspěšně odstraněno",
-            "Nepodařilo se odstranit místo"
-        )
+        showRemovePlaceToast(place, () => onPlaceRemoved(place.id))
     }
 
     return place ? (

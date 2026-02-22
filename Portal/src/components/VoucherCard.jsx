@@ -4,17 +4,14 @@ import { useAuth } from "../contexts/AuthContext"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherRemoved }) {
-    const { showConfirmToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showRemoveVoucherToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit poukaz '" + voucher.description + "'?",
-            async () => onVoucherRemoved(voucher.id),
-            "Poukaz byl úspěšně odstraněn",
-            "Nepodařilo se odstranit poukaz"
-        )
+        showRemoveVoucherToast(() => onVoucherRemoved(voucher.id))
     }
 
     const handleValueSubtraction = () => {

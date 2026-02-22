@@ -1,12 +1,13 @@
 import { Images, RefreshCcw, Share2, SquarePen, Trash2 } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
 import { getPrettyName } from "../utils/helpers"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsSelectingTriggered }) {
-    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
+    const { showFormToast } = useUserInput()
+    const { showRemoveEntityToast, showUpdateEntityNameToast } = usePredefinedUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
 
@@ -18,13 +19,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
     }, [])
 
     const handleNameChanged = () => {
-        showInputToast(
-            "Zadej nové jméno:",
-            onNameChanged,
-            "Jméno bylo úspěšně aktualizováno",
-            "Nepodařilo se aktualizovat jméno",
-            name
-        )
+        showUpdateEntityNameToast(name, onNameChanged)
     }
 
     const handleHighlightsSelectingTriggered = () => {
@@ -40,12 +35,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
     }
 
     const handleRemoved = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit tuto entitu?",
-            onRemoved,
-            "Entita byla úspěšně odstraněna",
-            "Nepodařilo se odstranit entitu"
-        )
+        showRemoveEntityToast(onRemoved)
     }
 
     const handleShared = async () => {

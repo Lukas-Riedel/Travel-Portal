@@ -1,14 +1,11 @@
 import { Trash2, Plus, Bold, Italic, Link, Edit2, Check } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useEffect, useRef, useState } from "react"
-import { useAuth } from "../contexts/AuthContext"
 import { getDateTimeString } from "../utils/helpers"
 import ReactMarkdown from "react-markdown"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, onNoteRemoved }) {
-    const { showConfirmToast } = useUserInput()
-    const { showCreateNoteToast, showRemoveNoteToast } = usePredefinedUserInput()
+    const { showCreateNoteToast, showRemoveNoteToast, showUpdateNoteToast } = usePredefinedUserInput()
 
     const textareaRef = useRef(null)
     const [isBeingEdited, setIsBeingEdited] = useState(onNoteCreated !== undefined)
@@ -39,15 +36,10 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             return
         }
 
-        showConfirmToast(
-            "Opravdu chceš upravit vybranou poznámku?",
-            async () => onNoteContentUpdated(note.id, content).then(() => {
-                textareaRef.current.value = ""
-                setIsBeingEdited(false)
-            }),
-            "Poznámka byla úspěšně upravena",
-            "Nepodařilo se upravit poznámku"
-        )
+        showUpdateNoteToast(() => onNoteContentUpdated(note.id, content).then(() => {
+            textareaRef.current.value = ""
+            setIsBeingEdited(false)
+        }))
     }
 
     const insertAtCursor = (before, after = "") => {

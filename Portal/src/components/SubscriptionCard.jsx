@@ -1,20 +1,14 @@
 
 import { Trash2 } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function SubscriptionCard({ subscription, onSubscriptionRemoved }) {
-    const { showConfirmToast } = useUserInput()
+    const { showRemoveSubscriptionToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
-        showConfirmToast(
-            "Opravdu chceš odstranit předplatné '" + subscription.description + "'?",
-            async () => onSubscriptionRemoved(subscription.id),
-            "Předplatné bylo úspěšně odstraněno",
-            "Nepodařilo se odstranit předplatné"
-        )
+        showRemoveSubscriptionToast(() => onSubscriptionRemoved(subscription.id))
     }
 
     const subscriptionProperties = {

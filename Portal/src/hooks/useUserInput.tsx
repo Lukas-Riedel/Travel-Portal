@@ -4,6 +4,7 @@ import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
 import type { FormField } from "../types/FormField.ts"
 import { useCallback, useRef } from "react"
 import type { SelectFormField } from "../types/SelectFormField.ts"
+import type { BranchingToastBranch } from "../types/BranchingToastBranch.ts"
 
 export const useUserInput = (): UseUserInputResult => {
     const { t } = useTranslation()
@@ -234,9 +235,81 @@ export const useUserInput = (): UseUserInputResult => {
     const showInputToast = <T extends any, R extends any>(message: string, onSubmitted?: (value: T) => Promise<R>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
         showFormToast(message, [{ type: "text", required: true, defaultValue }], onSubmitted, success, error)
 
+    const showBranchingToast = useCallback((title: string, branches: Record<string, BranchingToastBranch>): Promise<boolean> =>
+        new Promise((resolve, reject) => {
+            toast.custom(
+                id => {
+                    // TODO: Extract to a separate component in order to follow React best practices.
+                    function Form() {
+                        const selectRef = useRef<HTMLSelectElement | null>(null);
+
+                        const handleSubmit = () => {
+                            if (!selectRef.current) {
+                                return
+                            }
+                            
+                            toast.dismiss(id)
+                            branches[selectRef.current.value].handle().then(resolve).catch(reject)
+                        }
+                        
+                        const handleCancel = () => {
+                            toast.dismiss(id)
+                            resolve(false)
+                        }
+
+                        return (
+                            <div className="w-full flex justify-center">
+                                <div className="bg-white rounded-lg shadow-md border p-4 w-80 space-y-3 text-sm">
+                                    {title && (
+                                        <div className="font-medium">
+                                            {title}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <select
+                                            ref={element => {
+                                                if (element) {
+                                                    selectRef.current = element
+                                                }
+                                            }}
+                                            className="border rounded px-2 py-1 w-full text-sm">
+                                            {Object.keys(branches).map(branch => (
+                                                <option
+                                                    key={branch}
+                                                    value={branch}>
+                                                    {branches[branch].name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            className="px-3 py-1 rounded bg-gray-200"
+                                            onClick={handleCancel}>
+                                            {t("prompt.reject")}
+                                        </button>
+                                        <button
+                                            className="px-3 py-1 rounded bg-black text-white"
+                                            onClick={handleSubmit}>
+                                            {t("prompt.confirm")}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+                    return <Form />
+                },
+                {
+                    duration: Infinity
+                }
+            )
+        }), [t])
+
     return {
         showConfirmToast,
         showFormToast,
-        showInputToast
+        showInputToast,
+        showBranchingToast
     }
 }

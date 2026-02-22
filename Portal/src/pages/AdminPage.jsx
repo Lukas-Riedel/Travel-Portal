@@ -29,7 +29,6 @@ import { useSubscriptions } from "../hooks/useSubscriptions"
 import { useCategories } from "../hooks/useCategories"
 import SubscriptionCardGrid from "../components/SubscriptionCardGrid"
 import RegionEditor from "../components/RegionEditor"
-import showBranchingToast from "../components/BranchingToast"
 import { getGeoFeatures, getGeoJson } from "../utils/helpers"
 import { useDocuments } from "../hooks/useDocuments"
 import DocumentCardGrid from "../components/DocumentCardGrid"
@@ -60,8 +59,8 @@ export default function AdminPage() {
     const { hasRole } = useAuth()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
-    const { showInputToast, showFormToast } = useUserInput()
-    const { showCreateAirlineToast } = usePredefinedUserInput()
+    const { showFormToast, showBranchingToast } = useUserInput()
+    const { showCreateAirlineToast, showCreateMultipleGeographicalRegionsToast } = usePredefinedUserInput()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
@@ -300,35 +299,32 @@ export default function AdminPage() {
                 multipleGeographical: {
                     name: "Multiregion",
                     handle: () => {
-                        showInputToast(
-                            "Zadej reprezentaci geografických regionů",
-                            async geoJson => {
-                                const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
-                                for (const geoFeature of geoFeatures) {
-                                    try {
-                                        await showFormToast(
-                                            "Zadej reprezentaci geografického regionu:",
-                                            [
-                                                { label: "Název", defaultValue: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
-                                                // TODO: Use the value from the previous toast as a default.
-                                                { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
-                                                // TODO: Use the value from the previous toast as a default.
-                                                { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                                                // TODO: Use the value from the previous toast as a default.
-                                                { label: "Rádius", defaultValue: 0, required: true, type: "number", min: 0 }
-                                            ],
-                                            async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry)),
-                                            "Geografický region byl úspěšně přidán",
-                                            "Nepodařilo se přidat geografický region"
-                                        )
+                        showCreateMultipleGeographicalRegionsToast(async geoJson => {
+                            const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
+                            for (const geoFeature of geoFeatures) {
+                                try {
+                                    await showFormToast(
+                                        "Zadej reprezentaci geografického regionu:",
+                                        [
+                                            { label: "Název", defaultValue: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
+                                            // TODO: Use the value from the previous toast as a default.
+                                            { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
+                                            // TODO: Use the value from the previous toast as a default.
+                                            { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
+                                            // TODO: Use the value from the previous toast as a default.
+                                            { label: "Rádius", defaultValue: 0, required: true, type: "number", min: 0 }
+                                        ],
+                                        async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry)),
+                                        "Geografický region byl úspěšně přidán",
+                                        "Nepodařilo se přidat geografický region"
+                                    )
 
-                                    }
-                                    catch (error) {
-                                        continue
-                                    }
+                                }
+                                catch (error) {
+                                    continue
                                 }
                             }
-                        )
+                        })
                     }
                 }
             }

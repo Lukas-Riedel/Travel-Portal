@@ -13,8 +13,9 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }) {
     const navigate = useNavigate()
-    const { showInputToast, showFormToast } = useUserInput()
-    const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast } = usePredefinedUserInput()
+    const { showFormToast } = useUserInput()
+    const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast, showUpdatePlaceCountryToast, showUpdateAirportNameToast,
+        showUpdateAirportCountryToast, showUpdateAirlineLogoToast } = usePredefinedUserInput()
 
     const handleremoveAlbum = () => {
         showRemoveAlbumToast(onAllAlbumsInvalidated)
@@ -180,12 +181,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Název": place.name
                 }
             ),
-            resolve: place => showInputToast(
-                "Zadej novou státní příslušnost místa:",
-                async (country) => onPlaceCountryChanged(place.id, country),
-                "Státní příslušnost místa byla úspěšně aktualizována",
-                "Nepodařilo se aktualizovat státní příslušnost místa"
-            )
+            resolve: place => showUpdatePlaceCountryToast(country => onPlaceCountryChanged(place.id, country))
         },
         "NON_REVIEWED_PLACE": {
             name: "Nezrevidované místo",
@@ -285,12 +281,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kód": airport.code
                 }
             ),
-            resolve: airport => showInputToast(
-                "Zadej nové jméno letiště:",
-                async (name) => onAirportNameChanged(airport.id, name),
-                "Jméno letiště bylo úspěšně aktualizováno",
-                "Nepodařilo se aktualizovat jméno letiště"
-            )
+            resolve: airport => showUpdateAirportNameToast(name => onAirportNameChanged(airport.id, name))
         },
         "AIRPORT_WITHOUT_COUNTRY": {
             name: "Letiště bez státní příslušnosti",
@@ -300,12 +291,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kód": airport.code
                 }
             ),
-            resolve: airport => showInputToast(
-                "Zadej novou státní příslušnost letiště:",
-                async (country) => onAirportCountryChanged(airport.id, country),
-                "Státní příslušnost letiště byla úspěšně aktualizována",
-                "Nepodařilo se aktualizovat státní příslušnost letiště"
-            )
+            resolve: airport => showUpdateAirportCountryToast(country => onAirportCountryChanged(airport.id, country))
         },
         "AIRLINE_WITHOUT_LOGO": {
             name: "Aerolinka bez loga",
@@ -314,12 +300,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Název": airline.name
                 }
             ),
-            resolve: airline => showInputToast(
-                "Zadej nové logo aerolinky:",
-                async (logo) => onAirlineLogoChanged(airline.id, logo),
-                "Logo aerolinky bylo úspěšně aktualizováno",
-                "Nepodařilo se aktualizovat logo aerolinky"
-            )
+            resolve: airline => showUpdateAirlineLogoToast(logo => onAirlineLogoChanged(airline.id, logo))
         },
         "NON_LOGGED_FLIGHT": {
             name: "Nezalogovaný let",
