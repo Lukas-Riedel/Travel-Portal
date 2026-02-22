@@ -79,7 +79,7 @@ onBackgroundMessage(messaging, payload => {
                 self.registration.showNotification("Highlighty byly vytvořeny", {
                     body: "Místo " + wrappedEvent.args.entityName + " má nové highlighty",
                     icon: "icon-192.png",
-                    data: "/place/" + wrappedEvent.args.placeId
+                    data: "/place/" + wrappedEvent.args.entityId
                 })
             }
             else if (wrappedEvent.args.highlightType === "trip") {
