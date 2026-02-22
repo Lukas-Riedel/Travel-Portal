@@ -16,15 +16,21 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     const [messages, setMessages] = useState<Message[]>([])
     const [fcmToken, setFcmToken] = useState<string | null>(null)
 
+    const fetchToken = async (registration: ServiceWorkerRegistration) => {
+        const token = await getToken(messaging, {
+            vapidKey: window.env?.VITE_FIREBASE_VAPID_KEY || import.meta.env.VITE_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: registration
+        })
+
+        if (token) {
+            setFcmToken(token)
+        }
+    }
+
     useEffect(() => {
         if ("serviceWorker" in navigator) {
             const swVersion = window.env?.VITE_SW_VERSION || import.meta.env.VITE_SW_VERSION || Date.now()
-            navigator.serviceWorker.register("/firebase-messaging-sw.js?v=" + swVersion)
-                .then(registration => getToken(messaging, {
-                    vapidKey: window.env?.VITE_FIREBASE_VAPID_KEY || import.meta.env.VITE_FIREBASE_VAPID_KEY,
-                    serviceWorkerRegistration: registration
-                }))
-                .then(setFcmToken)
+            navigator.serviceWorker.register("/firebase-messaging-sw.js?v=" + swVersion).then(fetchToken)
         }
 
         const unsubscribe = onMessage(messaging, payload => {
@@ -44,6 +50,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
         return () => unsubscribe()
     }, [])
+
+    useEffect(() => {
+        if (accessToken && "serviceWorker" in navigator) {
+            navigator.serviceWorker.ready.then(fetchToken);
+        }
+    }, [accessToken])
 
     useEffect(() => {
         if (fcmToken && accessToken) {

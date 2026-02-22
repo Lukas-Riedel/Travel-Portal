@@ -1,14 +1,13 @@
 cortex:
   enabled: true
   image: ghcr.io/lukas-riedel/cortex
-  # tag: latest
+  tag: latest
   workers: 1
   threads: 4
   scaling:
     items: "5"
     cooldown: 120
     grace: 60
-  # model: clip-ViT-B-32
   model: clip-ViT-L-14
   engine: cpu
   core:
@@ -26,7 +25,6 @@ cortex:
       amqp: 5672
       management: 15672
     vhost: /
-    username: admin
     heartbeat: "60"
     queue:
       cortex: CortexQueue
@@ -40,7 +38,5 @@ cortex:
       backend:
         id: admin-cli
   grafana:
-    entrypoint: https://logs-prod-012.grafana.net
     client:
       name: travel-portal-service
-    username: "1287508"
