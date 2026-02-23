@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
@@ -12,8 +11,7 @@ export default function MainLayout({ children }) {
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
-    const { showFormToast } = useUserInput()
-    const { showLogoutToast } = usePredefinedUserInput()
+    const { showLogoutToast, showLoginToast } = usePredefinedUserInput()
 
     const navigationItems = [
         { label: t("menu.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
@@ -30,16 +28,7 @@ export default function MainLayout({ children }) {
 
     const handleLogin = () => {
         requestPermissions()
-        showFormToast(
-            "Zadej přihlašovací údaje:",
-            [
-                { label: "Uživatelské jméno", required: true },
-                { label: "Heslo", required: true, type: "password" }
-            ],
-            (username, password) => login({ username, password }),
-            "Přihlášení proběhlo úspěšně",
-            "Při přihlašování došlo k chybě"
-        )
+        showLoginToast((username, password) => login({ username, password }))
     }
 
     const handleLogout = () => {

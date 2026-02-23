@@ -1,8 +1,14 @@
 import type { Place } from "../classes/Place.ts"
-import type { Airline, Airport, Album, Document, Expense, Flight, Highlight, Label, Note, Subscription, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryMetadata, Device, Expense, Fitness, Flight, GeographicalRegion, Highlight, Label, Note, Subscription, TimeBasedFitness, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 
 export interface UsePredefinedUserInputResult {
+    showSelectHighlightsToast: (selectHighlights: (count: number) => Promise<void>) => Promise<boolean>
+    showAssignCategoryToast: (categories: Category[], assignCategory: (categoryName: string) => Promise<GeographicalRegion>) => Promise<boolean>
+    showAssignAirlineCodeToast: (airlines: Airline[], assignAirlineCode: (airlineId: string) => Promise<Airline>) => Promise<boolean>
+    showUpdateCategoryMetadataToast: (category: Category, updateMetadata: (metadata: CategoryMetadata) => Promise<Category>) => Promise<boolean>
+    showReplaceFitnessToast: (fitnessRecords: Fitness[], replaceFitness: (fitnessRecordIndex: number) => Promise<Fitness>) => Promise<boolean>
+    showReplacePhotoToast: (agent: Device[], replacePhoto: (path: string, agentId: string) => Promise<void>) => Promise<boolean>
     showCreateMultipleGeographicalRegionsToast: (createGeographicalRegions: (geoJson: string) => Promise<void>) => Promise<boolean>
     showRemoveVoucherToast: (removeVoucher: () => Promise<void>) => Promise<boolean>
     showRemoveTripToast: (removeTrip: () => Promise<void>) => Promise<boolean>
@@ -19,6 +25,7 @@ export interface UsePredefinedUserInputResult {
     showUpdateAirportCountryToast: (updateAirportCountry: (country: string) => Promise<Airport>) => Promise<boolean>
     showUpdateAirportNameToast: (updateAirportName: (name: string) => Promise<Airport>) => Promise<boolean>
     showUpdatePlaceCountryToast: (updatePlaceCountry: (country: string) => Promise<Place>) => Promise<boolean>
+    showLoginToast: (login: (username: string, password: string) => Promise<void>) => Promise<boolean>
     showLogoutToast: (logout: () => Promise<void>) => Promise<boolean>
     showUpdatePlaceLocationToast: (updatePlaceLocation: () => Promise<Place>) => Promise<boolean>
     showUpdatePlaceReviewedToast: (updatePlaceReviewed: () => Promise<Album[]>) => Promise<boolean>
@@ -26,7 +33,7 @@ export interface UsePredefinedUserInputResult {
     showUpdateNoteToast: (updateNote: () => Promise<Note>) => Promise<boolean>
     showRemoveDocumentToast: (removeDocument: () => Promise<void>) => Promise<boolean>
     showUpdateConfigurationEntryToast: (updateConfigurationEntry: () => Promise<Record<string, any>>) => Promise<boolean>
-    showRemovePlaceToast: (removePlace: () => Promise<void>) => Promise<boolean>
+    showRemovePlaceToast: (placesOrRemovePlace: Place[] | (() => Promise<void>), removePlace?: (placeId: string) => Promise<void>) => Promise<boolean>
     showRefreshAlbumToast: (refreshAlbum: () => Promise<Album>) => Promise<boolean>
     showRemoveAlbumToast: (removeAlbum: () => Promise<void>) => Promise<boolean>
     showUpdateAlbumMainPhotoToast: (updateAlbumMainPhoto: () => Promise<Album>) => Promise<boolean>

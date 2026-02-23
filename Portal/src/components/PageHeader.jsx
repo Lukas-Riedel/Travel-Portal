@@ -7,7 +7,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsSelectingTriggered }) {
     const { showFormToast } = useUserInput()
-    const { showRemoveEntityToast, showUpdateEntityNameToast } = usePredefinedUserInput()
+    const { showRemoveEntityToast, showUpdateEntityNameToast, showSelectHighlightsToast } = usePredefinedUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
 
@@ -23,15 +23,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
     }
 
     const handleHighlightsSelectingTriggered = () => {
-        showFormToast(
-            "Zadej počet highlightů pro tuto entitu:",
-            [
-                { type: "number", required: true, min: 1 }
-            ],
-            highlightsCount => onHighlightsSelectingTriggered(Number(highlightsCount)),
-            "Vybírání highlightů bude brzy zahájeno",
-            "Při vybírání highlightů došlo k chybě"
-        )
+        showSelectHighlightsToast(onHighlightsSelectingTriggered)
     }
 
     const handleRemoved = () => {

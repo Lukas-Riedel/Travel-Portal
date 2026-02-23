@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { useUserInput } from "./useUserInput.tsx"
-import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscription, Voucher, Place, Trip, Year, Category, Label, Airport } from "../types/CoreSwaggerTypes.ts"
+import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscription, Voucher, Place, Trip, Year, Category, Label, Airport, Device, TimeBasedFitness, Fitness, CategoryMetadata, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
 
@@ -33,12 +33,32 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("place.prompt.update.country.failed")
         )
 
+    const showLoginToast = (login: (username: string, password: string) => Promise<void>) =>
+        showFormToast(
+            t("general.prompt.login.message"),
+            [
+                {
+                    type: "string",
+                    required: true,
+                    label: t("general.prompt.login.label.username")
+                },
+                {
+                    type: "password",
+                    required: true,
+                    label: t("general.prompt.login.label.password")
+                }
+            ],
+            login,
+            t("general.prompt.login.confirmed"),
+            t("general.prompt.login.failed")
+        )
+
     const showLogoutToast = (logout: () => Promise<void>) =>
         showConfirmToast(
-            t("user.prompt.logout.message"),
+            t("general.prompt.logout.message"),
             logout,
-            t("user.prompt.logout.confirmed"),
-            t("user.prompt.logout.failed")
+            t("general.prompt.logout.confirmed"),
+            t("general.prompt.logout.failed")
         )
 
     const showUpdatePlaceLocationToast = (updatePlaceLocation: () => Promise<Place>) =>
@@ -89,13 +109,29 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("configuration.prompt.update.failed")
         )
 
-    const showRemovePlaceToast = (removePlace: () => Promise<void>) =>
-        showConfirmToast(
-            t("place.prompt.remove.message"),
-            removePlace,
-            t("place.prompt.remove.confirmed"),
-            t("place.prompt.remove.failed")
-        )
+    const showRemovePlaceToast = (placesOrRemovePlace: Place[] | (() => Promise<void>), removePlace?: (placeId: string) => Promise<void>) =>
+        Array.isArray(placesOrRemovePlace)
+            ? showFormToast(
+                t("place.prompt.remove.select.message"),
+                [
+                    {
+                        type: "select",
+                        required: true,
+                        options: placesOrRemovePlace.map(place => ({
+                            id: place.id,
+                            name: place.name
+                        }))
+                    }
+                ],
+                removePlace,
+                t("place.prompt.remove.select.confirmed"),
+                t("place.prompt.remove.select.failed")
+            ) : showConfirmToast(
+                t("place.prompt.remove.given.message"),
+                placesOrRemovePlace,
+                t("place.prompt.remove.given.confirmed"),
+                t("place.prompt.remove.given.failed")
+            )
 
     const showRefreshAlbumToast = (refreshAlbum: () => Promise<Album>) =>
         showConfirmToast(
@@ -461,7 +497,134 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             createGeographicalRegions
         )
 
+    const showReplacePhotoToast = (agents: Device[], replacePhoto: (path: string, agentId: string) => Promise<void>) =>
+        showFormToast(
+            t("photo.prompt.replace.message"),
+            [
+                {
+                    type: "string",
+                    required: true,
+                    label: t("photo.prompt.replace.label.path")
+                },
+                {
+                    type: "select",
+                    required: true,
+                    label: t("photo.prompt.replace.label.agent"),
+                    options: agents.map(agent => ({
+                        id: agent.id,
+                        name: agent.name
+                    }))
+                }
+            ],
+            replacePhoto,
+            t("photo.prompt.replace.confirmed"),
+            t("photo.prompt.replace.failed")
+        )
+
+    const showReplaceFitnessToast = (fitnessRecords: Fitness[], replaceFitness: (fitnessRecordIndex: number) => Promise<Fitness>) =>
+        showFormToast(
+            t("fitness.prompt.replace.message"),
+            [
+                {
+                    type: "select",
+                    required: true,
+                    options: Array.from({ length: fitnessRecords.length }, (_, index) => ({
+                        id: index,
+                        name: `${t("fitness.prompt.replace.label.record")} ${index + 1}`
+                    }))
+                }
+            ],
+            selectedFitnessRecordIndex => replaceFitness(Number(selectedFitnessRecordIndex)),
+            t("fitness.prompt.replace.confirmed"),
+            t("fitness.prompt.replace.failed")
+        )
+
+    const showUpdateCategoryMetadataToast = (category: Category, updateMetadata: (metadata: CategoryMetadata) => Promise<Category>) =>
+        showFormToast(
+            t("category.prompt.update.metadata.message"),
+            [
+                {
+                    type: "string",
+                    required: false,
+                    label: t("category.prompt.update.metadata.label.color"),
+                    defaultValue: category.metadata?.color
+                },
+                {
+                    type: "string",
+                    required: false,
+                    label: t("category.prompt.update.metadata.label.unicode"),
+                    defaultValue: category.metadata?.unicode
+                },
+                {
+                    type: "string",
+                    required: false,
+                    label: t("category.prompt.update.metadata.label.calendar"),
+                    defaultValue: category.metadata?.publicHolidaysCalendar
+                }
+            ],
+            (color, unicode, publicHolidaysCalendar) => updateMetadata({ color, unicode, publicHolidaysCalendar }),
+            t("category.prompt.update.metadata.confirmed"),
+            t("category.prompt.update.metadata.failed"),
+        )
+
+    const showAssignAirlineCodeToast = (airlines: Airline[], assignAirlineCode: (airlineId: string) => Promise<Airline>) =>
+        showFormToast(
+            t("airline.prompt.assign.code.message"),
+            [
+                {
+                    type: "select",
+                    required: true,
+                    options: airlines.map(airline => ({
+                        id: airline.id,
+                        name: airline.name
+                    }))
+                }
+            ],
+            assignAirlineCode,
+            t("airline.prompt.assign.code.confirmed"),
+            t("airline.prompt.assign.code.failed")
+        )
+
+    const showAssignCategoryToast = (categories: Category[], assignCategory: (categoryName: string) => Promise<GeographicalRegion>) =>
+        showFormToast(
+            t("place.prompt.assign.category.message"),
+            [
+                {
+                    type: "select",
+                    required: true,
+                    options: categories.map(category => ({
+                        id: category.name,
+                        name: category.name
+                    }))
+                }
+            ],
+            assignCategory,
+            t("place.prompt.assign.category.confirmed"),
+            t("place.prompt.assign.category.failed")
+        )
+
+    const showSelectHighlightsToast = (selectHighlights: (count: number) => Promise<void>) =>
+        showFormToast(
+            t("highlight.prompt.select.message"),
+            [
+                {
+                    type: "number",
+                    required: true,
+                    min: 1
+                }
+            ],
+            selectHighlights,
+            t("highlight.prompt.select.confirmed"),
+            t("highlight.prompt.select.failed")
+        )
+
     return {
+        showSelectHighlightsToast,
+        showAssignCategoryToast,
+        showAssignAirlineCodeToast,
+        showUpdateCategoryMetadataToast,
+        showReplaceFitnessToast,
+        showReplacePhotoToast,
         showCreateMultipleGeographicalRegionsToast,
         showRemoveVoucherToast,
         showRemoveTripToast,
@@ -478,6 +641,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showUpdateAirportCountryToast,
         showUpdateAirportNameToast,
         showUpdatePlaceCountryToast,
+        showLoginToast,
         showLogoutToast,
         showUpdatePlaceLocationToast,
         showUpdatePlaceReviewedToast,

@@ -321,7 +321,6 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
 
 function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }) {
     const { configuration } = useConfiguration()
-    const { showFormToast } = useUserInput()
     const { showCreateExpenseToast } = usePredefinedUserInput()
 
     const { subscriptions } = useSubscriptions()

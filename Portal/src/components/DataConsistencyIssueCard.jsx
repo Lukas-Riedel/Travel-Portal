@@ -1,7 +1,5 @@
 import { Wrench } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
 import LoadingCard from "./LoadingCard"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
@@ -13,9 +11,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }) {
     const navigate = useNavigate()
-    const { showFormToast } = useUserInput()
-    const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast, showUpdatePlaceCountryToast, showUpdateAirportNameToast,
-        showUpdateAirportCountryToast, showUpdateAirlineLogoToast } = usePredefinedUserInput()
+    const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast, showUpdatePlaceCountryToast, showUpdateAirportNameToast, showAssignCategoryToast, showRemovePlaceToast,
+        showUpdateAirportCountryToast, showUpdateAirlineLogoToast, showReplaceFitnessToast, showUpdateCategoryMetadataToast, showAssignAirlineCodeToast } = usePredefinedUserInput()
 
     const handleremoveAlbum = () => {
         showRemoveAlbumToast(onAllAlbumsInvalidated)
@@ -36,16 +33,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
                 return properties
             },
-            resolve: fitnessCollection => showFormToast(
-                "Vyber preferovaný záznam:",
-                [
-                    { type: "select", required: true, options: Array.from({ length: fitnessCollection.fitness.length }, (_, index) => ({ id: index, name: "Záznam " + (index + 1) })) }
-                ],
-                fitnessIndex => onFitnessReplaced(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
-                    fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true),
-                "Záznam byl úspěšně nahrazen",
-                "Nepodařilo se nahradit záznam"
-            )
+            resolve: fitnessCollection => showReplaceFitnessToast(fitnessCollection.fitness, fitnessIndex => onFitnessReplaced(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
+                    fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true))
         },
         "PLACE_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {
             name: "Místo s highlighty bez atributů kvality",
@@ -78,17 +67,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kalendář": category.metadata?.publicHolidaysCalendar || "N/A"
                 }
             ),
-            resolve: category => showFormToast(
-                "Zadej metadata kategorie:",
-                [
-                    { label: "Barva", required: false, defaultValue: category.metadata?.color },
-                    { label: "Unicode", required: false, defaultValue: category.metadata?.unicode },
-                    { label: "Kalendář", required: false, defaultValue: category.metadata?.publicHolidaysCalendar }
-                ],
-                async (color, unicode, publicHolidaysCalendar) => onCategoryMetadataChanged(category.id, { color, unicode, publicHolidaysCalendar }),
-                "Metadata byla úspěšně aktualizována",
-                "Při aktualizování metadat došlo k chybě"
-            )
+            resolve: category => showUpdateCategoryMetadataToast(category, metadata => onCategoryMetadataChanged(category.id, metadata))
         },
         "ALBUM_WITHOUT_PLACE": {
             name: "Album bez přiřazeného místa",
@@ -134,15 +113,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kód": code
                 }
             ),
-            resolve: code => showFormToast(
-                "Vyber aerolinku k přiřazení:",
-                [
-                    { type: "select", required: true, options: airlines?.map(airline => ({ id: airline.id, name: airline.name })) }
-                ],
-                async (airlineId) => onAirlineCodeAssigned(airlineId, code),
-                "Aerolinka byla úspěšně přiřazena",
-                "Nepodařilo se přiřadit aerolinku"
-            )
+            resolve: code => showAssignAirlineCodeToast(airlines, airlineId => onAirlineCodeAssigned(airlineId, code))
         },
         "COUNTRY_WITHOUT_ADMINISTRATIVE_DIVISION": {
             name: "Stát bez administrativního dělení",
@@ -162,16 +133,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 }
             ),
             resolve: async (place) => {
-                const categories = await listCategories({ country: place.country, categories: ["administrative"] });
-                return showFormToast(
-                    "Vyber administrativní kategorii k přiřazení:",
-                    [
-                        { type: "select", required: true, options: categories.map(category => ({ id: category.name, name: category.name })) }
-                    ],
-                    async (name) => onGeographicalExtensionCategoryAdded(name, place.country, "administrative", place.latitude, place.longitude),
-                    "Kategorie byla úspěšně přiřazena",
-                    "Při přiřazování kategorie došlo k chybě"
-                )
+                const categories = await listCategories({ country: place.country, categories: ["administrative"] })
+                return showAssignCategoryToast(categories, categoryName => onGeographicalExtensionCategoryAdded(categoryName, place.country, "administrative", place.latitude, place.longitude))
             }
         },
         "PLACE_WITHOUT_COUNTRY": {
@@ -263,15 +226,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     ...Object.fromEntries(places.map((place, idx) => ["Název " + (idx + 1), place.name + (place.dates?.length ? " (" + formatEvents(place.dates.length) + ")" : "")]))
                 }
             ),
-            resolve: places => showFormToast(
-                "Vyber místo k odstranění:",
-                [
-                    { type: "select", required: true, options: places.filter(place => !place.dates?.length).map(place => ({ id: place.id, name: place.name })) }
-                ],
-                onPlaceRemoved,
-                "Místo bylo úspěšně odstraněno",
-                "Nepodařilo se odstranit místo"
-            )
+            resolve: places => showRemovePlaceToast(places.filter(place => !place.dates?.length), onPlaceRemoved)
         },
         "AIRPORT_WITHOUT_LONG_NAME": {
             name: "Nepojmenované letiště",

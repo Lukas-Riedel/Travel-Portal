@@ -8,6 +8,15 @@
                 "message": "Opravdu se chceš odhlásit?",
                 "confirmed": "Byl jsi odhlášen",
                 "failed": "Při odhlašování došlo k chybě"
+            },
+            "login": {
+                "message": "Zadej své přihlašovací údaje:",
+                "label": {
+                    "username": "Uživatelské jméno",
+                    "password": "Heslo"
+                },
+                "confirmed": "Byl jsi přihlášen",
+                "failed": "Při přihlašování došlo k chybě"
             }
         }
     },
@@ -83,6 +92,13 @@
                     "message": "Zadej nové logo aerolinky:",
                     "confirmed": "Logo aerolinky bylo úspěšně aktualizováno",
                     "failed": "Nepodařilo se aktualizovat logo aerolinky"
+                }
+            },
+            "assign": {
+                "code": {
+                    "message": "Vyber aerolinku k přiřazení:",
+                    "confirmed": "Aerolinka byla úspěšně přiřazena",
+                    "failed": "Nepodařilo se přiřadit aerolinku"
                 }
             },
             "remove": {
@@ -238,10 +254,31 @@
             }
         }
     },
+    "fitness": {
+        "prompt": {
+            "replace": {
+                "message": "Vyber preferovaný záznam:",
+                "label": {
+                    "record": "Záznam"
+                },
+                "confirmed": "Záznam byl úspěšně nahrazen",
+                "failed": "Nepodařilo se nahradit záznam"
+            }
+        }
+    },
     "photo": {
         "prompt": {
+            "replace": {
+                "message": "Zadej cestu k nové fotce:",
+                "label": {
+                    "path": "Cesta",
+                    "agent": "Agent"
+                },
+                "confirmed": "Nahrazování fotky bude brzy zahájeno",
+                "failed": "Při nahrazování fotky došlo k chybě"
+            },
             "remove": {
-                "message": "Operavdu chceš odstranit tuto fotku?",
+                "message": "Opravdu chceš odstranit tuto fotku?",
                 "confirmed": "Fotka byla úspěšně odstraněna",
                 "failed": "Nepodařilo se odstranit fotku"
             }
@@ -266,9 +303,16 @@
     "place": {
         "prompt": {
             "remove": {
-                "message": "Opravdu chceš odstranit toto místo?",
-                "confirmed": "Místo bylo úspěšně odstraněno",
-                "failed": "Nepodařilo se odstranit místo"
+                "given": {
+                    "message": "Opravdu chceš odstranit toto místo?",
+                    "confirmed": "Místo bylo úspěšně odstraněno",
+                    "failed": "Nepodařilo se odstranit místo"
+                },
+                "select": {
+                    "message": "Vyber místo k odstranění:",
+                    "confirmed": "Místo bylo úspěšně odstraněno",
+                    "failed": "Nepodařilo se odstranit místo"
+                }
             },
             "refresh": {
                 "excerpt": {
@@ -303,6 +347,29 @@
                     "confirmed": "Státní příslušnost místa byla úspěšně aktualizována",
                     "failed": "Nepodařilo se aktualizovat státní příslušnost místa"
                 }
+            },
+            "assign": {
+                "category": {
+                    "message": "Vyber kategorii k přiřazení:",
+                    "confirmed": "Kategorie byla úspěšně přiřazena",
+                    "failed": "Nepodařilo se přiřadit kategorii"
+                }
+            }
+        }
+    },
+    "category": {
+        "prompt": {
+            "update": {
+                "metadata": {
+                    "message": "Zadej metadata kategorie:",
+                    "label": {
+                        "color": "Barva",
+                        "unicode": "Unikód",
+                        "calendar": "Kalendář"
+                    },
+                    "confirmed": "Metadata kategorie byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat metadata kategorie"
+                }
             }
         }
     },
@@ -335,6 +402,11 @@
     },
     "highlight": {
         "prompt": {
+            "select": {
+                "message": "Zadej počet highlightů k vytvoření:",
+                "confirmed": "Vytváření highlightů bude brzy zahájeno",
+                "failed": "Při vytváření highlightů došlo k chybě"
+            },
             "create": {
                 "message": "Opravdu chceš přidat tento highlight?",
                 "confirmed": "Highlight byl úspěšně vytvořen",
