@@ -6,7 +6,7 @@ import { Place } from "../classes/Place.ts"
 export default function NearbyPlaceTileGrid({ place }) {
     return (
         <TileGrid>
-            {place?.nearbyPlaces?.map(nearbyPlace => new Place(nearbyPlace))?.map(nearbyPlace => (
+            {place?.nearbyPlaces?.map(nearbyPlace => new Place(nearbyPlace))?.filter(nearbyPlace => nearbyPlace.mainHighlight)?.map(nearbyPlace => (
                 <PlaceTile
                     key={nearbyPlace.id}
                     place={nearbyPlace}

@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "generate:api": "node --env-file=.env.development swagger.config.js",
+    "predev": "npm run generate:api",
     "dev": "vite --mode development --config vite.config.development.ts",
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --watch",
-    "start:dev": "npm-run-all --parallel dev typecheck"
+    "start:dev": "npm run generate:api && npm-run-all --parallel dev typecheck"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
