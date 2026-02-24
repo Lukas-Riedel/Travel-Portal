@@ -138,6 +138,8 @@
       key: grafana-password
 - name: ALLOWED_REQUEST_ORIGINS
   value: "{{ .Values.core.origin.whitelist }}"
+- name: COMPOSITE_INDEX_NAME
+  value: "{{ .Values.core.index.composite }}"
 - name: MAX_HIGHLIGHTS_PER_TRIP_COUNT
   value: "{{ .Values.core.highlight.selecting.trip.max }}"
 - name: MAX_HIGHLIGHTS_PER_YEAR_COUNT

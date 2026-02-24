@@ -4,7 +4,7 @@
     use Common\Client\HealthCheckable;
     use Core\OpenLineage\OpenLineageEventManager;
     use OpenSearch\Client;
-    use OpenSearch\GuzzleClientFactory;
+    use OpenSearch\ClientBuilder;
 
     class OpenSearchClient implements SearchClient, HealthCheckable {
         
@@ -21,6 +21,7 @@
         public function __construct(string $host, int $port) {
             $this->host = $host;
             $this->port = $port;
+            $this->openLineageEventManager = null;
         }
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
@@ -44,13 +45,41 @@
         public function createIndex(string $index) : void {
             $this->init();
 
+            // TODO: Externalize the settings of the index to not explicitly mention Czech here.
             $params = array(
                 "index" => $index,
                 "body"  => array(
                     "settings" => array(
                         "index" => array(
                             "number_of_shards" => 1,
-                            "number_of_replicas" => 0
+                            "number_of_replicas" => 0,
+                            "similarity" => array(
+                                "no_length_norm" => array(
+                                    "type" => "BM25",
+                                    "b" => 0
+                                )
+                            )
+                        ),
+                        "analysis" => array(
+                            "filter" => array(
+                                "czech_stop" => array("type" => "stop", "stopwords" => "_czech_"),
+                                "czech_stemmer" => array("type" => "stemmer", "language" => "czech"),
+                                "my_ngram_filter" => array(
+                                    "type" => "edge_ngram",
+                                    "min_gram" => 3,
+                                    "max_gram" => 10
+                                )
+                            ),
+                            "analyzer" => array(
+                                "custom_analyzer" => array(
+                                    "tokenizer" => "standard",
+                                    "filter" => array("lowercase", "asciifolding", "czech_stop", "czech_stemmer")
+                                ),
+                                "ngram_analyzer" => array(
+                                    "tokenizer" => "standard",
+                                    "filter" => array("lowercase", "asciifolding", "my_ngram_filter")
+                                )
+                            )
                         )
                     ),
                     "mappings" => array(
@@ -59,7 +88,14 @@
                             "entity_type" => array("type" => "keyword"),
                             "search_text" => array(
                                 "type" => "text", 
-                                "analyzer" => "standard"
+                                "analyzer" => "custom_analyzer",
+                                "similarity" => "no_length_norm",
+                                "fields" => array(
+                                    "ngram" => array(
+                                        "type" => "text",
+                                        "analyzer" => "ngram_analyzer"
+                                    )
+                                )
                             )
                         )
                     )
@@ -96,7 +132,9 @@
             $this->client->bulk($params);
 
             if (!empty($documents)) {
-                $this->addOpenLineageOutputDataset($index, array_values(array_unique(array_map(fn($document) => array_keys($document), $documents))));
+                foreach ($this->getUniqueArrays(array_map(fn($document) => array_keys($document), $documents)) as &$columns) {
+                    $this->addOpenLineageOutputDataset($index, $columns);
+                }
             }
         }
 
@@ -140,7 +178,9 @@
 
 
             if (!empty($result)) {
-                $this->addOpenLineageInputDataset($index, array_values(array_unique(array_map(fn($item) => $item["source"], $result))));
+                foreach ($this->getUniqueArrays(array_map(fn($item) => array_keys($item["source"]), $result)) as &$columns) {
+                    $this->addOpenLineageInputDataset($index, $columns);
+                }
             }
 
             return $result;
@@ -151,14 +191,14 @@
 
             $this->client->delete(array(
                 "index" => $index,
-                "id"    => $id
+                "id" => $id
             ));
             $this->addOpenLineageOutputDataset($index, null);
         }
 
         private function init() : void {
             if ($this->client === null) {
-                $this->client = (new GuzzleClientFactory())->create(array("base_uri" => sprintf("http://%s:%s", $this->host, $this->port)));
+                $this->client = ClientBuilder::create()->setHosts(array(sprintf("http://%s:%s", $this->host, $this->port)))->build();
             }
         }
 
@@ -176,6 +216,12 @@
                 $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
                 $callable($namespace, $name, $value);
             }
+        }
+
+        private function getUniqueArrays(array $arrays) : array {
+            $serializedArrays = array_map(fn($array) => json_encode($array), $arrays);
+            $uniqueSerializedArrays = array_unique($serializedArrays);
+            return array_map(fn($serializedArray) => json_decode($serializedArray, true), $uniqueSerializedArrays);
         }
     }
 ?>

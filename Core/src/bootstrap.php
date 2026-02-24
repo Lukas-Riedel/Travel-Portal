@@ -32,6 +32,7 @@
     use Core\PlatformListener;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
+    use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CategoryServiceListener;
     use Core\Service\Configuration\ConfigurationService;
@@ -45,6 +46,7 @@
     use Core\Service\Fitness\FitnessServiceListener;
     use Core\Service\Fitness\FitnessStatisticsProvider;
     use Core\Service\Flight\FlightDataConsistencyMonitor;
+    use Core\Service\Flight\FlightIndexer;
     use Core\Service\Flight\FlightService;
     use Core\Service\Flight\FlightServiceListener;
     use Core\Service\Flight\FlightStatisticsProvider;
@@ -54,6 +56,9 @@
     use Core\Service\Highlight\HighlightDataConsistencyMonitor;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightServiceListener;
+    use Core\Service\Index\IndexService;
+    use Core\Service\Index\IndexServiceListener;
+    use Core\Service\Label\LabelIndexer;
     use Core\Service\Label\LabelService;
     use Core\Service\Label\LabelServiceListener;
     use Core\Service\Monitoring\MonitoringService;
@@ -67,6 +72,7 @@
     use Core\Service\Place\PlaceServiceListener;
     use Core\Service\Place\PlaceStatisticsProvider;
     use Core\Service\Photo\PhotoDataConsistencyMonitor;
+    use Core\Service\Place\PlaceIndexer;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Statistics\StatisticsServiceListener;
     use Core\Service\Stay\StayService;
@@ -75,9 +81,11 @@
     use Core\Service\TimeTracking\TimeTrackingService;
     use Core\Service\TimeTracking\TimeTrackingServiceListener;
     use Core\Service\Trip\TripDataConsistencyMonitor;
+    use Core\Service\Trip\TripIndexer;
     use Core\Service\Trip\TripService;
     use Core\Service\Trip\TripServiceListener;
     use Core\Service\Trip\TripStatisticsProvider;
+    use Core\Service\Year\YearIndexer;
     use Core\Service\Year\YearService;
     use Core\Service\Year\YearServiceListener;
     
@@ -174,6 +182,7 @@
         $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
+    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"));
 
     // Statistics providers.
     $statisticsProviders = array(
@@ -198,6 +207,17 @@
         new HighlightDataConsistencyMonitor($placeService, $tripService)
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
+
+    // Entity indexers.
+    $entityIndexers = array(
+        new CategoryIndexer($categoryService),
+        new PlaceIndexer($placeService),
+        new FlightIndexer($flightService),
+        new LabelIndexer($labelService),
+        new TripIndexer($tripService),
+        new YearIndexer($yearService)
+    );
+    $indexService->setEntityIndexers($entityIndexers);
 
     // OpenLineage manager. Switching the producers on or off will require a script restart for changes to take effect.
     $openLineageEventManager = null;
@@ -233,6 +253,7 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        new IndexServiceListener($indexService, $eventPublisher, $scheduler),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

@@ -32,7 +32,7 @@
         "aws/aws-sdk-php": "^3.368",
         "ramsey/uuid": "^4.9",
         "predis/predis": "^3.3",
-        "opensearch-project/opensearch-php": "^2.5",
+        "opensearch-project/opensearch-php": "2.3.0",
         "guzzlehttp/guzzle": "^7.10"
     },
     "config": {

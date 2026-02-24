@@ -74,6 +74,8 @@ core:
     highlight:
       full: highlight-photos
       thumbnail: highlight-thumbnails
+  index:
+    composite: travel-portal-composite
   highlight:
     selecting:
       trip:

@@ -199,6 +199,10 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
         }
 
+        public static function IndexInvalidated() : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array());
+        }
+
         public static function CategoryStatisticsUpdated(string $categoryId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("categoryId" => $categoryId));
         }
