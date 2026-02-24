@@ -123,6 +123,7 @@
             $this->init();
             
             $this->redisClient->del($key);
+            $this->addOpenLineageOutputDataset($key, null); 
         }
 
         public function getSortedSet(string $key) : SortedSet {
@@ -132,7 +133,10 @@
         public function addToSortedSet(string $key, mixed $value, int $score) : void {
             $this->init();
 
-            $this->redisClient->zadd($key, "GT", $score, json_encode($value));
+            $wasAdded = $this->redisClient->zadd($key, "GT", $score, json_encode($value));
+            if ($wasAdded) {
+                $this->addOpenLineageOutputDataset($key, $value);
+            }
         }
 
         public function removeFromSortedSet(string $key, int $minScore, int $maxScore) : array {
@@ -149,6 +153,7 @@
             LUA;
 
             $result = $this->redisClient->eval($lua, 1, $key, $minScore, $maxScore);
+            $this->addOpenLineageOutputDataset($key, null); 
             return is_array($result) ? array_map(fn($value) => json_decode($value, true), $result) : array();
         }
 

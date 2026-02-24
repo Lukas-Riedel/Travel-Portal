@@ -21,6 +21,7 @@
     use Core\Client\Forecast\YrNoActualForecastClient;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
+    use Core\Client\Search\OpenSearchClient;
     use Core\Event\EventPublisher;
     use Core\Event\RabbitMQEventListener;
     use Core\Event\Scheduler;
@@ -122,12 +123,14 @@
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), getenv("RMQ_PREFETCH_COUNT"), $databaseClient, $loggingContext, $logger);
     $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
+    $searchClient = new OpenSearchClient(getenv("OPENSEARCH_HOST"), getenv("OPENSEARCH_PORT"));
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
     $healthCheckables = array(
         $distributedCacheClient,
         $databaseClient,
-        $messagingClient
+        $messagingClient,
+        $searchClient
     );
 
     // Event producers.
@@ -208,7 +211,8 @@
         $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
         $distributedCacheClient->setOpenLineageEventManager($openLineageEventManager);
         $databaseClient->setOpenLineageEventManager($openLineageEventManager);
-        $httpClient->setOpenLineageEventManager($openLineageEventManager);        
+        $httpClient->setOpenLineageEventManager($openLineageEventManager);      
+        $searchClient->setOpenLineageEventManager($openLineageEventManager);  
     }
     
     // Event listeners.
