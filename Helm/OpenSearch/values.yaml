@@ -1,0 +1,18 @@
+opensearch:
+  enabled: true
+  image: opensearchproject/opensearch
+  tag: 2.11.1
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 9200
+    host: opensearch.lriedel.cz
+  dashboards:
+    enabled: true
+    image: opensearchproject/opensearch-dashboards
+    tag: 2.11.1
+    replicas: 1
+    service:
+      type: ClusterIP
+      port: 5601
+      host: opensearch.lriedel.cz

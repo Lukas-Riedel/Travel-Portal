@@ -1,0 +1,13 @@
+{{- if .Values.opensearch.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  type: {{ .Values.opensearch.service.type }}
+  ports:
+    - port: {{ .Values.opensearch.service.port }}
+      targetPort: {{ .Values.opensearch.service.port }}
+  selector:
+    app: {{ .Release.Name }}
+{{- end }}

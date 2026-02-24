@@ -1,0 +1,9 @@
+{{- if .Values.opensearch.dashboards.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Release.Name }}-dashboards-auth-middleware
+spec:
+  basicAuth:
+    secret: {{ .Release.Name }}-dashboards-auth-middleware-secret
+{{- end }}

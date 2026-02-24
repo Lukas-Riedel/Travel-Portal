@@ -1,0 +1,13 @@
+{{- if .Values.opensearch.dashboards.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-dashboards
+spec:
+  type: {{ .Values.opensearch.dashboards.service.type }}
+  ports:
+    - port: {{ .Values.opensearch.dashboards.service.port }}
+      targetPort: {{ .Values.opensearch.dashboards.service.port }}
+  selector:
+    app: {{ .Release.Name }}-dashboards
+{{- end }}

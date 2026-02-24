@@ -1,0 +1,20 @@
+{{- if .Values.opensearch.dashboards.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Release.Name }}-dashboards-web-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.opensearch.dashboards.service.host }}`)
+      kind: Rule
+      services:
+        - name: keda-add-ons-http-interceptor-proxy
+          namespace: keda
+          port: 8080
+      middlewares:
+        - name: {{ .Release.Name }}-dashboards-auth-middleware
+  tls:
+    certResolver: letsencrypt
+{{- end }}

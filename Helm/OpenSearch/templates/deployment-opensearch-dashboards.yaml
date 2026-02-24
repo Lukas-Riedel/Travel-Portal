@@ -1,0 +1,45 @@
+{{- if .Values.opensearch.dashboards.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-dashboards
+spec:
+  replicas: 0
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-dashboards
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-dashboards
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-dashboards
+          image: "{{ .Values.opensearch.dashboards.image }}:{{ .Values.opensearch.dashboards.tag }}"
+          ports:
+            - containerPort: {{ .Values.opensearch.dashboards.service.port }}             
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: {{ .Values.opensearch.dashboards.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: {{ .Values.opensearch.dashboards.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 1
+          env:
+            - name: OPENSEARCH_HOSTS
+              value: "http://{{ .Release.Name }}:{{ .Values.opensearch.service.port }}"
+            - name: DISABLE_SECURITY_DASHBOARDS_PLUGIN
+              value: "true"
+{{- end }}
