@@ -120,6 +120,44 @@
             }
         }
 
+        public function reassignAlias(string $alias, string $index) : void {
+            $this->init();
+
+            $oldIndices = array();
+            try {
+                $oldIndices = array_keys($this->client->indices()->getAlias(["name" => $alias]));
+            }
+            catch (\Throwable $e) {
+                // The alias does not exist -> the array will remain empty.
+            }
+
+            $actions = array(
+                array("add" => array("index" => $index, "alias" => $alias))
+            );
+
+            foreach ($oldIndices as &$oldIndex) {
+                $actions[] = array("remove" => array("index" => $oldIndex, "alias" => $alias));
+            }
+
+            $this->client->indices()->updateAliases(array("body" => array("actions" => $actions)));
+
+            foreach ($oldIndices as &$oldIndex) {
+                $remainingAliases = $this->client->indices()->getAlias(array("index" => $oldIndex));
+        
+                if (empty($remainingAliases[$oldIndex]["aliases"])) {
+                    try {
+                        $this->deleteIndex($oldIndex);
+                    }
+                    catch (\Throwable $e) {
+                        // Do nothing. The alias has already been deleted.
+                    }
+                }
+            }
+            
+            $this->addOpenLineageInputDataset($index, null);
+            $this->addOpenLineageOutputDataset($alias, null);
+        }
+
         public function index(string $index, array $documents) : void {
             $this->init();
 
@@ -169,7 +207,7 @@
                                             "multi_match" => array(
                                                 "query" => $query,
                                                 "fields" => array(
-                                                    // TODO: This shouldn't be in this generic query.
+                                                    // TODO: This should be configurable.
                                                     "entity_name^50",
                                                     "search_text^1"
                                                 ),

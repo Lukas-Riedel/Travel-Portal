@@ -8,6 +8,7 @@
     use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripService;
     use Core\Service\Year\YearService;
+    use Ramsey\Uuid\Uuid;
 
     class IndexService {
 
@@ -62,8 +63,8 @@
         }
 
         public function index() : void {
-            $this->searchClient->deleteIndex($this->compositeIndexName);
-            $this->searchClient->createIndex($this->compositeIndexName);
+            $temporaryIndexName = Uuid::uuid4()->toString();
+            $this->searchClient->createIndex($temporaryIndexName);
 
             foreach (IndexableEntityType::cases() as &$entityType) {
                 foreach ($this->entityIndexers as &$entityIndexer) {
@@ -87,10 +88,12 @@
                     }
 
                     foreach (array_chunk($mappedDocuments, self::BATCH_SIZE) as &$batch) {
-                        $this->searchClient->index($this->compositeIndexName, $batch);
+                        $this->searchClient->index($temporaryIndexName, $batch);
                     }
                 }
             }
+
+            $this->searchClient->reassignAlias($this->compositeIndexName, $temporaryIndexName);
         }
 
         private function getId(IndexableEntityType $entityType, string $id) : string {
