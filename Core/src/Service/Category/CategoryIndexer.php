@@ -3,13 +3,18 @@
 
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class CategoryIndexer implements EntityIndexer {
 
         private readonly CategoryService $categoryService;
 
-        public function __construct(CategoryService $categoryService) {
+        private readonly PlaceService $placeService;
+
+        public function __construct(CategoryService $categoryService, PlaceService $placeService) {
             $this->categoryService = $categoryService;
+            $this->placeService = $placeService;
         }
 
         public function index(IndexableEntityType $entityType) : array {
@@ -19,7 +24,10 @@
                 $categories = $this->categoryService->getCategories(null, CategoryCategory::values(), array());
 
                 foreach ($categories as &$category) {
-                    $result[$category->getId()] = array($category->getName());
+                    $categoryPlaces = $this->placeService->getRegularPlaces($category->getId(), null, null, null, null, null, null, null, time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
+                    if (count($categoryPlaces) > 0) {
+                        $result[$category->getId()] = array($category->getName());                        
+                    }
                 }
             }
 

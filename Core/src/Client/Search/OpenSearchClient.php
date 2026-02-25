@@ -169,7 +169,8 @@
                                             "multi_match" => array(
                                                 "query" => $query,
                                                 "fields" => array(
-                                                    "entity_name^10",
+                                                    // TODO: This shouldn't be in this generic query.
+                                                    "entity_name^50",
                                                     "search_text^1"
                                                 ),
                                                 "type" => "best_fields",
@@ -217,7 +218,6 @@
             $response = $this->client->search($params);
             
             $result = array_map(fn($hit) => $hit["_source"], $response["hits"]["hits"] ?? array());
-
 
             if (!empty($result)) {
                 foreach ($this->getUniqueArrays(array_map(fn($item) => array_keys($item), $result)) as &$columns) {

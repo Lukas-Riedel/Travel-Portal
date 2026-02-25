@@ -7,12 +7,21 @@ import type {
     Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
     DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
-    Location
+    Location,
+    SearchResult
 } from "../types/CoreSwaggerTypes.ts"
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
+
+export const search = async (query: string, limit?: number, config?: AxiosRequestConfig): Promise<SearchResult[]> =>
+    coreClient.get<SearchResult[]>(createQueryPath("search",
+        {
+            query,
+            limit
+        }
+    ), config).then(extractData)
 
 export const createVoucher = async (code: string, issuer: string, value: number, currency: string, expiration?: number): Promise<Voucher> =>
     coreClient.post<Voucher>("vouchers",

@@ -13,6 +13,7 @@ import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 
+// TODO: This is duplicated in MainLayout.
 const categoryCategories = {
     continent: "Kontinent",
     country: "Stát",

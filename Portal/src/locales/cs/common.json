@@ -21,6 +21,7 @@
         }
     },
     "menu": {
+        "search": "Hledat",
         "feed": "Nedávné",
         "trips": "Výlety",
         "places": "Místa",

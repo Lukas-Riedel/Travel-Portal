@@ -19,7 +19,7 @@
                 $trips = $this->tripService->getRegularTrips(null, null, time(), array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
 
                 foreach ($trips as &$trip) {
-                    $terms = array($trip->getName(), $trip->getYear());
+                    $terms = array($trip->getFullName());
 
                     foreach ($trip->getCountries() as &$country) {
                         $terms[] = $country;

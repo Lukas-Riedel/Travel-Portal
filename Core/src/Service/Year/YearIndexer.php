@@ -5,6 +5,8 @@
     use Core\Service\Index\IndexableEntityType;
 
     class YearIndexer implements EntityIndexer {
+        
+        private const YEAR_FORMAT = "Y";
 
         private readonly YearService $yearService;
 
@@ -19,7 +21,9 @@
                 $years = $this->yearService->getYears(array());
 
                 foreach ($years as &$year) {
-                    $result[$year->getId()] = array($year->getId());
+                    if ($year->getId() <= date(self::YEAR_FORMAT)) {
+                        $result[$year->getId()] = array($year->getId());
+                    }
                 }
             }
 
