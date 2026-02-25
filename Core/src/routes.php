@@ -17,6 +17,7 @@
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
     use Core\Resource\RegionResource;
+    use Core\Resource\SearchResource;
     use Core\Resource\StatisticsResource;
     use Core\Resource\TrackerResource;
     use Core\Resource\SubscriptionResource;
@@ -26,7 +27,7 @@
     use Slim\App;
 
     return function(App $app, string $appName, string $versionTag, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
-        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService, $statisticsService, $timeTrackingService,
+        $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService, $statisticsService, $timeTrackingService, $indexService,
         $yearService, $tripService, $placeService, $noteService, $documentService, $generativeContentClient, $photoService, $eventPublisher, $logger, $healthCheckables) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService, $geocodingService);
@@ -50,6 +51,7 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         GenerativeContentResource::register($app, $generativeContentClient, $configurationService);
+        SearchResource::register($app, $indexService);
         SwaggerResource::register($app, $coreBaseUrl);
         ManagementResource::register($app, $appName, $versionTag, $healthCheckables);
     };

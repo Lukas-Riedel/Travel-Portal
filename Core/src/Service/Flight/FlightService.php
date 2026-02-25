@@ -102,8 +102,16 @@
             return current(array_filter($this->getAllAirports(), fn($airport) => $airport->getId() === $airportId)) ?: null;
         }
 
+        public function getAirportIdentifier(string $airportId) : ?AirportIdentifier {
+            return $this->getAirport($airportId)?->getAirportIdentifier();
+        }
+
         public function getAirline(string $airlineId) : ?Airline {
             return $this->flightMapper->selectAirline($airlineId);
+        }
+
+        public function getAirlineIdentifier(string $airlineId) : ?AirlineIdentifier {
+            return $this->getAirline($airlineId)?->getAirlineIdentifier();
         }
 
         public function getUnassignedAirlineCodes() : array {

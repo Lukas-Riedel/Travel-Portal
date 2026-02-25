@@ -86,6 +86,11 @@
                         "properties" => array(
                             "id" => array("type" => "keyword"),
                             "entity_type" => array("type" => "keyword"),
+                            "entity_name" => array(
+                                "type" => "text",
+                                "analyzer" => "custom_analyzer",
+                                "similarity" => "no_length_norm"
+                            ),
                             "search_text" => array(
                                 "type" => "text", 
                                 "analyzer" => "custom_analyzer",
@@ -138,25 +143,66 @@
             }
         }
 
-        public function search(string $index, string $query, array $filters, int $limit) : array {
+        public function search(string $index, string $query, array $weights, array $filters, int $limit) : array {
             $this->init();
+
+            $functions = array();
+            foreach ($weights as $field => $terms) {
+                foreach ($terms as $term => $priority) {
+                    $functions[] = array(
+                        "filter" => array("term" => array($field => $term)),
+                        "weight" => $priority
+                    );
+                }
+            }
 
             $params = array(
                 "index" => $index,
                 "body"  => array(
                     "size" => $limit,
                     "query" => array(
-                        "bool" => array(
-                            "must" => array(
-                                "match" => array(
-                                    "search_text" => array(
-                                        "query" => $query,
-                                        "fuzziness" => "AUTO",
-                                        "operator" => "and"
-                                    )
+                        "function_score" => array(
+                            "query" => array(
+                                "bool" => array(
+                                    "should" => array(
+                                        array(
+                                            "multi_match" => array(
+                                                "query" => $query,
+                                                "fields" => array(
+                                                    "entity_name^10",
+                                                    "search_text^1"
+                                                ),
+                                                "type" => "best_fields",
+                                                "operator" => "and",
+                                                "fuzziness" => "AUTO",
+                                                "prefix_length" => 2
+                                            )
+                                        ),
+                                        array(
+                                            "match" => array(
+                                                "search_text.ngram" => array(
+                                                    "query" => $query,
+                                                    "boost" => 0.2
+                                                )
+                                            )
+                                        ),
+                                        array(
+                                            "match" => array(
+                                                "search_text" => array(
+                                                    "query" => $query,
+                                                    "fuzziness" => "AUTO",
+                                                    "prefix_length" => 2,
+                                                    "boost" => 0.5
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    "minimum_should_match" => 1
                                 )
                             ),
-                            "filter" => array()
+                            "functions" => $functions,
+                            "score_mode" => "multiply",
+                            "boost_mode" => "sum"
                         )
                     )
                 )
@@ -170,15 +216,11 @@
 
             $response = $this->client->search($params);
             
-            $result = array_map(fn($hit) => array(
-                "id" => $hit["_id"],
-                "score" => $hit["_score"],
-                "source" => $hit["_source"]
-            ), $response["hits"]["hits"] ?? array());
+            $result = array_map(fn($hit) => $hit["_source"], $response["hits"]["hits"] ?? array());
 
 
             if (!empty($result)) {
-                foreach ($this->getUniqueArrays(array_map(fn($item) => array_keys($item["source"]), $result)) as &$columns) {
+                foreach ($this->getUniqueArrays(array_map(fn($item) => array_keys($item), $result)) as &$columns) {
                     $this->addOpenLineageInputDataset($index, $columns);
                 }
             }

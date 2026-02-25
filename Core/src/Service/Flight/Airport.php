@@ -115,6 +115,10 @@
             return $this->timezone;
         }
 
+        public function getAirportIdentifier() : AirportIdentifier {
+            return new AirportIdentifier($this->id, $this->longName, $this->code, $this->country, $this->latitude, $this->longitude, $this->timezone);
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);
