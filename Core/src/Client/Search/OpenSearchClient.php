@@ -181,7 +181,7 @@
             }
         }
 
-        public function search(string $index, string $query, array $weights, array $filters, int $limit) : array {
+        public function search(string $index, string $query, array $weights, array $multipliers, array $filters, int $limit) : array {
             $this->init();
 
             $functions = array();
@@ -192,6 +192,11 @@
                         "weight" => $priority
                     );
                 }
+            }
+
+            $fields = array();
+            foreach ($multipliers as $term => $multiplier) {
+                $fields[] = $term . "^" . $multiplier;
             }
 
             $params = array(
@@ -206,11 +211,7 @@
                                         array(
                                             "multi_match" => array(
                                                 "query" => $query,
-                                                "fields" => array(
-                                                    // TODO: This should be configurable.
-                                                    "entity_name^50",
-                                                    "search_text^1"
-                                                ),
+                                                "fields" => $fields,
                                                 "type" => "best_fields",
                                                 "operator" => "and",
                                                 "fuzziness" => "AUTO",
@@ -248,8 +249,8 @@
             );
 
             foreach ($filters as $key => $value) {
-                $params["body"]["query"]["bool"]["filter"][] = array(
-                    "term" => array($key => $value)
+                $params["body"]["query"]["function_score"]["query"]["bool"]["filter"][] = array(
+                    "terms" => array($key => $value)
                 );
             }
 

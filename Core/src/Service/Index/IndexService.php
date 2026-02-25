@@ -44,18 +44,15 @@
         }
 
         public function search(string $query, int $limit, array $allowedEntityTypes) : array {
-            $rawResults = $this->searchClient->search($this->compositeIndexName, $query, $this->getWeights(), array(), $limit);
+            $rawResults = $this->searchClient->search($this->compositeIndexName, $query, $this->getWeights(), $this->getMultipliers(), $this->getFilters($allowedEntityTypes), $limit);
 
             $results = array();
             foreach ($rawResults as &$rawResult) {
                 $entityType = IndexableEntityType::from($rawResult["entity_type"]);
+                $entity = $this->getEntity($entityType, $rawResult["entity_id"]);
 
-                if (in_array($entityType, $allowedEntityTypes)) {
-                    $entity = $this->getEntity($entityType, $rawResult["entity_id"]);
-
-                    if ($entity !== null) {
-                        $results[] = new SearchResult($entityType, $entity);
-                    }
+                if ($entity !== null) {
+                    $results[] = new SearchResult($entityType, $entity);
                 }
             }
 
@@ -126,6 +123,19 @@
                 $weights[$type->value] = $type->getPriority();
             }
             return array("entity_type" => $weights);
+        }
+
+        private function getMultipliers() : array {
+            return array(
+                "entity_name" => 100,
+                "search_text" => 1
+            );
+        }
+
+        private function getFilters(array $allowedEntityTypes) : array {
+            return array(
+                "entity_type" => array_map(fn($entityType) => $entityType->value, $allowedEntityTypes)
+            );
         }
     }
 ?>
