@@ -62,38 +62,46 @@
             return $results;
         }
 
-        public function index() : void {
+        public function reindex() : void {
             $temporaryIndexName = Uuid::uuid4()->toString();
             $this->searchClient->createIndex($temporaryIndexName);
 
             foreach (IndexableEntityType::cases() as &$entityType) {
-                foreach ($this->entityIndexers as &$entityIndexer) {
-                    $documents = $entityIndexer->index($entityType);
-
-                    if (empty($documents)) {
-                        continue;
-                    }
-
-                    $mappedDocuments = array();
-                    foreach ($documents as $id => $terms) {
-                        $name = !empty($terms) ? $terms[0] : "";
-
-                        $mappedDocuments[] = array(
-                            "id" => $this->getId($entityType, $id),
-                            "entity_type" => $entityType->value,
-                            "entity_id" => (string) $id,
-                            "entity_name" => $name,
-                            "search_text" => implode(" ", array_unique($terms))
-                        );
-                    }
-
-                    foreach (array_chunk($mappedDocuments, self::BATCH_SIZE) as &$batch) {
-                        $this->searchClient->index($temporaryIndexName, $batch);
-                    }
-                }
+                $this->dOIndex($temporaryIndexName, $entityType);
             }
 
             $this->searchClient->reassignAlias($this->compositeIndexName, $temporaryIndexName);
+        }
+
+        public function index(IndexableEntityType $entityType) : void {
+            $this->doIndex($this->compositeIndexName, $entityType);
+        }
+
+        private function doIndex(string $index, IndexableEntityType $entityType) : void {
+            foreach ($this->entityIndexers as &$entityIndexer) {
+                $documents = $entityIndexer->index($entityType);
+
+                if (empty($documents)) {
+                    continue;
+                }
+
+                $mappedDocuments = array();
+                foreach ($documents as $id => $terms) {
+                    $name = !empty($terms) ? $terms[0] : "";
+
+                    $mappedDocuments[] = array(
+                        "id" => $this->getId($entityType, $id),
+                        "entity_type" => $entityType->value,
+                        "entity_id" => (string) $id,
+                        "entity_name" => $name,
+                        "search_text" => implode(" ", array_unique($terms))
+                    );
+                }
+
+                foreach (array_chunk($mappedDocuments, self::BATCH_SIZE) as &$batch) {
+                    $this->searchClient->index($index, $batch);
+                }
+            }
         }
 
         private function getId(IndexableEntityType $entityType, string $id) : string {

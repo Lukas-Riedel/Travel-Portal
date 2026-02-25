@@ -63,6 +63,7 @@
                 foreach ($place->getDates() as &$date) {
                     $trip = $date->getTrip();
                     if ($trip !== null) {
+                        // TODO: This shouldn't be here - the statistics service should be notified in a different way.
                         $this->eventPublisher->publish(Event::TripStatisticsInvalidated($trip->getId()));
                     }
                 }

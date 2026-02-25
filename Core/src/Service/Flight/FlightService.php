@@ -16,6 +16,7 @@
     use Core\Client\Flight\FlightClient;
     use Core\Common\CommonConstants;
 
+    // TODO: Missing AirlineUpdated and AirportUpdated events (listeners should be in IndexServiceListener and StatisticsServiceListener).
     class FlightService {
 
         private const AIRPORT_LOCATION_FORMAT = "%s Airport";
@@ -195,7 +196,7 @@
             $sanitizer = new Sanitizer();
             $allowedTags = new AllowedTags(array(
                 "svg" => array("xmlns", "viewBox", "width", "height"),
-                "g"   => array("transform"),
+                "g" => array("transform"),
                 "path"=> array("d", "fill", "stroke", "stroke-width", "transform")
             ));
 

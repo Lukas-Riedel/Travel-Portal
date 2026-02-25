@@ -3,7 +3,8 @@
 
     use Core\Service\Configuration\ConfigurationService;
     use Core\Client\Database\DatabaseClient;
-
+    
+    // TODO: Missing LabelUpdated event (the listener should be in IndexServiceListener).
     class LabelService {
 
         private readonly LabelMapper $labelMapper;

@@ -58,7 +58,6 @@
             return $this->publish($method->invokeArgs(null, $orderedArgs));
         }
 
-        // TODO: Go through all events and make sure it is fired meaningfuly (e.g., ForecastService shouldn't care about invalidating statistics)
         public function publish(Event $event, ?int $publishTimestamp = null) : ?string {
             if ($publishTimestamp !== null) {
                 $this->distributedCacheClient->getSortedSet(CommonConstants::DELAYED_EVENTS_SORTED_SET_KEY)->add($event, $publishTimestamp);
