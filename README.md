@@ -55,6 +55,7 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 * **MinIO (S3):** High-speed media caching to bypass Google Photos API limitations.
 * **Redis:** Used exclusively for data with specific **TTL (Time To Live)**. No traditional sessions are used; Redis handles the lifecycle of temporary data automatically.
 * **PostgreSQL:** The robust relational foundation for all structured business data.
+* **OpenSearch:** Serves as the primary engine for high-performance discovery, decoupling search heavy-lifting from the relational database. I intentionally opted for **OpenSearch over Elasticsearch** due to its significantly lower resource overhead and better alignment with a resource-constrained Kubernetes environment. It provides full-text search and geospatial indexing without the heavy memory footprint and licensing complexities of its predecessor.
 
 ---
 
@@ -74,6 +75,9 @@ Data integrity is critical. During **every deployment**, a GitHub Action trigger
 
 ### 📊 Monitoring & Observability
 * **Grafana:** Centralized dashboard for tracking system logs and health.
+* **OpenLineage:** To ensure data integrity across this distributed ecosystem, the system implements **OpenLineage**. A dedicated producer captures lineage events (metadata about data transformations and movements) and sends them to a central server. This allows for:
+    * **Visualizing Data Flow:** Tracking how a Google Calendar event transforms into a rich AI-narrative.
+    * **Impact Analysis:** Understanding how a schema change in one service affects downstream search indexes or mapping data.
 * **GitHub Actions:** Full CI/CD pipeline. Every commit builds and deploys via **Helm charts** into the **Kubernetes (K8s) cluster**.
 
 ---
