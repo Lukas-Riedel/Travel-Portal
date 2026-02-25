@@ -230,7 +230,7 @@ export default function MainLayout({ children }) {
                                     {label}
                                 </Link>
                             ) : (
-                                <span
+                                <button
                                     key={label}
                                     onClick={onClick}
                                     className={`relative inline-block px-2 py-1 font-medium transition-colors duration-200 cursor-pointer
@@ -239,7 +239,7 @@ export default function MainLayout({ children }) {
                                             : "text-gray-700 hover:text-blue-700 hover:after:absolute hover:after:left-0 hover:after:bottom-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-blue-600"
                                         }`}>
                                     {label}
-                                </span>
+                                </button>
                             )
                         })}
                     </nav>
@@ -247,16 +247,34 @@ export default function MainLayout({ children }) {
                 {isMenuOpen && (
                     <nav className="md:hidden bg-white border-t border-gray-200">
                         <ul className="flex flex-col p-4 space-y-2 items-center text-center">
-                            {filteredItems.map(({ label, to }) => (
+                            {filteredItems.map(({ label, to, onClick }) => (
                                 <li
-                                    key={to}
+                                    key={label}
                                     className="w-full">
-                                    <Link
-                                        to={to}
-                                        className="block w-full px-3 py-2 rounded hover:bg-gray-100"
-                                        onClick={() => setIsMenuOpen(false)}>
-                                        {label}
-                                    </Link>
+                                    {to ? (
+                                        <Link
+                                            to={to}
+                                            className="block w-full px-3 py-2 rounded hover:bg-gray-100"
+                                            onClick={() => {
+                                                if (onClick) {
+                                                    onClick()
+                                                }
+                                                setIsMenuOpen(false)
+                                            }}>
+                                            {label}
+                                        </Link>
+                                    ) : (
+                                        <button
+                                            className="block w-full px-3 py-2 rounded hover:bg-gray-100"
+                                            onClick={() => {
+                                                if (onClick) {
+                                                    onClick()
+                                                }
+                                                setIsMenuOpen(false)
+                                            }}>
+                                            {label}
+                                        </button>
+                                    )}
                                 </li>
                             ))}
                         </ul>
