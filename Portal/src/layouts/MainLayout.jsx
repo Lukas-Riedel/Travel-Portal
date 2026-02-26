@@ -282,8 +282,12 @@ export default function MainLayout({ children }) {
                 )}
             </header>
             {isSearchOpen && (
-                <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[10vh] bg-gray-900/50 backdrop-blur-sm">
-                    <div className="w-full max-w-xl bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div
+                    className="fixed inset-0 z-[60] flex items-start justify-center pt-[10vh] bg-gray-900/50 backdrop-blur-sm"
+                    onClick={() => setIsSearchOpen(false)}>
+                    <div
+                        className="w-full max-w-xl bg-white rounded-xl shadow-2xl overflow-hidden"
+                        onClick={e => e.stopPropagation()}>
                         <div className="flex items-center p-4 border-b">
                             <Search className="text-gray-400 mr-3" />
                             <input
@@ -323,7 +327,8 @@ export default function MainLayout({ children }) {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
             <main className="max-w-6xl mx-auto mt-8 mb-8 rounded-2xl px-2 py-8 md:px-8 md:py-8 bg-white">
                 {children}
                 <div className="flex justify-center mt-5">
@@ -334,7 +339,7 @@ export default function MainLayout({ children }) {
                     </button>
                 </div>
             </main>
-        </div>
+        </div >
     )
 }
 
