@@ -297,6 +297,25 @@
                 ->getFirstColumn("external_id");
         }
 
+        public function selectPhotoEmbedding(string $photoId) : ?array {      
+            $sql = <<<'SQL'
+                SELECT embedding
+                FROM photo_identifier
+                WHERE id = ?
+            SQL;
+            
+            $rawEmbedding = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($photoId)
+                ->getFirstColumn("embedding");
+                
+            if ($rawEmbedding === null) {
+                return null;
+            }
+
+            return json_decode($rawEmbedding, true);
+        }
+
         public function selectAlbumIdsWithOutdatedPhotos() : array {
             $sql = <<<'SQL'
                 SELECT a.id
@@ -438,6 +457,28 @@
                 ->execute() === 1;
         }
 
+        public function insertPhotoId(string $externalId, bool $replaced, array $embedding) : bool {    
+            $sql = <<<'SQL'
+                INSERT INTO photo_identifier (
+                    external_id,
+                    replaced,
+                    reviewed,
+                    embedding
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    NULL,
+                    ?
+                )
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($externalId, $replaced ? "true" : "false", "[" . implode(",", $embedding) . "]")
+                ->execute() === 1;
+        }
+
         public function updateAlbumReviewed(string $albumId) : bool {
             $sql = <<<'SQL'
                 UPDATE photo_identifier pi
@@ -453,23 +494,16 @@
                 ->execute() > 0;
         }
 
-        public function insertPhotoId(string $externalId, bool $replaced) : bool {    
+        public function updatePhotoEmbedding(string $photoId, array $embedding) : bool {
             $sql = <<<'SQL'
-                INSERT INTO photo_identifier (
-                    external_id,
-                    replaced,
-                    reviewed
-                )
-                VALUES (
-                    ?,
-                    ?,
-                    NULL
-                )
+                UPDATE photo_identifier
+                SET embedding = ?
+                WHERE id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($externalId, $replaced ? "true" : "false")
+                ->withParameters("[" . implode(",", $embedding) . "]", $photoId)
                 ->execute() === 1;
         }
 

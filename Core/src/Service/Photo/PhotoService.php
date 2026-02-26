@@ -13,6 +13,7 @@
     use Core\Client\Database\TransactionManager;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\HttpClient;
+    use Core\Service\Embedding\EmbeddingService;
 
     class PhotoService {
 
@@ -22,6 +23,8 @@
         private const ALBUM_PHOTOS_CACHE_TTL = 1800;
 
         private readonly PhotoMapper $photoMapper;
+
+        private readonly EmbeddingService $embeddingService;
 
         private readonly GoogleClient $googleClient;
         
@@ -39,12 +42,15 @@
         private readonly string $albumThumbnailBucket;
         private readonly int $thumbnailWidth;
         private readonly int $thumbnailHeight;
+        private readonly int $embeddingWidth;
+        private readonly int $embeddingHeight;
 
-        public function __construct(DatabaseClient $databaseClient, GoogleClient $googleClient,
+        public function __construct(DatabaseClient $databaseClient, EmbeddingService $embeddingService, GoogleClient $googleClient,
             EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, CacheClient $distributedCacheClient,
             HttpClient $httpClient, string $coreBaseUrl, string $albumThumbnailBucket, int $thumbnailWidth, int $thumbnailHeight,
-            int $indoorPhotoIsoThreshold) {
+            int $embeddingWidth, int $embeddingHeight, int $indoorPhotoIsoThreshold) {
             $this->photoMapper = new PhotoMapper($databaseClient, $googleClient, $indoorPhotoIsoThreshold);
+            $this->embeddingService = $embeddingService;
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cloudStorageClient = $cloudStorageClient;
@@ -55,6 +61,8 @@
             $this->albumThumbnailBucket = $albumThumbnailBucket;
             $this->thumbnailWidth = $thumbnailWidth;
             $this->thumbnailHeight = $thumbnailHeight;
+            $this->embeddingWidth = $embeddingWidth;
+            $this->embeddingHeight = $embeddingHeight;
         }
 
         public function getAllAlbums() : array {
@@ -185,7 +193,7 @@
                     $sunAzimuth = $sunPosition->azimuth * 180 / M_PI;
 
                     $photos[] = new Photo(
-                        $this->getOrCreatePhotoId($mediaItem["id"]), 
+                        $this->getOrCreatePhotoId($mediaItem["id"], false, $mediaItem["baseUrl"]), 
                         fn() => $this->getGooglePhotoProxyUrl($mediaItem["baseUrl"]),
                         $mediaItem["productUrl"],
                         implode(" ", array_filter(array($mediaItem["mediaMetadata"]["photo"]["cameraMake"] ?? null, $mediaItem["mediaMetadata"]["photo"]["cameraModel"] ?? null))) ?: null,
@@ -287,7 +295,7 @@
                         $objectKeys[] = $objectKey;
                         $mainImageUrl = $this->cloudStorageClient->getPath($this->albumThumbnailBucket, $objectKey);
                         
-                        $mainPhotoId = $this->getOrCreatePhotoId($album["coverPhotoMediaItemId"]);
+                        $mainPhotoId = $this->getOrCreatePhotoId($album["coverPhotoMediaItemId"], false, $album["coverPhotoBaseUrl"]);
                     }
         
                     $imagesCount = 0;
@@ -366,18 +374,21 @@
                 );
 
                 $oldPhotoExternalId = $this->photoMapper->selectPhotoExternalId($pendingPhoto->getReplacedPhotoId());
+                $oldPhotoEmbedding = $this->photoMapper->selectPhotoEmbedding($pendingPhoto->getReplacedPhotoId());
                 $albumExternalId = $this->photoMapper->selectAlbumExternalId($albumId);
 
-                $this->transactionManager->executeAtomically(function() use(&$albumId, &$albumExternalId, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
+                // TODO: Do this in a batch.
+                $this->transactionManager->executeAtomically(function() use(&$albumId, &$albumExternalId, &$oldPhotoEmbedding, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
                     $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
-                    $createdPhotoExternalId = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())["newMediaItemResults"][0]["mediaItem"]["id"];
+                    $createdPhoto = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())["newMediaItemResults"][0]["mediaItem"];
 
-                    $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhotoExternalId);                
+                    $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhoto["id"]);
+                    $this->photoMapper->updatePhotoEmbedding($pendingPhoto->getReplacedPhotoId(), $this->getPhotoEmbedding($createdPhoto["baseUrl"]));                
                     if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
-                        $this->googleClient->updateAlbumMainPhoto($albumExternalId, $createdPhotoExternalId);
+                        $this->googleClient->updateAlbumMainPhoto($albumExternalId, $createdPhoto["id"]);
                     }
                     
-                    $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true);
+                    $oldPhotoNewId = $this->getOrCreatePhotoId($oldPhotoExternalId, true, $oldPhotoEmbedding);
                     $this->photoMapper->insertPhoto($this->getPhoto($pendingPhoto->getReplacedPhotoId())->withReplacedId($oldPhotoNewId), $albumId);
 
                     $this->eventPublisher->publish(Event::PhotoInvalidated($pendingPhoto->getReplacedPhotoId()));
@@ -408,15 +419,22 @@
             return $this->photoMapper->selectAlbumId($externalId);
         }
     
-        private function getOrCreatePhotoId(string $externalId, bool $replaced = false) : string {
+        private function getOrCreatePhotoId(string $externalId, bool $replaced, string | array $baseUrlOrEmbedding) : string {
             $photoId = $this->photoMapper->selectPhotoId($externalId);
-            if ($photoId !== null) {
+            if ($photoId !== null) {                
                 return $photoId;
             }
 
-            $this->photoMapper->insertPhotoId($externalId, $replaced);
+            $embedding = is_string($baseUrlOrEmbedding) ? $this->getPhotoEmbedding($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
+            $this->photoMapper->insertPhotoId($externalId, $replaced, $embedding);
 
             return $this->photoMapper->selectPhotoId($externalId);
+        }
+
+        private function getPhotoEmbedding(string $baseUrl) : array {
+            $url = $baseUrl . "=w" . $this->embeddingWidth . "-h" . $this->embeddingHeight;
+            $data = $this->httpClient->executeRequest(HttpMethod::GET, $url);
+            return $this->embeddingService->getPhotoEmbedding(base64_encode($data));            
         }
 
         private function getAlbumsResponse(?string $albumId, ?string $pageToken = null) : ?array {

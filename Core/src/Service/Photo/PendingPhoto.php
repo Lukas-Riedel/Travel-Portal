@@ -54,9 +54,9 @@
             new OA\Property(
                 property: "uploadToken",
                 type: "string",
-                description: "The token retrieved by Google Photos API for this upload",
+                description: "The token retrieved by Google Photos API for the upload",
                 example: "kMuvQKDPessd0F9iA92L4zYs9kXWD16RArp3IbMxTaTdW8avf6ajPwTeUvpRSibB"
-            )
+            ),
         ]
     )]
     class PendingPhoto implements \JsonSerializable {        
@@ -116,7 +116,7 @@
         public function getUploadToken() : string {
             return $this->uploadToken;
         }
-
+        
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

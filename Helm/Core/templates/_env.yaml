@@ -104,6 +104,10 @@
   value: "{{ .Values.core.rabbitmq.queue.worker }}"
 - name: CORTEX_QUEUE_NAME
   value: "{{ .Values.core.rabbitmq.queue.cortex }}"
+- name: CORTEX_HOST
+  value: "{{ .Values.core.cortex.host }}"
+- name: CORTEX_PORT
+  value: "{{ .Values.core.cortex.port }}"
 - name: IAM_HOST
   value: "{{ .Values.core.iam.host }}"
 - name: IAM_PORT
@@ -168,6 +172,10 @@
   value: "{{ .Values.core.photo.thumbnail.width }}"
 - name: PHOTO_THUMBNAIL_HEIGHT
   value: "{{ .Values.core.photo.thumbnail.height }}"
+- name: PHOTO_EMBEDDING_WIDTH
+  value: "{{ .Values.core.photo.embedding.width }}"
+- name: PHOTO_EMBEDDING_HEIGHT
+  value: "{{ .Values.core.photo.embedding.height }}"
 - name: PHOTO_FULL_WIDTH
   value: "{{ .Values.core.photo.full.width }}"
 - name: PHOTO_FULL_HEIGHT

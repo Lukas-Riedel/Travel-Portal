@@ -102,7 +102,7 @@
             return $response["accessToken"];
         }
 
-        private function getServiceAccessToken() : string {
+        public function getServiceAccessToken() : string {
             $cachedServiceAccessToken = $this->distributedCacheClient->get(self::SERVICE_ACCESS_TOKEN_CACHE_KEY);
             if ($cachedServiceAccessToken !== null) {
                 return $cachedServiceAccessToken;

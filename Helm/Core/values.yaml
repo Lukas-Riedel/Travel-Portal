@@ -53,6 +53,9 @@ core:
     region: eu-central-1
     host: minio
     port: 9000
+  cortex:
+    host: cortex
+    port: 8080
   iam:
     host: iam
     port: 8080
@@ -103,6 +106,9 @@ core:
     thumbnail:
       width: "350"
       height: "233"
+    embedding:
+      width: "768"
+      height: "512"
     full:
       width: "2400"
       height: "1600"

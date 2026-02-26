@@ -39,6 +39,7 @@
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
+    use Core\Service\Embedding\EmbeddingService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseStatisticsProvider;
     use Core\Service\Fitness\FitnessDataConsistencyMonitor;
@@ -159,14 +160,15 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
+    $embeddingService = new EmbeddingService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
-        getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
+    $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
+        getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
     $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $cloudStorageClient, $httpClient);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $memoryCacheClient, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
