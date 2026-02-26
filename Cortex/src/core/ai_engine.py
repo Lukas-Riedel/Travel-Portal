@@ -139,7 +139,7 @@ class AiEngine:
         self, pil_images: Union[Image.Image, List[Image.Image]]
     ) -> Tensor:
         with torch.no_grad():
-            res = self.model.encode(pil_images, convert_to_tensor=True)
+            res = self.model.encode(pil_images, convert_to_tensor=True, normalize_embeddings=True)
             
             if res.ndimension() == 1:
                 res = res.unsqueeze(0)
@@ -197,7 +197,7 @@ class AiEngine:
 
     def get_text_embedding(self, text: str) -> Tensor:
         with torch.no_grad():
-            res = self.model.encode([text], convert_to_tensor=True)
+            res = self.model.encode([text], convert_to_tensor=True, normalize_embeddings=True)
             return res
 
     def calculate_max_similarity(
