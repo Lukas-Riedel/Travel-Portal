@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from src.core.logger import logger
 from src.core.distributed_cache import DistributedCache
-from src.utils.image_utils import get_thumbnail
+from src.utils.image_utils import get_thumbnail, get_thumbnail_image
 
 torch.set_num_threads(int(os.getenv("MAX_THREADS")))
 torch.set_num_interop_threads(int(os.getenv("MAX_THREADS")))
@@ -140,7 +140,6 @@ class AiEngine:
     ) -> Tensor:
         with torch.no_grad():
             res = self.model.encode(pil_images, convert_to_tensor=True)
-            gc.collect()
             
             if res.ndimension() == 1:
                 res = res.unsqueeze(0)
@@ -191,10 +190,14 @@ class AiEngine:
             )
             return None
 
+    def get_photo_embedding(self, base64_data: str) -> Tensor:
+        img = get_thumbnail_image(base64_data)
+        emb = self.get_image_embedding(img)
+        return emb.detach()
+
     def get_text_embedding(self, text: str) -> Tensor:
         with torch.no_grad():
             res = self.model.encode([text], convert_to_tensor=True)
-            gc.collect()
             return res
 
     def calculate_max_similarity(

@@ -1,0 +1,13 @@
+{{- if .Values.cortex.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  type: {{ .Values.cortex.service.type }}
+  ports:
+    - port: {{ .Values.cortex.service.port }}
+      targetPort: {{ .Values.cortex.service.port }}
+  selector:
+    app: {{ .Release.Name }}
+{{- end }}

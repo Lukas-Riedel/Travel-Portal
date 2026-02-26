@@ -8,6 +8,9 @@ cortex:
     items: "5"
     cooldown: 120
     grace: 60
+  service:
+    type: ClusterIP
+    port: 8080
   model: clip-ViT-L-14
   engine: cpu
   core:
@@ -28,15 +31,17 @@ cortex:
     heartbeat: "60"
     queue:
       cortex: CortexQueue
-  redis:
-    hostname: redis
-    port: 6379
   iam:
     host: iam
     port: 8080
     client:
+      app:
+        id: travel-portal-app
       backend:
         id: admin-cli
+  redis:
+    hostname: redis
+    port: 6379
   grafana:
     client:
       name: travel-portal-service

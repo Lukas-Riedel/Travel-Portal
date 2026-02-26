@@ -11,17 +11,20 @@ from typing import Final
 load_dotenv()
 
 transaction_id = contextvars.ContextVar("transaction_id", default="")
+request_origin = contextvars.ContextVar("request_origin", default="")
 
 
 class TransactionFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         record.transaction_id = transaction_id.get()
+        record.request_origin = request_origin.get()
         return True
 
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         tx_id = getattr(record, "transaction_id", "")
+        origin = getattr(record, "request_origin", "")
 
         dt = datetime.datetime.fromtimestamp(record.created).astimezone()
 
@@ -32,6 +35,7 @@ class JsonFormatter(logging.Formatter):
             "channel": record.name,
             "datetime": dt.isoformat(),
             "transaction_id": tx_id,
+            "request_origin": origin,
         }
 
         event = getattr(record, "event", None)
@@ -42,7 +46,7 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(log_record, default=str)
 
 
-class CortexLogger:
+class Logger:
     def __init__(
         self,
         app_name : str,
@@ -88,7 +92,7 @@ class CortexLogger:
         return logger
 
 
-logger_provider = CortexLogger(
+logger_provider = Logger(
     os.getenv("APP_NAME"),
     os.getenv("VERSION_TAG"),
     os.getenv("GRAFANA_LOKI_ENTRYPOINT"),

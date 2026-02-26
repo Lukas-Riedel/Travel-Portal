@@ -32,7 +32,7 @@
 
         public function checkLiveness(Request $request, Response $response, array $routeArguments) : mixed {
             $content = array(
-                "name" => $this->getFormattedServiceName(),
+                "name" => $this->appName,
                 "version" => $this->serviceVersion,
                 "status" => self::SERVICE_UP
             );
@@ -55,7 +55,7 @@
             }
 
             $content = array(
-                "name" => $this->getFormattedServiceName(),
+                "name" => $this->appName,
                 "version" => $this->serviceVersion,
                 "status" => self::SERVICE_UP,
                 "dependencies" => $dependencies
@@ -65,11 +65,6 @@
             return $response
                     ->withHeader("Content-Type", "application/json")
                     ->withStatus($isReady ? 200 : 503);
-        }
-
-        private function getFormattedServiceName() : string {
-            $tokens = explode("/", $this->appName);
-            return $tokens[count($tokens) - 1];
         }
     }
 ?>

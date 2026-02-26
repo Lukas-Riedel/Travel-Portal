@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-worker
+  name: {{ .Release.Name }}
   labels:
-    app: {{ .Release.Name }}-worker
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.cortex.replicas }}
   strategy:
@@ -14,22 +14,22 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-worker
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-worker
+        app: {{ .Release.Name }}
     spec:
       terminationGracePeriodSeconds: {{ .Values.cortex.scaling.grace }}
       initContainers:
-        - name: {{ .Release.Name }}-worker-cleanup
+        - name: {{ .Release.Name }}-cleanup
           image: busybox
           command: ["sh", "-c", "rm -f /tmp/timeout"]
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp
       containers:
-        - name: {{ .Release.Name }}-worker
+        - name: {{ .Release.Name }}
           image: "{{ .Values.cortex.image }}:{{ .Values.cortex.tag }}"
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
@@ -77,10 +77,6 @@ spec:
               value: "{{ .Values.cortex.core.host }}"
             - name: CORE_PORT
               value: "{{ .Values.cortex.core.port }}"
-            - name: IAM_HOST
-              value: "{{ .Values.cortex.iam.host }}"
-            - name: IAM_PORT
-              value: "{{ .Values.cortex.iam.port }}"
             - name: RMQ_HOST
               value: "{{ .Values.cortex.rabbitmq.hostname }}"            
             - name: RMQ_PORT
@@ -110,6 +106,12 @@ spec:
                 secretKeyRef:
                   name: redis-secret
                   key: redis-password
+            - name: IAM_HOST
+              value: "{{ .Values.cortex.iam.host }}"
+            - name: IAM_PORT
+              value: "{{ .Values.cortex.iam.port }}"
+            - name: IAM_APP_CLIENT_ID
+              value: "{{ .Values.cortex.iam.client.app.id }}"
             - name: IAM_BACKEND_CLIENT_ID
               value: "{{ .Values.cortex.iam.client.backend.id }}"
             - name: IAM_BACKEND_CLIENT_SECRET
