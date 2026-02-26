@@ -2,7 +2,7 @@ cortex:
   enabled: true
   image: ghcr.io/lukas-riedel/cortex
   tag: latest
-  workers: 1
+  replicas: 1
   threads: 4
   scaling:
     items: "5"
