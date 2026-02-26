@@ -94,7 +94,7 @@ jobs:
           --set iam.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m \
+          --timeout 3m \
           --atomic
   deploy-core:
     name: Deploy Core
@@ -146,7 +146,7 @@ jobs:
           --set core.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m \
+          --timeout 3m \
           --atomic
   deploy-cortex:
     name: Deploy Cortex
@@ -198,7 +198,7 @@ jobs:
           --set cortex.tag=${{ github.run_number }} \
           --install \
           --wait \
-          --timeout 5m \
+          --timeout 3m \
           --atomic
   deploy-portal:
     name: Deploy Portal
@@ -267,7 +267,7 @@ jobs:
           --set portal.google.maps.key.api=${{ secrets.FRONTEND_GOOGLE_MAPS_API_KEY }} \
           --install \
           --wait \
-          --timeout 5m \
+          --timeout 3m \
           --atomic
   verify-agent:
     name: Verify Agent
