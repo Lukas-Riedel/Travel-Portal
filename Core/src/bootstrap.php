@@ -211,7 +211,7 @@
     // Entity indexers.
     $entityIndexers = array(
         new CategoryIndexer($categoryService, $placeService),
-        new PlaceIndexer($placeService),
+        new PlaceIndexer($placeService, $geocodingService),
         new FlightIndexer($flightService),
         new LabelIndexer($labelService),
         new TripIndexer($tripService),

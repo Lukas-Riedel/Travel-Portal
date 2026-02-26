@@ -2,6 +2,7 @@
     namespace Core\Service\Place;
 
     use Core\Common\CommonConstants;
+    use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
 
@@ -9,17 +10,23 @@
         
         private const YEAR_FORMAT = "Y";
 
+        private const NEARBY_PLACES_COUNT = 5;
+        private const NEARBY_PLACE_THRESHOLD_KILOMETERS = 200;
+
         private readonly PlaceService $placeService;
 
-        public function __construct(PlaceService $placeService) {
+        private readonly GeocodingService $geocodingService;
+
+        public function __construct(PlaceService $placeService, GeocodingService $geocodingService) {
             $this->placeService = $placeService;
+            $this->geocodingService = $geocodingService;
         }
 
         public function index(IndexableEntityType $entityType) : array {
             $result = array();
 
             if ($entityType === IndexableEntityType::Place) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), null, null,
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
                     array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
@@ -40,6 +47,12 @@
                         $trip = $date->getTrip();
                         if ($trip !== null) {
                             $terms[] = $trip->getName();
+                        }
+                    }
+
+                    foreach ($place->getNearbyPlaces() as &$nearbyPlace) {
+                        if ($this->geocodingService->getDistance($place->getLatitude(), $place->getLongitude(), $nearbyPlace->getLatitude(), $nearbyPlace->getLongitude()) <= self::NEARBY_PLACE_THRESHOLD_KILOMETERS) {
+                            $terms[] = $nearbyPlace->getName();                            
                         }
                     }
 

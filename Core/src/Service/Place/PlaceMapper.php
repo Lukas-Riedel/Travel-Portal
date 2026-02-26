@@ -343,7 +343,7 @@
 
                     $nearbyPlacesArr = array();
                     if ($nearbyPlaces !== null) {
-                        $nearbyPlacesArr = $this->selectVisitedNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
+                        $nearbyPlacesArr = $this->selectVisitedNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces, $includedEntities);
                     }
                     
                     $excerpt = null;
@@ -976,7 +976,7 @@
                 ->execute();
         }
 
-        private function selectVisitedNearbyPlaces(string $placeId, float $latitude, float $longitude, int $limit) : array {
+        private function selectVisitedNearbyPlaces(string $placeId, float $latitude, float $longitude, int $limit, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT pi.id
                 FROM place_identifier pi
@@ -994,9 +994,9 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $longitude, $latitude, $limit)
-                ->getMappedResultSet(function($placeIdentifierRow) {
+                ->getMappedResultSet(function($placeIdentifierRow) use(&$includedEntities) {
                     return $this->selectRegularPlaces($placeIdentifierRow["id"], null, null, null, null,
-                        null, null, null, null, time(), null, null, PlaceIncludedEntity::values(), PlaceSortingStrategy::OldestAscending)[0];
+                        null, null, null, null, time(), null, null, $includedEntities, PlaceSortingStrategy::OldestAscending)[0];
                 });
         }
 
