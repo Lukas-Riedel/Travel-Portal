@@ -4,6 +4,6 @@
     use Core\Service\Index\IndexableEntityType;
 
     interface EntityIndexer {
-        public function index(IndexableEntityType $entityType) : array;
+        public function index(IndexType $indexType, IndexableEntityType $entityType) : array;
     }
 ?>

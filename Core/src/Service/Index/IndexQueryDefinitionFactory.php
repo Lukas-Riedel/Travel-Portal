@@ -133,6 +133,9 @@
                             "id": {
                                 "type": "keyword"
                             },
+                            "entity_id": {
+                                "type": "keyword"
+                            },
                             "entity_type": {
                                 "type": "keyword"
                             },
@@ -160,6 +163,58 @@
                         }
                     }
                 }        
+            JSON;
+
+            return json_decode($json, true);
+        }
+
+        public function createPhotoIndexDefinition() : array {
+            $json = <<<'JSON'
+                {
+                    "settings": {
+                        "index": {
+                            "number_of_shards": 1,
+                            "number_of_replicas": 0,
+                            "knn": true,
+                            "knn.algo_param.ef_search": "100"
+                        }
+                    },
+                    "mappings": {
+                        "properties": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "album_id": {
+                                "type": "keyword"
+                            },
+                            "place_id": {
+                                "type": "keyword"
+                            },
+                            "trip_id": {
+                                "type": "keyword"
+                            },
+                            "is_place_highlight": {
+                                "type": "boolean"
+                            },
+                            "is_place_main_highlight": {
+                                "type": "boolean"
+                            },
+                            "embedding": {
+                                "type": "knn_vector",
+                                "dimension": 768,
+                                "method": {
+                                    "name": "hnsw",
+                                    "space_type": "cosinesimil",
+                                    "engine": "nmslib",
+                                    "parameters": {
+                                        "ef_construction": 128,
+                                        "m": 16
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             JSON;
 
             return json_decode($json, true);

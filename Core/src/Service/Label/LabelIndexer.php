@@ -3,6 +3,7 @@
 
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
+    use Core\Service\Index\IndexType;
 
     class LabelIndexer implements EntityIndexer {
 
@@ -12,10 +13,10 @@
             $this->labelService = $labelService;
         }
 
-        public function index(IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
             $result = array();
 
-            if ($entityType === IndexableEntityType::Label) {
+            if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Label) {
                 $labels = $this->labelService->getAllLabels();
 
                 foreach ($labels as &$label) {

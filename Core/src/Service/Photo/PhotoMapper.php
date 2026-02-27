@@ -77,6 +77,26 @@
                 });
         }
 
+        public function selectPhotoEmbeddings(string $albumId) : array {
+            $sql = <<<'SQL'
+                SELECT pi.id,
+                    pi.embedding
+                FROM photo_identifier pi
+                INNER JOIN photo p
+                    ON pi.id = p.id
+                WHERE NOT pi.replaced
+                    AND pi.embedding IS NOT NULL
+                    AND p.album_id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($albumId)
+                ->getMappedResultSet(function($photoRow) {
+                    return new PhotoEmbedding($photoRow["id"], json_decode($photoRow["embedding"], true));
+                });
+        }
+
         public function selectAlbum(string $albumId) : ?Album {
             $sql = <<<SQL
                 WITH target_album AS (

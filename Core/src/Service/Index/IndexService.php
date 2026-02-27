@@ -13,13 +13,15 @@
         private readonly SearchClient $searchClient;
 
         private readonly string $compositeIndexName;
+        private readonly string $photoIndexName;
 
         private array $entityIndexers = array();
 
-        public function __construct(SearchClient $searchClient, string $compositeIndexName) {
+        public function __construct(SearchClient $searchClient, string $compositeIndexName, string $photoIndexName) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->searchClient = $searchClient;
             $this->compositeIndexName = $compositeIndexName;
+            $this->photoIndexName = $photoIndexName;
         }
 
         public function setEntityIndexers(array $entityIndexers) : void {
@@ -31,46 +33,86 @@
                 $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes)));
         }
 
-        public function reindex() : void {
-            $temporaryIndexName = Uuid::uuid4()->toString();
-            $this->searchClient->createIndex($temporaryIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexDefinition());
+        public function reindex() : void {            
+            foreach (IndexType::cases() as &$indexType) {
+                $temporaryIndexName = Uuid::uuid4()->toString();
+                $this->searchClient->createIndex($temporaryIndexName, $this->getIndexDefinition($indexType));
 
-            foreach (IndexableEntityType::cases() as &$entityType) {
-                $this->doIndex($temporaryIndexName, $entityType);
+                foreach (IndexableEntityType::cases() as &$entityType) {
+                    $this->doIndex($temporaryIndexName, $indexType, $entityType);
+                }
+
+                $this->searchClient->reassignAlias($this->getIndexName($indexType), $temporaryIndexName);
             }
-
-            $this->searchClient->reassignAlias($this->compositeIndexName, $temporaryIndexName);
         }
 
-        public function index(IndexableEntityType $entityType) : void {
-            $this->doIndex($this->compositeIndexName, $entityType);
+        public function index(IndexType $indexType, IndexableEntityType $entityType) : void {
+            $this->doIndex($this->getIndexName($indexType), $indexType, $entityType);
         }
 
-        private function doIndex(string $index, IndexableEntityType $entityType) : void {
+        private function doIndex(string $indexName, IndexType $indexType, IndexableEntityType $entityType) : void {
             foreach ($this->entityIndexers as &$entityIndexer) {
-                $documents = $entityIndexer->index($entityType);
-
+                $documents = $entityIndexer->index($indexType, $entityType);
                 if (empty($documents)) {
                     continue;
                 }
 
                 $mappedDocuments = array();
                 foreach ($documents as $id => $terms) {
-                    $name = !empty($terms) ? $terms[0] : "";
-
-                    $mappedDocuments[] = array(
-                        "id" => $this->getEntityId($entityType, $id),
-                        "entity_type" => $entityType->value,
-                        "entity_id" => (string) $id,
-                        "entity_name" => $name,
-                        "search_text" => implode(" ", array_unique($terms))
-                    );
+                    $mappedDocuments[] = $this->getDocument($indexType, $entityType, $id, $terms);
                 }
 
                 foreach (array_chunk($mappedDocuments, self::BATCH_SIZE) as &$batch) {
-                    $this->searchClient->index($index, $batch);
+                    $this->searchClient->index($indexName, $batch);
                 }
             }
+        }
+
+        private function getIndexDefinition(IndexType $indexType) : array {
+            return match($indexType) {
+                IndexType::Composite => $this->indexQueryDefinitionFactory->createCompositeIndexDefinition(),
+                IndexType::Photo => $this->indexQueryDefinitionFactory->createPhotoIndexDefinition()
+            };
+        }
+
+        private function getIndexName(IndexType $indexType) : string {
+            return match($indexType) {
+                IndexType::Composite => $this->compositeIndexName,
+                IndexType::Photo => $this->photoIndexName
+            };
+        }
+
+        private function getDocument(IndexType $indexType, IndexableEntityType $entityType, string $id, mixed $content) : array {
+            return match($indexType) {
+                IndexType::Composite => $this->getDocumentForCompositeIndex($entityType, $id, $content),
+                IndexType::Photo => $this->getDocumentForPhotoIndex($entityType, $id, $content)
+            };
+        }
+
+        private function getDocumentForCompositeIndex(IndexableEntityType $entityType, string $id, array $terms) : array {
+            $name = !empty($terms) ? $terms[0] : "";
+
+            return array(
+                "id" => $this->getEntityId($entityType, $id),
+                "entity_type" => $entityType->value,
+                "entity_id" => $id,
+                "entity_name" => $name,
+                "search_text" => implode(" ", array_unique($terms))
+            );
+        }
+
+        private function getDocumentForPhotoIndex(IndexableEntityType $entityType, string $id, array $data) : array {
+            return array(
+                "id" => $this->getEntityId($entityType, $id),
+                "entity_type" => $entityType->value,
+                "photo_id" => $id,
+                "embedding" => $data["embedding"],
+                "place_id" => $data["placeId"],
+                "trip_id" => $data["tripId"] ?? null,
+                "album_id" => $data["albumId"],
+                "is_place_highlight" => $data["isPlaceHighlight"],
+                "is_place_main_highlight" => $data["isPlaceMainHighlight"]
+            );
         }
 
         private function getEntityId(IndexableEntityType $entityType, string $id) : string {

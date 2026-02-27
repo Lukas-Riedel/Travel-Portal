@@ -23,57 +23,57 @@
         }
 
         public function onCategoryUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Category);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Category);
         }
 
         public function onFlightLogged(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Airport);
-            $this->indexService->index(IndexableEntityType::Airline);
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Airport);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Airline);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onFlightEventCreated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Airport);
-            $this->indexService->index(IndexableEntityType::Airline);
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Airport);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Airline);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onFlightEventUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Airport);
-            $this->indexService->index(IndexableEntityType::Airline);
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Airport);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Airline);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onPlaceUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Place);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Place);
         }
 
         public function onPlaceEventCreated(mixed $message) : void {     
-            $this->indexService->index(IndexableEntityType::Place);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Place);
         }
 
         public function onPlaceEventUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Place);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Place);
         }
 
         public function onStayEventCreated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onStayEventUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onTripUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onTripEventCreated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onTripEventUpdated(mixed $message) : void {
-            $this->indexService->index(IndexableEntityType::Trip);
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip);
         }
 
         public function onIndexInvalidated(mixed $message) : void {

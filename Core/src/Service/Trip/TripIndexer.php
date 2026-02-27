@@ -3,6 +3,7 @@
 
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
+    use Core\Service\Index\IndexType;
 
     class TripIndexer implements EntityIndexer {
 
@@ -12,10 +13,10 @@
             $this->tripService = $tripService;
         }
 
-        public function index(IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
             $result = array();
 
-            if ($entityType === IndexableEntityType::Trip) {
+            if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Trip) {
                 $trips = $this->tripService->getRegularTrips(null, null, time(), array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
 
                 foreach ($trips as &$trip) {

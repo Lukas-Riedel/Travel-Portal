@@ -73,6 +73,7 @@
     use Core\Service\Place\PlaceServiceListener;
     use Core\Service\Place\PlaceStatisticsProvider;
     use Core\Service\Photo\PhotoDataConsistencyMonitor;
+    use Core\Service\Photo\PhotoIndexer;
     use Core\Service\Place\PlaceIndexer;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Statistics\StatisticsServiceListener;
@@ -184,7 +185,7 @@
         $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
-    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"));
+    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"));
 
     // Statistics providers.
     $statisticsProviders = array(
@@ -217,7 +218,8 @@
         new FlightIndexer($flightService),
         new LabelIndexer($labelService),
         new TripIndexer($tripService),
-        new YearIndexer($yearService)
+        new YearIndexer($yearService),
+        new PhotoIndexer($photoService, $placeService)
     );
     $indexService->setEntityIndexers($entityIndexers);
 

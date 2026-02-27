@@ -3,6 +3,7 @@
 
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
+    use Core\Service\Index\IndexType;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
 
@@ -17,10 +18,10 @@
             $this->placeService = $placeService;
         }
 
-        public function index(IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
             $result = array();
 
-            if ($entityType === IndexableEntityType::Category) {
+            if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Category) {
                 $categories = $this->categoryService->getCategories(null, CategoryCategory::values(), array());
 
                 foreach ($categories as &$category) {

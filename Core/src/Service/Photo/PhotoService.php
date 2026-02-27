@@ -72,6 +72,10 @@
         public function getReplacedPhotos() : array {
             return $this->photoMapper->selectReplacedPhotos();
         }
+
+        public function getPhotoEmbeddings(string $albumId) : array {
+            return $this->photoMapper->selectPhotoEmbeddings($albumId);
+        }
         
         public function getAlbum(string $albumId) : ?Album {
             return $this->photoMapper->selectAlbum($albumId);

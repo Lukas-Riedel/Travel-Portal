@@ -5,6 +5,7 @@
     use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
+    use Core\Service\Index\IndexType;
 
     class PlaceIndexer implements EntityIndexer {
         
@@ -22,10 +23,10 @@
             $this->geocodingService = $geocodingService;
         }
 
-        public function index(IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
             $result = array();
 
-            if ($entityType === IndexableEntityType::Place) {
+            if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Place) {
                 $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
                     array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
 

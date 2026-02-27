@@ -17,6 +17,7 @@
         case Label = "label";
         case Trip = "trip";
         case Year = "year";
+        case Photo = "photo";
         
         public function getRequiredRole() : UserRole {
             return match($this) {
@@ -26,7 +27,8 @@
                 self::Airline => UserRole::AirlineRead,
                 self::Label => UserRole::LabelRead,
                 self::Trip => UserRole::TripRead,
-                self::Year => UserRole::YearRead
+                self::Year => UserRole::YearRead,
+                self::Photo => UserRole::PlaceAlbumRead
             };
         }
 
@@ -38,7 +40,8 @@
                 self::Airport => 4,
                 self::Airline => 2,
                 self::Label => 2,
-                self::Year => 1
+                self::Year => 1,
+                self::Photo => 1
             };
         }
     }
