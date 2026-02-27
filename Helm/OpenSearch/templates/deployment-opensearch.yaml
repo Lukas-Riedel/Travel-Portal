@@ -54,7 +54,7 @@ spec:
             - name: bootstrap.memory_lock
               value: "false"
             - name: OPENSEARCH_JAVA_OPTS
-              value: "-Xms512m -Xmx512m"
+              value: "-Xms1g -Xmx1g"
           volumeMounts:
             - name: {{ .Release.Name }}-data
               mountPath: /usr/share/opensearch/data
