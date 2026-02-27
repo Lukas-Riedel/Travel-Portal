@@ -13,11 +13,13 @@
             $this->tripService = $tripService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
             $result = array();
 
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Trip) {
-                $trips = $this->tripService->getRegularTrips(null, null, time(), array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
+                $trips = $entityId !== null
+                    ? array($this->tripService->getRegularTrip($entityId))
+                    : $this->tripService->getRegularTrips(null, null, time(), array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
 
                 foreach ($trips as &$trip) {
                     $terms = array($trip->getFullName());

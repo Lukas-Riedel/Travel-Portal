@@ -23,12 +23,14 @@
             $this->geocodingService = $geocodingService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
             $result = array();
 
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Place) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
-                    array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
+                $places = $entityId !== null
+                    ? array($this->placeService->getRegularPlace($entityId, self::NEARBY_PLACES_COUNT))
+                    : $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
+                        array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
                     $terms = array($place->getName());

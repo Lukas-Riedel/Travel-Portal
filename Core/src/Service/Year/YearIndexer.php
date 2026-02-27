@@ -15,11 +15,13 @@
             $this->yearService = $yearService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
             $result = array();
 
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Year) {
-                $years = $this->yearService->getYears(array());
+                $years = $entityId !== null
+                    ? array($this->yearService->getYear($entityId))
+                    : $this->yearService->getYears(array());
 
                 foreach ($years as &$year) {
                     if ($year->getId() <= date(self::YEAR_FORMAT)) {

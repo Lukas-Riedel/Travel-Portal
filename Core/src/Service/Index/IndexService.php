@@ -39,20 +39,20 @@
                 $this->searchClient->createIndex($temporaryIndexName, $this->getIndexDefinition($indexType));
 
                 foreach (IndexableEntityType::cases() as &$entityType) {
-                    $this->doIndex($temporaryIndexName, $indexType, $entityType);
+                    $this->doIndex($temporaryIndexName, $indexType, $entityType, null);
                 }
 
                 $this->searchClient->reassignAlias($this->getIndexName($indexType), $temporaryIndexName);
             }
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : void {
-            $this->doIndex($this->getIndexName($indexType), $indexType, $entityType);
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
+            $this->doIndex($this->getIndexName($indexType), $indexType, $entityType, $entityId);
         }
 
-        private function doIndex(string $indexName, IndexType $indexType, IndexableEntityType $entityType) : void {
+        private function doIndex(string $indexName, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             foreach ($this->entityIndexers as &$entityIndexer) {
-                $documents = $entityIndexer->index($indexType, $entityType);
+                $documents = $entityIndexer->index($indexType, $entityType, $entityId);
                 if (empty($documents)) {
                     continue;
                 }

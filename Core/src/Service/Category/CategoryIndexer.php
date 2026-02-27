@@ -18,11 +18,13 @@
             $this->placeService = $placeService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
             $result = array();
 
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Category) {
-                $categories = $this->categoryService->getCategories(null, CategoryCategory::values(), array());
+                $categories = $entityId !== null
+                    ? array($this->categoryService->getCategory($entityId))
+                    : $this->categoryService->getCategories(null, CategoryCategory::values(), array());
 
                 foreach ($categories as &$category) {
                     $categoryPlaces = $this->placeService->getRegularPlaces($category->getId(), null, null, null, null, null, null, null, time(), null, null, array(), PlaceSortingStrategy::OldestAscending);

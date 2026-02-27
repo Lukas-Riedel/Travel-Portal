@@ -19,11 +19,11 @@
             $this->placeService = $placeService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
             $result = array();
             
-            if ($indexType === IndexType::Photo && $entityType === IndexableEntityType::Photo) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
+            if ($indexType === IndexType::Photo && $entityType === IndexableEntityType::Album) {
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, $entityId, null, null,
                     null, time(), null, null, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Highlights->value),
                     PlaceSortingStrategy::OldestAscending);
 

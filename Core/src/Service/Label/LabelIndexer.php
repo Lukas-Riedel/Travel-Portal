@@ -13,11 +13,13 @@
             $this->labelService = $labelService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType) : array {
+        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
             $result = array();
 
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Label) {
-                $labels = $this->labelService->getAllLabels();
+                $labels = $entityId !== null
+                    ? array($this->labelService->getLabel($entityId))
+                    : $this->labelService->getAllLabels();
 
                 foreach ($labels as &$label) {
                     $result[$label->getId()] = array($label->getName());
