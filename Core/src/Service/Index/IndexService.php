@@ -14,6 +14,8 @@
 
         private const BATCH_SIZE = 500;
 
+        private readonly IndexQueryDefinitionFactory $indexQueryDefinitionFactory;
+
         private readonly CategoryService $categoryService;
         private readonly PlaceService $placeService;
         private readonly FlightService $flightService;
@@ -29,6 +31,7 @@
 
         public function __construct(CategoryService $categoryService, PlaceService $placeService, FlightService $flightService, LabelService $labelService,
             TripService $tripService, YearService $yearService, SearchClient $searchClient, string $compositeIndexName) {
+            $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->categoryService = $categoryService;
             $this->placeService = $placeService;
             $this->flightService = $flightService;
@@ -44,7 +47,7 @@
         }
 
         public function search(string $query, int $limit, array $allowedEntityTypes) : array {
-            $rawResults = $this->searchClient->search($this->compositeIndexName, $query, $this->getWeights(), $this->getMultipliers(), $this->getFilters($allowedEntityTypes), $limit);
+            $rawResults = $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes));
 
             $results = array();
             foreach ($rawResults as &$rawResult) {
@@ -61,10 +64,10 @@
 
         public function reindex() : void {
             $temporaryIndexName = Uuid::uuid4()->toString();
-            $this->searchClient->createIndex($temporaryIndexName);
+            $this->searchClient->createIndex($temporaryIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexDefinition());
 
             foreach (IndexableEntityType::cases() as &$entityType) {
-                $this->dOIndex($temporaryIndexName, $entityType);
+                $this->doIndex($temporaryIndexName, $entityType);
             }
 
             $this->searchClient->reassignAlias($this->compositeIndexName, $temporaryIndexName);
@@ -87,7 +90,7 @@
                     $name = !empty($terms) ? $terms[0] : "";
 
                     $mappedDocuments[] = array(
-                        "id" => $this->getId($entityType, $id),
+                        "id" => $this->getEntityId($entityType, $id),
                         "entity_type" => $entityType->value,
                         "entity_id" => (string) $id,
                         "entity_name" => $name,
@@ -101,7 +104,7 @@
             }
         }
 
-        private function getId(IndexableEntityType $entityType, string $id) : string {
+        private function getEntityId(IndexableEntityType $entityType, string $id) : string {
             return $entityType->value . "_" . $id;
         }
 
@@ -115,27 +118,6 @@
                 IndexableEntityType::Trip => $this->tripService->getTripIdentifierById($entityId),
                 IndexableEntityType::Year => $this->yearService->getYearIdentifier($entityId)
             };
-        }
-
-        private function getWeights() : array {
-            $weights = array();
-            foreach (IndexableEntityType::cases() as &$type) {
-                $weights[$type->value] = $type->getPriority();
-            }
-            return array("entity_type" => $weights);
-        }
-
-        private function getMultipliers() : array {
-            return array(
-                "entity_name" => 100,
-                "search_text" => 1
-            );
-        }
-
-        private function getFilters(array $allowedEntityTypes) : array {
-            return array(
-                "entity_type" => array_map(fn($entityType) => $entityType->value, $allowedEntityTypes)
-            );
         }
     }
 ?>

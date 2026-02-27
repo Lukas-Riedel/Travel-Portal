@@ -42,72 +42,10 @@
             }
         }
 
-        public function createIndex(string $index) : void {
+        public function createIndex(string $index, array $definition) : void {
             $this->init();
 
-            // TODO: Externalize the settings of the index to not explicitly mention Czech here.
-            $params = array(
-                "index" => $index,
-                "body"  => array(
-                    "settings" => array(
-                        "index" => array(
-                            "number_of_shards" => 1,
-                            "number_of_replicas" => 0,
-                            "similarity" => array(
-                                "no_length_norm" => array(
-                                    "type" => "BM25",
-                                    "b" => 0
-                                )
-                            )
-                        ),
-                        "analysis" => array(
-                            "filter" => array(
-                                "czech_stop" => array("type" => "stop", "stopwords" => "_czech_"),
-                                "czech_stemmer" => array("type" => "stemmer", "language" => "czech"),
-                                "my_ngram_filter" => array(
-                                    "type" => "edge_ngram",
-                                    "min_gram" => 3,
-                                    "max_gram" => 10
-                                )
-                            ),
-                            "analyzer" => array(
-                                "custom_analyzer" => array(
-                                    "tokenizer" => "standard",
-                                    "filter" => array("lowercase", "asciifolding", "czech_stop", "czech_stemmer")
-                                ),
-                                "ngram_analyzer" => array(
-                                    "tokenizer" => "standard",
-                                    "filter" => array("lowercase", "asciifolding", "my_ngram_filter")
-                                )
-                            )
-                        )
-                    ),
-                    "mappings" => array(
-                        "properties" => array(
-                            "id" => array("type" => "keyword"),
-                            "entity_type" => array("type" => "keyword"),
-                            "entity_name" => array(
-                                "type" => "text",
-                                "analyzer" => "custom_analyzer",
-                                "similarity" => "no_length_norm"
-                            ),
-                            "search_text" => array(
-                                "type" => "text", 
-                                "analyzer" => "custom_analyzer",
-                                "similarity" => "no_length_norm",
-                                "fields" => array(
-                                    "ngram" => array(
-                                        "type" => "text",
-                                        "analyzer" => "ngram_analyzer"
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            );
-
-            $this->client->indices()->create($params);
+            $this->client->indices()->create(array("index" => $index, "body"  => $definition));
             $this->addOpenLineageOutputDataset($index, null);
         }
 
@@ -131,10 +69,7 @@
                 // The alias does not exist -> the array will remain empty.
             }
 
-            $actions = array(
-                array("add" => array("index" => $index, "alias" => $alias))
-            );
-
+            $actions = array(array("add" => array("index" => $index, "alias" => $alias)));
             foreach ($oldIndices as &$oldIndex) {
                 $actions[] = array("remove" => array("index" => $oldIndex, "alias" => $alias));
             }
@@ -159,6 +94,10 @@
         }
 
         public function index(string $index, array $documents) : void {
+            if (empty($documents)) {
+                return;
+            }
+
             $this->init();
 
             $params = array("body" => array());
@@ -174,88 +113,15 @@
 
             $this->client->bulk($params);
 
-            if (!empty($documents)) {
-                foreach ($this->getUniqueArrays(array_map(fn($document) => array_keys($document), $documents)) as &$columns) {
-                    $this->addOpenLineageOutputDataset($index, $columns);
-                }
+            foreach ($this->getUniqueArrays(array_map(fn($document) => array_keys($document), $documents)) as &$columns) {
+                $this->addOpenLineageOutputDataset($index, $columns);
             }
         }
 
-        public function search(string $index, string $query, array $weights, array $multipliers, array $filters, int $limit) : array {
+        public function search(string $index, array $query) : array {
             $this->init();
 
-            $functions = array();
-            foreach ($weights as $field => $terms) {
-                foreach ($terms as $term => $priority) {
-                    $functions[] = array(
-                        "filter" => array("term" => array($field => $term)),
-                        "weight" => $priority
-                    );
-                }
-            }
-
-            $fields = array();
-            foreach ($multipliers as $term => $multiplier) {
-                $fields[] = $term . "^" . $multiplier;
-            }
-
-            $params = array(
-                "index" => $index,
-                "body"  => array(
-                    "size" => $limit,
-                    "query" => array(
-                        "function_score" => array(
-                            "query" => array(
-                                "bool" => array(
-                                    "should" => array(
-                                        array(
-                                            "multi_match" => array(
-                                                "query" => $query,
-                                                "fields" => $fields,
-                                                "type" => "best_fields",
-                                                "operator" => "and",
-                                                "fuzziness" => "AUTO",
-                                                "prefix_length" => 2
-                                            )
-                                        ),
-                                        array(
-                                            "match" => array(
-                                                "search_text.ngram" => array(
-                                                    "query" => $query,
-                                                    "boost" => 0.2
-                                                )
-                                            )
-                                        ),
-                                        array(
-                                            "match" => array(
-                                                "search_text" => array(
-                                                    "query" => $query,
-                                                    "fuzziness" => "AUTO",
-                                                    "prefix_length" => 2,
-                                                    "boost" => 0.5
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    "minimum_should_match" => 1
-                                )
-                            ),
-                            "functions" => $functions,
-                            "score_mode" => "multiply",
-                            "boost_mode" => "sum"
-                        )
-                    )
-                )
-            );
-
-            foreach ($filters as $key => $value) {
-                $params["body"]["query"]["function_score"]["query"]["bool"]["filter"][] = array(
-                    "terms" => array($key => $value)
-                );
-            }
-
-            $response = $this->client->search($params);
-            
+            $response = $this->client->search(array("index" => $index, "body"  => $query));            
             $result = array_map(fn($hit) => $hit["_source"], $response["hits"]["hits"] ?? array());
 
             if (!empty($result)) {
@@ -270,10 +136,8 @@
         public function delete(string $index, string $id) : void {
             $this->init();
 
-            $this->client->delete(array(
-                "index" => $index,
-                "id" => $id
-            ));
+            $this->client->delete(array("index" => $index, "id" => $id));
+
             $this->addOpenLineageOutputDataset($index, null);
         }
 

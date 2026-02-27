@@ -7,6 +7,8 @@
 
     // TODO: Replace cURL with Guzzle.
     class HttpClient {
+
+        private const MAX_PAYLOAD_LOG_LENGTH = 1000;
     
         private const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
         private const DEFAULT_HEADERS = array(
@@ -28,7 +30,8 @@
         }
 
         public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) : mixed {
-            $this->logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $payload));
+            $loggedPayload = $payload !== null && is_string($payload) && strlen($payload) > self::MAX_PAYLOAD_LOG_LENGTH ? substr($payload, 0, self::MAX_PAYLOAD_LOG_LENGTH) . "... [TRUNCATED]" : $payload;
+            $this->logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $loggedPayload));
 
             $curl = $this->prepareCurl($method, $url, $headers, $includeResponseHeaders);
     

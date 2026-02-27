@@ -113,7 +113,8 @@
                 "clientSecret" => $this->iamBackendClientSecret
             );
 
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getIamBaseUrl() . self::TOKEN_API_ENDPOINT_PATH, array(), $payload);
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getIamBaseUrl() . self::TOKEN_API_ENDPOINT_PATH,
+                array("Content-Type: application/json"), json_encode($payload));
 
             if (!isset($response["accessToken"])) {
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
