@@ -2,12 +2,18 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Core\Service\Category\CategoryService;
+    use Core\Service\Flight\FlightService;
     use Core\Service\Index\IndexableEntityType;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Service\Index\IndexService;
+    use Core\Service\Label\LabelService;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Trip\TripService;
+    use Core\Service\Year\YearService;
 
     #[OA\Tag(name: "Search")]
     class SearchResource extends AbstractResource {
@@ -16,12 +22,27 @@
 
         private readonly IndexService $indexService;
 
-        public function __construct(IndexService $indexService) {
+        private readonly CategoryService $categoryService;
+        private readonly PlaceService $placeService;
+        private readonly FlightService $flightService;
+        private readonly LabelService $labelService;
+        private readonly TripService $tripService;
+        private readonly YearService $yearService;
+
+        public function __construct(IndexService $indexService, CategoryService $categoryService, PlaceService $placeService,
+            FlightService $flightService, LabelService $labelService, TripService $tripService, YearService $yearService) {
             $this->indexService = $indexService;
+            $this->categoryService = $categoryService;
+            $this->placeService = $placeService;
+            $this->flightService = $flightService;
+            $this->labelService = $labelService;
+            $this->tripService = $tripService;
+            $this->yearService = $yearService;
         }
 
-        public static function register(App $app, IndexService $indexService) : void {
-            $resource = new self($indexService);
+        public static function register(App $app, IndexService $indexService, CategoryService $categoryService, PlaceService $placeService,
+            FlightService $flightService, LabelService $labelService, TripService $tripService, YearService $yearService) : void {
+            $resource = new self($indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService);
 
             $app->group("/search", function($group) use($resource) {
                 $group->get("", [$resource, "listSearchResults"]);
@@ -91,7 +112,21 @@
             $limit = $this->getQueryParameter($request, "limit") ?? self::DEFAULT_SEARCH_RESULTS_COUNT;
             $allowedEntityTypes = array_filter(IndexableEntityType::cases(), fn($entityType) => $this->hasRole($request, $entityType->getRequiredRole()));
 
-            return $this->indexService->search($query, $limit, $allowedEntityTypes);
+            $searchResults = array_map(fn($searchResult) => $searchResult->withReplacedEntity($this->getEntity($searchResult->getType(), $searchResult->getEntity())),
+                $this->indexService->search($query, $limit, $allowedEntityTypes));
+            return array_values(array_filter($searchResults, fn($searchResult) => $searchResult->getEntity() !== null));
+        }
+
+        private function getEntity(IndexableEntityType $entityType, string $entityId) : mixed {            
+            return match ($entityType) {
+                IndexableEntityType::Category => $this->categoryService->getCategoryIdentifierById($entityId),
+                IndexableEntityType::Place => $this->placeService->getPlaceIdentifierById($entityId),
+                IndexableEntityType::Airport => $this->flightService->getAirportIdentifier($entityId),
+                IndexableEntityType::Airline => $this->flightService->getAirlineIdentifier($entityId),
+                IndexableEntityType::Label => $this->labelService->getLabel($entityId),
+                IndexableEntityType::Trip => $this->tripService->getTripIdentifierById($entityId),
+                IndexableEntityType::Year => $this->yearService->getYearIdentifier($entityId)
+            };
         }
     }
 ?>

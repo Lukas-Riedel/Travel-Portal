@@ -184,7 +184,7 @@
         $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
-    $indexService = new IndexService($categoryService, $placeService, $flightService, $labelService, $tripService, $yearService, $searchClient, getenv("COMPOSITE_INDEX_NAME"));
+    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"));
 
     // Statistics providers.
     $statisticsProviders = array(

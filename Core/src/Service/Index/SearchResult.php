@@ -47,6 +47,10 @@
             return $this->entity;
         }
 
+        public function withReplacedEntity(mixed $entity) : SearchResult {
+            return new SearchResult($this->type, $entity);
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);
