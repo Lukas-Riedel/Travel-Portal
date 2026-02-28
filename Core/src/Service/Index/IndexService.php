@@ -55,6 +55,8 @@
 
                 $this->searchClient->reassignAlias($this->getIndexName($indexType), $temporaryIndexName);
             }
+
+            $this->searchClient->deleteUnusedIndexes(array_map(fn($indexType) => $this->getIndexName($indexType), IndexType::cases()));
         }
 
         public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {

@@ -56,6 +56,27 @@
                 $this->client->indices()->delete(array("index" => $index));
                 $this->addOpenLineageOutputDataset($index, null);
             }
+        }        
+
+        public function deleteUnusedIndexes(array $usedIndexes) : void {
+            $indices = array_keys($this->client->indices()->getAlias(array("format" => "json")));
+
+            foreach ($indices as $index) {
+                if (str_starts_with($index, ".")) {
+                    continue;
+                }
+
+                if (in_array($index, $usedIndexes)) {
+                    continue;
+                }
+
+                try {
+                    $this->deleteIndex($index);
+                }
+                catch (\Throwable $e) {
+                    // Do nothing. The index has already been deleted.
+                }
+            }
         }
 
         public function reassignAlias(string $alias, string $index) : void {
