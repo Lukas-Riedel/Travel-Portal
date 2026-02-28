@@ -3,50 +3,30 @@
 
     class IndexQueryDefinitionFactory {
         public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $mainHighlightsOnly) : array {
-            $vector = json_encode($embedding);
-            
-            if ($mainHighlightsOnly) {
-                $json = <<<JSON
-                    {
-                        "size": $limit,
-                        "_source": [
-                            "photo_id"
-                        ],
-                        "query": {
-                            "bool": {
-                                "must": {
-                                    "knn": {
-                                        "embedding": {
-                                            "vector": $vector,
-                                            "k": $limit
-                                        }
-                                    }
-                                },
-                                "filter": {
-                                    "term": { 
-                                        "is_place_main_highlight": true 
-                                    }
-                                }
-                            }
-                        }
-                    }
-                JSON;
+            $rawParams = array(
+                "vector" => $embedding,
+                "k" => $limit
+            );
 
-                return json_decode($json, true);
+            $filteredTerms = array();
+            if ($mainHighlightsOnly) {
+                $filteredTerms["is_place_main_highlight"] = true;
             }
-            
+
+
+            if (count($filteredTerms) > 0) {
+                $rawParams["filter"] = array("term" => $filteredTerms);
+            }
+
+            $params = json_encode($rawParams);
+
             $json = <<<JSON
                 {
                     "size": $limit,
-                    "_source": [
-                        "photo_id"
-                    ],
+                    "_source": ["photo_id"],
                     "query": {
                         "knn": {
-                            "embedding": {
-                                "vector": $vector,
-                                "k": $limit
-                            }
+                            "embedding": $params
                         }
                     }
                 }
@@ -265,7 +245,7 @@
                                 "method": {
                                     "name": "hnsw",
                                     "space_type": "cosinesimil",
-                                    "engine": "nmslib",
+                                    "engine": "lucene",
                                     "parameters": {
                                         "ef_construction": 128,
                                         "m": 16

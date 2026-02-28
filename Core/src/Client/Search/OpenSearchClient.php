@@ -3,6 +3,7 @@
 
     use Common\Client\HealthCheckable;
     use Core\OpenLineage\OpenLineageEventManager;
+    use Monolog\Logger;
     use OpenSearch\Client;
     use OpenSearch\ClientBuilder;
 
@@ -14,13 +15,16 @@
         private readonly string $host;
         private readonly int $port;
 
+        private readonly Logger $logger;
+
         private ?Client $client = null;
         
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $host, int $port) {
+        public function __construct(string $host, int $port, Logger $logger) {
             $this->host = $host;
             $this->port = $port;
+            $this->logger = $logger;
             $this->openLineageEventManager = null;
         }
 
@@ -59,7 +63,7 @@
         }        
 
         public function deleteUnusedIndexes(array $usedIndexes) : void {
-            $indices = array_keys($this->client->indices()->getAlias(array("format" => "json")));
+            $indices = array_keys($this->client->indices()->getMapping());
 
             foreach ($indices as $index) {
                 if (str_starts_with($index, ".")) {
@@ -143,13 +147,15 @@
             $this->init();
 
             $response = $this->client->search(array("index" => $index, "body"  => $query));            
-            $result = array_map(fn($hit) => $hit["_source"], $response["hits"]["hits"] ?? array());
+            $result = array_map(fn($hit) => new SearchEntry($hit["_score"], $hit["_source"]), $response["hits"]["hits"] ?? array());
 
             if (!empty($result)) {
-                foreach ($this->getUniqueArrays(array_map(fn($item) => array_keys($item), $result)) as &$columns) {
+                foreach ($this->getUniqueArrays(array_map(fn($item) => array_keys($item->getData()), $result)) as &$columns) {
                     $this->addOpenLineageInputDataset($index, $columns);
                 }
             }
+
+            $this->logger->debug("Totally " . count($result) . " results were found in the '$index' index.", array("query" => $query));
 
             return $result;
         }

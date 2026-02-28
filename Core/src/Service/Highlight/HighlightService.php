@@ -418,7 +418,7 @@
 
                     $value = $key->extractValue($attributes);
                     if ($value !== null) {
-                        $weight = pow($neighbour->getScore(), $key->value);
+                        $weight = pow($neighbour->getScore(), $key->getWeight());
 
                         $weightedSum += $value * $weight;
                         $totalWeight += $weight;

@@ -133,7 +133,7 @@
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), getenv("RMQ_PREFETCH_COUNT"), $databaseClient, $loggingContext, $logger);
     $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
-    $searchClient = new OpenSearchClient(getenv("OPENSEARCH_HOST"), getenv("OPENSEARCH_PORT"));
+    $searchClient = new OpenSearchClient(getenv("OPENSEARCH_HOST"), getenv("OPENSEARCH_PORT"), $logger);
     $databaseClient->setProgressReporter($messagingClient);
     $httpClient->setProgressReporter($messagingClient);
     $healthCheckables = array(

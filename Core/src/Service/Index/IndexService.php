@@ -29,22 +29,19 @@
         }
 
         public function search(string $query, int $limit, array $allowedEntityTypes) : array {
-            return array_map(fn($searchResult) => new SearchResult(IndexableEntityType::from($searchResult["entity_type"]), $searchResult["entity_id"]),
+            return array_map(fn($searchEntry) => new SearchResult(IndexableEntityType::from($searchEntry->getData()["entity_type"]), $searchEntry->getData()["entity_id"]),
                 $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes)));
         }
 
         public function getNearestNeighbourPhotoIds(array $embedding, int $limit, bool $mainHighlightsOnly = true) : array {    
-            $response = $this->searchClient->search($this->photoIndexName,
+            $searchEntries = $this->searchClient->search($this->photoIndexName,
                 $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $mainHighlightsOnly));
 
-            if (!isset($response["hits"]["hits"])) {
-                return array();
-            }
-
-            return array_map(fn($hit) => new NearestNeighbour($hit["_source"]["photo_id"], (float)$hit["_score"]), $response["hits"]["hits"]);
+            return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()["photo_id"], $searchEntry->getScore()), $searchEntries);
         }
 
-        public function reindex() : void {            
+        public function reindex() : void {           
+            $usedIndexes = array(); 
             foreach (IndexType::cases() as &$indexType) {
                 $temporaryIndexName = Uuid::uuid4()->toString();
                 $this->searchClient->createIndex($temporaryIndexName, $this->getIndexDefinition($indexType));
@@ -54,9 +51,10 @@
                 }
 
                 $this->searchClient->reassignAlias($this->getIndexName($indexType), $temporaryIndexName);
+                $usedIndexes[] = $temporaryIndexName;
             }
 
-            $this->searchClient->deleteUnusedIndexes(array_map(fn($indexType) => $this->getIndexName($indexType), IndexType::cases()));
+            $this->searchClient->deleteUnusedIndexes($usedIndexes);
         }
 
         public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {

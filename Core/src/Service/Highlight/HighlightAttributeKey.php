@@ -3,13 +3,23 @@
 
     use Core\Service\Highlight\HighlightAttributes;
 
-    enum HighlightAttributeKey : int {
-        case Composition = 4;
-        case Sky = 10;
-        case Shadows = 10;
-        case Circumstances = 4;
-        case Atmosphere = 10;
+    enum HighlightAttributeKey {
+        case Composition;
+        case Sky;
+        case Shadows;
+        case Circumstances;
+        case Atmosphere;
 
+        public function getWeight(): int {
+            return match($this) {
+                self::Composition => 4,
+                self::Sky => 10,
+                self::Shadows => 10,
+                self::Circumstances => 4,
+                self::Atmosphere => 10
+            };
+        }
+        
         public function extractValue(HighlightAttributes $highlightAttributes) : ?float {
             return match($this) {
                 self::Composition => $highlightAttributes->getComposition(),
