@@ -33,6 +33,17 @@
                 $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes)));
         }
 
+        public function getNearestNeighbourPhotoIds(array $embedding, int $limit, bool $mainHighlightsOnly = true) : array {    
+            $response = $this->searchClient->search($this->photoIndexName,
+                $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $mainHighlightsOnly));
+
+            if (!isset($response["hits"]["hits"])) {
+                return array();
+            }
+
+            return array_map(fn($hit) => new NearestNeighbour($hit["_source"]["photo_id"], (float)$hit["_score"]), $response["hits"]["hits"]);
+        }
+
         public function reindex() : void {            
             foreach (IndexType::cases() as &$indexType) {
                 $temporaryIndexName = Uuid::uuid4()->toString();

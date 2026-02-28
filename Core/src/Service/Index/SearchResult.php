@@ -7,7 +7,7 @@
     #[OA\Schema(
         schema: "SearchResult",
         type: "object",
-        description: "A class representing a a search result",
+        description: "A class representing a search result",
         required: ["type", "entity"],
         properties: [
             new OA\Property(

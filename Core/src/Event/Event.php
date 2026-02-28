@@ -43,10 +43,6 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId));
         }
 
-        public static function HighlightAttributesSettingTriggered(string $highlightId) : Event {
-            return new CortexEvent(Event::getEventName(), EventPriority::High, array("highlightId" => $highlightId));
-        }
-
         public static function HighlightUpdated(string $highlightType, string $entityId, string $highlightId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::High, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId));
         }

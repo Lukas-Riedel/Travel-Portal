@@ -77,6 +77,26 @@
                 });
         }
 
+        public function selectPhotoEmbedding(string $photoId) : ?PhotoEmbedding {
+            $sql = <<<'SQL'
+                SELECT id,
+                    embedding
+                FROM photo_identifier
+                WHERE id = ?
+            SQL;
+
+            $photoRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($photoId)
+                ->getSingleRow();
+
+            if ($photoRow === null) {
+                return null;
+            }
+            
+            return new PhotoEmbedding($photoRow["id"], json_decode($photoRow["embedding"], true));
+        }
+
         public function selectPhotoEmbeddings(string $albumId) : array {
             $sql = <<<'SQL'
                 SELECT pi.id,
@@ -315,25 +335,6 @@
                 ->statementBuilder($sql)
                 ->withParameters($photoId)
                 ->getFirstColumn("external_id");
-        }
-
-        public function selectPhotoEmbedding(string $photoId) : ?array {      
-            $sql = <<<'SQL'
-                SELECT embedding
-                FROM photo_identifier
-                WHERE id = ?
-            SQL;
-            
-            $rawEmbedding = $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($photoId)
-                ->getFirstColumn("embedding");
-                
-            if ($rawEmbedding === null) {
-                return null;
-            }
-
-            return json_decode($rawEmbedding, true);
         }
 
         public function selectAlbumIdsWithOutdatedPhotos() : array {

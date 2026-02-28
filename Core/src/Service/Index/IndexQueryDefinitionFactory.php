@@ -2,6 +2,59 @@
     namespace Core\Service\Index;
 
     class IndexQueryDefinitionFactory {
+        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $mainHighlightsOnly) : array {
+            $vector = json_encode($embedding);
+            
+            if ($mainHighlightsOnly) {
+                $json = <<<JSON
+                    {
+                        "size": $limit,
+                        "_source": [
+                            "photo_id"
+                        ],
+                        "query": {
+                            "bool": {
+                                "must": {
+                                    "knn": {
+                                        "embedding": {
+                                            "vector": $vector,
+                                            "k": $limit
+                                        }
+                                    }
+                                },
+                                "filter": {
+                                    "term": { 
+                                        "is_place_main_highlight": true 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                JSON;
+
+                return json_decode($json, true);
+            }
+            
+            $json = <<<JSON
+                {
+                    "size": $limit,
+                    "_source": [
+                        "photo_id"
+                    ],
+                    "query": {
+                        "knn": {
+                            "embedding": {
+                                "vector": $vector,
+                                "k": $limit
+                            }
+                        }
+                    }
+                }
+            JSON;
+
+            return json_decode($json, true);
+        }
+
         public function createCompositeIndexSearchQuery(string $query, int $limit, array $allowedEntityTypes) : array {
             $sanitizedQuery = json_encode($query);
             $functions = json_encode(array_map(fn($type) => array("filter" => array("term" => array("entity_type" => $type->value)), "weight" => $type->getPriority()), IndexableEntityType::cases()));
@@ -10,6 +63,10 @@
             $json = <<<JSON
                 {
                     "size": $limit,
+                    "_source": [
+                        "entity_type",
+                        "entity_id"
+                    ],
                     "query": {
                         "function_score": {
                             "query": {
@@ -182,6 +239,9 @@
                     "mappings": {
                         "properties": {
                             "id": {
+                                "type": "keyword"
+                            },
+                            "photo_id": {
                                 "type": "keyword"
                             },
                             "album_id": {

@@ -14,9 +14,6 @@ from src.core.ai_engine import AiEngine
 from src.handlers.highlights_selecting_triggered_handler import (
     HighlightsSelectingTriggeredHandler,
 )
-from src.handlers.highlight_attributes_setting_triggered_handler import (
-    HighlightAttributesSettingTriggeredHandler,
-)
 from src.api.management_router import router as management_router
 from src.api.embeddings_router import router as embeddings_router
 from src.service.authentication_service import AuthenticationService
@@ -113,7 +110,6 @@ def main():
             int(os.getenv("MAX_THREADS")),
             float(os.getenv("ISO_COEFFICIENT")),
         ),
-        HighlightAttributesSettingTriggeredHandler(ai_engine, core_client),
     ]
 
     listener = EventListener(

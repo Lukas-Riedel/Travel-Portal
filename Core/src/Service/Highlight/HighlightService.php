@@ -14,12 +14,18 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Http\HttpClient;
+    use Core\Service\Index\IndexService;
+    use Monolog\Logger;
 
     class HighlightService {
+
+        private const HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT = 9;
 
         private readonly HighlightMapper $highlightMapper;
 
         private readonly PhotoService $photoService;
+
+        private readonly IndexService $indexService;
         
         private readonly EventPublisher $eventPublisher;
 
@@ -29,13 +35,18 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, HttpClient $httpClient) {
+        private readonly Logger $logger;
+
+        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, IndexService $indexService,
+            EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, HttpClient $httpClient, Logger $logger) {
             $this->highlightMapper = new HighlightMapper($databaseClient, $photoService);
             $this->photoService = $photoService;
+            $this->indexService = $indexService;
             $this->cloudStorageClient = $cloudStorageClient;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
             $this->httpClient = $httpClient;
+            $this->logger = $logger;
         }
 
         public function getHighlight(?string $highlightId) : ?Highlight {
@@ -44,6 +55,10 @@
 
         public function getHighlights(array $highlightIds) : array {
             return $this->highlightMapper->selectHighlightsByIds($highlightIds);
+        }
+
+        public function getHighlightsByPhotoIds(array $photoIds) : array {
+            return $this->highlightMapper->selectHighlightsByPhotoIds($photoIds);
         }
 
         public function getPlaceHighlights(string $placeId) : array {
@@ -363,9 +378,59 @@
                 return $highlightId;
             }
 
-            $this->highlightMapper->insertHighlightId($photoId);
+            $computedHighlightAttributes = $this->computeHighlightAttributes($photoId);
+            $this->highlightMapper->insertHighlightId($photoId, $computedHighlightAttributes);
 
             return $this->highlightMapper->selectHighlightId($photoId);
+        }
+
+        private function computeHighlightAttributes(string $photoId) : HighlightAttributes {
+            $photoEmbedding = $this->photoService->getPhotoEmbedding($photoId);
+            if ($photoEmbedding === null) {
+                $this->logger->error("The embedding for the photo '$photoId' does not exist. Unable to compute highlight attributes.");
+                return new HighlightAttributes(0, 0, 0, 0, 0);
+            }
+
+            $nearestNeighbours = $this->indexService->getNearestNeighbourPhotoIds($photoEmbedding->getEmbedding(),
+                self::HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT, true);
+            if (empty($nearestNeighbours)) {
+                $this->logger->error("No neighbours for the photo '$photoId' were found. Unable to compute highlight attributes.");
+                return new HighlightAttributes(0, 0, 0, 0, 0);
+            }
+
+            $highlights = array();
+            foreach ($this->getHighlightsByPhotoIds(array_map(fn($neighbour) => $neighbour->getEntityId(), $nearestNeighbours)) as &$highlight) {
+                $highlights[$highlight->getPhoto()->getId()] = $highlight;
+            }
+
+            $computedAttributes = array();
+            foreach (HighlightAttributeKey::cases() as $key) {
+                $weightedSum = 0.0;
+                $totalWeight = 0.0;
+
+                foreach ($nearestNeighbours as &$neighbour) {
+                    $highlight = $highlights[$neighbour->getEntityId()] ?? null;
+                    $attributes = $highlight?->getAttributes();
+                    
+                    if (!$attributes) {
+                        continue;
+                    }
+
+                    $value = $key->extractValue($attributes);
+                    if ($value !== null) {
+                        $weight = pow($neighbour->getScore(), $key->value);
+
+                        $weightedSum += $value * $weight;
+                        $totalWeight += $weight;
+                    }
+                }
+
+                $computedAttributes[$key->name] = $totalWeight > 0 ? (int)round($weightedSum / $totalWeight) : 0;
+            }
+
+            $this->logger->debug("Setting the '$photoId' photo attributes to '" . json_encode($computedAttributes) . "'...");
+
+            return HighlightAttributeKey::createHighlightAttributes($computedAttributes);
         }
 
         private function doUpdateHighlights(HighlightSize $highlightSize, ?string $highlightId, ?string $photoId, bool $overwrite) : array {
@@ -373,7 +438,7 @@
             $existingObjectKeys = $this->cloudStorageClient->list($highlightSize->getBucket());
             $existingKeysMap = array_flip($existingObjectKeys);
 
-            $highlights = $this->highlightMapper->selectAllHighlights($highlightId, $photoId);
+            $highlights = $this->highlightMapper->selectHighlights($highlightId, $photoId);
             foreach ($highlights as &$highlight) {
                 $objectKey = $this->getHighlightObjectKey($highlight->getId());
     

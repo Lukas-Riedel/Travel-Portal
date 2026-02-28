@@ -86,6 +86,7 @@
                 return null;
             }
 
+            // TODO: Does this work if any of the attributes are zero?
             $values = array($this->composition, $this->sky, $this->shadows, $this->circumstances, $this->atmosphere);
             return in_array(0, $values, true) ? 0.0 : count($values) / array_sum(array_map(fn($value) => 1 / $value, $values));
         }

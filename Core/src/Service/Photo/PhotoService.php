@@ -76,6 +76,10 @@
         public function getPhotoEmbeddings(string $albumId) : array {
             return $this->photoMapper->selectPhotoEmbeddings($albumId);
         }
+
+        public function getPhotoEmbedding(string $photoId) : ?PhotoEmbedding {
+            return $this->photoMapper->selectPhotoEmbedding($photoId);
+        }
         
         public function getAlbum(string $albumId) : ?Album {
             return $this->photoMapper->selectAlbum($albumId);
@@ -378,7 +382,7 @@
                 );
 
                 $oldPhotoExternalId = $this->photoMapper->selectPhotoExternalId($pendingPhoto->getReplacedPhotoId());
-                $oldPhotoEmbedding = $this->photoMapper->selectPhotoEmbedding($pendingPhoto->getReplacedPhotoId());
+                $oldPhotoEmbedding = $this->getPhotoEmbedding($pendingPhoto->getReplacedPhotoId())?->getEmbedding();
                 $albumExternalId = $this->photoMapper->selectAlbumExternalId($albumId);
 
                 // TODO: Do this in a batch.
@@ -387,7 +391,7 @@
                     $createdPhoto = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())["newMediaItemResults"][0]["mediaItem"];
 
                     $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhoto["id"]);
-                    $this->photoMapper->updatePhotoEmbedding($pendingPhoto->getReplacedPhotoId(), $this->getPhotoEmbedding($createdPhoto["baseUrl"]));                
+                    $this->photoMapper->updatePhotoEmbedding($pendingPhoto->getReplacedPhotoId(), $this->fetchPhotoEmbedding($createdPhoto["baseUrl"]));                
                     if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
                         $this->googleClient->updateAlbumMainPhoto($albumExternalId, $createdPhoto["id"]);
                     }
@@ -429,13 +433,13 @@
                 return $photoId;
             }
 
-            $embedding = is_string($baseUrlOrEmbedding) ? $this->getPhotoEmbedding($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
+            $embedding = is_string($baseUrlOrEmbedding) ? $this->fetchPhotoEmbedding($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
             $this->photoMapper->insertPhotoId($externalId, $replaced, $embedding);
 
             return $this->photoMapper->selectPhotoId($externalId);
         }
 
-        private function getPhotoEmbedding(string $baseUrl) : array {
+        private function fetchPhotoEmbedding(string $baseUrl) : array {
             $url = $baseUrl . "=w" . $this->embeddingWidth . "-h" . $this->embeddingHeight;
             $data = $this->httpClient->executeRequest(HttpMethod::GET, $url);
             return $this->embeddingService->getPhotoEmbedding(base64_encode($data));            

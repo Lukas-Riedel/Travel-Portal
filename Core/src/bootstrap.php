@@ -161,6 +161,7 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
+    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"));
     $embeddingService = new EmbeddingService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
@@ -170,7 +171,7 @@
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
     $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
-    $highlightService = new HighlightService($databaseClient, $photoService, $eventPublisher, $cloudStorageClient, $httpClient);
+    $highlightService = new HighlightService($databaseClient, $photoService, $indexService, $eventPublisher, $cloudStorageClient, $httpClient, $logger);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $memoryCacheClient, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
@@ -185,7 +186,6 @@
         $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
-    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"));
 
     // Statistics providers.
     $statisticsProviders = array(
