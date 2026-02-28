@@ -90,7 +90,8 @@
                 ->withParameters($photoId)
                 ->getSingleRow();
 
-            if ($photoRow === null) {
+            // TODO EMBEDDING: Remove the other check once the embedding column has the not null constraint.
+            if ($photoRow === null || $photoRow["embedding"] === null) {
                 return null;
             }
             

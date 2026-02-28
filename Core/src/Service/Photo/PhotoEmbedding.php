@@ -7,7 +7,7 @@
         schema: "PhotoEmbedding",
         type: "object",
         description: "An object representing a photo embedding",
-        required: ["id", "embeddnig"],
+        required: ["id", "embedding"],
         properties: [
             new OA\Property(
                 property: "id",

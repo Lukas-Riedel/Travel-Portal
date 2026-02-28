@@ -23,7 +23,9 @@
             $json = <<<JSON
                 {
                     "size": $limit,
-                    "_source": ["photo_id"],
+                    "_source": [
+                        "photo_id"
+                    ],
                     "query": {
                         "knn": {
                             "embedding": $params
