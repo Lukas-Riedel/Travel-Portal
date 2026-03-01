@@ -79,10 +79,13 @@
 
         public function selectPhotoEmbedding(string $photoId) : ?PhotoEmbedding {
             $sql = <<<'SQL'
-                SELECT id,
-                    embedding
-                FROM photo_identifier
-                WHERE id = ?
+                SELECT pi.id,
+                    p.iso,
+                    pi.embedding
+                FROM photo_identifier pi
+                LEFT JOIN photo p
+                    ON pi.id = p.id
+                WHERE pi.id = ?
             SQL;
 
             $photoRow = $this->databaseClient
@@ -95,12 +98,13 @@
                 return null;
             }
             
-            return new PhotoEmbedding($photoRow["id"], json_decode($photoRow["embedding"], true));
+            return new PhotoEmbedding($photoRow["id"], $photoRow["iso"], json_decode($photoRow["embedding"], true));
         }
 
         public function selectPhotoEmbeddings(string $albumId) : array {
             $sql = <<<'SQL'
                 SELECT pi.id,
+                    p.iso,
                     pi.embedding
                 FROM photo_identifier pi
                 INNER JOIN photo p
@@ -114,7 +118,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($albumId)
                 ->getMappedResultSet(function($photoRow) {
-                    return new PhotoEmbedding($photoRow["id"], json_decode($photoRow["embedding"], true));
+                    return new PhotoEmbedding($photoRow["id"], $photoRow["iso"], json_decode($photoRow["embedding"], true));
                 });
         }
 

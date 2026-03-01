@@ -17,7 +17,11 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Service\Index\IndexService;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class TripService {
 
@@ -29,31 +33,68 @@
 
         private readonly CalendarClient $calendarClient;
         private readonly GoogleClient $googleClient;
+        private readonly GenerativeContentClient $generativeContentClient;
 
         private readonly ConfigurationService $configurationService;
 
         private readonly PlaceService $placeService;
         private readonly YearService $yearService;
         private readonly NoteService $noteService;
+        private readonly IndexService $indexService;
+        private readonly HighlightService $highlightService;
 
         private readonly EventPublisher $eventPublisher;
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, ConfigurationService $configurationService,
-            PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
-            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService, EventPublisher $eventPublisher) {
+        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $generativeContentClient,
+            ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,
+            FitnessService $fitnessService, NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService,
+            IndexService $indexService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
                 $stayService, $flightService, $expenseService, $fitnessService, $noteService,
                 $highlightService, $statisticsService);
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
+            $this->generativeContentClient = $generativeContentClient;
             $this->configurationService = $configurationService;
             $this->placeService = $placeService;
             $this->yearService = $yearService;
             $this->noteService = $noteService;
+            $this->indexService = $indexService;
+            $this->highlightService = $highlightService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
+        }
+
+        public function refreshTripHighlights(string $tripId, int $count) : void {
+            $trip = $this->getRegularTrip($tripId);
+            if ($trip === null) {
+                return;
+            }
+
+            $places = $this->placeService->getRegularPlaces(null, null, $tripId, null, null, null, null, null,
+                null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
+
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["tripHighlightsSelecting"];
+            // TODO EMBEDDINGS: Cache the query.
+            $query = $this->generativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query, $count, $trip->getMainHighlight()?->getPhoto()?->getId(),
+                array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places))));
+
+            foreach ($trip->getHighlights() as &$highlight) {
+                if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
+                    $this->highlightService->removeTripHighlight($tripId, $highlight->getId());
+                }
+            }
+
+            $existingHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), $trip->getHighlights());
+            foreach ($selectedPhotoIds as &$photoId) {
+                if (!in_array($photoId, $existingHighlightPhotoIds)) {
+                    $this->highlightService->createTripHighlight($tripId, $photoId);
+                }
+            }
         }
 
         public function getRegularTrip(string $tripId) : ?Trip {

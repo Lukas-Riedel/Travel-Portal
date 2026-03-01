@@ -35,6 +35,7 @@
     use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CategoryServiceListener;
+    use Core\Service\Clustering\ClusteringService;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
@@ -161,8 +162,9 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $indexService = new IndexService($searchClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"));
     $embeddingService = new EmbeddingService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $clusteringService = new ClusteringService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $indexService = new IndexService($clusteringService, $embeddingService, $configurationService, $searchClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"));
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
@@ -172,18 +174,18 @@
     $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
     $highlightService = new HighlightService($databaseClient, $photoService, $indexService, $eventPublisher, $cloudStorageClient, $httpClient, $logger);
-    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $statisticsService, $memoryCacheClient, $eventPublisher);
+    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $indexService, $statisticsService, $memoryCacheClient, $generativeContentClient, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService);
-    $yearService = new YearService($databaseClient, $fitnessService, $highlightService, $statisticsService);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $calendarClient, $googleClient, $distributedCacheClient, $memoryCacheClient, $configurationService, $categoryService,
-        $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $eventPublisher);
-    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
-        $noteService, $highlightService, $statisticsService, $yearService, $eventPublisher);
+        $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
+    $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $generativeContentClient);
+    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $generativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
+        $noteService, $highlightService, $statisticsService, $yearService, $indexService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
 
@@ -219,7 +221,7 @@
         new LabelIndexer($labelService),
         new TripIndexer($tripService),
         new YearIndexer($yearService),
-        new PhotoIndexer($photoService, $placeService)
+        new PhotoIndexer($photoService, $placeService, $tripService)
     );
     $indexService->setEntityIndexers($entityIndexers);
 
@@ -241,6 +243,7 @@
     
     // Event listeners.
     $listeners = array(
+        new IndexServiceListener($indexService, $photoService, $highlightService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
         new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
@@ -257,7 +260,6 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
-        new IndexServiceListener($indexService, $eventPublisher, $scheduler),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

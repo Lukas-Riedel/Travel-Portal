@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Label;
 
+    use Core\Service\Index\DocumentBuffer;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
     use Core\Service\Index\IndexType;
@@ -13,20 +14,16 @@
             $this->labelService = $labelService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
-            $result = array();
-
+        public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Label) {
                 $labels = $entityId !== null
                     ? array($this->labelService->getLabel($entityId))
                     : $this->labelService->getAllLabels();
 
                 foreach ($labels as &$label) {
-                    $result[$label->getId()] = array($label->getName());
+                    $documentBuffer->add($label->getId(), array($label->getName()));
                 }
             }
-
-            return $result;
         }
     }
 ?>

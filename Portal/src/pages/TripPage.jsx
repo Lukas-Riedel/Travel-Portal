@@ -15,17 +15,17 @@ import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
-import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function TripPage() {
     const { hasRole } = useAuth()
-    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { tripId } = useParams()
 
     const { trip, removeTrip, moveTrip, loadTrip, updateTripName, removeTripHighlight, updateTripMainHighlight,
         createTripExpense, updateTripExpenseDescription, updateTripExpenseValue, updateTripNoteContent,
-        removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes } = useTrip(tripId)
+        removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes, refreshTripHighlights } = useTrip(tripId)
     const { trips: candidateTrips } = useCandidateTrips()
     const { places } = useRegularPlaces({ tripId, include: ["categories", "dates"], sort: "-score" })
     const { candidatePlaces } = useCandidatePlaces({ tripId, include: ["categories", "dates"], sort: "-score" })
@@ -49,7 +49,7 @@ export default function TripPage() {
                 name={trip && trip.getFullName()}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.TripEdit) && { "Počet highlightů": trip?.highlights?.length }}
-                onHighlightsSelectingTriggered={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Trip, tripId, trip.getFullName(), highlightsCount, true))}
+                onHighlightsSelectingTriggered={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => refreshTripHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.TripEdit) && updateTripName}
                 onRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
             <HighlightCarouselAndPlaceMapToggle

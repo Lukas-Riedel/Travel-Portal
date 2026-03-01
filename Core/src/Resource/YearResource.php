@@ -35,6 +35,7 @@
                 $group->get("/{year}", [$resource, "getYear"]);
                 $group->patch("/{year}", [$resource, "updateYear"]);
                 $group->post("/{year}/highlights", [$resource, "createYearHighlight"]);
+                $group->post("/{year}/highlights/refresh", [$resource, "refreshYearHighlights"]);
                 $group->delete("/{year}/highlights/{highlightId}", [$resource, "removeYearHighlight"]);
             });
         }
@@ -446,6 +447,101 @@
             }
 
             return $this->highlightService->createYearHighlight($yearId, $photo["id"]);
+        }
+
+        #[OA\Post(
+            path: "/years/{yearId}/highlights/refresh",
+            summary: "Refresh highlights for a year with the specified identifier",
+            operationId: "refreshYearHighlights",
+            tags: ["Years"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "year",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the year",
+                    schema: new OA\Schema(type: "integer"),
+                    example: "2025",
+                ),
+                new OA\Parameter(
+                    name: "count",
+                    in: "query",
+                    required: true,
+                    description: "The count of highlights to select",
+                    schema: new OA\Schema(type: "integer"),
+                    example: 15,
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Refreshed highlights for a year with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Album")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function refreshYearHighlights(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::YearHighlightEdit);
+
+            $year = $this->requirePathArgument($routeArguments, "year");
+            $count = $this->requireQueryParameter($request, "count");
+
+            $this->yearService->refreshYearHighlights($year, $count);
+            
+            return $this->yearService->getYear($year)?->getHighlights();
         }
 
         #[OA\Delete(

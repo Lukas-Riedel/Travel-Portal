@@ -4,7 +4,8 @@ import {
     updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote,
     updatePlaceAlbumsReviewed,
     updatePlaceNoteContent,
-    updatePlaceCountry
+    updatePlaceCountry,
+    refreshPlaceHighlights
 } from "../clients/coreClient.ts"
 import { useEffect } from "react"
 import { Place } from "../classes/Place.ts"
@@ -51,6 +52,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         createPlaceNote: (name: string) => createPlaceNote(placeId, name).then(refetchResponse),
         updatePlaceNoteContent: (noteId: string, content: string) => updatePlaceNoteContent(placeId, noteId, content).then(refetchResponse),
         removePlaceNote: (noteId: string) => removePlaceNote(placeId, noteId).then(refetchResponse),
-        updatePlaceCountry: (country: string) => updatePlaceCountry(placeId, country).then(setResponse)
+        updatePlaceCountry: (country: string) => updatePlaceCountry(placeId, country).then(setResponse),
+        refreshPlaceHighlights: (count: number) => refreshPlaceHighlights(placeId, count).then(refetchResponse)
     }
 }

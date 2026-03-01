@@ -1,5 +1,5 @@
 
-import { getYear, removeYearHighlight, updateYearMainHighlight, updateHighlightQualityAttributes, createYearHighlight } from "../clients/coreClient.ts"
+import { getYear, removeYearHighlight, updateYearMainHighlight, updateHighlightQualityAttributes, createYearHighlight, refreshYearHighlights } from "../clients/coreClient.ts"
 import type { UseYearResult } from "../types/UseYearResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
@@ -18,6 +18,7 @@ export const useYear = (year?: number): UseYearResult => {
         removeYearHighlight: (highlightId: string) => removeYearHighlight(year, highlightId).then(refetchResponse),
         updateYearMainHighlight: (highlightId: string) => updateYearMainHighlight(year, highlightId).then(setResponse),
         updateYearHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) =>
-            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse)
+            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
+        refreshYearHighlights: (count: number) => refreshYearHighlights(year, count).then(refetchResponse)
     }
 }

@@ -23,6 +23,7 @@
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Service\Geocoding\Location;
+    use Core\Service\Index\IndexService;
 
     class PlaceService {
         
@@ -47,9 +48,13 @@
 
         private readonly CategoryService $categoryService;
 
+        private readonly HighlightService $highlightService;
+
         private readonly PhotoService $photoService;
 
         private readonly GeocodingService $geocodingService;
+
+        private readonly IndexService $indexService;
 
         private readonly EventPublisher $eventPublisher;
 
@@ -58,7 +63,8 @@
         public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, CalendarClient $calendarClient,
             GoogleClient $googleClient, CacheClient $distributedCacheClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService,
             CategoryService $categoryService, LabelService $labelService, ForecastService $forecastService, PhotoService $photoService,
-            HighlightService $highlightService, NoteService $noteService, GeocodingService $geocodingService, EventPublisher $eventPublisher) {
+            HighlightService $highlightService, NoteService $noteService, GeocodingService $geocodingService, IndexService $indexService,
+            EventPublisher $eventPublisher) {
             $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
                 $photoService, $highlightService, $noteService, $memoryCacheClient);
             $this->generativeContentClient = $generativeContentClient;
@@ -66,11 +72,39 @@
             $this->googleClient = $googleClient;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->configurationService = $configurationService;
+            $this->highlightService = $highlightService;
             $this->categoryService = $categoryService;
+            $this->indexService = $indexService;
             $this->photoService = $photoService;
             $this->geocodingService = $geocodingService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
+        }
+
+        public function refreshPlaceHighlights(string $placeId, int $count) : void {
+            $place = $this->getRegularPlace($placeId);
+            if ($place === null) {
+                return;
+            }
+
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeHighlightsSelecting"];
+            // TODO EMBEDDINGS: Cache the query.
+            $query = $this->generativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""));
+
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $query, $count, $place->getMainHighlight()?->getPhoto()?->getId());
+
+            foreach ($place->getHighlights() as &$highlight) {
+                if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
+                    $this->highlightService->removePlaceHighlight($placeId, $highlight->getId());
+                }
+            }
+
+            $existingHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), $place->getHighlights());
+            foreach ($selectedPhotoIds as &$photoId) {
+                if (!in_array($photoId, $existingHighlightPhotoIds)) {
+                    $this->highlightService->createPlaceHighlight($placeId, $photoId);
+                }
+            }
         }
 
         public function getPlaceSignificance(string $placeId) : int {

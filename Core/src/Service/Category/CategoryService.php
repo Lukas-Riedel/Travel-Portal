@@ -4,12 +4,15 @@
     use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-    use Core\Service\Configuration\ConfigurationService;
+use Core\Client\GenerativeContent\GenerativeContentClient;
+use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Statistics\StatisticsService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+use Core\Service\Index\IndexService;
+use Core\Service\Place\PlaceSortingStrategy;
 
     class CategoryService {
 
@@ -27,14 +30,59 @@
 
         private readonly CacheClient $memoryCacheClient;
 
+        private readonly GenerativeContentClient $generativeContentClient;
+
+        private readonly HighlightService $highlightService;
+
+        private readonly IndexService $indexService;
+
+        private readonly ConfigurationService $configurationService;
+
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,
-            HighlightService $highlightService, StatisticsService $statisticsService, CacheClient $memoryCacheClient, EventPublisher $eventPublisher) {
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
+            StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $generativeContentClient, EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $configurationService);
             $this->eventPublisher = $eventPublisher;
             $this->memoryCacheClient = $memoryCacheClient;
+            $this->generativeContentClient = $generativeContentClient;
+            $this->highlightService = $highlightService;
+            $this->indexService = $indexService;
+            $this->configurationService = $configurationService;
             $this->transactionManager = $databaseClient;
+        }
+
+        public function refreshCategoryHighlights(string $categoryId, int $count) : void {
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $category = $this->getCategory($categoryId);
+            if ($category === null) {
+                return;
+            }
+
+            $places = $placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null,
+                time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
+
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["categoryHighlightsSelecting"];
+            // TODO EMBEDDINGS: Cache the query.
+            $query = $this->generativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $query, $count,
+                $category->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
+
+            foreach ($category->getHighlights() as &$highlight) {
+                if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
+                    $this->highlightService->removeCategoryHighlight($categoryId, $highlight->getId());
+                }
+            }
+
+            $existingHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), $category->getHighlights());
+            foreach ($selectedPhotoIds as &$photoId) {
+                if (!in_array($photoId, $existingHighlightPhotoIds)) {
+                    $this->highlightService->createCategoryHighlight($categoryId, $photoId);
+                }
+            }
         }
 
         public function updateCategories(PlaceIdentifier $placeIdentifier) : void {

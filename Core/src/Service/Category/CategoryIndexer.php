@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Category;
 
+    use Core\Service\Index\DocumentBuffer;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
     use Core\Service\Index\IndexType;
@@ -18,9 +19,7 @@
             $this->placeService = $placeService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
-            $result = array();
-
+        public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Category) {
                 $categories = $entityId !== null
                     ? array($this->categoryService->getCategory($entityId))
@@ -29,12 +28,10 @@
                 foreach ($categories as &$category) {
                     $categoryPlaces = $this->placeService->getRegularPlaces($category->getId(), null, null, null, null, null, null, null, time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
                     if (count($categoryPlaces) > 0) {
-                        $result[$category->getId()] = array($category->getName());                        
+                        $documentBuffer->add($category->getId(), array($category->getName()));                       
                     }
                 }
             }
-
-            return $result;
         }
     }
 ?>

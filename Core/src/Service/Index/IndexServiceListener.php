@@ -5,6 +5,8 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Highlight\HighlightService;
+    use Core\Service\Photo\PhotoService;
 
     class IndexServiceListener {
         
@@ -13,11 +15,16 @@
 
         private readonly IndexService $indexService;
 
+        private readonly PhotoService $photoService;
+        private readonly HighlightService $highlightService;
+
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(IndexService $indexService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(IndexService $indexService, PhotoService $photoService, HighlightService $highlightService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->indexService = $indexService;
+            $this->photoService = $photoService;
+            $this->highlightService = $highlightService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -77,7 +84,53 @@
         }
 
         public function onAlbumUpdated(mixed $message) : void {
-            $this->indexService->index(IndexType::Photo, IndexableEntityType::Album, $message["albumId"]);
+            // TODO: This is a bit weird, since the entity type is photo but an album identifier is passed to the function as the entity id.
+            $this->indexService->index(IndexType::Photo, IndexableEntityType::Photo, $message["albumId"]);
+        }
+
+        public function onHighlightCreated(mixed $message) : void {
+            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
+            if ($highlight === null) {
+                return;
+            }
+
+            $album = $this->photoService->getAlbumForPhotoId($highlight->getPhoto()->getId());
+            if ($album === null) {
+                return;
+            }
+
+            // TODO: This is a bit weird, since the entity type is photo but an album identifier is passed to the function as the entity id.
+            $this->indexService->index(IndexType::Photo, IndexableEntityType::Photo, $album->getId());
+        }
+
+        public function onHighlightUpdated(mixed $message) : void {
+            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
+            if ($highlight === null) {
+                return;
+            }
+
+            $album = $this->photoService->getAlbumForPhotoId($highlight->getPhoto()->getId());
+            if ($album === null) {
+                return;
+            }
+
+            // TODO: This is a bit weird, since the entity type is photo but an album identifier is passed to the function as the entity id.
+            $this->indexService->index(IndexType::Photo, IndexableEntityType::Photo, $album->getId());
+        }
+
+        public function onHighlightRemoved(mixed $message) : void {
+            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
+            if ($highlight === null) {
+                return;
+            }
+
+            $album = $this->photoService->getAlbumForPhotoId($highlight->getPhoto()->getId());
+            if ($album === null) {
+                return;
+            }
+
+            // TODO: This is a bit weird, since the entity type is photo but an album identifier is passed to the function as the entity id.
+            $this->indexService->index(IndexType::Photo, IndexableEntityType::Photo, $album->getId());
         }
 
         public function onIndexInvalidated(mixed $message) : void {

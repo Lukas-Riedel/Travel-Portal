@@ -4,6 +4,6 @@
     use Core\Service\Index\IndexableEntityType;
 
     interface EntityIndexer {
-        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array;
+        public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void;
     }
 ?>

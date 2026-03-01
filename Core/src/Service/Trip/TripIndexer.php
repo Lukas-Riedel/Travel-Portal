@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Service\Index\DocumentBuffer;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
     use Core\Service\Index\IndexType;
@@ -13,9 +14,7 @@
             $this->tripService = $tripService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
-            $result = array();
-
+        public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Trip) {
                 $trips = $entityId !== null
                     ? array($this->tripService->getRegularTrip($entityId))
@@ -41,11 +40,9 @@
                         $terms[] = $stay->getName();
                     }
 
-                    $result[$trip->getId()] = array_filter($terms);
+                    $documentBuffer->add($trip->getId(), array_filter($terms));
                 }
             }
-
-            return $result;
         }
     }
 ?>

@@ -405,7 +405,7 @@
         "prompt": {
             "select": {
                 "message": "Zadej počet highlightů k vytvoření:",
-                "confirmed": "Vytváření highlightů bude brzy zahájeno",
+                "confirmed": "Vytváření highlightů bylo dokončeno",
                 "failed": "Při vytváření highlightů došlo k chybě"
             },
             "create": {

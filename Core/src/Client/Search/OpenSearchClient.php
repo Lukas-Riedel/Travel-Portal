@@ -63,7 +63,8 @@
         }        
 
         public function deleteUnusedIndexes(array $usedIndexes) : void {
-            $indices = array_keys($this->client->indices()->getMapping());
+            $allSettings = $this->client->indices()->getSettings();
+            $indices = array_keys($allSettings);
 
             foreach ($indices as $index) {
                 if (str_starts_with($index, ".")) {

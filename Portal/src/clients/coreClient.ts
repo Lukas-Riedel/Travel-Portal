@@ -7,13 +7,36 @@ import type {
     Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
     DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
-    Location,
-    SearchResult
+    Location, SearchResult
 } from "../types/CoreSwaggerTypes.ts"
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
+
+export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
+    coreClient.post<Highlight[]>(createQueryPath(`places/${placeId}/highlights/refresh`,
+        {
+            count
+        })).then(extractData)
+
+export const refreshTripHighlights = async (tripId: string, count: number): Promise<Highlight[]> =>
+    coreClient.post<Highlight[]>(createQueryPath(`trips/${tripId}/highlights/refresh`,
+        {
+            count
+        })).then(extractData)
+
+export const refreshCategoryHighlights = async (categoryId: string, count: number): Promise<Highlight[]> =>
+    coreClient.post<Highlight[]>(createQueryPath(`categories/${categoryId}/highlights/refresh`,
+        {
+            count
+        })).then(extractData)
+
+export const refreshYearHighlights = async (year: number, count: number): Promise<Highlight[]> =>
+    coreClient.post<Highlight[]>(createQueryPath(`years/${year}/highlights/refresh`,
+        {
+            count
+        })).then(extractData)
 
 export const search = async (query: string, limit?: number, config?: AxiosRequestConfig): Promise<SearchResult[]> =>
     coreClient.get<SearchResult[]>(createQueryPath("search",

@@ -17,15 +17,15 @@ import DayCard from "../components/DayCard"
 import { fromUnixTime, startOfDay } from "date-fns"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Trip } from "../classes/Trip.ts"
-import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function YearPage() {
     const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
     const { year: yearParameter } = useParams()
-    const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
+    const { publishPhotoReplacingTriggeredEvent, publishPhotosUploadingTriggeredEvent } = useEvents()
 
-    const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes } = useYear(yearParameter)
+    const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes, refreshYearHighlights } = useYear(yearParameter)
     const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: ["dates", "categories"] })
     const yearTrips = useRegularTrips({ year: yearParameter, include: ["expenses"] })
 
@@ -48,7 +48,7 @@ export default function YearPage() {
                 name={year?.id}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.YearEdit) && { "Počet highlightů": year?.highlights?.length }}
-                onHighlightsSelectingTriggered={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Year, yearParameter, yearParameter, highlightsCount, true))}
+                onHighlightsSelectingTriggered={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => refreshYearHighlights(highlightsCount))}
             />
             <HighlightCarouselAndPlaceMapToggle
                 entity={year}

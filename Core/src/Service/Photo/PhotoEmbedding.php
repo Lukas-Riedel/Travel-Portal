@@ -16,7 +16,13 @@
                 example: "d13e8c2e-4f9a-4c2e-b318-6fae77acda7b"
             ),
             new OA\Property(
-                property: "albumId",
+                property: "iso",
+                type: "integer",
+                description: "The ISO settings of the photo",
+                example: 100
+            ),
+            new OA\Property(
+                property: "embedding",
                 type: "array",
                 description: "The embedding of the photo",
                 items: new OA\Items(type: "number", format: "float"),
@@ -26,15 +32,21 @@
     )]
     class PhotoEmbedding implements \JsonSerializable { 
         private readonly string $id;
+        private readonly ?int $iso;
         private readonly array $embedding;
 
-        public function __construct(string $id, array $embedding) {
+        public function __construct(string $id, ?int $iso, array $embedding) {
             $this->id = $id;
+            $this->iso = $iso;
             $this->embedding = $embedding;
         }
 
         public function getId() : string {
             return $this->id;
+        }
+
+        public function getIso() : ?int {
+            return $this->iso;
         }
 
         public function getEmbedding() : array {

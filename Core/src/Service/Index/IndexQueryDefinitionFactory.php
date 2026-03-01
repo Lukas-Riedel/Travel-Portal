@@ -1,7 +1,99 @@
 <?php
     namespace Core\Service\Index;
 
+    // TODO: Figure out what to do with this class.
     class IndexQueryDefinitionFactory {
+        public function createAllPlaceMainHighlightsEmbeddingQuery() : array {
+            // TODO: The hard limit is 10000, fix this limitation by making multiple requests.
+            $json = <<<JSON
+                {
+                    "size": 10000,
+                    "_source": [
+                        "embedding"
+                    ],
+                    "query": {
+                        "term": {
+                            "is_place_main_highlight": {
+                                "value": true
+                            }
+                        }
+                    }
+                }
+            JSON;
+
+            return json_decode($json, true);
+        }
+
+        public function createPhotoSelectionQuery(array $embedding, int $limit, array $placeIds, array $tripIds, array $photoIds, ?bool $placeHighlightsOnly, ?bool $tripHighlightsOnly) : array {            
+            $filterConditions = array();
+            if (!empty($placeIds)) {
+                $filterConditions[] = array("terms" => array("place_id" => $placeIds));
+            }
+            if (!empty($tripIds)) {
+                $filterConditions[] = array("terms" => array("trip_id" => $tripIds));
+            }
+            if (!empty($photoIds)) {
+                $filterConditions[] = array("terms" => array("photo_id" => $photoIds));
+            }
+            if ($placeHighlightsOnly !== null) {
+                $filterConditions[] = array("term" => array("is_place_highlight" => $placeHighlightsOnly));
+            }
+            if ($tripHighlightsOnly !== null) {
+                $filterConditions[] = array("term" => array("is_trip_highlight" => $tripHighlightsOnly));
+            }
+            
+            $vector = json_encode($embedding);
+            $filter = json_encode($filterConditions);
+
+            $json = <<<JSON
+            {
+                "size": $limit,
+                "_source": [
+                    "photo_id",
+                    "embedding"
+                ],
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "script_score": {
+                                "query": {
+                                    "bool": {
+                                    "filter": $filter
+                                    }
+                                },
+                                "script": {
+                                    "source": "knn_score",
+                                    "lang": "knn",
+                                    "params": {
+                                        "field": "embedding",
+                                        "query_value": $vector,
+                                        "space_type": "cosinesimil"
+                                    }
+                                }
+                            }
+                        },
+                        "functions": [
+                            {
+                                "gauss": {
+                                    "iso": {
+                                        "origin": "100",
+                                        "scale": "400",
+                                        "decay": 0.5
+                                    }
+                                },
+                                "weight": 2
+                            }
+                        ],
+                        "score_mode": "multiply",
+                        "boost_mode": "multiply"
+                    }
+                }
+            }
+            JSON;
+
+            return json_decode($json, true);
+        }
+
         public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $mainHighlightsOnly) : array {
             $rawParams = array(
                 "vector" => $embedding,
@@ -39,8 +131,8 @@
 
         public function createCompositeIndexSearchQuery(string $query, int $limit, array $allowedEntityTypes) : array {
             $sanitizedQuery = json_encode($query);
-            $functions = json_encode(array_map(fn($type) => array("filter" => array("term" => array("entity_type" => $type->value)), "weight" => $type->getPriority()), IndexableEntityType::cases()));
-            $allowedValues = json_encode(array_map(fn($entityType) => $entityType->value, $allowedEntityTypes));
+            $functions = json_encode(array_values(array_map(fn($type) => array("filter" => array("term" => array("entity_type" => $type->value)), "weight" => $type->getPriority()), IndexableEntityType::cases())));
+            $allowedValues = json_encode(array_values(array_map(fn($entityType) => $entityType->value, $allowedEntityTypes)));
 
             $json = <<<JSON
                 {
@@ -235,7 +327,13 @@
                             "trip_id": {
                                 "type": "keyword"
                             },
+                            "iso": {
+                                "type": "integer"
+                            },
                             "is_place_highlight": {
+                                "type": "boolean"
+                            },
+                            "is_trip_highlight": {
                                 "type": "boolean"
                             },
                             "is_place_main_highlight": {

@@ -23,12 +23,12 @@ const nearbyPlacesCount = 3
 export default function PlacePage() {
     const { hasRole } = useAuth()
     const { placeId } = useParams()
-    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
-        createPlaceNote, removePlaceNote } = usePlace(placeId, nearbyPlacesCount)
+        createPlaceNote, removePlaceNote, refreshPlaceHighlights } = usePlace(placeId, nearbyPlacesCount)
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
 
@@ -40,7 +40,7 @@ export default function PlacePage() {
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation) }}
-                onHighlightsSelectingTriggered={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Place, placeId, place.name, highlightsCount, true))}
+                onHighlightsSelectingTriggered={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => refreshPlaceHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel
                 place={place}

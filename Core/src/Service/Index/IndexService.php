@@ -2,13 +2,25 @@
     namespace Core\Service\Index;
 
     use Core\Client\Search\SearchClient;
+    use Core\Service\Clustering\ClusteringService;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Embedding\EmbeddingService;
     use Ramsey\Uuid\Uuid;
 
     class IndexService {
 
-        private const BATCH_SIZE = 500;
+        private const BATCH_SIZE = 1000;
+        // TODO EMBEDDINGS: Extract to deployment configuration whatever deemed necessary.
+        private const SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT = 20;
+        private const CLUSTERS_COUNT_COEFFICIENT = 3.5;
+        private const STYLE_EMBEDDING_COEFFICIENT = 0.3;
+        private const NEGATIVE_EMBEDDING_COEFFICIENT = 0.2;
 
         private readonly IndexQueryDefinitionFactory $indexQueryDefinitionFactory;
+
+        private readonly ClusteringService $clusteringService;
+        private readonly EmbeddingService $embeddingService;
+        private readonly ConfigurationService $configurationService;
     
         private readonly SearchClient $searchClient;
 
@@ -17,8 +29,12 @@
 
         private array $entityIndexers = array();
 
-        public function __construct(SearchClient $searchClient, string $compositeIndexName, string $photoIndexName) {
+        public function __construct(ClusteringService $clusteringService, EmbeddingService $embeddingService, ConfigurationService $configurationService,
+            SearchClient $searchClient, string $compositeIndexName, string $photoIndexName) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
+            $this->clusteringService = $clusteringService;
+            $this->embeddingService = $embeddingService;
+            $this->configurationService = $configurationService;
             $this->searchClient = $searchClient;
             $this->compositeIndexName = $compositeIndexName;
             $this->photoIndexName = $photoIndexName;
@@ -33,11 +49,35 @@
                 $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes)));
         }
 
-        public function getNearestNeighbourPhotoIds(array $embedding, int $limit, bool $mainHighlightsOnly = true) : array {    
+        public function getNearestNeighbourPhotoIds(array $embedding, int $limit, bool $mainHighlightsOnly = true) : array {
             $searchEntries = $this->searchClient->search($this->photoIndexName,
                 $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $mainHighlightsOnly));
 
             return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()["photo_id"], $searchEntry->getScore()), $searchEntries);
+        }
+
+        public function getSelectedPhotoIdsForPlace(string $placeId, string $query, int $count, ?string $mainHighlightPhotoId) : array {
+            return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, array(),
+                fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
+                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, array($placeId), array(), array(), null, null));
+        }
+
+        public function getSelectedPhotoIdsForTrip(string $tripId, string $query, int $count, ?string $mainHighlightPhotoId, array $tripPlaceHighlightPhotoIds) : array {
+            return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $tripPlaceHighlightPhotoIds,
+                fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
+                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, array(), array($tripId), array(), null, null));            
+        }
+
+        public function getSelectedPhotoIdsForCategory(array $categoryPlaceIds, string $query, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
+            return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
+                fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
+                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, $categoryPlaceIds, array(), array(), true, null));
+        }
+
+        public function getSelectedPhotoIdsForYear(array $yearTripIds, string $query, int $count, ?string $mainHighlightPhotoId, array $tripMainHighlightPhotoIds) : array {
+            return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $tripMainHighlightPhotoIds,
+                fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
+                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, array(), $yearTripIds, array(), null, true));
         }
 
         public function reindex() : void {           
@@ -63,19 +103,9 @@
 
         private function doIndex(string $indexName, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             foreach ($this->entityIndexers as &$entityIndexer) {
-                $documents = $entityIndexer->index($indexType, $entityType, $entityId);
-                if (empty($documents)) {
-                    continue;
-                }
-
-                $mappedDocuments = array();
-                foreach ($documents as $id => $terms) {
-                    $mappedDocuments[] = $this->getDocument($indexType, $entityType, $id, $terms);
-                }
-
-                foreach (array_chunk($mappedDocuments, self::BATCH_SIZE) as &$batch) {
-                    $this->searchClient->index($indexName, $batch);
-                }
+                $documentBuffer = new DocumentBuffer($this->searchClient, $indexType, $entityType, $indexName, self::BATCH_SIZE);
+                $entityIndexer->index($documentBuffer, $indexType, $entityType, $entityId);
+                $documentBuffer->flush();
             }
         }
 
@@ -93,41 +123,136 @@
             };
         }
 
-        private function getDocument(IndexType $indexType, IndexableEntityType $entityType, string $id, mixed $content) : array {
-            return match($indexType) {
-                IndexType::Composite => $this->getDocumentForCompositeIndex($entityType, $id, $content),
-                IndexType::Photo => $this->getDocumentForPhotoIndex($entityType, $id, $content)
-            };
+        private function doGetSelectedPhotoIds(string $query, int $count, ?string $mainHighlightPhotoId,
+            ?array $prioritizedPhotoIds, callable $querySupplier) : array {            
+            $combinedEmbedding = $this->computeEmbeddingForPhotoSelection($query);
+            $searchEntries = $this->searchClient->search($this->photoIndexName, $querySupplier($combinedEmbedding));
+
+            $allPrioritizedPhotoIds = array();
+            if ($mainHighlightPhotoId !== null) {
+                $allPrioritizedPhotoIds[] = $mainHighlightPhotoId;
+            }
+            if ($prioritizedPhotoIds !== null) {
+                $allPrioritizedPhotoIds = array_merge($allPrioritizedPhotoIds, $prioritizedPhotoIds);
+            }
+
+            if (!empty($allPrioritizedPhotoIds)) {
+                $prioritizedSearchEntries = $this->searchClient->search($this->photoIndexName,
+                    $this->indexQueryDefinitionFactory->createPhotoSelectionQuery($combinedEmbedding, count($allPrioritizedPhotoIds), array(), array(), $allPrioritizedPhotoIds, null, null));
+                
+                $existingSearchEntries = array_flip(array_map(fn($searchEntry) => $searchEntry->getData()["photo_id"], $searchEntries));
+                foreach ($prioritizedSearchEntries as &$prioritizedSearchEntry) {
+                    if (!isset($existingSearchEntries[$prioritizedSearchEntry->getData()["photo_id"]])) {
+                        $searchEntries[] = $prioritizedSearchEntry;
+                    }
+                }
+            }
+
+            if (empty($searchEntries)) {
+                return array();
+            }
+
+            if (count($searchEntries) <= $count) {
+                return array_map(fn($searchEntry) => $searchEntry->getData()["photo_id"], $searchEntries);
+            }         
+            
+            $embeddings = array_map(fn($searchEntry) => $searchEntry->getData()["embedding"], $searchEntries);
+            $clusters = $this->clusteringService->getEmbeddingsClusters($embeddings, round($count * self::CLUSTERS_COUNT_COEFFICIENT));
+
+            $clustersMetadata = array();
+            foreach ($clusters as $label => $indices) {
+                foreach ($indices as &$idx) {
+                    $clustersMetadata[$idx] = array(
+                        "label" => $label,
+                        "size" => count($indices)
+                    );
+                }
+            }
+
+            $prioritizedPhotoIdsMap = array_flip($prioritizedPhotoIds);
+            $candidates = array_map(function($index, $entry) use (&$clustersMetadata, &$mainHighlightPhotoId, &$prioritizedPhotoIdsMap) {
+                $photoId = $entry->getData()["photo_id"];
+                $clusterMetadata = $clustersMetadata[$index];
+                
+                return array(
+                    "index" => $index,
+                    "photoId" => $photoId,
+                    "clusterLabel" => $clusterMetadata["label"],
+                    "priority" => $entry->getScore() * ($clusterMetadata["size"] ** 2),
+                    "typeRank" => match(true) {
+                        $photoId === $mainHighlightPhotoId => 0,
+                        isset($prioritizedPhotoIdsMap[$photoId]) => 1,
+                        default => 2
+                    }
+                );
+            }, array_keys($searchEntries), $searchEntries);
+
+            usort($candidates, fn($a, $b) => ($a["typeRank"] <=> $b["typeRank"]) ?: ($b["priority"] <=> $a["priority"]));
+
+            $selectedPhotoIds = array();
+            $usedClusterLabels = array();
+
+            foreach ($candidates as &$candidate) {
+                if (count($selectedPhotoIds) >= $count) {
+                    break;
+                }
+
+                if (!isset($usedClusterLabels[$candidate["clusterLabel"]])) {
+                    $selectedPhotoIds[$candidate["index"]] = $candidate["photoId"];
+                    $usedClusterLabels[$candidate["clusterLabel"]] = true;
+                }
+            }
+
+            foreach ($candidates as &$candidate) {
+                if (count($selectedPhotoIds) >= $count) {
+                    break;
+                }
+
+                if (!isset($selectedPhotoIds[$candidate["index"]])) {
+                    $selectedPhotoIds[$candidate["index"]] = $candidate["photoId"];
+                }
+            }
+
+            return array_values($selectedPhotoIds);
         }
 
-        private function getDocumentForCompositeIndex(IndexableEntityType $entityType, string $id, array $terms) : array {
-            $name = !empty($terms) ? $terms[0] : "";
+        private function computeEmbeddingForPhotoSelection(string $query) : array {
+            $contentEmbedding = $this->embeddingService->getTextEmbedding($query);
+            $styleEmbedding = $this->getStyleEmbedding();
+            $negativeEmbedding = $this->getNegativeEmbedding();
 
-            return array(
-                "id" => $this->getEntityId($entityType, $id),
-                "entity_type" => $entityType->value,
-                "entity_id" => $id,
-                "entity_name" => $name,
-                "search_text" => implode(" ", array_unique($terms))
-            );
+            $finalVector = array_map(fn($v, $n) => $v - ($n * self::NEGATIVE_EMBEDDING_COEFFICIENT), $contentEmbedding, $negativeEmbedding);
+            if ($styleEmbedding !== null) {
+                $finalVector = array_map(fn($c, $s) => $c + ($s * self::STYLE_EMBEDDING_COEFFICIENT), $finalVector, $styleEmbedding);
+            }
+
+            $norm = sqrt(array_sum(array_map(fn($v) => $v ** 2, $finalVector)));
+            return $norm > 1e-10 ? array_map(fn($v) => $v / $norm, $finalVector) : $contentEmbedding;
         }
 
-        private function getDocumentForPhotoIndex(IndexableEntityType $entityType, string $id, array $data) : array {
-            return array(
-                "id" => $this->getEntityId($entityType, $id),
-                "entity_type" => $entityType->value,
-                "photo_id" => $id,
-                "embedding" => $data["embedding"],
-                "place_id" => $data["placeId"],
-                "trip_id" => $data["tripId"] ?? null,
-                "album_id" => $data["albumId"],
-                "is_place_highlight" => $data["isPlaceHighlight"],
-                "is_place_main_highlight" => $data["isPlaceMainHighlight"]
-            );
+        private function getStyleEmbedding() : ?array {         
+            // TODO EMBEDDINGS: Cache the embedding for some time since it's unlikely to change that rapidly.   
+            $searchEntries = $this->searchClient->search($this->photoIndexName,
+                $this->indexQueryDefinitionFactory->createAllPlaceMainHighlightsEmbeddingQuery());
+            if (empty($searchEntries)) {
+                return null;
+            }
+
+            $embeddings = array_map(fn($e) => $e->getData()["embedding"], $searchEntries);
+
+            $sumVector = array_reduce($embeddings, function($carry, $vec) {
+                return $carry ? array_map(fn($a, $b) => $a + $b, $carry, $vec) : $vec;
+            }, array_fill(0, count($embeddings[0]), 0.0));
+
+            $avgVector = array_map(fn($val) => $val / count($embeddings), $sumVector);
+            $norm = sqrt(array_sum(array_map(fn($val) => $val ** 2, $avgVector)));
+
+            return $norm > 1e-10 ? array_map(fn($val) => $val / $norm, $avgVector) : null;
         }
 
-        private function getEntityId(IndexableEntityType $entityType, string $id) : string {
-            return $entityType->value . "_" . $id;
+        private function getNegativeEmbedding() : array {
+            // TODO EMBEDDINGS: Cache the embedding for given terms.
+            return $this->embeddingService->getTextEmbedding(implode(", ", $this->configurationService->getConfigurationEntry("embeddings")["negativeTerms"]));
         }
     }
 ?>

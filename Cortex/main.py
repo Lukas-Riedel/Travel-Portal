@@ -16,6 +16,7 @@ from src.handlers.highlights_selecting_triggered_handler import (
 )
 from src.api.management_router import router as management_router
 from src.api.embeddings_router import router as embeddings_router
+from src.api.clustering_router import router as clustering_router
 from src.service.authentication_service import AuthenticationService
 from src.api.logging_middleware import LoggingMiddleware
 from src.core.logger import logger, transaction_id
@@ -25,6 +26,7 @@ load_dotenv()
 app = FastAPI(title="Cortex API", docs_url="/swagger", version="1.0.0")
 app.include_router(management_router)
 app.include_router(embeddings_router)
+app.include_router(clustering_router)
 app.add_middleware(LoggingMiddleware)
 
 @app.get("/", include_in_schema=False)

@@ -3,6 +3,7 @@
 
     use Core\Common\CommonConstants;
     use Core\Service\Geocoding\GeocodingService;
+    use Core\Service\Index\DocumentBuffer;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
     use Core\Service\Index\IndexType;
@@ -23,9 +24,7 @@
             $this->geocodingService = $geocodingService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
-            $result = array();
-
+        public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Place) {
                 $places = $entityId !== null
                     ? array($this->placeService->getRegularPlace($entityId, self::NEARBY_PLACES_COUNT))
@@ -59,11 +58,9 @@
                         }
                     }
 
-                    $result[$place->getId()] = $terms;
+                    $documentBuffer->add($place->getId(), $terms);
                 }
             }
-
-            return $result;
         }
     }
 ?>

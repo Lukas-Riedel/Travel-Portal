@@ -1,4 +1,4 @@
-import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata, createCategoryHighlight, updateCategoryCategory, removeCategory, updateCategoryName } from "../clients/coreClient.ts"
+import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata, createCategoryHighlight, updateCategoryCategory, removeCategory, updateCategoryName, refreshCategoryHighlights } from "../clients/coreClient.ts"
 import type { CategoryCategory, CategoryMetadata } from "../types/CoreSwaggerTypes.ts"
 import type { UseCategoryResult } from "../types/UseCategoryResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
@@ -22,6 +22,7 @@ export const useCategory = (categoryId?: string): UseCategoryResult => {
         updateCategoryMainHighlight: (highlightId: string) => updateCategoryMainHighlight(categoryId, highlightId).then(setResponse),
         updateCategoryHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
-        removeCategory: () => removeCategory(categoryId)
+        removeCategory: () => removeCategory(categoryId),
+        refreshCategoryHighlights: (count: number) => refreshCategoryHighlights(categoryId, count).then(refetchResponse)
     }
 }

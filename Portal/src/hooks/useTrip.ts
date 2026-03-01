@@ -2,7 +2,8 @@ import {
     getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, createTripHighlight, removeTripHighlight,
     updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
     updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote,
-    updateTripNoteContent
+    updateTripNoteContent,
+    refreshTripHighlights
 } from "../clients/coreClient.ts"
 import { Trip } from "../classes/Trip.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
@@ -35,6 +36,7 @@ export const useTrip = (tripId?: string): UseTripResult => {
         updateTripExpenseValue: (expenseId: string, value: number, currency: string) => updateTripExpenseValue(tripId, expenseId, value, currency).then(refetchResponse),
         createTripNote: (name: string) => createTripNote(tripId, name).then(refetchResponse),
         updateTripNoteContent: (noteId: string, content: string) => updateTripNoteContent(tripId, noteId, content).then(refetchResponse),
-        removeTripNote: (noteId: string) => removeTripNote(tripId, noteId).then(refetchResponse)
+        removeTripNote: (noteId: string) => removeTripNote(tripId, noteId).then(refetchResponse),
+        refreshTripHighlights: (count: number) => refreshTripHighlights(tripId, count).then(refetchResponse)
     }
 }

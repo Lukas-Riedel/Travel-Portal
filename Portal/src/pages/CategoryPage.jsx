@@ -11,7 +11,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { Edit2, Folder } from "lucide-react"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import { useUserInput } from "../hooks/useUserInput.tsx"
-import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 // TODO: This is duplicated in MainLayout.
 const categoryCategories = {
@@ -27,12 +27,12 @@ const categoryCategories = {
 
 export default function CategoryPage() {
     const { categoryId } = useParams()
-    const { publishPhotoReplacingTriggeredEvent, publishHighlightsSelectingTriggeredEvent } = useEvents()
+    const { publishPhotoReplacingTriggeredEvent } = useEvents()
     const { showFormToast } = useUserInput()
 
     const { hasRole } = useAuth()
 
-    const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategory,
+    const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategory, refreshCategoryHighlights,
         removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const { places } = useTimeFilteredRegularPlaces({ categoryId, include: ["categories"], sort: "-score" })
 
@@ -85,7 +85,7 @@ export default function CategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.CategoryEdit) && attributes}
-                onHighlightsSelectingTriggered={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => publishHighlightsSelectingTriggeredEvent(HighlightType.Category, categoryId, category.name, highlightsCount, true))}
+                onHighlightsSelectingTriggered={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName}
                 onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== "country" && removeCategory} />
             <HighlightCarouselAndPlaceMapToggle

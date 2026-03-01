@@ -6,4 +6,5 @@ export interface UseYearResult {
     removeYearHighlight: (highlightId: string) => Promise<void>
     updateYearMainHighlight: (highlightId: string) => Promise<Year>
     updateYearHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) => Promise<Highlight>
+    refreshYearHighlights: (count: number) => Promise<Highlight[]>
 }

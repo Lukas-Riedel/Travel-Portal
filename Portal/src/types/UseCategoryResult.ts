@@ -10,4 +10,5 @@ export interface UseCategoryResult {
     updateCategoryMainHighlight: (highlightId: string) => Promise<Category>
     updateCategoryHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) => Promise<Highlight>
     removeCategory: () => Promise<void>
+    refreshCategoryHighlights: (count: number) => Promise<Highlight[]>
 }

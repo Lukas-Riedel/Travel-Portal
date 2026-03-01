@@ -18,4 +18,5 @@ export interface UseTripResult {
     createTripNote: (name: string) => Promise<Note>
     updateTripNoteContent: (noteId: string, content: string) => Promise<Note>
     removeTripNote: (noteId: string) => Promise<void>
+    refreshTripHighlights: (count: number) => Promise<Highlight[]>
 }

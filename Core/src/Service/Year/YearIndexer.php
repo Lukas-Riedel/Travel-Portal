@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Year;
 
+    use Core\Service\Index\DocumentBuffer;
     use Core\Service\Index\EntityIndexer;
     use Core\Service\Index\IndexableEntityType;
     use Core\Service\Index\IndexType;
@@ -15,9 +16,7 @@
             $this->yearService = $yearService;
         }
 
-        public function index(IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : array {
-            $result = array();
-
+        public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Year) {
                 $years = $entityId !== null
                     ? array($this->yearService->getYear($entityId))
@@ -25,12 +24,10 @@
 
                 foreach ($years as &$year) {
                     if ($year->getId() <= date(self::YEAR_FORMAT)) {
-                        $result[$year->getId()] = array($year->getId());
+                        $documentBuffer->add($year->getId(), array($year->getId()));
                     }
                 }
             }
-
-            return $result;
         }
     }
 ?>

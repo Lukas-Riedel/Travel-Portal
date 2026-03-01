@@ -53,6 +53,7 @@
                 $group->patch("/{tripId}/notes/{noteId}", [$resource, "updateTripNote"]);
                 $group->delete("/{tripId}/notes/{noteId}", [$resource, "removeTripNote"]);
                 $group->post("/{tripId}/highlights", [$resource, "createTripHighlight"]);
+                $group->post("/{tripId}/highlights/refresh", [$resource, "refreshTripHighlights"]);
                 $group->delete("/{tripId}/highlights/{highlightId}", [$resource, "removeTripHighlight"]);
             });
         }
@@ -1416,6 +1417,101 @@
             }
 
             return $this->highlightService->createTripHighlight($tripId, $photo["id"]);
+        }
+        
+        #[OA\Post(
+            path: "/trips/{tripId}/highlights/refresh",
+            summary: "Refresh highlights for a trip with the specified identifier",
+            operationId: "refreshTripHighlights",
+            tags: ["Trips"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "tripId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the trip",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                ),
+                new OA\Parameter(
+                    name: "count",
+                    in: "query",
+                    required: true,
+                    description: "The count of highlights to select",
+                    schema: new OA\Schema(type: "integer"),
+                    example: 15,
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Refreshed highlights for a trip with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Album")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function refreshTripHighlights(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::TripHighlightEdit);
+
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $count = $this->requireQueryParameter($request, "count");
+
+            $this->tripService->refreshTripHighlights($tripId, $count);
+            
+            return $this->doGetTrip($tripId)?->getHighlights();
         }
 
         #[OA\Delete(
