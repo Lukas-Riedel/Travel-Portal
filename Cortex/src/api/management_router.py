@@ -16,8 +16,6 @@ def check_liveness():
 
 @router.get("/readiness")
 def check_readiness(request: Request):
-    request.app.state.ai_engine.get_text_embedding("Readiness Check")
-
     return {
         "name": os.getenv("APP_NAME"),
         "version": os.getenv("VERSION_TAG"),
