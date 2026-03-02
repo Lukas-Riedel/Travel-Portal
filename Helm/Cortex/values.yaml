@@ -3,34 +3,12 @@ cortex:
   image: ghcr.io/lukas-riedel/cortex
   tag: latest
   replicas: 1
-  threads: 4
-  scaling:
-    items: "5"
-    cooldown: 120
-    grace: 60
+  workers: 2
   service:
     type: ClusterIP
     port: 8080
   model: clip-ViT-L-14
   engine: cpu
-  core:
-    host: core
-    port: 8080
-  highlight:
-    coefficient:
-      content: "0.7"
-      negative: "0.8"
-      cluster: "3.5"
-      iso: "0.7"
-  rabbitmq:
-    hostname: rabbitmq
-    port: 
-      amqp: 5672
-      management: 15672
-    vhost: /
-    heartbeat: "60"
-    queue:
-      cortex: CortexQueue
   iam:
     host: iam
     port: 8080
@@ -39,9 +17,6 @@ cortex:
         id: travel-portal-app
       backend:
         id: admin-cli
-  redis:
-    hostname: redis
-    port: 6379
   grafana:
     client:
       name: travel-portal-service

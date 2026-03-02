@@ -1,12 +1,12 @@
-import logging
-import logging_loki
-import os
-import json
 import contextvars
 import datetime
-from dotenv import load_dotenv
+import json
+import logging
+import os
 from logging import Logger
-from typing import Final
+
+import logging_loki
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -48,13 +48,13 @@ class JsonFormatter(logging.Formatter):
 
 class Logger:
     def __init__(
-        self,
-        app_name : str,
-        version_tag: str,
-        grafana_base_url: str,
-        grafana_client_name: str,
-        grafana_user: str,
-        grafana_password: str,
+            self,
+            app_name: str,
+            version_tag: str,
+            grafana_base_url: str,
+            grafana_client_name: str,
+            grafana_user: str,
+            grafana_password: str,
     ) -> None:
         self.app_name = app_name
         self.version_tag = version_tag

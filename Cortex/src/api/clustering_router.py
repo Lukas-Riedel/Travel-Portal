@@ -1,9 +1,9 @@
 from typing import List
-from fastapi import APIRouter, Depends
+
+from fastapi import APIRouter, Request, Depends
 from pydantic import BaseModel, Field
+
 from src.api.dependencies import require_backend_service_account
-from sklearn.cluster import AgglomerativeClustering
-import numpy as np
 
 router = APIRouter(
     prefix="/clustering",
@@ -33,24 +33,7 @@ class EmbeddingsClusteringRequest(BaseModel):
         422: {"description": "Unprocessable Entity", "model": None},
     },
 )
-def get_embeddings_clusters(request: EmbeddingsClusteringRequest):
-    if not request.embeddings:
-        return []
+def get_embeddings_clusters(request: EmbeddingsClusteringRequest, req_obj: Request):
+    clusters = req_obj.app.state.clustering_engine.get_embeddings_clusters(request.embeddings, request.clusters)
 
-    k = min(request.clusters, len(request.embeddings))
-    data = np.array(request.embeddings)
-
-    model = AgglomerativeClustering(
-        n_clusters=k, distance_threshold=None, metric="cosine", linkage="average"
-    )
-
-    labels = model.fit_predict(data)
-
-    clusters = {}
-    for idx, label in enumerate(labels):
-        l = int(label)
-        if l not in clusters:
-            clusters[l] = []
-        clusters[l].append(idx)
-
-    return list(clusters.values())
+    return clusters
