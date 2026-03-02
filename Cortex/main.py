@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from dotenv import load_dotenv
-from src.core.listener import EventListener
 from src.core.core_client import CoreClient
 from src.core.distributed_cache import DistributedCache
 from src.core.ai_engine import AiEngine
@@ -99,10 +98,7 @@ def main():
     app.state.ai_engine = ai_engine
     app.state.authentication_service = authentication_service
 
-    server_thread = threading.Thread(target=run_webserver, daemon=True)
-    server_thread.start()
-    
-    listener.listen()
+    uvicorn.run(app, host="0.0.0.0", port=8080, log_level="info")
 
 if __name__ == "__main__":
     main()

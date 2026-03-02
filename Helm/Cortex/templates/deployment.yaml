@@ -34,6 +34,22 @@ spec:
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp
+          readinessProbe:
+            httpGet:
+              path: /management/readiness
+              port: {{ .Values.cortex.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /management/liveness
+              port: {{ .Values.cortex.service.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 3
           env:
             - name: VERSION_TAG
               value: "{{ .Values.cortex.tag }}"
