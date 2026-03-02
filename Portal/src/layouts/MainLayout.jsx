@@ -65,7 +65,7 @@ const searchableEntityNameSelectors = {
 const DEFAULT_SEARCH_RESULTS_COUNT = 10
 
 export default function MainLayout({ children }) {
-    const { isLoggedIn, login, logout, hasRole } = useAuth()
+    const { isLoggedIn, username, login, logout, hasRole } = useAuth()
     const location = useLocation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
@@ -338,8 +338,11 @@ export default function MainLayout({ children }) {
                         {isLoggedIn ? <LogOut size={16} /> : <LogIn size={16} />}
                     </button>
                 </div>
+                <span className="flex justify-center mt-3 font-size-xs text-gray-400">
+                    {username}
+                </span>
             </main>
-        </div >
+        </div>
     )
 }
 

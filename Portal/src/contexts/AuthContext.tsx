@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             // TODO: Introduce an interface for the JWT token type.
             const decodedAccessToken = jwtDecode<any>(accessToken)
-            return decodedAccessToken?.preferred_username && decodedAccessToken?.preferred_username !== GUEST_CREDENTIALS.username;
+            return decodedAccessToken?.preferred_username && decodedAccessToken?.preferred_username !== GUEST_CREDENTIALS.username
         }
         catch {
             return false
@@ -43,10 +43,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             // TODO: Introduce an interface for the JWT token type.
             const decodedAccessToken = jwtDecode<any>(accessToken)
-            return decodedAccessToken?.resource_access?.[window.env?.VITE_IAM_APP_CLIENT_ID || import.meta.env.VITE_IAM_APP_CLIENT_ID]?.roles || [];
+            return decodedAccessToken?.resource_access?.[window.env?.VITE_IAM_APP_CLIENT_ID || import.meta.env.VITE_IAM_APP_CLIENT_ID]?.roles || []
         }
         catch {
             return []
+        }
+    }, [accessToken])
+
+    const username = useMemo(() => {
+        if (!accessToken) {
+            return null
+        }
+
+        try {
+            // TODO: Introduce an interface for the JWT token type.
+            const decodedAccessToken = jwtDecode<any>(accessToken)
+            return decodedAccessToken?.name
+        }
+        catch {
+            return null
         }
     }, [accessToken])
 
@@ -68,6 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             accessToken,
             hasRole,
             isLoggedIn,
+            username: isLoggedIn && username,
             login,
             logout: () => login(GUEST_CREDENTIALS)
         }}>

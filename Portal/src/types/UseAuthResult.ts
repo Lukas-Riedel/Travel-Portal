@@ -5,6 +5,7 @@ export interface UseAuthResult {
     accessToken?: string
     hasRole: (role: UserRole) => boolean
     isLoggedIn: boolean
+    username?: string
     login: (credentials: Credentials) => Promise<void>
     logout: () => Promise<void>
 }
