@@ -2,12 +2,10 @@
     namespace Core;
 
     use Core\Client\Calendar\Calendar;
-    use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-    use Core\Client\Google\GoogleClient;
 
     class PlatformListener {        
         

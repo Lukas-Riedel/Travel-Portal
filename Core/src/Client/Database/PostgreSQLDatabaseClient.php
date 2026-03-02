@@ -20,7 +20,7 @@
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s.%s.%s";
 
         private const TABLE_COLUMNS_CACHE_KEY_FORMAT = "PostgreSQLDatabaseClient:TableColumns:%s";
-        private const TABLE_COLUMNS_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
+        private const TABLE_COLUMNS_CACHE_TTL = CommonConstants::ONE_WEEK_SECONDS;
 
         private readonly Connection $connection;
         private readonly string $host;
