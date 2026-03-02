@@ -37,7 +37,7 @@ spec:
               command:
                 - rabbitmq-diagnostics
                 - -q
-                - check_local_alarms
+                - ping
             initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 5
