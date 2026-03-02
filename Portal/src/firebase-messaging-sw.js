@@ -53,7 +53,8 @@ onBackgroundMessage(messaging, payload => {
 
         self.registration.showNotification("Let přistál", {
             body: "Let " + args.flight + " přistál na letišti " + args.to + " v " + formattedActualArrival + " místního času",
-            icon: "icon-192.png"
+            icon: "icon-192.png",
+            data: "https://www.flightradar24.com/data/flights/" + args.flight
         })
     }
 

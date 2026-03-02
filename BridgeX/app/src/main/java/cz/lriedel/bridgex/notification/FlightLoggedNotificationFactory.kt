@@ -25,7 +25,7 @@ class FlightLoggedNotificationFactory(
         return Notification(
             context.getString(R.string.title_flight_landed),
             context.getString(R.string.message_flight_landed, flight, to, formattedActualArrival),
-            mapOf()
+            mapOf<String, Any>("flight" to flight)
         )
     }
 }
