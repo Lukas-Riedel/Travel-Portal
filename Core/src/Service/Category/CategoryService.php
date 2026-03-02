@@ -4,15 +4,15 @@
     use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-use Core\Client\GenerativeContent\GenerativeContentClient;
-use Core\Service\Configuration\ConfigurationService;
+    use Core\Client\GenerativeContent\GenerativeContentClient;
+    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Statistics\StatisticsService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
-use Core\Service\Index\IndexService;
-use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Service\Index\IndexService;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class CategoryService {
 
@@ -30,7 +30,7 @@ use Core\Service\Place\PlaceSortingStrategy;
 
         private readonly CacheClient $memoryCacheClient;
 
-        private readonly GenerativeContentClient $generativeContentClient;
+        private readonly GenerativeContentClient $cachingGenerativeContentClient;
 
         private readonly HighlightService $highlightService;
 
@@ -41,11 +41,11 @@ use Core\Service\Place\PlaceSortingStrategy;
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
-            StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $generativeContentClient, EventPublisher $eventPublisher) {
+            StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $cachingGenerativeContentClient, EventPublisher $eventPublisher) {
             $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $configurationService);
             $this->eventPublisher = $eventPublisher;
             $this->memoryCacheClient = $memoryCacheClient;
-            $this->generativeContentClient = $generativeContentClient;
+            $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;
             $this->highlightService = $highlightService;
             $this->indexService = $indexService;
             $this->configurationService = $configurationService;
@@ -65,8 +65,7 @@ use Core\Service\Place\PlaceSortingStrategy;
                 time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["categoryHighlightsSelecting"];
-            // TODO EMBEDDINGS: Cache the query.
-            $query = $this->generativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $query, $count,
                 $category->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));

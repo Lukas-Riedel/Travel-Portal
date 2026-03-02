@@ -25,16 +25,16 @@
 
         private readonly ConfigurationService $configurationService;
 
-        private readonly GenerativeContentClient $generativeContentClient;
+        private readonly GenerativeContentClient $cachingGenerativeContentClient;
 
         public function __construct(DatabaseClient $databaseClient, FitnessService $fitnessService, PlaceService $placeService, ConfigurationService $configurationService,
-            HighlightService $highlightService, StatisticsService $statisticsService, IndexService $indexService, GenerativeContentClient $generativeContentClient) {
+            HighlightService $highlightService, StatisticsService $statisticsService, IndexService $indexService, GenerativeContentClient $cachingGenerativeContentClient) {
             $this->yearMapper = new YearMapper($databaseClient, $fitnessService, $highlightService, $statisticsService);
             $this->placeService = $placeService;
             $this->configurationService = $configurationService;
             $this->indexService = $indexService;
             $this->highlightService = $highlightService;
-            $this->generativeContentClient = $generativeContentClient;
+            $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;
         }
 
         public function refreshYearHighlights(int $yearId, int $count) : void {
@@ -51,8 +51,7 @@
             $trips = $tripService->getRegularTrips($yearId, null, time(), array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["yearHighlightsSelecting"];
-            // TODO EMBEDDINGS: Cache the query.
-            $query = $this->generativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear(array_map(fn($trip) => $trip->getId(), $trips), $query, $count,
                 $year->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($trip) => $trip->getMainHighlight()?->getPhoto()?->getId(), $trips)));

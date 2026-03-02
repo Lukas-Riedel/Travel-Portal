@@ -33,7 +33,7 @@
 
         private readonly CalendarClient $calendarClient;
         private readonly GoogleClient $googleClient;
-        private readonly GenerativeContentClient $generativeContentClient;
+        private readonly GenerativeContentClient $cachingGenerativeContentClient;
 
         private readonly ConfigurationService $configurationService;
 
@@ -47,7 +47,7 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $generativeContentClient,
+        public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $cachingGenerativeContentClient,
             ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,
             FitnessService $fitnessService, NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService,
             IndexService $indexService, EventPublisher $eventPublisher) {
@@ -56,7 +56,7 @@
                 $highlightService, $statisticsService);
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
-            $this->generativeContentClient = $generativeContentClient;
+            $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;
             $this->configurationService = $configurationService;
             $this->placeService = $placeService;
             $this->yearService = $yearService;
@@ -77,8 +77,7 @@
                 null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["tripHighlightsSelecting"];
-            // TODO EMBEDDINGS: Cache the query.
-            $query = $this->generativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query, $count, $trip->getMainHighlight()?->getPhoto()?->getId(),
                 array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places))));

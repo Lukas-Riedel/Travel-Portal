@@ -37,6 +37,8 @@
         private readonly PlaceMapper $placeMapper;
 
         private readonly GenerativeContentClient $generativeContentClient;
+
+        private readonly GenerativeContentClient $cachingGenerativeContentClient;
         
         private readonly CalendarClient $calendarClient;
 
@@ -60,7 +62,7 @@
 
         private readonly TransactionManager $transactionManager;
 
-        public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, CalendarClient $calendarClient,
+        public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, GenerativeContentClient $cachingGenerativeContentClient, CalendarClient $calendarClient,
             GoogleClient $googleClient, CacheClient $distributedCacheClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService,
             CategoryService $categoryService, LabelService $labelService, ForecastService $forecastService, PhotoService $photoService,
             HighlightService $highlightService, NoteService $noteService, GeocodingService $geocodingService, IndexService $indexService,
@@ -68,6 +70,7 @@
             $this->placeMapper = new PlaceMapper($databaseClient, $configurationService, $categoryService, $labelService, $forecastService,
                 $photoService, $highlightService, $noteService, $memoryCacheClient);
             $this->generativeContentClient = $generativeContentClient;
+            $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
             $this->distributedCacheClient = $distributedCacheClient;
@@ -88,8 +91,7 @@
             }
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeHighlightsSelecting"];
-            // TODO EMBEDDINGS: Cache the query.
-            $query = $this->generativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""));
+            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $query, $count, $place->getMainHighlight()?->getPhoto()?->getId());
 
@@ -116,7 +118,7 @@
             
             $placeIdentifier = $this->getPlaceIdentifierById($placeId);
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeSignificance"];
-            $placeSignificance = intval($this->generativeContentClient->getResponse($prompt, array("name" => $placeIdentifier->getName(), "country" => $placeIdentifier->getCountry() ?? "")));
+            $placeSignificance = intval($this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $placeIdentifier->getName(), "country" => $placeIdentifier->getCountry() ?? "")));
 
             $this->distributedCacheClient->set($cacheKey, $placeSignificance, self::PLACE_SIGNIFICANCE_CACHE_TTL);
 

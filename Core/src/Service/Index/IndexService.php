@@ -1,13 +1,22 @@
 <?php
     namespace Core\Service\Index;
 
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Search\SearchClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Clustering\ClusteringService;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Embedding\EmbeddingService;
     use Ramsey\Uuid\Uuid;
 
     class IndexService {
+        
+        private const STYLE_EMBEDDING_CACHE_KEY = "IndexService:StyleEmbedding";
+        private const STYLE_EMBEDDING_CACHE_TTL = CommonConstants::ONE_WEEK_SECONDS;
+        private const STYLE_EMBEDDING_SAMPLES_CACHE_THRESHOLD = 100;
+        
+        private const NEGATIVE_EMBEDDING_CACHE_KEY_FORMAT = "IndexService:NegativeEmbedding:%s";
+        private const NEGATIVE_EMBEDDING_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private const BATCH_SIZE = 1000;
         // TODO EMBEDDINGS: Extract to deployment configuration whatever deemed necessary.
@@ -23,6 +32,7 @@
         private readonly ConfigurationService $configurationService;
     
         private readonly SearchClient $searchClient;
+        private readonly CacheClient $cacheClient;
 
         private readonly string $compositeIndexName;
         private readonly string $photoIndexName;
@@ -30,12 +40,13 @@
         private array $entityIndexers = array();
 
         public function __construct(ClusteringService $clusteringService, EmbeddingService $embeddingService, ConfigurationService $configurationService,
-            SearchClient $searchClient, string $compositeIndexName, string $photoIndexName) {
+            SearchClient $searchClient, CacheClient $cacheClient, string $compositeIndexName, string $photoIndexName) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->clusteringService = $clusteringService;
             $this->embeddingService = $embeddingService;
             $this->configurationService = $configurationService;
             $this->searchClient = $searchClient;
+            $this->cacheClient = $cacheClient;
             $this->compositeIndexName = $compositeIndexName;
             $this->photoIndexName = $photoIndexName;
         }
@@ -231,7 +242,11 @@
         }
 
         private function getStyleEmbedding() : ?array {         
-            // TODO EMBEDDINGS: Cache the embedding for some time since it's unlikely to change that rapidly.   
+            $cachedStyleEmbedding = $this->cacheClient->get(self::STYLE_EMBEDDING_CACHE_KEY);
+            if ($cachedStyleEmbedding !== null) {
+                return $cachedStyleEmbedding;
+            }
+
             $searchEntries = $this->searchClient->search($this->photoIndexName,
                 $this->indexQueryDefinitionFactory->createAllPlaceMainHighlightsEmbeddingQuery());
             if (empty($searchEntries)) {
@@ -247,12 +262,24 @@
             $avgVector = array_map(fn($val) => $val / count($embeddings), $sumVector);
             $norm = sqrt(array_sum(array_map(fn($val) => $val ** 2, $avgVector)));
 
-            return $norm > 1e-10 ? array_map(fn($val) => $val / $norm, $avgVector) : null;
+            $result = $norm > 1e-10 ? array_map(fn($val) => $val / $norm, $avgVector) : null;
+            if (count($searchEntries) > self::STYLE_EMBEDDING_SAMPLES_CACHE_THRESHOLD) {
+                $this->cacheClient->set(self::STYLE_EMBEDDING_CACHE_KEY, $result, self::STYLE_EMBEDDING_CACHE_TTL);
+            }
+            return $result;
         }
 
         private function getNegativeEmbedding() : array {
-            // TODO EMBEDDINGS: Cache the embedding for given terms.
-            return $this->embeddingService->getTextEmbedding(implode(", ", $this->configurationService->getConfigurationEntry("embeddings")["negativeTerms"]));
+            $negativeTerms = $this->configurationService->getConfigurationEntry("embeddings")["negativeTerms"];
+            $cacheKey = sprintf(self::NEGATIVE_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", json_encode($negativeTerms)));
+            $cachedNegativeEmbedding = $this->cacheClient->get($cacheKey);
+            if ($cachedNegativeEmbedding !== null) {
+                return $cachedNegativeEmbedding;
+            }
+
+            $result = $this->embeddingService->getTextEmbedding(implode(", ", $negativeTerms));
+            $this->cacheClient->set($cacheKey, $result, self::NEGATIVE_EMBEDDING_CACHE_TTL);
+            return $result;
         }
     }
 ?>
