@@ -99,7 +99,7 @@
     $backupFilePath = "/var/tmp/backup.sql.gz";
     
     $rootBackupFolderId = $googleClient->getOrCreateFolderId("Travel Portal Backups", null);  
-    $backupFolderId = $googleClient->createFolder(date("Y-m-d H:i:s"), $rootBackupFolderId);
+    $backupFolderId = $googleClient->createFolder(date("Y-m-d H:i:s (#" . getenv("VERSION_TAG") . ")"), $rootBackupFolderId);
 
     $googleClient->createFile("db.sql.gz", $backupFolderId, "application/gzip", file_get_contents($backupFilePath));
 
