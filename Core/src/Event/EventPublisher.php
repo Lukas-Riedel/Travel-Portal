@@ -69,11 +69,6 @@
                 return null;
             }
 
-            if ($event instanceof CortexEvent) {
-                $this->messagingClient->publish($this->cortexQueueName, $event, $event->getPriority());
-                return null;
-            }
-
             if ($event instanceof AgentEvent) {
                 $device = $this->deviceService->getDevice($event->getAgentId());
                 if ($device === null) {

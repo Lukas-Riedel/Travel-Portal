@@ -48,7 +48,7 @@ export default function YearPage() {
                 name={year?.id}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.YearEdit) && { "Počet highlightů": year?.highlights?.length }}
-                onHighlightsSelectingTriggered={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => refreshYearHighlights(highlightsCount))}
+                onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => refreshYearHighlights(highlightsCount))}
             />
             <HighlightCarouselAndPlaceMapToggle
                 entity={year}

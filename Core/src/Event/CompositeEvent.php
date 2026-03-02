@@ -29,11 +29,6 @@
             return $this;
         }
 
-        public function addCortexEvent(EventPriority $priority) : CompositeEvent {
-            $this->events[] = new CortexEvent($this->getName(), $priority, $this->getArgs());
-            return $this;
-        }
-
         public function getEvents() : array {
             return $this->events;
         }

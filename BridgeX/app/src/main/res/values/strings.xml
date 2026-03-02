@@ -18,12 +18,4 @@
     <string name="message_photo_not_replaced">Nahrazování fotky pro místo %1$s se nezdařilo</string>
     <string name="message_issues_detected">Hlášeno %1$d nových problémů</string>
     <string name="message_flight_landed">Let %1$s přistál na letišti %2$s v %3$s místního času</string>
-    <string name="message_highlights_created_place">Místo %1$s má nové highlighty</string>
-    <string name="message_highlights_created_trip">Výlet %1$s má nové highlighty</string>
-    <string name="message_highlights_created_category">Kategorie %1$s má nové highlighty</string>
-    <string name="message_highlights_created_year">Rok %1$s má nové highlighty</string>
-    <string name="message_highlights_not_created_place">Vytvoření highlightů pro místo %1$s se nezdařilo</string>
-    <string name="message_highlights_not_created_trip">Vytvoření highlightů pro výlet %1$s se nezdařilo</string>
-    <string name="message_highlights_not_created_category">Vytvoření highlightů pro kategorii %1$s se nezdařilo</string>
-    <string name="message_highlights_not_created_year">Vytvoření highlightů pro rok %1$s se nezdařilo</string>
 </resources>

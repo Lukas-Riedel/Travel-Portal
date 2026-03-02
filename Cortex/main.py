@@ -11,9 +11,6 @@ from src.core.listener import EventListener
 from src.core.core_client import CoreClient
 from src.core.distributed_cache import DistributedCache
 from src.core.ai_engine import AiEngine
-from src.handlers.highlights_selecting_triggered_handler import (
-    HighlightsSelectingTriggeredHandler,
-)
 from src.api.management_router import router as management_router
 from src.api.embeddings_router import router as embeddings_router
 from src.api.clustering_router import router as clustering_router
@@ -78,17 +75,6 @@ def run_webserver():
     uvicorn.run(app, host="0.0.0.0", port=8080, log_level="info")
 
 def main():
-    core_client = CoreClient(
-        os.getenv("APP_NAME"),
-        os.getenv("CORE_HOST"),
-        int(os.getenv("CORE_PORT")),
-        os.getenv("CORE_SSL", "false").lower() == "true",
-        os.getenv("IAM_HOST"),
-        int(os.getenv("IAM_PORT")),
-        os.getenv("IAM_SSL", "false").lower() == "true",
-        os.getenv("IAM_BACKEND_CLIENT_ID"),
-        os.getenv("IAM_BACKEND_CLIENT_SECRET"),
-    )
     distributed_cache = DistributedCache(
         os.getenv("REDIS_HOST"),
         int(os.getenv("REDIS_PORT")),
@@ -102,29 +88,6 @@ def main():
         float(os.getenv("CONTENT_COEFFICIENT")),
         float(os.getenv("NEGATIVE_COEFFICIENT")),
         float(os.getenv("CLUSTER_COEFFICIENT")),
-    )
-
-    handlers = [
-        HighlightsSelectingTriggeredHandler(
-            ai_engine,
-            core_client,
-            distributed_cache,
-            int(os.getenv("MAX_THREADS")),
-            float(os.getenv("ISO_COEFFICIENT")),
-        ),
-    ]
-
-    listener = EventListener(
-        core_client,
-        handlers,
-        os.getenv("RMQ_HOST"),
-        int(os.getenv("RMQ_PORT")),
-        os.getenv("RMQ_VHOST"),
-        os.getenv("RMQ_USER"),
-        os.getenv("RMQ_PASSWORD"),
-        os.getenv("RMQ_SSL", "false").lower() == "true",
-        int(os.getenv("RMQ_HEARTBEAT")),
-        os.getenv("CORTEX_QUEUE_NAME"),
     )
 
     authentication_service = AuthenticationService(

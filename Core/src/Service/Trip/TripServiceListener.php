@@ -118,8 +118,7 @@
                     foreach ($activeTripIds as &$tripId) {
                         $trip = $this->tripService->getRegularTrip($tripId);
                         if (count($trip->getHighlights()) < $this->maxHighlightsPerTripCount) {
-                            $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Trip->value, $tripId, $trip->getFullName(),
-                                $this->maxHighlightsPerTripCount, true, false));
+                            $this->tripService->updateTripMainHighlight($tripId, $this->maxHighlightsPerTripCount);
                         }
                     }
                 }

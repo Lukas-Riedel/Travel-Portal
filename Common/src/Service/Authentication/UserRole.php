@@ -75,9 +75,6 @@
         case YearStatisticsRead = "year.statistics.read";
         case EventEdit = "event.edit";
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
-        case HighlightsSelectingTriggeredEventProcessingStartedRead = "event.processingstarted.highlightsselectingtriggered.read";
-        case HighlightsSelectingTriggeredEventProcessingEndedRead = "event.processingended.highlightsselectingtriggered.read";
-        case HighlightsSelectingTriggeredEventProcessingFailedRead = "event.processingfailed.highlightsselectingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingFailedRead = "event.processingfailed.photoreplacingtriggered.read";

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
-export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsSelectingTriggered }) {
+export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }) {
     const { showFormToast } = useUserInput()
     const { showRemoveEntityToast, showUpdateEntityNameToast, showSelectHighlightsToast } = usePredefinedUserInput()
 
@@ -22,8 +22,8 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
         showUpdateEntityNameToast(name, onNameChanged)
     }
 
-    const handleHighlightsSelectingTriggered = () => {
-        showSelectHighlightsToast(onHighlightsSelectingTriggered)
+    const handleHighlightsRefreshed = () => {
+        showSelectHighlightsToast(onHighlightsRefreshed)
     }
 
     const handleRemoved = () => {
@@ -51,7 +51,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                     <Share2 size={16} />
                 </button>
             )}
-            {onHighlightsSelectingTriggered && (
+            {onHighlightsRefreshed && (
                 <>
                     <Link
                         to={`${location.pathname}/highlight`}
@@ -59,7 +59,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                         <Images size={16} />
                     </Link>
                     <button
-                        onClick={handleHighlightsSelectingTriggered}
+                        onClick={handleHighlightsRefreshed}
                         className="btn-chip-gray">
                         <RefreshCcw size={16} />
                     </button>
@@ -97,7 +97,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                     {name && (
                         <>
                             {getPrettyName(name)}
-                            {!!(onHighlightsSelectingTriggered || onNameChanged || onRemoved) && (
+                            {!!(onHighlightsRefreshed || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
                                 </span>)}
@@ -128,7 +128,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                     {name && (
                         <>
                             {getPrettyName(name)}
-                            {!!(onHighlightsSelectingTriggered || onNameChanged || onRemoved) && (
+                            {!!(onHighlightsRefreshed || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
                                 </span>)}

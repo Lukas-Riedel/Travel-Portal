@@ -1,5 +1,4 @@
 export enum EventType {
-    HighlightsSelectingTriggered = "HighlightsSelectingTriggered",
     PhotosUploadingTriggered = "PhotosUploadingTriggered",
     PhotoReplacingTriggered = "PhotoReplacingTriggered",
     AllAlbumsInvalidated = "AllAlbumsInvalidated",

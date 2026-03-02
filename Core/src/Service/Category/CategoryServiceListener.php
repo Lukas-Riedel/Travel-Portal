@@ -48,8 +48,7 @@
                 if ($categoryIdentifier !== null && $categoryIdentifier->getMainHighlight() === null) {
                     $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                     
-                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $categoryIdentifier->getName(),
-                        $this->maxHighlightsPerCategoryCount, true, false));
+                    $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);
                 }
             }
         }
@@ -67,8 +66,7 @@
                         }
                     }
                     
-                    $this->eventPublisher->publish(Event::HighlightsSelectingTriggered(HighlightType::Category->value, $message["entityId"], $category->getName(),
-                        $this->maxHighlightsPerCategoryCount, true, false));
+                    $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);
                 }
             }
         }

@@ -85,7 +85,7 @@ export default function CategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.CategoryEdit) && attributes}
-                onHighlightsSelectingTriggered={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}
+                onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName}
                 onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== "country" && removeCategory} />
             <HighlightCarouselAndPlaceMapToggle

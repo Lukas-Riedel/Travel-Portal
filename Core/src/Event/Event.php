@@ -263,10 +263,6 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function HighlightsSelectingTriggered(string $highlightType, string $entityId, string $entityName, int $highlightsCount, bool $highlightsRemovalAllowed, bool $isExplicit) : Event {
-            return new CortexEvent(Event::getEventName(), $isExplicit === true ?  EventPriority::Highest : EventPriority::Medium, array("highlightType" => $highlightType, "entityId" => $entityId, "entityName" => $entityName, "highlightsCount" => $highlightsCount, "highlightsRemovalAllowed" => $highlightsRemovalAllowed, "isExplicit" => $isExplicit));
-        }
-
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventNewDataConsistencyIssueDetectedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
         }
