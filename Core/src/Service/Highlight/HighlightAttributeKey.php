@@ -20,7 +20,7 @@
             };
         }
         
-        public function extractValue(HighlightAttributes $highlightAttributes) : ?float {
+        public function extractValue(HighlightAttributes $highlightAttributes) : float {
             return match($this) {
                 self::Composition => $highlightAttributes->getComposition(),
                 self::Sky => $highlightAttributes->getSky(),

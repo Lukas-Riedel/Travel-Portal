@@ -40,7 +40,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         createPlaceHighlight: (photoId: string) => createPlaceHighlight(placeId, photoId).then(refetchResponse),
         removePlaceHighlight: (highlightId: string) => removePlaceHighlight(placeId, highlightId).then(refetchResponse),
         updatePlaceMainHighlight: (highlightId: string) => updatePlaceMainHighlight(placeId, highlightId).then(setResponse),
-        updatePlaceHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) =>
+        updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
         createPlaceLabel: (name: string) => createPlaceLabel(placeId, name).then(refetchResponse),
         removePlaceLabel: (labelId: string) => removePlaceLabel(placeId, labelId).then(refetchResponse),

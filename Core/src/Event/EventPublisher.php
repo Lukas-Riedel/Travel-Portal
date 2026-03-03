@@ -19,15 +19,13 @@
         private readonly CacheClient $distributedCacheClient;
 
         private readonly string $workerQueueName;
-        private readonly string $cortexQueueName;
 
         public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient,
-            CacheClient $distributedCacheClient, string $workerQueueName, string $cortexQueueName) {
+            CacheClient $distributedCacheClient, string $workerQueueName) {
             $this->messagingClient = $messagingClient;
             $this->cloudMessagingClient = $cloudMessagingClient;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->workerQueueName = $workerQueueName;
-            $this->cortexQueueName = $cortexQueueName;
         }
 
         public function setDeviceService(DeviceService $deviceService) : void {

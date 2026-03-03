@@ -19,11 +19,6 @@
         private const NEGATIVE_EMBEDDING_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private const BATCH_SIZE = 1000;
-        // TODO EMBEDDINGS: Extract to deployment configuration whatever deemed necessary.
-        private const SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT = 20;
-        private const CLUSTERS_COUNT_COEFFICIENT = 3.5;
-        private const STYLE_EMBEDDING_COEFFICIENT = 0.3;
-        private const NEGATIVE_EMBEDDING_COEFFICIENT = 0.2;
 
         private readonly IndexQueryDefinitionFactory $indexQueryDefinitionFactory;
 
@@ -37,10 +32,16 @@
         private readonly string $compositeIndexName;
         private readonly string $photoIndexName;
 
+        private readonly string $selectedPhotoCandidatesLimitCoefficient;
+        private readonly string $clustersCountCoefficient;
+        private readonly string $styleEmbeddingCoefficient;
+        private readonly string $negativeEmbeddingCoefficient;
+
         private array $entityIndexers = array();
 
         public function __construct(ClusteringService $clusteringService, EmbeddingService $embeddingService, ConfigurationService $configurationService,
-            SearchClient $searchClient, CacheClient $cacheClient, string $compositeIndexName, string $photoIndexName) {
+            SearchClient $searchClient, CacheClient $cacheClient, string $compositeIndexName, string $photoIndexName, string $selectedPhotoCandidatesLimitCoefficient,
+            string $clustersCountCoefficient, string $styleEmbeddingCoefficient, string $negativeEmbeddingCoefficient) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->clusteringService = $clusteringService;
             $this->embeddingService = $embeddingService;
@@ -49,6 +50,10 @@
             $this->cacheClient = $cacheClient;
             $this->compositeIndexName = $compositeIndexName;
             $this->photoIndexName = $photoIndexName;
+            $this->selectedPhotoCandidatesLimitCoefficient = $selectedPhotoCandidatesLimitCoefficient;
+            $this->clustersCountCoefficient = $clustersCountCoefficient;
+            $this->styleEmbeddingCoefficient = $styleEmbeddingCoefficient;
+            $this->negativeEmbeddingCoefficient = $negativeEmbeddingCoefficient;
         }
 
         public function setEntityIndexers(array $entityIndexers) : void {
@@ -82,25 +87,25 @@
         public function getSelectedPhotoIdsForPlace(string $placeId, string $query, int $count, ?string $mainHighlightPhotoId) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, array(),
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, array($placeId), array(), array(), null, null));
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, array($placeId), array(), array(), null, null));
         }
 
         public function getSelectedPhotoIdsForTrip(string $tripId, string $query, int $count, ?string $mainHighlightPhotoId, array $tripPlaceHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $tripPlaceHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, array(), array($tripId), array(), null, null));            
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, array(), array($tripId), array(), null, null));            
         }
 
         public function getSelectedPhotoIdsForCategory(array $categoryPlaceIds, string $query, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, $categoryPlaceIds, array(), array(), true, null));
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, $categoryPlaceIds, array(), array(), true, null));
         }
 
         public function getSelectedPhotoIdsForYear(array $yearTripIds, string $query, int $count, ?string $mainHighlightPhotoId, array $tripMainHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $tripMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * self::SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT, array(), $yearTripIds, array(), null, true));
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, array(), $yearTripIds, array(), null, true));
         }
 
         public function reindex() : void {           
@@ -180,7 +185,7 @@
             }         
             
             $embeddings = array_map(fn($searchEntry) => $searchEntry->getData()["embedding"], $searchEntries);
-            $clusters = $this->clusteringService->getEmbeddingsClusters($embeddings, round($count * self::CLUSTERS_COUNT_COEFFICIENT));
+            $clusters = $this->clusteringService->getEmbeddingsClusters($embeddings, round($count * $this->clustersCountCoefficient));
 
             $clustersMetadata = array();
             foreach ($clusters as $label => $indices) {
@@ -244,9 +249,9 @@
             $styleEmbedding = $this->getStyleEmbedding();
             $negativeEmbedding = $this->getNegativeEmbedding();
 
-            $finalVector = array_map(fn($v, $n) => $v - ($n * self::NEGATIVE_EMBEDDING_COEFFICIENT), $contentEmbedding, $negativeEmbedding);
+            $finalVector = array_map(fn($v, $n) => $v - ($n * $this->negativeEmbeddingCoefficient), $contentEmbedding, $negativeEmbedding);
             if ($styleEmbedding !== null) {
-                $finalVector = array_map(fn($c, $s) => $c + ($s * self::STYLE_EMBEDDING_COEFFICIENT), $finalVector, $styleEmbedding);
+                $finalVector = array_map(fn($c, $s) => $c + ($s * $this->styleEmbeddingCoefficient), $finalVector, $styleEmbedding);
             }
 
             $norm = sqrt(array_sum(array_map(fn($v) => $v ** 2, $finalVector)));

@@ -13,7 +13,6 @@
     use Core\Resource\HighlightResource;
     use Core\Resource\LabelResource;
     use Common\Resource\ManagementResource;
-    use Core\Resource\GenerativeContentResource;
     use Core\Resource\MonitoringResource;
     use Core\Resource\PlaceResource;
     use Core\Resource\RegionResource;
@@ -50,7 +49,6 @@
         AirportResource::register($app, $flightService, $logger);
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
-        GenerativeContentResource::register($app, $generativeContentClient, $configurationService);
         SearchResource::register($app, $indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService, $photoService, $highlightService);
         SwaggerResource::register($app, $coreBaseUrl);
         ManagementResource::register($app, $appName, $versionTag, $healthCheckables);

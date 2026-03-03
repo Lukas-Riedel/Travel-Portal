@@ -36,27 +36,6 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             resolve: fitnessCollection => showReplaceFitnessToast(fitnessCollection.fitness, fitnessIndex => onFitnessReplaced(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
                     fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true))
         },
-        "PLACE_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {
-            name: "Místo s highlighty bez atributů kvality",
-            getProperties: place => (
-                {
-                    "Název": place.name,
-                    "Stát": place.country
-                }
-            ),
-            resolve: place => navigate(`/place/${place.id}`)
-        },
-        "TRIP_HIGHLIGHTS_WITHOUT_QUALITY_ATTRIBUTES": {
-            name: "Výlet s highlighty bez atributů kvality",
-            getProperties: trip => (
-                {
-                    "Název": trip.name + " " + trip.year,
-                    "Od": getDateString(trip.start),
-                    "Do": getDateString(trip.end)
-                }
-            ),
-            resolve: trip => navigate(`/trip/${trip.id}`)
-        },
         "COUNTRY_WITH_INCOMPLETE_METADATA": {
             name: "Stát s neúplnými metadaty",
             getProperties: category => (

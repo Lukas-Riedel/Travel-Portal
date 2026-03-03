@@ -28,7 +28,7 @@ export const useTrip = (tripId?: string): UseTripResult => {
         createTripHighlight: (photoId: string) => createTripHighlight(tripId, photoId).then(refetchResponse),
         removeTripHighlight: (highlightId: string) => removeTripHighlight(tripId, highlightId).then(refetchResponse),
         updateTripMainHighlight: (highlightId: string) => updateTripMainHighlight(tripId, highlightId).then(setResponse),
-        updateTripHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) =>
+        updateTripHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
         createTripExpense: (type: ExpenseType, description: string, value: number, currency: string, subscriptionId?: string) => createTripExpense(tripId, type, description, value, currency, subscriptionId).then(refetchResponse),
         removeTripExpense: (expenseId: string) => removeTripExpense(tripId, expenseId).then(refetchResponse),

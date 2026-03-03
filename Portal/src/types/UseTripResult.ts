@@ -10,7 +10,7 @@ export interface UseTripResult {
     createTripHighlight: (photoId: string) => Promise<Highlight>
     removeTripHighlight: (highlightId: string) => Promise<void>
     updateTripMainHighlight: (highlightId: string) => Promise<Trip>
-    updateTripHighlightQualityAttributes: (highlightId: string, composition?: number, sky?: number, shadows?: number, circumstances?: number, atmosphere?: number) => Promise<Highlight>
+    updateTripHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) => Promise<Highlight>
     createTripExpense: (type: ExpenseType, description: string, value: number, currency: string, subscriptionId?: string) => Promise<Expense>
     removeTripExpense: (expenseId: string) => Promise<void>
     updateTripExpenseDescription: (expenseId: string, description: string) => Promise<Expense>

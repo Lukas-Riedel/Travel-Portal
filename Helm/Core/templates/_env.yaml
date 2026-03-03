@@ -102,8 +102,6 @@
       key: exchange-rate-api-key
 - name: WORKER_QUEUE_NAME
   value: "{{ .Values.core.rabbitmq.queue.worker }}"
-- name: CORTEX_QUEUE_NAME
-  value: "{{ .Values.core.rabbitmq.queue.cortex }}"
 - name: CORTEX_HOST
   value: "{{ .Values.core.cortex.host }}"
 - name: CORTEX_PORT
@@ -156,6 +154,14 @@
   value: "{{ .Values.core.highlight.selecting.place.min }}"
 - name: MAX_HIGHLIGHTS_PER_PLACE_COUNT
   value: "{{ .Values.core.highlight.selecting.place.max }}"
+- name: SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT
+  value: "{{ .Values.core.highlight.selecting.candidate.coefficient }}"
+- name: CLUSTERS_COUNT_COEFFICIENT
+  value: "{{ .Values.core.highlight.selecting.cluster.coefficient }}"
+- name: STYLE_EMBEDDING_COEFFICIENT
+  value: "{{ .Values.core.highlight.selecting.embedding.style.coefficient }}"
+- name: NEGATIVE_EMBEDDING_COEFFICIENT
+  value: "{{ .Values.core.highlight.selecting.embedding.negative.coefficient }}"
 - name: HIGHLIGHT_SCORE_MULTIPLIER
   value: "{{ .Values.core.place.score.multiplier.highlight }}"
 - name: PHOTO_SCORE_MULTIPLIER

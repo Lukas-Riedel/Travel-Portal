@@ -45,7 +45,6 @@ core:
     prefetch: "1"
     queue:
       worker: WorkerQueue
-      cortex: CortexQueue
   fcm:
     project:
       id: travel-blog-free
@@ -91,6 +90,15 @@ core:
       place:
         min: "3"
         max: "15"
+      candidate:
+        coefficient: "20"
+      cluster:
+        coefficient: "3.1"
+      embedding:
+        style:
+          coefficient: "0.3"
+        negative:
+          coefficient: "0.2"
   place:
     score:
       multiplier:

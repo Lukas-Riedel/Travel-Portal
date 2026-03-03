@@ -135,6 +135,7 @@
                             property: "attributes",
                             description: "The highlight quality attributes",
                             type: "object",
+                            required: ["composition", "sky", "shadows", "circumstances", "atmosphere"],
                             properties: [
                                 new OA\Property(
                                     property: "composition",

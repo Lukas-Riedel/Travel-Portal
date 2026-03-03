@@ -56,7 +56,6 @@
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
     use Core\Service\Geocoding\GeocodingService;
-    use Core\Service\Highlight\HighlightDataConsistencyMonitor;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightServiceListener;
     use Core\Service\Index\IndexService;
@@ -147,7 +146,7 @@
     );
 
     // Event producers.
-    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $distributedCacheClient, getenv("WORKER_QUEUE_NAME"), getenv("CORTEX_QUEUE_NAME"));
+    $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $distributedCacheClient, getenv("WORKER_QUEUE_NAME"));
     $calendarClient->setEventPublisher($eventPublisher);
 
     $scheduler = new Scheduler($databaseClient, $distributedCacheClient, $eventPublisher);
@@ -166,7 +165,8 @@
     // Services.
     $embeddingService = new EmbeddingService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $clusteringService = new ClusteringService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $indexService = new IndexService($clusteringService, $embeddingService, $configurationService, $searchClient, $distributedCacheClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"));
+    $indexService = new IndexService($clusteringService, $embeddingService, $configurationService, $searchClient, $distributedCacheClient, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
+        getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"), getenv("STYLE_EMBEDDING_COEFFICIENT"), getenv("NEGATIVE_EMBEDDING_COEFFICIENT"));
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
@@ -210,8 +210,7 @@
         new FlightDataConsistencyMonitor($flightService),
         new CategoryDataConsistencyMonitor($categoryService, $placeService),
         new TripDataConsistencyMonitor($tripService, $configurationService),
-        new PlaceDataConsistencyMonitor($placeService),
-        new HighlightDataConsistencyMonitor($placeService, $tripService)
+        new PlaceDataConsistencyMonitor($placeService)
     );
     $monitoringService->setDataConsistencyMonitors($dataConsistencyMonitors);
 
