@@ -95,7 +95,7 @@
             return json_decode($json, true);
         }
 
-        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $highlightsOnly, bool $placeMainHighlightsOnly) : array {
+        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $placeHighlightsOnly, bool $placeMainHighlightsOnly) : array {
             $rawParams = array(
                 "vector" => $embedding,
                 "k" => $limit
@@ -105,12 +105,11 @@
             if ($placeMainHighlightsOnly) {
                 $filters[] = array("term" => array("is_place_main_highlight" => true));
             }
-            if ($highlightsOnly) {
+            if ($placeHighlightsOnly) {
                 $filters[] = array(
                     "bool" => array(
                         "should" => array(
-                            array("term" => array("is_place_highlight" => true)),
-                            array("term" => array("is_trip_highlight" => true))
+                            array("term" => array("is_place_highlight" => true))
                         ),
                         "minimum_should_match" => 1
                     )
