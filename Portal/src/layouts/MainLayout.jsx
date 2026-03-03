@@ -63,7 +63,7 @@ const searchableEntityNameSelectors = {
 }
 
 const DEFAULT_FOUND_ENTITIES_COUNT = 10
-const DEFAULT_FOUND_HIGHLIGHTS_COUNT = 8
+const DEFAULT_FOUND_HIGHLIGHTS_COUNT = 6
 
 export default function MainLayout({ children }) {
     const { isLoggedIn, username, login, logout, hasRole } = useAuth()
@@ -298,7 +298,7 @@ export default function MainLayout({ children }) {
                     className="fixed inset-0 z-[60] flex items-start justify-center pt-[10vh] bg-gray-900/50 backdrop-blur-sm"
                     onClick={() => setIsSearchOpen(false)}>
                     <div
-                        className="w-full max-w-xl bg-white rounded-xl shadow-2xl overflow-hidden"
+                        className="w-full md:max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden"
                         onClick={e => e.stopPropagation()}>
                         <div className="flex items-center p-4 border-b">
                             <Search className="text-gray-400 mr-3" />
@@ -336,32 +336,31 @@ export default function MainLayout({ children }) {
                                             Nebyly nalezeny žádné výsledky
                                         </div>
                                     ))}
-                        </div>
-                        {(foundHighlights === null || foundHighlights.length > 0) && foundEntities?.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <div className="flex flex-wrap justify-center gap-3 pb-2 px-2">
-                                    {foundHighlights ? (
-                                        foundHighlights.map((res, idx) => (
-                                            <img
-                                                src={res.entity.url.thumbnail}
-                                                className="group relative flex-grow w-32 h-32 rounded-lg bg-gray-100 transition-transform duration-200 object-cover shadow-sm"
-                                                loading="lazy" />
-                                        ))
-                                    ) : (
-                                        Array.from({ length: DEFAULT_FOUND_HIGHLIGHTS_COUNT }, (_, i) => i + 1).map(i => (
-                                            <div
-                                                key={i}
-                                                className="flex-frow w-32 h-32 rounded-lg bg-gray-100 animate-pulse"
-                                            />
-                                        ))
-                                    )}
+                            {(foundHighlights === null || foundHighlights.length > 0) && foundEntities?.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 px-2">
+                                        {foundHighlights ? (
+                                            foundHighlights.map((res, idx) => (
+                                                <img
+                                                    key={idx}
+                                                    src={res.entity.url.thumbnail}
+                                                    className="w-full aspect-[3/2] rounded-lg bg-gray-100 transition-transform duration-200 object-cover shadow-sm"
+                                                    loading="lazy" />
+                                            ))
+                                        ) : (
+                                            Array.from({ length: DEFAULT_FOUND_HIGHLIGHTS_COUNT }, (_, i) => i + 1).map(i => (
+                                                <div
+                                                    key={i}
+                                                    className="w-full aspect-[3/2] rounded-lg bg-gray-100 animate-pulse" />
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
-            )
-            }
+            )}
             <main className="max-w-6xl mx-auto mt-8 mb-8 rounded-2xl px-2 py-8 md:px-8 md:py-8 bg-white">
                 {children}
                 <div className="flex justify-center mt-5">
