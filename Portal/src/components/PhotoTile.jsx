@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import { getPrettyName } from "../utils/helpers";
 import LoadingTile from "./LoadingTile";
 
-export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick }) {
+export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick, className = "w-[350px] h-[233px]" }) {
     const InteractiveElement = to ? Link : "div"
     return src ? (
-        <div className="relative w-[350px] h-[233px] mx-auto">
+        <div className={`relative mx-auto ${className}`}>
             <InteractiveElement
                 to={to}
                 onClick={onClick}
@@ -13,7 +13,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                 <img
                     src={src}
                     alt={firstLineText ?? ""}
-                    className="w-[350px] h-[233px] object-cover brightness-100 hover:brightness-50 transition duration-700 ease-in-out rounded-xl"
+                    className="w-full h-full object-cover brightness-100 hover:brightness-50 transition duration-700 ease-in-out rounded-xl"
                 />
                 <div className={`absolute left-0 bottom-0 w-full flex items-center justify-center ${categories || firstLineText || secondLineText ? "bg-gradient-to-t from-black via-black/70 to-transparent" : ""} text-white text-sm uppercase font-medium leading-[170%] py-4 rounded-b-xl`}>
                     <ul className="list-none m-0 p-0 flex flex-col items-center gap-0.5 text-base">
@@ -43,6 +43,6 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
             </InteractiveElement>
         </div>
     ) : (
-        <LoadingTile />
+        <LoadingTile className={className} />
     )
 }

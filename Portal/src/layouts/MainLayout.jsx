@@ -8,6 +8,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { search } from "../clients/coreClient.ts"
 import { getPrettyName } from "../utils/helpers.js"
 import { useCategories } from "../hooks/useCategories.ts"
+import PhotoTile from "../components/PhotoTile.jsx"
 
 const searchableEntityTypeSelectors = {
     "category": entity => categoryCategories[entity.category] ?? "Region",
@@ -341,17 +342,20 @@ export default function MainLayout({ children }) {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 px-2">
                                         {foundHighlights ? (
                                             foundHighlights.map((res, idx) => (
-                                                <img
+                                                <PhotoTile
                                                     key={idx}
+                                                    className="w-full aspect-[3/2]"
+                                                    firstLineText={res.parent && res.parent.entity.name}
+                                                    categories={res.parent && [countryCategoriesMap.get(res.parent.entity.country)]}
                                                     src={res.entity.url.thumbnail}
-                                                    className="w-full aspect-[3/2] rounded-lg bg-gray-100 transition-transform duration-200 object-cover shadow-sm"
-                                                    loading="lazy" />
+                                                    to={res.parent && `/${res.parent.type}/${res.parent.entity.id}`}
+                                                    onClick={() => setIsSearchOpen(false)} />
                                             ))
                                         ) : (
                                             Array.from({ length: DEFAULT_FOUND_HIGHLIGHTS_COUNT }, (_, i) => i + 1).map(i => (
-                                                <div
+                                                <PhotoTile
                                                     key={i}
-                                                    className="w-full aspect-[3/2] rounded-lg bg-gray-100 animate-pulse" />
+                                                    className="w-full aspect-[3/2]" />
                                             ))
                                         )}
                                     </div>

@@ -16,6 +16,11 @@
                 example: "c799fd70-cbc1-4624-992f-a3c740706f8a"
             ),
             new OA\Property(
+                property: "parentEntityId",
+                description: "The identifier of the parent of the neighbour",
+                example: "ffc88058-e796-48bd-81b8-3ba819826bf2"
+            ),
+            new OA\Property(
                 property: "score",
                 type: "number",
                 format: "float",
@@ -26,15 +31,21 @@
     )]
     class NearestNeighbour implements \JsonSerializable {
         private readonly string $entityId;
+        private readonly ?string $parentEntityId;
         private readonly float $score;
 
-        public function __construct(string $entityId, float $score) {
+        public function __construct(string $entityId, ?string $parentEntityId, float $score) {
             $this->entityId = $entityId;
+            $this->parentEntityId = $parentEntityId;
             $this->score = $score;
         }
 
         public function getEntityId() : string {
             return $this->entityId;
+        }
+
+        public function getParentEntityId() : ?string {
+            return $this->parentEntityId;
         }
 
         public function getScore() : float {

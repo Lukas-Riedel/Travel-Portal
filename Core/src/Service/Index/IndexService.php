@@ -65,16 +65,18 @@
             $searchResults = array();
 
             if (in_array(IndexableEntityType::Photo, $allowedEntityTypes)) {
-                $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Photo, $nn->getEntityId()), $this->getNearestNeighbourPhotoIds($this->embeddingService->getTextEmbedding($query), $limit, true, false)));
+                $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Photo, new SearchResult(IndexableEntityType::Place, null, $nn->getParentEntityId()), $nn->getEntityId()),
+                    $this->getNearestNeighbourPhotoIds($this->embeddingService->getTextEmbedding($query), $limit, true, false)));
             }
 
             if (in_array(IndexableEntityType::Highlight, $allowedEntityTypes)) {
-                $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Highlight, $nn->getEntityId()), $this->getNearestNeighbourHighlightIds($this->embeddingService->getTextEmbedding($query), $limit, true, false)));
+                $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Highlight, new SearchResult(IndexableEntityType::Place, null, $nn->getParentEntityId()), $nn->getEntityId()),
+                    $this->getNearestNeighbourHighlightIds($this->embeddingService->getTextEmbedding($query), $limit, true, false)));
             }
 
             // This only works because the composite index is currently not supposed to contain neither photos nor highlights.
             if (empty($searchResults)) {
-                $searchResults = array_merge($searchResults, array_map(fn($searchEntry) => new SearchResult(IndexableEntityType::from($searchEntry->getData()["entity_type"]), $searchEntry->getData()["entity_id"]),
+                $searchResults = array_merge($searchResults, array_map(fn($searchEntry) => new SearchResult(IndexableEntityType::from($searchEntry->getData()["entity_type"]), null, $searchEntry->getData()["entity_id"]),
                 $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes))));
             }
 
@@ -308,7 +310,7 @@
             $searchEntries = $this->searchClient->search($this->photoIndexName,
                 $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $highlightsOnly, $placeMainHighlightsOnly));
 
-            return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()[$propertyName], $searchEntry->getScore()), $searchEntries);
+            return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()[$propertyName], $searchEntry->getData()["place_id"], $searchEntry->getScore()), $searchEntries);
         }
     }
 ?>

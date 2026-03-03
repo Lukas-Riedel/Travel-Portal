@@ -136,7 +136,8 @@
                     "size": $limit,
                     "_source": [
                         "photo_id",
-                        "highlight_id"
+                        "highlight_id",
+                        "place_id"
                     ],
                     "query": {
                         "knn": {

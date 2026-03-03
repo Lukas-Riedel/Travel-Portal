@@ -16,6 +16,11 @@
                 ref: "#/components/schemas/IndexableEntityType"
             ),
             new OA\Property(
+                property: "parent",
+                description: "The parent of the searched entity",
+                ref: "#/components/schemas/SearchResult"
+            ),
+            new OA\Property(
                 property: "entity",
                 description: "The searched entity",
                 oneOf: [
@@ -25,17 +30,21 @@
                     new OA\Schema(ref: "#/components/schemas/AirlineIdentifier"),
                     new OA\Schema(ref: "#/components/schemas/Label"),
                     new OA\Schema(ref: "#/components/schemas/TripIdentifier"),
-                    new OA\Schema(ref: "#/components/schemas/YearIdentifier")  
+                    new OA\Schema(ref: "#/components/schemas/YearIdentifier"),
+                    new OA\Schema(ref: "#/components/schemas/Photo"),
+                    new OA\Schema(ref: "#/components/schemas/Highlight")
                 ]
             )
         ]
     )]
     class SearchResult implements \JsonSerializable {
         private readonly IndexableEntityType $type;
+        private readonly ?SearchResult $parent;
         private readonly mixed $entity;
 
-        public function __construct(IndexableEntityType $type, mixed $entity) {
+        public function __construct(IndexableEntityType $type, ?SearchResult $parent, mixed $entity) {
             $this->type = $type;
+            $this->parent = $parent;
             $this->entity = $entity;
         }
 
@@ -43,12 +52,16 @@
             return $this->type;
         }
 
+        public function getParent() : ?SearchResult {
+            return $this->parent;
+        }
+
         public function getEntity() : mixed {
             return $this->entity;
         }
 
-        public function withReplacedEntity(mixed $entity) : SearchResult {
-            return new SearchResult($this->type, $entity);
+        public function withReplacedParentAndEntity(?SearchResult $parent, mixed $entity) : SearchResult {
+            return new SearchResult($this->type, $parent, $entity);
         }
 
         #[\ReturnTypeWillChange]

@@ -1,8 +1,8 @@
 import { TailSpin } from "react-loader-spinner";
 
-export default function LoadingTile() {
+export default function LoadingTile({ className = "w-[350px] h-[233px]" }) {
     return (
-        <div className="relative w-[350px] h-[233px] mx-auto flex items-center justify-center">
+        <div className={`relative mx-auto flex items-center justify-center ${className}`}>
             <TailSpin
                 color="black"
                 height={30}

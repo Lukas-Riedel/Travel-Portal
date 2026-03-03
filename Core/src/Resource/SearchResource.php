@@ -11,6 +11,7 @@
     use Slim\Psr7\Response;
     use OpenApi\Attributes as OA;
     use Core\Service\Index\IndexService;
+    use Core\Service\Index\SearchResult;
     use Core\Service\Label\LabelService;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceService;
@@ -134,9 +135,17 @@
             
             $allowedEntityTypes = array_filter($allowedEntityTypes, fn($entityType) => $this->hasRole($request, $entityType->getRequiredRole()));
 
-            $searchResults = array_map(fn($searchResult) => $searchResult->withReplacedEntity($this->getEntity($searchResult->getType(), $searchResult->getEntity())),
-                $this->indexService->search($query, $limit, $allowedEntityTypes));
+            $searchResults = array_map(fn($searchResult) => $this->mapSearchResult($request, $searchResult), $this->indexService->search($query, $limit, $allowedEntityTypes));
             return array_values(array_filter($searchResults, fn($searchResult) => $searchResult->getEntity() !== null));
+        }
+
+        private function mapSearchResult(Request $request, SearchResult $searchResult) : SearchResult {
+            $mappedSerachResult = $this->getEntity($searchResult->getType(), $searchResult->getEntity());
+            if ($searchResult->getParent() === null || !$this->hasRole($request, $searchResult->getParent()->getType()->getRequiredRole())) {
+                return $searchResult->withReplacedParentAndEntity(null, $mappedSerachResult);
+            }
+
+            return $searchResult->withReplacedParentAndEntity($this->mapSearchResult($request, $searchResult->getParent()), $mappedSerachResult);
         }
 
         private function getEntity(IndexableEntityType $entityType, string $entityId) : mixed {            
