@@ -62,7 +62,8 @@ const searchableEntityNameSelectors = {
     "year": entity => entity.id
 }
 
-const DEFAULT_SEARCH_RESULTS_COUNT = 10
+const DEFAULT_FOUND_ENTITIES_COUNT = 10
+const DEFAULT_FOUND_HIGHLIGHTS_COUNT = 8
 
 export default function MainLayout({ children }) {
     const { isLoggedIn, username, login, logout, hasRole } = useAuth()
@@ -71,7 +72,8 @@ export default function MainLayout({ children }) {
     const { t } = useTranslation()
     const { showLogoutToast, showLoginToast } = usePredefinedUserInput()
     const [isSearchOpen, setIsSearchOpen] = useState(false)
-    const [searchResults, setSearchResults] = useState(null)
+    const [foundEntities, setFoundEntities] = useState(null)
+    const [foundHighlights, setFoundHighlights] = useState(null)
     const [searchedText, setSearchedText] = useState(null)
     const countryCategories = useCategories({ categories: ["country"] })
 
@@ -110,23 +112,30 @@ export default function MainLayout({ children }) {
             if (searchedText?.length > 2) {
                 try {
                     const delay = setTimeout(async () => {
-                        const results = await search(searchedText, {
-                            limit: DEFAULT_SEARCH_RESULTS_COUNT,
+                        search(searchedText, {
+                            limit: DEFAULT_FOUND_ENTITIES_COUNT,
                             include: ["category", "place", "airport", "airline", "label", "trip", "year"]
                         }, {
                             signal: controller.signal
-                        });
-                        setSearchResults(results);
+                        }).then(setFoundEntities)
+
+                        search(searchedText, {
+                            limit: DEFAULT_FOUND_HIGHLIGHTS_COUNT,
+                            include: ["highlight"]
+                        }, {
+                            signal: controller.signal
+                        }).then(setFoundHighlights)
                     }, 200);
 
-                    return () => clearTimeout(delay);
+                    return () => clearTimeout(delay)
                 }
                 catch (e) {
                     // Do nothing.
                 }
             }
             else {
-                setSearchResults(null);
+                setFoundEntities(null)
+                setFoundHighlights(null)
             }
         }
 
@@ -304,9 +313,9 @@ export default function MainLayout({ children }) {
                             </button>
                         </div>
                         <div className="max-h-[60vh] overflow-y-auto p-2">
-                            {searchResults && (
-                                searchResults.length ?
-                                    searchResults.map(res => (
+                            {foundEntities && (
+                                foundEntities.length ?
+                                    foundEntities.map(res => (
                                         <Link
                                             key={res.entity.id}
                                             className="p-3 hover:bg-blue-50 rounded-lg cursor-pointer flex justify-between"
@@ -328,6 +337,27 @@ export default function MainLayout({ children }) {
                                         </div>
                                     ))}
                         </div>
+                        {(foundHighlights === null || foundHighlights.length > 0) && foundEntities?.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <div className="flex flex-wrap justify-center gap-3 pb-2 px-2">
+                                    {foundHighlights ? (
+                                        foundHighlights.map((res, idx) => (
+                                            <img
+                                                src={res.entity.url.thumbnail}
+                                                className="group relative flex-grow w-32 h-32 rounded-lg bg-gray-100 transition-transform duration-200 object-cover shadow-sm"
+                                                loading="lazy" />
+                                        ))
+                                    ) : (
+                                        Array.from({ length: DEFAULT_FOUND_HIGHLIGHTS_COUNT }, (_, i) => i + 1).map(i => (
+                                            <div
+                                                key={i}
+                                                className="flex-frow w-32 h-32 rounded-lg bg-gray-100 animate-pulse"
+                                            />
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )
