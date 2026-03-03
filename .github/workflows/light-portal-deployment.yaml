@@ -46,9 +46,9 @@ jobs:
           --set portal.content.range.max=$FINAL_TIMESTAMP \
           --install \
           --wait \
-          --timeout 3m \
+          --timeout 5m \
           --atomic
         CONTAINER_NAME=$(kubectl get deployment portal-light -o jsonpath='{.spec.template.spec.containers[0].name}')
         TIMESTAMP=$(date +%s)
         kubectl patch deployment portal-light -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"timestamp\":\"$TIMESTAMP\"}},\"spec\":{\"containers\":[{\"name\":\"$CONTAINER_NAME\",\"imagePullPolicy\":\"Always\"}]}}}}"
-        kubectl rollout status deployment portal-light --timeout 3m
+        kubectl rollout status deployment portal-light --timeout 5m
