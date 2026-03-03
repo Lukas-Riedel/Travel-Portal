@@ -51,7 +51,7 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         GenerativeContentResource::register($app, $generativeContentClient, $configurationService);
-        SearchResource::register($app, $indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService);
+        SearchResource::register($app, $indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService, $photoService, $highlightService);
         SwaggerResource::register($app, $coreBaseUrl);
         ManagementResource::register($app, $appName, $versionTag, $healthCheckables);
     };

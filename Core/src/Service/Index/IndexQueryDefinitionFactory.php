@@ -50,6 +50,7 @@
                 "size": $limit,
                 "_source": [
                     "photo_id",
+                    "highlight_id",
                     "embedding"
                 ],
                 "query": {
@@ -94,20 +95,39 @@
             return json_decode($json, true);
         }
 
-        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $mainHighlightsOnly) : array {
+        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $highlightsOnly, bool $placeMainHighlightsOnly) : array {
             $rawParams = array(
                 "vector" => $embedding,
                 "k" => $limit
             );
 
-            $filteredTerms = array();
-            if ($mainHighlightsOnly) {
-                $filteredTerms["is_place_main_highlight"] = true;
+            $filters = array();
+            if ($placeMainHighlightsOnly) {
+                $filters[] = array("term" => array("is_place_main_highlight" => true));
+            }
+            if ($highlightsOnly) {
+                $filters[] = array(
+                    "bool" => array(
+                        "should" => array(
+                            array("term" => array("is_place_highlight" => true)),
+                            array("term" => array("is_trip_highlight" => true))
+                        ),
+                        "minimum_should_match" => 1
+                    )
+                );
             }
 
-
-            if (count($filteredTerms) > 0) {
-                $rawParams["filter"] = array("term" => $filteredTerms);
+            if (count($filters) > 0) {
+                if (count($filters) > 1) {
+                    $rawParams["filter"] = array(
+                        "bool" => array(
+                            "must" => $filters
+                        )
+                    );
+                }
+                else {
+                    $rawParams["filter"] = $filters[0];
+                }
             }
 
             $params = json_encode($rawParams);
@@ -116,7 +136,8 @@
                 {
                     "size": $limit,
                     "_source": [
-                        "photo_id"
+                        "photo_id",
+                        "highlight_id"
                     ],
                     "query": {
                         "knn": {
@@ -319,6 +340,9 @@
                                 "type": "keyword"
                             },
                             "album_id": {
+                                "type": "keyword"
+                            },
+                            "highlight_id": {
                                 "type": "keyword"
                             },
                             "place_id": {

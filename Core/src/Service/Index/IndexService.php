@@ -55,16 +55,28 @@
             $this->entityIndexers = $entityIndexers;
         }
 
+        // TODO: This doesn't really respect the limit (but UI currently doesn't call it in a way that it matters).
         public function search(string $query, int $limit, array $allowedEntityTypes) : array {
-            return array_map(fn($searchEntry) => new SearchResult(IndexableEntityType::from($searchEntry->getData()["entity_type"]), $searchEntry->getData()["entity_id"]),
+            $searchResults = array_map(fn($searchEntry) => new SearchResult(IndexableEntityType::from($searchEntry->getData()["entity_type"]), $searchEntry->getData()["entity_id"]),
                 $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes)));
+
+            if (in_array(IndexableEntityType::Photo, $allowedEntityTypes)) {
+                $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Photo, $nn->getEntityId()), $this->getNearestNeighbourPhotoIds($this->embeddingService->getTextEmbedding($query), $limit, true, false)));
+            }
+
+            if (in_array(IndexableEntityType::Highlight, $allowedEntityTypes)) {
+                $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Highlight, $nn->getEntityId()), $this->getNearestNeighbourHighlightIds($this->embeddingService->getTextEmbedding($query), $limit, true, false)));
+            }
+
+            return $searchResults;
         }
 
-        public function getNearestNeighbourPhotoIds(array $embedding, int $limit, bool $mainHighlightsOnly = true) : array {
-            $searchEntries = $this->searchClient->search($this->photoIndexName,
-                $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $mainHighlightsOnly));
+        public function getNearestNeighbourHighlightIds(array $embedding, int $limit, bool $highlightsOnly, bool $placeMainHighlightsOnly) : array {
+            return $this->getNearestNeighbours("highlight_id", $embedding, $limit, $highlightsOnly, $placeMainHighlightsOnly);
+        }
 
-            return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()["photo_id"], $searchEntry->getScore()), $searchEntries);
+        public function getNearestNeighbourPhotoIds(array $embedding, int $limit, bool $highlightsOnly, bool $placeMainHighlightsOnly) : array {
+            return $this->getNearestNeighbours("photo_id", $embedding, $limit, $highlightsOnly, $placeMainHighlightsOnly);
         }
 
         public function getSelectedPhotoIdsForPlace(string $placeId, string $query, int $count, ?string $mainHighlightPhotoId) : array {
@@ -280,6 +292,13 @@
             $result = $this->embeddingService->getTextEmbedding(implode(", ", $negativeTerms));
             $this->cacheClient->set($cacheKey, $result, self::NEGATIVE_EMBEDDING_CACHE_TTL);
             return $result;
+        }
+        
+        private function getNearestNeighbours(string $propertyName, array $embedding, int $limit, bool $highlightsOnly, bool $placeMainHighlightsOnly) : array {
+            $searchEntries = $this->searchClient->search($this->photoIndexName,
+                $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $highlightsOnly, $placeMainHighlightsOnly));
+
+            return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()[$propertyName], $searchEntry->getScore()), $searchEntries);
         }
     }
 ?>

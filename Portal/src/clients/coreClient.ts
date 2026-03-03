@@ -4,7 +4,7 @@ import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamC
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType, } from "../types/CoreSwaggerTypes.ts"
 import type {
-    Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category,
+    Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category, IndexableEntityType,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
     DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
     Location, SearchResult
@@ -38,11 +38,12 @@ export const refreshYearHighlights = async (year: number, count: number): Promis
             count
         })).then(extractData)
 
-export const search = async (query: string, limit?: number, config?: AxiosRequestConfig): Promise<SearchResult[]> =>
+export const search = async (query: string, { include, limit }: { include?: IndexableEntityType[], limit?: number } = {}, config?: AxiosRequestConfig): Promise<SearchResult[]> =>
     coreClient.get<SearchResult[]>(createQueryPath("search",
         {
             query,
-            limit
+            limit,
+            include: include?.join(","),
         }
     ), config).then(extractData)
 

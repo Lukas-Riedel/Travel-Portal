@@ -64,6 +64,7 @@
                 "place_id" => $data["placeId"],
                 "trip_id" => $data["tripId"],
                 "album_id" => $data["albumId"],
+                "highlight_id" => $data["highlightId"],
                 "iso" => $data["iso"],
                 "is_place_highlight" => $data["isPlaceHighlight"],
                 "is_trip_highlight" => $data["isTripHighlight"],

@@ -35,27 +35,37 @@
 
                 $tripHighlightIds = array();
                 foreach ($trips as &$trip) {
-                    $tripHighlightIds[$trip->getId()] = array_map(fn($highlight) => $highlight->getPhoto()->getId(), $trip->getHighlights());
+                    $tripHighlightIds[$trip->getId()] = array();
+                    foreach ($trip->getHighlights() as &$highlight) {
+                        $tripHighlightIds[$trip->getId()][$highlight->getPhoto()->getId()] = $highlight->getId();
+                    }
                 }
 
                 foreach ($places as &$place) {
-                    $placeHighlightPhotoIds = array_flip(array_map(fn($highlight) => $highlight->getPhoto()->getId(), $place->getHighlights()));
+                    $placeHighlightIds = array();
+                    foreach ($place->getHighlights() as &$highlight) {
+                        $placeHighlightIds[$highlight->getPhoto()->getId()] = $highlight->getId();
+                    }
 
                     foreach ($place->getDates() as &$date) {
                         $album = $date->getAlbum();
 
                         if ($album !== null) {
                             $photoEmbeddings = $this->photoService->getPhotoEmbeddings($album->getId());
+                            $tripId = $date->getTrip()?->getId();
 
                             foreach ($photoEmbeddings as &$photoEmbedding) {
                                 $documentBuffer->add($photoEmbedding->getId(), array(
                                     "embedding" => $photoEmbedding->getEmbedding(),
                                     "placeId" => $place->getId(),
-                                    "tripId" => $date->getTrip()?->getId() ?? null,
+                                    "tripId" => $tripId,
                                     "albumId" => $album->getId(),
+                                    "highlightId" => isset($placeHighlightIds[$photoEmbedding->getId()]) ? $placeHighlightIds[$photoEmbedding->getId()]
+                                        : ($tripId !== null && isset($tripHighlightIds[$tripId][$photoEmbedding->getId()]) ? $tripHighlightIds[$tripId][$photoEmbedding->getId()] 
+                                        : null),
                                     "iso" => $photoEmbedding->getIso(),
-                                    "isPlaceHighlight" => isset($placeHighlightPhotoIds[$photoEmbedding->getId()]),
-                                    "isTripHighlight" => $date->getTrip() !== null && isset($tripHighlightIds[$date->getTrip()->getId()][$photoEmbedding->getId()]),
+                                    "isPlaceHighlight" => isset($placeHighlightIds[$photoEmbedding->getId()]),
+                                    "isTripHighlight" => $tripId !== null && isset($tripHighlightIds[$tripId][$photoEmbedding->getId()]),
                                     "isPlaceMainHighlight" => $place->getMainHighlight()?->getPhoto()?->getId() === $photoEmbedding->getId()
                                 ));
                             }

@@ -4,6 +4,7 @@
     use Common\Resource\AbstractResource;
     use Core\Service\Category\CategoryService;
     use Core\Service\Flight\FlightService;
+    use Core\Service\Highlight\HighlightService;
     use Core\Service\Index\IndexableEntityType;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -11,6 +12,7 @@
     use OpenApi\Attributes as OA;
     use Core\Service\Index\IndexService;
     use Core\Service\Label\LabelService;
+    use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripService;
     use Core\Service\Year\YearService;
@@ -28,9 +30,12 @@
         private readonly LabelService $labelService;
         private readonly TripService $tripService;
         private readonly YearService $yearService;
+        private readonly PhotoService $photoService;
+        private readonly HighlightService $highlightService;
 
         public function __construct(IndexService $indexService, CategoryService $categoryService, PlaceService $placeService,
-            FlightService $flightService, LabelService $labelService, TripService $tripService, YearService $yearService) {
+            FlightService $flightService, LabelService $labelService, TripService $tripService, YearService $yearService,
+            PhotoService $photoService, HighlightService $highlightService) {
             $this->indexService = $indexService;
             $this->categoryService = $categoryService;
             $this->placeService = $placeService;
@@ -38,11 +43,15 @@
             $this->labelService = $labelService;
             $this->tripService = $tripService;
             $this->yearService = $yearService;
+            $this->photoService = $photoService;
+            $this->highlightService = $highlightService;
         }
 
         public static function register(App $app, IndexService $indexService, CategoryService $categoryService, PlaceService $placeService,
-            FlightService $flightService, LabelService $labelService, TripService $tripService, YearService $yearService) : void {
-            $resource = new self($indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService);
+            FlightService $flightService, LabelService $labelService, TripService $tripService, YearService $yearService,
+            PhotoService $photoService, HighlightService $highlightService) : void {
+            $resource = new self($indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService,
+                $photoService, $highlightService);
 
             $app->group("/search", function($group) use($resource) {
                 $group->get("", [$resource, "listSearchResults"]);
@@ -61,14 +70,20 @@
                     in: "query",
                     required: true,
                     description: "The search query",
-                    example: "Prague"                
+                    example: "Prague"
+                ),            
+                new OA\Parameter(
+                    name: "include",
+                    in: "query",
+                    description: "The comma-separated list of included entities",
+                    example: "place,category"
                 ),
                 new OA\Parameter(
                     name: "limit",
                     in: "query",
                     description: "The count of search results",
                     example: "10"                
-                )
+                ),
             ],
             responses: [
                 new OA\Response(
@@ -107,10 +122,17 @@
                 )
             ]
         )]
-        public function listSearchResults(Request $request, Response $response, array $routeArguments) : mixed {   
+        public function listSearchResults(Request $request, Response $response, array $routeArguments) : mixed {
             $query = $this->requireQueryParameter($request, "query");
+            $include = $this->getQueryParameter($request, "include");
             $limit = $this->getQueryParameter($request, "limit") ?? self::DEFAULT_SEARCH_RESULTS_COUNT;
-            $allowedEntityTypes = array_filter(IndexableEntityType::cases(), fn($entityType) => $this->hasRole($request, $entityType->getRequiredRole()));
+
+            $allowedEntityTypes = IndexableEntityType::cases();
+            if ($include !== null) {
+                $allowedEntityTypes = array_map(fn($entityType) => IndexableEntityType::from($entityType), explode(",", $include));
+            }
+            
+            $allowedEntityTypes = array_filter($allowedEntityTypes, fn($entityType) => $this->hasRole($request, $entityType->getRequiredRole()));
 
             $searchResults = array_map(fn($searchResult) => $searchResult->withReplacedEntity($this->getEntity($searchResult->getType(), $searchResult->getEntity())),
                 $this->indexService->search($query, $limit, $allowedEntityTypes));
@@ -125,7 +147,9 @@
                 IndexableEntityType::Airline => $this->flightService->getAirlineIdentifier($entityId),
                 IndexableEntityType::Label => $this->labelService->getLabel($entityId),
                 IndexableEntityType::Trip => $this->tripService->getTripIdentifierById($entityId),
-                IndexableEntityType::Year => $this->yearService->getYearIdentifier($entityId)
+                IndexableEntityType::Year => $this->yearService->getYearIdentifier($entityId),
+                IndexableEntityType::Photo => $this->photoService->getPhoto($entityId),
+                IndexableEntityType::Highlight => $this->highlightService->getHighlight($entityId),
             };
         }
     }

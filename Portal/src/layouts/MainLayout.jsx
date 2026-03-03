@@ -110,7 +110,10 @@ export default function MainLayout({ children }) {
             if (searchedText?.length > 2) {
                 try {
                     const delay = setTimeout(async () => {
-                        const results = await search(searchedText, DEFAULT_SEARCH_RESULTS_COUNT, {
+                        const results = await search(searchedText, {
+                            limit: DEFAULT_SEARCH_RESULTS_COUNT,
+                            include: ["category", "place", "airport", "airline", "label", "trip", "year"]
+                        }, {
                             signal: controller.signal
                         });
                         setSearchResults(results);
