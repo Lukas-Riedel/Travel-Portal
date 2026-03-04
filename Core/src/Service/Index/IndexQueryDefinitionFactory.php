@@ -1,7 +1,7 @@
 <?php
     namespace Core\Service\Index;
 
-    // TODO: Figure out what to do with this class.
+    // TODO: Figure out what to do with this class. I don't like it's current form at all (the mixture of PHP and JSON).
     class IndexQueryDefinitionFactory {
         public function createAllPlaceMainHighlightsEmbeddingQuery() : array {
             // TODO: The hard limit is 10000, fix this limitation by making multiple requests.
@@ -95,7 +95,7 @@
             return json_decode($json, true);
         }
 
-        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $placeHighlightsOnly, bool $placeMainHighlightsOnly) : array {
+        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $placeHighlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {
             $rawParams = array(
                 "vector" => $embedding,
                 "k" => $limit
@@ -134,6 +134,9 @@
             $json = <<<JSON
                 {
                     "size": $limit,
+                    "collapse": {
+                        "field": "place_id" 
+                    },
                     "_source": [
                         "photo_id",
                         "highlight_id",
@@ -147,7 +150,11 @@
                 }
             JSON;
 
-            return json_decode($json, true);
+            $query = json_decode($json, true);
+            if ($distinctPlacesOnly) {
+                $query["collapse"] = array("field" => "place_id");
+            }
+            return $query;
         }
 
         public function createCompositeIndexSearchQuery(string $query, int $limit, array $allowedEntityTypes) : array {

@@ -337,7 +337,7 @@ export default function MainLayout({ children }) {
                                             Nebyly nalezeny žádné výsledky
                                         </div>
                                     ))}
-                            {(foundHighlights === null || foundHighlights.length > 0) && foundEntities?.length > 0 && (
+                            {(foundHighlights === null || foundHighlights.length > 0) && foundEntities && (
                                 <div className="mt-4 pt-4 border-t border-gray-100">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 px-2">
                                         {foundHighlights ? (
