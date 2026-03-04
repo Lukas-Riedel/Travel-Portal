@@ -308,7 +308,7 @@
         
         private function getNearestNeighbours(string $propertyName, array $embedding, int $limit, int $neighboursCount, bool $highlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {
             $searchEntries = $this->searchClient->search($this->photoIndexName,
-                $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $highlightsOnly, $neighboursCount, $placeMainHighlightsOnly, $distinctPlacesOnly));
+                $this->indexQueryDefinitionFactory->createPhotoNearestNeighbourQuery($embedding, $limit, $neighboursCount, $highlightsOnly, $placeMainHighlightsOnly, $distinctPlacesOnly));
 
             return array_map(fn($searchEntry) => new NearestNeighbour($searchEntry->getData()[$propertyName], $searchEntry->getData()["place_id"], $searchEntry->getScore()), $searchEntries);
         }
