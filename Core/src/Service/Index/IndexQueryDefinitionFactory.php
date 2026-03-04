@@ -1,27 +1,20 @@
 <?php
     namespace Core\Service\Index;
 
-    // TODO: Figure out what to do with this class. I don't like it's current form at all (the mixture of PHP and JSON).
     class IndexQueryDefinitionFactory {
+        // TODO: The hard limit in OpenSearch is 10000, fix this limitation by making multiple requests.
         public function createAllPlaceMainHighlightsEmbeddingQuery() : array {
-            // TODO: The hard limit is 10000, fix this limitation by making multiple requests.
-            $json = <<<JSON
-                {
-                    "size": 10000,
-                    "_source": [
-                        "embedding"
-                    ],
-                    "query": {
-                        "term": {
-                            "is_place_main_highlight": {
-                                "value": true
-                            }
-                        }
-                    }
-                }
-            JSON;
-
-            return json_decode($json, true);
+            return array(
+                "size" => 10000,
+                "_source" => array("embedding"),
+                "query" => array(
+                    "term" => array(
+                        "is_place_main_highlight" => array(
+                            "value" => true
+                        )
+                    )
+                )
+            );
         }
 
         public function createPhotoSelectionQuery(array $embedding, int $limit, array $placeIds, array $tripIds, array $photoIds, ?bool $placeHighlightsOnly, ?bool $tripHighlightsOnly) : array {            
@@ -42,65 +35,49 @@
                 $filterConditions[] = array("term" => array("is_trip_highlight" => $tripHighlightsOnly));
             }
             
-            $vector = json_encode($embedding);
-            $filter = json_encode($filterConditions);
-
-            $json = <<<JSON
-            {
-                "size": $limit,
-                "_source": [
-                    "photo_id",
-                    "highlight_id",
-                    "embedding"
-                ],
-                "query": {
-                    "function_score": {
-                        "query": {
-                            "script_score": {
-                                "query": {
-                                    "bool": {
-                                    "filter": $filter
-                                    }
-                                },
-                                "script": {
-                                    "source": "knn_score",
-                                    "lang": "knn",
-                                    "params": {
-                                        "field": "embedding",
-                                        "query_value": $vector,
-                                        "space_type": "cosinesimil"
-                                    }
-                                }
-                            }
-                        },
-                        "functions": [
-                            {
-                                "gauss": {
-                                    "iso": {
-                                        "origin": "100",
-                                        "scale": "400",
-                                        "decay": 0.5
-                                    }
-                                },
-                                "weight": 2
-                            }
-                        ],
-                        "score_mode": "multiply",
-                        "boost_mode": "multiply"
-                    }
-                }
-            }
-            JSON;
-
-            return json_decode($json, true);
+            return array(
+                "size" => $limit,
+                "_source" => array("photo_id", "highlight_id", "embedding"),
+                "query" => array(
+                    "function_score" => array(
+                        "query" => array(
+                            "script_score" => array(
+                                "query" => array(
+                                    "bool" => array(
+                                        "filter" => $filterConditions
+                                    )
+                                ),
+                                "script" => array(
+                                    "source" => "knn_score",
+                                    "lang" => "knn",
+                                    "params" => array(
+                                        "field" => "embedding",
+                                        "query_value" => $embedding,
+                                        "space_type" => "cosinesimil"
+                                    )
+                                )
+                            )
+                        ),
+                        "functions" => array(
+                            array(
+                                "gauss" => array(
+                                    "iso" => array(
+                                        "origin" => "100",
+                                        "scale" => "400",
+                                        "decay" => 0.5
+                                    )
+                                ),
+                                "weight" => 2
+                            )
+                        ),
+                        "score_mode" => "multiply",
+                        "boost_mode" => "multiply"
+                    )
+                )
+            );
         }
 
         public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, int $neighboursCount, bool $placeHighlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {
-            $rawParams = array(
-                "vector" => $embedding,
-                "k" => $neighboursCount
-            );
-
             $filters = array();
             if ($placeMainHighlightsOnly) {
                 $filters[] = array("term" => array("is_place_main_highlight" => true));
@@ -116,279 +93,224 @@
                 );
             }
 
+            $knnParams = array(
+                "vector" => $embedding,
+                "k" => $neighboursCount
+            );
+
             if (count($filters) > 0) {
                 if (count($filters) > 1) {
-                    $rawParams["filter"] = array(
+                    $knnParams["filter"] = array(
                         "bool" => array(
                             "must" => $filters
                         )
                     );
-                }
-                else {
-                    $rawParams["filter"] = $filters[0];
+                } else {
+                    $knnParams["filter"] = $filters[0];
                 }
             }
 
-            $params = json_encode($rawParams);
+            $query = array(
+                "size" => $limit,
+                "_source" => array("photo_id", "highlight_id", "place_id"),
+                "query" => array(
+                    "knn" => array(
+                        "embedding" => $knnParams
+                    )
+                )
+            );
 
-            $json = <<<JSON
-                {
-                    "size": $limit,
-                    "collapse": {
-                        "field": "place_id" 
-                    },
-                    "_source": [
-                        "photo_id",
-                        "highlight_id",
-                        "place_id"
-                    ],
-                    "query": {
-                        "knn": {
-                            "embedding": $params
-                        }
-                    }
-                }
-            JSON;
-
-            $query = json_decode($json, true);
             if ($distinctPlacesOnly) {
                 $query["collapse"] = array("field" => "place_id");
             }
+
             return $query;
         }
 
         public function createCompositeIndexSearchQuery(string $query, int $limit, array $allowedEntityTypes) : array {
-            $sanitizedQuery = json_encode($query);
-            $functions = json_encode(array_values(array_map(fn($type) => array("filter" => array("term" => array("entity_type" => $type->value)), "weight" => $type->getPriority()), IndexableEntityType::cases())));
-            $allowedValues = json_encode(array_values(array_map(fn($entityType) => $entityType->value, $allowedEntityTypes)));
+            $functions = array_values(array_map(function($type) {
+                return array(
+                    "filter" => array("term" => array("entity_type" => $type->value)),
+                    "weight" => $type->getPriority()
+                );
+            }, IndexableEntityType::cases()));
 
-            $json = <<<JSON
-                {
-                    "size": $limit,
-                    "_source": [
-                        "entity_type",
-                        "entity_id"
-                    ],
-                    "query": {
-                        "function_score": {
-                            "query": {
-                                "bool": {
-                                    "should": [
-                                        {
-                                            "term": {
-                                                "entity_name.raw": {
-                                                    "value": $sanitizedQuery,
-                                                    "boost": 1000
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "multi_match": {
-                                                "query": $sanitizedQuery,
-                                                "fields": [
-                                                    "entity_name^10",
-                                                    "search_text^1"
-                                                ],
-                                                "type": "best_fields",
-                                                "operator": "and",
-                                                "fuzziness": "AUTO",
-                                                "prefix_length": 2
-                                            }
-                                        },
-                                        {
-                                            "match": {
-                                                "search_text.ngram": {
-                                                    "query": $sanitizedQuery,
-                                                    "boost": 0.2
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "match": {
-                                                "search_text": {
-                                                    "query": $sanitizedQuery,
-                                                    "fuzziness": "AUTO",
-                                                    "prefix_length": 2,
-                                                    "boost": 0.5
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    "filter": [
-                                        {
-                                            "terms": { 
-                                                "entity_type": $allowedValues
-                                            }
-                                        }
-                                    ],
-                                    "minimum_should_match": 1
-                                }
-                            },
-                            "functions": $functions,
-                            "score_mode": "multiply",
-                            "boost_mode": "sum"
-                        }
-                    }
-                }
-            JSON;
+            $allowedValues = array_values(array_map(function($entityType) {
+                return $entityType->value;
+            }, $allowedEntityTypes));
 
-            return json_decode($json, true);
+            return array(
+                "size" => $limit,
+                "_source" => array("entity_type", "entity_id"),
+                "query" => array(
+                    "function_score" => array(
+                        "query" => array(
+                            "bool" => array(
+                                "should" => array(
+                                    array(
+                                        "term" => array(
+                                            "entity_name.raw" => array(
+                                                "value" => $query,
+                                                "boost" => 1000
+                                            )
+                                        )
+                                    ),
+                                    array(
+                                        "multi_match" => array(
+                                            "query" => $query,
+                                            "fields" => array("entity_name^10", "search_text^1"),
+                                            "type" => "best_fields",
+                                            "operator" => "and",
+                                            "fuzziness" => "AUTO",
+                                            "prefix_length" => 2
+                                        )
+                                    ),
+                                    array(
+                                        "match" => array(
+                                            "search_text.ngram" => array(
+                                                "query" => $query,
+                                                "boost" => 0.2
+                                            )
+                                        )
+                                    ),
+                                    array(
+                                        "match" => array(
+                                            "search_text" => array(
+                                                "query" => $query,
+                                                "fuzziness" => "AUTO",
+                                                "prefix_length" => 2,
+                                                "boost" => 0.5
+                                            )
+                                        )
+                                    )
+                                ),
+                                "filter" => array(
+                                    array(
+                                        "terms" => array(
+                                            "entity_type" => $allowedValues
+                                        )
+                                    )
+                                ),
+                                "minimum_should_match" => 1
+                            )
+                        ),
+                        "functions" => $functions,
+                        "score_mode" => "multiply",
+                        "boost_mode" => "sum"
+                    )
+                )
+            );
         }
 
         // TODO: Externalize the settings of the index to not explicitly mention Czech here.
         public function createCompositeIndexDefinition() : array {
-            $json = <<<'JSON'
-                {
-                    "settings": {
-                        "index": {
-                            "number_of_shards": 1,
-                            "number_of_replicas": 0,
-                            "similarity": {
-                                "no_length_norm": {
-                                    "type": "BM25",
-                                    "b": 0
-                                }
-                            }
-                        },
-                        "analysis": {
-                            "filter": {
-                                "czech_stop": {
-                                    "type": "stop",
-                                    "stopwords": "_czech_"
-                                },
-                                "czech_stemmer": {
-                                    "type": "stemmer",
-                                    "language": "czech"
-                                },
-                                "my_ngram_filter": {
-                                    "type": "edge_ngram",
-                                    "min_gram": 3,
-                                    "max_gram": 10
-                                }
-                            },
-                            "analyzer": {
-                                "custom_analyzer": {
-                                    "tokenizer": "standard",
-                                    "filter": [
-                                        "lowercase",
-                                        "asciifolding",
-                                        "czech_stop",
-                                        "czech_stemmer"
-                                    ]
-                                },
-                                "ngram_analyzer": {
-                                    "tokenizer": "standard",
-                                    "filter": [
-                                        "lowercase",
-                                        "asciifolding",
-                                        "my_ngram_filter"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "mappings": {
-                        "properties": {
-                            "id": {
-                                "type": "keyword"
-                            },
-                            "entity_id": {
-                                "type": "keyword"
-                            },
-                            "entity_type": {
-                                "type": "keyword"
-                            },
-                            "entity_name": {
-                                "type": "text",
-                                "analyzer": "custom_analyzer",
-                                "similarity": "no_length_norm",
-                                "fields": {
-                                    "raw": { 
-                                        "type": "keyword" 
-                                    }
-                                }
-                            },
-                            "search_text": {
-                                "type": "text",
-                                "analyzer": "custom_analyzer",
-                                "similarity": "no_length_norm",
-                                "fields": {
-                                    "ngram": {
-                                        "type": "text",
-                                        "analyzer": "ngram_analyzer"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }        
-            JSON;
-
-            return json_decode($json, true);
+            return array(
+                "settings" => array(
+                    "index" => array(
+                        "number_of_shards" => 1,
+                        "number_of_replicas" => 0,
+                        "similarity" => array(
+                            "no_length_norm" => array(
+                                "type" => "BM25",
+                                "b" => 0
+                            )
+                        )
+                    ),
+                    "analysis" => array(
+                        "filter" => array(
+                            "czech_stop" => array(
+                                "type" => "stop",
+                                "stopwords" => "_czech_"
+                            ),
+                            "czech_stemmer" => array(
+                                "type" => "stemmer",
+                                "language" => "czech"
+                            ),
+                            "my_ngram_filter" => array(
+                                "type" => "edge_ngram",
+                                "min_gram" => 3,
+                                "max_gram" => 10
+                            )
+                        ),
+                        "analyzer" => array(
+                            "custom_analyzer" => array(
+                                "tokenizer" => "standard",
+                                "filter" => array("lowercase", "asciifolding", "czech_stop", "czech_stemmer")
+                            ),
+                            "ngram_analyzer" => array(
+                                "tokenizer" => "standard",
+                                "filter" => array("lowercase", "asciifolding", "my_ngram_filter")
+                            )
+                        )
+                    )
+                ),
+                "mappings" => array(
+                    "properties" => array(
+                        "id" => array("type" => "keyword"),
+                        "entity_id" => array("type" => "keyword"),
+                        "entity_type" => array("type" => "keyword"),
+                        "entity_name" => array(
+                            "type" => "text",
+                            "analyzer" => "custom_analyzer",
+                            "similarity" => "no_length_norm",
+                            "fields" => array(
+                                "raw" => array("type" => "keyword")
+                            )
+                        ),
+                        "search_text" => array(
+                            "type" => "text",
+                            "analyzer" => "custom_analyzer",
+                            "similarity" => "no_length_norm",
+                            "fields" => array(
+                                "ngram" => array(
+                                    "type" => "text",
+                                    "analyzer" => "ngram_analyzer"
+                                )
+                            )
+                        )
+                    )
+                )
+            );
         }
 
         public function createPhotoIndexDefinition() : array {
-            $json = <<<'JSON'
-                {
-                    "settings": {
-                        "index": {
-                            "number_of_shards": 1,
-                            "number_of_replicas": 0,
-                            "knn": true,
-                            "knn.algo_param.ef_search": "100"
-                        }
-                    },
-                    "mappings": {
-                        "properties": {
-                            "id": {
-                                "type": "keyword"
-                            },
-                            "photo_id": {
-                                "type": "keyword"
-                            },
-                            "album_id": {
-                                "type": "keyword"
-                            },
-                            "highlight_id": {
-                                "type": "keyword"
-                            },
-                            "place_id": {
-                                "type": "keyword"
-                            },
-                            "trip_id": {
-                                "type": "keyword"
-                            },
-                            "iso": {
-                                "type": "integer"
-                            },
-                            "is_place_highlight": {
-                                "type": "boolean"
-                            },
-                            "is_trip_highlight": {
-                                "type": "boolean"
-                            },
-                            "is_place_main_highlight": {
-                                "type": "boolean"
-                            },
-                            "embedding": {
-                                "type": "knn_vector",
-                                "dimension": 768,
-                                "method": {
-                                    "name": "hnsw",
-                                    "space_type": "cosinesimil",
-                                    "engine": "lucene",
-                                    "parameters": {
-                                        "ef_construction": 128,
-                                        "m": 16
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            JSON;
-
-            return json_decode($json, true);
+            return array(
+                "settings" => array(
+                    "index" => array(
+                        "number_of_shards" => 1,
+                        "number_of_replicas" => 0,
+                        "knn" => true,
+                        "knn.algo_param.ef_search" => "100"
+                    )
+                ),
+                "mappings" => array(
+                    "properties" => array(
+                        "id" => array("type" => "keyword"),
+                        "photo_id" => array("type" => "keyword"),
+                        "album_id" => array("type" => "keyword"),
+                        "highlight_id" => array("type" => "keyword"),
+                        "place_id" => array("type" => "keyword"),
+                        "trip_id" => array("type" => "keyword"),
+                        "iso" => array("type" => "integer"),
+                        "is_place_highlight" => array("type" => "boolean"),
+                        "is_trip_highlight" => array("type" => "boolean"),
+                        "is_place_main_highlight" => array("type" => "boolean"),
+                        "embedding" => array(
+                            "type" => "knn_vector",
+                            "dimension" => 768,
+                            "method" => array(
+                                "name" => "hnsw",
+                                "space_type" => "cosinesimil",
+                                "engine" => "lucene",
+                                "parameters" => array(
+                                    "ef_construction" => 128,
+                                    "m" => 16
+                                )
+                            )
+                        )
+                    )
+                )
+            );
         }
     }
 ?>
