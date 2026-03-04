@@ -1509,7 +1509,7 @@
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $count = $this->requireQueryParameter($request, "count");
 
-            $this->tripService->refreshTripHighlights($tripId, $count);
+            $this->tripService->refreshTripHighlights($tripId, $count, false);
             
             return $this->doGetTrip($tripId)?->getHighlights();
         }

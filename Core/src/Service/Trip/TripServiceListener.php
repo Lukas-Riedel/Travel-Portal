@@ -102,6 +102,7 @@
 
                 if ($place !== null && count($photos) > 0) {
                     if ($place->getMainHighlight() === null) {
+                        // TODO: Why is this here? Should ine in PlaceServiceListener.
                         $this->highlightService->createPlaceHighlight($place->getId(), $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
                     }
 
@@ -118,7 +119,7 @@
                     foreach ($activeTripIds as &$tripId) {
                         $trip = $this->tripService->getRegularTrip($tripId);
                         if (count($trip->getHighlights()) < $this->maxHighlightsPerTripCount) {
-                            $this->tripService->updateTripMainHighlight($tripId, $this->maxHighlightsPerTripCount);
+                            $this->tripService->refreshTripHighlights($tripId, $this->maxHighlightsPerTripCount, true);
                         }
                     }
                 }

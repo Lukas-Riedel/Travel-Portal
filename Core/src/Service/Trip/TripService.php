@@ -67,7 +67,7 @@
             $this->transactionManager = $databaseClient;
         }
 
-        public function refreshTripHighlights(string $tripId, int $count) : void {
+        public function refreshTripHighlights(string $tripId, int $count, bool $onlyTripPlaceHighlights) : void {
             $trip = $this->getRegularTrip($tripId);
             if ($trip === null) {
                 return;
@@ -79,8 +79,8 @@
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["tripHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query, $count, $trip->getMainHighlight()?->getPhoto()?->getId(),
-                array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places))));
+            $tripPlaceHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places)));
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query, $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
 
             foreach ($trip->getHighlights() as &$highlight) {
                 if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
@@ -90,7 +90,7 @@
 
             $existingHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), $trip->getHighlights());
             foreach ($selectedPhotoIds as &$photoId) {
-                if (!in_array($photoId, $existingHighlightPhotoIds)) {
+                if (!in_array($photoId, $existingHighlightPhotoIds) && (!$onlyTripPlaceHighlights || in_array($photoId, $tripPlaceHighlightPhotoIds))) {
                     $this->highlightService->createTripHighlight($tripId, $photoId);
                 }
             }
