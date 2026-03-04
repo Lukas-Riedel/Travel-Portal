@@ -47,7 +47,7 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 ### 🧱 Specialized Services
 * **Portal (React):** A high-performance PWA serving as the main interface. Focused on map visualizations and gallery rendering. By implementing **Service Workers**, the portal supports offline caching and handles **Web Push Notifications** via **FCM**, ensuring real-time updates reach the desktop even when the browser tab is inactive.
 * **Core (PHP / REST API):** The central brain. Since PHP is single-threaded, Core includes a **dedicated background worker** that consumes **RabbitMQ** tasks to handle complex API integrations without blocking the API response. **Maintained in PHP for historical reasons** (originally built for shared hosting), it has since been modernized into a cloud-native service.
-* **Cortex (Python / AI Worker):** A specialized AI engine for photo evaluation. It has **no public API**; it operates purely as an RMQ consumer.
+* **Cortex (Python / REST API):** The AI heart of the system. Originally an RMQ listener, it has been refactored into a **high-performance REST API**. Its main responsibility is to transform raw data (images or text) into **high-dimensional vectors (embeddings)** using specialized ML models.
 * **Agent (Java / RabbitMQ Client):** A worker for heavy lifting, such as high-volume image processing, metadata extraction, and massive data synchronization.
 * **BridgeX (Android / Native):** A native gateway providing access to **GPS tracking** for precise location history and **Health Connect** integration. It also serves as a specialized container that renders the **Portal via an optimized WebView**. This allows for a seamless mobile experience while acting as a **native FCM consumer** for low-latency system alerts.
 
@@ -55,14 +55,14 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 * **MinIO (S3):** High-speed media caching to bypass Google Photos API limitations.
 * **Redis:** Used exclusively for data with specific **TTL (Time To Live)**. No traditional sessions are used; Redis handles the lifecycle of temporary data automatically.
 * **PostgreSQL:** The robust relational foundation for all structured business data.
-* **OpenSearch:** Serves as the primary engine for high-performance discovery, decoupling search heavy-lifting from the relational database. I intentionally opted for **OpenSearch over Elasticsearch** due to its significantly lower resource overhead and better alignment with a resource-constrained Kubernetes environment. It provides full-text search and geospatial indexing without the heavy memory footprint and licensing complexities of its predecessor.
+* **OpenSearch:** Serves as the primary engine for high-performance discovery, decoupling search heavy-lifting from the relational database. Beyond full-text search, it acts as a **Vector Database**, enabling **k-NN (k-nearest neighbors)** search to find similar or diverse content across thousands of records.
 
 ---
 
 ## 🛠 DevOps, CI/CD & Reliability
 
 ### 📈 Elastic Scaling
-To ensure efficiency, the system implements **horizontal autoscaling**. Both the **Core Worker** and **Cortex (AI Worker)** are automatically scaled within the Kubernetes cluster based on the **RabbitMQ queue size**.
+To ensure efficiency, the system implements **horizontal autoscaling**. The **Core Worker** is automatically scaled within the Kubernetes cluster based on the **RabbitMQ queue size**, ensuring that spikes in data processing are handled without manual intervention.
 
 ### 🛡️ Resilience & Self-Healing
 Every microservice is configured with **Liveness and Readiness probes**. This ensures that the Kubernetes orchestrator can automatically restart failing containers and direct traffic only to instances that are fully initialized and healthy.
@@ -78,7 +78,7 @@ Data integrity is critical. During **every deployment**, a GitHub Action trigger
 * **OpenLineage:** To ensure data integrity across this distributed ecosystem, the system implements **OpenLineage**. A dedicated producer captures lineage events (metadata about data transformations and movements) and sends them to a central server. This allows for:
     * **Visualizing Data Flow:** Tracking how a Google Calendar event transforms into a rich AI-narrative.
     * **Impact Analysis:** Understanding how a schema change in one service affects downstream search indexes or mapping data.
-* **GitHub Actions:** Full CI/CD pipeline. Every commit builds and deploys via **Helm charts** into the **Kubernetes (K8s) cluster**.
+* **GitHub Actions:** Full CI/CD pipeline. Every commit builds and deploys via **Helm charts** into the **Kubernetes (K8s) cluster**, including an automated build of the **BridgeX** Android app which is pushed to **Firebase App Distribution** for instant mobile installation.
 
 ---
 
