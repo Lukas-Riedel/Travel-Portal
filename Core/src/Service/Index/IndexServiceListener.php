@@ -11,7 +11,7 @@
     class IndexServiceListener {
         
         private const UPDATE_INDEX_ACTION_NAME = "UPDATE_INDEX";
-        private const UPDATE_INDEX_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
+        private const UPDATE_INDEX_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly IndexService $indexService;
 
