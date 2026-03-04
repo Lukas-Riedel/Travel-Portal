@@ -22,6 +22,12 @@
         private const ALBUM_PHOTOS_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:%s";
         private const ALBUM_PHOTOS_CACHE_TTL = 1800;
 
+        private const PENDING_PHOTO_EMBEDDING_CACHE_KEY_FORMAT = "PhotoService:PendingPhotos:Embeddings:%s";
+        private const PENDING_PHOTO_EMBEDDING_CACHE_TTL = self::PENDING_PHOTOS_EXPIRATION_INTERVAL;
+
+        private const PHOTO_EMBEDDING_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:Embeddings:%s";
+        private const PHOTO_EMBEDDING_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
+
         private readonly PhotoMapper $photoMapper;
 
         private readonly EmbeddingService $embeddingService;
@@ -258,6 +264,7 @@
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, null, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
+            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $uploadToken, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
             return $pendingPhoto;
         }
 
@@ -266,6 +273,7 @@
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
+            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $uploadToken, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
             return $pendingPhoto;
         }
 
@@ -385,7 +393,6 @@
                 $oldPhotoEmbedding = $this->getPhotoEmbedding($pendingPhoto->getReplacedPhotoId())?->getEmbedding();
                 $albumExternalId = $this->photoMapper->selectAlbumExternalId($albumId);
 
-                // TODO: Do this in a batch.
                 $this->transactionManager->executeAtomically(function() use(&$albumId, &$albumExternalId, &$oldPhotoEmbedding, &$newPhoto, &$oldPhotoExternalId, &$pendingPhoto) {
                     $this->photoMapper->deletePendingPhoto($pendingPhoto->getId());
                     $createdPhoto = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())["newMediaItemResults"][0]["mediaItem"];
@@ -433,7 +440,11 @@
                 return $photoId;
             }
 
-            $embedding = is_string($baseUrlOrEmbedding) ? $this->fetchPhotoEmbedding($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
+            $embedding = $this->distributedCacheClient->get($this->getPhotoEmbeddingCacheKey($externalId));
+            if ($embedding === null) {
+                $embedding = is_string($baseUrlOrEmbedding) ? $this->fetchPhotoEmbedding($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
+            }
+
             $this->photoMapper->insertPhotoId($externalId, $replaced, $embedding);
 
             return $this->photoMapper->selectPhotoId($externalId);
@@ -495,6 +506,13 @@
                 if (isset($createdPhoto["status"]["message"]) && $createdPhoto["status"]["message"] !== "Success") {
                     throw new \RuntimeException($createdPhoto["status"]["message"]);
                 }
+
+                $pendingPhotoEmbeddingCacheKey = $this->getPendingPhotoEmbeddingCacheKey($newPhotos["uploadToken"]);
+                $pendingPhotoEmbedding = $this->distributedCacheClient->get($pendingPhotoEmbeddingCacheKey);
+                if ($pendingPhotoEmbedding !== null) {
+                    $this->distributedCacheClient->set($this->getPhotoEmbeddingCacheKey($createdPhoto["mediaItem"]["id"]), $pendingPhotoEmbedding, self::PHOTO_EMBEDDING_CACHE_TTL);
+                    $this->distributedCacheClient->delete($pendingPhotoEmbeddingCacheKey);
+                }
             } 
 
             return $createdPhotos;
@@ -502,6 +520,14 @@
 
         private function getGooglePhotoProxyUrl(string $url) : string {
             return str_replace(CommonConstants::GOOGLE_USER_CONTENT_BASE_URL, $this->coreBaseUrl . CommonConstants::GOOGLE_USER_CONTENT_PROXY_BASE_URL, $url);
+        }
+
+        private function getPendingPhotoEmbeddingCacheKey(string $uploadToken) : string {
+            return sprintf(self::PENDING_PHOTO_EMBEDDING_CACHE_KEY_FORMAT, $uploadToken);
+        }
+
+        private function getPhotoEmbeddingCacheKey(string $externalId) : string {
+            return sprintf(self::PHOTO_EMBEDDING_CACHE_KEY_FORMAT, $externalId);
         }
     }
 ?>

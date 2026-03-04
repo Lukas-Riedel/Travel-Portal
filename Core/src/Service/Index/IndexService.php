@@ -27,7 +27,7 @@
         private readonly ConfigurationService $configurationService;
     
         private readonly SearchClient $searchClient;
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly string $compositeIndexName;
         private readonly string $photoIndexName;
@@ -40,14 +40,14 @@
         private array $entityIndexers = array();
 
         public function __construct(ClusteringService $clusteringService, EmbeddingService $embeddingService, ConfigurationService $configurationService,
-            SearchClient $searchClient, CacheClient $cacheClient, string $compositeIndexName, string $photoIndexName, string $selectedPhotoCandidatesLimitCoefficient,
+            SearchClient $searchClient, CacheClient $distributedCacheClient, string $compositeIndexName, string $photoIndexName, string $selectedPhotoCandidatesLimitCoefficient,
             string $clustersCountCoefficient, string $styleEmbeddingCoefficient, string $negativeEmbeddingCoefficient) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->clusteringService = $clusteringService;
             $this->embeddingService = $embeddingService;
             $this->configurationService = $configurationService;
             $this->searchClient = $searchClient;
-            $this->cacheClient = $cacheClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->compositeIndexName = $compositeIndexName;
             $this->photoIndexName = $photoIndexName;
             $this->selectedPhotoCandidatesLimitCoefficient = $selectedPhotoCandidatesLimitCoefficient;
@@ -266,7 +266,7 @@
         }
 
         private function getStyleEmbedding() : ?array {         
-            $cachedStyleEmbedding = $this->cacheClient->get(self::STYLE_EMBEDDING_CACHE_KEY);
+            $cachedStyleEmbedding = $this->distributedCacheClient->get(self::STYLE_EMBEDDING_CACHE_KEY);
             if ($cachedStyleEmbedding !== null) {
                 return $cachedStyleEmbedding;
             }
@@ -288,7 +288,7 @@
 
             $result = $norm > 1e-10 ? array_map(fn($val) => $val / $norm, $avgVector) : null;
             if (count($searchEntries) > self::STYLE_EMBEDDING_SAMPLES_CACHE_THRESHOLD) {
-                $this->cacheClient->set(self::STYLE_EMBEDDING_CACHE_KEY, $result, self::STYLE_EMBEDDING_CACHE_TTL);
+                $this->distributedCacheClient->set(self::STYLE_EMBEDDING_CACHE_KEY, $result, self::STYLE_EMBEDDING_CACHE_TTL);
             }
             return $result;
         }
@@ -296,13 +296,13 @@
         private function getNegativeEmbedding() : array {
             $negativeTerms = $this->configurationService->getConfigurationEntry("embeddings")["negativeTerms"];
             $cacheKey = sprintf(self::NEGATIVE_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", json_encode($negativeTerms)));
-            $cachedNegativeEmbedding = $this->cacheClient->get($cacheKey);
+            $cachedNegativeEmbedding = $this->distributedCacheClient->get($cacheKey);
             if ($cachedNegativeEmbedding !== null) {
                 return $cachedNegativeEmbedding;
             }
 
             $result = $this->embeddingService->getTextEmbedding(implode(", ", $negativeTerms));
-            $this->cacheClient->set($cacheKey, $result, self::NEGATIVE_EMBEDDING_CACHE_TTL);
+            $this->distributedCacheClient->set($cacheKey, $result, self::NEGATIVE_EMBEDDING_CACHE_TTL);
             return $result;
         }
         

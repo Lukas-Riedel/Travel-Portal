@@ -14,15 +14,15 @@
         private const JWKS_KEYS_CACHE_KEY = "AuthenticationService:JwksKeys";
         private const JWKS_KEYS_CACHE_TTL = 24 * 3600;
 
-        private readonly CacheClient $cacheClient;
+        private readonly CacheClient $distributedCacheClient;
         private readonly HttpClient $httpClient;
 
         private readonly string $iamAppClientId;
         private readonly string $iamHost;
         private readonly string $iamPort;
 
-        public function __construct(CacheClient $cacheClient, HttpClient $httpClient, string $iamAppClientId, string $iamHost, string $iamPort) {
-            $this->cacheClient = $cacheClient;
+        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, string $iamAppClientId, string $iamHost, string $iamPort) {
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->httpClient = $httpClient;
             $this->iamAppClientId = $iamAppClientId;
             $this->iamHost = $iamHost;
@@ -42,7 +42,7 @@
         }
 
         private function getJwksKeys() : mixed {
-            $cachedJwksKeys = $this->cacheClient->get(self::JWKS_KEYS_CACHE_KEY);
+            $cachedJwksKeys = $this->distributedCacheClient->get(self::JWKS_KEYS_CACHE_KEY);
             if ($cachedJwksKeys !== null) {
                 return $cachedJwksKeys;
             }
@@ -52,7 +52,7 @@
                 throw new \RuntimeException("There is no JWKS key. Response: " . json_encode($response));
             }
 
-            $this->cacheClient->set(self::JWKS_KEYS_CACHE_KEY, $response, self::JWKS_KEYS_CACHE_TTL);
+            $this->distributedCacheClient->set(self::JWKS_KEYS_CACHE_KEY, $response, self::JWKS_KEYS_CACHE_TTL);
             return $response;
         }
         
