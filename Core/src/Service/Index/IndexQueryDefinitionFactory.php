@@ -95,10 +95,10 @@
             return json_decode($json, true);
         }
 
-        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, bool $placeHighlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {
+        public function createPhotoNearestNeighbourQuery(array $embedding, int $limit, int $neighboursCount, bool $placeHighlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {
             $rawParams = array(
                 "vector" => $embedding,
-                "k" => $limit
+                "k" => $neighboursCount
             );
 
             $filters = array();

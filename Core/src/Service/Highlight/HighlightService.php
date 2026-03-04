@@ -392,7 +392,7 @@
             }
 
             $nearestNeighbours = $this->indexService->getNearestNeighbourPhotoIds($photoEmbedding->getEmbedding(),
-                self::HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT, true, true, false);
+                self::HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT, self::HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT, true, true, false);
             if (empty($nearestNeighbours)) {
                 $this->logger->error("No neighbours for the photo '$photoId' were found. Unable to compute highlight attributes.");
                 return new HighlightAttributes(0, 0, 0, 0, 0);
