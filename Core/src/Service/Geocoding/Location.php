@@ -54,8 +54,8 @@
         public function __construct(?string $country, float $latitude, float $longitude, int $elevation, string $timezone) {
             $this->country = $country;
             $this->latitude = $latitude;
-            $this->elevation = $elevation;
             $this->longitude = $longitude;
+            $this->elevation = $elevation;
             $this->timezone = $timezone;
         }
 

@@ -731,11 +731,13 @@
                     timezone, 
                     latitude, 
                     longitude, 
+                    elevation,
                     excerpt,
                     score,
                     quality
                 )
                 VALUES (
+                    ?, 
                     ?, 
                     ?, 
                     ?, 
@@ -752,7 +754,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeIdentifier->getName(), $placeIdentifier->getCountry() === null ? null
                     : $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
-                    $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
+                    $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(),
                     $placeIdentifier->getExcerpt(), $placeIdentifier->getScore(), $placeIdentifier->getQuality())
                 ->getSingleColumn("id");
                 
