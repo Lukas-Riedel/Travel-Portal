@@ -63,11 +63,5 @@ spec:
           volumeMounts:
 {{ include "core.volumeMounts" . | nindent 12 }}
       volumes:
-      - name: {{ .Release.Name }}-tmp
-        emptyDir: {}
-      - name: {{ .Release.Name }}-data
-        emptyDir: {}
-      - name: {{ .Release.Name }}-config
-        configMap:
-          name: {{ .Release.Name }}-configmap
+{{- include "core.volumes" . | nindent 8 }}
 {{- end }}

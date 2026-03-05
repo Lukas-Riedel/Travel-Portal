@@ -52,7 +52,7 @@
     // Services.
     $tokenService = new TokenService($httpClient, getenv("IAM_APP_CLIENT_ID"), getenv("INTERNAL_IAM_BASE_URL"));
     $userService = new UserService($tokenService, $httpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("INTERNAL_ADMIN_IAM_BASE_URL"));
-    $googleService = new GoogleService($userService, $httpClient, $encryptionClient, getenv("FCM_PROJECT_ID"), getenv("FCM_PRIVATE_KEY_ID"), getenv("FCM_PRIVATE_KEY"), getenv("FCM_CLIENT_EMAIL"),
+    $googleService = new GoogleService($userService, $httpClient, $encryptionClient, $distributedCacheClient, getenv("FCM_PROJECT_ID"), getenv("FCM_PRIVATE_KEY_ID"), getenv("FCM_PRIVATE_KEY"), getenv("FCM_CLIENT_EMAIL"),
         getenv("FCM_CLIENT_ID"), getenv("GOOGLE_API_CLIENT_ID"), getenv("FCM_CLIENT_X509_CERTIFICATE_URL"), getenv("GOOGLE_API_CLIENT_SECRET"), getenv("IAM_BASE_URL"));
     $ibmCloudService = new IbmCloudService($httpClient, getenv("IBM_CLOUD_IAM_BASE_URL"), getenv("IBM_CLOUD_API_KEY"));
     $certificateService = new CertificateService($httpClient, getenv("INTERNAL_IAM_BASE_URL"));

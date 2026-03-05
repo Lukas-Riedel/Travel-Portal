@@ -1,6 +1,7 @@
 <?php
     namespace Iam\Service\Google;
 
+    use Common\Client\Cache\CacheClient;
     use Google\Auth\Credentials\ServiceAccountCredentials;
     use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
@@ -24,8 +25,8 @@
         private const GOOGLE_API_AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
         private const GOOGLE_API_ACCESS_TYPE = "offline";
         
-        // TODO: Do not use a file to store the refresh token.
-        private const GOOGLE_REFRESH_TOKEN_FILE_PATH = __DIR__ . "/../../../../../tmp/google.txt";
+        private const GOOGLE_REFRESH_TOKEN_CACHE_KEY = "GoogleService:RefreshToken";
+        private const GOOGLE_REFRESH_TOKEN_CACHE_TTL = 365 * 86400;
 
         public const GOOGLE_API_AUTHORIZATION_SCOPES = array(
             "https://www.googleapis.com/auth/photoslibrary.appendonly",
@@ -45,6 +46,7 @@
         private readonly UserService $userService;
         private readonly HttpClient $httpClient;
         private readonly EncryptionClient $encryptionClient;
+        private readonly CacheClient $distributedCacheClient;
 
         private readonly string $fcmProjectId;
         private readonly string $fcmPrivateKeyId;
@@ -56,12 +58,13 @@
         private readonly string $googleApiClientSecret;
         private readonly string $iamBaseUrl;
 
-        public function __construct(UserService $userService, HttpClient $httpClient, EncryptionClient $encryptionClient, string $fcmProjectId,
-            string $fcmPrivateKeyId, string $fcmPrivateKey, string $fcmClientEmail, string $fcmClientId, string $googleApiClientId,
+        public function __construct(UserService $userService, HttpClient $httpClient, EncryptionClient $encryptionClient, CacheClient $distributedCacheClient,
+            string $fcmProjectId, string $fcmPrivateKeyId, string $fcmPrivateKey, string $fcmClientEmail, string $fcmClientId, string $googleApiClientId,
             string $fcmClientX509CertificateUrl, string $googleApiClientSecret, string $iamBaseUrl) {
             $this->userService = $userService;
             $this->httpClient = $httpClient;
             $this->encryptionClient = $encryptionClient;
+            $this->distributedCacheClient = $distributedCacheClient;
             $this->fcmProjectId = $fcmProjectId;
             $this->fcmPrivateKeyId = $fcmPrivateKeyId;
             $this->fcmPrivateKey = $fcmPrivateKey;
@@ -74,11 +77,12 @@
         }
 
         public function getGoogleApiAccessToken() : IamResponse {
-            if (!file_exists($this::GOOGLE_REFRESH_TOKEN_FILE_PATH)) {
+            $encryptedRefreshToken = $this->distributedCacheClient->get(self::GOOGLE_REFRESH_TOKEN_CACHE_KEY, self::GOOGLE_REFRESH_TOKEN_CACHE_TTL); 
+            if ($encryptedRefreshToken === null) {
                 throw new \RuntimeException("The refresh token has not been set yet.");
             }
             
-            $refreshToken = $this->encryptionClient->decrypt(trim(file_get_contents($this::GOOGLE_REFRESH_TOKEN_FILE_PATH)));
+            $refreshToken = $this->encryptionClient->decrypt($encryptedRefreshToken);
 
             $payload = array(
                 "grant_type" => self::GOOGLE_API_REFRESH_TOKEN_GRANT_TYPE,
@@ -148,7 +152,7 @@
                 throw new \RuntimeException("The user '$userId' is not authorized to perform the authentication.");
             }
 
-            file_put_contents($this::GOOGLE_REFRESH_TOKEN_FILE_PATH, $this->encryptionClient->encrypt($response["refresh_token"]));
+            $this->distributedCacheClient->set(self::GOOGLE_REFRESH_TOKEN_CACHE_KEY, $this->encryptionClient->encrypt($response["refresh_token"]), self::GOOGLE_REFRESH_TOKEN_CACHE_TTL);
         }
     }
 ?>

@@ -152,11 +152,4 @@ spec:
                   key: grafana-password
             - name: ALLOWED_REQUEST_ORIGINS
               value: "{{ .Values.iam.origins.whitelist }}"
-          volumeMounts:
-            - name: {{ .Release.Name }}-data
-              mountPath: /var/tmp
-      volumes:
-        - name: {{ .Release.Name }}-data
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-pvc
 {{- end }}

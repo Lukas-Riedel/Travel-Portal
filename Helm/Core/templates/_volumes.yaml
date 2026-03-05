@@ -2,8 +2,7 @@
 - name: {{ .Release.Name }}-tmp
   emptyDir: {}
 - name: {{ .Release.Name }}-data
-  persistentVolumeClaim:
-    claimName: {{ .Release.Name }}-pvc
+  emptyDir: {}
 - name: {{ .Release.Name }}-config
   configMap:
     name: {{ .Release.Name }}-configmap
