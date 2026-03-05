@@ -2,6 +2,7 @@
     namespace Core\Client\Search;
 
     class SearchEntry {
+        
         private readonly float $score;
         private readonly array $data;
 

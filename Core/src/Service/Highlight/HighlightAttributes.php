@@ -47,6 +47,7 @@
         ]
     )]
     class HighlightAttributes implements \JsonSerializable {
+        
         private readonly int $composition;
         private readonly int $sky;
         private readonly int $shadows;

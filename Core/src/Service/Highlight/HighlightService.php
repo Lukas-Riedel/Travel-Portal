@@ -22,19 +22,12 @@
         private const HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT = 9;
 
         private readonly HighlightMapper $highlightMapper;
-
         private readonly PhotoService $photoService;
-
-        private readonly IndexService $indexService;
-        
+        private readonly IndexService $indexService;        
         private readonly EventPublisher $eventPublisher;
-
         private readonly CloudStorageClient $cloudStorageClient;
-
         private readonly HttpClient $httpClient;
-
         private readonly TransactionManager $transactionManager;
-
         private readonly Logger $logger;
 
         public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, IndexService $indexService,

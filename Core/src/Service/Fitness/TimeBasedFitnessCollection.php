@@ -24,7 +24,8 @@
             )
         ]
     )]
-    class TimeBasedFitnessCollection implements \JsonSerializable {        
+    class TimeBasedFitnessCollection implements \JsonSerializable {   
+             
         private readonly int $timestamp;
         private readonly array $fitness;
 

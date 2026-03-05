@@ -48,7 +48,8 @@
             )
         ]
     )]
-    class Voucher implements \JsonSerializable {        
+    class Voucher implements \JsonSerializable {   
+             
         private ?string $id;
         private readonly string $code;
         private readonly string $issuer;

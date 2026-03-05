@@ -12,10 +12,8 @@
         private const DATA_CONSISTENCY_ISSUES_CACHE_KEY = "MonitoringService:DataConsistencyIssues";
         private const DATA_CONSISTENCY_ISSUES_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
-        private readonly CacheClient $distributedCacheClient;
-        
+        private readonly CacheClient $distributedCacheClient;        
         private readonly EventPublisher $eventPublisher;
-
         private readonly Logger $logger;
 
         private array $dataConsistencyMonitors = array();

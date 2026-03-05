@@ -14,9 +14,7 @@
         private const UPDATE_CATEGORY_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly CategoryService $categoryService;
-
         private readonly PlaceService $placeService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

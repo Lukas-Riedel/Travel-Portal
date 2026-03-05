@@ -8,9 +8,7 @@
     class FlightMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly CategoryService $categoryService;
-
         private readonly GeocodingService $geocodingService;
 
         public function __construct(DatabaseClient $databaseClient, CategoryService $categoryService,

@@ -14,7 +14,6 @@
         private const REPLACED_PHOTO_ISSUE_NAME = "REPLACED_PHOTO";
 
         private readonly PhotoService $photoService;
-
         private readonly PlaceService $placeService;
 
         public function __construct(PhotoService $photoService, PlaceService $placeService) {

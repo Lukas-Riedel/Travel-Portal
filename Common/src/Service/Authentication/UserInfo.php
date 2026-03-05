@@ -30,7 +30,8 @@
             ),
         ]
     )]
-    class UserInfo implements \JsonSerializable {        
+    class UserInfo implements \JsonSerializable {  
+              
         private readonly string $userId;
         private readonly string $client;
         private readonly array $roles;

@@ -2,6 +2,7 @@
     namespace Core\Event;
 
     class CompositeEvent extends Event {
+        
         private array $events;
 
         public function __construct(string $name, array $args) {

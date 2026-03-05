@@ -23,6 +23,7 @@
         ]
     )]
     class TripFitness implements \JsonSerializable {
+        
         private readonly Trip $trip;
         private readonly Fitness $fitness;
 

@@ -21,13 +21,10 @@
         private const INTERVALS_LIMIT = 100;
 
         private readonly FitnessService $fitnessService;
-
         private readonly TripService $tripService;
         private readonly PlaceService $placeService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
-
         private readonly Logger $logger;
 
         public function __construct(FitnessService $fitnessService, TripService $tripService, PlaceService $placeService, 

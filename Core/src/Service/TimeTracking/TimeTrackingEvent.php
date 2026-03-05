@@ -48,7 +48,8 @@
             )
         ]
     )]
-    class TimeTrackingEvent implements \JsonSerializable {        
+    class TimeTrackingEvent implements \JsonSerializable {     
+           
         private ?string $id;
         private readonly string $description;
         private readonly float $hours;

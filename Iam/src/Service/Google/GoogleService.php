@@ -43,7 +43,6 @@
         );
 
         private readonly UserService $userService;
-
         private readonly HttpClient $httpClient;
         private readonly EncryptionClient $encryptionClient;
 
@@ -53,10 +52,8 @@
         private readonly string $fcmClientEmail;
         private readonly string $fcmClientId;
         private readonly string $fcmClientX509CertificateUrl;
-
         private readonly string $googleApiClientId;
         private readonly string $googleApiClientSecret;
-
         private readonly string $iamBaseUrl;
 
         public function __construct(UserService $userService, HttpClient $httpClient, EncryptionClient $encryptionClient, string $fcmProjectId,

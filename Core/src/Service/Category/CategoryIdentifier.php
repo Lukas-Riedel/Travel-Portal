@@ -40,7 +40,8 @@
         ]
     )]
 
-    class CategoryIdentifier implements \JsonSerializable {        
+    class CategoryIdentifier implements \JsonSerializable {   
+             
         private ?string $id;
         private readonly string $name;
         private readonly CategoryCategory $category;

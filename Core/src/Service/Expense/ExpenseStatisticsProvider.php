@@ -15,7 +15,6 @@
     class ExpenseStatisticsProvider implements StatisticsProvider {
 
         private readonly ExpenseService $expenseService;
-
         private readonly TripService $tripService;
 
         public function __construct(ExpenseService $expenseService, TripService $tripService) {

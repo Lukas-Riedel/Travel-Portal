@@ -23,7 +23,8 @@
             )
         ]
     )]
-    class AirlineIdentifier implements \JsonSerializable {        
+    class AirlineIdentifier implements \JsonSerializable { 
+               
         private readonly string $id;
         private readonly string $name;
 

@@ -43,6 +43,7 @@
         ]
     )]
     class Document implements \JsonSerializable {
+        
         private ?string $id;
         private readonly string $name;
         private readonly string $code;

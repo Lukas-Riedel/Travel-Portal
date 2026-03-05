@@ -10,9 +10,7 @@
     class ConfigurationService {
 
         private readonly ConfigurationMapper $configurationMapper;
-
         private readonly EventPublisher $eventPublisher;
-
         private readonly TransactionManager $transactionManager;
 
         private readonly string $rabbitMqHost;

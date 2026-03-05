@@ -21,12 +21,10 @@
         private const ATTRIBUTE_KEY_VALUE_DELIMITER = ":";
 
         private readonly GoogleClient $googleClient;
-
         private readonly CacheClient $distributedCacheClient;
+        private readonly Logger $logger;
         
         private readonly string $coreBaseUrl;
-
-        private readonly Logger $logger;
 
         private ?EventPublisher $eventPublisher;
 

@@ -52,6 +52,7 @@
         ]
     )]
     class Category implements \JsonSerializable {        
+        
         private readonly string $id;
         private readonly string $name;
         private readonly CategoryCategory $category;

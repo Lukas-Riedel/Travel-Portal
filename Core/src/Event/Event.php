@@ -7,6 +7,7 @@
     use Core\Service\Highlight\HighlightType;
 
     abstract class Event implements \JsonSerializable {
+        
         private readonly string $name;
         private readonly array $args;
 

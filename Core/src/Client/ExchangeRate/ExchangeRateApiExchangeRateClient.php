@@ -10,7 +10,6 @@
         private const GET_EXCHANGE_RATE_API_ENDPOINT_FORMAT = "https://v6.exchangerate-api.com/v6/%s/latest/%s";
 
         private readonly HttpClient $httpClient;
-
         private readonly Logger $logger;
 
         private readonly string $exchangeRateApiKey;

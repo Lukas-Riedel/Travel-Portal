@@ -31,6 +31,7 @@
         ]
     )]
     class PhotoEmbedding implements \JsonSerializable { 
+        
         private readonly string $id;
         private readonly ?int $iso;
         private readonly array $embedding;

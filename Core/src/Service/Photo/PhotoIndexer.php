@@ -15,7 +15,6 @@
     class PhotoIndexer implements EntityIndexer {
 
         private readonly PhotoService $photoService;
-
         private readonly PlaceService $placeService;
         private readonly TripService $tripService;
 

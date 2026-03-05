@@ -26,19 +26,12 @@
         private const FLIGHT_ESTIMATED_ARRIVAL_TIME_CACHE_KEY_FORMAT = "FlightService:%s:EstimatedArrivalTime";
 
         private readonly FlightMapper $flightMapper;
-
         private readonly GeocodingService $geocodingService;
-
         private readonly FlightClient $flightClient;
-
         private readonly CalendarClient $calendarClient;
-
         private readonly GoogleClient $googleClient;
-
         private readonly CacheClient $distributedCacheClient;
-
-        private readonly EventPublisher $eventPublisher;
-        
+        private readonly EventPublisher $eventPublisher;        
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GeocodingService $geocodingService, CategoryService $categoryService,

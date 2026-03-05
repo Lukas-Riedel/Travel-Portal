@@ -16,7 +16,6 @@
         private const NEARBY_PLACE_THRESHOLD_KILOMETERS = 200;
 
         private readonly PlaceService $placeService;
-
         private readonly GeocodingService $geocodingService;
 
         public function __construct(PlaceService $placeService, GeocodingService $geocodingService) {

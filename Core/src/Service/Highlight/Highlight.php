@@ -33,7 +33,8 @@
             )
         ]
     )]
-    class Highlight implements \JsonSerializable {        
+    class Highlight implements \JsonSerializable {  
+              
         private readonly string $id;
         private readonly HighlightUrl $url;
         private readonly Photo $photo;

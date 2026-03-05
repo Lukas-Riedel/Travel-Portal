@@ -11,14 +11,14 @@
     class EventPublisher {
 
         private const WEBHOOK_EVENT_CACHE_KEY_FORMAT = "EventPublisher:WebhookEvent:%s";
-
-        private ?DeviceService $deviceService;
         
         private readonly MessagingClient $messagingClient;
         private readonly CloudMessagingClient $cloudMessagingClient;
         private readonly CacheClient $distributedCacheClient;
 
         private readonly string $workerQueueName;
+        
+        private ?DeviceService $deviceService;
 
         public function __construct(MessagingClient $messagingClient, CloudMessagingClient $cloudMessagingClient,
             CacheClient $distributedCacheClient, string $workerQueueName) {

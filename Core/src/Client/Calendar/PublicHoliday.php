@@ -30,6 +30,7 @@
         ]
     )]
     class PublicHoliday implements \JsonSerializable {
+        
         private readonly string $name;
         private readonly string $category;
         private readonly string $date;

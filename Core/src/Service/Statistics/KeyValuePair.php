@@ -30,6 +30,7 @@
         ]
     )]
     class KeyValuePair implements \JsonSerializable {
+        
         private readonly string $key;
         private readonly mixed $value;
 

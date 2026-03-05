@@ -13,7 +13,6 @@
         private const UPDATE_YEAR_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly YearService $yearService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

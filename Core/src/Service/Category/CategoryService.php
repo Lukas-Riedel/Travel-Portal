@@ -24,25 +24,18 @@
 
         private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
-        private readonly CategoryMapper $categoryMapper;
-        
+        private readonly CategoryMapper $categoryMapper;        
         private readonly EventPublisher $eventPublisher;
-
         private readonly CacheClient $memoryCacheClient;
-
         private readonly GenerativeContentClient $cachingGenerativeContentClient;
-
         private readonly HighlightService $highlightService;
-
         private readonly IndexService $indexService;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
             StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $cachingGenerativeContentClient, EventPublisher $eventPublisher) {
-            $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $configurationService);
+            $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService);
             $this->eventPublisher = $eventPublisher;
             $this->memoryCacheClient = $memoryCacheClient;
             $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;

@@ -14,12 +14,9 @@
     class PlaceServiceListener {
 
         private readonly PlaceService $placeService;
-
         private readonly TripService $tripService;
         private readonly CategoryService $categoryService;
-
         private readonly CalendarClient $calendarClient;
-
         private readonly EventPublisher $eventPublisher;
 
         private readonly int $minHighlightsPerPlaceCount;

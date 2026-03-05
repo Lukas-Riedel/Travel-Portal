@@ -16,7 +16,6 @@
         private const TRIP_WITHOUT_TIME_ISSUE_NAME = "TRIP_WITHOUT_TIME";
 
         private readonly TripService $tripService;
-
         private readonly ConfigurationService $configurationService;
 
         public function __construct(TripService $tripService, ConfigurationService $configurationService) {

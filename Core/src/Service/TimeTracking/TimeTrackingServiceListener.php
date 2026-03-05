@@ -16,7 +16,6 @@
         private const CONSOLIDATE_TIME_TRACKING_EVENTS_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
 
         private readonly TimeTrackingService $timeTrackingService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

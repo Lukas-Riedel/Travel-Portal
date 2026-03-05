@@ -28,7 +28,8 @@
             )
         ]
     )]
-    class CompositeRegion implements \JsonSerializable {        
+    class CompositeRegion implements \JsonSerializable {
+              
         private readonly CategoryIdentifier $category;
         private readonly array $includedCategories;
         private readonly array $excludedCategories;

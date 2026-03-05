@@ -16,12 +16,9 @@
         private const OLD_STAY_EVENT_TEMPORARY_TABLE = "old_stay_event";
 
         private readonly StayMapper $stayMapper;
-
         private readonly CalendarClient $calendarClient;
         private readonly GoogleClient $googleClient;
-
         private readonly EventPublisher $eventPublisher;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient,

@@ -18,15 +18,13 @@
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "fcm://%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
 
-        private readonly string $projectId;
-
-        private ?AuthenticationService $authenticationService;
-
         private readonly HttpClient $httpClient;
-
         private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
 
+        private readonly string $projectId;
+
+        private ?AuthenticationService $authenticationService;
         private ?OpenLineageEventManager $openLineageEventManager;
 
         public function __construct(string $projectId, HttpClient $httpClient, LoggingContext $loggingContext, Logger $logger) {

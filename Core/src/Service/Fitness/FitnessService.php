@@ -13,11 +13,8 @@
         private const STEPS_PER_MINUTE_THRESHOLD = 30;
 
         private readonly FitnessMapper $fitnessMapper;
-
-        private readonly EventPublisher $eventPublisher;
-        
+        private readonly EventPublisher $eventPublisher;        
         private readonly TransactionManager $transactionManager;
-
         private readonly Logger $logger;
         
         private readonly float $allowOverwriteThresholdCoefficient;

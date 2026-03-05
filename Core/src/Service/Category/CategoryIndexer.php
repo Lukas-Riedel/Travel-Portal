@@ -11,7 +11,6 @@
     class CategoryIndexer implements EntityIndexer {
 
         private readonly CategoryService $categoryService;
-
         private readonly PlaceService $placeService;
 
         public function __construct(CategoryService $categoryService, PlaceService $placeService) {

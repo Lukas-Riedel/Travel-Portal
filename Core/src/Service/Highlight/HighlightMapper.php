@@ -7,7 +7,6 @@
     class HighlightMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly PhotoService $photoService;
 
         public function __construct(DatabaseClient $databaseClient, PhotoService $photoService) {

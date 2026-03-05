@@ -26,6 +26,7 @@
         ]
     )]
     class HighlightUrl implements \JsonSerializable {
+        
         private readonly ?string $thumbnail;
         private readonly ?string $full;
 

@@ -13,10 +13,8 @@
         private const HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER = 2;
 
         private readonly ForecastMapper $forecastMapper;
-
         private readonly ForecastClient $actualForecastClient;
         private readonly ForecastClient $historicalForecastClient;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ForecastClient $actualForecastClient, ForecastClient $historicalForecastClient) {

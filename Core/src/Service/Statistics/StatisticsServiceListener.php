@@ -18,12 +18,10 @@
         private const UPDATE_OVERALL_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly StatisticsService $statisticsService;
-
         private readonly PlaceService $placeService;
         private readonly TripService $tripService;
         private readonly CategoryService $categoryService;
-        private readonly FlightService $flightService;
-        
+        private readonly FlightService $flightService;        
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

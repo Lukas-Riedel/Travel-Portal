@@ -35,31 +35,18 @@
         private const PLACE_SIGNIFICANCE_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
         private readonly PlaceMapper $placeMapper;
-
         private readonly GenerativeContentClient $generativeContentClient;
-
-        private readonly GenerativeContentClient $cachingGenerativeContentClient;
-        
+        private readonly GenerativeContentClient $cachingGenerativeContentClient;        
         private readonly CalendarClient $calendarClient;
-
         private readonly GoogleClient $googleClient;
-
         private readonly CacheClient $distributedCacheClient;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly CategoryService $categoryService;
-
         private readonly HighlightService $highlightService;
-
         private readonly PhotoService $photoService;
-
         private readonly GeocodingService $geocodingService;
-
         private readonly IndexService $indexService;
-
         private readonly EventPublisher $eventPublisher;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, GenerativeContentClient $cachingGenerativeContentClient, CalendarClient $calendarClient,

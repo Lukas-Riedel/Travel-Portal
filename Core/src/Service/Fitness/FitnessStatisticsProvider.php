@@ -20,7 +20,6 @@
         private const PLACES_AND_DATE_FORMAT = "%s @ %s";
 
         private readonly FitnessService $fitnessService;
-
         private readonly PlaceService $placeService;
         private readonly TripService $tripService;
 

@@ -16,6 +16,7 @@
         private const AUTHORIZATION_HEADER = "Authorization";
 
         private readonly AuthenticationService $authenticationService;
+        
         private readonly string $basePath;
         private readonly array $whitelistedPaths;
 

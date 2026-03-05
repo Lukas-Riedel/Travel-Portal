@@ -7,7 +7,6 @@
     class LabelMapper {
         
         private readonly DatabaseClient $databaseClient;
-
         private readonly ConfigurationService $configurationService;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService) {

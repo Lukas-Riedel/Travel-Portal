@@ -6,9 +6,9 @@
     class DocumentBuffer {
 
         private readonly SearchClient $searchClient;
-
         private readonly IndexType $indexType;
         private readonly IndexableEntityType $entityType;
+        
         private readonly string $indexName;
         private readonly int $batchSize;
 

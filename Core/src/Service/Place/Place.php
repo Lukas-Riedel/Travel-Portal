@@ -119,7 +119,8 @@
             )
         ]
     )]
-    class Place implements \JsonSerializable {        
+    class Place implements \JsonSerializable {  
+              
         private readonly string $id;
         private readonly string $name;
         private readonly ?string $country;

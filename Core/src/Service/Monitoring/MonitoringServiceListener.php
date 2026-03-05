@@ -12,7 +12,6 @@
         private const RUN_DATA_CONSISTENCY_SCAN_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly MonitoringService $monitoringService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

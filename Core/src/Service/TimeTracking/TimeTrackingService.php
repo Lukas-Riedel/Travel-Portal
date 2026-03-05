@@ -11,9 +11,7 @@
         private const OPENING_BALANCE_DESCRIPTION = "Opening balance";
 
         private readonly TimeTrackingMapper $timeTrackingMapper;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService) {

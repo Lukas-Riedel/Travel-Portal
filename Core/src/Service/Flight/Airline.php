@@ -36,7 +36,8 @@
             )
         ]
     )]
-    class Airline implements \JsonSerializable {        
+    class Airline implements \JsonSerializable {    
+            
         private ?string $id;
         private readonly string $name;
         private readonly array $codes;

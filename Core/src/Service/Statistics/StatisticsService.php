@@ -19,10 +19,8 @@
         private const STATISTICS_COLLECTION_CACHE_KEY_FORMAT = "StatisticsService:StatisticsCollection:%s:%s";
         private const STATISTICS_COLLECTION_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
-        private readonly CacheClient $distributedCacheClient;
-        
+        private readonly CacheClient $distributedCacheClient;        
         private readonly EventPublisher $eventPublisher;
-
         private readonly Logger $logger;
 
         private readonly int $statisticsValuesLimit;

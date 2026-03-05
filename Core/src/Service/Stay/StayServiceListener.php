@@ -8,9 +8,7 @@
     class StayServiceListener {
 
         private readonly StayService $stayService;
-
         private readonly TripService $tripService;
-
         private readonly CalendarClient $calendarClient;
 
         public function __construct(StayService $stayService, TripService $tripService, CalendarClient $calendarClient) {

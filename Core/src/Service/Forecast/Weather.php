@@ -59,7 +59,8 @@
             )
         ]
     )]
-    class Weather implements \JsonSerializable {        
+    class Weather implements \JsonSerializable {
+                
         private readonly float $temperature;
         private readonly ?float $clouds;
         private readonly float $wind;

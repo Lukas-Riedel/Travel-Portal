@@ -44,7 +44,8 @@
             )
         ]
     )]
-    class Location implements \JsonSerializable {        
+    class Location implements \JsonSerializable {     
+           
         private readonly ?string $country;
         private readonly float $latitude;
         private readonly float $longitude;

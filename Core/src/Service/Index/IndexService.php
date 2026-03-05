@@ -21,17 +21,14 @@
         private const BATCH_SIZE = 1000;
 
         private readonly IndexQueryDefinitionFactory $indexQueryDefinitionFactory;
-
         private readonly ClusteringService $clusteringService;
         private readonly EmbeddingService $embeddingService;
-        private readonly ConfigurationService $configurationService;
-    
+        private readonly ConfigurationService $configurationService;    
         private readonly SearchClient $searchClient;
         private readonly CacheClient $distributedCacheClient;
 
         private readonly string $compositeIndexName;
         private readonly string $photoIndexName;
-
         private readonly string $selectedPhotoCandidatesLimitCoefficient;
         private readonly string $clustersCountCoefficient;
         private readonly string $styleEmbeddingCoefficient;

@@ -60,7 +60,8 @@
             )
         ]
     )]
-    class Expense implements \JsonSerializable {        
+    class Expense implements \JsonSerializable { 
+               
         private ?string $id;
         private readonly string $description;
         private readonly float $value;

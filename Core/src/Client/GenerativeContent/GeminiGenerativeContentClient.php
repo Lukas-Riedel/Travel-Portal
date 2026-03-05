@@ -22,7 +22,6 @@
 
         private readonly HttpClient $httpClient;
         private readonly CacheClient $distributedCacheClient;
-
         private readonly Logger $logger;
 
         private readonly string $googleGeminiApiKey;

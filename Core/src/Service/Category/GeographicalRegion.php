@@ -33,7 +33,8 @@
             )
         ]
     )]
-    class GeographicalRegion implements \JsonSerializable {        
+    class GeographicalRegion implements \JsonSerializable {  
+              
         private readonly CategoryIdentifier $category;
         private readonly ?CategoryIdentifier $countryCategory;
         private readonly int $radius;

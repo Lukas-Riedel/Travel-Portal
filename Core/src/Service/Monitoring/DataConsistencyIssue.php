@@ -39,6 +39,7 @@
         ]
     )]
     class DataConsistencyIssue implements \JsonSerializable {
+        
         private readonly string $name;
         private readonly string $key;
         private readonly mixed $context;

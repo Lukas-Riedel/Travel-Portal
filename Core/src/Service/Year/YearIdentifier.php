@@ -23,7 +23,8 @@
             )
         ]
     )]
-    class YearIdentifier implements \JsonSerializable {        
+    class YearIdentifier implements \JsonSerializable {   
+             
         private int $id;
         private readonly ?Highlight $mainHighlight;
 

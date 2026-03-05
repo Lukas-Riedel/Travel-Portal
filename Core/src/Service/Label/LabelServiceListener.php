@@ -15,11 +15,8 @@
         private const UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly LabelService $labelService;
-
         private readonly PlaceService $placeService;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

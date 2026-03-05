@@ -30,6 +30,7 @@
         ]
     )]
     class NearestNeighbour implements \JsonSerializable {
+        
         private readonly string $entityId;
         private readonly ?string $parentEntityId;
         private readonly float $score;

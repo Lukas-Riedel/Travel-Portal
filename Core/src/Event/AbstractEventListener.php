@@ -16,7 +16,6 @@
         private readonly ?OpenLineageEventManager $openLineageEventManager;
 
         private readonly array $eventHandlers;
-
         private readonly string $workerQueueName;
         
         public function __construct(LoggingContext $loggingContext, Logger $logger, ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {

@@ -12,7 +12,6 @@
         private const DEVICE_INACTIVITY_THRESHOLD_SECONDS = CommonConstants::ONE_MONTH_SECONDS;
 
         private readonly DeviceMapper $deviceMapper;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, AuthenticationService $authenticationService) {

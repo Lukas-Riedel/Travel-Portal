@@ -24,6 +24,7 @@
         ]
     )]
     class CategoryPlaces implements \JsonSerializable {
+        
         private readonly CategoryIdentifier $category;
         private readonly array $places;
 

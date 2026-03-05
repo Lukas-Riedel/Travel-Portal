@@ -7,7 +7,6 @@
     class NoteService {
 
         private readonly NoteMapper $noteMapper;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient) {

@@ -14,7 +14,6 @@
         private const UNKNOWN_PATH = "UNKNOWN";
 
         private ?ProgressReporter $progressReporter;
-
         private ?OpenLineageEventManager $openLineageEventManager;
 
         public function __construct(string $appName, LoggingContext $loggingContext, Logger $logger) {

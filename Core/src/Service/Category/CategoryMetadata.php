@@ -28,7 +28,8 @@
             )
         ]
     )]
-    class CategoryMetadata implements \JsonSerializable {        
+    class CategoryMetadata implements \JsonSerializable {       
+         
         private readonly ?string $color;
         private readonly ?string $unicode;
         private readonly ?string $publicHolidaysCalendar;

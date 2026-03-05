@@ -62,7 +62,8 @@
             )
         ]
     )]
-    class Subscription implements \JsonSerializable {        
+    class Subscription implements \JsonSerializable {  
+              
         private ?string $id;
         private readonly string $description;
         private readonly float $value;

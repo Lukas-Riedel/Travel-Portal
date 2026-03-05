@@ -21,16 +21,13 @@
         private const VISITED_CATEGORIES_TEMPORARY_TABLE_NAME = "visited_categories";
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly CategoryService $categoryService;
         private readonly LabelService $labelService;
         private readonly ForecastService $forecastService;
         private readonly PhotoService $photoService;
         private readonly HighlightService $highlightService;
         private readonly NoteService $noteService;
-
         private readonly CacheClient $memoryCacheClient;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, CategoryService $categoryService, LabelService $labelService,

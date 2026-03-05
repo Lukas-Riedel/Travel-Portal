@@ -38,6 +38,7 @@
         ]
     )]
     class SearchResult implements \JsonSerializable {
+        
         private readonly IndexableEntityType $type;
         private readonly ?SearchResult $parent;
         private readonly mixed $entity;

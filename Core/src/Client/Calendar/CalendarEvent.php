@@ -79,7 +79,8 @@
             )
         ]
     )]
-    class CalendarEvent implements \JsonSerializable {        
+    class CalendarEvent implements \JsonSerializable {     
+           
         private readonly string $id;
         private readonly string $summary;
         private readonly ?string $location;

@@ -1,7 +1,8 @@
 <?php
     namespace Core\Client\Flight;
 
-    class FetchedFlight implements \JsonSerializable {        
+    class FetchedFlight implements \JsonSerializable { 
+               
         private readonly string $flight;
         private readonly string $registration;
         private readonly string $aircraft;

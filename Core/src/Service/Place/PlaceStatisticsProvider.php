@@ -16,9 +16,7 @@
     class PlaceStatisticsProvider implements StatisticsProvider {
 
         private readonly PlaceService $placeService;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly GeocodingService $geocodingService;
 
         public function __construct(PlaceService $placeService, ConfigurationService $configurationService, GeocodingService $geocodingService) {

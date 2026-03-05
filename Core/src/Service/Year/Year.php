@@ -41,7 +41,8 @@
             )
         ]
     )]
-    class Year implements \JsonSerializable {        
+    class Year implements \JsonSerializable {  
+              
         private readonly int $id;
         private readonly ?Highlight $mainHighlight;
         private readonly array $fitness;

@@ -14,8 +14,7 @@
         private const OFFLINE_ACCESS_AUTHORIZATION_CODE_FLOW_URL_FORMAT = "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&prompt=consent&redirect_uri=%s&response_type=code&access_type=offline&state=%s&scope=%s";
 
         private readonly AuthenticationService $authenticationService;
-        private readonly GoogleService $googleService;
-        
+        private readonly GoogleService $googleService;        
         private readonly EncryptionClient $encryptionClient;
 
         private readonly string $googleApiClientId;

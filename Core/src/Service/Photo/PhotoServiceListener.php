@@ -16,8 +16,7 @@
         private const FETCH_ALBUMS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly PhotoService $photoService;
-        private readonly PlaceService $placeService;
-        
+        private readonly PlaceService $placeService;        
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

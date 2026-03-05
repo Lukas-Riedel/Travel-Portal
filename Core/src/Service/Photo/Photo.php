@@ -84,7 +84,8 @@
             )
         ]
     )]
-    class Photo implements \JsonSerializable {        
+    class Photo implements \JsonSerializable {  
+              
         private readonly string $id;
         private readonly mixed $urlProvider;
         private readonly ?string $permalink;

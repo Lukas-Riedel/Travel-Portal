@@ -19,9 +19,7 @@
         private const FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL = 300;
 
         private readonly ForecastService $forecastService;
-
         private readonly PlaceService $placeService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

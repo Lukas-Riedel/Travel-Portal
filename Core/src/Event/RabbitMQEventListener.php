@@ -15,12 +15,11 @@
         private const SEND_HEARTBEAT_INTERVAL_SECONDS = 30;
 
         private readonly RabbitMQMessagingClient $messagingClient;
-
-        private readonly string $workerQueueName;
-        private readonly string $consumerTag;
-
         private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
+        
+        private readonly string $workerQueueName;
+        private readonly string $consumerTag;
 
         private bool $isRunning = true;
 

@@ -9,18 +9,14 @@
     class CategoryMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
 
-        private readonly ConfigurationService $configurationService;
-
         public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService,
-            StatisticsService $statisticsService, ConfigurationService $configurationService) {
+            StatisticsService $statisticsService) {
             $this->databaseClient = $databaseClient;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
-            $this->configurationService = $configurationService;
         }
 
         public function selectAllCategoryNames() : array {            

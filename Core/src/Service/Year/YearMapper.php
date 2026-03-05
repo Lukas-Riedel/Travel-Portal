@@ -10,7 +10,6 @@
     class YearMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly FitnessService $fitnessService;
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;

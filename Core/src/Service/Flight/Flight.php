@@ -71,7 +71,8 @@
             )
         ]
     )]
-    class Flight implements \JsonSerializable {        
+    class Flight implements \JsonSerializable {       
+         
         private readonly string $flight;
         private readonly ?string $registration;
         private readonly ?string $aircraft;

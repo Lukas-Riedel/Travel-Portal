@@ -16,7 +16,6 @@
         private readonly string $password;
 
         private ?Client $redisClient = null;    
-
         private ?OpenLineageEventManager $openLineageEventManager;
 
         public function __construct(string $host, int $port, string $password) {

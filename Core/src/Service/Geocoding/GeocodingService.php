@@ -22,7 +22,6 @@
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private readonly CacheClient $distributedCacheClient;
-
         private readonly GoogleClient $googleClient;
 
         public function __construct(CacheClient $distributedCacheClient, GoogleClient $googleClient) {

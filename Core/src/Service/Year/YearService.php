@@ -16,15 +16,10 @@
     class YearService {
         
         private readonly YearMapper $yearMapper;
-
         private readonly PlaceService $placeService;
-
         private readonly IndexService $indexService;
-
         private readonly HighlightService $highlightService;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly GenerativeContentClient $cachingGenerativeContentClient;
 
         public function __construct(DatabaseClient $databaseClient, FitnessService $fitnessService, PlaceService $placeService, ConfigurationService $configurationService,

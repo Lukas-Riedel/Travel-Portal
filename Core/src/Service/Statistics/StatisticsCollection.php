@@ -25,6 +25,7 @@
         ]
     )]
     class StatisticsCollection implements \JsonSerializable {
+        
         private readonly array $statistics;
         private readonly int $timestamp;
 

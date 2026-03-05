@@ -14,10 +14,8 @@
         private const UPDATE_INDEX_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly IndexService $indexService;
-
         private readonly PhotoService $photoService;
         private readonly HighlightService $highlightService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

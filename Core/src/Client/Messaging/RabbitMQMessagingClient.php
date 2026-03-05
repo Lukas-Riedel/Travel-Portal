@@ -23,6 +23,10 @@
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
 
+        private readonly TransactionManager $transactionManager;
+        private readonly LoggingContext $loggingContext;
+        private readonly Logger $logger;
+
         private readonly string $host;
         private readonly string $port;
         private readonly string $vhost;
@@ -31,14 +35,9 @@
         private readonly int $heartbeatSeconds;
         private readonly int $prefetchCount;
 
-        private readonly TransactionManager $transactionManager;
-
         private ?AMQPStreamConnection $connection;
         private ?AMQPChannel $producerChannel;
         private ?AMQPChannel $consumerChannel;
-
-        private readonly LoggingContext $loggingContext;
-        private readonly Logger $logger;
         private ?OpenLineageEventManager $openLineageEventManager;
 
         private ?int $lastHeartbeatTimestamp;

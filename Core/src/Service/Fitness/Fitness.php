@@ -31,7 +31,8 @@
             )
         ]
     )]
-    class Fitness implements \JsonSerializable {        
+    class Fitness implements \JsonSerializable {      
+          
         private readonly int $steps;
         private readonly int $seconds;
         private readonly float $distance;

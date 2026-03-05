@@ -32,7 +32,8 @@
             )
         ]
     )]
-    class Statistics implements \JsonSerializable {        
+    class Statistics implements \JsonSerializable {   
+             
         private readonly StatisticsName $name;
         private readonly mixed $value;
         private readonly StatisticsUnit $unit;

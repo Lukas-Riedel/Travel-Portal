@@ -7,13 +7,12 @@
 
     class OpenLineageEventManager {
 
-        private ?OpenLineageEvent $event;
-
+        private readonly EventPublisher $eventPublisher;
         private readonly array $openLineageEventPublishers;
 
-        private readonly EventPublisher $eventPublisher;
-
         private readonly string $coreBaseUrl;
+        
+        private ?OpenLineageEvent $event;
 
         public function __construct(array $openLineageEventPublishers, EventPublisher $eventPublisher, string $coreBaseUrl) {
             $this->event = null;

@@ -8,7 +8,6 @@
     class DeviceMapper {
         
         private readonly DatabaseClient $databaseClient;
-
         private readonly AuthenticationService $authenticationService;
 
         public function __construct(DatabaseClient $databaseClient, AuthenticationService $authenticationService) {

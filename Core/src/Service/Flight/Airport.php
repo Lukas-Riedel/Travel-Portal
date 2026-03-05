@@ -61,7 +61,8 @@
             )
         ]
     )]
-    class Airport implements \JsonSerializable {        
+    class Airport implements \JsonSerializable {   
+             
         private readonly ?string $id;
         private readonly string $shortName;
         private readonly ?string $longName;

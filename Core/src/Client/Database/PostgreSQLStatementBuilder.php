@@ -10,17 +10,16 @@ use Monolog\Logger;
 
         private const DURATION_THRESHOLD_MILLISECONDS = 100;
 
-        private readonly ?ProgressReporter $progressReporter;
+        private readonly ?ProgressReporter $progressReporter;        
+        private readonly Logger $logger;
         
         private readonly Connection $connection;
-
         private readonly string $sql;
+
         private array $params;
         private array $deferredParams;
-
         private array $preparedStatements;
 
-        private readonly Logger $logger;
 
         public function __construct(?ProgressReporter $progressReporter, Connection $connection, array &$preparedStatements, string $sql, Logger $logger) {
             $this->progressReporter = $progressReporter;

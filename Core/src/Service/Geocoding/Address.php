@@ -17,7 +17,8 @@
             )
         ]
     )]
-    class Address implements \JsonSerializable {        
+    class Address implements \JsonSerializable {    
+            
         private readonly string $address;
 
         public function __construct(string $address) {

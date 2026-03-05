@@ -12,7 +12,6 @@
         private const FETCH_HIGHLIGHTS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly HighlightService $highlightService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

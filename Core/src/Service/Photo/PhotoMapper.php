@@ -7,7 +7,6 @@
     class PhotoMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly GoogleClient $googleClient;
 
         private readonly int $indoorPhotoIsoThreshold;

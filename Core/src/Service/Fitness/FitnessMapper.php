@@ -6,6 +6,7 @@
     class FitnessMapper {
 
         private readonly DatabaseClient $databaseClient;
+        
         private readonly int $updateThresholdDays;
 
         public function __construct(DatabaseClient $databaseClient, int $updateThresholdDays) {

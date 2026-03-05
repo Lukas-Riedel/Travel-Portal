@@ -7,10 +7,10 @@
 
         private readonly string $eventTime;
         private readonly string $jobName;
+        private readonly string $coreBaseUrl;
+        
         private array $inputs;
         private array $outputs;
-
-        private readonly string $coreBaseUrl;
 
         public function __construct(string $eventTime, string $jobName, array $inputs, array $outputs, string $coreBaseUrl) {
             $this->eventTime = $eventTime;

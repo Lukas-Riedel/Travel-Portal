@@ -12,14 +12,11 @@
         private const CREATE_OPENLINEAGE_EVENT_API_ENDPOINT_PATH = "/gov_lineage/v2/lineage_events/openlineage";
 
         private readonly AuthenticationService $authenticationService;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly HttpClient $httpClient;
+        private readonly Logger $logger;
 
         private readonly string $ibmDataplatformBaseUrl;
-
-        private readonly Logger $logger;
 
         public function __construct(AuthenticationService $authenticationService, ConfigurationService $configurationService, 
             HttpClient $httpClient, string $ibmDataplatformBaseUrl, Logger $logger) {

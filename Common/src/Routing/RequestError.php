@@ -36,6 +36,7 @@
         ]
     )]
     class RequestError implements \JsonSerializable {
+        
         private readonly int $code;
         private readonly string $type;
         private readonly string $message;

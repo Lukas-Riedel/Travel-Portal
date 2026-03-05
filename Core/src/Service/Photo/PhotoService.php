@@ -29,19 +29,12 @@
         private const PHOTO_EMBEDDING_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
         private readonly PhotoMapper $photoMapper;
-
         private readonly EmbeddingService $embeddingService;
-
-        private readonly GoogleClient $googleClient;
-        
+        private readonly GoogleClient $googleClient;        
         private readonly EventPublisher $eventPublisher;
-
-        private readonly CloudStorageClient $cloudStorageClient;
-        
+        private readonly CloudStorageClient $cloudStorageClient;        
         private readonly CacheClient $distributedCacheClient;
-
         private readonly HttpClient $httpClient;
-
         private readonly TransactionManager $transactionManager;
 
         private readonly string $coreBaseUrl;

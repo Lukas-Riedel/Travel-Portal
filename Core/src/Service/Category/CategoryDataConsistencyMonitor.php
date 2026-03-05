@@ -14,7 +14,6 @@
         private const COUNTRY_WITH_INCOMPLETE_METADATA_ISSUE_NAME = "COUNTRY_WITH_INCOMPLETE_METADATA";
 
         private readonly CategoryService $categoryService;
-
         private readonly PlaceService $placeService;
 
         public function __construct(CategoryService $categoryService, PlaceService $placeService) {

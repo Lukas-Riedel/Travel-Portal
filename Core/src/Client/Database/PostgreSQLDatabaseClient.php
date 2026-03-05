@@ -22,17 +22,15 @@
         private const TABLE_COLUMNS_CACHE_KEY_FORMAT = "PostgreSQLDatabaseClient:TableColumns:%s";
         private const TABLE_COLUMNS_CACHE_TTL = CommonConstants::ONE_WEEK_SECONDS;
 
+        private readonly CacheClient $distributedCacheClient;
+        private readonly Logger $logger;
+
         private readonly Connection $connection;
         private readonly string $host;
         private readonly string $database;
 
         private ?ProgressReporter $progressReporter;
-        private ?OpenLineageEventManager $openLineageEventManager;
-
-        private readonly CacheClient $distributedCacheClient;
-
-        private readonly Logger $logger;
-        
+        private ?OpenLineageEventManager $openLineageEventManager;        
         private ?AtomicExecution $currentAtomicExecution;
 
         private array $preparedStatements;

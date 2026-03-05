@@ -49,7 +49,8 @@
             )
         ]
     )]
-    class Date implements \JsonSerializable {        
+    class Date implements \JsonSerializable {  
+              
         private readonly int $start;
         private readonly int $end;
         private readonly bool $layover;

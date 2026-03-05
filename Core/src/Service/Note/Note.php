@@ -30,7 +30,8 @@
             )
         ]
     )]
-    class Note implements \JsonSerializable {        
+    class Note implements \JsonSerializable {     
+           
         private ?string $id;
         private readonly string $content;
         private readonly int $timestamp;

@@ -17,9 +17,7 @@
         private const REQUEST_DEVICE_LOG_ON_ACTION_INTERVAL = 15 * 60;
 
         private readonly DeviceService $deviceService;
-
         private readonly TripService $tripService;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 

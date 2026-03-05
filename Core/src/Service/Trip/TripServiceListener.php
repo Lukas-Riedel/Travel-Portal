@@ -23,18 +23,14 @@
         private const UPDATE_TRIP_STATISTICS_ACTION_INTERVAL = 21 * CommonConstants::ONE_DAY_SECONDS;
 
         private readonly TripService $tripService;
-
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
         private readonly FlightService $flightService;
         private readonly PhotoService $photoService;
         private readonly HighlightService $highlightService;
-
         private readonly CalendarClient $calendarClient;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
-
         private readonly TransactionManager $transactionManager;
 
         private readonly int $maxHighlightsPerTripCount;

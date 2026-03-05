@@ -30,21 +30,16 @@
         private const YEAR_FORMAT = "Y";
 
         private readonly TripMapper $tripMapper;
-
         private readonly CalendarClient $calendarClient;
         private readonly GoogleClient $googleClient;
         private readonly GenerativeContentClient $cachingGenerativeContentClient;
-
         private readonly ConfigurationService $configurationService;
-
         private readonly PlaceService $placeService;
         private readonly YearService $yearService;
         private readonly NoteService $noteService;
         private readonly IndexService $indexService;
         private readonly HighlightService $highlightService;
-
         private readonly EventPublisher $eventPublisher;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $cachingGenerativeContentClient,

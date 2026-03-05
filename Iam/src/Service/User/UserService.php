@@ -12,7 +12,6 @@
         private const USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT = "/clients/%s/roles/%s/users";
 
         private readonly TokenService $tokenService;
-
         private readonly HttpClient $httpClient;
 
         private readonly string $iamAppClientId;

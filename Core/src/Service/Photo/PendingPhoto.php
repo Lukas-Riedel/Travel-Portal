@@ -59,7 +59,8 @@
             ),
         ]
     )]
-    class PendingPhoto implements \JsonSerializable {        
+    class PendingPhoto implements \JsonSerializable {    
+            
         private ?string $id;
         private readonly string $albumId;
         private readonly string $fileName;

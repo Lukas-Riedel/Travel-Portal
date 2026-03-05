@@ -9,7 +9,6 @@
         private const OPENLINEAGE_EVENTS_FOLDER_NAME = "OpenLineage Events";
 
         private readonly ConfigurationService $configurationService;
-
         private readonly GoogleClient $googleClient;
 
         public function __construct(ConfigurationService $configurationService, GoogleClient $googleClient) {

@@ -36,6 +36,7 @@
         ]
     )]
     class Sun implements \JsonSerializable {
+        
         private readonly int $sunrise;
         private readonly int $sunset;
         private readonly Interval $altitude;

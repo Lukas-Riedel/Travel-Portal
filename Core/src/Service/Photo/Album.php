@@ -74,6 +74,7 @@
         ]
     )]
     class Album implements \JsonSerializable {      
+        
         private const ALBUM_NAME_PATTERN = "/^(.*) (\d{1,2}\.\d{1,2}\.\d{4})$/";
 
         private readonly string $id;

@@ -24,7 +24,6 @@
         private const DEFAULT_SEARCH_RESULTS_COUNT = 10;
 
         private readonly IndexService $indexService;
-
         private readonly CategoryService $categoryService;
         private readonly PlaceService $placeService;
         private readonly FlightService $flightService;

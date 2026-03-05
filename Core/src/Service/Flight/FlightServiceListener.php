@@ -15,15 +15,11 @@
         private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 4 * CommonConstants::ONE_HOUR_SECONDS;
         private const ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS = 5 * 60;
 
-        private readonly FlightService $flightService;
-        
+        private readonly FlightService $flightService;        
         private readonly TripService $tripService;
-
         private readonly CalendarClient $calendarClient;
-
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
-
         private readonly Logger $logger;
 
         public function __construct(FlightService $flightService, TripService $tripService, CalendarClient $calendarClient,

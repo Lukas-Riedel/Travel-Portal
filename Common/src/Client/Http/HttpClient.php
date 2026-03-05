@@ -17,11 +17,11 @@
             "Connection: keep-alive",
             "Cache-Control: max-age=0"
         );
-
-        private readonly string $appName;
         
         private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
+
+        private readonly string $appName;
 
         public function __construct(string $appName, LoggingContext $loggingContext, Logger $logger) {
             $this->appName = $appName;

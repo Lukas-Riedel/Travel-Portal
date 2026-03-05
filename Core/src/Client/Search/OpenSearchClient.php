@@ -12,13 +12,12 @@
         private const OPEN_SEARCH_SCHEME = "opensearch";        
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = self::OPEN_SEARCH_SCHEME . "://%s:%s";
 
+        private readonly Logger $logger;
+
         private readonly string $host;
         private readonly int $port;
 
-        private readonly Logger $logger;
-
-        private ?Client $client = null;
-        
+        private ?Client $client = null;        
         private ?OpenLineageEventManager $openLineageEventManager;
 
         public function __construct(string $host, int $port, Logger $logger) {

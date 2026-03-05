@@ -45,6 +45,7 @@
         ]
     )]
     class Device implements \JsonSerializable {
+        
         private readonly string $id;
         private readonly DeviceType $type;
         private readonly string $name;

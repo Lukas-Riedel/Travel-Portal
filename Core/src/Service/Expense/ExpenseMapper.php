@@ -7,7 +7,6 @@
     class ExpenseMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly EncryptionClient $encryptionClient;
 
         public function __construct(DatabaseClient $databaseClient, EncryptionClient $encryptionClient) {

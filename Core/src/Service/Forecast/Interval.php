@@ -26,6 +26,7 @@
         ]
     )]
     class Interval implements \JsonSerializable {
+        
         private readonly float $start;
         private readonly float $end;
 

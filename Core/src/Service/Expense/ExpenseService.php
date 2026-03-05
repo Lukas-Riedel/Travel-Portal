@@ -16,16 +16,11 @@
         private const EXCHANGE_RATE_CACHE_KEY = "ExpenseService:ExchangeRates";
         private const EXCHANGE_RATE_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
-        private readonly ExpenseMapper $expenseMapper;
-        
+        private readonly ExpenseMapper $expenseMapper;        
         private readonly ConfigurationService $configurationService;
-
         private readonly EventPublisher $eventPublisher;
-
         private readonly ExchangeRateClient $exchangeRateClient;
-
         private readonly CacheClient $distributedCacheClient;
-
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService,

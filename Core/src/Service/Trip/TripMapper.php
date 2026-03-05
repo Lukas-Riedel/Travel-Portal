@@ -16,9 +16,7 @@
     class TripMapper {
 
         private readonly DatabaseClient $databaseClient;
-
         private readonly CalendarClient $calendarClient;
-
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
         private readonly FlightService $flightService;

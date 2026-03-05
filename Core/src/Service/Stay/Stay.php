@@ -39,6 +39,7 @@
         ]
     )]
     class Stay implements \JsonSerializable {
+        
         private readonly string $name;
         private readonly ?string $address;
         private readonly int $start;
