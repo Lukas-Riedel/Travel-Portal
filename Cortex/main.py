@@ -8,13 +8,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from src.core.clustering_engine import ClusteringEngine
 from src.api.clustering_router import router as clustering_router
 from src.api.embeddings_router import router as embeddings_router
 from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
 from src.core.ai_engine import AiEngine
+from src.core.clustering_engine import ClusteringEngine
 from src.core.logger import logger, transaction_id
+from src.core.translation_engine import TranslationEngine
 from src.service.authentication_service import AuthenticationService
 
 load_dotenv()
@@ -27,6 +28,9 @@ async def lifespan(app: FastAPI):
         os.getenv("ENGINE_DEVICE")
     )
     app.state.clustering_engine = ClusteringEngine()
+    app.state.translation_engine = TranslationEngine(
+        source_languages={lang.strip() for lang in os.getenv("SUPPORTED_LANGUAGES", "").split(",") if lang.strip()}
+    )
     app.state.authentication_service = AuthenticationService(
         os.getenv("IAM_HOST"),
         int(os.getenv("IAM_PORT", 8080)),

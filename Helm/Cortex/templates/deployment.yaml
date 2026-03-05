@@ -85,6 +85,8 @@ spec:
                 secretKeyRef:
                   name: grafana-secret
                   key: grafana-password
+            - name: SUPPORTED_LANGUAGES
+              value: "{{ .Values.cortex.languages }}"
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp

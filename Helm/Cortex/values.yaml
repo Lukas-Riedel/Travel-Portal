@@ -20,3 +20,4 @@ cortex:
   grafana:
     client:
       name: travel-portal-service
+  languages: cs,en

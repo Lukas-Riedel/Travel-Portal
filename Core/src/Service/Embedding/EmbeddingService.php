@@ -7,8 +7,9 @@
 
     class EmbeddingService {
 
-        private const PHOTO_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/photo";
-        private const TEXT_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/text";
+        private const PHOTO_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/photo";        
+        // TODO: Do not hardcode the language here.
+        private const TEXT_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/text?language=cs";
 
         private readonly AuthenticationService $authenticationService;
         private readonly HttpClient $httpClient;
