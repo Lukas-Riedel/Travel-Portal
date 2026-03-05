@@ -12,6 +12,7 @@ from src.api.clustering_router import router as clustering_router
 from src.api.embeddings_router import router as embeddings_router
 from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
+from src.api.translation_router import router as translation_router
 from src.core.ai_engine import AiEngine
 from src.core.clustering_engine import ClusteringEngine
 from src.core.logger import logger, transaction_id
@@ -29,7 +30,7 @@ async def lifespan(app: FastAPI):
     )
     app.state.clustering_engine = ClusteringEngine()
     app.state.translation_engine = TranslationEngine(
-        source_languages={lang.strip() for lang in os.getenv("SUPPORTED_LANGUAGES", "").split(",") if lang.strip()}
+        supported_languages={lang.strip() for lang in os.getenv("SUPPORTED_LANGUAGES", "").split(",") if lang.strip()}
     )
     app.state.authentication_service = AuthenticationService(
         os.getenv("IAM_HOST"),
@@ -42,6 +43,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Cortex API", docs_url="/swagger", version="1.0.0", lifespan=lifespan)
 app.include_router(management_router)
 app.include_router(embeddings_router)
+app.include_router(translation_router)
 app.include_router(clustering_router)
 app.add_middleware(LoggingMiddleware)
 
