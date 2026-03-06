@@ -43,11 +43,13 @@
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Category->value) {
                 $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["entityId"]);
-                if ($categoryIdentifier !== null && $categoryIdentifier->getMainHighlight() === null) {
-                    $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
-                    
-                    $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);
+                if ($categoryIdentifier !== null) {
+                    if ($categoryIdentifier->getMainHighlight() === null) {
+                        $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
+                    }
                 }
+
+                $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);
             }
         }
 
