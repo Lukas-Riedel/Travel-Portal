@@ -9,5 +9,8 @@ COPY Cortex/. ./
 ENV PYTHONPATH=/app \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+USER 1000
 EXPOSE 8080
-CMD uvicorn main:app --host 0.0.0.0 --port 8080 --workers ${WORKERS_COUNT}
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8080 --workers ${WORKERS_COUNT}"]

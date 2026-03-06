@@ -20,8 +20,19 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: {{ .Release.Name }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           image: "{{ .Values.cortex.image }}:{{ .Values.cortex.tag }}"
           ports:
             - containerPort: {{ .Values.cortex.service.port }}
@@ -90,7 +101,11 @@ spec:
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp
+            - name: {{ .Release.Name }}-home-appuser
+              mountPath: /home/appuser
       volumes:
         - name: {{ .Release.Name }}-tmp
+          emptyDir: {}
+        - name: {{ .Release.Name }}-home-appuser
           emptyDir: {}
 {{- end }}

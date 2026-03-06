@@ -1,7 +1,13 @@
 {{- define "core.volumes" }}
 - name: {{ .Release.Name }}-tmp
   emptyDir: {}
-- name: {{ .Release.Name }}-data
+- name: {{ .Release.Name }}-var-tmp
+  emptyDir: {}
+- name: {{ .Release.Name }}-var-run
+  emptyDir: {}
+- name: {{ .Release.Name }}-var-lib-nginx
+  emptyDir: {}
+- name: {{ .Release.Name }}-var-log-nginx
   emptyDir: {}
 - name: {{ .Release.Name }}-config
   configMap:

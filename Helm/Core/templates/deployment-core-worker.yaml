@@ -21,6 +21,11 @@ spec:
         app: {{ .Release.Name }}-worker
     spec:
       terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33
+        runAsGroup: 33
+        fsGroup: 33
       initContainers:
         - name: {{ .Release.Name }}-worker-cleanup
           image: busybox
@@ -29,6 +34,12 @@ spec:
 {{ include "core.volumeMounts" . | nindent 12 }}
       containers:
         - name: {{ .Release.Name }}-worker
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           command: ["/usr/bin/tini", "-g", "--"]
           args:

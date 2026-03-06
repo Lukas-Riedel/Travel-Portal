@@ -20,8 +20,19 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33
+        runAsGroup: 33
+        fsGroup: 33
       containers:
         - name: {{ .Release.Name }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
           ports:
             - containerPort: {{ .Values.core.service.port }}

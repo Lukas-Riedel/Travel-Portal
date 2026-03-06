@@ -5,7 +5,7 @@ portal:
   replicas: 1
   service:
     type: ClusterIP
-    port: 80
+    port: 8080
     host: lriedel.cz
   credentials:
     default:

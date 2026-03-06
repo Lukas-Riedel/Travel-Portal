@@ -30,4 +30,9 @@ COPY Core/www.conf /usr/local/etc/php-fpm.d/www.conf
 EXPOSE 8080
 COPY Core/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chown -R www-data:www-data /var/www/html /var/lib/nginx /var/log/nginx /var/run
+RUN mkdir -p /var/tmp/cache/nginx && chown -R www-data:www-data /var/tmp /var/lib/nginx
+RUN touch /var/log/nginx/access.log /var/log/nginx/error.log && \
+    chown -R www-data:www-data /var/log/nginx
+USER 33
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

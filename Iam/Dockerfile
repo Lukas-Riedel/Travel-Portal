@@ -10,5 +10,7 @@ RUN apk add --no-cache nginx bash curl
 WORKDIR /var/www/html
 COPY --from=builder /app ./
 COPY Iam/nginx.conf /etc/nginx/nginx.conf
+RUN chown -R www-data:www-data /var/www/html /var/lib/nginx /var/log/nginx /var/run
+USER 82
 EXPOSE 8080
-CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "mkdir -p /run/nginx /var/lib/nginx/tmp /var/lib/nginx/logs && php-fpm -D && nginx -g 'daemon off;'"]

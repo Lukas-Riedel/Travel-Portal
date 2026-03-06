@@ -20,9 +20,20 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
       containers:
         - name: {{ .Release.Name }}
           image: "{{ .Values.portal.image }}:{{ .Values.portal.tag }}" 
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: {{ .Values.portal.service.port }}    
           readinessProbe:
@@ -53,8 +64,20 @@ spec:
             - name: {{ .Release.Name }}-config
               mountPath: /usr/share/nginx/html/env.js
               subPath: env.js
+            - name: {{ .Release.Name }}-var-run
+              mountPath: /var/run
+            - name: {{ .Release.Name }}-var-cache-nginx
+              mountPath: /var/cache/nginx
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
       volumes:
         - name: {{ .Release.Name }}-config
           configMap:
             name: {{ .Release.Name }}-configmap
+        - name: {{ .Release.Name }}-var-run
+          emptyDir: {}
+        - name: {{ .Release.Name }}-var-cache-nginx
+          emptyDir: {}
+        - name: {{ .Release.Name }}-tmp
+          emptyDir: {}
 {{- end }}
