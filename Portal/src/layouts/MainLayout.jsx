@@ -296,7 +296,7 @@ export default function MainLayout({ children }) {
             </header>
             {isSearchOpen && (
                 <div
-                    className="fixed inset-0 z-[60] flex items-start justify-center pt-[10vh] bg-gray-900/50 backdrop-blur-sm"
+                    className="fixed inset-0 z-[60] flex items-start justify-center pt-[8vh] bg-gray-900/50 backdrop-blur-sm"
                     onClick={() => setIsSearchOpen(false)}>
                     <div
                         className="w-full md:max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden"
@@ -313,32 +313,43 @@ export default function MainLayout({ children }) {
                                 <XIcon size={16} />
                             </button>
                         </div>
-                        <div className="max-h-[60vh] overflow-y-auto p-2">
+                        <div className="max-h-[80vh] overflow-y-auto p-2">
                             {foundEntities && (
-                                foundEntities.length ?
-                                    foundEntities.map(res => (
-                                        <Link
-                                            key={res.entity.id}
-                                            className="p-3 hover:bg-blue-50 rounded-lg cursor-pointer flex justify-between"
-                                            to={`/${res.type}/${res.entity.id}`}
-                                            onClick={() => setIsSearchOpen(false)}>
-                                            <span className="flex items-center gap-3">
-                                                {renderIcon(res.type, res.entity)}
-                                                <span className="font-medium">
-                                                    {searchableEntityNameSelectors[res.type]?.(res.entity) ?? res.entity.id}
+                                <>
+                                    <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                                        <span>Katalog</span>
+                                        <div className="h-px bg-gray-100 flex-grow" />
+                                    </div>
+                                    {foundEntities.length ?
+                                        foundEntities.map(res => (
+                                            <Link
+                                                key={res.entity.id}
+                                                className="p-3 hover:bg-blue-50 rounded-lg cursor-pointer flex justify-between"
+                                                to={`/${res.type}/${res.entity.id}`}
+                                                onClick={() => setIsSearchOpen(false)}>
+                                                <span className="flex items-center gap-3">
+                                                    {renderIcon(res.type, res.entity)}
+                                                    <span className="font-medium">
+                                                        {searchableEntityNameSelectors[res.type]?.(res.entity) ?? res.entity.id}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                            <span className="text-xs text-gray-400">
-                                                {searchableEntityTypeSelectors[res.type]?.(res.entity) ?? res.type}
-                                            </span>
-                                        </Link>
-                                    )) : (
-                                        <div className="p-3 text-center">
-                                            Nebyly nalezeny žádné výsledky
-                                        </div>
-                                    ))}
+                                                <span className="text-xs text-gray-400">
+                                                    {searchableEntityTypeSelectors[res.type]?.(res.entity) ?? res.type}
+                                                </span>
+                                            </Link>
+                                        )) : (
+                                            <div className="p-3 text-center">
+                                                Nebyly nalezeny žádné výsledky
+                                            </div>
+                                        )}
+                                </>
+                            )}
                             {(foundHighlights === null || foundHighlights.length > 0) && foundEntities && (
-                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                <div className="mt-4">
+                                    <div className="px-3 pt-2 pb-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                                        <span>Fotografie</span>
+                                        <div className="h-px bg-gray-100 flex-grow" />
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 px-2">
                                         {foundHighlights ? (
                                             foundHighlights.map((res, idx) => (
