@@ -602,7 +602,7 @@
             }
 
             if ($this->existsJsonBodyField($request, "excerpt")) {
-                $newExcerpt = $this->getJsonBodyField($request, "newExcerpt");
+                $newExcerpt = $this->getJsonBodyField($request, "excerpt");
                 $wasUpdated |= $this->placeService->updatePlaceExcerpt($placeId, $newExcerpt);
             }                 
             
