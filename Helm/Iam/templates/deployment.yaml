@@ -57,8 +57,8 @@ spec:
               path: /management/liveness
               port: {{ .Values.iam.service.port }}
             initialDelaySeconds: 10
-            periodSeconds: 30
-            failureThreshold: 3
+            periodSeconds: 10
+            failureThreshold: 50
             timeoutSeconds: 3
           env:
             - name: VERSION_TAG

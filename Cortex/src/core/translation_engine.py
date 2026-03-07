@@ -26,36 +26,35 @@ class TranslationEngine:
         argostranslate.package.update_package_index()
         available_packages = argostranslate.package.get_available_packages()
 
-        def get_installed_pairs():
-            translations = argostranslate.translate.get_all_installed_translations()
-            pairs = set()
-            for t in translations:
-                try:
-                    pairs.add((t.from_lang.code, t.to_lang.code))
-                except AttributeError:
-                    pairs.add((t.from_code, t.to_code))
-            return pairs
-
-        installed_pairs = get_installed_pairs()
-        
         for source in self.supported_languages:
             for target in self.supported_languages:
                 if source == target:
                     continue
 
-                if (source, target) not in installed_pairs:
+                translation_path = None
+                try:
+                    translation_path = argostranslate.translate.get_translation_from_codes(source, target)
+                except Exception:
+                    pass
+
+                if translation_path is None:
                     package = next(
                         (pkg for pkg in available_packages 
-                        if pkg.from_code == source and pkg.to_code == target),
+                         if pkg.from_code == source and pkg.to_code == target),
                         None
                     )
 
                     if package:
-                        download_path = package.download()
-                        argostranslate.package.install_from_path(download_path)
-                        
-                        argostranslate.translate.load_installed_languages()
-                        installed_pairs = get_installed_pairs()
+                        try:
+                            download_path = package.download()
+                            argostranslate.package.install_from_path(download_path)
+                        except Exception as e:
+                            pass
+
+        try:
+            argostranslate.translate.load_installed_languages()
+        except Exception:
+            pass
                         
     @staticmethod
     def _post_process_text(text: str) -> str:
