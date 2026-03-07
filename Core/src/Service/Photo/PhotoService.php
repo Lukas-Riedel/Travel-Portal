@@ -257,7 +257,8 @@
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, null, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
-            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $uploadToken, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
+            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken),
+                $this->embeddingService->getPhotoEmbedding($data), self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
             return $pendingPhoto;
         }
 
@@ -266,7 +267,8 @@
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
-            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $uploadToken, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
+            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken),
+                $this->embeddingService->getPhotoEmbedding($data), self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
             return $pendingPhoto;
         }
 
@@ -391,7 +393,7 @@
                     $createdPhoto = $this->createGooglePhotos($albumId, array($newPhoto), $pendingPhoto->getReplacedPhotoId())["newMediaItemResults"][0]["mediaItem"];
 
                     $this->photoMapper->updatePhotoExternalId($pendingPhoto->getReplacedPhotoId(), $createdPhoto["id"]);
-                    $this->photoMapper->updatePhotoEmbedding($pendingPhoto->getReplacedPhotoId(), $this->fetchPhotoEmbedding($createdPhoto["baseUrl"]));                
+                    $this->photoMapper->updatePhotoEmbedding($pendingPhoto->getReplacedPhotoId(), $this->distributedCacheClient->get($this->getPhotoEmbeddingCacheKey($createdPhoto["id"])));                
                     if ($this->getAlbum($albumId)?->getMainPhoto()?->getId() == $pendingPhoto->getReplacedPhotoId()) {
                         $this->googleClient->updateAlbumMainPhoto($albumExternalId, $createdPhoto["id"]);
                     }
@@ -500,7 +502,7 @@
                     throw new \RuntimeException($createdPhoto["status"]["message"]);
                 }
 
-                $pendingPhotoEmbeddingCacheKey = $this->getPendingPhotoEmbeddingCacheKey($newPhotos["uploadToken"]);
+                $pendingPhotoEmbeddingCacheKey = $this->getPendingPhotoEmbeddingCacheKey($createdPhoto["uploadToken"]);
                 $pendingPhotoEmbedding = $this->distributedCacheClient->get($pendingPhotoEmbeddingCacheKey);
                 if ($pendingPhotoEmbedding !== null) {
                     $this->distributedCacheClient->set($this->getPhotoEmbeddingCacheKey($createdPhoto["mediaItem"]["id"]), $pendingPhotoEmbedding, self::PHOTO_EMBEDDING_CACHE_TTL);

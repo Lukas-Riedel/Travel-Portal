@@ -26,29 +26,36 @@ class TranslationEngine:
         argostranslate.package.update_package_index()
         available_packages = argostranslate.package.get_available_packages()
 
-        installed_languages = argostranslate.translate.get_installed_languages()
-        installed_pairs = {
-            (language.code, translation.to_code)
-            for language in installed_languages
-            for translation in language.translations
-        }
+        def get_installed_pairs():
+            translations = argostranslate.translate.get_all_installed_translations()
+            pairs = set()
+            for t in translations:
+                try:
+                    pairs.add((t.from_lang.code, t.to_lang.code))
+                except AttributeError:
+                    pairs.add((t.from_code, t.to_code))
+            return pairs
 
-        for source_language in self.supported_languages:
-            for target_language in self.supported_languages:
-                if source_language == target_language:
+        installed_pairs = get_installed_pairs()
+        
+        for source in self.supported_languages:
+            for target in self.supported_languages:
+                if source == target:
                     continue
 
-                if (source_language, target_language) not in installed_pairs:
-                    package_to_install = next(
-                        filter(
-                            lambda x: x.from_code == source_language and x.to_code == target_language,
-                            available_packages
-                        ), None
+                if (source, target) not in installed_pairs:
+                    package = next(
+                        (pkg for pkg in available_packages 
+                        if pkg.from_code == source and pkg.to_code == target),
+                        None
                     )
 
-                    if package_to_install:
-                        argostranslate.package.install_from_path(package_to_install.download())
-
+                    if package:
+                        download_path = package.download()
+                        argostranslate.package.install_from_path(download_path)
+                        
+                        argostranslate.translate.load_installed_languages()
+                        installed_pairs = get_installed_pairs()
     @staticmethod
     def _post_process_text(text: str) -> str:
         return text.strip()
