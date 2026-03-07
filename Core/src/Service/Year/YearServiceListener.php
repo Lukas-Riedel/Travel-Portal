@@ -27,13 +27,15 @@
 
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Year->value) {
-                $yearIdentifier = $this->yearService->getYearIdentifier($message["entityId"]);
-                if ($yearIdentifier !== null) {
-                    if ($yearIdentifier->getMainHighlight() === null) {
+                $year = $this->yearService->getYear($message["entityId"]);
+                if ($year !== null) {
+                    if ($year->getMainHighlight() === null) {
                         $this->yearService->updateYearMainHighlight($message["entityId"], $message["highlightId"]);
                     }
 
-                    $this->yearService->refreshYearHighlights($message["entityId"], $this->maxHighlightsPerYearCount);
+                    if (count($year->getHighlights()) !== $this->maxHighlightsPerYearCount) {
+                        $this->yearService->refreshYearHighlights($message["entityId"], $this->maxHighlightsPerYearCount);
+                    }
                 }                
             }
         }
@@ -51,7 +53,9 @@
                         }
                     }
                 
-                    $this->yearService->refreshYearHighlights($message["entityId"], $this->maxHighlightsPerYearCount);
+                    if (count($year->getHighlights()) !== $this->maxHighlightsPerYearCount) {
+                        $this->yearService->refreshYearHighlights($message["entityId"], $this->maxHighlightsPerYearCount);
+                    }
                 }
             }
         }

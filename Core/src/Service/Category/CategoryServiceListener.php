@@ -42,14 +42,16 @@
 
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Category->value) {
-                $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["entityId"]);
-                if ($categoryIdentifier !== null) {
-                    if ($categoryIdentifier->getMainHighlight() === null) {
+                $category = $this->categoryService->getCategory($message["entityId"]);
+                if ($category !== null) {
+                    if ($category->getMainHighlight() === null) {
                         $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                     }
                 }
 
-                $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);
+                if (count($category->getHighlights()) !== $this->maxHighlightsPerCategoryCount) {
+                    $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);                        
+                }
             }
         }
 
@@ -66,7 +68,9 @@
                         }
                     }
                     
-                    $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);
+                    if (count($category->getHighlights()) !== $this->maxHighlightsPerCategoryCount) {
+                        $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);                        
+                    }
                 }
             }
         }
