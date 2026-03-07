@@ -29,7 +29,7 @@ spec:
               port: {{ .Values.rabbitmq.service.prometheus.port }}
             initialDelaySeconds: 20
             periodSeconds: 10
-            timeoutSeconds: 3
+            timeoutSeconds: 5
             failureThreshold: 3
           livenessProbe:
             tcpSocket:
