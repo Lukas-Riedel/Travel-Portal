@@ -15,8 +15,8 @@
         private const STYLE_EMBEDDING_CACHE_TTL = CommonConstants::ONE_WEEK_SECONDS;
         private const STYLE_EMBEDDING_SAMPLES_CACHE_THRESHOLD = 100;
         
-        private const NEGATIVE_EMBEDDING_CACHE_KEY_FORMAT = "IndexService:NegativeEmbedding:%s";
-        private const NEGATIVE_EMBEDDING_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
+        private const TEXT_EMBEDDING_CACHE_KEY_FORMAT = "IndexService:TextEmbedding:%s";
+        private const TEXT_EMBEDDING_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private const BATCH_SIZE = 1000;
 
@@ -63,12 +63,12 @@
 
             if (in_array(IndexableEntityType::Photo, $allowedEntityTypes)) {
                 $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Photo, new SearchResult(IndexableEntityType::Place, null, $nn->getParentEntityId()), $nn->getEntityId()),
-                    $this->getNearestNeighbourPhotoIds($this->embeddingService->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
+                    $this->getNearestNeighbourPhotoIds($this->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
             }
 
             if (in_array(IndexableEntityType::Highlight, $allowedEntityTypes)) {
                 $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Highlight, new SearchResult(IndexableEntityType::Place, null, $nn->getParentEntityId()), $nn->getEntityId()),
-                    $this->getNearestNeighbourHighlightIds($this->embeddingService->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
+                    $this->getNearestNeighbourHighlightIds($this->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
             }
 
             // This only works because the composite index is currently not supposed to contain neither photos nor highlights.
@@ -249,7 +249,7 @@
         }
 
         private function computeEmbeddingForPhotoSelection(string $query) : array {
-            $contentEmbedding = $this->embeddingService->getTextEmbedding($query);
+            $contentEmbedding = $this->getTextEmbedding($query);
             $styleEmbedding = $this->getStyleEmbedding();
             $negativeEmbedding = $this->getNegativeEmbedding();
 
@@ -287,20 +287,25 @@
             if (count($searchEntries) > self::STYLE_EMBEDDING_SAMPLES_CACHE_THRESHOLD) {
                 $this->distributedCacheClient->set(self::STYLE_EMBEDDING_CACHE_KEY, $result, self::STYLE_EMBEDDING_CACHE_TTL);
             }
+
             return $result;
         }
 
         private function getNegativeEmbedding() : array {
             $negativeTerms = $this->configurationService->getConfigurationEntry("embeddings")["negativeTerms"];
-            $cacheKey = sprintf(self::NEGATIVE_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", json_encode($negativeTerms)));
-            $cachedNegativeEmbedding = $this->distributedCacheClient->get($cacheKey);
-            if ($cachedNegativeEmbedding !== null) {
-                return $cachedNegativeEmbedding;
-            }
+            return $this->getTextEmbedding(implode(", ", $negativeTerms));
+        }
 
-            $result = $this->embeddingService->getTextEmbedding(implode(", ", $negativeTerms));
-            $this->distributedCacheClient->set($cacheKey, $result, self::NEGATIVE_EMBEDDING_CACHE_TTL);
-            return $result;
+        private function getTextEmbedding(string $query) : array {
+            $cacheKey = sprintf(self::TEXT_EMBEDDING_CACHE_KEY_FORMAT, $query);
+            $cachedEmbedding = $this->distributedCacheClient->get($cacheKey, self::TEXT_EMBEDDING_CACHE_TTL);
+            if ($cachedEmbedding !== null) {
+                return $cachedEmbedding;
+            }
+            
+            $embedding = $this->embeddingService->getTextEmbedding($query);
+            $this->distributedCacheClient->set($cacheKey, $embedding, self::TEXT_EMBEDDING_CACHE_TTL);
+            return $embedding;
         }
         
         private function getNearestNeighbours(string $propertyName, array $embedding, int $limit, int $neighboursCount, bool $highlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {
