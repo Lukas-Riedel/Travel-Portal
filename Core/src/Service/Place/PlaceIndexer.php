@@ -25,10 +25,18 @@
 
         public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Place) {
-                $places = $entityId !== null
-                    ? array($this->placeService->getRegularPlace($entityId, self::NEARBY_PLACES_COUNT))
-                    : $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
+                $places = array();
+                if ($entityId !== null) {
+                    $place = $this->placeService->getRegularPlace($entityId);
+                    
+                    if ($place !== null) {
+                        $places[] = $place;
+                    }
+                }
+                else {
+                    $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
                         array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
+                }
 
                 foreach ($places as &$place) {
                     $terms = array($place->getName());
