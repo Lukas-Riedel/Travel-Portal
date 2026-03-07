@@ -244,7 +244,7 @@
     
     // Event listeners.
     $listeners = array(
-        new IndexServiceListener($indexService, $photoService, $highlightService, $eventPublisher, $scheduler),
+        new IndexServiceListener($indexService, $photoService, $highlightService, $placeService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
         new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),

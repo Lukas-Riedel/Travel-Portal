@@ -6,7 +6,11 @@
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
     use Core\Service\Highlight\HighlightService;
+    use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class IndexServiceListener {
         
@@ -16,13 +20,16 @@
         private readonly IndexService $indexService;
         private readonly PhotoService $photoService;
         private readonly HighlightService $highlightService;
+        private readonly PlaceService $placeService;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(IndexService $indexService, PhotoService $photoService, HighlightService $highlightService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(IndexService $indexService, PhotoService $photoService, HighlightService $highlightService,
+            PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->indexService = $indexService;
             $this->photoService = $photoService;
             $this->highlightService = $highlightService;
+            $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -117,18 +124,36 @@
         }
 
         public function onHighlightRemoved(mixed $message) : void {
-            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
-            if ($highlight === null) {
-                return;
+            $places = array();
+            if ($message["highlightType"] === HighlightType::Trip->value) {
+                $places = $this->placeService->getRegularPlaces(null, null, $message["entityId"], null, null, null, null, null,
+                    null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+            }
+            else if ($message["highlightType"] === HighlightType::Place->value) {
+                $place = $this->placeService->getRegularPlace($message["entityId"]);
+                if ($place !== null) {
+                    $places = array($place);       
+                }
+            }
+            else if ($message["highlightType"] === HighlightType::Category->value) {
+                $places = $this->placeService->getRegularPlaces($message["entityId"], null, null, null, null, null, null, null,
+                    null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+            }
+            else if ($message["highlightType"] === HighlightType::Year->value) {
+                $places = $this->placeService->getRegularPlaces(null, null, null, $message["entityId"], null, null, null, null,
+                    null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             }
 
-            $album = $this->photoService->getAlbumForPhotoId($highlight->getPhoto()->getId());
-            if ($album === null) {
-                return;
+            foreach ($places as &$place) {
+                foreach ($place->getDates() as &$date) {
+                    $album = $date->getAlbum();
+                    
+                    if ($album !== null) {
+                        // TODO: This is a bit weird, since the entity type is photo but an album identifier is passed to the function as the entity id.
+                        $this->indexService->index(IndexType::Photo, IndexableEntityType::Photo, $album->getId());
+                    }
+                }
             }
-
-            // TODO: This is a bit weird, since the entity type is photo but an album identifier is passed to the function as the entity id.
-            $this->indexService->index(IndexType::Photo, IndexableEntityType::Photo, $album->getId());
         }
 
         public function onIndexInvalidated(mixed $message) : void {
