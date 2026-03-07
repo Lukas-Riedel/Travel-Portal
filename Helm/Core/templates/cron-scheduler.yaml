@@ -2,10 +2,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ .Release.Name }}-scheduler-cronjob
+  name: {{ .Release.Name }}-highligts-selecting-cronjob
 spec:
-  schedule: "*/1 * * * *"
-  successfulJobsHistoryLimit: 0
+  schedule: "0 14 * * *"
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 0
   concurrencyPolicy: Allow
   jobTemplate:
@@ -15,9 +15,9 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - name: {{ .Release.Name }}-scheduler
+          - name: {{ .Release.Name }}-highlights-selecting
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-            command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
+            command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=512M", "/var/www/html/src/highlights.php"]
             env:
 {{ include "core.env" . | nindent 14 }}
             volumeMounts:
