@@ -56,6 +56,7 @@ class TranslationEngine:
                         
                         argostranslate.translate.load_installed_languages()
                         installed_pairs = get_installed_pairs()
+                        
     @staticmethod
     def _post_process_text(text: str) -> str:
         return text.strip()

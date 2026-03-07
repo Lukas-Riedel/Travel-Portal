@@ -37,6 +37,7 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             exec:
               command:
@@ -48,6 +49,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 20
             timeoutSeconds: 5
+            failureThreshold: 3
           env:
             - name: POSTGRES_DB
               value: {{ .Values.postgres.database }}

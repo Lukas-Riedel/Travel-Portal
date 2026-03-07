@@ -11,3 +11,6 @@ rabbitmq:
     management:
       port: 15672
       host: rmq.lriedel.cz
+    prometheus:
+      port: 15692
+      host: rmq.lriedel.cz

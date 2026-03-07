@@ -29,14 +29,14 @@ spec:
               port: {{ .Values.opensearch.dashboards.service.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 1
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               path: /api/status
               port: {{ .Values.opensearch.dashboards.service.port }}
             initialDelaySeconds: 15
             periodSeconds: 30
-            timeoutSeconds: 1
+            timeoutSeconds: 3
           env:
             - name: OPENSEARCH_HOSTS
               value: "http://{{ .Release.Name }}:{{ .Values.opensearch.service.port }}"
