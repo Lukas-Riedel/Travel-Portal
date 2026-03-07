@@ -317,7 +317,7 @@ export default function MainLayout({ children }) {
                             {foundEntities && (
                                 <>
                                     <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                                        <span>Katalog</span>
+                                        <span>Výsledky hledání</span>
                                         <div className="h-px bg-gray-100 flex-grow" />
                                     </div>
                                     {foundEntities.length ?
@@ -347,7 +347,7 @@ export default function MainLayout({ children }) {
                             {(foundHighlights === null || foundHighlights.length > 0) && foundEntities && (
                                 <div className="mt-4">
                                     <div className="px-3 pt-2 pb-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                                        <span>Fotografie</span>
+                                        <span>Vizuální podobnost</span>
                                         <div className="h-px bg-gray-100 flex-grow" />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 px-2">
