@@ -40,6 +40,46 @@
     },
     "tracker": {
         "prompt": {
+            "create": {
+                "positive": {
+                    "overtime": {
+                        "message": "Zadej údaje pro zaznamenání přesčasu:",
+                        "label": {
+                            "description": "Popis",
+                            "hours": "Počet hodin"
+                        },
+                        "confirmed": "Přesčas byl úspěšně zaznamenán",
+                        "failed": "Nepodařilo se zaznamenat přesčas"
+                    },
+                    "plannedWork": {
+                        "message": "Zadej počet hodin k modifikaci plánované práce:",
+                        "confirmed": "Plánovaná práce byla úspěšně modifikována",
+                        "failed": "Nepodařilo se modifikovat plánovanou práci"
+                    }
+                },
+                "negative": {
+                    "vacation": {
+                        "message": "Zadej počet hodin k využití dovolené:",
+                        "confirmed": "Dovolená byla úspěšně využita",
+                        "failed": "Nepodařilo se využit dovolenou"
+                    },
+                    "selfcare": {
+                        "message": "Zadej počet hodin k využití sick daye:",
+                        "confirmed": "Sick day byl úspěšně využit",
+                        "failed": "Nepodařilo se využit sick day"
+                    },
+                    "tenure": {
+                        "message": "Zadej počet hodin k využití bonusového volna:",
+                        "confirmed": "Bonusové volno bylo úspěšně využito",
+                        "failed": "Nepodařilo se využit bonusové volno"
+                    },
+                    "overtime": {
+                        "message": "Zadej počet hodin k využití přesčasu:",
+                        "confirmed": "Přesčas byl úspěšně využit",
+                        "failed": "Nepodařilo se využit přesčas"
+                    }
+                }
+            },
             "remove": {
                 "message": "Opravdu chceš odstranit tuto událost?",
                 "confirmed": "Událost byla úspěšně odstraněna",
@@ -110,11 +150,28 @@
         }
     },
     "flight": {
+        "type": {
+            "scheduled": "Potvrzený",
+            "watched": "Sledovaný",
+            "logged": "Odletěný"
+        },
         "prompt": {
             "log": {
                 "message": "Opravdu chceš zalogovat tento let?",
                 "confirmed": "Let byl úspěšně zalogovan",
                 "failed": "Nepodařilo se zalogovat let"
+            },
+            "create": {
+                "message": "Zadej údaje o letu k přidání:",
+                "label": {
+                    "flight": "Číslo letu",
+                    "from": "Místo odletu",
+                    "departure": "Čas odletu (v časové zóně místa odletu)",
+                    "to": "Místo příletu",
+                    "arrival": "Čas příletu (v časové zóně místa příletu)"
+                },
+                "confirmed": "Let byl úspěšně přidán",
+                "failed": "Nepodařilo se přidat let"
             }
         }
     },
@@ -147,6 +204,17 @@
                 "message": "Opravdu chceš odstranit toto předplatné?",
                 "confirmed": "Předplatné bylo úspěšně odstraněno",
                 "failed": "Nepodařilo se odstranit předplatné"
+            },
+            "create": {
+                "message": "Zadej údaje o předplatném k přidání:",
+                "label": {
+                    "description": "Popis",
+                    "value": "Hodnota",
+                    "currency": "Měna",
+                    "expiration": "Expirace"
+                },
+                "confirmed": "Předplatné bylo úspěšně přidáno",
+                "failed": "Nepodařilo se přidat předplatné"
             }
         }
     },
@@ -160,6 +228,23 @@
                 "message": "Opravdu chceš odstranit tento poukaz?",
                 "confirmed": "Poukaz byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit poukaz"
+            },
+            "subtract": {
+                "message": "Zadej, o kolik se má snížit hodnota poukazu:",
+                "confirmed": "Hodnota poukazu byla úspěšně aktualizována",
+                "failed": "Nepodařilo se aktualizovat hodnotu poukazu"
+            },
+            "create": {
+                "message": "Zadej údaje o poukazu k přidání:",
+                "label": {
+                    "identifier": "Identifikátor",
+                    "issuer": "Vydavatel",
+                    "value": "Hodnota",
+                    "currency": "Měna",
+                    "expiration": "Expirace"
+                },
+                "confirmed": "Poukaz byl úspěšně přidán",
+                "failed": "Nepodařilo se přidat poukaz"
             }
         }
     },
@@ -269,6 +354,17 @@
     },
     "photo": {
         "prompt": {
+            "upload": {
+                "message": "Zadej cestu k fotkám k nahrání:",
+                "label": {
+                    "datum": "Datum",
+                    "path": "Cesta",
+                    "position": "Pozice hlavní fotky",
+                    "agent": "Agent"
+                },
+                "confirmed": "Nahrávání fotek bude brzy zahájeno",
+                "failed": "Při nahrávání fotek došlo k chybě"
+            },
             "replace": {
                 "message": "Zadej cestu k nové fotce:",
                 "label": {
@@ -282,6 +378,15 @@
                 "message": "Opravdu chceš odstranit tuto fotku?",
                 "confirmed": "Fotka byla úspěšně odstraněna",
                 "failed": "Nepodařilo se odstranit fotku"
+            },
+            "synchronize": {
+                "message": "Zadej cestu ke složce k automatické synchronizaci:",
+                "label": {
+                    "path": "Cesta",
+                    "expiration": "Konec synchronizace"
+                },
+                "confirmed": "Automatická synchronizace složky bude brzy zahájena",
+                "failed": "Při automatické synchronizaci složky došlo k chybě"
             }
         }
     },
@@ -290,6 +395,37 @@
             "create": {
                 "multiple": {
                     "message": "Zadej reprezentaci geografických regionů:"
+                },
+                "selected": {
+                    "message": "Vyber typ regionu k přidání:",
+                    "label": {
+                        "geographical": "Geografický",
+                        "composite": "Kompozitní",
+                        "multiple": "Multiregion"
+                    }
+                },
+                "geographical": {
+                    "message": "Zadej reprezentaci geografického regionu:",
+                    "label": {
+                        "name": "Název",
+                        "country": "Stát",
+                        "category": "Kategorie",
+                        "radius": "Rádius",
+                        "geojson": "GeoJSON"
+                    },
+                    "confirmed": "Geografický region byl úspěšně vytvořen",
+                    "failed": "Nepodařilo se vytvořit geografický region"
+                },
+                "composite": {
+                    "message": "Zadej reprezentaci kompozitního regionu:",
+                    "label": {
+                        "name": "Název",
+                        "category": "Kategorie",
+                        "included": "Zahrnuté regiony",
+                        "excluded": "Vyloučené regiony"
+                    },
+                    "confirmed": "Kompozitní region byl úspěšně vytvořen",
+                    "failed": "Nepodařilo se vytvořit kompozitní region"
                 }
             },
             "copy": {
@@ -298,11 +434,40 @@
                     "confirmed": "GeoJSON reprezentace regionu byla úspěšně vložena do schránky",
                     "failed": "Nepodařilo se vložit GeoJSON reprezentaci regionu do schránky"
                 }
+            },
+            "overwrite": {
+                "geographical": {
+                    "message": "Zadej novou reprezentaci geografického regionu (existující geografické body budou odstraněny):",
+                    "label": {
+                        "radius": "Rádius",
+                        "geojson": "GeoJSON"
+                    },
+                    "confirmed": "Geografický region byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat geografický region"
+                },
+                "composite": {
+                    "message": "Zadej novou reprezentaci kompozitního regionu:",
+                    "label": {
+                        "included": "Zahrnuté regiony",
+                        "excluded": "Vyloučené regiony"
+                    },
+                    "confirmed": "Kompozitní region byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat kompozitní region"
+                }
             }
         }
     },
     "place": {
         "prompt": {
+            "create": {
+                "message": "Zadej údaje o místě k přidání:",
+                "label": {
+                    "name": "Jméno",
+                    "address": "Adresa"
+                },
+                "confirmed": "Místo bylo úspěšně přidáno",
+                "failed": "Při přidávání místa došlo k chybě"
+            },
             "remove": {
                 "given": {
                     "message": "Opravdu chceš odstranit toto místo?",
@@ -359,18 +524,27 @@
         }
     },
     "category": {
+        "category": {
+            "continent": "Kontinent",
+            "country": "Stát",
+            "administrative": "Administrativní oblast",
+            "ocean": "Oceán",
+            "sea": "Moře",
+            "bay": "Záliv",
+            "island": "Ostrov",
+            "region": "Geografický region"
+        },
         "prompt": {
             "update": {
-                "metadata": {
-                    "message": "Zadej metadata kategorie:",
-                    "label": {
-                        "color": "Barva",
-                        "unicode": "Unikód",
-                        "calendar": "Kalendář"
-                    },
-                    "confirmed": "Metadata kategorie byla úspěšně aktualizována",
-                    "failed": "Nepodařilo se aktualizovat metadata kategorie"
-                }
+                "message": "Zadej nové údaje pro kategorii:",
+                "label": {
+                    "color": "Barva",
+                    "unicode": "Unikód",
+                    "calendar": "Kalendář",
+                    "category": "Kategorie"
+                },
+                "confirmed": "Kategorie byla úspěšně aktualizována",
+                "failed": "Nepodařilo se aktualizovat kategorii"
             }
         }
     },
@@ -389,6 +563,17 @@
                 "message": "Opravdu chceš odstranit tento dokument?",
                 "confirmed": "Dokument byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit dokument"
+            },
+            "create": {
+                "message": "Zadej údaje o dokumentu k přidání:",
+                "label": {
+                    "name": "Název",
+                    "identifier": "Identifikátor",
+                    "issuer": "Vydavatel",
+                    "expiration": "Expirace"
+                },
+                "confirmed": "Dokument byl úspěšně přidán",
+                "failed": "Nepodařilo se přidat dokument"
             }
         }
     },
@@ -398,6 +583,16 @@
                 "message": "Opravdu chceš odstranit tento výlet?",
                 "confirmed": "Výlet byla úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit výlet"
+            },
+            "move": {
+                "message": "Zadej nový začátek výletu:",
+                "confirmed": "Výlet byl úspěšně přesunut",
+                "failed": "Nepodařilo se přesunout výlet"
+            },
+            "load": {
+                "message": "Vyber výlet k načtení:",
+                "confirmed": "Výlet byl úspěšně náčten",
+                "failed": "Nepodařilo se načíst výlet"
             }
         }
     },
@@ -418,10 +613,58 @@
                 "confirmed": "Hlavní highlight byl úspěšně nastaven",
                 "failed": "Nepodařilo se nastavit hlavní highlight"
             },
-            "update": {
+            "adjust": {
                 "message": "Opravdu chceš upravit tento highlight?",
                 "confirmed": "Highlight byl úspěšně upraven",
                 "failed": "Nepodařilo se upravit highlight"
+            },
+            "update": {
+                "attributes": {
+                    "message": "Zadej nové hodnoty atributů:",
+                    "label": {
+                        "composition": "Kompozice",
+                        "sky": "Obloha",
+                        "shadows": "Stíny",
+                        "circumstances": "Okolnosti",
+                        "atmosphere": "Atmosféra",
+                        "datetime": "Čas pořízení",
+                        "sun": "Výška slunce"
+                    },
+                    "option": {
+                        "composition": {
+                            "bad": "Nedostatečná",
+                            "average": "Průměrná",
+                            "good": "Kvalitní"
+                        },
+                        "sky": {
+                            "terrible": "Jednolitá šedá",
+                            "bad": "Zataženo s výraznou strukturou mraků",
+                            "average": "Oblačná s prosvítajícím sluncem",
+                            "good": "Jasná",
+                            "great": "Fotogenní mraky"
+                        },
+                        "shadows": {
+                            "terrible": "Silné protisvětlo (špatná denní doba)",
+                            "bad": "Ploché (zataženo nebo polední světlo)",
+                            "good": "Mírné (lehké modelování scény)",
+                            "great": "Výrazné (boční světlo, plastika)"
+                        },
+                        "circumstances": {
+                            "terrible": "Výrazně rušivé (lešení, davy, nepořádek)",
+                            "bad": "Rušivé (něco narušuje celkový dojem)",
+                            "good": "Minimálně rušivé (drobná rušení)",
+                            "great": "Bez rušivých prvků (čistá scéna)"
+                        },
+                        "atmosphere": {
+                            "terrible": "Znečištěný nebo zakalený vzduch (opar, smog, inverze)",
+                            "bad": "Mírný opar (snížená čirost, ale přijatelná)",
+                            "good": "Čistý vzduch (dobrá viditelnost, přirozené barvy)",
+                            "great": "Křišťálově čistý vzduch (výjimečně fotogenické podmínky)"
+                        }
+                    },
+                    "confirmed": "Atributy highlightu byly úspěšně aktualizovány",
+                    "failed": "Nepodařilo se aktualizovat atributy highlightu"
+                }
             },
             "remove": {
                 "message": "Opravdu chceš odstranit tento highlight?",

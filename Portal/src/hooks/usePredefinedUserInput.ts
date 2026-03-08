@@ -1,12 +1,13 @@
 import { useTranslation } from "react-i18next"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { useUserInput } from "./useUserInput.tsx"
-import type { Airline, Album, Document, Expense, Flight, Highlight, Note, Subscription, Voucher, Place, Trip, Year, Category, Label, Airport, Device, TimeBasedFitness, Fitness, CategoryMetadata, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Trip, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
+import { formatAsFullDateTime } from "../utils/timeUtils.ts"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
-    const { showConfirmToast, showInputToast, showFormToast } = useUserInput()
+    const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
     const { t } = useTranslation()
 
     const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
@@ -38,7 +39,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("general.prompt.login.message"),
             [
                 {
-                    type: "string",
+                    type: "text",
                     required: true,
                     label: t("general.prompt.login.label.username")
                 },
@@ -181,8 +182,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                             : t("voucher.format.nonexpirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency }),
                     }))
                 }
-            ] as const,
-            async (subscriptionId, voucherId) => createExpense(subscriptionId)
+            ],
+            (subscriptionId, voucherId) => createExpense(subscriptionId)
                 .then(async expense => {
                     if (voucherId) {
                         const voucher = vouchers.find(voucher => voucher.id === voucherId)
@@ -225,7 +226,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         name: currency
                     }))
                 }
-            ] as const,
+            ],
             updateExpenseValue,
             t("expense.prompt.update.value.confirmed"),
             t("expense.prompt.update.value.failed")
@@ -302,7 +303,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("airline.prompt.update.all.label.codes"),
                     defaultValue: airline.codes,
                     multiple: true,
-                    options: airline.codes.map(code => ({ id: code, name: code }))
+                    options: airline.codes.map(code => ({
+                        id: code,
+                        name: code
+                    }))
                 }
             ] as const,
             async (name, logo, codes) => {
@@ -362,10 +366,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
 
     const showUpdateHighlightToast = (updateHighlight: () => Promise<Highlight>) =>
         showConfirmToast(
-            t("highlight.prompt.update.message"),
+            t("highlight.prompt.adjust.message"),
             updateHighlight,
-            t("highlight.prompt.update.confirmed"),
-            t("highlight.prompt.update.failed")
+            t("highlight.prompt.adjust.confirmed"),
+            t("highlight.prompt.adjust.failed")
         )
 
     const showRemoveHighlightToast = (removeHighlight: () => Promise<void>) =>
@@ -491,10 +495,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("voucher.prompt.remove.failed")
         )
 
-    const showCreateMultipleGeographicalRegionsToast = (createGeographicalRegions: (geoJson: string) => Promise<void>) =>
+    const showCreateMultipleGeographicalRegionsToast = (createGeographicalRegions: (geoJson: object) => Promise<void>) =>
         showInputToast(
             t("region.prompt.create.multiple.message"),
-            createGeographicalRegions
+            (geoJson: string) => createGeographicalRegions(JSON.parse(geoJson)),
         )
 
     const showReplacePhotoToast = (agents: Device[], replacePhoto: (path: string, agentId: string) => Promise<void>) =>
@@ -502,7 +506,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("photo.prompt.replace.message"),
             [
                 {
-                    type: "string",
+                    type: "text",
                     required: true,
                     label: t("photo.prompt.replace.label.path")
                 },
@@ -539,32 +543,44 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("fitness.prompt.replace.failed")
         )
 
-    const showUpdateCategoryMetadataToast = (category: Category, updateMetadata: (metadata: CategoryMetadata) => Promise<Category>) =>
+    const showUpdateCategoryToast = (category: Category, updateMetadata: (metadata: CategoryMetadata) => Promise<Category>, updateCategory?: (category: CategoryCategory) => Promise<Category>) =>
         showFormToast(
-            t("category.prompt.update.metadata.message"),
+            t("category.prompt.update.message"),
             [
                 {
-                    type: "string",
+                    type: "text",
                     required: false,
-                    label: t("category.prompt.update.metadata.label.color"),
+                    label: t("category.prompt.update.label.color"),
                     defaultValue: category.metadata?.color
                 },
                 {
-                    type: "string",
+                    type: "text",
                     required: false,
-                    label: t("category.prompt.update.metadata.label.unicode"),
+                    label: t("category.prompt.update.label.unicode"),
                     defaultValue: category.metadata?.unicode
                 },
                 {
-                    type: "string",
+                    type: "text",
                     required: false,
-                    label: t("category.prompt.update.metadata.label.calendar"),
+                    label: t("category.prompt.update.label.calendar"),
                     defaultValue: category.metadata?.publicHolidaysCalendar
-                }
+                },
+                updateCategory && {
+                    type: "select",
+                    required: true,
+                    label: t("category.prompt.update.label.category"),
+                    options: Object.values(CategoryCategory).map(categoryCategory => ({
+                        id: categoryCategory,
+                        name: t(`category.category.${categoryCategory}`)
+                    }))
+                },
             ],
-            (color, unicode, publicHolidaysCalendar) => updateMetadata({ color, unicode, publicHolidaysCalendar }),
-            t("category.prompt.update.metadata.confirmed"),
-            t("category.prompt.update.metadata.failed"),
+            (color, unicode, publicHolidaysCalendar, category) => {
+                const promise = updateMetadata({ color, unicode, publicHolidaysCalendar })
+                return updateCategory ? promise.then(() => updateCategory(category as CategoryCategory)) : promise
+            },
+            t("category.prompt.update.confirmed"),
+            t("category.prompt.update.failed"),
         )
 
     const showAssignAirlineCodeToast = (airlines: Airline[], assignAirlineCode: (airlineId: string) => Promise<Airline>) =>
@@ -618,11 +634,693 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.select.failed")
         )
 
+    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)) =>
+        uploadPhotos.length === 3
+            ? showFormToast(
+                t("photo.prompt.upload.message"),
+                [
+                    {
+                        type: "text",
+                        label: t("photo.prompt.upload.label.path"),
+                        required: true
+                    },
+                    {
+                        type: "select",
+                        required: true,
+                        label: t("photo.prompt.upload.label.agent"),
+                        options: agents.map(agent => ({
+                            id: agent.id,
+                            name: agent.name
+                        }))
+                    },
+                    {
+                        type: "number",
+                        label: t("photo.prompt.upload.label.position"),
+                        required: false,
+                        min: 1
+                    }
+                ],
+                (path, agentId, mainPhotoPosition) => (uploadPhotos as (path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)(path, agentId, mainPhotoPosition && Number(mainPhotoPosition)),
+                t("photo.prompt.upload.confirmed"),
+                t("photo.prompt.upload.failed")
+            )
+            : showFormToast(
+                t("photo.prompt.upload.message"),
+                [
+                    {
+                        type: "date",
+                        label: t("photo.prompt.upload.label.date"),
+                        required: true
+                    },
+                    {
+                        type: "text",
+                        label: t("photo.prompt.upload.label.path"),
+                        required: true
+                    },
+                    {
+                        type: "select",
+                        required: true,
+                        label: t("photo.prompt.upload.label.agent"),
+                        options: agents.map(agent => ({
+                            id: agent.id,
+                            name: agent.name
+                        }))
+                    },
+                    {
+                        type: "number",
+                        label: t("photo.prompt.upload.label.position"),
+                        required: false,
+                        min: 1
+                    }
+                ],
+                (date, path, agentId, mainPhotoPosition) => (uploadPhotos as (date: string, path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)(date, path, agentId, mainPhotoPosition && Number(mainPhotoPosition)),
+                t("photo.prompt.upload.confirmed"),
+                t("photo.prompt.upload.failed")
+            )
+
+    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) =>
+        showFormToast(
+            t("highlight.prompt.update.attributes.message"),
+            [
+                {
+                    type: "select",
+                    label: t("highlight.prompt.update.attributes.label.composition"),
+                    defaultValue: highlightAttributes?.composition,
+                    required: true,
+                    options: [
+                        {
+                            id: 5,
+                            name: t("highlight.prompt.update.attributes.option.composition.bad")
+                        },
+                        {
+                            id: 60,
+                            name: t("highlight.prompt.update.attributes.option.composition.average")
+                        },
+                        {
+                            id: 100,
+                            name: t("highlight.prompt.update.attributes.option.composition.good")
+                        }
+                    ]
+                },
+                {
+                    type: "select",
+                    label: t("highlight.prompt.update.attributes.label.sky"),
+                    defaultValue: highlightAttributes?.sky,
+                    required: true,
+                    options: [
+                        {
+                            id: 10,
+                            name: t("highlight.prompt.update.attributes.option.sky.terrible")
+                        },
+                        {
+                            id: 30,
+                            name: t("highlight.prompt.update.attributes.option.sky.bad")
+                        },
+                        {
+                            id: 50,
+                            name: t("highlight.prompt.update.attributes.option.sky.average")
+                        },
+                        {
+                            id: 95,
+                            name: t("highlight.prompt.update.attributes.option.sky.good")
+                        },
+                        {
+                            id: 100,
+                            name: t("highlight.prompt.update.attributes.option.sky.great")
+                        }
+                    ]
+                },
+                {
+                    type: "select",
+                    label: t("highlight.prompt.update.attributes.label.shadows"),
+                    defaultValue: highlightAttributes?.shadows,
+                    required: true,
+                    options: [
+                        {
+                            id: 35,
+                            name: t("highlight.prompt.update.attributes.option.shadows.terrible")
+                        },
+                        {
+                            id: 40,
+                            name: t("highlight.prompt.update.attributes.option.shadows.bad")
+                        },
+                        {
+                            id: 60,
+                            name: t("highlight.prompt.update.attributes.option.shadows.good")
+                        },
+                        {
+                            id: 100,
+                            name: t("highlight.prompt.update.attributes.option.shadows.great")
+                        }
+                    ]
+                },
+                {
+                    type: "select",
+                    label: t("highlight.prompt.update.attributes.label.circumstances"),
+                    defaultValue: highlightAttributes?.circumstances,
+                    required: true,
+                    options: [
+                        {
+                            id: 20,
+                            name: t("highlight.prompt.update.attributes.option.circumstances.terrible")
+                        },
+                        {
+                            id: 70,
+                            name: t("highlight.prompt.update.attributes.option.circumstances.bad")
+                        },
+                        {
+                            id: 90,
+                            name: t("highlight.prompt.update.attributes.option.circumstances.good")
+                        },
+                        {
+                            id: 100,
+                            name: t("highlight.prompt.update.attributes.option.circumstances.great")
+                        }
+                    ]
+                },
+                {
+                    type: "select",
+                    label: t("highlight.prompt.update.attributes.label.atmosphere"),
+                    defaultValue: highlightAttributes?.circumstances,
+                    required: true,
+                    options: [
+                        {
+                            id: 30,
+                            name: t("highlight.prompt.update.attributes.option.atmosphere.terrible")
+                        },
+                        {
+                            id: 80,
+                            name: t("highlight.prompt.update.attributes.option.atmosphere.bad")
+                        },
+                        {
+                            id: 95,
+                            name: t("highlight.prompt.update.attributes.option.atmosphere.good")
+                        },
+                        {
+                            id: 100,
+                            name: t("highlight.prompt.update.attributes.option.atmosphere.great")
+                        }
+                    ]
+                },
+                timestamp && {
+                    type: "text",
+                    label: t("highlight.prompt.update.attributes.label.datetime"),
+                    required: false,
+                    disabled: true,
+                    defaultValue: formatAsFullDateTime(timestamp, timezone),
+                },
+                sunAltitude && {
+                    type: "text",
+                    label: t("highlight.prompt.update.attributes.label.sun"),
+                    required: false,
+                    disabled: true,
+                    defaultValue: `${sunAltitude.toFixed(1)}°`,
+                }
+            ],
+            updateHighlightAttributes,
+            t("highlight.prompt.update.attributes.confirmed"),
+            t("highlight.prompt.update.attributes.failed")
+        )
+
+    const showOverwriteGeographicalRegionToast = (region: GeographicalRegion, overwriteGeographicalRegion: (radius: number, geoJson: object) => Promise<GeographicalRegion>) =>
+        showFormToast(
+            t("region.prompt.overwrite.geographical.message"),
+            [
+                {
+                    type: "number",
+                    label: t("region.prompt.overwrite.geographical.label.radius"),
+                    defaultValue: region.radius,
+                    required: true,
+                    min: 0
+                },
+                {
+                    type: "text",
+                    label: t("region.prompt.overwrite.geographical.label.geojson"),
+                    defaultValue: JSON.stringify(region.geoJson),
+                    required: true
+                }
+            ],
+            (radius, geoJson) => overwriteGeographicalRegion(Number(radius), JSON.parse(String(geoJson))),
+            t("region.prompt.overwrite.geographical.confirmed"),
+            t("region.prompt.overwrite.geographical.failed")
+        )
+
+    const showOverwriteCompositeRegionToast = (region: CompositeRegion, overwriteCompositeRegion: (includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
+        showFormToast(
+            t("region.prompt.overwrite.composite.message"),
+            [
+                {
+                    type: "text",
+                    label: t("region.prompt.overwrite.composite.label.included"),
+                    defaultValue: region.includedCategories.map(category => category.name).join(","),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("region.prompt.overwrite.composite.label.included"),
+                    defaultValue: region.excludedCategories?.map(category => category.name).join(","),
+                    required: false
+                }
+            ],
+            (includedCategoryNames, excludedCategoryNames) => overwriteCompositeRegion(includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
+            t("region.prompt.overwrite.composite.confirmed"),
+            t("region.prompt.overwrite.composite.failed")
+        )
+
+    const showSubtractVoucherValueToast = (subtractVoucherValue: (value: number) => Promise<Voucher>) =>
+        showFormToast(
+            t("voucher.prompt.subtract.message"),
+            [
+                {
+                    type: "number",
+                    required: true,
+                    defaultValue: 0,
+                }
+            ],
+            subtractVoucherValue,
+            t("voucher.prompt.subtract.confirmed"),
+            t("voucher.prompt.subtract.failed")
+        )
+
+    const showCreatePlaceToast = (createPlace: (name: string, address: string) => Promise<Place>) =>
+        showFormToast(
+            t("place.prompt.create.message"),
+            [
+                {
+                    type: "text",
+                    label: t("place.prompt.create.label.name"),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("place.prompt.create.label.address"),
+                    required: false
+                }
+            ],
+            (name: string, address: string) => createPlace(name, address || name),
+            t("place.prompt.create.confirmed"),
+            t("place.prompt.create.failed")
+        )
+
+    const showMoveTripToast = (moveTrip: (date: Date) => Promise<Trip>) =>
+        showFormToast(
+            t("trip.prompt.move.message"),
+            [
+                {
+                    type: "date",
+                    required: true
+                }
+            ],
+            (date: string) => moveTrip(new Date(date)),
+            t("trip.prompt.move.confirmed"),
+            t("trip.prompt.move.failed")
+        )
+
+    const showLoadTripToast = (tripCandidates: Trip[], loadTrip: (tripId: string) => Promise<Trip>) =>
+        showFormToast(
+            t("trip.prompt.load.message"),
+            [
+                {
+                    type: "select",
+                    required: true,
+                    options: tripCandidates.map(candidateTrip => ({
+                        id: candidateTrip.id,
+                        name: candidateTrip.name
+                    }))
+                }
+            ],
+            loadTrip,
+            t("trip.prompt.load.confirmed"),
+            t("trip.prompt.load.failed")
+        )
+
+    const showCreateOvertimeToast = (defaultOvertimeHours: number, createOvertime: (description: string, hours: number) => Promise<TimeTrackingEvent>) =>
+        showFormToast(
+            t("tracker.prompt.create.positive.overtime.message"),
+            [
+                {
+                    type: "text",
+                    label: t("tracker.prompt.create.positive.overtime.label.description"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("tracker.prompt.create.positive.overtime.label.hours"),
+                    defaultValue: defaultOvertimeHours,
+                    required: true,
+                    min: 0
+                }
+            ] as const,
+            (description: string, hours: number) => createOvertime(description, hours),
+            t("tracker.prompt.create.positive.overtime.confirmed"),
+            t("tracker.prompt.create.positive.overtime.failed")
+        )
+
+    const showCreatePlannedWorkToast = (defaultPlannedWorkHours: number, createPlannedWork: (hours: number) => Promise<TimeTrackingEvent>) =>
+        showFormToast(
+            t("tracker.prompt.create.positive.plannedWork.message"),
+            [{
+                type: "number",
+                defaultValue: defaultPlannedWorkHours,
+                required: true
+            }],
+            createPlannedWork,
+            t("tracker.prompt.create.positive.plannedWork.confirmed"),
+            t("tracker.prompt.create.positive.plannedWork.failed")
+        )
+
+    const showCreateNegativeTimeTrackingEventToast = (type: TimeTrackingEventType, defaultHours: number, createNegativeTimeTrackingEvent: (hours: number) => Promise<TimeTrackingEvent>) =>
+        showFormToast(
+            t(`tracker.prompt.create.negative.${type}.message`),
+            [{
+                type: "number",
+                defaultValue: defaultHours,
+                required: true
+            }],
+            createNegativeTimeTrackingEvent,
+            t(`tracker.prompt.create.negative.${type}.confirmed`),
+            t(`tracker.prompt.create.negative.${type}.failed`)
+        )
+
+    const showCreateFlightToast = (createFlight: (flight: string, from: string, scheduledDeparture: Date, to: string, scheduledArrival: Date, type: FlightType) => Promise<Flight>) =>
+        showFormToast(
+            t("flight.prompt.create.message"),
+            [
+                {
+                    type: "text",
+                    label: t("flight.prompt.create.label.flight"),
+                    required: true,
+                    placeholder: "EK139"
+                },
+                {
+                    type: "text",
+                    label: t("flight.prompt.create.label.from"),
+                    required: true,
+                    placeholder: "Frankurt"
+                },
+                {
+                    type: "datetime-local",
+                    label: t("flight.prompt.create.label.departure"),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("flight.prompt.create.label.to"),
+                    required: true,
+                    placeholder: "Toronto"
+                },
+                {
+                    type: "datetime-local",
+                    label: t("flight.prompt.create.label.arrival"),
+                    required: true
+                },
+                {
+                    type: "select",
+                    label: "Typ",
+                    required: true,
+                    options: Object.values(FlightType).map(flightType => ({
+                        id: flightType,
+                        name: t(`flight.type.${flightType}`)
+                    }))
+                }
+            ],
+            (flight, from, scheduledDeparture, to, scheduledArrival, type) => createFlight(flight, from, new Date(scheduledDeparture), to, new Date(scheduledArrival), type as FlightType),
+            t("flight.prompt.create.confirmed"),
+            t("flight.prompt.create.failed")
+        )
+
+    const showCreateSubscriptionToast = (currencies: string[], createSubscription: (description: string, value: number, currency: string, expiration: Date) => Promise<Subscription>) =>
+        showFormToast(
+            t("subscription.prompt.create.message"),
+            [
+                {
+                    type: "text",
+                    label: t("subscription.prompt.create.label.description"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("subscription.prompt.create.label.value"),
+                    required: true,
+                    min: 0
+                },
+                {
+                    type: "select",
+                    label: t("subscription.prompt.create.label.currency"),
+                    required: true,
+                    options: currencies.map(currency => ({
+                        id: currency,
+                        name: currency
+                    }))
+                },
+                {
+                    type: "datetime-local",
+                    label: t("subscription.prompt.create.label.expiration"),
+                    required: true
+                }
+            ] as const,
+            (description: string, value: number, currency: string, expiration: string) => createSubscription(description, value, currency, new Date(expiration)),
+            t("subscription.prompt.create.confirmed"),
+            t("subscription.prompt.create.failed")
+        )
+
+    const showCreateDocumentToast = (createDocument: (name: string, identifier: string, issuer: string, expiration?: Date) => Promise<Document>) =>
+        showFormToast(
+            t("document.prompt.create.message"),
+            [
+                {
+                    type: "text",
+                    label: t("document.prompt.create.label.name"),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("document.prompt.create.label.identifier"),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("document.prompt.create.label.issuer"),
+                    required: true
+                },
+                {
+                    type: "date",
+                    label: t("document.prompt.create.label.expiration"),
+                    required: false
+                }
+            ] as const,
+            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration && new Date(expiration)),
+            t("document.prompt.create.confirmed"),
+            t("document.prompt.create.failed")
+        )
+
+    const showCreateVoucherToast = (currencies: string[], createVoucher: (identifier: string, issuer: string, value: number, currency: string, expiration?: Date) => Promise<Voucher>) =>
+        showFormToast(
+            t("voucher.prompt.create.message"),
+            [
+                {
+                    type: "text",
+                    label: t("voucher.prompt.create.label.identifier"),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("voucher.prompt.create.label.issuer"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("voucher.prompt.create.label.value"),
+                    required: true,
+                    min: 0
+                },
+                {
+                    type: "select",
+                    label: t("voucher.prompt.create.label.currency"),
+                    required: true,
+                    options: currencies.map(currency => ({
+                        id: currency,
+                        name: currency
+                    }))
+                },
+                {
+                    type: "date",
+                    label: t("voucher.prompt.create.label.expiration"),
+                    required: false
+                }
+            ] as const,
+            (code: string, issuer: string, value: number, currency: string, expiration: string) => createVoucher(code, issuer, value, currency, expiration && new Date(expiration)),
+            t("voucher.prompt.create.confirmed"),
+            t("voucher.prompt.create.failed")
+        )
+
+    const showSynchronizePhotosToast = (synchronizePhotos: (path: string, expiration: Date) => Promise<void>) =>
+        showFormToast(
+            t("photo.prompt.synchronize.message"),
+            [
+                {
+                    type: "text",
+                    label: t("photo.prompt.synchronize.label.path"),
+                    required: true
+                },
+                {
+                    type: "datetime-local",
+                    label: t("photo.prompt.synchronize.label.expiration"),
+                    required: true
+                }
+            ],
+            (path: string, expiration: string) => synchronizePhotos(path, new Date(expiration)),
+            t("photo.prompt.synchronize.confirmed"),
+            t("photo.prompt.synchronize.failed")
+        )
+
+    const showCreateGeographicalRegionToast = (countryCategories: Category[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: object, country?: string, radius?: number) => Promise<GeographicalRegion>, templateRegion?: GeographicalRegion) =>
+        showFormToast(
+            t("region.prompt.create.geographical.message"),
+            [
+                {
+                    type: "text",
+                    label: t("region.prompt.create.geographical.label.name"),
+                    required: true,
+                    defaultValue: templateRegion?.category?.name
+                },
+                {
+                    type: "select",
+                    label: t("region.prompt.create.geographical.label.category"),
+                    required: true,
+                    options: Object.values(CategoryCategory).map(categoryCategory => ({
+                        id: categoryCategory,
+                        name: t(`category.category.${categoryCategory}`)
+                    })),
+                    defaultValue: templateRegion?.category?.category
+                },
+                {
+                    type: "text",
+                    label: t("region.prompt.create.geographical.label.geojson"),
+                    required: true,
+                    defaultValue: templateRegion?.geoJson && JSON.stringify(templateRegion?.geoJson)
+                },
+                {
+                    type: "select",
+                    label: t("region.prompt.create.geographical.label.country"),
+                    required: false,
+                    options: countryCategories.map(countryCategory => ({
+                        id: countryCategory.name,
+                        name: countryCategory.name
+                    })),
+                    defaultValue: templateRegion?.countryCategory?.name
+                },
+                {
+                    type: "number",
+                    label: t("region.prompt.create.geographical.label.radius"),
+                    required: false,
+                    min: 0,
+                    defaultValue: templateRegion?.radius
+                }
+            ] as const,
+            (name: string, category: CategoryCategory, geoJson: string, country?: string, radius?: number) => createGeographicalRegion(name, category, JSON.parse(geoJson), country, radius),
+            t("region.prompt.create.geographical.confirmed"),
+            t("region.prompt.create.geographical.failed")
+        )
+
+    const showCreateCompositeRegionToast = (createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
+        showFormToast(
+            t("region.prompt.create.composite.message"),
+            [
+                {
+                    type: "text",
+                    label: t("region.prompt.create.geographical.label.name"),
+                    required: true
+                },
+                {
+                    type: "select",
+                    label: t("region.prompt.create.geographical.label.category"),
+                    required: true,
+                    options: Object.values(CategoryCategory).map(categoryCategory => ({
+                        id: categoryCategory,
+                        name: t(`category.category.${categoryCategory}`)
+                    }))
+                },
+                {
+                    type: "text",
+                    label: t("region.prompt.create.composite.label.included"),
+                    required: true
+                },
+                {
+                    type: "text",
+                    label: t("region.prompt.create.composite.label.included"),
+                    required: false
+                }
+            ],
+            (name, category, includedCategoryNames, excludedCategoryNames) => createCompositeRegion(name, category as CategoryCategory, includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
+            t("region.prompt.create.composite.confirmed"),
+            t("region.prompt.create.composite.failed")
+        )
+
+    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geoJson: object) => object, extractGeoJsonFeatures: (geoJson: object) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: object, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
+        showBranchingToast(
+            t("region.prompt.create.selected.message"),
+            {
+                geographical: {
+                    name: t("region.prompt.create.selected.label.geographical"),
+                    handle: () => showCreateGeographicalRegionToast(countryCategories, createGeographicalRegion)
+                },
+                composite: {
+                    name: t("region.prompt.create.selected.label.composite"),
+                    handle: () => showCreateCompositeRegionToast(createCompositeRegion)
+                },
+                multiple: {
+                    name: t("region.prompt.create.selected.label.multiple"),
+                    handle: () => showCreateMultipleGeographicalRegionsToast(async geoJson => {
+                        const geoFeatures = extractGeoJsonFeatures(geoJson)
+                        for (const geoFeature of geoFeatures) {
+                            try {
+                                const templateRegion = {
+                                    category: {
+                                        id: "",
+                                        // TODO: Use the value from the previous toast (if any).
+                                        category: CategoryCategory.Administrative,
+                                        name: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]).join(", ")
+                                    },
+                                    // TODO: Use the value from the previous toast (if any).
+                                    radius: 0,
+                                    geoJson: createGeoJsonRegion(geoFeature.geometry)
+                                }
+                                await showCreateGeographicalRegionToast(countryCategories, createGeographicalRegion, templateRegion)
+                            }
+                            catch (error) {
+                                continue
+                            }
+                        }
+                    })
+                }
+            }
+        )
+
     return {
+        showCreateSelectedRegionToast,
+        showCreateCompositeRegionToast,
+        showCreateGeographicalRegionToast,
+        showSynchronizePhotosToast,
+        showCreateVoucherToast,
+        showCreateDocumentToast,
+        showCreateSubscriptionToast,
+        showCreateFlightToast,
+        showCreateNegativeTimeTrackingEventToast,
+        showCreatePlannedWorkToast,
+        showCreateOvertimeToast,
+        showLoadTripToast,
+        showMoveTripToast,
+        showCreatePlaceToast,
+        showSubtractVoucherValueToast,
+        showOverwriteCompositeRegionToast,
+        showOverwriteGeographicalRegionToast,
+        showUpdateHighlightAttributesToast,
+        showUploadPhotosToast,
         showSelectHighlightsToast,
         showAssignCategoryToast,
         showAssignAirlineCodeToast,
-        showUpdateCategoryMetadataToast,
+        showUpdateCategoryToast,
         showReplaceFitnessToast,
         showReplacePhotoToast,
         showCreateMultipleGeographicalRegionsToast,

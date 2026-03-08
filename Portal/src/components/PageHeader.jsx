@@ -6,7 +6,6 @@ import { Link } from "react-router-dom"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }) {
-    const { showFormToast } = useUserInput()
     const { showRemoveEntityToast, showUpdateEntityNameToast, showSelectHighlightsToast } = usePredefinedUserInput()
 
     const [isMobile, setIsMobile] = useState(false)

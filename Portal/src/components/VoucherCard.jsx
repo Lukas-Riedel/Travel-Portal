@@ -1,29 +1,18 @@
 
 import { Diff, Trash2 } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import LoadingCard from "./LoadingCard"
 import { getDateString } from "../utils/helpers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherRemoved }) {
-    const { showFormToast } = useUserInput()
-    const { showRemoveVoucherToast } = usePredefinedUserInput()
+    const { showRemoveVoucherToast, showSubtractVoucherValueToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
         showRemoveVoucherToast(() => onVoucherRemoved(voucher.id))
     }
 
     const handleValueSubtraction = () => {
-        showFormToast(
-            "Zadej, o kolik se má snížit hodnota poukazu:",
-            [
-                { defaultValue: 0, required: true, type: "number", min: 0 }
-            ],
-            async (value) => onVoucherValueUpdated(voucher.id, voucher.value - value),
-            "Hodnota poukazu byla úspěšně aktualizována",
-            "Nepodařilo se aktualizovat hodnotu poukazu"
-        )
+        showSubtractVoucherValueToast(value => onVoucherValueUpdated(voucher.id, voucher.value - value))
     }
 
     const voucherProperties = {

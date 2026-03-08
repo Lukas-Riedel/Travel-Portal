@@ -28,8 +28,7 @@ const defaultYPosition = 0
 export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
     const { configuration } = useConfiguration()
     const agents = useDevices({ type: "agent" })
-    const { showFormToast } = useUserInput()
-    const { showCreateHighlightToast, showUpdateHighlightToast, showRemoveHighlightToast, showUpdateMainHighlightToast } = usePredefinedUserInput()
+    const { showCreateHighlightToast, showUpdateHighlightToast, showRemoveHighlightToast, showUpdateMainHighlightToast, showReplacePhotoToast, showUpdateHighlightAttributesToast } = usePredefinedUserInput()
 
     const [shuffledHighlights, setShuffledHighlights] = useState([])
     const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
@@ -94,17 +93,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }
 
     const handlePhotoReplaced = () => {
-        showFormToast(
-            "Zadej cestu k nové fotce:",
-            [
-                { label: "Cesta", required: true },
-                { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
-            ],
-            async (path, agentId) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path)
-                .then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")),
-            "Nahrazování fotky bude brzy zahájeno",
-            "Při nahrazování fotky došlo k chybě"
-        )
+        const onlineAgents = agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name }))
+        showReplacePhotoToast(onlineAgents, (path, agentId) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path))
     }
 
     const handlePhotoCorrected = () => {
@@ -140,57 +130,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const handleHighlightQualityAttributesUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
         const timestamp = highlight.photo.timestamp - (isDaylightSavingTime(highlight.photo.timestamp, configuration?.homeLocation?.timezone) ? 0 : 3600)
-        showFormToast(
-            "Zadej nové atributy:",
-            [
-                {
-                    label: "Kompozice", defaultValue: highlight.attributes?.composition, required: true, type: "select", options: [
-                        { id: 5, name: "Nedostatečná" },
-                        { id: 60, name: "Průměrná" },
-                        { id: 100, name: "Kvalitní" }
-                    ]
-                },
-                {
-                    label: "Obloha", defaultValue: highlight.attributes?.sky, required: true, type: "select", options: [
-                        { id: 10, name: "Jednolitá šedá" },
-                        { id: 30, name: "Zataženo s výraznou strukturou mraků" },
-                        { id: 50, name: "Oblačná s prosvítajícím sluncem" },
-                        { id: 95, name: "Jasná" },
-                        { id: 100, name: "Fotogenní mraky" }
-                    ]
-                },
-                {
-                    label: "Stíny", defaultValue: highlight.attributes?.shadows, required: true, type: "select", options: [
-                        { id: 35, name: "Silné protisvětlo (špatná denní doba)" },
-                        { id: 40, name: "Ploché (zataženo nebo polední světlo)" },
-                        { id: 60, name: "Mírné (lehké modelování scény)" },
-                        { id: 100, name: "Výrazné (boční světlo, plastika)" }
-                    ]
-                },
-                {
-                    label: "Okolnosti", defaultValue: highlight.attributes?.circumstances, required: true, type: "select", options: [
-                        { id: 20, name: "Výrazně rušivé (lešení, davy, nepořádek)" },
-                        { id: 70, name: "Rušivé (něco narušuje celkový dojem)" },
-                        { id: 90, name: "Minimálně rušivé (drobná rušení)" },
-                        { id: 100, name: "Bez rušivých prvků (čistá scéna)" }
-                    ]
-                },
-                {
-                    label: "Atmosféra", defaultValue: highlight.attributes?.atmosphere, required: true, type: "select", options: [
-                        { id: 30, name: "Znečištěný nebo zakalený vzduch (opar, smog, inverze)" },
-                        { id: 80, name: "Mírný opar (snížená čirost, ale přijatelná)" },
-                        { id: 95, name: "Čistý vzduch (dobrá viditelnost, přirozené barvy)" },
-                        { id: 100, name: "Křišťálově čistý vzduch (výjimečně fotogenické podmínky)" }
-                    ]
-                },
-                place && { label: "Čas pořízení:", defaultValue: format(toZonedTime(fromUnixTime(timestamp), place.timezone), "d.M.yyyy HH:mm"), required: true, disabled: true },
-                highlight.photo.sunAltitude && { label: "Výška slunce:", defaultValue: highlight.photo.sunAltitude.toFixed(1) + "°", required: true, disabled: true }
-            ],
-            async (composition, sky, shadows, circumstances, atmosphere) =>
-                onHighlightQualityAttributesUpdated(highlight.id, composition, sky, shadows, circumstances, atmosphere),
-            "Atributy highlightu byly úspěšně aktualizovány",
-            "Nepodařilo se aktualizovat atributy highlightu"
-        )
+        showUpdateHighlightAttributesToast((composition, sky, shadows, circumstances, atmosphere) => onHighlightQualityAttributesUpdated(highlight.id, composition,
+            sky, shadows, circumstances, atmosphere), highlight?.attributes, timestamp, place.timezone, highlight.photo.sunAltitude)
     }
 
     if (highlights && shuffledHighlights.length === 0) {

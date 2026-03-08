@@ -1,4 +1,4 @@
 export interface SelectFormFieldOption<T> {
-    id: string
+    id: string | number
     name: T
 }

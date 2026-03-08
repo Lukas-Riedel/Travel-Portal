@@ -43,7 +43,7 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts"
 // TODO: Duplicated in ExpenseSummary.
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
 
-// TODO: Duplicated in CategoryPage.
+// TODO: Duplicated in CategoryPage. Replace by t(`category.category.${categoryCategory}`).
 const categoryCategories = {
     continent: "Kontinent",
     // country: "Stát", Except this.
@@ -59,8 +59,7 @@ export default function AdminPage() {
     const { hasRole } = useAuth()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
-    const { showFormToast, showBranchingToast } = useUserInput()
-    const { showCreateAirlineToast, showCreateMultipleGeographicalRegionsToast } = usePredefinedUserInput()
+    const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast } = usePredefinedUserInput()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
@@ -137,35 +136,17 @@ export default function AdminPage() {
     ]
 
     const handleFlightCreated = () => {
-        showFormToast(
-            "Zadej údaje o letu k přidání:",
-            [
-                { label: "Číslo letu", required: true, placeholder: "EK139" },
-                { label: "Místo odletu", required: true, placeholder: "Praha" },
-                { label: "Čas odletu (v časové zóně místa odletu)", required: true, type: "datetime-local" },
-                { label: "Místo příletu", required: true, placeholder: "Dubaj" },
-                { label: "Čas příletu (v časové zóně místa příletu)", required: true, type: "datetime-local" },
-                {
-                    label: "Typ", required: true, type: "select", options: [
-                        { id: "watched", name: "Sledovaný" },
-                        { id: "scheduled", name: "Potvrzený" }
-                    ]
-                }
-            ],
-            async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
-                if (type === "scheduled") {
-                    return createScheduledFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
-                }
-                else if (type === "watched") {
-                    return createWatchedFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
-                }
-                else {
-                    return Promise.reject(`Unknown flight type '${type}'.`)
-                }
-            },
-            "Let byl úspěšně přidán",
-            "Při přidávání letu došlo k chybě"
-        )
+        showCreateFlightToast(async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
+            if (type === "scheduled" || type === "logged") {
+                return createScheduledFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
+            }
+            else if (type === "watched") {
+                return createWatchedFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
+            }
+            else {
+                return Promise.reject(`Unknown flight type '${type}'.`)
+            }
+        })
     }
 
     const handleAirlineCreated = () => {
@@ -173,182 +154,64 @@ export default function AdminPage() {
     }
 
     const handleSubscriptionCreated = () => {
-        showFormToast(
-            "Zadej údaje o předplatném k přidání:",
-            [
-                { label: "Popis", required: true },
-                { label: "Hodnota", required: true, type: "number", min: 0 },
-                { label: "Měna", required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) },
-                { label: "Expirace", required: true, type: "datetime-local" }
-            ],
-            async (description, value, currency, expiration) => {
-                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
-                if (convertedExpiration < Date.now() / 1000) {
-                    return Promise.reject("Expiration must be in the future.")
-                }
+        showCreateSubscriptionToast(currencies, async (description, value, currency, expiration) => {
+            const convertedExpiration = Math.round(expiration.getTime() / 1000)
+            if (convertedExpiration < Date.now() / 1000) {
+                return Promise.reject("Expiration must be in the future.")
+            }
 
-                return createSubscription(description, value, currency, convertedExpiration)
-            },
-            "Předplatné bylo úspěšně přidáno",
-            "Při přidávání předplatného došlo k chybě"
-        )
+            return createSubscription(description, value, currency, convertedExpiration)
+        })
     }
 
     const handleDocumentCreated = () => {
-        showFormToast(
-            "Zadej údaje o dokumentu k přidání:",
-            [
-                { label: "Název", required: true },
-                { label: "Identifikátor", required: true },
-                { label: "Vydavatel", required: true },
-                { label: "Expirace", type: "date" }
-            ],
-            async (name, code, issuer, expiration) => {
-                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
-                if (convertedExpiration < Date.now() / 1000) {
-                    return Promise.reject("Expiration must be in the future.")
-                }
+        showCreateDocumentToast(async (name, code, issuer, expiration) => {
+            const convertedExpiration = Math.round(expiration.getTime() / 1000)
+            if (convertedExpiration < Date.now() / 1000) {
+                return Promise.reject("Expiration must be in the future.")
+            }
 
-                return createDocument(name, code, issuer, convertedExpiration)
-            },
-            "Dokument byl úspěšně přidán",
-            "Při přidávání dokumentu došlo k chybě"
-        )
+            return createDocument(name, code, issuer, convertedExpiration)
+        })
     }
 
     const handleVoucherCreated = () => {
-        showFormToast(
-            "Zadej údaje o poukazu k přidání:",
-            [
-                { label: "Identifikátor", required: true },
-                { label: "Vydavatel", required: true },
-                { label: "Hodnota", required: true, type: "number", min: 0 },
-                { label: "Měna", required: true, type: "select", options: currencies.map(currency => ({ id: currency, name: currency })) },
-                { label: "Expirace", type: "date" }
-            ],
-            async (code, issuer, value, currency, expiration) => {
-                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
-                if (convertedExpiration < Date.now() / 1000) {
-                    return Promise.reject("Expiration must be in the future.")
-                }
+        showCreateVoucherToast(currencies, (code, issuer, value, currency, expiration) => {
+            const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
+            if (convertedExpiration < Date.now() / 1000) {
+                return Promise.reject("Expiration must be in the future.")
+            }
 
-                return createVoucher(code, issuer, value, currency, convertedExpiration)
-            },
-            "Poukaz byl úspěšně přidán",
-            "Při přidávání poukazu došlo k chybě"
-        )
+            return createVoucher(code, issuer, value, currency, convertedExpiration)
+        })
     }
 
     const handlePermanentPlaceCreated = () => {
-        showFormToast(
-            "Zadej údaje o místě k přidání:",
-            [
-                { label: "Jméno", required: true },
-                { label: "Adresa", required: false }
-            ],
-            async (name, address) => createPermanentPlace(name, address || name),
-            "Místo bylo úspěšně přidáno",
-            "Při přidávání místa došlo k chybě"
-        )
+        showCreatePlaceToast(createPermanentPlace)
     }
 
     const handleRegionCreated = () => {
-        showBranchingToast(
-            "Vyber typ regionu k přidání:",
-            {
-                geographical: {
-                    name: "Geografický",
-                    handle: () => showFormToast(
-                        "Zadej reprezentaci geografického regionu:",
-                        [
-                            { label: "Název", required: true },
-                            { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
-                            { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                            { label: "Rádius", defaultValue: 0, required: true, type: "number", min: 0 },
-                            { label: "GeoJSON", required: true }
-                        ],
-                        async (name, country, category, radius, geoJson) => {
-                            const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
-                            if (geoFeatures.length !== 1) {
-                                return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
-                            }
-
-                            return createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeatures[0].geometry))
-                        },
-                        "Geografický region byl úspěšně přidán",
-                        "Nepodařilo se přidat geografický region"
-                    )
-                },
-                composite: {
-                    name: "Kompozitní",
-                    handle: () =>
-                        showFormToast(
-                            "Zadej reprezentaci kompozitního regionu:",
-                            [
-                                { label: "Název", required: true },
-                                { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                                { label: "Zahrnuté regiony", required: true },
-                                { label: "Vyloučené regiony", required: false }
-                            ],
-                            async (name, category, includedCategories, excludedCategories) => createCompositeRegion(name, category,
-                                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim())),
-                            "Kompozitní region byl úspěšně přidán",
-                            "Nepodařilo se přidat kompozitní region"
-                        )
-                },
-                multipleGeographical: {
-                    name: "Multiregion",
-                    handle: () => {
-                        showCreateMultipleGeographicalRegionsToast(async geoJson => {
-                            const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
-                            for (const geoFeature of geoFeatures) {
-                                try {
-                                    await showFormToast(
-                                        "Zadej reprezentaci geografického regionu:",
-                                        [
-                                            { label: "Název", defaultValue: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]), required: true },
-                                            // TODO: Use the value from the previous toast as a default.
-                                            { label: "Stát", required: false, type: "select", options: [{ id: null, name: "" }, ...countryCategories.map(countryCategory => ({ id: countryCategory.name, name: countryCategory.name }))] },
-                                            // TODO: Use the value from the previous toast as a default.
-                                            { label: "Kategorie", required: true, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                                            // TODO: Use the value from the previous toast as a default.
-                                            { label: "Rádius", defaultValue: 0, required: true, type: "number", min: 0 }
-                                        ],
-                                        async (name, country, category, radius) => createGeographicalRegion(name, country, category, radius, getGeoJson(geoFeature.geometry)),
-                                        "Geografický region byl úspěšně přidán",
-                                        "Nepodařilo se přidat geografický region"
-                                    )
-
-                                }
-                                catch (error) {
-                                    continue
-                                }
-                            }
-                        })
-                    }
+        showCreateSelectedRegionToast(countryCategories, getGeoJson, getGeoFeatures,
+            (name, category, geoJson, country, radius) => {
+                const geoFeatures = getGeoFeatures(geoJson)
+                if (geoFeatures.length !== 1) {
+                    return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
                 }
-            }
-        )
+
+                return createGeographicalRegion(name, country, category, radius, geoJson)
+            },
+            (name, category, includedCategories, excludedCategories) => createCompositeRegion(name, category, includedCategories, excludedCategories))
     }
 
     const handleFolderSynchronizationRequested = agentId => {
-        showFormToast(
-            "Zadej cestu ke složce k automatické synchronizaci:",
-            [
-                { label: "Cesta", required: true },
-                { label: "Konec synchronizace", required: true, type: "datetime-local" },
-            ],
-            async (path, expiration) => {
-                const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
-                if (convertedExpiration < Date.now() / 1000) {
-                    return Promise.reject("Expiration must be in the future.")
-                }
+        showSynchronizePhotosToast((path, expiration) => {
+            const convertedExpiration = Math.round(expiration.getTime() / 1000)
+            if (convertedExpiration < Date.now() / 1000) {
+                return Promise.reject("Expiration must be in the future.")
+            }
 
-                return publishFolderSynchronizationRequestedEvent(agentId, path, convertedExpiration)
-            },
-            "Automatická synchronizace složky bude brzy zahájena",
-            "Při nastavování automatické synchronizace složky došlo k chybě"
-        )
+            return publishFolderSynchronizationRequestedEvent(agentId, path, convertedExpiration)
+        })
     }
 
     return labels.some(label => label.enabled) && (

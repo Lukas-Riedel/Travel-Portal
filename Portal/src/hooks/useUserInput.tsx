@@ -239,14 +239,20 @@ export const useUserInput = (): UseUserInputResult => {
         const options = Object.entries(branches).map(([id, branch]) => ({ id, name: branch.name }));
 
         // TODO: Do not show success or error messages when moving to the next branch.
-        return showFormToast(title, [{ type: "select", required: true, options: options, defaultValue: options[0]?.id }],
-            async selectedId => {
-                const branch = branches[selectedId];
-                if (branch) {
-                    branch.handle()
-                    return true
-                }
-            })
+        return showFormToast(title, [
+            {
+                type: "select",
+                required: true,
+                options: options,
+                defaultValue: options[0]?.id
+            }
+        ], async selectedId => {
+            const branch = branches[selectedId];
+            if (branch) {
+                branch.handle()
+                return true
+            }
+        })
     }, [showFormToast])
 
     return {

@@ -7,10 +7,11 @@ import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { useUserInput } from "../hooks/useUserInput.tsx"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
-    const { showFormToast } = useUserInput()
+    const { showMoveTripToast, showLoadTripToast } = usePredefinedUserInput()
 
     const [timezone, setTimezone] = useState(undefined)
 
@@ -21,28 +22,13 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
 
 
     const handleMoved = () => {
-        showFormToast(
-            "Zadej nový začátek výletu:",
-            [
-                { type: "date", required: true }
-            ],
-            async start => onTripMoved(Math.round(fromZonedTime(new Date(start).toISOString().slice(0, -1), configuration?.homeLocation?.timezone).getTime() / 1000)),
-            "Výlet byl úspěšně přesunut",
-            "Nepodařilo se přesunout výlet"
-        )
+        showMoveTripToast(start => onTripMoved(Math.round(fromZonedTime(start.toISOString().slice(0, -1), configuration?.homeLocation?.timezone).getTime() / 1000)))
     }
 
     const handleLoaded = () => {
-        showFormToast(
-            "Vyber výlet k načtení:",
-            [
-                { type: "select", required: true, options: tripCandidates?.map(candidateTrip => ({ id: candidateTrip.id, name: candidateTrip.name })) }
-            ],
-            onTripLoaded,
-            "Výlet byl úspěšně načten",
-            "Nepodařilo se načíst výlet"
-        )
+        showLoadTripToast(tripCandidates ?? [], onTripLoaded)
     }
+
     return (
         <div className="relative w-full my-4">
             <CardGrid cardsPerRowCount={4}>

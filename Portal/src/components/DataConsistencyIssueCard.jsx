@@ -12,7 +12,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     onPlaceCountryChanged }) {
     const navigate = useNavigate()
     const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast, showUpdatePlaceCountryToast, showUpdateAirportNameToast, showAssignCategoryToast, showRemovePlaceToast,
-        showUpdateAirportCountryToast, showUpdateAirlineLogoToast, showReplaceFitnessToast, showUpdateCategoryMetadataToast, showAssignAirlineCodeToast } = usePredefinedUserInput()
+        showUpdateAirportCountryToast, showUpdateAirlineLogoToast, showReplaceFitnessToast, showUpdateCategoryToast, showAssignAirlineCodeToast } = usePredefinedUserInput()
 
     const handleremoveAlbum = () => {
         showRemoveAlbumToast(onAllAlbumsInvalidated)
@@ -46,7 +46,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     "Kalendář": category.metadata?.publicHolidaysCalendar || "N/A"
                 }
             ),
-            resolve: category => showUpdateCategoryMetadataToast(category, metadata => onCategoryMetadataChanged(category.id, metadata))
+            resolve: category => showUpdateCategoryToast(category, metadata => onCategoryMetadataChanged(category.id, metadata))
         },
         "ALBUM_WITHOUT_PLACE": {
             name: "Album bez přiřazeného místa",

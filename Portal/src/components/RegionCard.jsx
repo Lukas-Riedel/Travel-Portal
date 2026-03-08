@@ -6,8 +6,7 @@ import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
-    const { showFormToast } = useUserInput()
-    const { showCopyRegionGeoJsonToast } = usePredefinedUserInput()
+    const { showCopyRegionGeoJsonToast, showOverwriteGeographicalRegionToast, showOverwriteCompositeRegionToast } = usePredefinedUserInput()
 
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",
@@ -46,37 +45,19 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
     }
 
     const handleOverwriteGeographicalRegion = () => {
-        showFormToast(
-            "Zadej novou reprezentaci geografického regionu (existující geografické body budou odstraněny):",
-            [
-                { label: "Rádius", defaultValue: region.radius, required: true, type: "number", min: 0 },
-                { label: "GeoJSON", defaultValue: JSON.stringify(region.geoJson), required: true }
-            ],
-            async (radius, geoJson) => {
-                const geoFeatures = getGeoFeatures(JSON.parse(geoJson))
-                if (geoFeatures.length !== 1) {
-                    return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
-                }
+        showOverwriteGeographicalRegionToast(region, (radius, geoJson) => {
+            const geoFeatures = getGeoFeatures(geoJson)
+            if (geoFeatures.length !== 1) {
+                return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
+            }
 
-                return onGeographicalRegionUpdated(region.category.name, region.countryCategory?.name, region.category.category, radius, getGeoJson(geoFeatures[0].geometry))
-            },
-            "Geografický region byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat geografický region"
-        )
+            return onGeographicalRegionUpdated(region.category.name, region.countryCategory?.name, region.category.category, radius, getGeoJson(geoFeatures[0].geometry))
+        })
     }
 
     const handleOverwriteCompositeRegion = () => {
-        showFormToast(
-            "Zadej novou reprezentaci kompozitního regionu:",
-            [
-                { label: "Zahrnuté regiony", defaultValue: region.includedCategories.map(category => category.name).join(","), required: true },
-                { label: "Vyloučené regiony", defaultValue: region.excludedCategories?.map(category => category.name)?.join(","), required: true }
-            ],
-            async (includedCategories, excludedCategories) => onCompositeRegionUpdated(region.category.name, region.category.category,
-                includedCategories.split(",").map(name => name.trim()), excludedCategories?.trim() && excludedCategories.split(",").map(name => name.trim())),
-            "Kompozitní region byl úspěšně aktualizován",
-            "Nepodařilo se aktualizovat kompozitní region"
-        )
+        showOverwriteCompositeRegionToast(region, (includedCategories, excludedCategories) =>
+            onCompositeRegionUpdated(region.category.name, region.category.category, includedCategories, excludedCategories))
     }
 
     return region ? (

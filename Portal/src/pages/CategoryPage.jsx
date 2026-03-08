@@ -12,8 +12,9 @@ import { Edit2, Folder } from "lucide-react"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
-// TODO: This is duplicated in MainLayout.
+// TODO: This is duplicated in MainLayout. Replace by t(`category.category.${categoryCategory}`).
 const categoryCategories = {
     continent: "Kontinent",
     country: "Stát",
@@ -28,7 +29,7 @@ const categoryCategories = {
 export default function CategoryPage() {
     const { categoryId } = useParams()
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
-    const { showFormToast } = useUserInput()
+    const {showUpdateCategoryToast} = usePredefinedUserInput()
 
     const { hasRole } = useAuth()
 
@@ -64,19 +65,7 @@ export default function CategoryPage() {
     }
 
     const handleMetadataChanged = () => {
-        showFormToast(
-            "Zadej metadata kategorie:",
-            [
-                { label: "Kategorie", required: true, defaultValue: category.category, type: "select", options: Object.keys(categoryCategories).map(categoryCategory => ({ id: categoryCategory, name: categoryCategories[categoryCategory] })) },
-                { label: "Barva", required: false, defaultValue: category.metadata?.color },
-                { label: "Unicode", required: false, defaultValue: category.metadata?.unicode },
-                { label: "Kalendář", required: false, defaultValue: category.metadata?.publicHolidaysCalendar }
-            ],
-            async (category, color, unicode, publicHolidaysCalendar) =>
-                updateCategoryCategory(category).then(() => updateCategoryMetadata({ color, unicode, publicHolidaysCalendar })),
-            "Kategorie byla úspěšně aktualizována",
-            "Při aktualizování kategorie došlo k chybě"
-        )
+        showUpdateCategoryToast(category, updateCategoryMetadata, updateCategoryCategory)
     }
 
     return hasRole(UserRole.CategoryRead) && (

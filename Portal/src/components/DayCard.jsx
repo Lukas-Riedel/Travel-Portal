@@ -64,8 +64,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { hasRole } = useAuth()
     const agents = useDevices({ type: "agent" })
-    const { showFormToast } = useUserInput()
-    const { showCreateNoteToast, showRemoveNoteToast } = usePredefinedUserInput()
+    const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast } = usePredefinedUserInput()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])
 
@@ -94,17 +93,8 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
     const formatTimestamp = (timestamp, timestampTimezone) => format(toZonedTime(fromUnixTime(timestamp), timezone || timestampTimezone), "HH:mm")
 
     const handlePhotosAdded = (placeId, placeName, albumId, timestamp) => {
-        showFormToast(
-            "Zadej cestu k fotkám k nahrání:",
-            [
-                { label: "Cesta", required: true },
-                { label: "Pozice hlavní fotky", required: false, type: "number", min: 1 },
-                { label: "Agent", required: true, type: "select", options: agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name })) }
-            ],
-            async (path, mainPhotoPosition, agentId) => onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition),
-            "Nahrávání fotek bude brzy zahájeno",
-            "Při nahrávání fotek došlo k chybě"
-        )
+        const onlineAgents = agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name }))
+        showUploadPhotosToast(onlineAgents, (path, agentId, mainPhotoPosition) => onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition))
     }
 
     const requiresAttention = event => hasRole(UserRole.PortalWarningRead)

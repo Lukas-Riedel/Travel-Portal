@@ -1,4 +1,4 @@
-import { endOfDay, fromUnixTime, startOfDay } from "date-fns"
+import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 
 export const ONE_MINUTE_SECONDS = 60
@@ -6,6 +6,7 @@ export const ONE_HOUR_SECONDS = 60 * ONE_MINUTE_SECONDS
 export const ONE_DAY_SECONDS = 24 * ONE_HOUR_SECONDS
 export const ONE_WEEK_SECONDS = 7 * ONE_DAY_SECONDS
 export const ONE_MONTH_SECONDS = 30 * ONE_DAY_SECONDS
+export const FULL_DATETIME_FORMAT = "d.M.yyyy HH:mm"
 
 export function getCurrentYear(): number {
     return new Date().getFullYear()
@@ -39,4 +40,8 @@ export function getZonedDate(dateOrTimestamp: number | Date, timezone: string): 
 
 export function getTimezoneOrDefault(timezone?: string): string {
     return timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
+}
+
+export function formatAsFullDateTime(timestamp: number, timezone?: string) {
+    return format(toZonedTime(fromUnixTime(timestamp), getTimezoneOrDefault(timezone)), FULL_DATETIME_FORMAT)
 }

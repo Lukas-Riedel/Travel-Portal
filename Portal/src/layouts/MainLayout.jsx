@@ -30,7 +30,7 @@ const searchableEntityIconSelectors = {
     "year": _ => Calendar
 }
 
-// TODO: This is duplicated in CategoryPage.
+// TODO: This is duplicated in CategoryPage. Replace by t(`category.category.${categoryCategory}`).
 const categoryCategories = {
     continent: "Kontinent",
     country: "Stát",

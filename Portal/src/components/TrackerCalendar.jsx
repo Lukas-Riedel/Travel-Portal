@@ -14,8 +14,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { configuration } = useConfiguration()
-    const { showFormToast } = useUserInput()
-    const { showRemoveTimeTrackingEventToast, showCopyTimeTrackingEventDescriptionToast } = usePredefinedUserInput()
+    const { showCreateNegativeTimeTrackingEventToast, showRemoveTimeTrackingEventToast, showCopyTimeTrackingEventDescriptionToast, showCreateOvertimeToast, showCreatePlannedWorkToast } = usePredefinedUserInput()
 
     const now = new Date()
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
@@ -193,76 +192,46 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     }
 
     const handleCreatePositiveOvertimeEvent = (day, expectedWorkingHours) => {
-        showFormToast(
-            "Zadej údaje pro vytvoření přesčasu:",
-            [
-                { label: "Popis přesčasu", required: true },
-                { label: "Počet hodin", defaultValue: Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1), required: true, type: "number", min: 0 }
-            ],
-            async (description, hours) => onEventCreated("overtime", description, hours, toNoonTimestamp(day)),
-            "Přesčas byl úspěšně vytvořen",
-            "Nepodařilo se vytvořit přesčas"
-        )
+        showCreateOvertimeToast(+Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1),
+            async (description, hours) => onEventCreated("overtime", description, hours, toNoonTimestamp(day)))
     }
 
-    const handleBalanceUsageEvent = (day, type, title, success, error) => {
-        showFormToast(
-            title,
-            [{ defaultValue: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number", min: 0 }],
-            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, toNoonTimestamp(day)),
-            success,
-            error
-        )
+    const handleBalanceUsageEvent = (day, type) => {
+        showCreateNegativeTimeTrackingEventToast(type, +standardWorkingHoursPerWorkingDay.toFixed(1),
+            async (hours) => onEventCreated(type, "Balance usage", (-1) * hours, toNoonTimestamp(day)))
     }
 
     const handleCreateNegativeOvertimeEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "overtime",
-            "Zadej počet hodin k využití přesčasu:",
-            "Přesčas byl úspěšně využit",
-            "Nepodařilo se využít přesčas"
+            "overtime"
         )
     }
 
     const handleCreateVacationEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "vacation",
-            "Zadej počet hodin k využití dovolené:",
-            "Dovolená byl úspěšně využita",
-            "Nepodařilo se využít dovolenou"
+            "vacation"
         )
     }
 
     const handleCreateSelfcareEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "selfcare",
-            "Zadej počet hodin k využití sick daye:",
-            "Sick day byl úspěšně využit",
-            "Nepodařilo se využít sick day"
+            "selfcare"
         )
     }
 
     const handleCreateTenureEvent = day => {
         handleBalanceUsageEvent(
             day,
-            "tenure",
-            "Zadej počet hodin k využití bonusového volna:",
-            "Bonusové volno bylo úspěšně využito",
-            "Nepodařilo se využít bonusové volno"
+            "tenure"
         )
     }
 
     const handleCreatePlannedWorkEvent = day => {
-        showFormToast(
-            "Zadej počet hodin k modifikaci plánované práce:",
-            [{ defaultValue: standardWorkingHoursPerWorkingDay.toFixed(1), required: true, type: "number" }],
-            async (hours) => onEventCreated("plannedWork", "Planned work", hours, toNoonTimestamp(day)),
-            "Plánovaná práce byla úspěšně modifikována",
-            "Nepodařilo se modifikovat plánovanou práci"
-        )
+        showCreatePlannedWorkToast(+standardWorkingHoursPerWorkingDay.toFixed(1),
+            async (hours) => onEventCreated("plannedWork", "Planned work", hours, toNoonTimestamp(day)))
     }
 
     const handleRemoveEvent = event => {

@@ -15,13 +15,14 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
 
 export default function PlansPage() {
     const { hasRole } = useAuth()
-    const { showFormToast } = useUserInput()
+    const { showCreatePlaceToast } = usePredefinedUserInput()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality", maxEnd: getCurrentTimestamp() })
@@ -74,16 +75,7 @@ export default function PlansPage() {
     ]
 
     const handleCandidatePlaceCreated = () => {
-        showFormToast(
-            "Zadej údaje o místě k přidání:",
-            [
-                { label: "Jméno", required: true },
-                { label: "Adresa", required: false }
-            ],
-            async (name, address) => createCandidatePlace(name, address || name),
-            "Místo bylo úspěšně přidáno",
-            "Při přidávání místa došlo k chybě"
-        )
+        showCreatePlaceToast(createCandidatePlace)
     }
 
     return labels.some(label => label.enabled) && (
