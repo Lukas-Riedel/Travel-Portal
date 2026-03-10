@@ -124,25 +124,13 @@
         }
 
         public function onHighlightRemoved(mixed $message) : void {
-            $places = array();
-            if ($message["highlightType"] === HighlightType::Trip->value) {
-                $places = $this->placeService->getRegularPlaces(null, null, $message["entityId"], null, null, null, null, null,
+            $highlight = $this->highlightService->getHighlight($message["highlightId"]);
+            if ($highlight === null) {
+                return;
+            }
+
+            $places = $this->placeService->getRegularPlaces(null, null, null, null, null, $highlight->getPhoto()->getId(), null, null,
                     null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-            }
-            else if ($message["highlightType"] === HighlightType::Place->value) {
-                $place = $this->placeService->getRegularPlace($message["entityId"]);
-                if ($place !== null) {
-                    $places = array($place);       
-                }
-            }
-            else if ($message["highlightType"] === HighlightType::Category->value) {
-                $places = $this->placeService->getRegularPlaces($message["entityId"], null, null, null, null, null, null, null,
-                    null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-            }
-            else if ($message["highlightType"] === HighlightType::Year->value) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, $message["entityId"], null, null, null, null,
-                    null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-            }
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {

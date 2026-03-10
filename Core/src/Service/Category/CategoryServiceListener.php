@@ -7,6 +7,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Monolog\Logger;
 
     class CategoryServiceListener {
         
@@ -17,14 +18,17 @@
         private readonly PlaceService $placeService;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
+        private readonly Logger $logger;
 
         private readonly int $maxHighlightsPerCategoryCount;
 
-        public function __construct(CategoryService $categoryService, PlaceService $placeService, EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerCategoryCount) {
+        public function __construct(CategoryService $categoryService, PlaceService $placeService, EventPublisher $eventPublisher,
+            Scheduler $scheduler, Logger $logger, int $maxHighlightsPerCategoryCount) {
             $this->categoryService = $categoryService;
             $this->placeService = $placeService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->logger = $logger;
             $this->maxHighlightsPerCategoryCount = $maxHighlightsPerCategoryCount;
         }
 
@@ -69,6 +73,7 @@
                     }
                     
                     if (count($category->getHighlights()) !== $this->maxHighlightsPerCategoryCount) {
+                        $this->logger->debug("There are " . count($category->getHighlights()) . "/" . $this->maxHighlightsPerCategoryCount . " highlights for the '" . $message["entityId"] . "' category. Refreshing the highlights...");
                         $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);                        
                     }
                 }

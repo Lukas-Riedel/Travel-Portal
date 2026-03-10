@@ -197,11 +197,7 @@
                 if ($wasRemoved) {
                     $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Place->value, $placeId, $highlightId));
                 }                    
-            });  
-
-            if ($wasRemoved) {                
-                $this->highlightMapper->deleteStaleHighlightIdentifiers();
-            }  
+            });
 
             return $wasRemoved;
         }
@@ -213,11 +209,7 @@
                 if ($wasRemoved) {
                     $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Trip->value, $tripId, $highlightId));
                 }
-            });  
-
-            if ($wasRemoved) {
-                $this->highlightMapper->deleteStaleHighlightIdentifiers();
-            }
+            });
 
             return $wasRemoved;
         }
@@ -326,6 +318,10 @@
                 }
             });
             return $wasUpdated;
+        }
+
+        public function deleteStaleHighlightIdentifiers() : void {
+            $this->highlightMapper->deleteStaleHighlightIdentifiers();
         }
 
         public function deleteHighlightObject(string $highlightId) : void {

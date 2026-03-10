@@ -7,6 +7,7 @@
     use Core\Service\Clustering\ClusteringService;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Embedding\EmbeddingService;
+    use Monolog\Logger;
     use Ramsey\Uuid\Uuid;
 
     class IndexService {
@@ -26,6 +27,7 @@
         private readonly ConfigurationService $configurationService;    
         private readonly SearchClient $searchClient;
         private readonly CacheClient $distributedCacheClient;
+        private readonly Logger $logger;
 
         private readonly string $compositeIndexName;
         private readonly string $photoIndexName;
@@ -37,14 +39,15 @@
         private array $entityIndexers = array();
 
         public function __construct(ClusteringService $clusteringService, EmbeddingService $embeddingService, ConfigurationService $configurationService,
-            SearchClient $searchClient, CacheClient $distributedCacheClient, string $compositeIndexName, string $photoIndexName, string $selectedPhotoCandidatesLimitCoefficient,
-            string $clustersCountCoefficient, string $styleEmbeddingCoefficient, string $negativeEmbeddingCoefficient) {
+            SearchClient $searchClient, CacheClient $distributedCacheClient, Logger $logger, string $compositeIndexName, string $photoIndexName,
+            string $selectedPhotoCandidatesLimitCoefficient, string $clustersCountCoefficient, string $styleEmbeddingCoefficient, string $negativeEmbeddingCoefficient) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->clusteringService = $clusteringService;
             $this->embeddingService = $embeddingService;
             $this->configurationService = $configurationService;
             $this->searchClient = $searchClient;
             $this->distributedCacheClient = $distributedCacheClient;
+            $this->logger = $logger;
             $this->compositeIndexName = $compositeIndexName;
             $this->photoIndexName = $photoIndexName;
             $this->selectedPhotoCandidatesLimitCoefficient = $selectedPhotoCandidatesLimitCoefficient;
@@ -142,10 +145,17 @@
         }
 
         private function doIndex(string $indexName, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {
+            $start = microtime(true);
+            if ($entityId !== null) {
+                $this->logger->debug("Reindexing the '" . $entityId . "' " . $entityType->value . "...");
+            }
             foreach ($this->entityIndexers as &$entityIndexer) {
                 $documentBuffer = new DocumentBuffer($this->searchClient, $indexType, $entityType, $indexName, self::BATCH_SIZE);
                 $entityIndexer->index($documentBuffer, $indexType, $entityType, $entityId);
                 $documentBuffer->flush();
+            }
+            if ($entityId !== null) {
+                $this->logger->info("The '" . $entityId . "' " . $entityType->value . " was reindexed in " . round((microtime(true) - $start) * 1000) . " milliseconds.");
             }
         }
 

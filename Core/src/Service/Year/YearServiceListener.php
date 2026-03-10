@@ -6,6 +6,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Monolog\Logger;
 
     class YearServiceListener {
         
@@ -15,13 +16,15 @@
         private readonly YearService $yearService;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
+        private readonly Logger $logger;
 
         private readonly int $maxHighlightsPerYearCount;
 
-        public function __construct(YearService $yearService, EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerYearCount) {
+        public function __construct(YearService $yearService, EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger, int $maxHighlightsPerYearCount) {
             $this->yearService = $yearService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->logger = $logger;
             $this->maxHighlightsPerYearCount = $maxHighlightsPerYearCount;
         }
 
@@ -54,6 +57,7 @@
                     }
                 
                     if (count($year->getHighlights()) !== $this->maxHighlightsPerYearCount) {
+                        $this->logger->debug("There are " . count($year->getHighlights()) . "/" . $this->maxHighlightsPerYearCount . " highlights for the '" . $message["entityId"] . "' category. Refreshing the highlights...");
                         $this->yearService->refreshYearHighlights($message["entityId"], $this->maxHighlightsPerYearCount);
                     }
                 }
