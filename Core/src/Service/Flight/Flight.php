@@ -102,11 +102,11 @@
             return $this->flight;
         }
 
-        public function getRegistration() : string {
+        public function getRegistration() : ?string {
             return $this->registration;
         }
 
-        public function getAircraft() : string {
+        public function getAircraft() : ?string {
             return $this->aircraft;
         }
 
@@ -114,7 +114,7 @@
             return $this->airline;
         }
 
-        public function getDistance() : float {
+        public function getDistance() : ?float {
             return $this->distance;
         }
 

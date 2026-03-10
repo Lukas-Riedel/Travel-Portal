@@ -50,12 +50,14 @@
                     }
 
                     foreach ($place->getDates() as &$date) {
-                        $terms[] = date(self::YEAR_FORMAT, $date->getStart());
-                        $terms[] = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
+                        if ($date->getStart() < time()) {
+                            $terms[] = date(self::YEAR_FORMAT, $date->getStart());
+                            $terms[] = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
 
-                        $trip = $date->getTrip();
-                        if ($trip !== null) {
-                            $terms[] = $trip->getName();
+                            $trip = $date->getTrip();
+                            if ($trip !== null) {
+                                $terms[] = $trip->getName();
+                            }
                         }
                     }
 
