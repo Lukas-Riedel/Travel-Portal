@@ -174,12 +174,12 @@
             }
         }
 
-        private function addOpenLineageInputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $columns), $key, $value);
+        private function addOpenLineageInputDataset(string $index, mixed $value) : void {
+            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $columns), $index, $value);
         }
 
-        private function addOpenLineageOutputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $columns), $key, $value);
+        private function addOpenLineageOutputDataset(string $index, mixed $value) : void {
+            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $columns), $index, $value);
         }
 
         private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {

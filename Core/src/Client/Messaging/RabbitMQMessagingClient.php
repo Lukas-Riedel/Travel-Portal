@@ -20,7 +20,7 @@
         private const SEND_HEARTBEAT_THRESHOLD_SECONDS = 10;
         private const APPLICATION_TIMEOUT_SECONDS = 600;
 
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s@%s:%s/%s";
+        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "rmq://%s:%s/%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
 
         private readonly TransactionManager $transactionManager;
@@ -132,7 +132,7 @@
             }
 
             if ($this->openLineageEventManager !== null) {
-                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->user, $this->host, $this->port, $this->vhost);
+                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port, $this->vhost);
                 $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $queueName, $event->getName());
                 $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());
             }
