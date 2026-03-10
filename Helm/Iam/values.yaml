@@ -26,8 +26,8 @@ iam:
   ibm:
     iam:
       url:
-        # base: https://iam.cloud.ibm.com
-        base: https://iam.test.cloud.ibm.com
+        base: https://iam.cloud.ibm.com
+        # base: https://iam.test.cloud.ibm.com
   grafana:
     client:
       name: travel-portal-service

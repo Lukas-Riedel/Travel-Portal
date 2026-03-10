@@ -140,8 +140,8 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secret
-                  # key: ibm-cloud-api-key
-                  key: ibm-test-cloud-api-key
+                  key: ibm-cloud-api-key
+                  # key: ibm-test-cloud-api-key
             - name: GRAFANA_LOKI_ENTRYPOINT
               valueFrom:
                 secretKeyRef:

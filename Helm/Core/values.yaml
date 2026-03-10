@@ -18,8 +18,8 @@ core:
       base: https://s3.lriedel.cz
     ibm:
       dataplatform:
-        # base: https://api.eu-de.dataplatform.cloud.ibm.com
-        base: https://api.dataplatform.dev.cloud.ibm.com
+        base: https://api.eu-de.dataplatform.cloud.ibm.com
+        # base: https://api.dai.dev.cloud.ibm.com
   db:
     hostname: postgres
     port: 5432
