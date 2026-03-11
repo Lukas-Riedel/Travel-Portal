@@ -158,7 +158,7 @@
         "prompt": {
             "log": {
                 "message": "Opravdu chceš zalogovat tento let?",
-                "confirmed": "Let byl úspěšně zalogovan",
+                "confirmed": "Let byl úspěšně zalogován",
                 "failed": "Nepodařilo se zalogovat let"
             },
             "create": {
