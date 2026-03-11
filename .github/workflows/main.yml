@@ -262,7 +262,7 @@ jobs:
         helm upgrade portal ./Helm/Portal \
           -f ./Helm/Portal/values.yaml \
           --set portal.tag=${{ github.run_number }} \
-          --set portal.fcm.key.api=${{ secrets.FIREBASE_API_KEY }} \
+          --set portal.fcm.key.api=${{ secrets.FIREBASE_WEB_API_KEY }} \
           --set portal.fcm.key.vapid=${{ secrets.FIREBASE_VAPID_KEY }} \
           --set portal.google.maps.key.api=${{ secrets.FRONTEND_GOOGLE_MAPS_API_KEY }} \
           --install \
@@ -308,6 +308,14 @@ jobs:
         cd BridgeX
         cd app
         echo "${{ secrets.BRIDGEX_KEYSTORE_BASE64 }}" | base64 --decode > bridgex.jks
+    - name: Get SHA-1 Fingerprint
+      run: |
+        cd BridgeX/app
+        keytool -list -v \
+          -keystore bridgex.jks \
+          -alias ${{ secrets.BRIDGEX_KEY_ALIAS }} \
+          -storepass ${{ secrets.BRIDGEX_KEY_PASSWORD }} \
+          -keypass ${{ secrets.BRIDGEX_KEY_PASSWORD }}
     - name: Build APK
       run: |
         cd BridgeX
@@ -322,7 +330,7 @@ jobs:
         CORE_BASE_URL: ${{ vars.CORE_BASE_URL }}
         IAM_BASE_URL: ${{ vars.IAM_BASE_URL }}
         IAM_APP_CLIENT_ID: ${{ vars.IAM_APP_CLIENT_ID }}
-        FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        FIREBASE_API_KEY: ${{ secrets.FIREBASE_ANDROID_API_KEY }}
         FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
         FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
         FIREBASE_STORAGE_BUCKET: ${{ vars.FIREBASE_STORAGE_BUCKET }}
