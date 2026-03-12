@@ -291,6 +291,7 @@
                         "highlight_id" => array("type" => "keyword"),
                         "place_id" => array("type" => "keyword"),
                         "trip_id" => array("type" => "keyword"),
+                        "year" => array("type" => "keyword"),
                         "iso" => array("type" => "integer"),
                         "is_place_highlight" => array("type" => "boolean"),
                         "is_trip_highlight" => array("type" => "boolean"),

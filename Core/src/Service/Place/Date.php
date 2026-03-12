@@ -50,6 +50,8 @@
         ]
     )]
     class Date implements \JsonSerializable {  
+
+        private const YEAR_FORMAT = "Y";
               
         private readonly int $start;
         private readonly int $end;
@@ -76,6 +78,10 @@
 
         public function getEnd() : int {
             return $this->end;
+        }
+
+        public function getYear() : int {
+            return date(self::YEAR_FORMAT, $this->start);
         }
 
         public function isLayover() : bool {

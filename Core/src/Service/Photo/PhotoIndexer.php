@@ -58,6 +58,7 @@
                                     "embedding" => $photoEmbedding->getEmbedding(),
                                     "placeId" => $place->getId(),
                                     "tripId" => $tripId,
+                                    "year" => $date->getYear(),
                                     "albumId" => $album->getId(),
                                     "highlightId" => isset($placeHighlightIds[$photoEmbedding->getId()]) ? $placeHighlightIds[$photoEmbedding->getId()]
                                         : ($tripId !== null && isset($tripHighlightIds[$tripId][$photoEmbedding->getId()]) ? $tripHighlightIds[$tripId][$photoEmbedding->getId()] 

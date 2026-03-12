@@ -63,6 +63,7 @@
                 "embedding" => $data["embedding"],
                 "place_id" => $data["placeId"],
                 "trip_id" => $data["tripId"],
+                "year" => $data["year"],
                 "album_id" => $data["albumId"],
                 "highlight_id" => $data["highlightId"],
                 "iso" => $data["iso"],
