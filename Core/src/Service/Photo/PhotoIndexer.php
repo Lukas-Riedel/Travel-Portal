@@ -65,7 +65,12 @@
                                         : null),
                                     "iso" => $photoEmbedding->getIso(),
                                     "isPlaceHighlight" => isset($placeHighlightIds[$photoEmbedding->getId()]),
-                                    "isTripHighlight" => $tripId !== null && isset($tripHighlightIds[$tripId][$photoEmbedding->getId()]),
+                                    "isTripHighlight" => $tripId !== null 
+                                        ? isset($tripHighlightIds[$tripId][$photoEmbedding->getId()])
+                                        // TODO: This is a bit of a hack to allow places without a trip to be a year highlight.
+                                        // This basically says that if the photo is a place highlight and the photo was taken within a day trip,
+                                        // we treat it as a highlight of that non-existent trip for day trips, too.
+                                        : isset($placeHighlightIds[$photoEmbedding->getId()]),
                                     "isPlaceMainHighlight" => $place->getMainHighlight()?->getPhoto()?->getId() === $photoEmbedding->getId()
                                 ));
                             }

@@ -94,33 +94,33 @@
         public function getSelectedPhotoIdsForPlace(string $placeId, string $query, int $count, ?string $mainHighlightPhotoId) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, array(),
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, array($placeId), array(), array(), null, null),
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, null, array($placeId), array(), array(), null, null),
                 fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, count($prioritizedPhotoIds), array($placeId), array(), $prioritizedPhotoIds, null, null));
+                    $embedding, count($prioritizedPhotoIds), null, array($placeId), array(), $prioritizedPhotoIds, null, null));
         }
 
         public function getSelectedPhotoIdsForTrip(string $tripId, string $query, int $count, ?string $mainHighlightPhotoId, array $tripPlaceHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $tripPlaceHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, array(), array($tripId), array(), null, null),
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, null, array(), array($tripId), array(), null, null),
                 fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, count($prioritizedPhotoIds), array(), array($tripId), $prioritizedPhotoIds, null, null));            
+                    $embedding, count($prioritizedPhotoIds), null, array(), array($tripId), $prioritizedPhotoIds, null, null));            
         }
 
         public function getSelectedPhotoIdsForCategory(array $categoryPlaceIds, string $query, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, $categoryPlaceIds, array(), array(), true, null),
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, null, $categoryPlaceIds, array(), array(), true, null),
                 fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, count($prioritizedPhotoIds), $categoryPlaceIds, array(), $prioritizedPhotoIds, true, null));
+                    $embedding, count($prioritizedPhotoIds), null, $categoryPlaceIds, array(), $prioritizedPhotoIds, null, null));
         }
 
-        public function getSelectedPhotoIdsForYear(array $yearTripIds, string $query, int $count, ?string $mainHighlightPhotoId, array $tripMainHighlightPhotoIds) : array {
+        public function getSelectedPhotoIdsForYear(int $year, string $query, int $count, ?string $mainHighlightPhotoId, array $tripMainHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $tripMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, array(), $yearTripIds, array(), null, true),
+                    $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, $year, array(), array(), array(), null, true),
                 fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, count($prioritizedPhotoIds), array(), $yearTripIds, $prioritizedPhotoIds, null, true));
+                    $embedding, count($prioritizedPhotoIds), $year, array(), array(), $prioritizedPhotoIds, null, null));
         }
 
         public function reindex() : void {           

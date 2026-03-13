@@ -17,8 +17,11 @@
             );
         }
 
-        public function createPhotoSelectionQuery(array $embedding, int $limit, array $placeIds, array $tripIds, array $photoIds, ?bool $placeHighlightsOnly, ?bool $tripHighlightsOnly) : array {            
+        public function createPhotoSelectionQuery(array $embedding, int $limit, ?int $year, array $placeIds, array $tripIds, array $photoIds, ?bool $placeHighlightsOnly, ?bool $tripHighlightsOnly) : array {            
             $filterConditions = array();
+            if ($year !== null) {
+                $filterConditions[] = array("term" => array("year" => $year));
+            }
             if (!empty($placeIds)) {
                 $filterConditions[] = array("terms" => array("place_id" => $placeIds));
             }
