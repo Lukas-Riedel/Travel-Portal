@@ -3,7 +3,7 @@ import { getPrettyName } from "../utils/helpers"
 import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { formatKilometers, formatNextPlaces } from "../utils/formatters"
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 const maximumPlacesCount = 5

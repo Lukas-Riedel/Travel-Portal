@@ -7,7 +7,7 @@ import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { formatDays } from "../utils/formatters"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { getPrettyName } from "../utils/helpers"
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function TripCard({ trip, onTripRemoved }) {

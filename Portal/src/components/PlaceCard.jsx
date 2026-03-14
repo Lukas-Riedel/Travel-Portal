@@ -3,7 +3,7 @@ import { getPrettyName } from "../utils/helpers"
 import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
 import { formatKilometers } from "../utils/formatters"
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {

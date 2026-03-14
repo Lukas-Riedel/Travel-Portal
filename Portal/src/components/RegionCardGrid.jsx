@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid"
+import CardGrid from "./CardGrid.tsx"
 import RegionCard from "./RegionCard"
 
 export default function RegionCardGrid({ regions, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
     return (
-        <CardGrid cardsPerRowCount={3}>
+        <CardGrid rowSize={3}>
             {regions?.map((region, index) => (
                 <RegionCard
                     key={index}

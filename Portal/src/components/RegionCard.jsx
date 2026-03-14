@@ -1,4 +1,4 @@
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { formatKilometers } from "../utils/formatters"
 import { Copy, Map, Wrench } from "lucide-react"
 import { useUserInput } from "../hooks/useUserInput.tsx"

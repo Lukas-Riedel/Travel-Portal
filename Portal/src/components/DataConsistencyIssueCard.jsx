@@ -1,5 +1,5 @@
 import { Wrench } from "lucide-react"
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
 import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"

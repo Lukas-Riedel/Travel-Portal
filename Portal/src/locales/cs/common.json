@@ -18,6 +18,9 @@
                 "confirmed": "Byl jsi přihlášen",
                 "failed": "Při přihlašování došlo k chybě"
             }
+        },
+        "placeholder": {
+            "logo": "Logo není k dispozici"
         }
     },
     "menu": {

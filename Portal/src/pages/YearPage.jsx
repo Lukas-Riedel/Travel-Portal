@@ -64,7 +64,7 @@ export default function YearPage() {
                 <TripTable trips={yearTrips?.filter(trip => trip.isFuture())} />
             )}
             <TripTileGrid trips={yearTrips?.filter(trip => trip.isPast())?.slice()?.reverse()} />
-            <CardGrid cardsPerRowCount={4}>
+            <CardGrid rowSize={4}>
                 {days?.map((day, index) => (
                     <DayCard
                         key={index}

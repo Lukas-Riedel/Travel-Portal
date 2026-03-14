@@ -1,4 +1,4 @@
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { decapitalize } from "../utils/helpers"
 import { formatStatisticsUnit } from "../utils/formatters"
 import { useConfiguration } from "../contexts/ConfigContext"

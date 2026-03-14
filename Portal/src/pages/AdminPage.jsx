@@ -253,6 +253,7 @@ export default function AdminPage() {
             {activeTab === 2 && hasRole(UserRole.AirlineEdit) && (
                 <>
                     <AirlineCardGrid
+                        rowSize={6}
                         airlines={airlines}
                         onAirlineRemoved={removeAirline}
                         onAirlineNameUpdated={updateAirlineName}

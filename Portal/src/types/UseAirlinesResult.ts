@@ -1,4 +1,4 @@
-import type { Airline } from "./CoreSwaggerTypes.ts";
+import type { Airline } from "./CoreSwaggerTypes.ts"
 
 export interface UseAirlinesResult {
     airlines?: Airline[]

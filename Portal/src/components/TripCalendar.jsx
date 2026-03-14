@@ -4,7 +4,7 @@ import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
-import CardGrid from "./CardGrid"
+import CardGrid from "./CardGrid.tsx"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
@@ -31,7 +31,7 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
 
     return (
         <div className="relative w-full my-4">
-            <CardGrid cardsPerRowCount={4}>
+            <CardGrid rowSize={4}>
                 {days?.map((day, index) => (
                     <DayCard
                         key={index}

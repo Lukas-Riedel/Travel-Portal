@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid";
+import CardGrid from "./CardGrid.tsx";
 import FlightCard from "./FlightCard";
 
 export default function FlightCardGrid({ flights }) {
     return (
-        <CardGrid cardsPerRowCount={4}>
+        <CardGrid rowSize={4}>
             {flights?.map(flight => (
                 <FlightCard
                     key={flight.start}

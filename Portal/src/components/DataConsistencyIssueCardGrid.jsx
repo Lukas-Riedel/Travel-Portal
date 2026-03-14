@@ -1,11 +1,11 @@
-import CardGrid from "./CardGrid"
+import CardGrid from "./CardGrid.tsx"
 import DataConsistencyIssueCard from "./DataConsistencyIssueCard"
 
 export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }) {
     return (
-        <CardGrid cardsPerRowCount={4}>
+        <CardGrid rowSize={4}>
             {dataConsistencyIssues?.map((dataConsistencyIssue, idx) => (
                 <DataConsistencyIssueCard
                     key={idx}

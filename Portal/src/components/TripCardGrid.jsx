@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid"
+import CardGrid from "./CardGrid.tsx"
 import TripCard from "./TripCard"
 
 export default function TripCardGrid({ trips, onTripRemoved }) {
     return (
-        <CardGrid cardsPerRowCount={3}>
+        <CardGrid rowSize={3}>
             {trips?.map(trip => (
                 <TripCard
                     key={trip.id}

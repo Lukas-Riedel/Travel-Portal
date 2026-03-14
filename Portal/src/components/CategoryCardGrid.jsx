@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid"
+import CardGrid from "./CardGrid.tsx"
 import CategoryCard from "./CategoryCard"
 
 export default function CategoryCardGrid({ categories, categoriesPlaces, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }) {
     return (
-        <CardGrid cardsPerRowCount={5}>
+        <CardGrid rowSize={5}>
             {categories?.map(category => (
                 <CategoryCard
                     key={category.id}

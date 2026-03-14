@@ -1,4 +1,4 @@
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { getDateTimeString } from "../utils/helpers"
 import { useMemo } from "react"
 import { useAuth } from "../contexts/AuthContext"

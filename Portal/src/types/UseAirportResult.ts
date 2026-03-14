@@ -1,4 +1,4 @@
-import type { Airport } from "./CoreSwaggerTypes.ts";
+import type { Airport } from "./CoreSwaggerTypes.ts"
 
 export interface UseAirportResult {
     airport?: Airport

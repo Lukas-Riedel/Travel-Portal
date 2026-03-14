@@ -1,6 +1,6 @@
 
 import { Diff, Trash2 } from "lucide-react"
-import LoadingCard from "./LoadingCard"
+import LoadingCard from "./LoadingCard.tsx"
 import { getDateString } from "../utils/helpers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 

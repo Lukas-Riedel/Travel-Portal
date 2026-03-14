@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid";
+import CardGrid from "./CardGrid.tsx";
 import DeviceCard from "./DeviceCard";
 
 export default function DeviceCardGrid({ devices, onFolderSynchronizationRequested }) {
     return (
-        <CardGrid cardsPerRowCount={4}>
+        <CardGrid rowSize={4}>
             {devices?.map(device => (
                 <DeviceCard
                     key={device.id}

@@ -56,32 +56,6 @@ export function sumEventHours(events) {
     return events.map(e => e.hours).reduce((a, b) => a + b, 0)
 }
 
-export function getSafeSvgString(svgString, prefix) {
-    if (!svgString) {
-        return svgString
-    }
-
-    const result = optimize(svgString, {
-        plugins: [
-            {
-                name: "prefixIds",
-                params: {
-                    prefix,
-                    delim: "-",
-                    prefixIds: true,
-                    prefixClassNames: true
-                }
-            }
-        ]
-    })
-
-    if ("data" in result) {
-        return result.data
-    }
-
-    return svgString
-}
-
 export function isDaylightSavingTime(timestamp, timezone) {
     const date = toZonedTime(fromUnixTime(timestamp), timezone)
     return date.getTimezoneOffset() < Math.max(toZonedTime(new Date(date.getFullYear(), 0, 1), timezone).getTimezoneOffset(), toZonedTime(new Date(date.getFullYear(), 6, 1), timezone).getTimezoneOffset())

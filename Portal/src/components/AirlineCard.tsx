@@ -1,26 +1,49 @@
-import { getSafeSvgString } from "../utils/helpers.js"
 import { Link } from "react-router-dom"
-import LoadingCard from "./LoadingCard.jsx"
+import LoadingCard from "./LoadingCard.tsx"
 import { Trash2, Wrench } from "lucide-react"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Airline } from "../types/CoreSwaggerTypes.ts"
+import Card from "./Card.tsx"
+import { useTranslation } from "react-i18next"
+import { getSafeSvgString } from "../utils/imageUtils.ts"
+import { useCallback } from "react"
 
-export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineRemoved, onAirlineCodeRemoved }) {
+interface AirlineCardProps {
+    airline: Airline | null
+    onAirlineNameUpdated?: (name: string) => Promise<Airline>
+    onAirlineLogoUpdated?: (logo: string) => Promise<Airline>
+    onAirlineRemoved?: () => Promise<void>
+    onAirlineCodeRemoved?: (code: string) => Promise<void>
+}
+
+export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineRemoved, onAirlineCodeRemoved }: AirlineCardProps) {
+    const { t } = useTranslation()
     const { showUpdateAirlineToast, showRemoveAirlineToast } = usePredefinedUserInput()
 
-    const handleAirlineUpdated = () => {
-        showUpdateAirlineToast(airline,
-            // TODO: No need to propagate airline.id here, do it in the caller.
-            name => onAirlineNameUpdated(airline.id, name),
-            logo => onAirlineLogoUpdated(airline.id, logo),
-            code => onAirlineCodeRemoved(airline.id, code))
+    const handleAirlineUpdated = useCallback(() => {
+        if (airline && onAirlineNameUpdated && onAirlineLogoUpdated && onAirlineCodeRemoved) {
+            showUpdateAirlineToast(airline,
+                onAirlineNameUpdated,
+                onAirlineLogoUpdated,
+                onAirlineCodeRemoved
+            )
+        }
+    }, [airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineCodeRemoved, showUpdateAirlineToast])
+
+    const handleAirlineRemoved = useCallback(() => {
+        if (onAirlineRemoved) {
+            showRemoveAirlineToast(onAirlineRemoved)
+        }
+    }, [onAirlineRemoved, showRemoveAirlineToast])
+
+    if (!airline) {
+        return (
+            <LoadingCard />
+        )
     }
 
-    const handleAirlineRemoved = () => {
-        showRemoveAirlineToast(() => onAirlineRemoved(airline.id))
-    }
-
-    return airline ? (
-        <div className="bg-white rounded-xl shadow-md p-3 w-full flex flex-col h-full text-center">
+    return (
+        <Card className="h-full text-center p-3">
             <div className="flex flex-col items-center justify-center flex-grow space-y-4">
                 <div className="flex-shrink-0 w-20 h-20 flex items-center justify-center">
                     {airline.logo ? (
@@ -36,7 +59,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                             dangerouslySetInnerHTML={{ __html: getSafeSvgString(airline.logo, airline.codes.join()) }} />
                     ) : (
                         <div className="text-gray-400 text-sm">
-                            Logo není k dispozici
+                            {t("general.placeholder.logo")}
                         </div>
                     )}
                 </div>
@@ -52,7 +75,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                 </div>
             </div>
             <div className="mt-4">
-                {onAirlineNameUpdated && onAirlineLogoUpdated && (
+                {onAirlineNameUpdated && onAirlineLogoUpdated && onAirlineCodeRemoved && (
                     <button
                         onClick={handleAirlineUpdated}
                         className="rounded text-orange-600 hover:bg-gray-100 transition-colors p-2">
@@ -67,8 +90,6 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                     </button>
                 )}
             </div>
-        </div>
-    ) : (
-        <LoadingCard />
+        </Card>
     )
 }

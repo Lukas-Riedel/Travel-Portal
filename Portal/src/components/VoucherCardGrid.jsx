@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid"
+import CardGrid from "./CardGrid.tsx"
 import VoucherCard from "./VoucherCard"
 
 export default function VoucherCardGrid({ vouchers, onVoucherValueUpdated, onVoucherRemoved }) {
     return (
-        <CardGrid cardsPerRowCount={4}>
+        <CardGrid rowSize={4}>
             {vouchers?.map(voucher => (
                 <VoucherCard
                     key={voucher.id}

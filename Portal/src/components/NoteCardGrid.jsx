@@ -1,9 +1,9 @@
-import CardGrid from "./CardGrid";
+import CardGrid from "./CardGrid.tsx";
 import NoteCard from "./NoteCard";
 
 export default function NoteCardGrid({ notes, onNoteCreated, onNoteContentUpdated, onNoteRemoved }) {
     return (
-        <CardGrid cardsPerRowCount={3}>
+        <CardGrid rowSize={3}>
             {notes?.map(note => (
                 <NoteCard
                     key={note.id}
