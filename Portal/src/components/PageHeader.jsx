@@ -1,9 +1,8 @@
 import { Images, RefreshCcw, Share2, SquarePen, Trash2 } from "lucide-react"
-import { getPrettyName } from "../utils/helpers"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }) {
     const { showRemoveEntityToast, showUpdateEntityNameToast, showSelectHighlightsToast } = usePredefinedUserInput()
@@ -95,7 +94,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                 <h1 className="text-5xl font-bold leading-tight text-left [text-wrap:balance]">
                     {name && (
                         <>
-                            {getPrettyName(name)}
+                            {getEntityPrettyName(name)}
                             {!!(onHighlightsRefreshed || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
@@ -126,7 +125,7 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
                 <h1 className="text-5xl text-center font-bold leading-tight mb-3">
                     {name && (
                         <>
-                            {getPrettyName(name)}
+                            {getEntityPrettyName(name)}
                             {!!(onHighlightsRefreshed || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}

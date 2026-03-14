@@ -7,6 +7,7 @@ import Card from "./Card.tsx"
 import { useTranslation } from "react-i18next"
 import { getSafeSvgString } from "../utils/imageUtils.ts"
 import { useCallback } from "react"
+import AppLink from "./AppLink.tsx"
 
 interface AirlineCardProps {
     airline: Airline | null
@@ -43,7 +44,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
     }
 
     return (
-        <Card className="h-full text-center p-3">
+        <Card className="text-center flex flex-col items-center justify-center">
             <div className="flex flex-col items-center justify-center flex-grow space-y-4">
                 <div className="flex-shrink-0 w-20 h-20 flex items-center justify-center">
                     {airline.logo ? (
@@ -64,11 +65,11 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                     )}
                 </div>
                 <div className="flex flex-col items-center space-y-1">
-                    <Link
+                    <AppLink
                         to={`/airline/${airline.id}`}
                         className="font-semibold text-lg hover:underline">
                         {airline.name}
-                    </Link>
+                    </AppLink>
                     <div className="text-gray-800">
                         {airline.codes.join(", ")}
                     </div>

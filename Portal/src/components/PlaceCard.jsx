@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom"
-import { getPrettyName } from "../utils/helpers"
 import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
 import { formatKilometers } from "../utils/formatters"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {
     const { showRemovePlaceToast } = usePredefinedUserInput()
@@ -26,9 +26,9 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
                 )}
                 <Link
                     to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/place/${place.id}`}
-                    title={getPrettyName(place.name)}
+                    title={getEntityPrettyName(place.name)}
                     className="ml-2 hover:underline text-lg font-semibold truncate">
-                    {getPrettyName(place.name)}
+                    {getEntityPrettyName(place.name)}
                 </Link>
                 {onPlaceRemoved && (
                     <button
@@ -54,7 +54,7 @@ export default function PlaceCard({ place, onPlaceRemoved }) {
                         <Link
                             to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/category/${category.id}`}
                             className="text-gray-600 hover:underline hover:text-gray-300 transition-colors duration-200">
-                            {getPrettyName(category.name)}
+                            {getEntityPrettyName(category.name)}
                         </Link>
                     </li>
                 ))}

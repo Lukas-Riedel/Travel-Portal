@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
-import { getDateString, getPrettyName } from "../utils/helpers"
+import { getDateString } from "../utils/helpers"
 import { TailSpin } from "react-loader-spinner"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 export default function PlaceSummary({ place }) {
     const category = useMemo(() => place && place.getCategory("mostSpecificWithMetadata"), [place])
@@ -29,7 +30,7 @@ export default function PlaceSummary({ place }) {
                         <Link
                             to={`/place/${place.id}`}
                             className="text-3xl mb-2 uppercase hover:text-blue-700 transition">
-                            {getPrettyName(place.name)}
+                            {getEntityPrettyName(place.name)}
                         </Link>
                         <span className="text-gray-600 mb-4">
                             {getDateString(Math.max(...place.dates.map(date => date.start)))}

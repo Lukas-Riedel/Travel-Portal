@@ -1,41 +1,65 @@
-import { Link } from "react-router-dom"
-import { getPrettyName } from "../utils/helpers"
 import { MapPin, Move, Trash2 } from "lucide-react"
-import { useMemo } from "react"
-import { formatKilometers, formatNextPlaces } from "../utils/formatters"
+import { useCallback, useMemo } from "react"
+import { formatKilometers, formatNextPlaces } from "../utils/formatters.js"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Category } from "../types/CoreSwaggerTypes.ts"
+import type { Place } from "../classes/Place.ts"
+import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import Card from "./Card.tsx"
+import AppLink from "./AppLink.tsx"
+import { useTranslation } from "react-i18next"
 
-const maximumPlacesCount = 5
+const MAXIMUM_PLACES_COUNT = 5
 
-export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }) {
+interface CategoryCardProps {
+    category: Category | null
+    places: DistanceAwarePlace[] | Place[] | null
+    onCurrentLocationChanged?: (place: Place) => void
+    onMaximumDistanceChanged?: (distance: number) => void
+    onPlaceRemoved?: (placeId: string) => Promise<void>
+}
+
+const hasDistance = (place: Place | DistanceAwarePlace): place is DistanceAwarePlace => (place as DistanceAwarePlace).distance !== undefined
+
+export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }: CategoryCardProps) {
+    const { t } = useTranslation()
     const { showRemovePlaceToast } = usePredefinedUserInput()
 
-    const visiblePlaces = useMemo(() => [...(places ?? [])]?.sort((a, b) => a.distance - b.distance)?.slice(0, maximumPlacesCount), [places])
-    const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places, visiblePlaces])
+    const visiblePlaces = useMemo(() => [...(places ?? [])].slice(0, MAXIMUM_PLACES_COUNT), [places])
+    const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places?.length, visiblePlaces?.length])
 
-    const handleDelete = place => {
-        showRemovePlaceToast(() => onPlaceRemoved(place.id))
-    }
+    const handlePlaceRemoved = useCallback((placeId: string) => {
+        if (onPlaceRemoved) {
+            showRemovePlaceToast(() => onPlaceRemoved(placeId))
+        }
+    }, [onPlaceRemoved])
 
     if (category && places && places.length === 0) {
         return null
     }
 
-    return category && places ? (
-        <div className="bg-white rounded-xl shadow-md max-w-xl mx-auto p-3 w-full">
+    if (!category || !places) {
+        return (
+            <LoadingCard />
+        )
+    }
+
+    return (
+        <Card>
             <div className="flex justify-start items-center space-x-2">
                 <img
                     src={`/img/flags/${category.metadata.unicode}.svg`}
                     alt={category.name}
                     className="w-7 h-auto flex-shrink-0" />
-                <Link
-                    to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/category/${category.id}`}
+                <AppLink
+                    to={`/category/${category.id}`}
                     className="hover:underline text-lg font-semibold truncate">
-                    {getPrettyName(category.name)}
-                </Link>
+                    {getEntityPrettyName(category.name)}
+                </AppLink>
             </div>
-            <ul>
+            <ul className="mt-3">
                 {visiblePlaces.map(place => (
                     <li
                         key={place.id}
@@ -52,26 +76,26 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                     <MapPin size={16} />
                                 </span>
                             )}
-                            <Link
-                                to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/place/${place.id}`}
+                            <AppLink
+                                to={`/place/${place.id}`}
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
-                                {getPrettyName(place.name)}
-                                {place.quality && place.quality >= 0 && ` (${Math.round(place.quality)} %)`}
-                            </Link>
+                                {getEntityPrettyName(place.name)}
+                                {place?.quality > 0 ? ` (${Math.round(place.quality)} %)` : ""}
+                            </AppLink>
                             {onPlaceRemoved && (
                                 <button
-                                    onClick={() => handleDelete(place)}
+                                    onClick={() => handlePlaceRemoved(place.id)}
                                     className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
                                     <Trash2 size={16} />
                                 </button>
                             )}
                         </div>
-                        {place.distance > 0 && (
+                        {hasDistance(place) && place.distance > 0 && (
                             <div className="flex justify-start items-center">
                                 {onMaximumDistanceChanged ? (
                                     <button
                                         className="text-gray-600 hover:text-gray-300 transition-colors duration-200"
-                                        onClick={() => onMaximumDistanceChanged && onMaximumDistanceChanged(place.distance)}>
+                                        onClick={() => onMaximumDistanceChanged(place.distance)}>
                                         <Move size={16} />
                                     </button>
                                 ) : (
@@ -88,16 +112,14 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                 ))}
                 {remainingCount > 0 && (
                     <li className="my-2">
-                        <Link
-                            to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/category/${category.id}`}
+                        <AppLink
+                            to={`/category/${category.id}`}
                             className="text-gray-500 text-sm hover:underline">
-                            Zobrazit {formatNextPlaces(remainingCount)}
-                        </Link>
+                            {`${t("general.label.view")} ${formatNextPlaces(remainingCount)}`}
+                        </AppLink>
                     </li>
                 )}
             </ul>
-        </div>
-    ) : (
-        <LoadingCard />
+        </Card>
     )
 }

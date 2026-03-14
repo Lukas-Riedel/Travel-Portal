@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { getPrettyName } from "../utils/helpers";
 import LoadingTile from "./LoadingTile";
+import { getEntityPrettyName } from "../utils/formattingUtils.ts";
 
 export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick, className = "w-[350px] h-[233px]" }) {
     const InteractiveElement = to ? Link : "div"
@@ -30,7 +30,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                         </li>
                         {firstLineText && (
                             <li className="break-words max-w-[300px] text-center">
-                                {getPrettyName(firstLineText)}
+                                {getEntityPrettyName(firstLineText)}
                             </li>
                         )}
                         {secondLineText && (

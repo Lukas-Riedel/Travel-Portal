@@ -38,11 +38,6 @@ export function decapitalize(str) {
     return str && (str[0].toLowerCase() + str.slice(1))
 }
 
-export function getPrettyName(name) {
-    // Name can also be an integer (e.g., a year name).
-    return `${name}`?.split("(")[0].trim()
-}
-
 export function isInTrip(trips, date) {
     return trips.some(({ start, end }) => start * 1000 <= endOfDay(date).getTime() && end * 1000 > startOfDay(date).getTime())
 }

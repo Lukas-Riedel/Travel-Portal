@@ -3,7 +3,6 @@ import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
 import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
 import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash, Trash2, Plus, Ship } from "lucide-react"
-import { getPrettyName } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
@@ -14,6 +13,7 @@ import { useUserInput } from "../hooks/useUserInput.tsx"
 import ReactMarkdown from "react-markdown"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -205,7 +205,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                     <Link
                                         to={`${(window.location.pathname.startsWith("/plan") ? "/plan" : "")}/place/${event.id}`}
                                         className={`${requiresAttention(event) ? "text-red-600" : "text-indigo-600"} hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-indigo-300"} transition-colors duration-200`}>
-                                        {getPrettyName(event.name)}
+                                        {getEntityPrettyName(event.name)}
                                     </Link>
                                     {requiresAttention(event) && (
                                         <span className="text-red-600">

@@ -6,9 +6,9 @@ import { useAuth } from "../contexts/AuthContext"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { formatDays } from "../utils/formatters"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
-import { getPrettyName } from "../utils/helpers"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 export default function TripCard({ trip, onTripRemoved }) {
     const { showRemoveTripToast } = usePredefinedUserInput()
@@ -78,9 +78,9 @@ export default function TripCard({ trip, onTripRemoved }) {
                                     <Link
                                         key={index}
                                         to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/place/${place.id}`}
-                                        title={getPrettyName(place.name)}
+                                        title={getEntityPrettyName(place.name)}
                                         className="hover:underline hover:text-indigo-300 transition-colors duration-200">
-                                        {getPrettyName(place.name)}
+                                        {getEntityPrettyName(place.name)}
                                     </Link>
                                 ])}
                             </span>

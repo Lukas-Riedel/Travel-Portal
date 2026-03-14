@@ -3,7 +3,7 @@ import Card from "./Card.tsx"
 
 export default function LoadingCard() {
     return (
-        <Card className="h-[150px]">
+        <Card className="h-[150px] flex flex-col items-center justify-center">
             <TailSpin
                 color="black"
                 height={30}

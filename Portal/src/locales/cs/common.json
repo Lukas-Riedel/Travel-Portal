@@ -21,6 +21,9 @@
         },
         "placeholder": {
             "logo": "Logo není k dispozici"
+        },
+        "label": {
+            "view": "Zobrazit"
         }
     },
     "menu": {

@@ -101,6 +101,7 @@ export default function PlansPage() {
                             onValueChanged={setMaxDistance} />
                     )}
                     <CategoryCardGrid
+                        rowSize={5}
                         categories={countryCategories}
                         categoriesPlaces={countriesCandidatePlaces}
                         onCurrentLocationChanged={changeCurrentLocation}
@@ -124,6 +125,7 @@ export default function PlansPage() {
                         maxValue={100}
                         onValueChanged={setMaxQuality} />
                     <CategoryCardGrid
+                        rowSize={5}
                         categories={countryCategories}
                         categoriesPlaces={countriesVisitedPlaces} />
                 </>

@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { search } from "../clients/coreClient.ts"
-import { getPrettyName } from "../utils/helpers.js"
 import { useCategories } from "../hooks/useCategories.ts"
 import PhotoTile from "../components/PhotoTile.jsx"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 const searchableEntityTypeSelectors = {
     "category": entity => categoryCategories[entity.category] ?? "Region",
@@ -54,8 +54,8 @@ const categoryCategoryIcons = {
 }
 
 const searchableEntityNameSelectors = {
-    "category": entity => getPrettyName(entity.name),
-    "place": entity => getPrettyName(entity.name),
+    "category": entity => getEntityPrettyName(entity.name),
+    "place": entity => getEntityPrettyName(entity.name),
     "airport": entity => entity.longName,
     "airline": entity => entity.name,
     "label": entity => entity.name,
