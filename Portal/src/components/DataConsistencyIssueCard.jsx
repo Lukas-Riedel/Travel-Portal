@@ -1,16 +1,17 @@
 import { Wrench } from "lucide-react"
 import LoadingCard from "./LoadingCard.tsx"
 import { getDateString, getDateTimeString, getTimeString } from "../utils/helpers"
-import { formatDuration, formatEvents, formatKilometers, formatSteps } from "../utils/formatters"
 import { fromUnixTime } from "date-fns"
 import { useNavigate } from "react-router"
 import { listCategories } from "../clients/coreClient"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function DataConsistencyIssueCard({ dataConsistencyIssue, airlines, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }) {
     const navigate = useNavigate()
+    const { formatDuration, formatEvents, formatKilometers, formatSteps } = useFormatters()
     const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast, showUpdatePlaceCountryToast, showUpdateAirportNameToast, showAssignCategoryToast, showRemovePlaceToast,
         showUpdateAirportCountryToast, showUpdateAirlineLogoToast, showReplaceFitnessToast, showUpdateCategoryToast, showAssignAirlineCodeToast } = usePredefinedUserInput()
 
@@ -34,7 +35,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 return properties
             },
             resolve: fitnessCollection => showReplaceFitnessToast(fitnessCollection.fitness, fitnessIndex => onFitnessReplaced(fitnessCollection.timestamp, fitnessCollection.fitness[fitnessIndex].steps,
-                    fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true))
+                fitnessCollection.fitness[fitnessIndex].seconds, fitnessCollection.fitness[fitnessIndex].distance, true))
         },
         "COUNTRY_WITH_INCOMPLETE_METADATA": {
             name: "Stát s neúplnými metadaty",

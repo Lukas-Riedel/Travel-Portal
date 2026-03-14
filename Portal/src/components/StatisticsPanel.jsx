@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { formatStatisticsUnit } from "../utils/formatters.js"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { decapitalize } from "../utils/helpers.js"
 import { TailSpin } from "react-loader-spinner"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 const loadingStatisticsCount = 20
 const maxStatisticsValuesCount = 5
@@ -77,6 +77,7 @@ const statisticsNames = {
 
 export default function StatisticsPanel({ statistics }) {
     const { configuration } = useConfiguration()
+    const { formatStatisticsUnit } = useFormatters()
 
     const containerRef = useRef(null)
     const isDraggingRef = useRef(false)

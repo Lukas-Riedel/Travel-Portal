@@ -1,11 +1,12 @@
 import { TailSpin } from "react-loader-spinner"
 import { useMemo } from "react"
 import { ClockPlus, Palmtree, Pill, Shield } from "lucide-react"
-import { formatDays, formatDuration } from "../utils/formatters"
 import { useConfiguration } from "../contexts/ConfigContext"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function TimeOffBalanceSummary({ overtimeEvents, vacationEvents, selfcareEvents, tenureEvents }) {
     const { configuration } = useConfiguration()
+    const { formatDuration, formatDays } = useFormatters()
 
     const getBalance = events => Array.isArray(events) ? (events[0]?.balance ?? 0) : undefined
     const overtimeBalance = useMemo(() => getBalance(overtimeEvents), [overtimeEvents])

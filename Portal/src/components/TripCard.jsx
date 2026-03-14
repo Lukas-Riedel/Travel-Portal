@@ -4,14 +4,15 @@ import { Calendar, Trash2 } from "lucide-react"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useAuth } from "../contexts/AuthContext"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
-import { formatDays } from "../utils/formatters"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function TripCard({ trip, onTripRemoved }) {
     const { showRemoveTripToast } = usePredefinedUserInput()
+    const { formatDays } = useFormatters()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: ["categories", "dates"] })

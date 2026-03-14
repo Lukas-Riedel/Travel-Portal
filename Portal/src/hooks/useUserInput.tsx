@@ -13,20 +13,20 @@ export const useUserInput = (): UseUserInputResult => {
         new Promise((resolve, reject) => {
             const id = toast(message, {
                 action: {
-                    label: t("prompt.confirm"),
+                    label: t("general.prompt.confirm"),
                     onClick: () => {
                         toast.dismiss(id)
 
                         if (onConfirmed) {
                             toast.promise(onConfirmed(), {
-                                loading: t("prompt.loading"),
+                                loading: t("general.prompt.loading"),
                                 success: () => {
                                     resolve(true)
-                                    return success || t("prompt.confirmed")
+                                    return success || t("general.prompt.confirmed")
                                 },
                                 error: e => {
                                     reject(e)
-                                    return error || t("prompt.failed")
+                                    return error || t("general.prompt.failed")
                                 },
                             })
                         }
@@ -36,7 +36,7 @@ export const useUserInput = (): UseUserInputResult => {
                     }
                 },
                 cancel: {
-                    label: t("prompt.reject"),
+                    label: t("general.prompt.reject"),
                     onClick: () => {
                         resolve(false)
                     }
@@ -84,14 +84,14 @@ export const useUserInput = (): UseUserInputResult => {
 
                             if (onSubmitted) {
                                 toast.promise(onSubmitted(...args), {
-                                    loading: t("prompt.loading"),
+                                    loading: t("general.prompt.loading"),
                                     success: () => {
                                         resolve(true)
-                                        return success || t("prompt.confirmed")
+                                        return success || t("general.prompt.confirmed")
                                     },
                                     error: e => {
                                         reject(e)
-                                        return error || t("prompt.failed")
+                                        return error || t("general.prompt.failed")
                                     }
                                 })
                             }
@@ -212,12 +212,12 @@ export const useUserInput = (): UseUserInputResult => {
                                         <button
                                             className="px-3 py-1 rounded bg-gray-200"
                                             onClick={handleCancel}>
-                                            {t("prompt.reject")}
+                                            {t("general.prompt.reject")}
                                         </button>
                                         <button
                                             className="px-3 py-1 rounded bg-black text-white"
                                             onClick={handleSubmit}>
-                                            {t("prompt.confirm")}
+                                            {t("general.prompt.confirm")}
                                         </button>
                                     </div>
                                 </div>

@@ -6,14 +6,15 @@ import cs from "date-fns/locale/cs"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { fromUnixTime } from "date-fns"
 import Tooltip from "./Tooltip"
-import { formatDuration } from "../utils/formatters"
 import { useAuth } from "../contexts/AuthContext"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { configuration } = useConfiguration()
+    const { formatDuration } = useFormatters()
     const { showCreateNegativeTimeTrackingEventToast, showRemoveTimeTrackingEventToast, showCopyTimeTrackingEventDescriptionToast, showCreateOvertimeToast, showCreatePlannedWorkToast } = usePredefinedUserInput()
 
     const now = new Date()

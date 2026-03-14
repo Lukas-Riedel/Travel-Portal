@@ -16,7 +16,7 @@ import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
-import { formatMeters } from "../utils/formatters.js"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 const nearbyPlacesCount = 3
 
@@ -24,6 +24,7 @@ export default function PlacePage() {
     const { hasRole } = useAuth()
     const { placeId } = useParams()
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
+    const { formatMeters } = useFormatters()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,

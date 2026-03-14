@@ -11,17 +11,18 @@ import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
-import { formatTimeAgo } from "../utils/formatters"
 import { getCoordinates } from "../clients/coreClient"
 import SunCalc from "suncalc"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
+    const { formatTimeAgo } = useFormatters()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([

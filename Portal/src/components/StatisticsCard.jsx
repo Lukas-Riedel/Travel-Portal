@@ -1,9 +1,9 @@
 import LoadingCard from "./LoadingCard.tsx"
 import { decapitalize } from "../utils/helpers"
-import { formatStatisticsUnit } from "../utils/formatters"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from "recharts"
 import { getCurrentYear } from "../utils/timeUtils.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 // TODO: This is duplicated in StatisticsPanel
 const statisticsNames = {
@@ -89,6 +89,7 @@ const chartTypes = {
 
 export default function StatisticsCard({ statistics, years }) {
     const { configuration } = useConfiguration()
+    const { formatStatisticsUnit } = useFormatters()
 
     const StandingStatisticsChart = chartTypes[statistics?.name] || StandingStatisticsBarChart
 
@@ -151,6 +152,7 @@ function StatisticsContainer({ children }) {
 
 function StandingStatisticsBarChart({ values, unit }) {
     const { configuration } = useConfiguration()
+    const { formatStatisticsUnit } = useFormatters()
 
     return (
         <StatisticsContainer>
@@ -171,6 +173,7 @@ function StandingStatisticsBarChart({ values, unit }) {
 
 function StandingStatisticsPieChart({ values, unit }) {
     const { configuration } = useConfiguration()
+    const { formatStatisticsUnit } = useFormatters()
 
     const getRandomColor = index => {
         const hue = (index * 360) / values.length

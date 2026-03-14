@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
-import { formatKilometers } from "../utils/formatters"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function PlaceCard({ place, onPlaceRemoved }) {
     const { showRemovePlaceToast } = usePredefinedUserInput()
+    const {formatKilometers} = useFormatters()
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("country"), [place])
 

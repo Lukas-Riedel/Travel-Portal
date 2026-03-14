@@ -1,14 +1,15 @@
 import { Plane, Clock, MapPin, PlaneTakeoff, PlaneLanding } from "lucide-react"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import { formatKilometers, formatDuration } from "../utils/formatters.js"
 import { Link } from "react-router-dom"
 import { useAirline } from "../hooks/useAirline"
 import LoadingCard from "./LoadingCard.tsx"
 import { getSafeSvgString } from "../utils/imageUtils.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function FlightCard({ flight }) {
     const { airline } = useAirline(flight?.airline?.id)
+    const { formatDuration, formatKilometers } = useFormatters()
 
     const formatTime = (timestamp, timezone) => format(toZonedTime(fromUnixTime(timestamp), timezone), "HH:mm")
 

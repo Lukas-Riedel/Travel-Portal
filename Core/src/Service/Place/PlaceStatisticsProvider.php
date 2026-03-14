@@ -176,7 +176,8 @@
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Category || $statisticsType === StatisticsType::Trip) {
                     $lowestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending));
+                        array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending),
+                            fn($place) => $place->getElevation() < 0));
                     if (count($lowestPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::LowestPlaces, $lowestPlaces, StatisticsUnit::ElevationMeters);
                     }

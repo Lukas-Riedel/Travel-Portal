@@ -21,7 +21,6 @@ import { useEvents } from "./hooks/useEvents"
 import AlbumPage from "./pages/AlbumPage"
 import AdminPage from "./pages/AdminPage"
 import RecentPlacesPage from "./pages/RecentPlacesPage"
-import { formatNewProblems } from "./utils/formatters"
 import PlaceHighlightsPage from "./pages/PlaceHighlightsPage"
 import TripHighlightsPage from "./pages/TripHighlightsPage"
 import CategoryHighlightsPage from "./pages/CategoryHighlightsPage"
@@ -31,8 +30,11 @@ import { toZonedTime } from "date-fns-tz"
 import StatisticsPage from "./pages/StatisticsPage"
 import { TailSpin } from "react-loader-spinner"
 import { UserRole } from "./types/CoreSwaggerTypes.ts"
+import { useFormatters } from "./hooks/useFormatters.ts"
 
 export default function App() {
+    const { formatNewProblems } = useFormatters()
+
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
     useEffect(() => {
         newDataConsistencyIssuesDetectedEvents.forEach(event => {

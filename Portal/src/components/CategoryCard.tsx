@@ -1,6 +1,5 @@
 import { MapPin, Move, Trash2 } from "lucide-react"
 import { useCallback, useMemo } from "react"
-import { formatKilometers, formatNextPlaces } from "../utils/formatters.js"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Category } from "../types/CoreSwaggerTypes.ts"
@@ -10,6 +9,7 @@ import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import Card from "./Card.tsx"
 import AppLink from "./AppLink.tsx"
 import { useTranslation } from "react-i18next"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 const MAXIMUM_PLACES_COUNT = 5
 
@@ -26,6 +26,7 @@ const hasDistance = (place: Place | DistanceAwarePlace): place is DistanceAwareP
 export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }: CategoryCardProps) {
     const { t } = useTranslation()
     const { showRemovePlaceToast } = usePredefinedUserInput()
+    const { formatKilometers, formatNextPlaces } = useFormatters()
 
     const visiblePlaces = useMemo(() => [...(places ?? [])].slice(0, MAXIMUM_PLACES_COUNT), [places])
     const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places?.length, visiblePlaces?.length])
@@ -115,7 +116,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                         <AppLink
                             to={`/category/${category.id}`}
                             className="text-gray-500 text-sm hover:underline">
-                            {`${t("general.label.view")} ${formatNextPlaces(remainingCount)}`}
+                            {`${t("general.prefix.view")} ${formatNextPlaces(remainingCount)}`}
                         </AppLink>
                     </li>
                 )}

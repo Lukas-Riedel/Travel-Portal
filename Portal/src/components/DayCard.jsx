@@ -1,7 +1,6 @@
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
-import { formatDuration, formatSteps, formatKilometers } from "../utils/formatters"
 import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash, Trash2, Plus, Ship } from "lucide-react"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
@@ -14,6 +13,7 @@ import ReactMarkdown from "react-markdown"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 const weatherIcons = {
     "clearsky": Sun,
@@ -64,6 +64,7 @@ const agentOnlineStatusThresholdSeconds = 60
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { hasRole } = useAuth()
     const agents = useDevices({ type: "agent" })
+    const { formatDuration, formatSteps, formatKilometers } = useFormatters()
     const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast } = usePredefinedUserInput()
 
     const isToday = useMemo(() => new Date().toDateString() === day?.toDateString(), [day])

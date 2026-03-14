@@ -1,12 +1,13 @@
 import LoadingCard from "./LoadingCard.tsx"
-import { formatKilometers } from "../utils/formatters"
 import { Copy, Map, Wrench } from "lucide-react"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }) {
     const { showCopyRegionGeoJsonToast, showOverwriteGeographicalRegionToast, showOverwriteCompositeRegionToast } = usePredefinedUserInput()
+    const { formatKilometers } = useFormatters()
 
     const regionProperties = region && {
         "Typ": region.geoJson ? "Geografický" : "Kompozitní",

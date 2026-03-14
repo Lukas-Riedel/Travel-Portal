@@ -4,11 +4,6 @@
             "date": "dd.MM.yyyy"
         },
         "prompt": {
-            "logout": {
-                "message": "Opravdu se chceš odhlásit?",
-                "confirmed": "Byl jsi odhlášen",
-                "failed": "Při odhlašování došlo k chybě"
-            },
             "login": {
                 "message": "Zadej své přihlašovací údaje:",
                 "label": {
@@ -17,13 +12,89 @@
                 },
                 "confirmed": "Byl jsi přihlášen",
                 "failed": "Při přihlašování došlo k chybě"
-            }
+            },
+            "logout": {
+                "message": "Opravdu se chceš odhlásit?",
+                "confirmed": "Byl jsi odhlášen",
+                "failed": "Při odhlašování došlo k chybě"
+            },
+            "confirm": "Ano",
+            "confirmed": "Akce byla úspěšně provedena",
+            "reject": "Ne",
+            "failed": "Při provádění akce došlo k chybě",
+            "loading": "Probíhá zpracování..."
         },
         "placeholder": {
             "logo": "Logo není k dispozici"
         },
-        "label": {
+        "prefix": {
             "view": "Zobrazit"
+        },
+        "suffix": {
+            "elevation": "nad mořem"
+        },
+        "unit": {
+            "hour_one": "{{count}} hodina",
+            "hour_few": "{{count}} hodiny",
+            "hour_other": "{{count}} hodin",
+            "minute_one": "{{count}} minuta",
+            "minute_few": "{{count}} minuty",
+            "minute_other": "{{count}} minut",
+            "second_one": "{{count}} sekunda",
+            "second_few": "{{count}} sekundy",
+            "second_other": "{{count}} sekund",
+            "event_one": "{{count}} událost",
+            "event_few": "{{count}} události",
+            "event_other": "{{count}} událostí",
+            "kilometer_one": "{{count}} kilometr",
+            "kilometer_few": "{{count}} kilometry",
+            "kilometer_other": "{{count}} kilometrů",
+            "meter_one": "{{count}} metr",
+            "meter_few": "{{count}} metry",
+            "meter_other": "{{count}} metrů",
+            "photo_one": "{{count}} fotka",
+            "photo_few": "{{count}} fotky",
+            "photo_other": "{{count}} fotek",
+            "problem_one": "{{count}} nový problém",
+            "problem_few": "{{count}} nové problémy",
+            "problem_other": "{{count}} nových problémů",
+            "country_one": "{{count}} stát",
+            "country_few": "{{count}} státy",
+            "country_other": "{{count}} států",
+            "place_one": "{{count}} místo",
+            "place_few": "{{count}} místa",
+            "place_other": "{{count}} míst",
+            "nextPlace_few": "další {{count}} místa",
+            "nextPlace_other": "dalších {{count}} míst",
+            "day_one": "{{count}} den",
+            "day_few": "{{count}} dny",
+            "day_other": "{{count}} dnů",
+            "flight_one": "{{count}} let",
+            "flight_few": "{{count}} lety",
+            "flight_other": "{{count}} letů",
+            "step_one": "{{count}} krok",
+            "step_few": "{{count}} kroky",
+            "step_other": "{{count}} kroků",
+            "visit_one": "{{count}} návštěva",
+            "visit_few": "{{count}} návštěvy",
+            "visit_other": "{{count}} návštěv",
+            "airport_one": "{{count}} letiště",
+            "airport_few": "{{count}} letiště",
+            "airport_other": "{{count}} letišť",
+            "night_one": "{{count}} noc",
+            "night_few": "{{count}} noci",
+            "night_other": "{{count}} nocí"
+        },
+        "time": {
+            "ago": {
+                "seconds": "Před několika sekundami",
+                "minute_one": "Před {{count}} minutou",
+                "minute_other": "Před {{count}} minutami",
+                "hour_one": "Před {{count}} hodinou",
+                "hour_other": "Před {{count}} hodinami",
+                "day_one": "Před {{count}} dnem",
+                "day_other": "Před {{count}} dny"
+            }
         }
     },
     "menu": {
@@ -36,13 +107,6 @@
         "plan": "Plán",
         "tracker": "Tracker",
         "admin": "Admin"
-    },
-    "prompt": {
-        "confirm": "Ano",
-        "confirmed": "Akce byla úspěšně provedena",
-        "reject": "Ne",
-        "failed": "Při provádění akce došlo k chybě",
-        "loading": "Probíhá zpracování..."
     },
     "tracker": {
         "prompt": {

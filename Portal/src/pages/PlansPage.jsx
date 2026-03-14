@@ -5,7 +5,6 @@ import PlaceMap from "../components/PlaceMap"
 import CategoryCardGrid from "../components/CategoryCardGrid"
 import TripCardGrid from "../components/TripCardGrid"
 import Slider from "../components/Slider"
-import { formatKilometers } from "../utils/formatters"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useAuth } from "../contexts/AuthContext"
 import FloatingButton from "../components/FloatingButton"
@@ -16,6 +15,7 @@ import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
@@ -23,6 +23,7 @@ const defaultMaxQuality = 80
 export default function PlansPage() {
     const { hasRole } = useAuth()
     const { showCreatePlaceToast } = usePredefinedUserInput()
+    const { formatKilometers } = useFormatters()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality", maxEnd: getCurrentTimestamp() })
