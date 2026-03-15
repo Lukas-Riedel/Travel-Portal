@@ -27,7 +27,7 @@ export default function CardGrid({ rowSize, children }: CardGridProps) {
         const handleResize = () => setGridTemplateColumns(getRealRowSize(window.innerWidth))
         window.addEventListener("resize", handleResize)
         return () => window.removeEventListener("resize", handleResize)
-    }, [getRealRowSize])
+    }, [getRealRowSize, window.innerWidth])
 
     return (
         <div

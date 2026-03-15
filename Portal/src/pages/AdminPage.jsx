@@ -39,8 +39,11 @@ import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useTranslation } from "react-i18next"
+import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 
 // TODO: Duplicated in ExpenseSummary.
+// TODO: Eventually define in PHP and include in the Swagger schema (similarly to StatisticsName).
 const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
 
 // TODO: Duplicated in CategoryPage. Replace by t(`category.category.${categoryCategory}`).
@@ -57,6 +60,7 @@ const categoryCategories = {
 
 export default function AdminPage() {
     const { hasRole } = useAuth()
+    const { t } = useTranslation()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
     const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast } = usePredefinedUserInput()
@@ -90,47 +94,58 @@ export default function AdminPage() {
 
     const labels = [
         {
-            name: "Aktuální výlet",
+            tab: AdminMenuTabName.Trip,
+            name: t("menu.tab.label.trip"),
             enabled: upcomingOrCurrentTrip !== null && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            name: "Sledované lety",
+            tab: AdminMenuTabName.Flights,
+            name: t("menu.tab.label.flights"),
             enabled: hasRole(UserRole.TripFlightRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            name: "Aerolinky",
+            tab: AdminMenuTabName.Airlines,
+            name: t("menu.tab.label.airlines"),
             enabled: hasRole(UserRole.AirlineEdit)
         },
         {
-            name: "Hlášené problémy",
+            tab: AdminMenuTabName.DataConsistencyIssues,
+            name: t("menu.tab.label.issues"),
             enabled: dataConsistencyIssues && dataConsistencyIssues.length > 0 && hasRole(UserRole.MonitoringRead)
         },
         {
-            name: "Konfigurace",
+            tab: AdminMenuTabName.Configuration,
+            name: t("menu.tab.label.configuration"),
             enabled: configuration !== null && hasRole(UserRole.ConfigurationEdit)
         },
         {
-            name: "Zařízení",
+            tab: AdminMenuTabName.Devices,
+            name: t("menu.tab.label.devices"),
             enabled: devices && devices.length > 0 && hasRole(UserRole.DeviceRead)
         },
         {
-            name: "Trvalá místa",
+            tab: AdminMenuTabName.PermanentPlaces,
+            name: t("menu.tab.label.places"),
             enabled: hasRole(UserRole.PlaceEdit)
         },
         {
-            name: "Aktivní předplatná",
+            tab: AdminMenuTabName.ActiveSubscriptions,
+            name: t("menu.tab.label.subscriptions"),
             enabled: hasRole(UserRole.SubscriptionEdit)
         },
         {
-            name: "Regiony",
+            tab: AdminMenuTabName.Regions,
+            name: t("menu.tab.label.regions"),
             enabled: hasRole(UserRole.RegionEdit)
         },
         {
-            name: "Dokumenty",
+            tab: AdminMenuTabName.Documents,
+            name: t("menu.tab.label.documents"),
             enabled: hasRole(UserRole.DocumentEdit)
         },
         {
-            name: "Poukazy",
+            tab: AdminMenuTabName.Vouchers,
+            name: t("menu.tab.label.vouchers"),
             enabled: hasRole(UserRole.VoucherEdit)
         }
     ]
@@ -268,6 +283,7 @@ export default function AdminPage() {
                 <DataConsistencyIssueCardGrid
                     dataConsistencyIssues={dataConsistencyIssues}
                     airlines={airlines}
+                    rowSize={4}
                     onAirlineCodeAssigned={createAirlineCode}
                     onFitnessReplaced={replaceFitness}
                     onAirlineLogoChanged={updateAirlineLogo}
@@ -275,6 +291,7 @@ export default function AdminPage() {
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
                     onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: ["dates"] })
                         .then(places => Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))))}
+                    // TODO: Replace by hook methods?
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionRegion}
                     onPlaceRemoved={removeCandidatePlace}
                     onFlightLogged={logFlight}

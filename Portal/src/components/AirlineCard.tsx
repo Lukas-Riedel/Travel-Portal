@@ -6,7 +6,6 @@ import type { Airline } from "../types/CoreSwaggerTypes.ts"
 import Card from "./Card.tsx"
 import { useTranslation } from "react-i18next"
 import { getSafeSvgString } from "../utils/imageUtils.ts"
-import { useCallback } from "react"
 import AppLink from "./AppLink.tsx"
 
 interface AirlineCardProps {
@@ -21,7 +20,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
     const { t } = useTranslation()
     const { showUpdateAirlineToast, showRemoveAirlineToast } = usePredefinedUserInput()
 
-    const handleAirlineUpdated = useCallback(() => {
+    const handleAirlineUpdated = () => {
         if (airline && onAirlineNameUpdated && onAirlineLogoUpdated && onAirlineCodeRemoved) {
             showUpdateAirlineToast(airline,
                 onAirlineNameUpdated,
@@ -29,13 +28,13 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                 onAirlineCodeRemoved
             )
         }
-    }, [airline, onAirlineNameUpdated, onAirlineLogoUpdated, onAirlineCodeRemoved, showUpdateAirlineToast])
+    }
 
-    const handleAirlineRemoved = useCallback(() => {
+    const handleAirlineRemoved = () => {
         if (onAirlineRemoved) {
             showRemoveAirlineToast(onAirlineRemoved)
         }
-    }, [onAirlineRemoved, showRemoveAirlineToast])
+    }
 
     if (!airline) {
         return (
@@ -66,7 +65,7 @@ export default function AirlineCard({ airline, onAirlineNameUpdated, onAirlineLo
                 </div>
                 <div className="flex flex-col items-center space-y-1">
                     <AppLink
-                        to={`/airline/${airline.id}`}
+                        to={airline}
                         className="font-semibold text-lg hover:underline">
                         {airline.name}
                     </AppLink>

@@ -5,11 +5,11 @@ export interface UseFormattersResult {
     formatEvents: (value: number) => string
     formatKilometers: (value: number) => string
     formatMeters: (value: number) => string
+    formatElevationMeters: (value: number) => string
     formatPhotos: (value: number) => string
     formatNewProblems: (value: number) => string
     formatCountries: (value: number) => string
     formatPlaces: (value: number) => string
-    formatNextPlaces: (value: number) => string
     formatDays: (value: number) => string
     formatFlights: (value: number) => string
     formatSteps: (value: number) => string

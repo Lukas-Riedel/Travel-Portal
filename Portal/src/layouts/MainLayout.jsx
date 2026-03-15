@@ -83,17 +83,17 @@ export default function MainLayout({ children }) {
     }, [countryCategories])
 
     const navigationItems = [
-        { label: t("menu.search"), onClick: () => setIsSearchOpen(true) },
-        { label: t("menu.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
-        { label: t("menu.trips"), to: "/trip", requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
-        { label: t("menu.places"), to: "/place", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
-        { label: t("menu.flights"), to: "/flight", requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
-        { label: t("menu.statistics"), to: "/statistics", requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
+        { label: t("menu.label.search"), onClick: () => setIsSearchOpen(true) },
+        { label: t("menu.label.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
+        { label: t("menu.label.trips"), to: "/trip", requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
+        { label: t("menu.label.places"), to: "/place", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
+        { label: t("menu.label.flights"), to: "/flight", requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
+        { label: t("menu.label.statistics"), to: "/statistics", requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
         // TODO: Find a better required role.
-        { label: t("menu.plan"), to: "/plan", requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
-        { label: t("menu.tracker"), to: "/tracker", requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
+        { label: t("menu.label.plan"), to: "/plan", requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
+        { label: t("menu.label.tracker"), to: "/tracker", requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
         // TODO: Find a better requried role.
-        { label: t("menu.admin"), to: "/admin", requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
+        { label: t("menu.label.admin"), to: "/admin", requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
     ]
 
     const handleLogin = () => {

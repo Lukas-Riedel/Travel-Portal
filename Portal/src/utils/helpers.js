@@ -3,17 +3,17 @@ import { toZonedTime } from "date-fns-tz"
 import { optimize } from "svgo"
 import { v4 as uuidv4 } from "uuid"
 
-// TODO: Make sure all code that needs to format date uses this function.
+// TODO: Replace by formatTimestamp in timeUtils.ts
 export function getDateString(timestamp) {
     return timestamp && format(fromUnixTime(timestamp), "d.M.yyyy")
 }
 
-// TODO: Make sure all code that needs to format datetime uses this function.
+// TODO: Replace by formatTimestamp in timeUtils.ts
 export function getDateTimeString(timestamp, includeYear = true) {
     return timestamp && format(fromUnixTime(timestamp), includeYear ? "d.M.yyyy H:mm" : "d.M. H:mm")
 }
 
-// TODO: Make sure all code that needs to format time uses this function.
+// TODO: Replace by formatTimestamp in timeUtils.ts
 export function getTimeString(timestamp) {
     return timestamp && format(fromUnixTime(timestamp), "H:mm")
 }

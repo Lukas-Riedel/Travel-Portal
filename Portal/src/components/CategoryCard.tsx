@@ -1,5 +1,5 @@
 import { MapPin, Move, Trash2 } from "lucide-react"
-import { useCallback, useMemo } from "react"
+import { useMemo } from "react"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Category } from "../types/CoreSwaggerTypes.ts"
@@ -26,16 +26,16 @@ const hasDistance = (place: Place | DistanceAwarePlace): place is DistanceAwareP
 export default function CategoryCard({ category, places, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }: CategoryCardProps) {
     const { t } = useTranslation()
     const { showRemovePlaceToast } = usePredefinedUserInput()
-    const { formatKilometers, formatNextPlaces } = useFormatters()
+    const { formatKilometers } = useFormatters()
 
     const visiblePlaces = useMemo(() => [...(places ?? [])].slice(0, MAXIMUM_PLACES_COUNT), [places])
     const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places?.length, visiblePlaces?.length])
 
-    const handlePlaceRemoved = useCallback((placeId: string) => {
+    const handlePlaceRemoved = (placeId: string) => {
         if (onPlaceRemoved) {
             showRemovePlaceToast(() => onPlaceRemoved(placeId))
         }
-    }, [onPlaceRemoved])
+    }
 
     if (category && places && places.length === 0) {
         return null
@@ -55,7 +55,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                     alt={category.name}
                     className="w-7 h-auto flex-shrink-0" />
                 <AppLink
-                    to={`/category/${category.id}`}
+                    to={category}
                     className="hover:underline text-lg font-semibold truncate">
                     {getEntityPrettyName(category.name)}
                 </AppLink>
@@ -78,7 +78,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 </span>
                             )}
                             <AppLink
-                                to={`/place/${place.id}`}
+                                to={place}
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
                                 {getEntityPrettyName(place.name)}
                                 {place?.quality > 0 ? ` (${Math.round(place.quality)} %)` : ""}
@@ -114,9 +114,9 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                 {remainingCount > 0 && (
                     <li className="my-2">
                         <AppLink
-                            to={`/category/${category.id}`}
+                            to={category}
                             className="text-gray-500 text-sm hover:underline">
-                            {`${t("general.prefix.view")} ${formatNextPlaces(remainingCount)}`}
+                            {t("place.show.more", { count: remainingCount })}
                         </AppLink>
                     </li>
                 )}

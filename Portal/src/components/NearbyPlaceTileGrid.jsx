@@ -1,6 +1,7 @@
 import TileGrid from "./TileGrid.jsx"
 import PlaceTile from "./PlaceTile.jsx"
 import { Place } from "../classes/Place.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
 
 export default function NearbyPlaceTileGrid({ place }) {
     const { formatKilometers } = useFormatters()

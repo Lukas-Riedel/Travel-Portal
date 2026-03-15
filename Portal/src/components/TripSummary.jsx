@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, format, fromUnixTime, startOfDay } from "date-fns"
 import { getCachedCoordinates, getDateRangeString, getTimeString } from "../utils/helpers"
 import DayCard from "./DayCard"
@@ -16,13 +16,13 @@ import SunCalc from "suncalc"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
-import { useFormatters } from "../hooks/useFormatters.ts"
+import { useTranslation } from "react-i18next"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
-    const { formatTimeAgo } = useFormatters()
+    const { t } = useTranslation()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
@@ -68,6 +68,25 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (toZonedTime(new Date(), lastSeenBridgeXDevice?.data?.timezone || "UTC").getHours() < 10 ? 86400 : 0))), configuration?.homeLocation?.timezone)?.address,
         [trip, lastSeenBridgeXDevice?.timezone])
 
+    const formatRefreshedBefore = useCallback((timestamp) => {
+        const seconds = Math.floor(Date.now() / 1000 - timestamp)
+        if (seconds < 60) {
+            return t("general.time.refreshed.ago.seconds")
+        }
+
+        const minutes = Math.floor(seconds / 60)
+        if (minutes < 60) {
+            return t("general.time.refreshed.ago.minute", { count: minutes })
+        }
+
+        const hours = Math.floor(minutes / 60)
+        if (hours < 24) {
+            return t("general.time.refreshed.ago.hour", { count: hours })
+        }
+
+        const days = Math.floor(hours / 24)
+        return t("general.time.refreshed.ago.day", { count: days })
+    }, [t])
 
     useEffect(() => {
         if (!targetAddress) {
@@ -176,7 +195,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 )}
                             </li>
                             <li className="text-center">
-                                Aktualizováno před {formatTimeAgo(lastSeenBridgeXDevice.lastSeen)}
+                                {formatRefreshedBefore(lastSeenBridgeXDevice.lastSeen)}
                             </li>
                         </ul>
 

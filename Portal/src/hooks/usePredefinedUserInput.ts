@@ -4,7 +4,7 @@ import { useUserInput } from "./useUserInput.tsx"
 import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Trip, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
-import { formatAsFullDateTime } from "../utils/timeUtils.ts"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
@@ -168,7 +168,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("expense.prompt.create.label.subscription"),
                     options: subscriptions.map(subscription => ({
                         id: subscription.id,
-                        name: t("subscription.format", { description: subscription.description, expiration: format(fromUnixTime(subscription.expiration), t("general.format.date")) })
+                        name: t("subscription.format", { description: subscription.description, expiration: format(fromUnixTime(subscription.expiration), t("general.format.date.year.included")) })
                     }))
                 },
                 {
@@ -178,7 +178,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     options: vouchers.map(voucher => ({
                         id: voucher.id,
                         name: voucher.expiration
-                            ? t("voucher.format.expirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency, expiration: format(fromUnixTime(voucher.expiration), t("general.format.date")) })
+                            ? t("voucher.format.expirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency, expiration: format(fromUnixTime(voucher.expiration), t("general.format.date.year.included")) })
                             : t("voucher.format.nonexpirable", { issuer: voucher.issuer, value: voucher.value, currency: voucher.currency }),
                     }))
                 }
@@ -827,7 +827,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("highlight.prompt.update.attributes.label.datetime"),
                     required: false,
                     disabled: true,
-                    defaultValue: formatAsFullDateTime(timestamp, timezone),
+                    defaultValue: formatTimestamp(timestamp, t("general.format.datetime.year.included"), timezone),
                 },
                 sunAltitude && {
                     type: "text",

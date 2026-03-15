@@ -3,6 +3,8 @@ import { useCallback } from "react"
 import { StatisticsUnit } from "../types/CoreSwaggerTypes.ts"
 import type { UseFormattersResult } from "../types/UseFormattersResult.ts"
 
+type UnitFormatter = (value: number) => string
+
 export function useFormatters(): UseFormattersResult {
     const { t } = useTranslation()
 
@@ -30,11 +32,11 @@ export function useFormatters(): UseFormattersResult {
     const formatEvents = useCallback((v: number) => t("general.unit.event", { count: v }), [t])
     const formatKilometers = useCallback((v: number) => t("general.unit.kilometer", { count: Math.round(v) }), [t])
     const formatMeters = useCallback((v: number) => t("general.unit.meter", { count: Math.round(v) }), [t])
+    const formatElevationMeters = useCallback((v: number) => t("general.unit.elevation", { count: Math.round(v) }), [t])
     const formatPhotos = useCallback((v: number) => t("general.unit.photo", { count: v }), [t])
     const formatNewProblems = useCallback((v: number) => t("general.unit.problem", { count: v }), [t])
     const formatCountries = useCallback((v: number) => t("general.unit.country", { count: v }), [t])
     const formatPlaces = useCallback((v: number) => t("general.unit.place", { count: v }), [t])
-    const formatNextPlaces = useCallback((v: number) => t("general.unit.nextPlace", { count: v }), [t])
     const formatDays = useCallback((v: number) => t("general.unit.day", { count: v }), [t])
     const formatFlights = useCallback((v: number) => t("general.unit.flight", { count: v }), [t])
     const formatSteps = useCallback((v: number) => t("general.unit.step", { count: v }), [t])
@@ -79,21 +81,18 @@ export function useFormatters(): UseFormattersResult {
     }, [t])
 
     const formatStatisticsUnit = useCallback((unit: StatisticsUnit, value: any, mainCurrency?: string) => {
-        const units: Record<StatisticsUnit, (value: number) => string> = {
+        const unitFormatters: Record<StatisticsUnit, UnitFormatter> = {
             [StatisticsUnit.Kilometers]: formatKilometers,
-            [StatisticsUnit.ElevationMeters]: value => `${formatMeters(value)} ${t("general.suffix.elevation")}`,
+            [StatisticsUnit.ElevationMeters]: formatElevationMeters,
             [StatisticsUnit.Photos]: formatPhotos,
             [StatisticsUnit.Duration]: formatDuration,
             [StatisticsUnit.Countries]: formatCountries,
             [StatisticsUnit.Places]: formatPlaces,
-            [StatisticsUnit.MainCurrency]: value => `${value} ${mainCurrency || ""}`,
+            [StatisticsUnit.MainCurrency]: value => `${value} ${mainCurrency || ""}`.trim(),
             [StatisticsUnit.Days]: formatDays,
             [StatisticsUnit.Flights]: formatFlights,
             [StatisticsUnit.Steps]: formatSteps,
-            [StatisticsUnit.BeforeDaysTimestamp]: value => {
-                const days = Math.floor((Date.now() / 1000 - value) / 86400)
-                return t("general.time.ago.day", { count: days })
-            },
+            [StatisticsUnit.BeforeDaysTimestamp]: formatTimeAgo,
             [StatisticsUnit.Visits]: formatVisits,
             [StatisticsUnit.Airports]: formatAirports,
             [StatisticsUnit.Nights]: formatNights,
@@ -101,8 +100,7 @@ export function useFormatters(): UseFormattersResult {
             [StatisticsUnit.Longitude]: formatLongitude
         }
 
-        const formatter = units[unit]
-        return formatter ? formatter(value) : `${value} ${unit}`
+        return unitFormatters[unit] ? unitFormatters[unit](value) : `${value} ${unit}`
     }, [t, formatKilometers, formatMeters, formatPhotos, formatDuration, formatCountries, formatPlaces, formatDays,
         formatFlights, formatSteps, formatVisits, formatAirports, formatNights, formatLatitude, formatLongitude])
 
@@ -111,11 +109,11 @@ export function useFormatters(): UseFormattersResult {
         formatEvents,
         formatKilometers,
         formatMeters,
+        formatElevationMeters,
         formatPhotos,
         formatNewProblems,
         formatCountries,
         formatPlaces,
-        formatNextPlaces,
         formatDays,
         formatFlights,
         formatSteps,

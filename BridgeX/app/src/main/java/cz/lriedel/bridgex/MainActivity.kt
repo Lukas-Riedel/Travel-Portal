@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
-        loadWebViewUrl(savedInstanceState, intent.getStringExtra("flight"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"), intent.getStringExtra("year"))
+        loadWebViewUrl(savedInstanceState, intent.getStringExtra("flight"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"), intent.getStringExtra("year"), intent.getIntExtra("issues", 0))
         CoroutineScope(Dispatchers.IO).launch {
             deviceInitializer.initialize()
         }
@@ -69,19 +69,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadWebViewUrl(savedInstanceState: Bundle?, flight: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?) {
+    private fun loadWebViewUrl(savedInstanceState: Bundle?, flight: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, issues: Int) {
         val url = when {
             flight != null -> "https://www.flightradar24.com/data/flights/$flight"
             placeId != null -> "${BuildConfig.PORTAL_BASE_URL}place/$placeId"
             tripId != null -> "${BuildConfig.PORTAL_BASE_URL}trip/$tripId"
             categoryId != null -> "${BuildConfig.PORTAL_BASE_URL}category/$categoryId"
             year != null -> "${BuildConfig.PORTAL_BASE_URL}year/$year"
+            issues > 0 -> "${BuildConfig.PORTAL_BASE_URL}admin?tab=issues"
             else -> BuildConfig.PORTAL_BASE_URL
         }
         
         if (savedInstanceState == null) {
             val bustParam = System.currentTimeMillis() / (3600 * 1000)
-            webView.loadUrl("$url?t=$bustParam")
+            val separator = if (url.contains("?")) "&" else "?"
+            webView.loadUrl("$url${separator}t=$bustParam")
         }
         else {
             webView.restoreState(savedInstanceState)

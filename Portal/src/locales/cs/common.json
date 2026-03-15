@@ -1,7 +1,19 @@
 {
     "general": {
         "format": {
-            "date": "dd.MM.yyyy"
+            "time": "HH:mm",
+            "date": {
+                "year": {
+                    "included": "d.M.yyyy",
+                    "excluded": "d.M."
+                }
+            },
+            "datetime": {
+                "year": {
+                    "included": "d.M.yyyy HH:mm",
+                    "excluded": "d.M. HH:mm"
+                }
+            }
         },
         "prompt": {
             "login": {
@@ -27,12 +39,6 @@
         "placeholder": {
             "logo": "Logo není k dispozici"
         },
-        "prefix": {
-            "view": "Zobrazit"
-        },
-        "suffix": {
-            "elevation": "nad mořem"
-        },
         "unit": {
             "hour_one": "{{count}} hodina",
             "hour_few": "{{count}} hodiny",
@@ -52,6 +58,9 @@
             "meter_one": "{{count}} metr",
             "meter_few": "{{count}} metry",
             "meter_other": "{{count}} metrů",
+            "elevation_one": "{{count}} metr nad mořem",
+            "elevation_few": "{{count}} metry nad mořem",
+            "elevation_other": "{{count}} metrů nad mořem",
             "photo_one": "{{count}} fotka",
             "photo_few": "{{count}} fotky",
             "photo_other": "{{count}} fotek",
@@ -64,8 +73,6 @@
             "place_one": "{{count}} místo",
             "place_few": "{{count}} místa",
             "place_other": "{{count}} míst",
-            "nextPlace_few": "další {{count}} místa",
-            "nextPlace_other": "dalších {{count}} míst",
             "day_one": "{{count}} den",
             "day_few": "{{count}} dny",
             "day_other": "{{count}} dnů",
@@ -94,19 +101,246 @@
                 "hour_other": "Před {{count}} hodinami",
                 "day_one": "Před {{count}} dnem",
                 "day_other": "Před {{count}} dny"
+            },
+            "refreshed": {
+                "ago": {
+                    "seconds": "Aktualizováno před několika sekundami",
+                    "minute_one": "Aktualizováno před {{count}} minutou",
+                    "minute_other": "Aktualizováno před {{count}} minutami",
+                    "hour_one": "Aktualizováno před {{count}} hodinou",
+                    "hour_other": "Aktualizováno před {{count}} hodinami",
+                    "day_one": "Aktualizováno před {{count}} dnem",
+                    "day_other": "Aktualizováno před {{count}} dny"
+                }
+            }
+        }
+    },
+    "issue": {
+        "scanned": "Poslední sken: {{datetime}}",
+        "fitness": {
+            "conflict": {
+                "name": "Konfliktní záznamy o aktivitě",
+                "label": {
+                    "timestamp": "Čas záznamu",
+                    "record": "Záznam"
+                }
+            }
+        },
+        "category": {
+            "country": {
+                "incomplete": {
+                    "name": "Stát s neúplnými metadaty",
+                    "label": {
+                        "name": "Název",
+                        "color": "Barva",
+                        "unicode": "Unikód",
+                        "calendar": "Kalendář"
+                    }
+                },
+                "nondivided": {
+                    "name": "Stát bez administrativního dělení",
+                    "label": {
+                        "name": "Název"
+                    }
+                }
+            }
+        },
+        "album": {
+            "standalone": {
+                "name": "Album bez přiřazeného místa",
+                "label": {
+                    "name": "Název",
+                    "photos": "Počet fotek"
+                }
+            },
+            "empty": {
+                "name": "Prázdné album",
+                "label": {
+                    "name": "Název"
+                }
+            }
+        },
+        "photo": {
+            "replaced": {
+                "name": "Nahrazená fotka k odstranění",
+                "label": {
+                    "timestamp": "Čas pořízení"
+                }
+            }
+        },
+        "airline": {
+            "code": {
+                "unassigned": {
+                    "name": "Kód bez přiřazené aerolinky",
+                    "label": {
+                        "code": "Kód"
+                    }
+                }
+            },
+            "logo": {
+                "unassigned": {
+                    "name": "Aerolinka beu loga",
+                    "label": {
+                        "name": "Název"
+                    }
+                }
+            }
+        },
+        "trip": {
+            "time": {
+                "nonset": {
+                    "name": "Výlet bez specifikovaného času",
+                    "label": {
+                        "name": "Název",
+                        "from": "Od",
+                        "to": "Do"
+                    }
+                }
+            }
+        },
+        "flight": {
+            "nonlinked": {
+                "name": "Let bez události v kalendáři",
+                "label": {
+                    "flight": "Let",
+                    "from": "Z",
+                    "to": "Do",
+                    "departure": "Čas odletu",
+                    "arrival": "Čas příletu"
+                }
+            },
+            "nonlogged": {
+                "name": "Nezalogovaný let",
+                "label": {
+                    "flight": "Let",
+                    "from": "Z",
+                    "to": "Do",
+                    "departure": "Čas odletu",
+                    "arrival": "Čas příletu"
+                }
+            }
+        },
+        "region": {
+            "duplicated": {
+                "name": "Duplicitní název geogragického regionu",
+                "label": {
+                    "name": "Název"
+                }
+            }
+        },
+        "place": {
+            "category": {
+                "unassigned": {
+                    "administrative": {
+                        "name": "Místo bez administrativní kategorie",
+                        "label": {
+                            "name": "Název",
+                            "country": "Stát"
+                        }
+                    },
+                    "country": {
+                        "name": "Místo bez státní příslušnosti",
+                        "label": {
+                            "name": "Název"
+                        }
+                    }
+                }
+            },
+            "date": {
+                "time": {
+                    "nonset": {
+                        "name": "Událost bez specifikovaného času",
+                        "label": {
+                            "name": "Název",
+                            "country": "Stát",
+                            "date": "Datum"
+                        }
+                    },
+                    "unaligned": {
+                        "name": "Událost s nesprávným časem začátku",
+                        "label": {
+                            "name": "Název",
+                            "country": "Stát",
+                            "date": "Datum",
+                            "time": "Čas"
+                        }
+                    }
+                },
+                "duration": {
+                    "unaligned": {
+                        "name": "Událost s nesprávnou délkou trvání",
+                        "label": {
+                            "name": "Název",
+                            "country": "Stát",
+                            "date": "Datum",
+                            "duration": "Délka trvání"
+                        }
+                    }
+                }
+            },
+            "nonreviewed": {
+                "name": "Nezrevidované místo",
+                "label": {
+                    "name": "Název",
+                    "country": "Stát"
+                }
+            },
+            "duplicated": {
+                "name": "Duplicitní místo",
+                "label": {
+                    "coordinates": "Souřadnice",
+                    "place": "Místo {{index}}"
+                }
+            }
+        },
+        "airport": {
+            "unnamed": {
+                "name": "Nepojmenované letiště",
+                "label": {
+                    "name": "Název",
+                    "code": "Kód"
+                }
+            },
+            "category": {
+                "unassigned": {
+                    "country": {
+                        "name": "Letiště bez státní příslušnosti",
+                        "label": {
+                            "name": "Název",
+                            "code": "Kód"
+                        }
+                    }
+                }
             }
         }
     },
     "menu": {
-        "search": "Hledat",
-        "feed": "Nedávné",
-        "trips": "Výlety",
-        "places": "Místa",
-        "flights": "Lety",
-        "statistics": "Statistiky",
-        "plan": "Plán",
-        "tracker": "Tracker",
-        "admin": "Admin"
+        "label": {
+            "search": "Hledat",
+            "feed": "Nedávné",
+            "trips": "Výlety",
+            "places": "Místa",
+            "flights": "Lety",
+            "statistics": "Statistiky",
+            "plan": "Plán",
+            "tracker": "Tracker",
+            "admin": "Admin"
+        },
+        "tab": {
+            "label": {
+                "trip": "Aktuální výlet",
+                "flights": "Sledované lety",
+                "airlines": "Aerolinky",
+                "issues": "Hlášené problémy",
+                "configuration": "Konfigurace",
+                "devices": "Zařízení",
+                "places": "Trvalá místa",
+                "subscriptions": "Aktivní předplatné",
+                "regions": "Regiony",
+                "documents": "Dokumenty",
+                "vouchers": "Poukazy"
+            }
+        }
     },
     "tracker": {
         "prompt": {
@@ -415,7 +649,7 @@
             "replace": {
                 "message": "Vyber preferovaný záznam:",
                 "label": {
-                    "record": "Záznam"
+                    "record": "Záznam {{index}}"
                 },
                 "confirmed": "Záznam byl úspěšně nahrazen",
                 "failed": "Nepodařilo se nahradit záznam"
@@ -528,6 +762,11 @@
         }
     },
     "place": {
+        "show": {
+            "more_one": "Zobrazit další {{count}} místo",
+            "more_few": "Zobrazit další {{count}} místa",
+            "more_other": "Zobrazit dalších {{count}} míst"
+        },
         "prompt": {
             "create": {
                 "message": "Zadej údaje o místě k přidání:",

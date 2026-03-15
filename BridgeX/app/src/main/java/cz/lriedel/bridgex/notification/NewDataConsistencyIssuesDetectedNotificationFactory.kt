@@ -12,7 +12,7 @@ class NewDataConsistencyIssuesDetectedNotificationFactory(
         return Notification(
             context.getString(R.string.title_issues_detected),
             context.getString(R.string.message_issues_detected, count),
-            mapOf()
+            mapOf<String, Any>("issues" to count)
         )
     }
 }

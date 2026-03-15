@@ -1,18 +1,17 @@
-import { useCallback, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useNotifications } from "../contexts/NotificationContext.jsx"
 import { createEvent } from "../clients/coreClient.ts"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
-import type { HighlightType } from "../types/CoreSwaggerTypes.ts"
 
 export const useEvents = (eventType: EventType): UseEventsResult => {
     const { messages } = useNotifications()
 
     const [readMessageIds, setReadMessageIds] = useState(() => new Set<string>())
 
-    const markAsRead = useCallback((messageId: string) => {
+    const markAsRead = (messageId: string) => {
         setReadMessageIds(previous => new Set(previous).add(messageId))
-    }, [setReadMessageIds])
+    }
 
     const events = useMemo(() => messages
         ?.filter(message => message.data?.event === eventType && !readMessageIds.has(message.messageId))

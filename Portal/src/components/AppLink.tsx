@@ -1,13 +1,19 @@
 import { Link, useLocation, type LinkProps } from "react-router-dom"
+import type { Navigable } from "../types/Navigable.ts"
+import { getPath } from "../utils/navigationUtils.ts"
 
-const PLANS_PAGE_PREFIX = "/plan"
 
-export default function AppLink({ to, children, ...props }: LinkProps) {
+interface AppLinkProps extends Omit<LinkProps, "to"> {
+    to: Navigable
+}
+
+export default function AppLink({ to, children, ...props }: AppLinkProps) {
     const { pathname } = useLocation()
-    const prefix = pathname.startsWith(PLANS_PAGE_PREFIX) ? PLANS_PAGE_PREFIX : ""
-    
+
     return (
-        <Link to={`${prefix}${to}`} {...props}>
+        <Link
+            to={getPath(to, pathname)}
+            {...props}>
             {children}
         </Link>
     )

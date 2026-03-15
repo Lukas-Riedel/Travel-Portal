@@ -4,7 +4,7 @@ import { EventType } from "../types/EventType.ts"
 import type { Date } from "../types/CoreSwaggerTypes.ts"
 import type { UseAlbumsBeingUploadedResult } from "../types/UseAlbumsBeingUploadedResult.ts"
 
-export function useAlbumsBeingUploaded(): UseAlbumsBeingUploadedResult {
+export const useAlbumsBeingUploaded = (): UseAlbumsBeingUploadedResult => {
     const { events: processingStartedEvents } = useEvents(EventType.ProcessingStarted)
     const { events: processingEndedEvents } = useEvents(EventType.ProcessingEnded)
     const { events: processingFailedEvents } = useEvents(EventType.ProcessingFailed)
