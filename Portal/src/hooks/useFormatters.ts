@@ -61,21 +61,21 @@ export function useFormatters(): UseFormattersResult {
     const formatTimeAgo = useCallback((timestamp: number) => {
         const seconds = Math.floor(Date.now() / 1000 - timestamp)
         if (seconds < 60) {
-            return t("time.ago.seconds")
+            return t("general.time.ago.seconds")
         }
 
         const minutes = Math.floor(seconds / 60)
         if (minutes < 60) {
-            return t("time.ago.minute", { count: minutes })
+            return t("general.time.ago.minute", { count: minutes })
         }
 
         const hours = Math.floor(minutes / 60)
         if (hours < 24) {
-            return t("time.ago.hour", { count: hours })
+            return t("general.time.ago.hour", { count: hours })
         }
 
         const days = Math.floor(hours / 24)
-        return t("time.ago.day", { count: days })
+        return t("general.time.ago.day", { count: days })
     }, [t])
 
     const formatStatisticsUnit = useCallback((unit: StatisticsUnit, value: any, mainCurrency?: string) => {
