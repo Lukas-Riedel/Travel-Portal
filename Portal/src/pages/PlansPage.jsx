@@ -62,14 +62,17 @@ export default function PlansPage() {
 
     const labels = [
         {
+            tab: "considered",
             name: "Zvažovaná místa",
             enabled: hasRole(UserRole.PlaceRead)
         },
         {
+            tab: "visited",
             name: "Navštívená místa",
             enabled: hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
+            tab: "trips",
             name: "Návrhy výletů",
             enabled: hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         }

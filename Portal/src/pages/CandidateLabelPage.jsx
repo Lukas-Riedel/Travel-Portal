@@ -32,6 +32,7 @@ export default function CandidateLabelPage() {
             </div>
             <PlaceCardGrid
                 places={candidatePlaces}
+                rowSize={5}
                 onPlaceRemoved={hasRole(UserRole.PlaceEdit) && removeCandidatePlace} />
         </>
     )

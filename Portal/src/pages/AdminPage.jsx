@@ -313,6 +313,7 @@ export default function AdminPage() {
                 <>
                     <PlaceCardGrid
                         places={permanentPlaces}
+                        rowSize={5}
                         onPlaceRemoved={removePermanentPlace} />
                     <FloatingButton
                         icon={Plus}
