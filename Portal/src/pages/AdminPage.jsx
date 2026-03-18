@@ -181,6 +181,10 @@ export default function AdminPage() {
 
     const handleDocumentCreated = () => {
         showCreateDocumentToast(async (name, code, issuer, expiration) => {
+            if (!expiration) {
+                return createDocument(name, code, issuer, undefined)
+            }
+
             const convertedExpiration = Math.round(expiration.getTime() / 1000)
             if (convertedExpiration < Date.now() / 1000) {
                 return Promise.reject("Expiration must be in the future.")
