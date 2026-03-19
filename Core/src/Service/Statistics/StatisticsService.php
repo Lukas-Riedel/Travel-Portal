@@ -73,7 +73,7 @@
             $this->statisticsProviders = $statisticsProviders;
         }
 
-        // TODO: Remove the categoryId parameter.
+        // TODO: Remove the categoryId parameter. Possibly extend StatisticsProvider with categoryId, tripId, and year (instead of entityId).
         private function updateStatistics(StatisticsType $statisticsType, int $start, int $end, ?string $categoryId, ?string $entityId) : void {
             $statisticsCollectionCacheKey = $this->getStatisticsCollectionCacheKey($statisticsType, $entityId);
             $cachedStatisticsCollection = $this->distributedCacheClient->get($statisticsCollectionCacheKey);            
