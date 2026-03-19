@@ -365,8 +365,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (flight: Flight) => (
                 {
                     [t("issue.flight.nonlogged.label.flight")]: flight.flight,
-                    [t("issue.flight.nonlogged.label.from")]: flight.from.code,
-                    [t("issue.flight.nonlogged.label.to")]: flight.to.code,
+                    [t("issue.flight.nonlogged.label.from")]: flight.from.shortName,
+                    [t("issue.flight.nonlogged.label.to")]: flight.to.shortName,
                     [t("issue.flight.nonlogged.label.departure")]: formatTimestamp(flight.start, t("general.format.datetime.year.included")),
                     [t("issue.flight.nonlogged.label.arrival")]: formatTimestamp(flight.end, t("general.format.datetime.year.included"))
                 }
