@@ -17,6 +17,7 @@ import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { useTranslation } from "react-i18next"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
@@ -106,6 +107,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
         }
     }, [targetAddress])
 
+    const tripProgress = trip?.isCurrent() && (Math.min(Math.max(((getCurrentTimestamp() - trip.start) / (trip.end - trip.start)) * 100, 0), 100))
 
     return trip ? (
         <div className="relative w-full grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] items-center gap-4 bg-white p-3 my-4 text-sm">
@@ -131,7 +133,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                 {lastSeenBridgeXDevice && (hasRole(UserRole.PortalFutureRead) || trip.isCurrent()) && (
                     <>
                         {lastSeenBridgeXDevice.lastSeen + 1800 > Date.now() / 1000 ? (
-                            <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-6 hover:underline hover:text-green-400 transition-colors duration-200">
+                            <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-4 hover:underline hover:text-green-400 transition-colors duration-200">
                                 <LocateFixedIcon size={16} />
                                 <a
                                     className="text-xs truncate"
@@ -198,7 +200,16 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 {formatRefreshedBefore(lastSeenBridgeXDevice.lastSeen)}
                             </li>
                         </ul>
-
+                        {tripProgress && (
+                            <div className="w-full flex flex-col items-center mt-4">
+                                <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-blue-500 transition-all duration-500 ease-out"
+                                        style={{ width: `${tripProgress}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>

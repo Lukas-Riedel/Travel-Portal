@@ -96,20 +96,26 @@
             "ago": {
                 "seconds": "Před několika sekundami",
                 "minute_one": "Před {{count}} minutou",
+                "minute_few": "Před {{count}} minutami",
                 "minute_other": "Před {{count}} minutami",
                 "hour_one": "Před {{count}} hodinou",
+                "hour_few": "Před {{count}} hodinami",
                 "hour_other": "Před {{count}} hodinami",
                 "day_one": "Před {{count}} dnem",
+                "day_few": "Před {{count}} dny",
                 "day_other": "Před {{count}} dny"
             },
             "refreshed": {
                 "ago": {
                     "seconds": "Aktualizováno před několika sekundami",
                     "minute_one": "Aktualizováno před {{count}} minutou",
+                    "minute_few": "Aktualizováno před {{count}} minutami",
                     "minute_other": "Aktualizováno před {{count}} minutami",
                     "hour_one": "Aktualizováno před {{count}} hodinou",
+                    "hour_few": "Aktualizováno před {{count}} hodinami",
                     "hour_other": "Aktualizováno před {{count}} hodinami",
                     "day_one": "Aktualizováno před {{count}} dnem",
+                    "day_few": "Aktualizováno před {{count}} dny",
                     "day_other": "Aktualizováno před {{count}} dny"
                 }
             }
