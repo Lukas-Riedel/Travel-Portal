@@ -8,6 +8,7 @@
     class FlightRadar24FlightClient implements FlightClient {
         
         private const UTC_TIMEZONE = "UTC";
+        private const UNKNOWN_FLIGHT_STATUS = "Unknown";
 
         private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
 
@@ -24,7 +25,8 @@
             $selectedFlight = null;
             foreach ($apiResponse["result"]["response"]["data"] as &$fetchedFlight) {
                 if (($fetchedFlight["time"]["scheduled"]["departure"] - CommonConstants::ONE_HOUR_SECONDS <= $scheduledDeparture)
-                    && ($fetchedFlight["time"]["scheduled"]["departure"] + CommonConstants::ONE_HOUR_SECONDS >= $scheduledDeparture)) {
+                    && ($fetchedFlight["time"]["scheduled"]["departure"] + CommonConstants::ONE_HOUR_SECONDS >= $scheduledDeparture)
+                    && ($fetchedFlight["status"]["text"]) !== self::UNKNOWN_FLIGHT_STATUS) {
                     $selectedFlight = $fetchedFlight;
                     break;
                 }
