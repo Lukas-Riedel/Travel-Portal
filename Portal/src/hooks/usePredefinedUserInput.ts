@@ -801,7 +801,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "select",
                     label: t("highlight.prompt.update.attributes.label.atmosphere"),
-                    defaultValue: highlightAttributes?.circumstances,
+                    defaultValue: highlightAttributes?.atmosphere,
                     required: true,
                     options: [
                         {

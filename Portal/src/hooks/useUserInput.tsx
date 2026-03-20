@@ -90,6 +90,7 @@ export const useUserInput = (): UseUserInputResult => {
                                         return success || t("general.prompt.confirmed")
                                     },
                                     error: e => {
+                                        console.error(e)
                                         reject(e)
                                         return error || t("general.prompt.failed")
                                     }

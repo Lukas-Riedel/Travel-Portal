@@ -65,14 +65,16 @@ export function getGeoFeatures(geoJson) {
         return geoJson.features
     }
     if (geoJson.type === "Feature") {
-        return geoJson
+        return [geoJson]
     }
     if (geoJson.type === "GeometryCollection" && geoJson.geometries.length === 1) {
-        return {
-            type: "Feature",
-            properties: {},
-            geometry: geoJson.geometries[0]
-        }
+        return [
+            {
+                type: "Feature",
+                properties: {},
+                geometry: geoJson.geometries[0]
+            }
+        ]
     }
     return []
 }

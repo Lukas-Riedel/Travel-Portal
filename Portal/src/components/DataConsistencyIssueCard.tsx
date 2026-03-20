@@ -206,7 +206,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             resolve: handleAirlineCodeAssigned
         },
         [DataConsistencyIssueName.PlaceWithoutAdministrativeCategory]: {
-            name: t("issue.place.category.unassigned.administrative"),
+            name: t("issue.place.category.unassigned.administrative.name"),
             isResolvable: !!onGeographicalExtensionCategoryAdded,
             getProperties: (place: Place) => (
                 {

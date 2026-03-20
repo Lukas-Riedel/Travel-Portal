@@ -380,6 +380,8 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
 }
 
 function RemainingUploadTime({ album }) {
+    const { formatDuration } = useFormatters()
+
     const computedRemaining = useMemo(() => {
         if (album.uploadingProgress > 0 && album.uploadingProgress < 100) {
             const now = Date.now() / 1000
