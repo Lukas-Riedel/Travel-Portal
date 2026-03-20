@@ -184,7 +184,7 @@
 
                     $highestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
                         // Use Trip ID to filter out permanent places.
-                        $this->placeService->getRegularPlaces($categoryId, null, null, $statisticsType === StatisticsType::Trip ? $entityId : null,
+                        $this->placeService->getRegularPlaces($categoryId, null, $statisticsType === StatisticsType::Trip ? $entityId : null, null,
                             null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationDescending));
                     if (count($highestPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::HighestPlaces, $highestPlaces, StatisticsUnit::ElevationMeters);
