@@ -201,12 +201,17 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                             </li>
                         </ul>
                         {tripProgress && (
-                            <div className="w-full flex flex-col items-center mt-4">
-                                <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-full mt-4">
+                                <div className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700 relative">
                                     <div
-                                        className="h-full bg-blue-500 transition-all duration-500 ease-out"
-                                        style={{ width: `${tripProgress}%` }}
-                                    />
+                                        className="h-4 bg-blue-500 rounded-full transition-all duration-500 ease-out flex items-center justify-center"
+                                        style={{ width: `${tripProgress}%` }}>
+                                        {tripProgress > 10 && (
+                                            <span className="text-[10px] text-white leading-none">
+                                                {Math.round(tripProgress)}%
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
