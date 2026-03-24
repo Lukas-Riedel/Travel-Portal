@@ -40,7 +40,7 @@ jobs:
           --set portal.credentials.default.username=light \
           --set portal.credentials.default.password=light \
           --set portal.url.base=https://travel-portal.eu \
-          --set portal.fcm.key.api=${{ secrets.FIREBASE_API_KEY }} \
+          --set portal.fcm.key.api=${{ secrets.FIREBASE_WEB_API_KEY }} \
           --set portal.fcm.key.vapid=${{ secrets.FIREBASE_VAPID_KEY }} \
           --set portal.google.maps.key.api=${{ secrets.FRONTEND_GOOGLE_MAPS_API_KEY }} \
           --set portal.content.range.max=$FINAL_TIMESTAMP \
