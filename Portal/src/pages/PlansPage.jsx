@@ -16,6 +16,7 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
+import { useAppNavigate } from "../hooks/useAppNavigate.ts"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
@@ -24,7 +25,8 @@ export default function PlansPage() {
     const { hasRole } = useAuth()
     const { showCreatePlaceToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
-
+    const navigate = useAppNavigate()
+    
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality", maxEnd: getCurrentTimestamp() })
     const { trips, removeTrip } = useCandidateTrips()
@@ -79,7 +81,7 @@ export default function PlansPage() {
     ]
 
     const handleCandidatePlaceCreated = () => {
-        showCreatePlaceToast(createCandidatePlace)
+        showCreatePlaceToast((name, address) => createCandidatePlace(name, address).then(place => (navigate(place), place)))
     }
 
     return labels.some(label => label.enabled) && (
