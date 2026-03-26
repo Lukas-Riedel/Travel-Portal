@@ -4,6 +4,7 @@ import cz.lriedel.agent.client.CoreClient;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.ImagingException;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
@@ -58,7 +59,15 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
     public byte[] fetch(Path path) {
         byte[] data = photoFetcher.fetch(path);
 
-        JpegImageMetadata sourceMetadata = (JpegImageMetadata) Imaging.getMetadata(path.toFile());
+        JpegImageMetadata sourceMetadata;
+        try {
+            sourceMetadata = (JpegImageMetadata) Imaging.getMetadata(path.toFile());
+        }
+        catch (ImagingException e) {
+            log.error("An error occurred when obtaining metadata for '{}'.", path, e);
+            return data;
+        }
+
         TiffImageMetadata imageMetadata = sourceMetadata.getExif();
         if (imageMetadata == null) {
             log.warn("There are no image metadata associated with '{}'.", path);
