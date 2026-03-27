@@ -534,7 +534,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true,
                     options: Array.from({ length: fitnessRecords.length }, (_, index) => ({
                         id: index,
-                        name: `${t("fitness.prompt.replace.label.record")} ${index + 1}`
+                        name: t("fitness.prompt.replace.label.record", { index: index + 1 })
                     }))
                 }
             ],

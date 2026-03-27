@@ -128,7 +128,7 @@
                 "name": "Konfliktní záznamy o aktivitě",
                 "label": {
                     "timestamp": "Čas záznamu",
-                    "record": "Záznam"
+                    "record": "Záznam {{index}}"
                 }
             }
         },
