@@ -616,10 +616,10 @@
         }
 
         #[OA\Post(
-            path: "/categorys/{categoryId}/highlights/refresh",
+            path: "/categories/{categoryId}/highlights/refresh",
             summary: "Refresh highlights for a category with the specified identifier",
             operationId: "refreshCategoryHighlights",
-            tags: ["Categorys"],
+            tags: ["Categories"],
             security: [ ["bearerAuth" => []] ],
             parameters: [
                 new OA\Parameter(
@@ -643,7 +643,10 @@
                 new OA\Response(
                     response: 200,
                     description: "Success. Refreshed highlights for a category with the specified identifier.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/Album")
+                    content: new OA\JsonContent(
+                        type: "array",
+                        items: new OA\Items(ref: "#/components/schemas/Highlight")
+                    )
                 ),
                 new OA\Response(
                     response: 400,
