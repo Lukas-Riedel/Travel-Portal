@@ -15,7 +15,7 @@ export interface UsePlaceResult {
     refreshPlaceExcerpt: () => Promise<Place>
     updatePlaceLocation: (latitude: number, longitude: number) => Promise<Place>
     updatePlaceAlbumsReviewed: () => Promise<Album[]>
-    refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number) => Promise<Album>
+    refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number, batchId?: string) => Promise<Album>
     createPlaceNote: (content: string) => Promise<Note>
     updatePlaceNoteContent: (noteId: string, content: string) => Promise<Note>
     removePlaceNote: (noteId: string) => Promise<void>

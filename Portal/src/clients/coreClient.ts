@@ -465,10 +465,11 @@ export const createPlaceAlbum = async (placeId: string, timestamp: number): Prom
     coreClient.post<Album>(`places/${placeId}/albums?timestamp=${timestamp}`)
         .then(extractData)
 
-export const refreshPlaceAlbum = async (placeId: string, albumId: string, { mainPhotoPosition }: { mainPhotoPosition?: number } = {}): Promise<Album> =>
+export const refreshPlaceAlbum = async (placeId: string, albumId: string, { mainPhotoPosition, batchId }: { mainPhotoPosition?: number, batchId?: string } = {}): Promise<Album> =>
     coreClient.post<Album>(createQueryPath(`places/${placeId}/albums/${albumId}/refresh`,
         {
-            mainPhotoPosition
+            mainPhotoPosition,
+            batchId
         }
     )).then(extractData)
 

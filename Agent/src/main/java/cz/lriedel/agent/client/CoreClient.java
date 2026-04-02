@@ -1,6 +1,7 @@
 package cz.lriedel.agent.client;
 
 import cz.lriedel.agent.model.api.Album;
+import cz.lriedel.agent.model.api.PendingPhoto;
 import cz.lriedel.agent.model.api.Place;
 import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
@@ -74,29 +75,33 @@ public class CoreClient {
         return Objects.requireNonNull(restTemplate.postForObject(uri, httpEntityProvider.getEmptyHttpEntity(), Album.class));
     }
 
-    public void uploadPhoto(String placeId, String albumId, String fileName, String replacedPhotoId, byte[] data) {
+    public PendingPhoto uploadPhoto(String placeId, String albumId, String fileName, String replacedPhotoId, byte[] data) {
         PhotoPrototype photoPrototype = PhotoPrototype.builder().fileName(fileName).replacedPhotoId(replacedPhotoId)
                 .data(Base64.getEncoder().encodeToString(data)).build();
 
         URI uri = uriBuilderFactory.builder().path(CREATE_PLACE_ALBUM_PHOTO_ENDPOINT_PATH).build(placeId, albumId);
 
-        restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), Void.class);
+        return Objects.requireNonNull(restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), PendingPhoto.class));
     }
 
-    public void uploadPhoto(String placeId, String albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition, byte[] data) {
+    public PendingPhoto uploadPhoto(String placeId, String albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition, byte[] data) {
         PhotoPrototype photoPrototype = PhotoPrototype.builder().fileName(fileName).batchId(batchId).expectedBatchSize(expectedBatchSize)
                 .batchPosition(batchPosition).data(Base64.getEncoder().encodeToString(data)).build();
 
         URI uri = uriBuilderFactory.builder().path(CREATE_PLACE_ALBUM_PHOTO_ENDPOINT_PATH).build(placeId, albumId);
 
-        restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), Void.class);
+        return Objects.requireNonNull(restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), PendingPhoto.class));
     }
 
-    public Album refreshAlbum(String placeId, String albumId, @Nullable Integer mainPhotoPosition) {
+    public Album refreshAlbum(String placeId, String albumId, @Nullable Integer mainPhotoPosition, @Nullable String batchId) {
         UriBuilder uriBuilder = uriBuilderFactory.builder().path(REFRESH_PLACE_ALBUM_ENDPOINT_PATH);
 
         if (mainPhotoPosition != null) {
             uriBuilder.queryParam("mainPhotoPosition", mainPhotoPosition);
+        }
+
+        if (batchId != null) {
+            uriBuilder.queryParam("batchId", batchId);
         }
 
         URI uri = uriBuilder.build(placeId, albumId);

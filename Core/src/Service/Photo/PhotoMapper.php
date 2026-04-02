@@ -221,11 +221,12 @@
                 });
         }
 
-        public function selectPendingPhotosWithFixedPosition(string $albumId) : array {
+        public function selectPendingPhotosWithFixedPosition(string $albumId, string $batchId) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
+                    AND batch_id = ?
                     AND replaced_photo_id IS NULL
                     AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
                 ORDER BY batch_position
@@ -234,7 +235,7 @@
             
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($albumId)
+                ->withParameters($albumId, $batchId)
                 ->getMappedResultSet(function($photoRow) {
                     return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
                         $photoRow["batch_id"], $photoRow["expected_batch_size"], $photoRow["batch_position"],
@@ -242,18 +243,19 @@
                 });
         }
 
-        public function selectPendingPhotosWithRelativePosition(string $albumId) : array {
+        public function selectPendingPhotosWithRelativePosition(string $albumId, string $batchId) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM photo_pending
                 WHERE album_id = ?
+                    AND batch_id = ?
                     AND replaced_photo_id IS NOT NULL
                     AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
             SQL;
             
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($albumId)
+                ->withParameters($albumId, $batchId)
                 ->getMappedResultSet(function($photoRow) {
                     return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
                         $photoRow["batch_id"], $photoRow["expected_batch_size"], $photoRow["batch_position"],

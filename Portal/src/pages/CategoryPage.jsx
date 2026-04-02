@@ -29,7 +29,7 @@ const categoryCategories = {
 export default function CategoryPage() {
     const { categoryId } = useParams()
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
-    const {showUpdateCategoryToast} = usePredefinedUserInput()
+    const { showUpdateCategoryToast } = usePredefinedUserInput()
 
     const { hasRole } = useAuth()
 
@@ -52,7 +52,7 @@ export default function CategoryPage() {
         "Počet highlightů": category?.highlights?.length
     }
 
-    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {

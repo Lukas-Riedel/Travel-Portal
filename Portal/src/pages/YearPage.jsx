@@ -39,7 +39,7 @@ export default function YearPage() {
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)
     const getDayOfYear = date => Math.round((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 1)) / 86400000)
 
-    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(placeId, albumId))
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
 
     // TODO: Introduce Calendar instead of CardGrid, use TripCalendar as base. Also make sure that loading tail spins are displayed correctly.
     return hasRole(UserRole.YearRead) && (

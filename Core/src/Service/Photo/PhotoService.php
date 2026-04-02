@@ -17,7 +17,7 @@
 
     class PhotoService {
 
-        private const PENDING_PHOTOS_EXPIRATION_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
+        private const PENDING_PHOTOS_EXPIRATION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
         
         private const ALBUM_PHOTOS_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:%s";
         private const ALBUM_PHOTOS_CACHE_TTL = 1800;
@@ -109,8 +109,10 @@
             $this->pruneUnusedObjects($objectKeys);
         }
 
-        public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, ?int $mainPhotoPosition = null) : void {            
-            $this->createPendingPhotos($albumId);
+        public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, ?int $mainPhotoPosition = null, ?string $batchId = null) : void {            
+            if ($batchId !== null) {
+                $this->createPendingPhotos($albumId, $batchId);
+            }
 
             if ($mainPhotoPosition !== null) {
                 if ($latitude === null || $longitude === null) {
@@ -265,7 +267,7 @@
         public function replacePhoto(string $fileName, string $albumId, string $replacedPhotoId, string $data) : PendingPhoto {        
             $uploadToken = $this->googleClient->uploadPhoto($data);
 
-            $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $fileName, 1, 1, $replacedPhotoId, $uploadToken);
+            $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $replacedPhotoId, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
             $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken),
                 $this->embeddingService->getPhotoEmbedding($data), self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
@@ -356,9 +358,9 @@
             return $objectKeys;
         }
         
-        private function createPendingPhotos(string $albumId) : void {            
+        private function createPendingPhotos(string $albumId, string $batchId) : void {            
             // Process pending photos with fixed position.
-            $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId);        
+            $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId);        
             while (count($pendingPhotos) > 0) {
                 $this->transactionManager->executeAtomically(function() use(&$albumId, &$pendingPhotos) {
                     $newPhotos = array();
@@ -373,11 +375,11 @@
                     $this->createGooglePhotos($albumId, $newPhotos, null);                      
                 });
 
-                $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId);
+                $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId);
             }
                    
             // Process pending photos with relative position.
-            $pendingPhotos = $this->photoMapper->selectPendingPhotosWithRelativePosition($albumId);            
+            $pendingPhotos = $this->photoMapper->selectPendingPhotosWithRelativePosition($albumId, $batchId);            
             foreach ($pendingPhotos as &$pendingPhoto) {
                 $newPhoto = array(
                     "uploadToken" => $pendingPhoto->getUploadToken(),

@@ -33,7 +33,7 @@ export default function PlacePage() {
 
     const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
 
-    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(() => refreshPlaceAlbum(albumId))
+    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(albumId, undefined, batchId))
 
     return hasRole(UserRole.PlaceRead) && (
         <>

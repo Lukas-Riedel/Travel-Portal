@@ -48,7 +48,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId, null).then(setResponse),
         updatePlaceLocation: (latitude: number, longitude: number) => updatePlaceLocation(placeId, latitude, longitude).then(setResponse),
         updatePlaceAlbumsReviewed: () => Promise.all(response?.dates?.map(date => date.album)?.filter(Boolean)?.filter(album => !album.reviewed)?.map(album => updatePlaceAlbumsReviewed(placeId, album.id))).then(refetchResponse),
-        refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number) => refreshPlaceAlbum(placeId, albumId, mainPhotoPosition ? { mainPhotoPosition } : {}).then(refetchResponse),
+        refreshPlaceAlbum: (albumId: string, mainPhotoPosition?: number, batchId?: string) => refreshPlaceAlbum(placeId, albumId, { mainPhotoPosition, batchId }).then(refetchResponse),
         createPlaceNote: (name: string) => createPlaceNote(placeId, name).then(refetchResponse),
         updatePlaceNoteContent: (noteId: string, content: string) => updatePlaceNoteContent(placeId, noteId, content).then(refetchResponse),
         removePlaceNote: (noteId: string) => removePlaceNote(placeId, noteId).then(refetchResponse),

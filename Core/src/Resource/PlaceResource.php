@@ -1791,7 +1791,14 @@
                     description: "The position of the main photo of the album",
                     schema: new OA\Schema(type: "integer"),
                     example: 15,
-                )
+                ),
+                new OA\Parameter(
+                    name: "batchId",
+                    in: "query",
+                    description: "The identifier of the batch to create photos for",
+                    schema: new OA\Schema(type: "string"),
+                    example: "d451237a-b280-4902-8578-f12ef1a29499",
+                ),
             ],
             responses: [
                 new OA\Response(
@@ -1859,6 +1866,7 @@
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $albumId = $this->requirePathArgument($routeArguments, "albumId");
             $mainPhotoPosition = $this->getQueryParameter($request, "mainPhotoPosition");
+            $batchId = $this->getQueryParameter($request, "batchId");
 
             $place = $this->doGetPlace($placeId);
             $album = $place->findAlbum($albumId);
@@ -1867,7 +1875,7 @@
                 throw new NotFoundException($albumId);
             }
 
-            $this->photoService->updateAlbum($albumId, $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition);
+            $this->photoService->updateAlbum($albumId, $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition, $batchId);
             
             $place = $this->doGetPlace($placeId);
             return $place->findAlbum($albumId);
