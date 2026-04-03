@@ -22,8 +22,8 @@ router = APIRouter(
 )
 def get_translation(req_obj: Request,
                     text: str = Query(..., description="Text to translate"),
-                    source_language: str = Query(..., min_length=2, max_length=2,
+                    source_language: str = Query(..., min_length=2, max_length=2, alias="sourceLanguage",
                                                  description="Code of the language that the text is written in"),
-                    target_language: str = Query(..., min_length=2, max_length=2,
+                    target_language: str = Query(..., min_length=2, max_length=2, alias="targetLanguage",
                                                  description="Code of the language to translate the text to")):
     return req_obj.app.state.translation_engine.translate(text, source_language, target_language)

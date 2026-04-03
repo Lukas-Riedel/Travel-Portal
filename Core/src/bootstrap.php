@@ -23,6 +23,7 @@
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Client\Search\OpenSearchClient;
+    use Core\Client\Translation\CortexTranslationClient;
     use Core\Event\EventPublisher;
     use Core\Event\RabbitMQEventListener;
     use Core\Event\Scheduler;
@@ -126,7 +127,8 @@
     $googleClient = new GoogleClient($distributedCacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $cachingGenerativeContentClient = new CachingGenerativeClient($generativeContentClient, $distributedCacheClient);
-    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $logger, getenv("CORE_BASE_URL")); 
+    $translationClient = new CortexTranslationClient($httpClient, $distributedCacheClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL")); 
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);
@@ -161,6 +163,7 @@
     $authenticationService = new AuthenticationService($httpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
+    $translationClient->setAuthenticationService($authenticationService);
 
     // Services.
     $embeddingService = new EmbeddingService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));

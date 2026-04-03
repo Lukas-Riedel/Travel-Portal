@@ -3,6 +3,7 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Client\Google\GoogleClient;
+    use Core\Client\Translation\TranslationClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
@@ -10,6 +11,7 @@
     use ICal\ICal;
     use Monolog\Logger;
 
+    // TODO: Create an interface and rename this to GoogleCalendarClient.
     class CalendarClient {
         
         private const PUBLIC_HOLIDAYS_CACHE_KEY_FORMAT = "CalendarClient:PublicHolidays:%s";
@@ -20,17 +22,23 @@
 
         private const ATTRIBUTE_KEY_VALUE_DELIMITER = ":";
 
+        private const PUBLIC_HOLIDAY_NAME_SOURCE_LANGUAGE = "en";
+        // TODO: Do not hardcode the language code here.
+        private const PUBLIC_HOLIDAY_NAME_TARGET_LANGUAGE = "cs";
+
         private readonly GoogleClient $googleClient;
         private readonly CacheClient $distributedCacheClient;
+        private readonly TranslationClient $translationClient;
         private readonly Logger $logger;
         
         private readonly string $coreBaseUrl;
 
         private ?EventPublisher $eventPublisher;
 
-        public function __construct(GoogleClient $googleClient, CacheClient $distributedCacheClient, Logger $logger, string $coreBaseUrl) {
+        public function __construct(GoogleClient $googleClient, CacheClient $distributedCacheClient, TranslationClient $translationClient, Logger $logger, string $coreBaseUrl) {
             $this->googleClient = $googleClient;
             $this->distributedCacheClient = $distributedCacheClient;
+            $this->translationClient = $translationClient;
             $this->logger = $logger;
             $this->coreBaseUrl = $coreBaseUrl;
             $this->eventPublisher = null;
@@ -127,7 +135,8 @@
                 foreach ($this->getPublicHolidayEvents($categoryIdentifier) as &$event) {
                     if ($event->getStart() > time()) {
                         $date = getdate($event->getStart());
-                        $fetchedHolidays[] = new PublicHoliday($event->getSummary(), $categoryIdentifier->getName(), $date["mday"] . "." . $date["mon"] . "." . $date["year"]);                    
+                        $fetchedHolidays[] = new PublicHoliday($this->translationClient->translate($event->getSummary(), self::PUBLIC_HOLIDAY_NAME_SOURCE_LANGUAGE, self::PUBLIC_HOLIDAY_NAME_TARGET_LANGUAGE),
+                            $categoryIdentifier->getName(), $date["mday"] . "." . $date["mon"] . "." . $date["year"]);                    
                     }
                 }
             }

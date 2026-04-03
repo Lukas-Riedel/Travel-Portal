@@ -5,6 +5,7 @@
     use Core\Client\Http\HttpClient;
     use Core\Service\Authentication\AuthenticationService;
 
+    // TODO: Transform to ClusteringClient.
     class ClusteringService {
 
         private const EMBEDDINGS_CLUSTERING_API_ENDPOINT_PATH = "/clustering/embeddings";

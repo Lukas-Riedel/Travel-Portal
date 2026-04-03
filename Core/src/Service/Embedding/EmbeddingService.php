@@ -5,6 +5,7 @@
     use Core\Client\Http\HttpClient;
     use Core\Service\Authentication\AuthenticationService;
 
+    // TODO: Transform to EmbeddingClient.
     class EmbeddingService {
 
         private const PHOTO_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/photo";        
