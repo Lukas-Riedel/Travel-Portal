@@ -130,10 +130,10 @@ core:
   fitness:
     overwrite:
       threshold:
-        step: "100"
-        distance: "0.1"
-        duration: "120"
-        coefficient: "0.95"
+        step: "500"
+        distance: "0.5"
+        duration: "300"
+        coefficient: "0.9"
     update:
       threshold:
         days: "7"
