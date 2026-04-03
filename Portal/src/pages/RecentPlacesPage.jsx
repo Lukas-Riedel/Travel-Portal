@@ -11,7 +11,7 @@ import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const limitStep = 10
-const maxDistance = 500
+const maxDistance = 2000
 
 export default function RecentPlacesPage() {
     const { hasRole } = useAuth()
