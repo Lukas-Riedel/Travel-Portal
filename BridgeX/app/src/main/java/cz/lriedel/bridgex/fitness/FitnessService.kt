@@ -45,14 +45,15 @@ class FitnessService private constructor(
         val timeRange = TimeRangeFilter.between(Instant.ofEpochSecond(start), Instant.ofEpochSecond(end))
 
         val metrics: Set<AggregateMetric<*>> = setOf(COUNT_TOTAL, DISTANCE_TOTAL)
-        val dataOriginFilter: Set<DataOrigin> = setOf(DataOrigin("com.google.android.apps.fitness"))
+        val dataOriginFilter: Set<DataOrigin> = setOf(DataOrigin(GOOGLE_FITNESS_DATA_ORIGIN))
 
         val aggregationRequest = AggregateRequest(metrics, timeRange, dataOriginFilter)
         val aggregationResult = healthClient.aggregate(aggregationRequest)
 
         val stepRecordsRequest = ReadRecordsRequest(
             recordType = StepsRecord::class,
-            timeRangeFilter = timeRange
+            timeRangeFilter = timeRange,
+            dataOriginFilter = dataOriginFilter
         );
         val stepRecordsResponse = healthClient.readRecords(stepRecordsRequest)
 
@@ -68,6 +69,7 @@ class FitnessService private constructor(
     }
 
     companion object {
+        private const val GOOGLE_FITNESS_DATA_ORIGIN = "com.google.android.apps.fitness"
         private const val MAX_RETRIES = 3
         private const val BACK_OFF_MULTIPLIER = 2
         private const val WAIT_TIME_MILLISECONDS = 500
