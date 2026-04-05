@@ -45,6 +45,10 @@
                 . sprintf(self::TRANSLATION_API_ENDPOINT_PATH_FORMAT, $sourceLanguage, $targetLanguage),
                 array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"),
                 json_encode($payload));
+                
+            if ($translation === false) {
+                return $text;
+            }
 
             $this->distributedCacheClient->set($cacheKey, $translation, self::TRANSLATED_TEXT_CACHE_TTL);
             return $translation;

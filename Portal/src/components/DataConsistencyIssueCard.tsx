@@ -317,7 +317,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (places: Place[]) => {
                 const records = places.map((place, i) => [
                     t("issue.place.duplicated.label.place", { index: i + 1 }),
-                    [place.name, place.dates?.length && formatEvents(place.dates.length)].filter(Boolean).join(" ")
+                    [place.name, place.dates?.length && formatEvents(place.dates.length)].filter(Boolean).join(", ")
                 ])
 
                 return {

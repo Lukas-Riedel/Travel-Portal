@@ -131,7 +131,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         const highlight = shuffledHighlights[currentHighlightIndex]
         const timestamp = highlight.photo.timestamp - (isDaylightSavingTime(highlight.photo.timestamp, configuration?.homeLocation?.timezone) ? 0 : 3600)
         showUpdateHighlightAttributesToast((composition, sky, shadows, circumstances, atmosphere) => onHighlightQualityAttributesUpdated(highlight.id, composition,
-            sky, shadows, circumstances, atmosphere), highlight?.attributes, timestamp, place.timezone, highlight.photo.sunAltitude)
+            sky, shadows, circumstances, atmosphere), highlight?.attributes, timestamp, place?.timezone, highlight?.photo?.sunAltitude)
     }
 
     if (highlights && shuffledHighlights.length === 0) {
