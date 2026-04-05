@@ -265,7 +265,7 @@
             }
         }
 
-        public function updateHighlightComposition(string $highlightId, int $composition) : bool {
+        public function updateHighlightComposition(string $highlightId, ?int $composition) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$highlightId, &$composition, &$wasUpdated) {
                 $wasUpdated &= $this->highlightMapper->updateHighlightComposition($highlightId, $composition);
@@ -276,7 +276,7 @@
             return $wasUpdated;
         }
 
-        public function updateHighlightSky(string $highlightId, int $sky) : bool {
+        public function updateHighlightSky(string $highlightId, ?int $sky) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$highlightId, &$sky, &$wasUpdated) {
                 $wasUpdated &= $this->highlightMapper->updateHighlightSky($highlightId, $sky);
@@ -287,7 +287,7 @@
             return $wasUpdated;
         }
 
-        public function updateHighlightShadows(string $highlightId, int $shadows) : bool {
+        public function updateHighlightShadows(string $highlightId, ?int $shadows) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$highlightId, &$shadows, &$wasUpdated) {
                 $wasUpdated &= $this->highlightMapper->updateHighlightShadows($highlightId, $shadows);
@@ -298,7 +298,7 @@
             return $wasUpdated;
         }
 
-        public function updateHighlightCircumstances(string $highlightId, int $circumstances) : bool {
+        public function updateHighlightCircumstances(string $highlightId, ?int $circumstances) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$highlightId, &$circumstances, &$wasUpdated) {
                 $wasUpdated &= $this->highlightMapper->updateHighlightCircumstances($highlightId, $circumstances);
@@ -309,7 +309,7 @@
             return $wasUpdated;
         }
 
-        public function updateHighlightAtmosphere(string $highlightId, int $atmosphere) : bool {
+        public function updateHighlightAtmosphere(string $highlightId, ?int $atmosphere) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$highlightId, &$atmosphere, &$wasUpdated) {
                 $wasUpdated &= $this->highlightMapper->updateHighlightAtmosphere($highlightId, $atmosphere);

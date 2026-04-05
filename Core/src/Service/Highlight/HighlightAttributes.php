@@ -7,7 +7,6 @@
         schema: "HighlightAttributes",
         type: "object",
         description: "A class representing highlight quality attributes",
-        required: ["composition", "sky", "shadows", "circumstances", "atmosphere"],
         properties: [
             new OA\Property(
                 property: "composition",
@@ -48,13 +47,13 @@
     )]
     class HighlightAttributes implements \JsonSerializable {
         
-        private readonly int $composition;
-        private readonly int $sky;
-        private readonly int $shadows;
-        private readonly int $circumstances;
-        private readonly int $atmosphere;
+        private readonly ?int $composition;
+        private readonly ?int $sky;
+        private readonly ?int $shadows;
+        private readonly ?int $circumstances;
+        private readonly ?int $atmosphere;
 
-        public function __construct(int $composition, int $sky, int $shadows, int $circumstances, int $atmosphere) {
+        public function __construct(?int $composition, ?int $sky, ?int $shadows, ?int $circumstances, ?int $atmosphere) {
             $this->composition = $composition;
             $this->sky = $sky;
             $this->shadows = $shadows;
@@ -62,28 +61,28 @@
             $this->atmosphere = $atmosphere;
         }
 
-        public function getComposition() : int {
+        public function getComposition() : ?int {
             return $this->composition;
         }
 
-        public function getSky() : int {
+        public function getSky() : ?int {
             return $this->sky;
         }
 
-        public function getShadows() : int {
+        public function getShadows() : ?int {
             return $this->shadows;
         }
 
-        public function getCircumstances() : int {
+        public function getCircumstances() : ?int {
             return $this->circumstances;
         }
 
-        public function getAtmosphere() : int {
+        public function getAtmosphere() : ?int {
             return $this->atmosphere;
         }
 
-        public function getQuality() : ?float {
-            $values = array($this->composition, $this->sky, $this->shadows, $this->circumstances, $this->atmosphere);
+        public function getQuality() : float {
+            $values = array_filter(array($this->composition, $this->sky, $this->shadows, $this->circumstances, $this->atmosphere), fn($value) => !is_null($value));
             return in_array(0, $values, true) ? 0.0 : count($values) / array_sum(array_map(fn($value) => 1 / $value, $values));
         }
 

@@ -17,7 +17,7 @@ export const useYear = (year?: number): UseYearResult => {
         createYearHighlight: (photoId: string) => createYearHighlight(year, photoId).then(refetchResponse),
         removeYearHighlight: (highlightId: string) => removeYearHighlight(year, highlightId).then(refetchResponse),
         updateYearMainHighlight: (highlightId: string) => updateYearMainHighlight(year, highlightId).then(setResponse),
-        updateYearHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) =>
+        updateYearHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
         refreshYearHighlights: (count: number) => refreshYearHighlights(year, count).then(refetchResponse)
     }

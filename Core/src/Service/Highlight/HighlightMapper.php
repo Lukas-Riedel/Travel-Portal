@@ -251,7 +251,7 @@
                 ->execute() === 1;
         }
 
-        public function updateHighlightComposition(string $highlightId, int $composition) : bool {
+        public function updateHighlightComposition(string $highlightId, ?int $composition) : bool {
             $sql = <<<'SQL'
                 UPDATE highlight_identifier
                 SET composition = ?
@@ -264,7 +264,7 @@
                 ->execute() === 1;
         }
 
-        public function updateHighlightSky(string $highlightId, int $sky) : bool {
+        public function updateHighlightSky(string $highlightId, ?int $sky) : bool {
             $sql = <<<'SQL'
                 UPDATE highlight_identifier
                 SET sky = ?
@@ -277,7 +277,7 @@
                 ->execute() === 1;
         }
 
-        public function updateHighlightShadows(string $highlightId, int $shadows) : bool {
+        public function updateHighlightShadows(string $highlightId, ?int $shadows) : bool {
             $sql = <<<'SQL'
                 UPDATE highlight_identifier
                 SET shadows = ?
@@ -290,7 +290,7 @@
                 ->execute() === 1;
         }
 
-        public function updateHighlightCircumstances(string $highlightId, int $circumstances) : bool {
+        public function updateHighlightCircumstances(string $highlightId, ?int $circumstances) : bool {
             $sql = <<<'SQL'
                 UPDATE highlight_identifier
                 SET circumstances = ?
@@ -303,7 +303,7 @@
                 ->execute() === 1;
         }
 
-        public function updateHighlightAtmosphere(string $highlightId, int $atmosphere) : bool {
+        public function updateHighlightAtmosphere(string $highlightId, ?int $atmosphere) : bool {
             $sql = <<<'SQL'
                 UPDATE highlight_identifier
                 SET atmosphere = ?

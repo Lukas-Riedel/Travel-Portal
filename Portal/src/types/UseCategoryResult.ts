@@ -8,7 +8,7 @@ export interface UseCategoryResult {
     createCategoryHighlight: (photoId: string) => Promise<Highlight>
     removeCategoryHighlight: (highlightId: string) => Promise<void>
     updateCategoryMainHighlight: (highlightId: string) => Promise<Category>
-    updateCategoryHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) => Promise<Highlight>
+    updateCategoryHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) => Promise<Highlight>
     removeCategory: () => Promise<void>
     refreshCategoryHighlights: (count: number) => Promise<Highlight[]>
 }

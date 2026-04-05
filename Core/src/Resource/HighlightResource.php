@@ -135,7 +135,6 @@
                             property: "attributes",
                             description: "The highlight quality attributes",
                             type: "object",
-                            required: ["composition", "sky", "shadows", "circumstances", "atmosphere"],
                             properties: [
                                 new OA\Property(
                                     property: "composition",
@@ -256,23 +255,23 @@
             
             $newAttributes = $this->getJsonBodyField($request, "attributes");
             if ($newAttributes !== null) {
-                if (isset($newAttributes["composition"])) {
+                if (array_key_exists("composition", $newAttributes)) {
                     $wasUpdated |= $this->highlightService->updateHighlightComposition($highlightId, $newAttributes["composition"]);
                 }
 
-                if (isset($newAttributes["sky"])) {
+                if (array_key_exists("sky", $newAttributes)) {
                     $wasUpdated |= $this->highlightService->updateHighlightSky($highlightId, $newAttributes["sky"]);
                 }
 
-                if (isset($newAttributes["shadows"])) {
+                if (array_key_exists("shadows", $newAttributes)) {
                     $wasUpdated |= $this->highlightService->updateHighlightShadows($highlightId, $newAttributes["shadows"]);
                 }
 
-                if (isset($newAttributes["circumstances"])) {
+                if (array_key_exists("circumstances", $newAttributes)) {
                     $wasUpdated |= $this->highlightService->updateHighlightCircumstances($highlightId, $newAttributes["circumstances"]);
                 }
 
-                if (isset($newAttributes["atmosphere"])) {
+                if (array_key_exists("atmosphere", $newAttributes)) {
                     $wasUpdated |= $this->highlightService->updateHighlightAtmosphere($highlightId, $newAttributes["atmosphere"]);
                 }
             }

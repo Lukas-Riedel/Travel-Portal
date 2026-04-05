@@ -8,7 +8,7 @@ export interface UsePlaceResult {
     createPlaceHighlight: (photoId: string) => Promise<Highlight>
     removePlaceHighlight: (highlightId: string) => Promise<void>
     updatePlaceMainHighlight: (highlightId: string) => Promise<Place>
-    updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) => Promise<Highlight>
+    updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) => Promise<Highlight>
     createPlaceLabel: (name: string) => Promise<Label>
     removePlaceLabel: (labelId: string) => Promise<void>
     updatePlaceExcerpt: (excerpt: string) => Promise<Place>

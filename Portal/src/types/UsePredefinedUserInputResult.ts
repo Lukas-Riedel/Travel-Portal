@@ -56,7 +56,7 @@ export interface UsePredefinedUserInputResult {
     showAssignLabelToast: (createLabel: () => Promise<Label>) => Promise<boolean>
     showUnassignLabelToast: (removeLabel: () => Promise<void>) => Promise<boolean>
     showUploadPhotosToast: (agents: Device[], uploadPhotos: ((path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)) => Promise<boolean>
-    showUpdateHighlightAttributesToast: (updateHighlightAttributes: (composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) => Promise<boolean>
+    showUpdateHighlightAttributesToast: (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) => Promise<boolean>
     showOverwriteGeographicalRegionToast: (region: GeographicalRegion, overwriteGeographicalRegion: (radius: number, geoJson: object) => Promise<GeographicalRegion>) => Promise<boolean>
     showOverwriteCompositeRegionToast: (region: CompositeRegion, overwriteCompositeRegion: (includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showSubtractVoucherValueToast: (subtractVoucherValue: (value: number) => Promise<Voucher>) => Promise<boolean>

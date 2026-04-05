@@ -20,7 +20,7 @@ export const useCategory = (categoryId?: string): UseCategoryResult => {
         createCategoryHighlight: (photoId: string) => createCategoryHighlight(categoryId, photoId).then(refetchResponse),
         removeCategoryHighlight: (highlightId: string) => removeCategoryHighlight(categoryId, highlightId).then(refetchResponse),
         updateCategoryMainHighlight: (highlightId: string) => updateCategoryMainHighlight(categoryId, highlightId).then(setResponse),
-        updateCategoryHighlightQualityAttributes: (highlightId: string, composition: number, sky: number, shadows: number, circumstances: number, atmosphere: number) =>
+        updateCategoryHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
         removeCategory: () => removeCategory(categoryId),
         refreshCategoryHighlights: (count: number) => refreshCategoryHighlights(categoryId, count).then(refetchResponse)
