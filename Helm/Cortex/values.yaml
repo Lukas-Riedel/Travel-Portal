@@ -7,7 +7,9 @@ cortex:
   service:
     type: ClusterIP
     port: 8080
-  model: clip-ViT-L-14
+  model:
+    embeddings: clip-ViT-L-14
+    translation: Helsinki-NLP/opus-mt-{source}-{target}
   engine: cpu
   iam:
     host: iam

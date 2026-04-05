@@ -1,13 +1,33 @@
-from typing import Set
-
-import argostranslate.package
-import argostranslate.translate
+import torch
+from transformers import MarianMTModel, MarianTokenizer
+from typing import Set, Dict
 
 
 class TranslationEngine:
-    def __init__(self, supported_languages: Set[str]) -> None:
+    def __init__(self, model_name_format: str, supported_languages: Set[str], device: str) -> None:
+        self.model_name_format = model_name_format
         self.supported_languages = supported_languages
+        self.device = device
+        self.models: Dict[str, MarianMTModel] = {}
+        self.tokenizers: Dict[str, MarianTokenizer] = {}
         self._initialize_models()
+
+    def _initialize_models(self) -> None:
+        for source in self.supported_languages:
+            for target in self.supported_languages:
+                if source == target:
+                    continue
+
+                model_name = self.model_name_format.format(source=source, target=target)
+                tokenizer = MarianTokenizer.from_pretrained(model_name)
+                model = MarianMTModel.from_pretrained(model_name)
+
+                model.to(self.device)
+                model.eval()
+
+                pair_key = f"{source}-{target}"
+                self.tokenizers[pair_key] = tokenizer
+                self.models[pair_key] = model
 
     def translate(self, text: str, source_language: str, target_language: str) -> str:
         if not text or not text.strip():
@@ -16,46 +36,27 @@ class TranslationEngine:
         if source_language == target_language:
             return self._post_process_text(text)
 
-        translated = argostranslate.translate.translate(
-            text, source_language, target_language
+        pair_key = f"{source_language}-{target_language}"
+
+        if pair_key not in self.models:
+            return self._post_process_text(text)
+
+        tokenizer = self.tokenizers[pair_key]
+        model = self.models[pair_key]
+
+        inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True).to(
+            self.device
         )
 
-        return self._post_process_text(translated)
+        with torch.no_grad():
+            translated_tokens = model.generate(**inputs, max_new_tokens=512)
 
-    def _initialize_models(self) -> None:
-        argostranslate.package.update_package_index()
-        available_packages = argostranslate.package.get_available_packages()
+        translated_text = tokenizer.decode(
+            translated_tokens[0], skip_special_tokens=True
+        )
 
-        for source in self.supported_languages:
-            for target in self.supported_languages:
-                if source == target:
-                    continue
+        return self._post_process_text(translated_text)
 
-                translation_path = None
-                try:
-                    translation_path = argostranslate.translate.get_translation_from_codes(source, target)
-                except Exception:
-                    pass
-
-                if translation_path is None:
-                    package = next(
-                        (pkg for pkg in available_packages 
-                         if pkg.from_code == source and pkg.to_code == target),
-                        None
-                    )
-
-                    if package:
-                        try:
-                            download_path = package.download()
-                            argostranslate.package.install_from_path(download_path)
-                        except Exception as e:
-                            pass
-
-        try:
-            argostranslate.translate.load_installed_languages()
-        except Exception:
-            pass
-                        
     @staticmethod
     def _post_process_text(text: str) -> str:
         return text.strip()

@@ -24,23 +24,28 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.ai_engine = AiEngine(
-        os.getenv("MODEL_NAME"),
-        os.getenv("ENGINE_DEVICE")
-    )
+    app.state.ai_engine = AiEngine(os.getenv("EMBEDDINGS_MODEL_NAME"), os.getenv("ENGINE_DEVICE"))
     app.state.clustering_engine = ClusteringEngine()
     app.state.translation_engine = TranslationEngine(
-        supported_languages={lang.strip() for lang in os.getenv("SUPPORTED_LANGUAGES", "").split(",") if lang.strip()}
+        model_name_format=os.getenv("TRANSLATION_MODEL_NAME_FORMAT"),
+        supported_languages={
+            lang.strip()
+            for lang in os.getenv("SUPPORTED_LANGUAGES", "").split(",")
+            if lang.strip()
+        },
+        device=os.getenv("ENGINE_DEVICE"),
     )
     app.state.authentication_service = AuthenticationService(
         os.getenv("IAM_HOST"),
         int(os.getenv("IAM_PORT", 8080)),
-        os.getenv("IAM_APP_CLIENT_ID")
+        os.getenv("IAM_APP_CLIENT_ID"),
     )
     yield
 
 
-app = FastAPI(title="Cortex API", docs_url="/swagger", version="1.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="Cortex API", docs_url="/swagger", version="1.0.0", lifespan=lifespan
+)
 app.include_router(management_router)
 app.include_router(embeddings_router)
 app.include_router(translation_router)
@@ -79,7 +84,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         "code": status_code,
         "type": error_type,
         "message": message,
-        "path": path
+        "path": path,
     }
 
     logger.error(
@@ -87,11 +92,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         extra={
             "error": error_content,
             "stacktrace": traceback.format_exc().splitlines(),
-            "transaction_id": t_id
-        }
+            "transaction_id": t_id,
+        },
     )
 
-    return JSONResponse(
-        status_code=status_code,
-        content=error_content
-    )
+    return JSONResponse(status_code=status_code, content=error_content)
