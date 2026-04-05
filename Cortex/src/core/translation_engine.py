@@ -1,10 +1,14 @@
 import torch
 from transformers import MarianMTModel, MarianTokenizer
+import syntok.segmenter as segmenter
+from syntok.tokenizer import Tokenizer
 from typing import Set, Dict
 
 
 class TranslationEngine:
-    def __init__(self, model_name_format: str, supported_languages: Set[str], device: str) -> None:
+    def __init__(
+        self, model_name_format: str, supported_languages: Set[str], device: str
+    ) -> None:
         self.model_name_format = model_name_format
         self.supported_languages = supported_languages
         self.device = device
@@ -37,25 +41,41 @@ class TranslationEngine:
             return self._post_process_text(text)
 
         pair_key = f"{source_language}-{target_language}"
-
         if pair_key not in self.models:
             return self._post_process_text(text)
 
-        tokenizer = self.tokenizers[pair_key]
-        model = self.models[pair_key]
-
-        inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True).to(
-            self.device
-        )
-
-        with torch.no_grad():
-            translated_tokens = model.generate(**inputs, max_new_tokens=512)
-
-        translated_text = tokenizer.decode(
-            translated_tokens[0], skip_special_tokens=True
+        translated_text = self._do_translate(
+            text, self.tokenizers[pair_key], self.models[pair_key]
         )
 
         return self._post_process_text(translated_text)
+
+    def _do_translate(self, text: str, tokenizer, model) -> str:
+        sentence_tokens = segmenter.analyze(text)
+        translated_parts = []
+
+        for paragraph in sentence_tokens:
+            for sentence in paragraph:
+                raw_sentence = "".join(
+                    token.spacing + token.value for token in sentence
+                ).strip()
+
+                if not raw_sentence:
+                    continue
+
+                inputs = tokenizer(
+                    raw_sentence, return_tensors="pt", padding=True, truncation=True
+                ).to(self.device)
+
+                with torch.no_grad():
+                    translated_tokens = model.generate(**inputs, max_new_tokens=512)
+
+                decoded = tokenizer.decode(
+                    translated_tokens[0], skip_special_tokens=True
+                )
+                translated_parts.append(decoded)
+
+        return " ".join(translated_parts)
 
     @staticmethod
     def _post_process_text(text: str) -> str:
