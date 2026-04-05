@@ -34,6 +34,8 @@ class EmbeddingsClusteringRequest(BaseModel):
     },
 )
 def get_embeddings_clusters(request: EmbeddingsClusteringRequest, req_obj: Request):
-    clusters = req_obj.app.state.clustering_engine.get_embeddings_clusters(request.embeddings, request.clusters)
+    clusters = req_obj.app.state.clustering_engine.get_embeddings_clusters(
+        request.embeddings, request.clusters
+    )
 
     return clusters

@@ -16,7 +16,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.perf_counter()
 
         t_id = request.headers.get(TRANSACTION_ID_HEADER) or str(uuid.uuid4())
-        origin = request.headers.get(REQUEST_ORIGIN_HEADER, request.client.host if request.client else None)
+        origin = request.headers.get(
+            REQUEST_ORIGIN_HEADER, request.client.host if request.client else None
+        )
 
         token_t = transaction_id.set(t_id)
         token_o = request_origin.set(origin)
@@ -31,7 +33,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
 
             duration = round((time.perf_counter() - start_time) * 1000)
-            logger.info(f"The '{request.method} {path}' request was processed in {duration} milliseconds.")
+            logger.info(
+                f"The '{request.method} {path}' request was processed in {duration} milliseconds."
+            )
 
             response.headers[TRANSACTION_ID_HEADER] = t_id
             return response

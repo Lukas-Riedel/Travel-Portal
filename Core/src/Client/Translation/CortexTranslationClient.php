@@ -9,7 +9,7 @@
 
     class CortexTranslationClient implements TranslationClient {
 
-        private const TRANSLATION_API_ENDPOINT_PATH_FORMAT = "/translate?text=%s&sourceLanguage=%s&targetLanguage=%s";
+        private const TRANSLATION_API_ENDPOINT_PATH_FORMAT = "/translate?sourceLanguage=%s&targetLanguage=%s";
         
         private const TRANSLATED_TEXT_CACHE_KEY_FORMAT = "CortexTranslationClient:TranslatedText:%s:%s:%s";
         private const TRANSLATED_TEXT_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
@@ -40,9 +40,11 @@
                 return $cachedTranslation;
             }
 
-            $translation = $this->httpClient->executeRequest(HttpMethod::GET, $this->getCortexBaseUrl()
-                . sprintf(self::TRANSLATION_API_ENDPOINT_PATH_FORMAT, urlencode($text), $sourceLanguage, $targetLanguage),
-                array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken()));
+            $payload = array("data" => $text);
+            $translation = $this->httpClient->executeRequest(HttpMethod::POST, $this->getCortexBaseUrl()
+                . sprintf(self::TRANSLATION_API_ENDPOINT_PATH_FORMAT, $sourceLanguage, $targetLanguage),
+                array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"),
+                json_encode($payload));
 
             $this->distributedCacheClient->set($cacheKey, $translation, self::TRANSLATED_TEXT_CACHE_TTL);
             return $translation;

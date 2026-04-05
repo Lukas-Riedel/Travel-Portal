@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.params import Query
+from pydantic import BaseModel, Field
 
 from src.api.dependencies import require_backend_service_account
 
@@ -9,7 +10,15 @@ router = APIRouter(
 )
 
 
-@router.get(
+class TranslationRequest(BaseModel):
+    data: str = Field(
+        ...,
+        description="The text to translate",
+        example="This is the text that will be translated.",
+    )
+
+
+@router.post(
     "/translate",
     response_model=str,
     response_description="A translated text",
@@ -20,10 +29,24 @@ router = APIRouter(
         422: {"description": "Unprocessable Entity", "model": None},
     },
 )
-def get_translation(req_obj: Request,
-                    text: str = Query(..., description="Text to translate"),
-                    source_language: str = Query(..., min_length=2, max_length=2, alias="sourceLanguage",
-                                                 description="Code of the language that the text is written in"),
-                    target_language: str = Query(..., min_length=2, max_length=2, alias="targetLanguage",
-                                                 description="Code of the language to translate the text to")):
-    return req_obj.app.state.translation_engine.translate(text, source_language, target_language)
+def get_translation(
+    request: TranslationRequest,
+    req_obj: Request,
+    source_language: str = Query(
+        ...,
+        min_length=2,
+        max_length=2,
+        alias="sourceLanguage",
+        description="Code of the language that the text is written in",
+    ),
+    target_language: str = Query(
+        ...,
+        min_length=2,
+        max_length=2,
+        alias="targetLanguage",
+        description="Code of the language to translate the text to",
+    ),
+):
+    return req_obj.app.state.translation_engine.translate(
+        request.data, source_language, target_language
+    )

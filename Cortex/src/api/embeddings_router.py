@@ -52,11 +52,21 @@ class EmbeddingResponse(BaseModel):
         422: {"description": "Unprocessable Entity", "model": None},
     },
 )
-def get_text_embedding(request: TextEmbeddingRequest, req_obj: Request,
-                       language: str = Query(min_length=2, max_length=2,
-                                             description="Code of the language that the text is written in")):
-    translated_text = req_obj.app.state.translation_engine.translate(request.data, language, TARGET_LANGUAGE).lower()
-    embedding = req_obj.app.state.ai_engine.get_text_embedding(translated_text).flatten()
+def get_text_embedding(
+    request: TextEmbeddingRequest,
+    req_obj: Request,
+    language: str = Query(
+        min_length=2,
+        max_length=2,
+        description="Code of the language that the text is written in",
+    ),
+):
+    translated_text = req_obj.app.state.translation_engine.translate(
+        request.data, language, TARGET_LANGUAGE
+    ).lower()
+    embedding = req_obj.app.state.ai_engine.get_text_embedding(
+        translated_text
+    ).flatten()
 
     return {"embedding": [float(x) for x in embedding], "dimensions": len(embedding)}
 
