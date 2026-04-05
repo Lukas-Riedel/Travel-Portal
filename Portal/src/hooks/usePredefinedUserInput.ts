@@ -5,9 +5,11 @@ import { type Airline, type Album, type Document, type Expense, type Flight, typ
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
+import { useConfiguration } from "../contexts/ConfigContext.tsx"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
+    const { configuration } = useConfiguration()
     const { t } = useTranslation()
 
     const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
@@ -700,138 +702,68 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
 
     const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) =>
         showFormToast(
-            t("highlight.prompt.update.attributes.message"),
+            t("highlight.prompt.update.attribute.message"),
             [
                 {
                     type: "select",
-                    label: t("highlight.prompt.update.attributes.label.composition"),
+                    label: t("highlight.prompt.update.attribute.label.composition"),
                     defaultValue: highlightAttributes?.composition,
                     required: true,
-                    options: [
-                        {
-                            id: 5,
-                            name: t("highlight.prompt.update.attributes.option.composition.bad")
-                        },
-                        {
-                            id: 60,
-                            name: t("highlight.prompt.update.attributes.option.composition.average")
-                        },
-                        {
-                            id: 100,
-                            name: t("highlight.prompt.update.attributes.option.composition.good")
-                        }
-                    ]
+                    options: configuration?.highlights?.attribute?.option?.composition?.map(({ id, value }) => ({
+                        id: value,
+                        name: t(`highlight.prompt.update.attribute.option.composition.${id}`)
+                    }))
                 },
                 {
                     type: "select",
-                    label: t("highlight.prompt.update.attributes.label.sky"),
+                    label: t("highlight.prompt.update.attribute.label.sky"),
                     defaultValue: highlightAttributes?.sky,
                     required: false,
-                    options: [
-                        {
-                            id: 10,
-                            name: t("highlight.prompt.update.attributes.option.sky.terrible")
-                        },
-                        {
-                            id: 30,
-                            name: t("highlight.prompt.update.attributes.option.sky.bad")
-                        },
-                        {
-                            id: 50,
-                            name: t("highlight.prompt.update.attributes.option.sky.average")
-                        },
-                        {
-                            id: 95,
-                            name: t("highlight.prompt.update.attributes.option.sky.good")
-                        },
-                        {
-                            id: 100,
-                            name: t("highlight.prompt.update.attributes.option.sky.great")
-                        }
-                    ]
+                    options: configuration?.highlights?.attribute?.option?.sky?.map(({ id, value }) => ({
+                        id: value,
+                        name: t(`highlight.prompt.update.attribute.option.sky.${id}`)
+                    }))
                 },
                 {
                     type: "select",
-                    label: t("highlight.prompt.update.attributes.label.shadows"),
+                    label: t("highlight.prompt.update.attribute.label.shadows"),
                     defaultValue: highlightAttributes?.shadows,
                     required: false,
-                    options: [
-                        {
-                            id: 35,
-                            name: t("highlight.prompt.update.attributes.option.shadows.terrible")
-                        },
-                        {
-                            id: 40,
-                            name: t("highlight.prompt.update.attributes.option.shadows.bad")
-                        },
-                        {
-                            id: 60,
-                            name: t("highlight.prompt.update.attributes.option.shadows.good")
-                        },
-                        {
-                            id: 100,
-                            name: t("highlight.prompt.update.attributes.option.shadows.great")
-                        }
-                    ]
+                    options: configuration?.highlights?.attribute?.option?.shadows?.map(({ id, value }) => ({
+                        id: value,
+                        name: t(`highlight.prompt.update.attribute.option.shadows.${id}`)
+                    }))
                 },
                 {
                     type: "select",
-                    label: t("highlight.prompt.update.attributes.label.circumstances"),
+                    label: t("highlight.prompt.update.attribute.label.circumstances"),
                     defaultValue: highlightAttributes?.circumstances,
                     required: true,
-                    options: [
-                        {
-                            id: 20,
-                            name: t("highlight.prompt.update.attributes.option.circumstances.terrible")
-                        },
-                        {
-                            id: 70,
-                            name: t("highlight.prompt.update.attributes.option.circumstances.bad")
-                        },
-                        {
-                            id: 90,
-                            name: t("highlight.prompt.update.attributes.option.circumstances.good")
-                        },
-                        {
-                            id: 100,
-                            name: t("highlight.prompt.update.attributes.option.circumstances.great")
-                        }
-                    ]
+                    options: configuration?.highlights?.attribute?.option?.circumstances?.map(({ id, value }) => ({
+                        id: value,
+                        name: t(`highlight.prompt.update.attribute.option.circumstances.${id}`)
+                    }))
                 },
                 {
                     type: "select",
-                    label: t("highlight.prompt.update.attributes.label.atmosphere"),
+                    label: t("highlight.prompt.update.attribute.label.atmosphere"),
                     defaultValue: highlightAttributes?.atmosphere,
                     required: true,
-                    options: [
-                        {
-                            id: 30,
-                            name: t("highlight.prompt.update.attributes.option.atmosphere.terrible")
-                        },
-                        {
-                            id: 80,
-                            name: t("highlight.prompt.update.attributes.option.atmosphere.bad")
-                        },
-                        {
-                            id: 95,
-                            name: t("highlight.prompt.update.attributes.option.atmosphere.good")
-                        },
-                        {
-                            id: 100,
-                            name: t("highlight.prompt.update.attributes.option.atmosphere.great")
-                        }
-                    ]
+                    options: configuration?.highlights?.attribute?.option?.atmosphere?.map(({ id, value }) => ({
+                        id: value,
+                        name: t(`highlight.prompt.update.attribute.option.atmosphere.${id}`)
+                    }))
                 },
                 timestamp && {
                     type: "text",
-                    label: t("highlight.prompt.update.attributes.label.datetime"),
+                    label: t("highlight.prompt.update.attribute.label.datetime"),
                     required: false,
                     disabled: true,
                     defaultValue: formatTimestamp(timestamp, t("general.format.datetime.year.included"), timezone),
                 },
                 sunAltitude && {
                     type: "text",
-                    label: t("highlight.prompt.update.attributes.label.sun"),
+                    label: t("highlight.prompt.update.attribute.label.sun"),
                     required: false,
                     disabled: true,
                     defaultValue: `${sunAltitude.toFixed(1)}°`,
@@ -844,8 +776,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 circumstantes !== "" ? Number(circumstantes) : null,
                 atmosphere !== "" ? Number(atmosphere) : null
             ),
-            t("highlight.prompt.update.attributes.confirmed"),
-            t("highlight.prompt.update.attributes.failed")
+            t("highlight.prompt.update.attribute.confirmed"),
+            t("highlight.prompt.update.attribute.failed")
         )
 
     const showOverwriteGeographicalRegionToast = (region: GeographicalRegion, overwriteGeographicalRegion: (radius: number, geoJson: object) => Promise<GeographicalRegion>) =>

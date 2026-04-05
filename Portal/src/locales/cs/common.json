@@ -934,7 +934,7 @@
                 "failed": "Nepodařilo se upravit highlight"
             },
             "update": {
-                "attributes": {
+                "attribute": {
                     "message": "Zadej nové hodnoty atributů:",
                     "label": {
                         "composition": "Kompozice",
