@@ -38,6 +38,7 @@ def get_translation(
         max_length=2,
         alias="sourceLanguage",
         description="Code of the language that the text is written in",
+        example="en",
     ),
     target_language: str = Query(
         ...,
@@ -45,6 +46,7 @@ def get_translation(
         max_length=2,
         alias="targetLanguage",
         description="Code of the language to translate the text to",
+        example="cs",
     ),
 ):
     return req_obj.app.state.translation_engine.translate(
