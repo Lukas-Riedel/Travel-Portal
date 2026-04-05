@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Highlight;
 
+    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightAttributes;
 
     enum HighlightAttributeKey {
@@ -10,14 +11,8 @@
         case Circumstances;
         case Atmosphere;
 
-        public function getWeight(): int {
-            return match($this) {
-                self::Composition => 4,
-                self::Sky => 10,
-                self::Shadows => 10,
-                self::Circumstances => 4,
-                self::Atmosphere => 10
-            };
+        public function getOptions(ConfigurationService $configurationService) : array {
+            return $configurationService->getConfigurationEntry("highlights")["attribute"]["option"][strtolower($this->name)];
         }
         
         public function extractValue(HighlightAttributes $highlightAttributes) : ?float {

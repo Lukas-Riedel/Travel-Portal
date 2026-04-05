@@ -166,7 +166,7 @@
     $translationClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $embeddingService = new EmbeddingService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $embeddingService = new EmbeddingService($authenticationService, $httpClient, $distributedCacheClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $clusteringService = new ClusteringService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $indexService = new IndexService($clusteringService, $embeddingService, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
         getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"), getenv("STYLE_EMBEDDING_COEFFICIENT"), getenv("NEGATIVE_EMBEDDING_COEFFICIENT"));
@@ -178,7 +178,7 @@
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
     $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
-    $highlightService = new HighlightService($databaseClient, $photoService, $indexService, $eventPublisher, $cloudStorageClient, $httpClient, $logger);
+    $highlightService = new HighlightService($databaseClient, $photoService, $embeddingService, $configurationService, $eventPublisher, $cloudStorageClient, $httpClient, $logger);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $indexService, $statisticsService, $memoryCacheClient, $cachingGenerativeContentClient, $eventPublisher);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),

@@ -14,27 +14,29 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Http\HttpClient;
-    use Core\Service\Index\IndexService;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Embedding\EmbeddingService;
     use Monolog\Logger;
 
     class HighlightService {
 
-        private const HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT = 9;
-
         private readonly HighlightMapper $highlightMapper;
         private readonly PhotoService $photoService;
-        private readonly IndexService $indexService;        
+        private readonly EmbeddingService $embeddingService;
+        private readonly ConfigurationService $configurationService;
         private readonly EventPublisher $eventPublisher;
         private readonly CloudStorageClient $cloudStorageClient;
         private readonly HttpClient $httpClient;
         private readonly TransactionManager $transactionManager;
         private readonly Logger $logger;
 
-        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService, IndexService $indexService,
-            EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, HttpClient $httpClient, Logger $logger) {
+        public function __construct(DatabaseClient $databaseClient, PhotoService $photoService,
+            EmbeddingService $embeddingService, ConfigurationService $configurationService, EventPublisher $eventPublisher,
+            CloudStorageClient $cloudStorageClient, HttpClient $httpClient, Logger $logger) {
             $this->highlightMapper = new HighlightMapper($databaseClient, $photoService);
             $this->photoService = $photoService;
-            $this->indexService = $indexService;
+            $this->embeddingService = $embeddingService;
+            $this->configurationService = $configurationService;
             $this->cloudStorageClient = $cloudStorageClient;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
@@ -379,44 +381,25 @@
                 $this->logger->error("The embedding for the photo '$photoId' does not exist. Unable to compute highlight attributes.");
                 return new HighlightAttributes(0, 0, 0, 0, 0);
             }
-
-            $nearestNeighbours = $this->indexService->getNearestNeighbourPhotoIds($photoEmbedding->getEmbedding(),
-                self::HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT, self::HIGHLIGHT_ATTRIBUTES_NEAREST_NEIGHBOURS_COUNT, true, true, false);
-            if (empty($nearestNeighbours)) {
-                $this->logger->error("No neighbours for the photo '$photoId' were found. Unable to compute highlight attributes.");
-                return new HighlightAttributes(0, 0, 0, 0, 0);
-            }
-
-            $highlights = array();
-            foreach ($this->getHighlightsByPhotoIds(array_map(fn($neighbour) => $neighbour->getEntityId(), $nearestNeighbours)) as &$highlight) {
-                $highlights[$highlight->getPhoto()->getId()] = $highlight;
-            }
-
+            
             $computedAttributes = array();
             foreach (HighlightAttributeKey::cases() as $key) {
-                $weightedSum = 0.0;
-                $totalWeight = 0.0;
+                $bestOption = null;
+                $maxSimilarity = -1.0;
 
-                foreach ($nearestNeighbours as &$neighbour) {
-                    $highlight = $highlights[$neighbour->getEntityId()] ?? null;
-                    $attributes = $highlight?->getAttributes();
-                    
-                    if (!$attributes) {
-                        continue;
-                    }
+                foreach ($key->getOptions($this->configurationService) as &$option) {
+                    $optionEmbedding = $this->embeddingService->getTextEmbedding($option["text"]);
+                    $optionSimilarity = $this->embeddingService->getEmbeddingSimilarity($photoEmbedding->getEmbedding(), $optionEmbedding);
 
-                    $value = $key->extractValue($attributes);
-                    if ($value !== null) {
-                        $weight = pow($neighbour->getScore(), $key->getWeight());
-
-                        $weightedSum += $value * $weight;
-                        $totalWeight += $weight;
+                    if ($bestOption === null || $optionSimilarity > $maxSimilarity) {
+                        $bestOption = $option;
+                        $maxSimilarity = $optionSimilarity;
                     }
                 }
 
-                $computedAttributes[$key->name] = $totalWeight > 0 ? (int)round($weightedSum / $totalWeight) : 0;
+                $computedAttributes[$key->name] = $bestOption["value"];
             }
-
+            
             $this->logger->debug("Setting the '$photoId' photo attributes to '" . json_encode($computedAttributes) . "'...");
 
             return HighlightAttributeKey::createHighlightAttributes($computedAttributes);
