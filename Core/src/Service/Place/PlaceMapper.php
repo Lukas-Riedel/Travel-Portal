@@ -360,7 +360,7 @@
                             $albumTimestamp = $albumDate->getTimestamp();
 
                             if (($minStart === null || $minStart <= $albumTimestamp) && ($maxEnd === null || $albumTimestamp + CommonConstants::ONE_DAY_SECONDS <= $maxEnd)) {
-                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS, false, null, null, $permanentPlaceAlbum, null));
+                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS, false, array(), null, $permanentPlaceAlbum, null));
                             }
                         }
                     }
@@ -368,7 +368,7 @@
                         $weather = null;
                         $sun = null;
                         if ($placeRow["start"] > time()) {
-                            $weather = $this->forecastService->getWeatherForecast($placeRow["id"], $placeRow["start"]);
+                            $weather = $this->forecastService->getWeatherForecast($placeRow["id"], $placeRow["start"], $placeRow["end"]);
                             $sun = $this->forecastService->getDaylightForecast($placeRow["id"], $placeRow["start"]);
                         }
 
@@ -534,7 +534,7 @@
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
-                    $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], false, null, null, null, $trip));
+                    $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], false, array(), null, null, $trip));
                 }
             }
 

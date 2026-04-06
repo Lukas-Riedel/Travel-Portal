@@ -126,7 +126,7 @@ core:
         iso: "640"
   forecast:
     actual:
-      days: "9"
+      days: "10"
   fitness:
     overwrite:
       threshold:

@@ -83,8 +83,13 @@
 
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
-                        if ($this->forecastService->isActualWeatherForecastExpired($place->getId(), $date->getStart())) {
-                            $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
+                        $timestamp = $date->getStart();
+                        while ($timestamp < $date->getEnd()) {
+                            if ($this->forecastService->isActualWeatherForecastExpired($place->getId(), $timestamp)) {
+                                $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $timestamp));
+                            }
+
+                            $timestamp += CommonConstants::ONE_HOUR_SECONDS;
                         }
                     }
                 }
