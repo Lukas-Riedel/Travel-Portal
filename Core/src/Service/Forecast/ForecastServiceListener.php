@@ -95,8 +95,8 @@
                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
         
                 foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {    
-                        if ($date->getWeather() === null) {
+                    foreach ($place->getDates() as &$date) {
+                        if (empty($date->getWeather())) {
                             $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
                         }
                     }

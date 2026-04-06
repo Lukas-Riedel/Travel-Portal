@@ -243,33 +243,36 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                 </div>
                             )
                         ])}
-                        {event.weather && (() => {
-                            const WeatherIcon = weatherIcons[event.weather.symbol] ?? CircleHelp
+                        {/** Explicit array conversion is due to backaward and caching compatbility only. Delete during the refactoring. */}
+                        {(Array.isArray(event.weather) ? event.weather : (event.weather ? [event.weather] : []))?.map((weather, index) => {
+                            const WeatherIcon = weatherIcons[weather.symbol] ?? CircleHelp
 
                             return (
-                                <div className="relative group inline-block">
+                                <div
+                                    key={index}
+                                    className="relative group inline-block">
                                     {renderDescriptionRow("text-amber-600", [
-                                        event.weather.temperature && (
+                                        weather.temperature && (
                                             <div className="flex items-center space-x-1">
                                                 <WeatherIcon className="w-4 h-4 mr-1 shrink-0" />
                                                 <span>
-                                                    {event.weather.temperature.toFixed(1) + " °C"}
+                                                    {weather.temperature.toFixed(1) + " °C"}
                                                 </span>
                                             </div>
                                         ),
-                                        event.weather.precipitation != null && event.weather.precipitation.toFixed(1) + " mm",
-                                        event.weather.clouds != null && Math.round(event.weather.clouds) + " %",
-                                        event.weather.wind != null && event.weather.wind.toFixed(0) + " m/s"
+                                        weather.precipitation != null && weather.precipitation.toFixed(1) + " mm",
+                                        weather.clouds != null && Math.round(weather.clouds) + " %",
+                                        weather.wind != null && weather.wind.toFixed(0) + " m/s"
                                     ])}
-                                    {event.weather.symbol && (
+                                    {weather.symbol && (
                                         <Tooltip>
                                             <Sun size={16} />
-                                            {`Poslední aktualizace v ${format(fromUnixTime(event.weather.lastUpdate), "HH:mm")}`}
+                                            {`Poslední aktualizace v ${format(fromUnixTime(weather.lastUpdate), "HH:mm")}`}
                                         </Tooltip>
                                     )}
                                 </div>
                             )
-                        })()}
+                        })}
                         {onPhotosAdded && event.album?.uploadingStart && event.album?.uploadingProgress && (
                             <div className="relative group inline-block">
                                 {renderDescriptionRow("text-yellow-500", [

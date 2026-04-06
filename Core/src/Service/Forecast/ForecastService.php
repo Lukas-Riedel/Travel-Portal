@@ -29,11 +29,18 @@
             return $actualForecastExpiration === null || $actualForecastExpiration < time();
         }
 
-        public function getWeatherForecast(string $placeId, int $timestamp) : ?Weather {
+        public function getWeatherForecast(string $placeId, int $timestamp) : array {
             $actualForecast = $this->forecastMapper->selectActualWeatherForecast($placeId, $timestamp);
-            return $actualForecast !== null
-                ? $actualForecast 
-                : $this->forecastMapper->selectHistoricalWeatherForecast($placeId, $timestamp);
+            if ($actualForecast !== null) {
+                return array($actualForecast);
+            }
+
+            $historicalForecast = $this->forecastMapper->selectHistoricalWeatherForecast($placeId, $timestamp);
+            if ($historicalForecast !== null) {
+                return array($historicalForecast);
+            }
+
+            return array();
         }
 
         public function getDaylightForecast(string $placeId, int $timestamp) : ?Sun {

@@ -30,7 +30,8 @@
             new OA\Property(
                 property: "weather",
                 description: "The weather forecast for the date",
-                ref: "#/components/schemas/Weather"
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Weather")
             ),
             new OA\Property(
                 property: "sun",
@@ -56,12 +57,12 @@
         private readonly int $start;
         private readonly int $end;
         private readonly bool $layover;
-        private readonly ?Weather $weather;
+        private readonly array $weather;
         private readonly ?Sun $sun;
         private ?Album $album;
         private ?TripIdentifier $trip;
 
-        public function __construct(int $start, int $end, bool $layover, ?Weather $weather,
+        public function __construct(int $start, int $end, bool $layover, array $weather,
             ?Sun $sun, ?Album $album, ?TripIdentifier $trip) {
             $this->start = $start;
             $this->end = $end;
@@ -88,7 +89,7 @@
             return $this->layover;
         }
 
-        public function getWeather() : ?Weather {
+        public function getWeather() : array {
             return $this->weather;
         }
 
