@@ -26,7 +26,7 @@
                 ->getSingleRow();
 
             return $forecastRow === null ? null : new Weather($forecastRow["temperature"], $forecastRow["clouds_total"] !== null
-                ? new Clouds($forecastRow["clouds_total"], $forecastRow["clouds_low"], $forecastRow["clouds_medium"], $forecastRow["clouds_high"]) : null,
+                ? new Clouds($forecastRow["clouds_total"], $forecastRow["clouds_low"], $forecastRow["clouds_medium"], $forecastRow["clouds_high"], $forecastRow["clouds_confidence"]) : null,
                 $forecastRow["wind"], new Precipitation($forecastRow["precipitation"], $forecastRow["precipitation_probability"]), $forecastRow["humidity"],
                 $forecastRow["last_update"], $forecastRow["expiration"]);
         }
@@ -148,6 +148,7 @@
                     clouds_low, 
                     clouds_medium, 
                     clouds_high, 
+                    clouds_confidence,
                     last_update, 
                     expiration
                 )
@@ -164,6 +165,7 @@
                     ?,
                     ?, 
                     ?, 
+                    ?,
                     ?
                 )
             SQL;
@@ -172,7 +174,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation()->getTotal(), $weather->getPrecipitation()->getProbability(),
                     $weather->getHumidity(), $weather->getClouds()?->getTotal(), $weather->getClouds()?->getLow(), $weather->getClouds()?->getMedium(), $weather->getClouds()?->getHigh(),
-                    $weather->getLastUpdate(), $weather->getValidity())
+                    $weather->getClouds()?->getConfidence(), $weather->getLastUpdate(), $weather->getValidity())
                 ->execute() === 1;
         }
 

@@ -14,6 +14,8 @@
         private const ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT = "OpenMeteoActualForecastClient:EnsembleApiResponse:%f:%f";
         private const ENSEMBLE_API_RESPONSE_CACHE_TTL = 900;
 
+        private const MODELS_REFRESH_INTERVAL_SECONDS = 3 * CommonConstants::ONE_HOUR_SECONDS;
+
         private const TEMPERATURE_VARIABLE_KEY = "temperature_2m";
         private const PRECIPITATION_VARIABLE_KEY = "precipitation";
         private const WINDSPEED_VARIABLE_KEY = "wind_speed_10m";
@@ -83,7 +85,8 @@
                     $this->getAverage($cloudCoverValues), 
                     $this->getAverage($cloudCoverLowValues), 
                     $this->getAverage($cloudCoverMidValues), 
-                    $this->getAverage($cloudCoverHighValues)
+                    $this->getAverage($cloudCoverHighValues),
+                    $this->getCloudConfidence($cloudCoverValues)
                 ),
                 $this->getAverage($windspeedValues),
                 new Precipitation(
@@ -92,7 +95,7 @@
                 ),
                 $this->getAverage($humidityValues),
                 time(), 
-                time() + CommonConstants::ONE_HOUR_SECONDS
+                time() + self::MODELS_REFRESH_INTERVAL_SECONDS
             );
         }
 
@@ -127,8 +130,29 @@
             return ($count % 2 === 0) ? ($sortedValues[$mid - 1] + $sortedValues[$mid]) / 2 : $sortedValues[$mid];
         }
 
+        private function getStandardDeviation(array $values): float {
+            $count = count($values);
+            if ($count <= 1) {
+                return 0;
+            }
+
+            $average = $this->getAverage($values);
+            $sumOfSquares = array_reduce($values, fn($carry, $item) => $carry + pow($item - $average, 2), 0);
+            
+            return sqrt($sumOfSquares / ($count - 1));
+        }
+
         private function getPrecipitationProbability(array $values) : float {
             return count($values) === 0 ? 0 : round((count(array_filter($values, fn($v) => $v >= 0.1)) / count($values)) * 100);
+        }
+
+        private function getCloudConfidence(array $values): int {
+            $count = count($values);
+            if ($count <= 1) {
+                return 100;
+            }
+
+            return (int) max(0, min(100, 100 - ($this->getStandardDeviation($values) * 3)));
         }
     }
 ?>

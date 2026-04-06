@@ -36,6 +36,13 @@
                 type: "number",
                 format: "float",
                 example: 0.0
+             ),
+             new OA\Property(
+                property: "confidence",
+                description: "The confidence of the cloud coverage forecast in percentage",
+                type: "number",
+                format: "float",
+                example: 85
              )
         ]
     )]
@@ -45,12 +52,14 @@
         private readonly ?float $low;
         private readonly ?float $medium;
         private readonly ?float $high;
+        private readonly ?float $confidence;
 
-        public function __construct(float $total, ?float $low, ?float $medium, ?float $high) {
+        public function __construct(float $total, ?float $low, ?float $medium, ?float $high, ?float $confidence) {
             $this->total = $total;
             $this->low = $low;
             $this->medium = $medium;
             $this->high = $high;
+            $this->confidence = $confidence;
         }
 
         public function getTotal() : float {
@@ -67,6 +76,10 @@
 
         public function getHigh() : ?float {
             return $this->high;
+        }
+
+        public function getConfidence() : ?float {
+            return $this->confidence;
         }
 
         #[\ReturnTypeWillChange]

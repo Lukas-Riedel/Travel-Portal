@@ -82,7 +82,7 @@
 
             $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) 
                 ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : time() + CommonConstants::ONE_HOUR_SECONDS;
-            return new Weather($convertedForecast["temperature"], new Clouds($convertedForecast["clouds"], null, null, null), $convertedForecast["wind"],
+            return new Weather($convertedForecast["temperature"], new Clouds($convertedForecast["clouds"], null, null, null, null), $convertedForecast["wind"],
                 new Precipitation($convertedForecast["precipitation"], null), $convertedForecast["humidity"], $convertedForecast["updatedAt"], $expiration);
         }
     }
