@@ -75,7 +75,11 @@ function getAggregatedWeather(weatherArray, start) {
             last.symbol === curr.symbol &&
             last.temperature === curr.temperature &&
             last.precipitation === curr.precipitation &&
-            last.clouds === curr.clouds &&
+            last.humidity === curr.humidity &&
+            last.clouds?.total === curr.clouds?.total &&
+            last.clouds?.low === curr.clouds?.low &&
+            last.clouds?.medium === curr.clouds?.medium &&
+            last.clouds?.high === curr.clouds?.high &&
             last.wind === curr.wind
 
         if (isSame) {
@@ -294,7 +298,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                                 </div>
                                             ),
                                             weather.precipitation != null && weather.precipitation.toFixed(1) + " mm",
-                                            weather.clouds != null && Math.round(weather.clouds) + " %",
+                                            weather.clouds != null && Math.round(weather.clouds.total) + " %",
                                             weather.wind != null && weather.wind.toFixed(0) + " m/s"
                                         ])}
                                         {weather.symbol && (

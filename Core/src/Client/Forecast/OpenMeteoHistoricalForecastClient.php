@@ -31,7 +31,7 @@
             $windspeed = $this->getAverage($apiResponse["daily"]["windspeed_10m_max"]);
             $precipitation = $this->getAverage($apiResponse["daily"]["precipitation_sum"]) / 24;
 
-            return new Weather($temperature, null, $windspeed, $precipitation, null, time(), $end + CommonConstants::ONE_YEAR_SECONDS);
+            return new Weather($temperature, null, $windspeed, $precipitation, null, null, time(), $end + CommonConstants::ONE_YEAR_SECONDS);
         }
     
         private function getAverage(array $values) : ?float {

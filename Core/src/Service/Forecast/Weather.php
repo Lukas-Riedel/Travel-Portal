@@ -19,9 +19,7 @@
             new OA\Property(
                 property: "clouds",
                 description: "The forecasted clouds coverage percentage",
-                type: "number",
-                format: "float",
-                example: 13
+                ref: "#/components/schemas/Sun"
             ),
             new OA\Property(
                 property: "wind",
@@ -36,6 +34,13 @@
                 type: "number",
                 format: "float",
                 example: 0.2
+            ),
+            new OA\Property(
+                property: "humidity",
+                description: "The forecasted humidity percentage",
+                type: "number",
+                format: "float",
+                example: 65
             ),
             new OA\Property(
                 property: "symbol",
@@ -62,19 +67,21 @@
     class Weather implements \JsonSerializable {
                 
         private readonly float $temperature;
-        private readonly ?float $clouds;
+        private readonly ?Clouds $clouds;
         private readonly float $wind;
         private readonly float $precipitation;
+        private readonly ?float $humidity;
         private readonly ?string $symbol;
         private readonly int $lastUpdate;
         private readonly int $validity;
 
-        public function __construct(float $temperature, ?float $clouds, float $wind,
-            float $precipitation, ?string $symbol, int $lastUpdate, int $validity) {
+        public function __construct(float $temperature, ?Clouds $clouds, float $wind,
+            float $precipitation, ?float $humidity, ?string $symbol, int $lastUpdate, int $validity) {
             $this->temperature = $temperature;
             $this->clouds = $clouds;
             $this->wind = $wind;
             $this->precipitation = $precipitation;
+            $this->humidity = $humidity;
             $this->symbol = $symbol;
             $this->lastUpdate = $lastUpdate;
             $this->validity = $validity;
@@ -84,7 +91,7 @@
             return $this->temperature;
         }
 
-        public function getClouds() : ?float {
+        public function getClouds() : ?Clouds {
             return $this->clouds;
         }
 
@@ -94,6 +101,10 @@
 
         public function getPrecipitation() : float {
             return $this->precipitation;
+        }
+
+        public function getHumidity() : ?float {
+            return $this->humidity;
         }
 
         public function getSymbol() : ?string {

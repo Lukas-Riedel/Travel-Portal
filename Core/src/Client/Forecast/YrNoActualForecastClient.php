@@ -5,6 +5,7 @@
     use Core\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Forecast\Clouds;
     use Core\Service\Forecast\Weather;
 
     class YrNoActualForecastClient implements ForecastClient {
@@ -52,6 +53,7 @@
                 "temperature" => $bestForecast["data"]["instant"]["details"]["air_temperature"],
                 "clouds" => $bestForecast["data"]["instant"]["details"]["cloud_area_fraction"],
                 "wind" => $bestForecast["data"]["instant"]["details"]["wind_speed"],
+                "humidity" => $bestForecast["data"]["instant"]["details"]["relative_humidity"],
                 "symbol" => null,
                 "precipitation" => 0,
                 "updatedAt" => strtotime($apiResponse["properties"]["meta"]["updated_at"])
@@ -84,8 +86,8 @@
 
             $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) 
                 ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : time() + CommonConstants::ONE_HOUR_SECONDS;
-            return new Weather($convertedForecast["temperature"], $convertedForecast["clouds"], $convertedForecast["wind"],
-                $convertedForecast["precipitation"], $convertedForecast["symbol"], $convertedForecast["updatedAt"], $expiration);
+            return new Weather($convertedForecast["temperature"], new Clouds($convertedForecast["clouds"], null, null, null), $convertedForecast["wind"],
+                $convertedForecast["precipitation"], $convertedForecast["humidity"], $convertedForecast["symbol"], $convertedForecast["updatedAt"], $expiration);
         }
     }
 ?>
