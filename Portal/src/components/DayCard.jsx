@@ -14,49 +14,6 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 
-const weatherIcons = {
-    "clearsky": Sun,
-    "cloudy": Cloud,
-    "fair": Sun,
-    "fog": CloudFog,
-    "heavyrain": CloudRain,
-    "heavyrainandthunder": CloudLightning,
-    "heavyrainshowers": CloudRain,
-    "heavyrainshowersandthunder": CloudLightning,
-    "heavysleet": CloudHail,
-    "heavysleetandthunder": CloudLightning,
-    "heavysleetshowersandthunder": CloudLightning,
-    "heavysnow": CloudHail,
-    "heavysnowandthunder": CloudLightning,
-    "heavysnowshowers": CloudLightning,
-    "heavysnowshowersandthunder": CloudLightning,
-    "lightrain": CloudDrizzle,
-    "lightrainandthunder": CloudLightning,
-    "lightrainshowers": CloudDrizzle,
-    "lightrainshowersandthunder": CloudLightning,
-    "lightsleet": CloudHail,
-    "lightsleetandthunder": CloudLightning,
-    "lightsleetshowers": CloudHail,
-    "lightsleetshowersandthunder": CloudLightning,
-    "lightsnow": Snowflake,
-    "lightsnowandthunder": CloudLightning,
-    "lightsnowshowers": Snowflake,
-    "lightsnowshowersandthunder": CloudLightning,
-    "partlycloudy": CloudSun,
-    "rain": CloudRain,
-    "rainandthunder": CloudLightning,
-    "rainshowers": CloudRain,
-    "rainshowersandthunder": CloudLightning,
-    "sleet": CloudHail,
-    "sleetandthunder": CloudLightning,
-    "sleetshowers": CloudHail,
-    "sleetshowersandthunder": CloudLightning,
-    "snow": Snowflake,
-    "snowandthunder": CloudLightning,
-    "snowshowers": Snowflake,
-    "snowshowersandthunder": CloudLightning
-}
-
 const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
 
@@ -72,9 +29,9 @@ function getAggregatedWeather(weatherArray, start) {
         const last = acc[acc.length - 1]
 
         const isSame = last &&
-            last.symbol === curr.symbol &&
             last.temperature === curr.temperature &&
-            last.precipitation === curr.precipitation &&
+            last.precipitation?.total === curr.precipitation?.total &&
+            last.precipitation?.probability === curr.precipitation?.probability &&
             last.humidity === curr.humidity &&
             last.clouds?.total === curr.clouds?.total &&
             last.clouds?.low === curr.clouds?.low &&
@@ -282,7 +239,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                         {/** Explicit array conversion is due to backaward and caching compatbility only. Delete during the refactoring. */}
                         {getAggregatedWeather(Array.isArray(event.weather) ? event.weather : (event.weather ? [event.weather] : []), event.start)
                             .map((weather, index) => {
-                                const WeatherIcon = weatherIcons[weather.symbol] ?? CircleHelp
+                                const WeatherIcon = CircleHelp
 
                                 return (
                                     <div
@@ -297,11 +254,11 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                                     </span>
                                                 </div>
                                             ),
-                                            weather.precipitation != null && weather.precipitation.toFixed(1) + " mm",
-                                            weather.clouds != null && Math.round(weather.clouds.total) + " %",
+                                            weather.precipitation?.total != null && weather.precipitation.total.toFixed(1) + " mm",
+                                            weather.clouds?.total != null && Math.round(weather.clouds.total) + " %",
                                             weather.wind != null && weather.wind.toFixed(0) + " m/s"
                                         ])}
-                                        {weather.symbol && (
+                                        {weather.humidity && (
                                             <Tooltip>
                                                 <Sun size={16} />
                                                 {`Poslední aktualizace v ${format(fromUnixTime(weather.lastUpdate), "HH:mm")}`}

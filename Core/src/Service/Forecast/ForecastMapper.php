@@ -27,7 +27,8 @@
 
             return $forecastRow === null ? null : new Weather($forecastRow["temperature"], $forecastRow["clouds_total"] !== null
                 ? new Clouds($forecastRow["clouds_total"], $forecastRow["clouds_low"], $forecastRow["clouds_medium"], $forecastRow["clouds_high"]) : null,
-                $forecastRow["wind"], $forecastRow["precipitation"], $forecastRow["humidity"], $forecastRow["symbol"], $forecastRow["last_update"], $forecastRow["expiration"]);
+                $forecastRow["wind"], new Precipitation($forecastRow["precipitation"], $forecastRow["precipitation_probability"]), $forecastRow["humidity"],
+                $forecastRow["last_update"], $forecastRow["expiration"]);
         }
 
         public function selectHistoricalWeatherForecast(string $placeId, int $timestamp) : ?Weather {
@@ -44,7 +45,7 @@
                 ->getSingleRow();
 
             return $forecastRow === null ? null : new Weather($forecastRow["temperature"], null, $forecastRow["wind"],
-                $forecastRow["precipitation"], NULL, null, time(), $timestamp + CommonConstants::ONE_YEAR_SECONDS);
+                new Precipitation($forecastRow["precipitation"], null), null, time(), $timestamp + CommonConstants::ONE_YEAR_SECONDS);
         }
 
         public function selectDaylightForecast(string $placeId, int $timestamp) : ?Sun {
@@ -129,7 +130,7 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation())
+                ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation()->getTotal())
                 ->execute() === 1;
         }
 
@@ -141,12 +142,12 @@
                     temperature, 
                     wind, 
                     precipitation,
+                    precipitation_probability,
                     humidity,
                     clouds_total, 
                     clouds_low, 
                     clouds_medium, 
                     clouds_high, 
-                    symbol, 
                     last_update, 
                     expiration
                 )
@@ -155,11 +156,11 @@
                     ?, 
                     ?, 
                     ?, 
-                    ?, 
-                    ?, 
-                    ?, 
-                    ?, 
                     ?,
+                    ?,
+                    ?, 
+                    ?, 
+                    ?, 
                     ?,
                     ?, 
                     ?, 
@@ -169,9 +170,9 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation(), $weather->getHumidity(),
-                    $weather->getClouds()?->getTotal(), $weather->getClouds()?->getLow(), $weather->getClouds()?->getMedium(), $weather->getClouds()?->getHigh(),
-                    $weather->getSymbol(), $weather->getLastUpdate(), $weather->getValidity())
+                ->withParameters($placeId, $timestamp, $weather->getTemperature(), $weather->getWind(), $weather->getPrecipitation()->getTotal(), $weather->getPrecipitation()->getProbability(),
+                    $weather->getHumidity(), $weather->getClouds()?->getTotal(), $weather->getClouds()?->getLow(), $weather->getClouds()?->getMedium(), $weather->getClouds()?->getHigh(),
+                    $weather->getLastUpdate(), $weather->getValidity())
                 ->execute() === 1;
         }
 

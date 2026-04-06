@@ -126,7 +126,8 @@ core:
         iso: "640"
   forecast:
     actual:
-      days: "10"
+      days: "13"
+      models: ecmwf_ifs025_ensemble,ecmwf_aifs025_ensemble,icon_global_eps
   fitness:
     overwrite:
       threshold:

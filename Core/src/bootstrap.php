@@ -15,10 +15,10 @@
     use Core\Client\Database\PostgreSQLDatabaseClient;
     use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
     use Core\Client\Flight\FlightRadar24FlightClient;
+    use Core\Client\Forecast\OpenMeteoActualForecastClient;
     use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
-    use Core\Client\Forecast\YrNoActualForecastClient;
     use Core\Client\GenerativeContent\CachingGenerativeClient;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
@@ -132,7 +132,7 @@
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($httpClient);
-    $actualForecastClient = new YrNoActualForecastClient($httpClient, getenv("CORE_BASE_URL"));
+    $actualForecastClient = new OpenMeteoActualForecastClient($httpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), getenv("RMQ_PREFETCH_COUNT"), $databaseClient, $loggingContext, $logger);
@@ -156,7 +156,6 @@
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
     $googleClient->setConfigurationService($configurationService);
-    $actualForecastClient->setConfigurationService($configurationService);
 
     // Authentication service.
     $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $httpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));

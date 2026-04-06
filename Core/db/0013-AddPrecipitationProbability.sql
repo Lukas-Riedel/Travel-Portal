@@ -1,0 +1,2 @@
+alter table forecast_actual
+add column precipitation_probability double precision;

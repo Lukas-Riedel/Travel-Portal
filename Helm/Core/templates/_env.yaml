@@ -192,6 +192,8 @@
   value: "{{ .Values.core.photo.indoor.threshold.iso }}"
 - name: ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE
   value: "{{ .Values.core.forecast.actual.days }}"
+- name: ACTUAL_WEATHER_FORECAST_MODELS
+  value: "{{ .Values.core.forecast.actual.models }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
   value: "{{ .Values.core.fitness.overwrite.threshold.coefficient }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE

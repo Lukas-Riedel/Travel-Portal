@@ -6,8 +6,10 @@
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Forecast\Clouds;
+    use Core\Service\Forecast\Precipitation;
     use Core\Service\Forecast\Weather;
 
+    // TODO: Remove? Also remove contact details from the configuration?
     class YrNoActualForecastClient implements ForecastClient {
 
         private const GET_ACTUAL_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s";
@@ -54,7 +56,6 @@
                 "clouds" => $bestForecast["data"]["instant"]["details"]["cloud_area_fraction"],
                 "wind" => $bestForecast["data"]["instant"]["details"]["wind_speed"],
                 "humidity" => $bestForecast["data"]["instant"]["details"]["relative_humidity"],
-                "symbol" => null,
                 "precipitation" => 0,
                 "updatedAt" => strtotime($apiResponse["properties"]["meta"]["updated_at"])
             );
@@ -72,11 +73,6 @@
                 }
             }                        
             else if (array_key_exists("next_6_hours", $bestForecast["data"])) {
-                if (array_key_exists("summary", $bestForecast["data"]["next_6_hours"])) {
-                    if (array_key_exists("symbol_code", $bestForecast["data"]["next_6_hours"]["summary"])) {
-                        $convertedForecast["symbol"] = explode("_", $bestForecast["data"]["next_6_hours"]["summary"]["symbol_code"])[0];
-                    }
-                }
                 if (array_key_exists("details", $bestForecast["data"]["next_6_hours"])) {
                     if (array_key_exists("precipitation_amount", $bestForecast["data"]["next_6_hours"]["details"])) {
                         $convertedForecast["precipitation"] = $bestForecast["data"]["next_6_hours"]["details"]["precipitation_amount"] / 6;
@@ -87,7 +83,7 @@
             $expiration = isset($apiResponse["__httpHeaders"]["Expires"]) 
                 ? strtotime($apiResponse["__httpHeaders"]["Expires"]) : time() + CommonConstants::ONE_HOUR_SECONDS;
             return new Weather($convertedForecast["temperature"], new Clouds($convertedForecast["clouds"], null, null, null), $convertedForecast["wind"],
-                $convertedForecast["precipitation"], $convertedForecast["humidity"], $convertedForecast["symbol"], $convertedForecast["updatedAt"], $expiration);
+                new Precipitation($convertedForecast["precipitation"], null), $convertedForecast["humidity"], $convertedForecast["updatedAt"], $expiration);
         }
     }
 ?>

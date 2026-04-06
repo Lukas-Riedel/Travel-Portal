@@ -18,8 +18,8 @@
             ),
             new OA\Property(
                 property: "clouds",
-                description: "The forecasted clouds coverage percentage",
-                ref: "#/components/schemas/Sun"
+                description: "The forecasted clouds coverage",
+                ref: "#/components/schemas/Clouds"
             ),
             new OA\Property(
                 property: "wind",
@@ -30,10 +30,8 @@
             ),
             new OA\Property(
                 property: "precipitation",
-                description: "The forecasted precipitation in millimeters",
-                type: "number",
-                format: "float",
-                example: 0.2
+                description: "The forecasted precipitation",
+                ref: "#/components/schemas/Precipitation"
             ),
             new OA\Property(
                 property: "humidity",
@@ -41,12 +39,6 @@
                 type: "number",
                 format: "float",
                 example: 65
-            ),
-            new OA\Property(
-                property: "symbol",
-                description: "The symbol of the weather forecast",
-                type: "string",
-                example: "clearsky"
             ),
             new OA\Property(
                 property: "lastUpdate",
@@ -69,20 +61,18 @@
         private readonly float $temperature;
         private readonly ?Clouds $clouds;
         private readonly float $wind;
-        private readonly float $precipitation;
+        private readonly Precipitation $precipitation;
         private readonly ?float $humidity;
-        private readonly ?string $symbol;
         private readonly int $lastUpdate;
         private readonly int $validity;
 
         public function __construct(float $temperature, ?Clouds $clouds, float $wind,
-            float $precipitation, ?float $humidity, ?string $symbol, int $lastUpdate, int $validity) {
+            Precipitation $precipitation, ?float $humidity, int $lastUpdate, int $validity) {
             $this->temperature = $temperature;
             $this->clouds = $clouds;
             $this->wind = $wind;
             $this->precipitation = $precipitation;
             $this->humidity = $humidity;
-            $this->symbol = $symbol;
             $this->lastUpdate = $lastUpdate;
             $this->validity = $validity;
         }
@@ -99,16 +89,12 @@
             return $this->wind;
         }
 
-        public function getPrecipitation() : float {
+        public function getPrecipitation() : Precipitation {
             return $this->precipitation;
         }
 
         public function getHumidity() : ?float {
             return $this->humidity;
-        }
-
-        public function getSymbol() : ?string {
-            return $this->symbol;
         }
 
         public function getLastUpdate() : int {
