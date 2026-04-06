@@ -1,14 +1,13 @@
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from 'date-fns/locale'
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash, Trash2, Plus, Ship } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship } from "lucide-react"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 import Tooltip from "./Tooltip"
 import { useAuth } from "../contexts/AuthContext"
 import { useDevices } from "../hooks/useDevices"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import ReactMarkdown from "react-markdown"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
@@ -60,6 +59,39 @@ const weatherIcons = {
 
 const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
+
+function getAggregatedWeather(weatherArray, start) {
+    if (!weatherArray || weatherArray.length === 0) {
+        return []
+    }
+
+    const HOUR_IN_SECONDS = 3600
+
+    return weatherArray.reduce((acc, curr, index) => {
+        const currentTimestamp = start + (index * HOUR_IN_SECONDS)
+        const last = acc[acc.length - 1]
+
+        const isSame = last &&
+            last.symbol === curr.symbol &&
+            last.temperature === curr.temperature &&
+            last.precipitation === curr.precipitation &&
+            last.clouds === curr.clouds &&
+            last.wind === curr.wind
+
+        if (isSame) {
+            last.endTime = currentTimestamp
+            return acc
+        }
+        else {
+            acc.push({
+                ...curr,
+                startTime: currentTimestamp,
+                endTime: currentTimestamp
+            })
+            return acc
+        }
+    }, [])
+}
 
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { hasRole } = useAuth()
@@ -244,35 +276,36 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                             )
                         ])}
                         {/** Explicit array conversion is due to backaward and caching compatbility only. Delete during the refactoring. */}
-                        {(Array.isArray(event.weather) ? event.weather : (event.weather ? [event.weather] : []))?.map((weather, index) => {
-                            const WeatherIcon = weatherIcons[weather.symbol] ?? CircleHelp
+                        {getAggregatedWeather(Array.isArray(event.weather) ? event.weather : (event.weather ? [event.weather] : []), event.start)
+                            .map((weather, index) => {
+                                const WeatherIcon = weatherIcons[weather.symbol] ?? CircleHelp
 
-                            return (
-                                <div
-                                    key={index}
-                                    className="relative group inline-block">
-                                    {renderDescriptionRow("text-amber-600", [
-                                        weather.temperature && (
-                                            <div className="flex items-center space-x-1">
-                                                <WeatherIcon className="w-4 h-4 mr-1 shrink-0" />
-                                                <span>
-                                                    {weather.temperature.toFixed(1) + " °C"}
-                                                </span>
-                                            </div>
-                                        ),
-                                        weather.precipitation != null && weather.precipitation.toFixed(1) + " mm",
-                                        weather.clouds != null && Math.round(weather.clouds) + " %",
-                                        weather.wind != null && weather.wind.toFixed(0) + " m/s"
-                                    ])}
-                                    {weather.symbol && (
-                                        <Tooltip>
-                                            <Sun size={16} />
-                                            {`Poslední aktualizace v ${format(fromUnixTime(weather.lastUpdate), "HH:mm")}`}
-                                        </Tooltip>
-                                    )}
-                                </div>
-                            )
-                        })}
+                                return (
+                                    <div
+                                        key={index}
+                                        className="relative group inline-block">
+                                        {renderDescriptionRow("text-amber-600", [
+                                            weather.temperature && (
+                                                <div className="flex items-center space-x-1">
+                                                    <WeatherIcon className="w-4 h-4 mr-1 shrink-0" />
+                                                    <span>
+                                                        {weather.temperature.toFixed(1) + " °C"}
+                                                    </span>
+                                                </div>
+                                            ),
+                                            weather.precipitation != null && weather.precipitation.toFixed(1) + " mm",
+                                            weather.clouds != null && Math.round(weather.clouds) + " %",
+                                            weather.wind != null && weather.wind.toFixed(0) + " m/s"
+                                        ])}
+                                        {weather.symbol && (
+                                            <Tooltip>
+                                                <Sun size={16} />
+                                                {`Poslední aktualizace v ${format(fromUnixTime(weather.lastUpdate), "HH:mm")}`}
+                                            </Tooltip>
+                                        )}
+                                    </div>
+                                )
+                            })}
                         {onPhotosAdded && event.album?.uploadingStart && event.album?.uploadingProgress && (
                             <div className="relative group inline-block">
                                 {renderDescriptionRow("text-yellow-500", [
