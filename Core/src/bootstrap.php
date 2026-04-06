@@ -179,7 +179,7 @@
     $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
     $highlightService = new HighlightService($databaseClient, $photoService, $embeddingService, $configurationService, $eventPublisher, $cloudStorageClient, $httpClient, $logger);
-    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $indexService, $statisticsService, $memoryCacheClient, $cachingGenerativeContentClient, $eventPublisher);
+    $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $indexService, $statisticsService, $memoryCacheClient, $cachingGenerativeContentClient, $eventPublisher, $logger);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"));

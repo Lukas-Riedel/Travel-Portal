@@ -13,6 +13,7 @@
     use Core\Event\EventPublisher;
     use Core\Service\Index\IndexService;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Monolog\Logger;
 
     class CategoryService {
 
@@ -32,9 +33,10 @@
         private readonly IndexService $indexService;
         private readonly ConfigurationService $configurationService;
         private readonly TransactionManager $transactionManager;
+        private readonly Logger $logger;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
-            StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $cachingGenerativeContentClient, EventPublisher $eventPublisher) {
+            StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $cachingGenerativeContentClient, EventPublisher $eventPublisher, Logger $logger) {
             $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService);
             $this->eventPublisher = $eventPublisher;
             $this->memoryCacheClient = $memoryCacheClient;
@@ -43,6 +45,7 @@
             $this->indexService = $indexService;
             $this->configurationService = $configurationService;
             $this->transactionManager = $databaseClient;
+            $this->logger = $logger;
         }
 
         public function refreshCategoryHighlights(string $categoryId, int $count) : void {
@@ -92,13 +95,13 @@
                 if ($geographicalRegion->getCountryCategory()?->getId() === null
                     // TODO: '==' must be here because '===' doesn't work, find out why.
                     || $geographicalRegion->getCountryCategory()->getId() == $countryCategoryIdentifier->getId()) {
-                    if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $point)) {
+                    if ($this->isPointInPolygon($geographicalRegion, $point)) {
                         $categoryIds[] = $geographicalRegion->getCategory()->getId();
                     }
                     else if ($geographicalRegion->getRadius() > 0) {
                         foreach ($this->getWktPointsOnCircle($placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(),
                             $geographicalRegion->getRadius(), self::CIRCLE_APPROXIMATION_POINTS_COUNT) as &$pointOnCircle) {
-                            if ($this->isPointInPolygon($geographicalRegion->getGeoJson(), $pointOnCircle)) {
+                            if ($this->isPointInPolygon($geographicalRegion, $pointOnCircle)) {
                                 $categoryIds[] = $geographicalRegion->getCategory()->getId();
                                 break;
                             }
@@ -447,24 +450,30 @@
             return \geoPHP::load(json_encode($geoJson), "json");
         }
 
-        private function isPointInPolygon(mixed $geoJson, mixed $point) : bool {
-            $geometry = $this->getGeometry($geoJson);
+        private function isPointInPolygon(GeographicalRegion $geographicalRegion, mixed $point) : bool {
+            try {                
+                $geometry = $this->getGeometry($geographicalRegion->getGeoJson());
 
-            if (method_exists($geometry, "pointInPolygon")) {
-                return $geometry->pointInPolygon($point);
-            }
-
-            if (method_exists($geometry, "getComponents")) {
-                $pointInPolygon = false;
-                foreach ($geometry->getComponents() as &$component) {
-                    if ($component->pointInPolygon($point, $pointInPolygon)) {
-                        $pointInPolygon = true;
-                    }
+                if (method_exists($geometry, "pointInPolygon")) {
+                    return $geometry->pointInPolygon($point);
                 }
-                return $pointInPolygon;
-            }
 
-            return $geometry->equals($point);
+                if (method_exists($geometry, "getComponents")) {
+                    $pointInPolygon = false;
+                    foreach ($geometry->getComponents() as &$component) {
+                        if ($component->pointInPolygon($point, $pointInPolygon)) {
+                            $pointInPolygon = true;
+                        }
+                    }
+                    return $pointInPolygon;
+                }
+
+                return $geometry->equals($point);
+            }
+            catch (\Throwable $e) {
+                $this->logger->error("Unable to determine whether the point is in the '" . $geographicalRegion->getCategory()->getName() . "' region. Reason: " . $e->getMessage());
+                return false;
+            }
         }
 
         private function arrayAny(array $array, mixed $fn) : bool {
