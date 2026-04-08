@@ -1,7 +1,7 @@
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import { cs } from 'date-fns/locale'
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship } from "lucide-react"
+import { cs } from "date-fns/locale"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Wind, Droplets, HelpCircle, Clock, CircleQuestionMark, Compass, SunDim, ArrowUpRight, ArrowUpRightFromCircle, ArrowDownRightFromCircle, ArrowUpLeftFromCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
@@ -16,43 +16,6 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 
 const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
-
-function getAggregatedWeather(weatherArray, start) {
-    if (!weatherArray || weatherArray.length === 0) {
-        return []
-    }
-
-    const HOUR_IN_SECONDS = 3600
-
-    return weatherArray.reduce((acc, curr, index) => {
-        const currentTimestamp = start + (index * HOUR_IN_SECONDS)
-        const last = acc[acc.length - 1]
-
-        const isSame = last &&
-            last.temperature === curr.temperature &&
-            last.precipitation?.total === curr.precipitation?.total &&
-            last.precipitation?.probability === curr.precipitation?.probability &&
-            last.humidity === curr.humidity &&
-            last.clouds?.total === curr.clouds?.total &&
-            last.clouds?.low === curr.clouds?.low &&
-            last.clouds?.medium === curr.clouds?.medium &&
-            last.clouds?.high === curr.clouds?.high &&
-            last.wind === curr.wind
-
-        if (isSame) {
-            last.endTime = currentTimestamp
-            return acc
-        }
-        else {
-            acc.push({
-                ...curr,
-                startTime: currentTimestamp,
-                endTime: currentTimestamp
-            })
-            return acc
-        }
-    }, [])
-}
 
 export default function DayCard({ day, events, stay, fitness, noteSelector, publicHoliday, timezone, onPhotosAdded, onNoteRemoved, onNoteAdded }) {
     const { hasRole } = useAuth()
@@ -189,12 +152,6 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                     </span>
                                     <div className={`font-medium ${requiresAttention(event) ? "text-red-600" : "text-indigo-600"} relative group inline-block`}>
                                         {formatTimestamp(event.start, event.timezone)}
-                                        {event.sun?.altitude && (
-                                            <Tooltip>
-                                                <Sun size={16} />
-                                                {`Výška slunce ${(event.sun.altitude.start).toFixed(1)}°`}
-                                            </Tooltip>
-                                        )}
                                     </div>
                                     <Link
                                         to={`${(window.location.pathname.startsWith("/plan") ? "/plan" : "")}/place/${event.id}`}
@@ -236,37 +193,276 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                 </div>
                             )
                         ])}
-                        {/** Explicit array conversion is due to backaward and caching compatbility only. Delete during the refactoring. */}
-                        {getAggregatedWeather(Array.isArray(event.weather) ? event.weather : (event.weather ? [event.weather] : []), event.start)
-                            .map((weather, index) => {
-                                const WeatherIcon = CircleHelp
+                        {(() => {
+                            if (!event.weather || event.weather.length === 0) {
+                                return null
+                            }
 
-                                return (
-                                    <div
-                                        key={index}
-                                        className="relative group inline-block">
-                                        {renderDescriptionRow("text-amber-600", [
-                                            weather.temperature && (
-                                                <div className="flex items-center space-x-1">
-                                                    <WeatherIcon className="w-4 h-4 mr-1 shrink-0" />
-                                                    <span>
-                                                        {weather.temperature.toFixed(1) + " °C"}
-                                                    </span>
+                            const weatherCount = event.weather.length
+                            const aggregate = event.weather.reduce((acc, w) => {
+                                const hasClouds = w.clouds && typeof w.clouds.total === "number"
+                                const hasConfidence = w.clouds && typeof w.clouds.confidence === "number"
+
+                                return {
+                                    temperature: acc.temperature + (w.temperature || 0),
+                                    precipitation: {
+                                        probability: Math.max(acc.precipitation.probability, w.precipitation?.probability || 0),
+                                        total: acc.precipitation.total + (w.precipitation?.total || 0)
+                                    },
+                                    clouds: {
+                                        total: hasClouds ? acc.clouds.total + w.clouds.total : acc.clouds.total,
+                                        low: acc.clouds.low + (w.clouds?.low || 0),
+                                        medium: acc.clouds.medium + (w.clouds?.medium || 0),
+                                        high: acc.clouds.high + (w.clouds?.high || 0),
+                                        confidence: hasConfidence ? acc.clouds.confidence + w.clouds.confidence : acc.clouds.confidence
+                                    },
+                                    wind: acc.wind + (w.wind || 0),
+                                    humidity: acc.humidity + (w.humidity || 0),
+                                    lastUpdate: Math.min(acc.lastUpdate, w.lastUpdate),
+                                    counts: {
+                                        clouds: hasClouds ? acc.counts.clouds + 1 : acc.counts.clouds,
+                                        confidence: hasConfidence ? acc.counts.confidence + 1 : acc.counts.confidence,
+                                        wind: typeof w.wind === "number" ? acc.counts.wind + 1 : acc.counts.wind,
+                                        humidity: typeof w.humidity === "number" ? acc.counts.humidity + 1 : acc.counts.humidity
+                                    }
+                                }
+                            }, {
+                                temperature: 0,
+                                precipitation: {
+                                    probability: 0,
+                                    total: 0
+                                },
+                                clouds: {
+                                    total: 0,
+                                    low: 0,
+                                    medium: 0,
+                                    high: 0,
+                                    confidence: 0
+                                },
+                                wind: 0,
+                                humidity: 0,
+                                counts: {
+                                    clouds: 0,
+                                    confidence: 0,
+                                    wind: 0,
+                                    humidity: 0
+                                },
+                                lastUpdate: Number.MAX_VALUE
+                            })
+
+                            const summary = {
+                                temperature: weatherCount > 0 ? (aggregate.temperature / weatherCount).toFixed(1) : null,
+                                precipitation: {
+                                    probability: aggregate.precipitation.probability,
+                                    total: aggregate.precipitation.total >= 0 ? aggregate.precipitation.total.toFixed(1) : null
+                                },
+                                clouds: aggregate.counts.clouds > 0 ? {
+                                    total: Math.round(aggregate.clouds.total / aggregate.counts.clouds),
+                                    low: Math.round(aggregate.clouds.low / aggregate.counts.clouds),
+                                    medium: Math.round(aggregate.clouds.medium / aggregate.counts.clouds),
+                                    high: Math.round(aggregate.clouds.high / aggregate.counts.clouds),
+                                    confidence: aggregate.counts.confidence > 0 ? Math.round(aggregate.clouds.confidence / aggregate.counts.confidence) : null
+                                } : null,
+                                wind: aggregate.counts.wind > 0 ? (aggregate.wind / aggregate.counts.wind).toFixed(1) : null,
+                                humidity: aggregate.counts.humidity > 0 ? Math.round(aggregate.humidity / aggregate.counts.humidity) : null,
+                                lastUpdate: aggregate.lastUpdate
+                            }
+
+                            const {
+                                Icon: WeatherIcon,
+                                color: iconColor
+                            } = (() => {
+                                if (summary.clouds === null) {
+                                    return {
+                                        Icon: HelpCircle,
+                                        color: "text-slate-400"
+                                    }
+                                }
+                                if (summary.precipitation.probability > 40) {
+                                    return {
+                                        Icon: CloudRain,
+                                        color: "text-blue-500"
+                                    }
+                                }
+                                if (summary.clouds.total > 70) {
+                                    return {
+                                        Icon: Cloud,
+                                        color: "text-slate-500"
+                                    }
+                                }
+                                if (summary.clouds.total > 20) {
+                                    return {
+                                        Icon: CloudSun,
+                                        color: "text-amber-600"
+                                    }
+                                }
+                                return {
+                                    Icon: Sun,
+                                    color: "text-amber-500"
+                                }
+                            })()
+
+                            const confidenceColor = (() => {
+                                const confidence = summary.clouds?.confidence
+                                if (confidence === null) {
+                                    return "text-slate-400"
+                                }
+                                if (confidence < 40) {
+                                    return "text-rose-500"
+                                }
+                                if (confidence < 75) {
+                                    return "text-amber-500"
+                                }
+                                return "text-emerald-500"
+                            })()
+
+                            const hasAnyTechnicalData = summary.precipitation.probability > 0 || summary.precipitation.total || summary.humidity || summary.wind
+                            const isSingleRowLayout = summary.clouds === null
+
+                            return (
+                                <div className={`flex flex-col w-full ${isSingleRowLayout ? "gap-0" : "gap-1"} pb-1`}>
+                                    <div className="flex items-center gap-3 pr-1">
+                                        <div className="flex items-center space-x-1 shrink-0">
+                                            <WeatherIcon className={`w-4 h-4 mr-1 leading-none shrink-0 ${iconColor}`} />
+                                            <div className="text-[12px] text-slate-900 group relative cursor-help">
+                                                {summary.temperature}°C
+                                                {hasAnyTechnicalData && (
+                                                    <Tooltip>
+                                                        <Clock
+                                                            size={14}
+                                                            className="mr-1" />
+                                                        <span>{`Poslední aktualizace v ${format(fromUnixTime(summary.lastUpdate), "HH:mm")}`}</span>
+                                                    </Tooltip>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {summary.clouds !== null ? (
+                                            <>
+                                                <div className="relative flex-1 group h-1.5">
+                                                    <div className="w-full h-full bg-slate-100 rounded-full flex overflow-hidden shadow-inner cursor-help">
+                                                        <div style={{ width: `${summary.clouds.low}%` }} className="bg-slate-600 h-full shrink-0" />
+                                                        <div style={{ width: `${summary.clouds.medium}%` }} className="bg-slate-400 h-full shrink-0" />
+                                                        <div style={{ width: `${summary.clouds.high}%` }} className="bg-slate-300 h-full shrink-0" />
+                                                    </div>
+                                                    <Tooltip>
+                                                        <div className="flex flex-col gap-1 p-2 min-w-[120px]">
+                                                            <div className="flex justify-between gap-4 border-b border-white/20 pb-2 mb-1 text-white">
+                                                                <span>Mraky:</span>
+                                                                <b className="text-white">{summary.clouds.total}%</b>
+                                                            </div>
+                                                            <div className="flex justify-between gap-4 text-slate-300">
+                                                                <span>Nízké:</span>
+                                                                <b className="text-white">{summary.clouds.low}%</b>
+                                                            </div>
+                                                            <div className="flex justify-between gap-4 text-slate-300">
+                                                                <span>Střední:</span>
+                                                                <b className="text-white">{summary.clouds.medium}%</b>
+                                                            </div>
+                                                            <div className="flex justify-between gap-4 text-slate-300">
+                                                                <span>Vysoké:</span>
+                                                                <b className="text-white">{summary.clouds.high}%</b>
+                                                            </div>
+                                                        </div>
+                                                    </Tooltip>
                                                 </div>
-                                            ),
-                                            weather.precipitation?.total != null && weather.precipitation.total.toFixed(1) + " mm",
-                                            weather.clouds?.total != null && Math.round(weather.clouds.total) + " %",
-                                            weather.wind != null && weather.wind.toFixed(0) + " m/s"
-                                        ])}
-                                        {weather.humidity && (
-                                            <Tooltip>
-                                                <Sun size={16} />
-                                                {`Poslední aktualizace v ${format(fromUnixTime(weather.lastUpdate), "HH:mm")}`}
-                                            </Tooltip>
+                                                {summary.clouds.confidence !== null && (
+                                                    <span className={`text-[10px] shrink-0 font-black ${confidenceColor}`}>
+                                                        {summary.clouds.confidence}%
+                                                    </span>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="flex-1 flex items-center justify-end gap-2.5 text-[11px] font-medium pr-1">
+                                                {summary.precipitation.total !== null && (
+                                                    <div className="flex items-center gap-1 text-blue-600 leading-none">
+                                                        <CloudRain size={13} className="shrink-0" />
+                                                        <span className="tabular-nums font-normal opacity-70 uppercase">
+                                                            {summary.precipitation.total}mm
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {summary.wind !== null && (
+                                                    <div className="flex items-center gap-1 text-slate-500 leading-none">
+                                                        <Wind size={13} className="shrink-0" />
+                                                        <span className="tabular-nums font-normal opacity-70 uppercase">
+                                                            {summary.wind}m/s
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
-                                )
-                            })}
+                                    {!isSingleRowLayout && hasAnyTechnicalData && (
+                                        <div className="flex items-start justify-between text-[10px] space-x-0.5 mt-1 mb-1">
+                                            <div className="flex flex-col text-blue-500 items-center shrink-0 flex-l">
+                                                <CloudRain
+                                                    size={14} />
+                                                <div className="flex flex-col items-center leading-none mt-1">
+                                                    {summary.precipitation.probability > 0 && (
+                                                        <span className="tabular-nums font-medium uppercase">
+                                                            {summary.precipitation.probability}%
+                                                        </span>
+                                                    )}
+                                                    {summary.precipitation.total !== null && (
+                                                        <span className="text-[8px] tabular-nums uppercase">
+                                                            {summary.precipitation.total}mm
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-center text-slate-400 shrink-0 flex-l">
+                                                <Cloud size={14} />
+                                                <span className="tabular-nums font-medium uppercase">
+                                                    {summary.clouds.total}%
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col items-center text-cyan-700 shrink-0 flex-l">
+                                                <Droplets size={14} />
+                                                <span className="tabular-nums font-medium uppercase">
+                                                    {summary.humidity}%
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col items-center text-slate-700 shrink-0 flex-l">
+                                                <Wind size={14} />
+                                                <span className="tabular-nums font-medium uppercase">
+                                                    {summary.wind}m/s
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col items-center text-cyan-400 shrink-0 flex-l">
+                                                <div className="transition-transform duration-700 ease-in-out">
+                                                    <ArrowUpLeftFromCircle
+                                                        size={14}
+                                                        strokeWidth={2.3}
+                                                        style={{
+                                                            transform: `rotate(${45 + event.sun.azimuth.start}deg)`,
+                                                            transformOrigin: "center center"
+                                                        }}
+                                                    />
+                                                </div>
+                                                <span className="tabular-nums font-medium uppercase">
+                                                    {(event.sun.altitude.start).toFixed(1)}°
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col items-center text-rose-400 shrink-0 flex-l">
+                                                <div className="transition-transform duration-700 ease-in-out">
+                                                    <ArrowUpLeftFromCircle
+                                                        size={14}
+                                                        strokeWidth={2.3}
+                                                        style={{
+                                                            transform: `rotate(${45 + event.sun.azimuth.end}deg)`,
+                                                            transformOrigin: "center center"
+                                                        }}
+                                                    />
+                                                </div>
+                                                <span className="tabular-nums font-medium uppercase">
+                                                    {(event.sun.altitude.end).toFixed(1)}°
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })()}
                         {onPhotosAdded && event.album?.uploadingStart && event.album?.uploadingProgress && (
                             <div className="relative group inline-block">
                                 {renderDescriptionRow("text-yellow-500", [
