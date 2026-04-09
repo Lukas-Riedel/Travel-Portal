@@ -178,6 +178,12 @@
                     example: "2025"
                 ),
                 new OA\Parameter(
+                    name: "name",
+                    in: "query",
+                    description: "The name of the place",
+                    example: "Baku"
+                ),
+                new OA\Parameter(
                     name: "tripId",
                     in: "query",
                     description: "The identifier of the trip of the places",
@@ -228,8 +234,8 @@
                 new OA\Parameter(
                     name: "type",
                     in: "query",
-                    description: "The type of the place",
-                    schema: new OA\Schema(ref: "#/components/schemas/PlaceType")                    
+                    description: "The comma-separated list of types of the place",
+                    example: "regular"                 
                 ),
                 new OA\Parameter(
                     name: "nearbyPlaces",
@@ -310,6 +316,7 @@
             $this->requireRole($request, UserRole::PlaceRead);
 
             $year = $this->getQueryParameter($request, "year");
+            $name = $this->getQueryParameter($request, "name");
             $tripId = $this->getQueryParameter($request, "tripId");
             $categoryId = $this->getQueryParameter($request, "categoryId");
             $labelId = $this->getQueryParameter($request, "labelId");
@@ -341,12 +348,15 @@
             // TODO: Do not use the backing value, refactor the service code first.
             $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             $mappedSort = PlaceSortingStrategy::from($sort);
-            $mappedType = PlaceType::from($type);
+            $mappedTypes = array_map(fn($type) => PlaceType::from($type), array_filter(explode(",", $type)));
             
-            $places = match ($mappedType) {
-                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
-                PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $nearbyPlaces, $mappedInclude)
-            };
+            $places = array();
+            foreach ($mappedTypes as &$mappedType) {
+                $places = array_merge($places, match ($mappedType) {
+                    PlaceType::Regular => $this->placeService->getRegularPlaces($name, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
+                    PlaceType::Candidate => $this->placeService->getCandidatePlaces($name, $categoryId, $tripId, $labelId, $nearbyPlaces, $mappedInclude)
+                });
+            }
 
             foreach ($places as &$place) {
                 foreach ($place->getDates() as &$date) {

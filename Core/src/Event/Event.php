@@ -28,6 +28,10 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array());
         }
 
+        public static function ActualForecastWatchingTriggered(string $placeId, int $start, int $end) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("placeId" => $placeId, "start" => $start, "end" => $end));
+        }
+
         public static function CalendarWatchRenewing(string $calendar) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => Calendar::from($calendar)->value));
         }
