@@ -199,74 +199,96 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                 return null
                             }
 
-                            const weatherCount = event.weather.length
-                            const aggregate = event.weather.reduce((acc, w) => {
-                                const hasClouds = w.clouds && typeof w.clouds.total === "number"
-                                const hasConfidence = w.clouds && typeof w.clouds.confidence === "number"
+                            const safeNum = (val) => {
+                                const parsed = parseFloat(val)
+                                return (typeof val !== "boolean" && !isNaN(parsed) && isFinite(parsed)) ? parsed : null
+                            }
+
+                            const aggregate = (event.weather || []).reduce((acc, w) => {
+                                const t = safeNum(w.temperature)
+                                const pProb = safeNum(w.precipitation?.probability)
+                                const pTotal = safeNum(w.precipitation?.total)
+                                const cTotal = safeNum(w.clouds?.total)
+                                const cLow = safeNum(w.clouds?.low)
+                                const cMed = safeNum(w.clouds?.medium)
+                                const cHigh = safeNum(w.clouds?.high)
+                                const cConf = safeNum(w.clouds?.confidence)
+                                const wind = safeNum(w.wind)
+                                const hum = safeNum(w.humidity)
+                                const update = safeNum(w.lastUpdate)
 
                                 return {
-                                    temperature: acc.temperature + (w.temperature || 0),
+                                    temperature: t !== null ? acc.temperature + t : acc.temperature,
                                     precipitation: {
-                                        probability: Math.max(acc.precipitation.probability, w.precipitation?.probability || 0),
-                                        total: acc.precipitation.total + (w.precipitation?.total || 0)
+                                        probability: pProb !== null
+                                            ? (acc.precipitation.probability === null ? pProb : Math.max(acc.precipitation.probability, pProb))
+                                            : acc.precipitation.probability,
+                                        total: pTotal !== null ? acc.precipitation.total + pTotal : acc.precipitation.total
                                     },
                                     clouds: {
-                                        total: hasClouds ? acc.clouds.total + w.clouds.total : acc.clouds.total,
-                                        low: acc.clouds.low + (w.clouds?.low || 0),
-                                        medium: acc.clouds.medium + (w.clouds?.medium || 0),
-                                        high: acc.clouds.high + (w.clouds?.high || 0),
-                                        confidence: hasConfidence ? acc.clouds.confidence + w.clouds.confidence : acc.clouds.confidence
+                                        total: cTotal !== null ? acc.clouds.total + cTotal : acc.clouds.total,
+                                        low: cLow !== null ? acc.clouds.low + cLow : acc.clouds.low,
+                                        medium: cMed !== null ? acc.clouds.medium + cMed : acc.clouds.medium,
+                                        high: cHigh !== null ? acc.clouds.high + cHigh : acc.clouds.high,
+                                        confidence: cConf !== null ? acc.clouds.confidence + cConf : acc.clouds.confidence
                                     },
-                                    wind: acc.wind + (w.wind || 0),
-                                    humidity: acc.humidity + (w.humidity || 0),
-                                    lastUpdate: Math.min(acc.lastUpdate, w.lastUpdate),
+                                    wind: wind !== null ? acc.wind + wind : acc.wind,
+                                    humidity: hum !== null ? acc.humidity + hum : acc.humidity,
+                                    lastUpdate: (update !== null && update < acc.lastUpdate) ? update : acc.lastUpdate,
                                     counts: {
-                                        clouds: hasClouds ? acc.counts.clouds + 1 : acc.counts.clouds,
-                                        confidence: hasConfidence ? acc.counts.confidence + 1 : acc.counts.confidence,
-                                        wind: typeof w.wind === "number" ? acc.counts.wind + 1 : acc.counts.wind,
-                                        humidity: typeof w.humidity === "number" ? acc.counts.humidity + 1 : acc.counts.humidity
+                                        temp: t !== null ? acc.counts.temp + 1 : acc.counts.temp,
+                                        precipProb: pProb !== null ? acc.counts.precipProb + 1 : acc.counts.precipProb,
+                                        precipTotal: pTotal !== null ? acc.counts.precipTotal + 1 : acc.counts.precipTotal,
+                                        clouds: cTotal !== null ? acc.counts.clouds + 1 : acc.counts.clouds,
+                                        cloudsConfidence: cConf !== null ? acc.counts.cloudsConfidence + 1 : acc.counts.cloudsConfidence,
+                                        wind: wind !== null ? acc.counts.wind + 1 : acc.counts.wind,
+                                        humidity: hum !== null ? acc.counts.humidity + 1 : acc.counts.humidity
                                     }
                                 }
                             }, {
                                 temperature: 0,
-                                precipitation: {
-                                    probability: 0,
-                                    total: 0
-                                },
-                                clouds: {
-                                    total: 0,
-                                    low: 0,
-                                    medium: 0,
-                                    high: 0,
-                                    confidence: 0
-                                },
+                                precipitation: { probability: null, total: 0 },
+                                clouds: { total: 0, low: 0, medium: 0, high: 0, confidence: 0 },
                                 wind: 0,
                                 humidity: 0,
+                                lastUpdate: Number.MAX_VALUE,
                                 counts: {
+                                    temp: 0,
+                                    precipProb: 0,
+                                    precipTotal: 0,
                                     clouds: 0,
-                                    confidence: 0,
+                                    cloudsConfidence: 0,
                                     wind: 0,
                                     humidity: 0
-                                },
-                                lastUpdate: Number.MAX_VALUE
+                                }
                             })
 
                             const summary = {
-                                temperature: weatherCount > 0 ? (aggregate.temperature / weatherCount).toFixed(1) : null,
+                                temperature: aggregate.counts.temp > 0
+                                    ? (aggregate.temperature / aggregate.counts.temp).toFixed(1)
+                                    : null,
                                 precipitation: {
                                     probability: aggregate.precipitation.probability,
-                                    total: aggregate.precipitation.total >= 0 ? aggregate.precipitation.total.toFixed(1) : null
+                                    total: aggregate.counts.precipTotal > 0
+                                        ? aggregate.precipitation.total.toFixed(1)
+                                        : null
                                 },
                                 clouds: aggregate.counts.clouds > 0 ? {
                                     total: Math.round(aggregate.clouds.total / aggregate.counts.clouds),
                                     low: Math.round(aggregate.clouds.low / aggregate.counts.clouds),
                                     medium: Math.round(aggregate.clouds.medium / aggregate.counts.clouds),
                                     high: Math.round(aggregate.clouds.high / aggregate.counts.clouds),
-                                    confidence: aggregate.counts.confidence > 0 ? Math.round(aggregate.clouds.confidence / aggregate.counts.confidence) : null
+                                    confidence: aggregate.counts.cloudsConfidence > 0
+                                        ? Math.round(aggregate.clouds.confidence / aggregate.counts.cloudsConfidence)
+                                        : null
                                 } : null,
-                                wind: aggregate.counts.wind > 0 ? (aggregate.wind / aggregate.counts.wind).toFixed(1) : null,
-                                humidity: aggregate.counts.humidity > 0 ? Math.round(aggregate.humidity / aggregate.counts.humidity) : null,
-                                lastUpdate: aggregate.lastUpdate
+                                wind: aggregate.counts.wind > 0
+                                    ? (aggregate.wind / aggregate.counts.wind).toFixed(1)
+                                    : null,
+                                humidity: aggregate.counts.humidity > 0
+                                    ? Math.round(aggregate.humidity / aggregate.counts.humidity)
+                                    : null,
+                                lastUpdate: aggregate.lastUpdate === Number.MAX_VALUE ? null : aggregate.lastUpdate
                             }
 
                             return (

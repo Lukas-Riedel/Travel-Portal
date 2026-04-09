@@ -41,7 +41,7 @@
                 return;
             }
 
-            $places = $this->placeService->getRegularPlaces(null, null, null, $yearId, null, null, null, null,
+            $places = $this->placeService->getRegularPlaces(null, null, null, null, $yearId, null, null, null, null,
                 time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
             $trips = $tripService->getRegularTrips($yearId, null, time(), array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
 

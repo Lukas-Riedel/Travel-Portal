@@ -28,6 +28,10 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array());
         }
 
+        public static function ActualForecastWatchingTriggered(string $placeId, int $start, int $end) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("placeId" => $placeId, "start" => $start, "end" => $end));
+        }
+
         public static function CalendarWatchRenewing(string $calendar) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("calendar" => Calendar::from($calendar)->value));
         }
@@ -52,8 +56,8 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::High, array());
         }
 
-        public static function ActualWeatherForecastUpdated(string $placeId, int $start) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
+        public static function ActualWeatherForecastUpdated(string $placeId, int $start, ?string $bustParameter = null) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start, "bustParameter" => $bustParameter));
         }
 
         public static function DaylightForecastUpdated(string $placeId, int $start, int $end,) : Event {

@@ -24,7 +24,7 @@
         public function fetchDataConsistencyIssues() : array {
             $dataConsistencyIssues = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null,
+            $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null,
                 null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             $allAlbums = $this->photoService->getAllAlbums();
 

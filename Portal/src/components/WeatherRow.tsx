@@ -15,7 +15,7 @@ export default function WeatherRow({ weather, sun, className }: WeatherRowProps)
     const { t } = useTranslation()
 
     const { WeatherIcon, color } = useMemo<{ WeatherIcon: LucideIcon, color: string }>(() => {
-        if (weather?.precipitation?.probability === null) {
+        if (weather?.precipitation?.probability == null) {
             return {
                 WeatherIcon: HelpCircle,
                 color: "text-slate-400"

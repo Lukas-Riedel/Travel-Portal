@@ -129,7 +129,7 @@
                 return;
             }
 
-            $places = $this->placeService->getRegularPlaces(null, null, null, null, null, $highlight->getPhoto()->getId(), null, null,
+            $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, $highlight->getPhoto()->getId(), null, null,
                     null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             foreach ($places as &$place) {
