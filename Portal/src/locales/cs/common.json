@@ -507,6 +507,15 @@
             }
         }
     },
+    "weather": {
+        "updated": "Aktualizováno v {{datetime}}",
+        "clouds": {
+            "total": "Mraky",
+            "low": "Nizké",
+            "medium": "Střední",
+            "high": "Vysoké"
+        }
+    },
     "subscription": {
         "format": "{{description}} (do {{expiration}})",
         "prompt": {
