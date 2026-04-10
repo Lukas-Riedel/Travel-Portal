@@ -126,8 +126,10 @@ core:
         iso: "640"
   forecast:
     actual:
-      days: "9"
-      models: ecmwf_ifs025_ensemble,ecmwf_aifs025_ensemble,icon_global_eps
+      days: "10"
+      models: ecmwf_ifs025_ensemble,gfs_seamless_ensemble
+      refresh:
+        hours: 5,11,17,23
   fitness:
     overwrite:
       threshold:

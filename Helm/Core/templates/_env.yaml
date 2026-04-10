@@ -194,6 +194,8 @@
   value: "{{ .Values.core.forecast.actual.days }}"
 - name: ACTUAL_WEATHER_FORECAST_MODELS
   value: "{{ .Values.core.forecast.actual.models }}"
+- name: ACTUAL_WEATHER_FORECAST_REFRESH_HOURS
+  value: "{{ .Values.core.forecast.actual.refresh.hours }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
   value: "{{ .Values.core.fitness.overwrite.threshold.coefficient }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE

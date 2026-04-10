@@ -11,10 +11,8 @@
 
     class OpenMeteoActualForecastClient implements ForecastClient {
 
-        private const ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT = "OpenMeteoActualForecastClient:EnsembleApiResponse:%f:%f";
+        private const ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT = "OpenMeteoActualForecastClient:EnsembleApiResponse:%s:%s:%f:%f:";
         private const ENSEMBLE_API_RESPONSE_CACHE_TTL = 900;
-
-        private const MODELS_REFRESH_INTERVAL_SECONDS = 3 * CommonConstants::ONE_HOUR_SECONDS;
 
         private const TEMPERATURE_VARIABLE_KEY = "temperature_2m";
         private const PRECIPITATION_VARIABLE_KEY = "precipitation";
@@ -27,31 +25,35 @@
 
         private const VARIABLE_KEY_PREFIX_SUFFIX = "_member";
         
-        private const GET_ENSEMBLE_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://ensemble-api.open-meteo.com/v1/ensemble?latitude=%f&longitude=%f&hourly=%s&models=%s&timezone=%s&forecast_days=%d&wind_speed_unit=ms&timeformat=unixtime";
+        private const GET_ENSEMBLE_WEATHER_FORECAST_ENDPOINT_FORMAT = "https://ensemble-api.open-meteo.com/v1/ensemble?latitude=%f&longitude=%f&hourly=%s&models=%s&timezone=%s&start_date=%s&end_date=%s&wind_speed_unit=ms&timeformat=unixtime";
 
         private readonly HttpClient $httpClient;
         private readonly CacheClient $distributedCacheClient;
 
         private readonly array $models;
-        private readonly int $actualWeatherForecastDaysToCache;
+        private readonly array $refreshHours;
 
-        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, array $models, int $actualWeatherForecastDaysToCache) {
+        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, array $models, array $refreshHours) {
             $this->httpClient = $httpClient;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->models = $models;
-            $this->actualWeatherForecastDaysToCache = $actualWeatherForecastDaysToCache;
+            $this->refreshHours = $refreshHours;
         }
 
         public function getForecast(float $latitude, float $longitude, int $start, int $end) : Weather {
-            $cacheKey = sprintf(self::ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT, $latitude, $longitude);
+            $startDate = date(CommonConstants::YMD_DATE_FORMAT, $start);
+            $endDate = date(CommonConstants::YMD_DATE_FORMAT, $end);
+
+            $cacheKey = sprintf(self::ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT, $startDate, $endDate, $latitude, $longitude);
             $apiResponse = $this->distributedCacheClient->get($cacheKey);
 
+            $expiration = $this->getExpirationTimestamp();
             if ($apiResponse === null) {
                 $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ENSEMBLE_WEATHER_FORECAST_ENDPOINT_FORMAT,
                     $latitude, $longitude, implode(",", array(self::TEMPERATURE_VARIABLE_KEY, self::PRECIPITATION_VARIABLE_KEY, self::WINDSPEED_VARIABLE_KEY, self::CLOUD_COVER_VARIABLE_KEY,
                     self::CLOUD_COVER_LOW_VARIABLE_KEY, self::CLOUD_COVER_MID_VARIABLE_KEY, self::CLOUD_COVER_HIGH_VARIABLE_KEY, self::HUMIDITY_VARIABLE_KEY)), implode(",", $this->models),
-                    date_default_timezone_get(), $this->actualWeatherForecastDaysToCache + 1));
-                $this->distributedCacheClient->set($cacheKey, $apiResponse, self::ENSEMBLE_API_RESPONSE_CACHE_TTL);
+                    date_default_timezone_get(), $startDate, $endDate));
+                $this->distributedCacheClient->set($cacheKey, $apiResponse, max($expiration - time(), self::ENSEMBLE_API_RESPONSE_CACHE_TTL));
             }
 
             if (!isset($apiResponse["hourly"])) {
@@ -95,8 +97,24 @@
                 ),
                 $this->getAverage($humidityValues),
                 time(), 
-                time() + self::MODELS_REFRESH_INTERVAL_SECONDS
+                $expiration
             );
+        }
+
+        private function getExpirationTimestamp() : int {
+            $now = time();
+            $startOfTodayUtc = $now - ($now % CommonConstants::ONE_DAY_SECONDS);
+
+            foreach ($this->refreshHours as $hour) {
+                $refreshTimestamp = $startOfTodayUtc + ($hour * CommonConstants::ONE_HOUR_SECONDS);
+                
+                if ($refreshTimestamp > $now) {
+                    return $refreshTimestamp;
+                }
+            }
+
+            $firstRefreshHourTomorrow = $this->refreshHours[0];
+            return $startOfTodayUtc + CommonConstants::ONE_DAY_SECONDS + ($firstRefreshHourTomorrow * CommonConstants::ONE_HOUR_SECONDS);
         }
 
         private function extractValues(mixed $apiResponse, int $index, string $variableKey) : array {
