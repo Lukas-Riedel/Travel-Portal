@@ -12,7 +12,6 @@
     class OpenMeteoActualForecastClient implements ForecastClient {
 
         private const ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT = "OpenMeteoActualForecastClient:EnsembleApiResponse:%s:%s:%f:%f:";
-        private const ENSEMBLE_API_RESPONSE_CACHE_TTL = 900;
 
         private const TEMPERATURE_VARIABLE_KEY = "temperature_2m";
         private const PRECIPITATION_VARIABLE_KEY = "precipitation";
@@ -53,7 +52,7 @@
                     $latitude, $longitude, implode(",", array(self::TEMPERATURE_VARIABLE_KEY, self::PRECIPITATION_VARIABLE_KEY, self::WINDSPEED_VARIABLE_KEY, self::CLOUD_COVER_VARIABLE_KEY,
                     self::CLOUD_COVER_LOW_VARIABLE_KEY, self::CLOUD_COVER_MID_VARIABLE_KEY, self::CLOUD_COVER_HIGH_VARIABLE_KEY, self::HUMIDITY_VARIABLE_KEY)), implode(",", $this->models),
                     date_default_timezone_get(), $startDate, $endDate));
-                $this->distributedCacheClient->set($cacheKey, $apiResponse, max($expiration - time(), self::ENSEMBLE_API_RESPONSE_CACHE_TTL));
+                $this->distributedCacheClient->set($cacheKey, $apiResponse, max(0, $expiration - time()));
             }
 
             if (!isset($apiResponse["hourly"])) {
@@ -82,20 +81,20 @@
             $cloudCoverHighValues = $this->extractValues($apiResponse, $index, self::CLOUD_COVER_HIGH_VARIABLE_KEY);
 
             return new Weather(
-                $this->getAverage($temperatureValues), 
+                $this->getMedian($temperatureValues), 
                 new Clouds(
-                    $this->getAverage($cloudCoverValues), 
-                    $this->getAverage($cloudCoverLowValues), 
-                    $this->getAverage($cloudCoverMidValues), 
-                    $this->getAverage($cloudCoverHighValues),
-                    $this->getCloudConfidence($cloudCoverValues)
+                    $this->getMedian($cloudCoverValues), 
+                    $this->getMedian($cloudCoverLowValues), 
+                    $this->getMedian($cloudCoverMidValues), 
+                    $this->getMedian($cloudCoverHighValues),
+                    $this->getConfidence($cloudCoverValues)
                 ),
-                $this->getAverage($windspeedValues),
+                $this->getMedian($windspeedValues),
                 new Precipitation(
                     $this->getMedian($precipitationValues),
                     $this->getPrecipitationProbability($precipitationValues)
                 ),
-                $this->getAverage($humidityValues),
+                $this->getMedian($humidityValues),
                 time(), 
                 $expiration
             );
@@ -129,13 +128,9 @@
                 }
             }
             return $result;
-        }  
-
-        private function getAverage(array $values) : ?float {
-            return count($values) === 0 ? null : (array_sum($values) / count($values));
         }
 
-        private function getMedian(array $values): ?float {
+        private function getMedian(array $values) : ?float {
             $count = count($values);
             if ($count === 0) {
                 return null;
@@ -148,29 +143,42 @@
             return ($count % 2 === 0) ? ($sortedValues[$mid - 1] + $sortedValues[$mid]) / 2 : $sortedValues[$mid];
         }
 
-        private function getStandardDeviation(array $values): float {
-            $count = count($values);
-            if ($count <= 1) {
-                return 0;
-            }
-
-            $average = $this->getAverage($values);
-            $sumOfSquares = array_reduce($values, fn($carry, $item) => $carry + pow($item - $average, 2), 0);
-            
-            return sqrt($sumOfSquares / ($count - 1));
-        }
-
-        private function getPrecipitationProbability(array $values) : float {
-            return count($values) === 0 ? 0 : round((count(array_filter($values, fn($v) => $v >= 0.1)) / count($values)) * 100);
-        }
-
-        private function getCloudConfidence(array $values): int {
+        private function getConfidence(array $values) : int {
             $count = count($values);
             if ($count <= 1) {
                 return 100;
             }
 
-            return (int) max(0, min(100, 100 - ($this->getStandardDeviation($values) * 3)));
+            $median = $this->getMedian($values);
+            $tolerance = $this->getAdaptiveTolerance($values, $median);
+
+            $agreeCount = count(array_filter($values, fn($v) => abs($v - $median) <= $tolerance));
+            return (int) round(($agreeCount / $count) * 100);
+        }
+
+        private function getAdaptiveTolerance(array $values, float $median) : float {
+            if ($median === null) {
+                return 1.0;
+            }
+            
+            $count = count($values);
+
+            $sorted = $values;
+            sort($sorted);
+
+            $q1 = $sorted[(int)($count * 0.25)];
+            $q3 = $sorted[(int)($count * 0.75)];
+            $iqr = $q3 - $q1;
+
+            if ($iqr === 0) {
+                return max(1.0, abs($median) * 0.05);
+            }
+
+            return max(1.0, $iqr * 0.5);
+        }
+
+        private function getPrecipitationProbability(array $values) : float {
+            return count($values) === 0 ? 0 : round((count(array_filter($values, fn($v) => $v > 0)) / count($values)) * 100);
         }
     }
 ?>
