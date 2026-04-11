@@ -508,7 +508,10 @@
         }
     },
     "weather": {
-        "updated": "Aktualizováno v {{datetime}}",
+        "expiration": "Příští aktualizace v {{datetime}}",
+        "sun": {
+            "altitude": "Výška slunce {{from}}° → {{to}}°"
+        },
         "clouds": {
             "total": "Mraky",
             "low": "Nizké",

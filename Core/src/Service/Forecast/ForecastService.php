@@ -58,6 +58,7 @@
             return $this->forecastMapper->selectDaylightForecast($placeId, $timestamp);
         }
 
+        // TODO: Remove this. The UI is already able to compute the values. Replace remaining usages before removing.
         public function updateDaylightForecast(PlaceIdentifier $placeIdentifier, int $start, int $end) : void {
             $dateTime = new \DateTime();
             $dateTime->setTimestamp($start);

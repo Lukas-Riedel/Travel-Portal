@@ -168,7 +168,7 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                             </td>
                             {includePlannedTimeOff && !isMobile && (
                                 <>
-                                    <td className="p-3 text-center relative group">
+                                    <td className="p-3 text-center relative group hover:cursor-help">
                                         {tripBalances[trip.id] ? (
                                             <>
                                                 {tripBalances[trip.id].availableOvertimeHours.toFixed(1)}

@@ -55,7 +55,9 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 <div className="flex justify-center gap-2 mt-2">
                     <a
                         href={date.album.permalink}
-                        className="btn-large-gray">
+                        className="btn-large-gray"
+                        target="_blank"
+                        rel="noopener noreferrer">
                         <ExternalLink size={16} />
                     </a>
                     <Link

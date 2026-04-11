@@ -49,7 +49,9 @@ export default function FlightCard({ flight }) {
                     </span>
                     <a
                         href={`https://www.flightradar24.com/data/flights/${flight.flight}`}
-                        className="text-blue-600 hover:underline text-lg">
+                        className="text-blue-600 hover:underline text-lg"
+                        target="_blank"
+                        rel="noopener noreferrer">
                         {flight.flight}
                     </a>
                     {airline && (
@@ -86,7 +88,9 @@ export default function FlightCard({ flight }) {
                     {flight.aircraft} (
                     <a
                         href={`https://www.flightradar24.com/data/aircraft/${flight.registration}`}
-                        className="hover:underline">
+                        className="hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer">
                         {flight.registration}
                     </a>
                     )
@@ -104,7 +108,9 @@ export default function FlightCard({ flight }) {
                 {flight.start > Date.now() / 1000 && (
                     <a
                         href={`https://www.google.com/travel/flights?q=One way flight from ${flight.from.shortName} to ${flight.to.shortName} on ${format(toZonedTime(fromUnixTime(flight.start), flight.from.timezone), "d.M.yyyy")}`}
-                        className="hover:underline">
+                        className="hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer">
                         Zkontrolovat cenu
                     </a>
                 )}

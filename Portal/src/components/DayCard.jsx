@@ -1,7 +1,7 @@
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { cs } from "date-fns/locale"
-import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Wind, Droplets, HelpCircle, Clock, CircleQuestionMark, Compass, SunDim, ArrowUpRight, ArrowUpRightFromCircle, ArrowDownRightFromCircle, ArrowUpLeftFromCircle } from "lucide-react"
+import { Bed, Footprints, PartyPopper, CircleHelp, Sunrise, Sunset, Sun, Cloud, CloudSun, CloudFog, CloudRain, CloudLightning, Snowflake, CloudHail, CloudDrizzle, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Wind, Droplets, HelpCircle, Clock, CircleQuestionMark, Compass, SunDim, ArrowUpRight, ArrowUpRightFromCircle, ArrowDownRightFromCircle, ArrowUpLeftFromCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { Link } from "react-router-dom"
 import React, { useEffect, useMemo, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
@@ -14,6 +14,8 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import WeatherRow from "./WeatherRow.tsx"
+import WeatherSummary from "./WeatherSummary.tsx"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
@@ -73,7 +75,9 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                             {stay.address ? (
                                 <a
                                     href={`https://www.google.com/maps/search/${stay.address}`}
-                                    className="text-amber-900 text-xs leading-tight text-right break-words hover:underline hover:text-amber-600 transition-colors duration-200">
+                                    className="text-amber-900 text-xs leading-tight text-right break-words hover:underline hover:text-amber-600 transition-colors duration-200"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     <Bed
                                         size={14}
                                         className="inline mr-1 relative top-[-1px]" />
@@ -120,7 +124,9 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                         ) : (
                                             <a
                                                 href={`https://www.google.com/maps/search/Letiště ${event.from.shortName}`}
-                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
+                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}
+                                                target="_blank"
+                                                rel="noopener noreferrer">
                                                 {event.from.shortName}
                                             </a>
                                         )}
@@ -134,7 +140,9 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                         ) : (
                                             <a
                                                 href={`https://www.google.com/maps/search/Letiště ${event.to.shortName}`}
-                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
+                                                className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}
+                                                target="_blank"
+                                                rel="noopener noreferrer">
                                                 {event.to.shortName}
                                             </a>
                                         )}
@@ -148,9 +156,13 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                             )}
                             {event.name && (
                                 <>
-                                    <span className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}>
+                                    <a
+                                        href={`https://www.windy.com/${event.latitude}/${event.longitude}?satellite`}
+                                        className={requiresAttention(event) ? "text-red-600" : "text-indigo-600"}
+                                        target="_blank"
+                                        rel="noopener noreferrer">
                                         <MapPin size={16} />
-                                    </span>
+                                    </a>
                                     <div className={`font-medium ${requiresAttention(event) ? "text-red-600" : "text-indigo-600"} relative group inline-block`}>
                                         {formatTimestamp(event.start, event.timezone)}
                                     </div>
@@ -178,12 +190,14 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                             event.flight && (
                                 <a
                                     href={`https://www.flightradar24.com/data/flights/${event.flight}`}
-                                    className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}>
+                                    className={`hover:underline ${requiresAttention(event) ? "hover:text-red-300" : "hover:text-sky-300"} transition-colors duration-200`}
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     {event.flight}
                                 </a>
                             ),
                             event.aircraft && (
-                                <div className="relative group inline-block">
+                                <div className="relative group inline-block hover:cursor-help">
                                     {event.aircraft}
                                     {event.registration && (
                                         <Tooltip>
@@ -194,112 +208,16 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                                 </div>
                             )
                         ])}
-                        {(() => {
-                            if (!event.weather || event.weather.length === 0) {
-                                return null
-                            }
-
-                            const safeNum = (val) => {
-                                const parsed = parseFloat(val)
-                                return (typeof val !== "boolean" && !isNaN(parsed) && isFinite(parsed)) ? parsed : null
-                            }
-
-                            const aggregate = (event.weather || []).reduce((acc, w) => {
-                                const t = safeNum(w.temperature)
-                                const pProb = safeNum(w.precipitation?.probability)
-                                const pTotal = safeNum(w.precipitation?.total)
-                                const cTotal = safeNum(w.clouds?.total)
-                                const cLow = safeNum(w.clouds?.low)
-                                const cMed = safeNum(w.clouds?.medium)
-                                const cHigh = safeNum(w.clouds?.high)
-                                const cConf = safeNum(w.clouds?.confidence)
-                                const wind = safeNum(w.wind)
-                                const hum = safeNum(w.humidity)
-                                const update = safeNum(w.lastUpdate)
-
-                                return {
-                                    temperature: t !== null ? acc.temperature + t : acc.temperature,
-                                    precipitation: {
-                                        probability: pProb !== null
-                                            ? (acc.precipitation.probability === null ? pProb : Math.max(acc.precipitation.probability, pProb))
-                                            : acc.precipitation.probability,
-                                        total: pTotal !== null ? acc.precipitation.total + pTotal : acc.precipitation.total
-                                    },
-                                    clouds: {
-                                        total: cTotal !== null ? acc.clouds.total + cTotal : acc.clouds.total,
-                                        low: cLow !== null ? acc.clouds.low + cLow : acc.clouds.low,
-                                        medium: cMed !== null ? acc.clouds.medium + cMed : acc.clouds.medium,
-                                        high: cHigh !== null ? acc.clouds.high + cHigh : acc.clouds.high,
-                                        confidence: cConf !== null ? acc.clouds.confidence + cConf : acc.clouds.confidence
-                                    },
-                                    wind: wind !== null ? acc.wind + wind : acc.wind,
-                                    humidity: hum !== null ? acc.humidity + hum : acc.humidity,
-                                    lastUpdate: (update !== null && update < acc.lastUpdate) ? update : acc.lastUpdate,
-                                    counts: {
-                                        temp: t !== null ? acc.counts.temp + 1 : acc.counts.temp,
-                                        precipProb: pProb !== null ? acc.counts.precipProb + 1 : acc.counts.precipProb,
-                                        precipTotal: pTotal !== null ? acc.counts.precipTotal + 1 : acc.counts.precipTotal,
-                                        clouds: cTotal !== null ? acc.counts.clouds + 1 : acc.counts.clouds,
-                                        cloudsConfidence: cConf !== null ? acc.counts.cloudsConfidence + 1 : acc.counts.cloudsConfidence,
-                                        wind: wind !== null ? acc.counts.wind + 1 : acc.counts.wind,
-                                        humidity: hum !== null ? acc.counts.humidity + 1 : acc.counts.humidity
-                                    }
-                                }
-                            }, {
-                                temperature: 0,
-                                precipitation: { probability: null, total: 0 },
-                                clouds: { total: 0, low: 0, medium: 0, high: 0, confidence: 0 },
-                                wind: 0,
-                                humidity: 0,
-                                lastUpdate: Number.MAX_VALUE,
-                                counts: {
-                                    temp: 0,
-                                    precipProb: 0,
-                                    precipTotal: 0,
-                                    clouds: 0,
-                                    cloudsConfidence: 0,
-                                    wind: 0,
-                                    humidity: 0
-                                }
-                            })
-
-                            const summary = {
-                                temperature: aggregate.counts.temp > 0
-                                    ? (aggregate.temperature / aggregate.counts.temp).toFixed(1)
-                                    : null,
-                                precipitation: {
-                                    probability: aggregate.precipitation.probability,
-                                    total: aggregate.counts.precipTotal > 0
-                                        ? aggregate.precipitation.total.toFixed(1)
-                                        : null
-                                },
-                                clouds: aggregate.counts.clouds > 0 ? {
-                                    total: Math.round(aggregate.clouds.total / aggregate.counts.clouds),
-                                    low: Math.round(aggregate.clouds.low / aggregate.counts.clouds),
-                                    medium: Math.round(aggregate.clouds.medium / aggregate.counts.clouds),
-                                    high: Math.round(aggregate.clouds.high / aggregate.counts.clouds),
-                                    confidence: aggregate.counts.cloudsConfidence > 0
-                                        ? Math.round(aggregate.clouds.confidence / aggregate.counts.cloudsConfidence)
-                                        : null
-                                } : null,
-                                wind: aggregate.counts.wind > 0
-                                    ? (aggregate.wind / aggregate.counts.wind).toFixed(1)
-                                    : null,
-                                humidity: aggregate.counts.humidity > 0
-                                    ? Math.round(aggregate.humidity / aggregate.counts.humidity)
-                                    : null,
-                                lastUpdate: aggregate.lastUpdate === Number.MAX_VALUE ? null : aggregate.lastUpdate
-                            }
-
-                            return (
-                                <WeatherRow
-                                    weather={summary}
-                                    sun={event.sun}
-                                    className="pb-1" />
-                            )
-                        })()}
+                        {event.weather?.length > 0 && (
+                            <WeatherSummary
+                                weather={event.weather}
+                                coordinates={event}
+                                start={event.start}
+                                end={event.end}
+                                timezone={timezone || event.timezone} />
+                        )}
                         {onPhotosAdded && event.album?.uploadingStart && event.album?.uploadingProgress && (
-                            <div className="relative group inline-block">
+                            <div className="relative group inline-block hover:cursor-help">
                                 {renderDescriptionRow("text-yellow-500", [
                                     (
                                         <>
@@ -326,7 +244,7 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                             key={note.id}
                             className="clear-left flex items-center space-x-2">
                             <NotebookPen className="w-4 h-4 shrink-0" />
-                            <div className="relative group inline-block flex-1 min-w-0">
+                            <div className="relative group inline-block flex-1 min-w-0 hover:cursor-help">
                                 <span className="truncate block">
                                     <ReactMarkdown>
                                         {note.content}

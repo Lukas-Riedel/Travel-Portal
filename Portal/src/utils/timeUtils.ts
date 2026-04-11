@@ -44,3 +44,7 @@ export function getTimezoneOrDefault(timezone?: string): string {
 export function formatTimestamp(timestamp: number, timestampFormat: string, timezone?: string) {
     return format(toZonedTime(fromUnixTime(timestamp), getTimezoneOrDefault(timezone)), timestampFormat)
 }
+
+export function getDate(dateOrTimestamp: number | Date): Date {
+    return typeof dateOrTimestamp === "number" ? new Date(dateOrTimestamp * 1000) : dateOrTimestamp
+}

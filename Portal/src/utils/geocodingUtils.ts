@@ -7,15 +7,19 @@ export function getEuclideanDistance(a: Coordinates, b: Coordinates): number {
 }
 
 export function getHaversineDistance(a: Coordinates, b: Coordinates): number {
-    const x1 = a.latitude - b.latitude;
-    const x2 = a.longitude - b.longitude;
+    const x1 = a.latitude - b.latitude
+    const x2 = a.longitude - b.longitude
     const ar = Math.sin(toRadians(x1) / 2) * Math.sin(toRadians(x1) / 2) + Math.cos(toRadians(b.latitude))
-        * Math.cos(toRadians(a.latitude)) * Math.sin(toRadians(x2) / 2) * Math.sin(toRadians(x2) / 2);
-    const c = 2 * Math.atan2(Math.sqrt(ar), Math.sqrt(1 - ar));
+        * Math.cos(toRadians(a.latitude)) * Math.sin(toRadians(x2) / 2) * Math.sin(toRadians(x2) / 2)
+    const c = 2 * Math.atan2(Math.sqrt(ar), Math.sqrt(1 - ar))
 
-    return EARTH_RADIUS_KILOMETERS * c;
+    return EARTH_RADIUS_KILOMETERS * c
 }
 
 export function toRadians(degrees: number): number {
-    return degrees * Math.PI / 180;
+    return degrees * Math.PI / 180
+}
+
+export function toDegrees(radians: number): number {
+    return radians * 180 / Math.PI
 }

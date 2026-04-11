@@ -18,6 +18,7 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { useTranslation } from "react-i18next"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { getSunAltitude } from "../utils/sunUtils.ts"
 
 export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
@@ -32,7 +33,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
         ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.to.shortName, address: "Letiště " + flight.to.shortName, type: KnownAddressType.Airport })) ?? [])
     ])
 
-    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data && Math.round((SunCalc.getPosition(new Date(), lastSeenBridgeXDevice.data.latitude, lastSeenBridgeXDevice.data.longitude).altitude * 180) / Math.PI), [lastSeenBridgeXDevice])
+    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data && Math.round(getSunAltitude(new Date(), lastSeenBridgeXDevice.data)), [lastSeenBridgeXDevice])
     const SunAltitudeIcon = useMemo(() => currentSunAltitude > 10 ? Sun : currentSunAltitude < -10 ? Moon : SunMoon, [currentSunAltitude])
 
     const [timezone, setTimezone] = useState(undefined)
@@ -137,7 +138,9 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 <LocateFixedIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.data.address.address)}`}>
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.data.address.address)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     {lastSeenBridgeXDevice.data.address.name}
                                 </a>
                             </div>
@@ -146,7 +149,9 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 <LocateOffIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.data.address.address)}`}>
+                                    href={`https://www.google.com/maps/search/${encodeURIComponent(lastSeenBridgeXDevice.data.address.address)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer">
                                     {lastSeenBridgeXDevice.data.address.name}
                                 </a>
                             </div>

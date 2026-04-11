@@ -129,7 +129,7 @@ core:
       days: "10"
       models: ecmwf_ifs025_ensemble,ncep_gefs_seamless
       refresh:
-        hours: 5,11,17,23
+        hours: 1,7,13,19
   fitness:
     overwrite:
       threshold:

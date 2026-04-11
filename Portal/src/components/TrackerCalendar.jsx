@@ -138,7 +138,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             <li
                 key="flight"
                 className="relative group">
-                <div className="flex items-center space-x-1 text-white text-xs leading-tight">
+                <div className="flex items-center space-x-1 text-white text-xs leading-tight hover:cursor-help">
                     <Icon className="w-4 h-4 mr-1 shrink-0" />
                     <span className="font-medium truncate hidden md:block">
                         {formatTimestamp(flight.time)}
@@ -146,7 +146,9 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                     <span className="whitespace-nowrap text-ellipsis truncate">
                         <a
                             href={`https://www.flightradar24.com/data/flights/${flight.flight}`}
-                            className="hover:underline hover:text-gray-300 transition-colors duration-200">
+                            className="hover:underline hover:text-gray-300 transition-colors duration-200"
+                            target="_blank"
+                            rel="noopener noreferrer">
                             {flight.flight}
                         </a>
                     </span>
@@ -165,7 +167,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             <li
                 key={event.id}
                 className="relative group">
-                <div className="flex items-center space-x-1 text-white text-xs leading-tight">
+                <div className="flex items-center space-x-1 text-white text-xs leading-tight hover:cursor-help">
                     <Icon className="w-4 h-4 mr-1 shrink-0" />
                     <span className="font-medium truncate">
                         {formatDuration((-1) * event.hours * 3600)}
@@ -410,7 +412,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
                                                             {daySummary.positiveOvertime.map(event => (
                                                                 <div
                                                                     key={event.id}
-                                                                    className="relative group">
+                                                                    className="relative group hover:cursor-help">
                                                                     <div className="flex items-center space-x-1">
                                                                         <span
                                                                             className="text-2xs text-ellipsis truncate"
