@@ -54,32 +54,6 @@
             return array();
         }
 
-        public function getDaylightForecast(string $placeId, int $timestamp) : ?Sun {
-            return $this->forecastMapper->selectDaylightForecast($placeId, $timestamp);
-        }
-
-        // TODO: Remove this. The UI is already able to compute the values. Replace remaining usages before removing.
-        public function updateDaylightForecast(PlaceIdentifier $placeIdentifier, int $start, int $end) : void {
-            $dateTime = new \DateTime();
-            $dateTime->setTimestamp($start);
-            $suncalc = new SunCalc($dateTime, $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
-            $sunTimes = $suncalc->getSunTimes();
-            $startSunPosition = $suncalc->getSunPosition($dateTime);
-            $dateTime->setTimestamp($end);
-            $endSunPosition = $suncalc->getSunPosition($dateTime);
-
-            $daylightForecast = new Sun($sunTimes["sunrise"]->getTimestamp(), $sunTimes["sunset"]->getTimestamp(),
-                $startSunPosition->altitude * 180 / M_PI, $endSunPosition->altitude * 180 / M_PI,
-                $startSunPosition->azimuth * 180 / M_PI, $endSunPosition->azimuth * 180 / M_PI);
-            
-            $this->transactionManager->executeAtomically(function() use(&$placeIdentifier, &$daylightForecast, &$start) {
-                $this->forecastMapper->deleteDaylightForecast($placeIdentifier->getId(), $start);
-                $this->forecastMapper->insertDaylightForecast($daylightForecast, $placeIdentifier->getId(), $start);
-            });
-
-            $this->forecastMapper->deleteStaleDaylightForecast();
-        }
-
         public function updateHistoricalWeatherForecast(PlaceIdentifier $placeIdentifier, int $timestamp) : void {
             $oneYearAgoTimestamp = $timestamp;
             while ($oneYearAgoTimestamp > time() - (1 + self::HISTORICAL_WEATHER_FORECAST_DAYS_BEFORE_AND_AFTER) * CommonConstants::ONE_DAY_SECONDS) {

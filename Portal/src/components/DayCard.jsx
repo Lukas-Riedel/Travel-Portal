@@ -16,6 +16,7 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 import WeatherRow from "./WeatherRow.tsx"
 import WeatherSummary from "./WeatherSummary.tsx"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { getSunAltitude, getSunrise, getSunset } from "../utils/sunUtils.ts"
 
 const sunAltitudeThreshold = 20
 const agentOnlineStatusThresholdSeconds = 60
@@ -58,8 +59,8 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
     }
 
     const requiresAttention = event => hasRole(UserRole.PortalWarningRead)
-        && ((event.sun?.altitude && (event.sun.altitude.start < sunAltitudeThreshold || event.sun.altitude.end < sunAltitudeThreshold))
-            || (event.from && event.to && !event.confirmed))
+        && (getSunAltitude(event.start, event) < sunAltitudeThreshold || getSunAltitude(event.end, event) < sunAltitudeThreshold)
+        || (event.from && event.to && !event.confirmed)
 
     return (day && events) ? ((events.length > 0 || stay) && (
         <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>
@@ -294,26 +295,42 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
                     </span>
                 </div>
             )}
-            {events.some(event => event.sun) && (
-                <div className="mt-3 flex justify-between items-center">
-                    <div className="flex items-center space-x-1 text-cyan-400">
-                        <Sunrise
-                            className="mr-1"
-                            size={16} />
-                        <span>
-                            {events.filter(event => event.sun?.sunrise).map(event => formatTimestamp(event.sun.sunrise, event.timezone))[0]}
-                        </span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-rose-400">
-                        <Sunset
-                            className="mr-1"
-                            size={16} />
-                        <span>
-                            {events.filter(event => event.sun?.sunset).map(event => formatTimestamp(event.sun.sunset, event.timezone)).at(-1)}
-                        </span>
-                    </div>
-                </div>
-            )}
+            <div className="mt-3 flex justify-between items-center">
+                {(() => {
+                    const sunrise = events.map(event => {
+                        const sunrise = getSunrise(event.start, event)
+                        return sunrise ? formatTimestamp(sunrise, event.timezone) : null
+                    }).filter(Boolean)[0]
+
+                    return sunrise && (
+                        <div className="flex items-center space-x-1 text-cyan-400">
+                            <Sunrise
+                                className="mr-1"
+                                size={16} />
+                            <span>
+                                {sunrise}
+                            </span>
+                        </div>
+                    )
+                })()}
+                {(() => {
+                    const sunset = events.map(event => {
+                        const sunset = getSunset(event.start, event)
+                        return sunset ? formatTimestamp(sunset, event.timezone) : null
+                    }).filter(Boolean).at(-1)
+
+                    return sunset && (
+                        <div className="flex items-center space-x-1 text-rose-400">
+                            <Sunset
+                                className="mr-1"
+                                size={16} />
+                            <span>
+                                {sunset}
+                            </span>
+                        </div>
+                    )
+                })()}
+            </div>
         </div>
     )) : (
         <div className="fbg-white rounded-xl shadow p-4 flex flex-col items-center justify-center h-[150px]">

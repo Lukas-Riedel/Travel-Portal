@@ -56,10 +56,6 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
         }
 
-        public static function DaylightForecastUpdated(string $placeId, int $start, int $end,) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start, "end" => $end));
-        }
-
         public static function HistoricalWeatherForecastUpdated(string $placeId, int $start) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::High, array("placeId" => $placeId, "start" => $start));
         }

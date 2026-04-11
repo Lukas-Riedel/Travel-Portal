@@ -360,19 +360,17 @@
                             $albumTimestamp = $albumDate->getTimestamp();
 
                             if (($minStart === null || $minStart <= $albumTimestamp) && ($maxEnd === null || $albumTimestamp + CommonConstants::ONE_DAY_SECONDS <= $maxEnd)) {
-                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS, false, array(), null, $permanentPlaceAlbum, null));
+                                $places[$placeRow["id"]]->addDate(new Date($albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS, false, array(), $permanentPlaceAlbum, null));
                             }
                         }
                     }
                     else {
                         $weather = array();
-                        $sun = null;
                         if ($placeRow["start"] > time()) {
                             $weather = $this->forecastService->getWeatherForecast($placeRow["id"], $placeRow["start"], $placeRow["end"]);
-                            $sun = $this->forecastService->getDaylightForecast($placeRow["id"], $placeRow["start"]);
                         }
 
-                        $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] === "t", $weather, $sun,
+                        $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] === "t", $weather,
                             $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"]), $placeRow["trip_id"] == null ? null : $tripService->getTripIdentifierById($placeRow["trip_id"])));  
                     }
                 }
@@ -534,7 +532,7 @@
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
-                    $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], false, array(), null, null, $trip));
+                    $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], false, array(), null, $trip));
                 }
             }
 

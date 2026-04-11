@@ -1,8 +1,6 @@
 <?php
     namespace Core\Service\Place;
 
-    use Core\Service\Forecast\Weather;
-    use Core\Service\Forecast\Sun;
     use Core\Service\Photo\Album;
     use Core\Service\Trip\TripIdentifier;    
     use OpenApi\Attributes as OA;
@@ -34,11 +32,6 @@
                 items: new OA\Items(ref: "#/components/schemas/Weather")
             ),
             new OA\Property(
-                property: "sun",
-                description: "The sun position for the date",
-                ref: "#/components/schemas/Sun"
-            ),
-            new OA\Property(
                 property: "album",
                 description: "The album for the date",
                 ref: "#/components/schemas/Album"
@@ -58,17 +51,15 @@
         private readonly int $end;
         private readonly bool $layover;
         private readonly array $weather;
-        private readonly ?Sun $sun;
         private ?Album $album;
         private ?TripIdentifier $trip;
 
         public function __construct(int $start, int $end, bool $layover, array $weather,
-            ?Sun $sun, ?Album $album, ?TripIdentifier $trip) {
+            ?Album $album, ?TripIdentifier $trip) {
             $this->start = $start;
             $this->end = $end;
             $this->layover = $layover;
             $this->weather = $weather;
-            $this->sun = $sun;
             $this->album = $album;
             $this->trip = $trip;
         }
@@ -91,10 +82,6 @@
 
         public function getWeather() : array {
             return $this->weather;
-        }
-
-        public function getSun() : ?Sun {
-            return $this->sun;
         }
 
         public function getAlbum() : ?Album {

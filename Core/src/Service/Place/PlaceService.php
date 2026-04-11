@@ -281,7 +281,7 @@
             $this->transactionManager->executeAtomically(function() use(&$places, &$tripStart, &$archivedTripIdentifier) {
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
-                        if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $tripStart, $date->getEnd() - $tripStart, false, array(), null, null, $archivedTripIdentifier))))) {
+                        if ($this->placeMapper->insertPlaceCandidateEvent($place->withUpdatedDates(array(new Date($date->getStart() - $tripStart, $date->getEnd() - $tripStart, false, array(), null, $archivedTripIdentifier))))) {
                             $this->googleClient->deleteCalendarEvent(Calendar::Places, $this->placeMapper->selectPlaceEventId($place->getId(), $date->getStart()));
                         }
                     }
@@ -362,7 +362,7 @@
                     $resolvedTripIdentifier = $tripService->getTripIdentifierForEntity($start, $end);
                     $place = new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                         $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(), $placeIdentifier->getQuality(),
-                        $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, array(), null, null, $resolvedTripIdentifier)));
+                        $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array(new Date($start, $end, $isLayover, array(), null, $resolvedTripIdentifier)));
 
                     $this->placeMapper->insertPlaceEvent($place, $placeEvent->getId());
 

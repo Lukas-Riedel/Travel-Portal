@@ -13,10 +13,8 @@
 
         private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME = "FETCH_ACTUAL_WEATHER_FORECAST";
         private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME = "FETCH_HISTORICAL_WEATHER_FORECAST";
-        private const FETCH_DAYLIGHT_FORECAST_ACTION_NAME = "FETCH_DAYLIGHT_FORECAST";
         private const FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
         private const FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL = 300;
-        private const FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL = 300;
 
         private readonly ForecastService $forecastService;
         private readonly PlaceService $placeService;
@@ -43,11 +41,6 @@
             $this->forecastService->updateHistoricalWeatherForecast($placeIdentifier, $message["start"]);
         }
 
-        public function onDaylightForecastUpdated(mixed $message) : void {
-            $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["placeId"]);
-            $this->forecastService->updateDaylightForecast($placeIdentifier, $message["start"], $message["end"]);
-        }
-
         public function onPlaceEventCreated(mixed $message) : void {
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
@@ -57,7 +50,6 @@
                     }
                             
                     $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
-                    $this->eventPublisher->publish(Event::DaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd()));
                 }
             }
         }
@@ -71,7 +63,6 @@
                     }
                             
                     $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
-                    $this->eventPublisher->publish(Event::DaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd()));
                 }
             }
         }
@@ -103,19 +94,6 @@
                     foreach ($place->getDates() as &$date) {
                         if (empty($date->getWeather())) {
                             $this->eventPublisher->publish(Event::HistoricalWeatherForecastUpdated($place->getId(), $date->getStart()));
-                        }
-                    }
-                }
-            }
-
-            if ($this->scheduler->requestExecution(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME, self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null, null, null,
-                    array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
-
-                foreach ($places as &$place) {
-                    foreach ($place->getDates() as &$date) {    
-                        if ($date->getSun() === null) {
-                            $this->eventPublisher->publish(Event::DaylightForecastUpdated($place->getId(), $date->getStart(), $date->getEnd()));
                         }
                     }
                 }
