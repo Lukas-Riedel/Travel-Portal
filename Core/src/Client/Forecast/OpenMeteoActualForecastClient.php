@@ -43,20 +43,21 @@
             $startDate = date(CommonConstants::YMD_DATE_FORMAT, $start);
             $endDate = date(CommonConstants::YMD_DATE_FORMAT, $end);
 
-            $cacheKey = sprintf(self::ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT, $startDate, $endDate, $latitude, $longitude);
+            $cacheKey = sprintf(self::ENSEMBLE_API_RESPONSE_CACHE_KEY_FORMAT, $startDate, $endDate, round($latitude, 2), round($longitude, 2));
             $apiResponse = $this->distributedCacheClient->get($cacheKey);
 
             $expiration = $this->getExpirationTimestamp();
             if ($apiResponse === null) {
                 $apiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_ENSEMBLE_WEATHER_FORECAST_ENDPOINT_FORMAT,
-                    $latitude, $longitude, implode(",", array(self::TEMPERATURE_VARIABLE_KEY, self::PRECIPITATION_VARIABLE_KEY, self::WINDSPEED_VARIABLE_KEY, self::CLOUD_COVER_VARIABLE_KEY,
+                    round($latitude, 2), round($longitude, 2), implode(",", array(self::TEMPERATURE_VARIABLE_KEY, self::PRECIPITATION_VARIABLE_KEY, self::WINDSPEED_VARIABLE_KEY, self::CLOUD_COVER_VARIABLE_KEY,
                     self::CLOUD_COVER_LOW_VARIABLE_KEY, self::CLOUD_COVER_MID_VARIABLE_KEY, self::CLOUD_COVER_HIGH_VARIABLE_KEY, self::HUMIDITY_VARIABLE_KEY)), implode(",", $this->models),
                     date_default_timezone_get(), $startDate, $endDate));
-                $this->distributedCacheClient->set($cacheKey, $apiResponse, max(0, $expiration - time()));
-            }
 
-            if (!isset($apiResponse["hourly"])) {
-                throw new \RuntimeException("Unable to fetch actual forecast. Response: " . json_encode($apiResponse));
+                if (!isset($apiResponse["hourly"])) {
+                    throw new \RuntimeException("Unable to fetch actual forecast. Response: " . json_encode($apiResponse));
+                }
+                
+                $this->distributedCacheClient->set($cacheKey, $apiResponse, max(0, $expiration - time()));
             }
 
             $index = -1;

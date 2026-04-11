@@ -25,6 +25,7 @@
             ),
         ]
     )]
+    // TODO: Move to Core\Client\Forecast.
     class Precipitation implements \JsonSerializable {
 
         private readonly float $total;

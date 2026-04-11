@@ -56,6 +56,7 @@
             )
         ]
     )]
+    // TODO: Move to Core\Client\Forecast.
     class Weather implements \JsonSerializable {
                 
         private readonly float $temperature;

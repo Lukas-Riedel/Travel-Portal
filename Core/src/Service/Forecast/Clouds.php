@@ -46,6 +46,7 @@
              )
         ]
     )]
+    // TODO: Move to Core\Client\Forecast.
     class Clouds implements \JsonSerializable {
 
         private readonly float $total;
