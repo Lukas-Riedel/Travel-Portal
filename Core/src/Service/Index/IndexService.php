@@ -303,7 +303,7 @@
         }
 
         private function getNegativeEmbedding() : array {
-            $negativeTerms = $this->configurationService->getConfigurationEntry("embeddings")["negativeTerms"];
+            $negativeTerms = $this->configurationService->getConfigurationEntry("highlight")["negativeTerms"];
             return $this->embeddingService->getTextEmbedding(implode(", ", $negativeTerms));
         }
         

@@ -554,7 +554,7 @@
 
         private function getCalendarIdentifier(Calendar $calendar) : string {    
             preg_match('/https:\/\/calendar\.google\.com\/calendar\/ical\/(.+@group\.calendar\.google\.com)\/.*/',
-                rawurldecode($this->configurationService->getConfigurationEntry("calendars")[$calendar->value]), $tokens);
+                rawurldecode($this->configurationService->getConfigurationEntry("calendar")[$calendar->value]), $tokens);
             if (count($tokens) !== 2 || $tokens[1] === null) {
                 throw new \InvalidArgumentException("The calendar '{$calendar->value}' does not exist or has invalid format.");
             }

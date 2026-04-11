@@ -709,7 +709,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("highlight.prompt.update.attribute.label.composition"),
                     defaultValue: highlightAttributes?.composition,
                     required: true,
-                    options: configuration?.highlights?.attribute?.option?.composition?.map(({ id, value }) => ({
+                    options: configuration?.highlights?.attribute?.composition?.map(({ id, value }) => ({
                         id: value,
                         name: t(`highlight.prompt.update.attribute.option.composition.${id}`)
                     }))
@@ -719,7 +719,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("highlight.prompt.update.attribute.label.sky"),
                     defaultValue: highlightAttributes?.sky,
                     required: false,
-                    options: configuration?.highlights?.attribute?.option?.sky?.map(({ id, value }) => ({
+                    options: configuration?.highlights?.attribute?.sky?.map(({ id, value }) => ({
                         id: value,
                         name: t(`highlight.prompt.update.attribute.option.sky.${id}`)
                     }))
@@ -729,7 +729,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("highlight.prompt.update.attribute.label.shadows"),
                     defaultValue: highlightAttributes?.shadows,
                     required: false,
-                    options: configuration?.highlights?.attribute?.option?.shadows?.map(({ id, value }) => ({
+                    options: configuration?.highlights?.attribute?.shadows?.map(({ id, value }) => ({
                         id: value,
                         name: t(`highlight.prompt.update.attribute.option.shadows.${id}`)
                     }))
@@ -739,7 +739,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("highlight.prompt.update.attribute.label.circumstances"),
                     defaultValue: highlightAttributes?.circumstances,
                     required: true,
-                    options: configuration?.highlights?.attribute?.option?.circumstances?.map(({ id, value }) => ({
+                    options: configuration?.highlights?.attribute?.circumstances?.map(({ id, value }) => ({
                         id: value,
                         name: t(`highlight.prompt.update.attribute.option.circumstances.${id}`)
                     }))
@@ -749,7 +749,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("highlight.prompt.update.attribute.label.atmosphere"),
                     defaultValue: highlightAttributes?.atmosphere,
                     required: true,
-                    options: configuration?.highlights?.attribute?.option?.atmosphere?.map(({ id, value }) => ({
+                    options: configuration?.highlights?.attribute?.atmosphere?.map(({ id, value }) => ({
                         id: value,
                         name: t(`highlight.prompt.update.attribute.option.atmosphere.${id}`)
                     }))

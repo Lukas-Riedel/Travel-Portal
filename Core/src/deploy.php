@@ -103,7 +103,7 @@
 
     $googleClient->createFile("db.sql.gz", $backupFolderId, "application/gzip", file_get_contents($backupFilePath));
 
-    foreach ($configurationService->getConfigurationEntry("calendars") as $calendarName => $calendarUrl) {
+    foreach ($configurationService->getConfigurationEntry("calendar") as $calendarName => $calendarUrl) {
         $googleClient->createFile($calendarName . ".ics", $backupFolderId, "text/calendar", $httpClient->executeRequest(HttpMethod::GET, $calendarUrl));
     }
 ?>

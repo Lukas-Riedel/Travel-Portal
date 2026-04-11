@@ -45,7 +45,7 @@
                 time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
             $trips = $tripService->getRegularTrips($yearId, null, time(), array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["yearHighlightsSelecting"];
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["yearHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear($yearId, $query, $count,

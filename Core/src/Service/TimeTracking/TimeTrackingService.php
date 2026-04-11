@@ -43,7 +43,7 @@
         }
 
         public function resetOpeningBalances(int $beginningOfYearTimestamp) : void {
-            foreach ($this->configurationService->getConfigurationEntry("timeTracking")["timeOffHours"] as $eventType => $openingBalance) {
+            foreach ($this->configurationService->getConfigurationEntry("timeTracking")["openingBalance"] as $eventType => $openingBalance) {
                 $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);                
                 $this->transactionManager->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearTimestamp) {
                     $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;

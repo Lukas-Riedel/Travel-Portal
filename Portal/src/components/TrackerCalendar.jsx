@@ -20,7 +20,7 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
     const now = new Date()
     const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
     const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
-    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimeHoursPerDay || 0, [configuration])
+    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay || 0, [configuration])
 
     const [date, setDate] = useState(() => startOfMonth(now))
 

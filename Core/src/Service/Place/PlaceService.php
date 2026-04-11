@@ -77,7 +77,7 @@
                 return;
             }
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeHighlightsSelecting"];
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $query, $count, $place->getMainHighlight()?->getPhoto()?->getId());
@@ -104,7 +104,7 @@
             }
             
             $placeIdentifier = $this->getPlaceIdentifierById($placeId);
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeSignificance"];
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeSignificance"];
             $placeSignificance = intval($this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $placeIdentifier->getName(), "country" => $placeIdentifier->getCountry() ?? "")));
 
             $this->distributedCacheClient->set($cacheKey, $placeSignificance, self::PLACE_SIGNIFICANCE_CACHE_TTL);
@@ -436,7 +436,7 @@
         }
 
         private function getSuggestedExcerpt(string $name, ?string $country) : ?string {
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["placeExcerpt"];
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeExcerpt"];
             return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country ?? ""));
         }
 

@@ -12,7 +12,7 @@
         case Atmosphere;
 
         public function getOptions(ConfigurationService $configurationService) : array {
-            return $configurationService->getConfigurationEntry("highlights")["attribute"]["option"][strtolower($this->name)];
+            return $configurationService->getConfigurationEntry("highlight")["attribute"][strtolower($this->name)];
         }
         
         public function extractValue(HighlightAttributes $highlightAttributes) : ?float {

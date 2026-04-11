@@ -22,7 +22,7 @@
         }
 
         public static function isOpenLineageEnabled(ConfigurationService $configurationService) : bool {
-            $producers = $configurationService->getConfigurationEntry("openLineage")["producers"];
+            $producers = $configurationService->getConfigurationEntry("openLineage")["producer"];
             return array_reduce($producers, fn($carry, $producer) => $carry || $producer["enabled"], false);            
         }
 
