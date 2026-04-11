@@ -35,9 +35,7 @@
 
         public function onActualWeatherForecastUpdated(mixed $message) : void {
             $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["placeId"]);
-            if ($this->forecastService->isActualWeatherForecastExpired($placeIdentifier->getId(), $message["start"])) {
-                $this->forecastService->updateActualWeatherForecast($placeIdentifier, $message["start"]);
-            }
+            $this->forecastService->updateActualWeatherForecast($placeIdentifier, $message["start"]);
         }
 
         public function onHistoricalWeatherForecastUpdated(mixed $message) : void {
@@ -78,29 +76,9 @@
             }
         }
 
-        public function onActualForecastWatchingTriggered(mixed $message) : void {
-            $currentTimestamp = time(); 
-            $publishTimestamp = $currentTimestamp - ($currentTimestamp % 300);
-            $maxHorizonSeconds = $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS;
-
-            while ($publishTimestamp < $message["end"]) {
-                $timestamp = $message["start"];
-
-                while ($timestamp < $message["end"]) {
-                    if ($publishTimestamp < $timestamp && ($timestamp - $publishTimestamp) <= $maxHorizonSeconds) {                            
-                        $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($message["placeId"], $timestamp, $publishTimestamp), $publishTimestamp);
-                    }
-                    
-                    $timestamp += CommonConstants::ONE_HOUR_SECONDS;
-                }
-                
-                $publishTimestamp += self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL;
-            }
-        }
-
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_ACTUAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(),
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(),
                     time() + $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {
@@ -118,7 +96,7 @@
             }
 
             if ($this->scheduler->requestExecution(self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_NAME, self::FETCH_HISTORICAL_WEATHER_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), null, null, null,
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null, null, null,
                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
         
                 foreach ($places as &$place) {
@@ -131,7 +109,7 @@
             }
 
             if ($this->scheduler->requestExecution(self::FETCH_DAYLIGHT_FORECAST_ACTION_NAME, self::FETCH_DAYLIGHT_FORECAST_ACTION_INTERVAL)) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), null, null, null,
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, time(), null, null, null,
                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 foreach ($places as &$place) {

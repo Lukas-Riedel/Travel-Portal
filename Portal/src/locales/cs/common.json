@@ -344,8 +344,7 @@
                 "subscriptions": "Aktivní předplatné",
                 "regions": "Regiony",
                 "documents": "Dokumenty",
-                "vouchers": "Poukazy",
-                "forecast": "Předpověď počasí"
+                "vouchers": "Poukazy"
             }
         }
     },
@@ -515,18 +514,6 @@
             "low": "Nizké",
             "medium": "Střední",
             "high": "Vysoké"
-        },
-        "prompt": {
-            "watch": {
-                "message": "Zadej údaje o sledovaní předpovědi počasí:",
-                "label": {
-                    "place": "Místo",
-                    "from": "Od",
-                    "to": "Do"
-                },
-                "confirmed": "Sledování předpovědi počasí bylo úspěšně nastaveno",
-                "failed": "Nepodařilo se nastavit sledování předpovědi počasí"
-            }
         }
     },
     "subscription": {

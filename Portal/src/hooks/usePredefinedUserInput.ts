@@ -6,8 +6,6 @@ import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
-import { listAllPlaces } from "../clients/coreClient.ts"
-import { fromZonedTime } from "date-fns-tz"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
@@ -1237,41 +1235,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             }
         )
 
-    const showWatchWeatherForecastToast = (watchActualForecast: (placeId: string, start: Date, end: Date) => Promise<void>) =>
-        showFormToast(
-            t("weather.prompt.watch.message"),
-            [
-                {
-                    type: "text",
-                    label: t("weather.prompt.watch.label.place"),
-                    required: true,
-                    placeholder: "Baku"
-                },
-                {
-                    type: "datetime-local",
-                    label: t("weather.prompt.watch.label.from"),
-                    required: true
-                },
-                {
-                    type: "datetime-local",
-                    label: t("weather.prompt.watch.label.to"),
-                    required: true
-                }
-            ],
-            (name, start, end) => listAllPlaces({ name }).then(places => {
-                if (places.length === 0) {
-                    return Promise.reject("There are no places called '" + name + "'.")
-                }
-
-                return Promise.all(Array.from(new Map(places.map(place => [place.id, place])).values())
-                    .map(place => watchActualForecast(place.id, fromZonedTime(start, place.timezone), fromZonedTime(end, place.timezone))))
-            }),
-            t("weather.prompt.watch.confirmed"),
-            t("weather.prompt.watch.failed")
-        )
-
     return {
-        showWatchWeatherForecastToast,
         showCreateSelectedRegionToast,
         showCreateCompositeRegionToast,
         showCreateGeographicalRegionToast,

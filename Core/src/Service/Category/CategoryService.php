@@ -57,7 +57,7 @@
                 return;
             }
 
-            $places = $placeService->getRegularPlaces(null, $categoryId, null, null, null, null, null, null, null,
+            $places = $placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null,
                 time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["categoryHighlightsSelecting"];

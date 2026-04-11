@@ -61,9 +61,9 @@ const categoryCategories = {
 export default function AdminPage() {
     const { hasRole } = useAuth()
     const { t } = useTranslation()
-    const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent, publishActualForecastWatchingTriggeredEvent } = useEvents()
+    const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
-    const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showWatchWeatherForecastToast, showCreateFlightToast, showCreateSubscriptionToast } = usePredefinedUserInput()
+    const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast } = usePredefinedUserInput()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
@@ -85,7 +85,6 @@ export default function AdminPage() {
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
     const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
 
-    // TODO: Rewrite to AdminMenuTabName.
     const [activeTab, setActiveTab] = useState(0)
 
     const watchedFlights = useMemo(() => {
@@ -148,11 +147,6 @@ export default function AdminPage() {
             tab: AdminMenuTabName.Vouchers,
             name: t("menu.tab.label.vouchers"),
             enabled: hasRole(UserRole.VoucherEdit)
-        },
-        {
-            tab: AdminMenuTabName.Forecast,
-            name: t("menu.tab.label.forecast"),
-            enabled: hasRole(UserRole.PlaceRead)
         }
     ]
 
@@ -209,10 +203,6 @@ export default function AdminPage() {
 
             return createVoucher(code, issuer, value, currency, convertedExpiration)
         })
-    }
-
-    const handleForecastWatchingTriggered = () => {
-        showWatchWeatherForecastToast((placeId, start, end) => publishActualForecastWatchingTriggeredEvent(placeId, Math.round(start.getTime() / 1000), Math.round(end.getTime() / 1000)))
     }
 
     const handlePermanentPlaceCreated = () => {
@@ -372,13 +362,6 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handleVoucherCreated} />
-                </>
-            )}
-            {activeTab === 11 && hasRole(UserRole.PlaceRead) && (
-                <>
-                    <FloatingButton
-                        icon={Plus}
-                        onClick={handleForecastWatchingTriggered} />
                 </>
             )}
         </>

@@ -81,7 +81,7 @@
 
         private function getAllRequiredFitnessRecordTimestamps() : array {
             $trips = $this->tripService->getRegularTrips(null, null, null, array(), TripSortingStrategy::OldestAscending);
-            $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, time(), null, null,
+            $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), null, null,
                 array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $allTimestamps = array();

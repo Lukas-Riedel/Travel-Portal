@@ -153,7 +153,7 @@
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
                         array_filter(array_map(function($placeId) use(&$start, &$end, &$placesCache) {
                             if (!isset($placesCache[$placeId])) {
-                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, null, $start, $end, null, PHP_INT_MAX,
+                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end, null, PHP_INT_MAX,
                                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                                 $placesCache[$placeId] = count($places) === 0 ? null : $places[0];                                
                             }
@@ -179,7 +179,7 @@
                 });
         }
         
-        public function selectRegularPlaces(?string $placeId, ?string $name, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -217,9 +217,6 @@
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
-            }
-            if ($name !== null) {
-                $whereClauseBuilder->withClause("pi.name = ?", $name);
             }
             if ($year !== null) {
                 $whereClauseBuilder->withClause("TO_CHAR(TO_TIMESTAMP(pe.\"start\"), 'YYYY') = ?", $year);
@@ -385,7 +382,7 @@
             return array_values($places);
         }
         
-        public function selectCandidatePlaces(?string $placeId, ?string $name, ?string $categoryId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
+        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT pi.*
                 FROM place_candidate pc
@@ -400,9 +397,6 @@
                 ->withClause("NOT EXISTS (SELECT 1 FROM place_permanent pp WHERE pp.place_id = pi.id)");
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
-            }
-            if ($name !== null) {
-                $whereClauseBuilder->withClause("pi.name = ?", $name);
             }
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
@@ -1000,7 +994,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $longitude, $latitude, $limit)
                 ->getMappedResultSet(function($placeIdentifierRow) use(&$includedEntities) {
-                    return $this->selectRegularPlaces($placeIdentifierRow["id"], null, null, null, null, null,
+                    return $this->selectRegularPlaces($placeIdentifierRow["id"], null, null, null, null,
                         null, null, null, null, time(), null, null, $includedEntities, PlaceSortingStrategy::OldestAscending)[0];
                 });
         }
@@ -1023,7 +1017,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $longitude, $latitude, $limit)
                 ->getMappedResultSet(function($placeIdentifierRow) {
-                    return $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, null, null, PlaceIncludedEntity::values())[0];
+                    return $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, null, PlaceIncludedEntity::values())[0];
                 });
         }
 

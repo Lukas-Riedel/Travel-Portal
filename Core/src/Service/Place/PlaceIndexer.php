@@ -34,7 +34,7 @@
                     }
                 }
                 else {
-                    $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
+                    $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, time(), self::NEARBY_PLACES_COUNT, null,
                         array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
                 }
 

@@ -31,7 +31,7 @@
         public function onAllDynamicLabelsInvalidated(mixed $message) : void {
             foreach ($this->configurationService->getConfigurationEntry("dynamicLabels") as &$dynamicLabel) {
                 $this->labelService->removeLabelForAllPlaces($this->labelService->getOrCreateLabelId($dynamicLabel["name"]));
-                $labeledPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
+                $labeledPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null,
                     time() - $dynamicLabel["interval"], time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
                 
                 foreach ($labeledPlaces as &$labeledPlace) {

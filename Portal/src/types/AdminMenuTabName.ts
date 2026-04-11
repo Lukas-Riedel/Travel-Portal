@@ -9,6 +9,5 @@ export enum AdminMenuTabName {
     ActiveSubscriptions = "subscriptions",
     Regions = "regions",
     Documents = "documents",
-    Vouchers = "vouchers",
-    Forecast = "forecast"
+    Vouchers = "vouchers"
 }

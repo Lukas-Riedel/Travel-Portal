@@ -29,7 +29,7 @@
             int $start, int $end, ?string $categoryId, ?string $entityId) : array {
             $statistics = array();
 
-            $relevantPlaces = $this->placeService->getRegularPlaces(null, $categoryId, null, null, null, null, null, null, $start, $end, null, null,
+            $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null,
                 array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
 
             if ($statisticsKind === StatisticsKind::Fact) {

@@ -26,7 +26,7 @@
 
         public function index(DocumentBuffer $documentBuffer, IndexType $indexType, IndexableEntityType $entityType, ?string $entityId) : void {            
             if ($indexType === IndexType::Photo && $entityType === IndexableEntityType::Photo) {
-                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, $entityId, null, null,
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, $entityId, null, null,
                     null, null, null, null, array(PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Highlights->value),
                     PlaceSortingStrategy::OldestAscending);
                 $trips = $this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Highlights->value), 

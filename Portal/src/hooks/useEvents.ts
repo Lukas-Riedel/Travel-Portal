@@ -4,7 +4,7 @@ import { createEvent } from "../clients/coreClient.ts"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
 
-export const useEvents = (eventType?: EventType): UseEventsResult => {
+export const useEvents = (eventType: EventType): UseEventsResult => {
     const { messages } = useNotifications()
 
     const [readMessageIds, setReadMessageIds] = useState(() => new Set<string>())
@@ -15,7 +15,7 @@ export const useEvents = (eventType?: EventType): UseEventsResult => {
 
     const events = useMemo(() => messages
         ?.filter(message => message.data?.event === eventType && !readMessageIds.has(message.messageId))
-        ?.map(message => ({ ...(message.data?.args ?? {}), markAsRead: () => markAsRead(message.messageId) })), [eventType, messages, readMessageIds])
+        ?.map(message => ({ ...(message.data?.args ?? {}), markAsRead: () => markAsRead(message.messageId) })), [messages, readMessageIds])
 
     return {
         events,
@@ -25,8 +25,6 @@ export const useEvents = (eventType?: EventType): UseEventsResult => {
             createEvent(EventType.PhotoReplacingTriggered, { agentId, placeId, placeName, albumId, replacedPhotoId, path }),
         publishFolderSynchronizationRequestedEvent: (agentId: string, path: string, expiration: number) =>
             createEvent(EventType.FolderSynchronizationRequested, { agentId, path, expiration }),
-        publishActualForecastWatchingTriggeredEvent: (placeId: string, start: number, end: number) =>
-            createEvent(EventType.ActualForecastWatchingTriggered, { placeId, start, end }),
         publishAllAlbumsInvalidatedEvent: () => createEvent(EventType.AllAlbumsInvalidated)
     }
 }

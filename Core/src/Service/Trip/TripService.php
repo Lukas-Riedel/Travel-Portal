@@ -68,7 +68,7 @@
                 return;
             }
 
-            $places = $this->placeService->getRegularPlaces(null, null, null, $tripId, null, null, null, null, null,
+            $places = $this->placeService->getRegularPlaces(null, null, $tripId, null, null, null, null, null,
                 null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompts")["tripHighlightsSelecting"];

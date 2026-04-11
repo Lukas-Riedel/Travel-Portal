@@ -43,7 +43,7 @@
         public function onCategoryRenamed(mixed $message) : void {
             $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["categoryId"]);
             if ($categoryIdentifier?->getCategory() === CategoryCategory::Country) {
-                $places = $this->placeService->getRegularPlaces(null, $message["categoryId"], null, null, null, null, null, null,
+                $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null,
                     null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                     
                 foreach ($places as &$place) {
@@ -86,13 +86,13 @@
         }
 
         public function onCategoryInvalidated(mixed $message) : void {
-            $places = $this->placeService->getRegularPlaces(null, $message["categoryId"], null, null, null, null, null, null,
+            $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null,
                 null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
             foreach ($places as &$place) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }
             
-            $places = $this->placeService->getCandidatePlaces(null, $message["categoryId"], null, null, null, array());
+            $places = $this->placeService->getCandidatePlaces($message["categoryId"], null, null, null, array());
             foreach ($places as &$place) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }
