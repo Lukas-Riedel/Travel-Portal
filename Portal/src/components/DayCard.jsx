@@ -57,10 +57,13 @@ export default function DayCard({ day, events, stay, fitness, noteSelector, publ
         const onlineAgents = agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name }))
         showUploadPhotosToast(onlineAgents, (path, agentId, mainPhotoPosition) => onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition))
     }
-
-    const requiresAttention = event => hasRole(UserRole.PortalWarningRead)
-        && (getSunAltitude(event.start, event) < sunAltitudeThreshold || getSunAltitude(event.end, event) < sunAltitudeThreshold)
-        || (event.from && event.to && !event.confirmed)
+    
+    const requiresAttention = event => hasRole(UserRole.PortalWarningRead) && event.start > getCurrentTimestamp()
+        && (
+            (getSunAltitude(event.start, event) < sunAltitudeThreshold || getSunAltitude(event.end, event) < sunAltitudeThreshold)
+            || (event.from && event.to && !event.confirmed)
+            || (event.weather?.some(w => w.precipitation?.probability > 50 && w.precipitation?.total > 0))
+        )
 
     return (day && events) ? ((events.length > 0 || stay) && (
         <div className={`rounded-xl p-4 h-full flex flex-col ${isToday ? "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg" : "shadow-md bg-white"}`}>

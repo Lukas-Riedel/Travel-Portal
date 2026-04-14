@@ -36,7 +36,7 @@ export default function WeatherRow({ coordinates, weather, start, end, timezone,
             }
         }
 
-        if (weather?.precipitation?.probability > 40 && weather?.precipitation?.total >= 0.1) {
+        if (weather?.precipitation?.probability > 50 && weather?.precipitation?.total >= 0.1) {
             return {
                 WeatherIcon: CloudRain,
                 color: "text-blue-500"

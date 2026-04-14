@@ -205,7 +205,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                                 {formatRefreshedBefore(lastSeenBridgeXDevice.lastSeen)}
                             </li>
                         </ul>
-                        {tripProgress && (
+                        {tripProgress > 0 && (
                             <div className="w-full mt-4">
                                 <div className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700 relative">
                                     <div
