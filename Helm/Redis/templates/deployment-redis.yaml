@@ -17,6 +17,13 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 20m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
           image: "{{ .Values.redis.image }}:{{ .Values.redis.tag }}"
           command: ["redis-server"]
           args: ["--requirepass", "$(REDIS_PASSWORD)"]

@@ -20,7 +20,7 @@ spec:
     - port: {{ .Values.rabbitmq.service.prometheus.port }}
       targetPort: {{ .Values.rabbitmq.service.prometheus.port }}
       protocol: TCP
-      name: http-management
+      name: http-metrics
   selector:
     app: {{ .Release.Name }}
 {{- end }}

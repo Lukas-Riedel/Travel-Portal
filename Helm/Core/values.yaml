@@ -3,7 +3,7 @@ core:
   image: ghcr.io/lukas-riedel/core
   tag: latest
   replicas: 1
-  workers: 5
+  workers: 3
   scaling:
     items: "100"
     cooldown: 120

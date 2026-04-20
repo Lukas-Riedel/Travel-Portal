@@ -34,6 +34,13 @@ spec:
 {{ include "core.volumeMounts" . | nindent 12 }}
       containers:
         - name: {{ .Release.Name }}-worker
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 400Mi
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -47,7 +54,7 @@ spec:
             - -d
             - max_execution_time=0
             - -d
-            - memory_limit=512M
+            - memory_limit=300M
             - /var/www/html/src/worker.php
           readinessProbe:
             exec:

@@ -27,6 +27,13 @@ spec:
         fsGroup: 101
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 10m
+              memory: 50Mi
+            limits:
+              cpu: 100m
+              memory: 150Mi
           image: "{{ .Values.portal.image }}:{{ .Values.portal.tag }}" 
           securityContext:
             readOnlyRootFilesystem: true
@@ -54,7 +61,6 @@ spec:
             httpGet:
               path: /management/liveness
               port: {{ .Values.portal.service.port }}
-            initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 50
             timeoutSeconds: 5

@@ -20,6 +20,13 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-dashboards
+          resources:
+            requests:
+              cpu: 10m
+              memory: 500Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
           image: "{{ .Values.opensearch.dashboards.image }}:{{ .Values.opensearch.dashboards.tag }}"
           ports:
             - containerPort: {{ .Values.opensearch.dashboards.service.port }}             

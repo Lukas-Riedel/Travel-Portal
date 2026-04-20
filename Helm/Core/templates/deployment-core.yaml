@@ -27,6 +27,13 @@ spec:
         fsGroup: 33
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 200m
+              memory: 150Mi
+            limits:
+              cpu: 1000m
+              memory: 2.2G # TODO: Reduce the limit after reworking the deployment script.
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -54,7 +61,6 @@ spec:
             httpGet:
               path: /management/liveness
               port: {{ .Values.core.service.port }}
-            initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 50
             timeoutSeconds: 5

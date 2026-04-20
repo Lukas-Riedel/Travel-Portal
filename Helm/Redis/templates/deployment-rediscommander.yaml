@@ -20,6 +20,13 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-rediscommander
+          resources:
+            requests:
+              cpu: 10m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
           image: "{{ .Values.rediscommander.image }}:{{ .Values.rediscommander.tag }}"
           ports:
             - containerPort: {{ .Values.rediscommander.service.port }}

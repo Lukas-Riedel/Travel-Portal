@@ -17,6 +17,13 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+            limits:
+              cpu: 300m
+              memory: 400Mi
           image: "{{ .Values.rabbitmq.image }}:{{ .Values.rabbitmq.tag }}"
           ports:
             - name: amqp

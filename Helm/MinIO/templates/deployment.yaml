@@ -17,6 +17,13 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 400Mi
+            limits:
+              cpu: 500m
+              memory: 800Mi
           image: "{{ .Values.minio.image }}:{{ .Values.minio.tag }}"
           args:
             - server

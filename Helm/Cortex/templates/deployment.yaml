@@ -24,6 +24,13 @@ spec:
         fsGroup: 1000
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1.2Gi
+            limits:
+              cpu: 1000m
+              memory: 1.8Gi
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -51,7 +58,6 @@ spec:
             httpGet:
               path: /management/liveness
               port: {{ .Values.cortex.service.port }}
-            initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 50
             timeoutSeconds: 5

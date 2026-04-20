@@ -16,8 +16,15 @@ spec:
           restartPolicy: Never
           containers:
           - name: {{ .Release.Name }}-scheduler
+            resources:
+              requests:
+                cpu: 100m
+                memory: 200Mi
+              limits:
+                cpu: 500m
+                memory: 400Mi
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-            command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=512M", "/var/www/html/src/scheduler.php"]
+            command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=300M", "/var/www/html/src/scheduler.php"]
             env:
 {{ include "core.env" . | nindent 14 }}
             volumeMounts:

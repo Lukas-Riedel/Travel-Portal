@@ -17,6 +17,13 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
           image: "{{ .Values.postgres.image }}:{{ .Values.postgres.tag }}"
           command: ["/usr/local/bin/docker-entrypoint.sh"]
           args:
