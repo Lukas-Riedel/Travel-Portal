@@ -679,7 +679,7 @@
             "upload": {
                 "message": "Zadej cestu k fotkám k nahrání:",
                 "label": {
-                    "datum": "Datum",
+                    "date": "Datum",
                     "path": "Cesta",
                     "position": "Pozice hlavní fotky",
                     "agent": "Agent"
