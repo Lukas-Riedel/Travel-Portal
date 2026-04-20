@@ -162,7 +162,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM forecast_actual
-                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW()));
+                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW())) - 86400
             SQL;
 
             return $this->databaseClient
@@ -174,7 +174,7 @@
             $sql = <<<'SQL'
                 DELETE
                 FROM forecast_historical
-                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW()));
+                WHERE timestamp < ROUND(EXTRACT(EPOCH FROM NOW())) - 86400
             SQL;
 
             return $this->databaseClient

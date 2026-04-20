@@ -366,7 +366,7 @@
                     }
                     else {
                         $weather = array();
-                        if ($placeRow["start"] > time()) {
+                        if ($placeRow["end"] > time()) {
                             $weather = $this->forecastService->getWeatherForecast($placeRow["id"], $placeRow["start"], $placeRow["end"]);
                         }
 

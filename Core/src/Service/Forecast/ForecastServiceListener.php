@@ -45,6 +45,7 @@
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
+                    // TODO: This only updates forecast for the first hours of the date, not for all (as is done in the scheduler).
                     if (time() + $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
                         $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                     }
@@ -58,6 +59,7 @@
             $place = $this->placeService->getRegularPlace($message["placeId"]);
             foreach ($place->getDates() as &$date) {
                 if (time() < $date->getStart()) {
+                    // TODO: This only updates forecast for the first hours of the date, not for all (as is done in the scheduler).
                     if (time() + $this->actualWeatherForecastDaysToCache * CommonConstants::ONE_DAY_SECONDS > $date->getStart()) {
                         $this->eventPublisher->publish(Event::ActualWeatherForecastUpdated($place->getId(), $date->getStart()));
                     }
