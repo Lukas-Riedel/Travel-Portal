@@ -510,6 +510,7 @@
                 VALUES (
                     ?
                 )
+                ON CONFLICT DO NOTHING
             SQL;
 
             return $this->databaseClient
@@ -534,6 +535,7 @@
                     ?, 
                     ?
                 )
+                ON CONFLICT DO NOTHING
                 RETURNING id
             SQL;
 

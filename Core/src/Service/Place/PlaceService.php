@@ -459,8 +459,7 @@
             return new Place($placeIdentifier->getId(), $placeIdentifier->getName(), $placeIdentifier->getCountry(), $placeIdentifier->getLatitude(),
                 $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(), $placeIdentifier->getTimezone(), $placeIdentifier->getMainHighlight(), $placeIdentifier->getScore(),
                 $placeIdentifier->getQuality(), $placeIdentifier->getExcerpt(), array(), array(), array(), array(), array(), array());
-        }
-        
+        }   
 
         private function getOrCreateSpecialPlace(SpecialPlaceType $specialPlaceType, PlaceIdentifier $placeIdentifier) : Place {
             $this->transactionManager->executeAtomically(function() use(&$specialPlaceType, &$placeIdentifier) {

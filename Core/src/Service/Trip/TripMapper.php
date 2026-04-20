@@ -314,6 +314,7 @@
                     ?, 
                     ?
                 )
+                ON CONFLICT DO NOTHING
                 RETURNING id
             SQL;            
 

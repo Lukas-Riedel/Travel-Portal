@@ -211,6 +211,7 @@
                     ?,
                     ?
                 )
+                ON CONFLICT DO NOTHING
             SQL;
 
             return $this->databaseClient

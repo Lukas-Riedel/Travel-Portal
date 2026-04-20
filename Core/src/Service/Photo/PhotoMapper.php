@@ -475,6 +475,7 @@
                 VALUES (
                     ?
                 )
+                ON CONFLICT DO NOTHING
             SQL;
 
             return $this->databaseClient
@@ -497,6 +498,7 @@
                     NULL,
                     ?
                 )
+                ON CONFLICT DO NOTHING
             SQL;
 
             return $this->databaseClient
