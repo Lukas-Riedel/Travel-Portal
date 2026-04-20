@@ -173,8 +173,7 @@
                     }
                 }
 
-                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
-                    || $statisticsType === StatisticsType::Category || $statisticsType === StatisticsType::Trip) {
+                if ($statisticsType === StatisticsType::Overall) {
                     $lowestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
                         array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending),
                             fn($place) => $place->getElevation() < 0));
