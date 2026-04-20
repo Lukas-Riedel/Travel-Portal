@@ -308,6 +308,10 @@
             }
             
             $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
+            if ($geographicalRegion->isEmpty()) {
+                throw new \InvalidArgumentException("The geographical region cannot be empty.");
+            }
+
             $this->transactionManager->executeAtomically(function() use(&$categoryIdentifier, &$geographicalRegion, &$overwrite) {
                 if ($overwrite) {
                     $this->categoryMapper->deleteGeographicalRegion($categoryIdentifier->getId());
@@ -327,6 +331,10 @@
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
 
             $geographicalRegion = new GeographicalRegion($categoryIdentifier, $countryCategoryIdentifier, $radius, $geoJson);
+            if ($geographicalRegion->isEmpty()) {
+                throw new \InvalidArgumentException("The geographical region cannot be empty.");
+            }
+            
             $this->transactionManager->executeAtomically(function() use(&$geographicalRegion, &$country) {
                 $this->categoryMapper->insertGeographicalRegion($geographicalRegion);
 

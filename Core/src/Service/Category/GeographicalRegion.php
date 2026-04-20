@@ -63,6 +63,10 @@
             return $this->geoJson;
         }
 
+        public function isEmpty() : bool {
+            return $this->geoJson == null || !isset($this->geoJson["geometry"]);
+        }
+
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);
