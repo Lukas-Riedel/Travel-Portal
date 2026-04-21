@@ -7,6 +7,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useLabel } from "../hooks/useLabel"
 import { useAuth } from "../contexts/AuthContext.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { Folder } from "lucide-react"
 
 export default function LabelPage() {
     const { labelId } = useParams()
@@ -33,6 +34,15 @@ export default function LabelPage() {
             <PlaceTileGrid
                 places={places}
                 placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+            <div className="flex justify-end">
+                <div className="flex items-center gap-2">
+                    <a
+                        href={`/plan/label/${label?.id}`}
+                        className="btn-chip-gray">
+                        <Folder size={16} />
+                    </a>
+                </div>
+            </div>
         </>
     )
 }

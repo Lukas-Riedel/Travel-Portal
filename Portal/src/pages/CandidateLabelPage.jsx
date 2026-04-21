@@ -7,9 +7,15 @@ import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useLabel } from "../hooks/useLabel"
 import { useAuth } from "../contexts/AuthContext.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useAppNavigate } from "../hooks/useAppNavigate.ts"
+import FloatingButton from "../components/FloatingButton.jsx"
+import { Plus } from "lucide-react"
 
 export default function CandidateLabelPage() {
     const { labelId } = useParams()
+    const { showCreatePlaceToast } = usePredefinedUserInput()
+    const navigate = useAppNavigate()
     const { hasRole } = useAuth()
 
     const { label, updateLabelName } = useLabel(labelId)
@@ -17,6 +23,10 @@ export default function CandidateLabelPage() {
 
     const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])
+
+    const handleCandidatePlaceCreated = () => {
+        showCreatePlaceToast((name, address) => createCandidatePlace(name, address).then(place => (navigate(place), place)))
+    }
 
     return hasRole(UserRole.LabelRead) && (
         <>
@@ -34,6 +44,11 @@ export default function CandidateLabelPage() {
                 places={candidatePlaces}
                 rowSize={5}
                 onPlaceRemoved={hasRole(UserRole.PlaceEdit) && removeCandidatePlace} />
+            {hasRole(UserRole.PlaceEdit) && (
+                <FloatingButton
+                    icon={Plus}
+                    onClick={handleCandidatePlaceCreated} />
+            )}
         </>
     )
 }
