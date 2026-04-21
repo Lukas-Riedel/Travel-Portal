@@ -21,7 +21,7 @@
                     : $this->labelService->getAllLabels();
 
                 foreach ($labels as &$label) {
-                    $documentBuffer->add($label->getId(), array($label->getName()));
+                    $documentBuffer->add($label->getId(), array($label->getName()), false);
                 }
             }
         }

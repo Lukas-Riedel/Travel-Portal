@@ -23,8 +23,8 @@
             $this->batchSize = $batchSize;
         }
 
-        public function add(string $id, mixed $content) : void {
-            $this->documents[] = $this->getDocument($id, $content);
+        public function add(string $id, mixed $content, bool $isEmpty) : void {
+            $this->documents[] = $this->getDocument($id, $content, $isEmpty);
 
             if (count($this->documents) >= $this->batchSize) {
                 $this->flush();
@@ -36,14 +36,14 @@
             $this->documents = array();
         }
 
-        private function getDocument(string $id, mixed $content) : array {
+        private function getDocument(string $id, mixed $content, bool $isEmpty) : array {
             return match($this->indexType) {
-                IndexType::Composite => $this->getDocumentForCompositeIndex($id, $content),
+                IndexType::Composite => $this->getDocumentForCompositeIndex($id, $content, $isEmpty),
                 IndexType::Photo => $this->getDocumentForPhotoIndex($id, $content)
             };
         }
 
-        private function getDocumentForCompositeIndex(string $id, array $terms) : array {
+        private function getDocumentForCompositeIndex(string $id, array $terms, bool $isEmpty) : array {
             $name = !empty($terms) ? $terms[0] : "";
 
             return array(
@@ -51,7 +51,8 @@
                 "entity_type" => $this->entityType->value,
                 "entity_id" => $id,
                 "entity_name" => $name,
-                "search_text" => implode(" ", array_unique($terms))
+                "search_text" => implode(" ", array_unique($terms)),
+                "is_empty" => $isEmpty
             );
         }
 

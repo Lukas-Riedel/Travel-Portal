@@ -130,7 +130,7 @@
             return $query;
         }
 
-        public function createCompositeIndexSearchQuery(string $query, int $limit, array $allowedEntityTypes) : array {
+        public function createCompositeIndexSearchQuery(string $query, int $limit, array $allowedEntityTypes, bool $emptyEntitiesAllowed) : array {
             $functions = array_values(array_map(function($type) {
                 return array(
                     "filter" => array("term" => array("entity_type" => $type->value)),
@@ -141,6 +141,12 @@
             $allowedValues = array_values(array_map(function($entityType) {
                 return $entityType->value;
             }, $allowedEntityTypes));
+
+            $filterConditions = array(array("terms" => array("entity_type" => $allowedValues)));
+
+            if (!$emptyEntitiesAllowed) {
+                $filterConditions[] = array("term" => array("is_empty" => false));
+            }
 
             return array(
                 "size" => $limit,
@@ -187,13 +193,7 @@
                                         )
                                     )
                                 ),
-                                "filter" => array(
-                                    array(
-                                        "terms" => array(
-                                            "entity_type" => $allowedValues
-                                        )
-                                    )
-                                ),
+                                "filter" => $filterConditions,
                                 "minimum_should_match" => 1
                             )
                         ),
@@ -260,6 +260,7 @@
                                 "raw" => array("type" => "keyword")
                             )
                         ),
+                        "is_empty" => array("type" => "boolean"),
                         "search_text" => array(
                             "type" => "text",
                             "analyzer" => "custom_analyzer",

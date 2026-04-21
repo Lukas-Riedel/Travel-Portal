@@ -18,31 +18,29 @@
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Trip) {
                 $trips = $entityId !== null
                     ? array($this->tripService->getRegularTrip($entityId))
-                    : $this->tripService->getRegularTrips(null, null, time(), array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
+                    : $this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
 
                 foreach ($trips as &$trip) {
-                    if ($trip->getStart() < time()) {
-                        $terms = array($trip->getFullName());
+                    $terms = array($trip->getFullName());
 
-                        foreach ($trip->getCountries() as &$country) {
-                            $terms[] = $country;
-                        }
-
-                        foreach ($trip->getFlights() as &$flight) {
-                            $terms[] = $flight->getFlight();
-                            $terms[] = $flight->getRegistration();
-                            $terms[] = $flight->getAircraft();
-                            $terms[] = $flight->getFrom()?->getLongName();
-                            $terms[] = $flight->getTo()?->getLongName();
-                            $terms[] = $flight->getAirline()?->getName();
-                        }
-
-                        foreach ($trip->getStays() as &$stay) {
-                            $terms[] = $stay->getName();
-                        }
-
-                        $documentBuffer->add($trip->getId(), array_filter($terms));
+                    foreach ($trip->getCountries() as &$country) {
+                        $terms[] = $country;
                     }
+
+                    foreach ($trip->getFlights() as &$flight) {
+                        $terms[] = $flight->getFlight();
+                        $terms[] = $flight->getRegistration();
+                        $terms[] = $flight->getAircraft();
+                        $terms[] = $flight->getFrom()?->getLongName();
+                        $terms[] = $flight->getTo()?->getLongName();
+                        $terms[] = $flight->getAirline()?->getName();
+                    }
+
+                    foreach ($trip->getStays() as &$stay) {
+                        $terms[] = $stay->getName();
+                    }
+
+                    $documentBuffer->add($trip->getId(), array_filter($terms), $trip->getStart() > time());
                 }
             }
         }

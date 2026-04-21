@@ -72,7 +72,7 @@
                                         // we treat it as a highlight of that non-existent trip for day trips, too.
                                         : isset($placeHighlightIds[$photoEmbedding->getId()]),
                                     "isPlaceMainHighlight" => $place->getMainHighlight()?->getPhoto()?->getId() === $photoEmbedding->getId()
-                                ));
+                                ), false);
                             }
                         }
                     }

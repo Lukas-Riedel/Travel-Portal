@@ -83,7 +83,7 @@ export default function MainLayout({ children }) {
     }, [countryCategories])
 
     const navigationItems = [
-        { label: t("menu.label.search"), onClick: () => setIsSearchOpen(true) },
+        { label: t("menu.label.search"), requiredRole: UserRole.SearchRead, onClick: () => setIsSearchOpen(true) },
         { label: t("menu.label.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
         { label: t("menu.label.trips"), to: "/trip", requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
         { label: t("menu.label.places"), to: "/place", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },

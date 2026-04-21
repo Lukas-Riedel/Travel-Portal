@@ -26,9 +26,7 @@
 
                 foreach ($categories as &$category) {
                     $categoryPlaces = $this->placeService->getRegularPlaces($category->getId(), null, null, null, null, null, null, null, time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
-                    if (count($categoryPlaces) > 0) {
-                        $documentBuffer->add($category->getId(), array($category->getName()));                       
-                    }
+                    $documentBuffer->add($category->getId(), array($category->getName()), count($categoryPlaces) === 0);
                 }
             }
         }

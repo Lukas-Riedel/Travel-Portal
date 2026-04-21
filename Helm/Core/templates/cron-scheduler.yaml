@@ -21,7 +21,7 @@ spec:
                 cpu: 100m
                 memory: 200Mi
               limits:
-                cpu: 500m
+                cpu: 1000m
                 memory: 400Mi
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
             command: ["php", "-d", "max_execution_time=60", "-d", "memory_limit=300M", "/var/www/html/src/scheduler.php"]

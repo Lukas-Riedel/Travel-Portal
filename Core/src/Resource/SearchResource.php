@@ -2,6 +2,7 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
+    use Common\Service\Authentication\UserRole;
     use Core\Service\Category\CategoryService;
     use Core\Service\Flight\FlightService;
     use Core\Service\Highlight\HighlightService;
@@ -134,7 +135,7 @@
             
             $allowedEntityTypes = array_filter($allowedEntityTypes, fn($entityType) => $this->hasRole($request, $entityType->getRequiredRole()));
 
-            $searchResults = array_map(fn($searchResult) => $this->mapSearchResult($request, $searchResult), $this->indexService->search($query, $limit, $allowedEntityTypes));
+            $searchResults = array_map(fn($searchResult) => $this->mapSearchResult($request, $searchResult), $this->indexService->search($query, $limit, $allowedEntityTypes, $this->hasRole($request, UserRole::SearchEdit)));
             return array_values(array_filter($searchResults, fn($searchResult) => $searchResult->getEntity() !== null));
         }
 

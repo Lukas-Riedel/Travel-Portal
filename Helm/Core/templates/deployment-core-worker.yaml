@@ -36,10 +36,10 @@ spec:
         - name: {{ .Release.Name }}-worker
           resources:
             requests:
-              cpu: 100m
+              cpu: 200m
               memory: 200Mi
             limits:
-              cpu: 500m
+              cpu: 1000m
               memory: 400Mi
           securityContext:
             readOnlyRootFilesystem: true

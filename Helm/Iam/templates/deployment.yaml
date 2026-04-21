@@ -29,11 +29,11 @@ spec:
         - name: {{ .Release.Name }}
           resources:
             requests:
-              cpu: 10m
+              cpu: 100m
               memory: 100Mi
             limits:
-              cpu: 100m
-              memory: 150Mi
+              cpu: 500m
+              memory: 200Mi
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false

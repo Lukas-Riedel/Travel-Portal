@@ -23,9 +23,7 @@
                     : $this->yearService->getYears(array());
 
                 foreach ($years as &$year) {
-                    if ($year->getId() <= date(self::YEAR_FORMAT)) {
-                        $documentBuffer->add($year->getId(), array($year->getId()));
-                    }
+                    $documentBuffer->add($year->getId(), array($year->getId()), $year->getId() > date(self::YEAR_FORMAT));
                 }
             }
         }

@@ -24,7 +24,8 @@
                         $airline = $flight->getAirline();
                         if ($airline !== null && ($entityId === null || $flight->getAirline()->getId() === $entityId)) {
                             $data = array($airline->getName(), $flight->getFrom()?->getLongName(), $flight->getTo()?->getLongName(), $flight->getFlight(), $flight->getRegistration(), $flight->getAircraft(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart()));
-                            $documentBuffer->add($airline->getId(), array_merge($result[$airline->getId()] ?? array(), array_filter($data)));
+                            // TODO: Obtain airlines in a different way so that it also considers airlines without any flights.
+                            $documentBuffer->add($airline->getId(), array_merge($result[$airline->getId()] ?? array(), array_filter($data)), false);
                         }
                     }
                 }
@@ -34,13 +35,15 @@
                         $from = $flight->getFrom();
                         if ($from !== null && ($entityId === null || $flight->getFrom()->getId() === $entityId)) {
                             $data = array($from->getLongName(), $from->getCode(), $from->getCountry(), $flight->getAirline()?->getName(), $flight->getFlight(), $flight->getRegistration(), $flight->getAircraft(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getStart()));
-                            $documentBuffer->add($from->getId(), array_merge($result[$from->getId()] ?? array(), array_filter($data)));
+                            // TODO: Obtain airport in a different way so that it also considers airport without any flights.
+                            $documentBuffer->add($from->getId(), array_merge($result[$from->getId()] ?? array(), array_filter($data)), false);
                         }
 
                         $to = $flight->getTo();
                         if ($to !== null && ($entityId === null || $flight->getTo()->getId() === $entityId)) {
                             $data = array($to->getLongName(), $to->getCode(), $to->getCountry(), $flight->getAirline()?->getName(), $flight->getFlight(), $flight->getRegistration(), $flight->getAircraft(), date(CommonConstants::DMY_DATE_FORMAT, $flight->getEnd()));
-                            $documentBuffer->add($to->getId(), array_merge($result[$to->getId()] ?? array(), array_filter($data)));
+                            // TODO: Obtain airport in a different way so that it also considers airport without any flights.
+                            $documentBuffer->add($to->getId(), array_merge($result[$to->getId()] ?? array(), array_filter($data)), false);
                         }
                     }
                 }

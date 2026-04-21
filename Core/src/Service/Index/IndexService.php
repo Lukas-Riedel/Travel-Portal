@@ -58,7 +58,7 @@
         }
 
         // TODO: This doesn't really respect the limit (but UI currently doesn't call it in a way that it matters).
-        public function search(string $query, int $limit, array $allowedEntityTypes) : array {
+        public function search(string $query, int $limit, array $allowedEntityTypes, bool $emptyEntitiesAllowed) : array {
             $searchResults = array();
 
             if (in_array(IndexableEntityType::Photo, $allowedEntityTypes)) {
@@ -74,7 +74,7 @@
             // This only works because the composite index is currently not supposed to contain neither photos nor highlights.
             if (empty($searchResults)) {
                 $searchResults = array_merge($searchResults, array_map(fn($searchEntry) => new SearchResult(IndexableEntityType::from($searchEntry->getData()["entity_type"]), null, $searchEntry->getData()["entity_id"]),
-                $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes))));
+                $this->searchClient->search($this->compositeIndexName, $this->indexQueryDefinitionFactory->createCompositeIndexSearchQuery($query, $limit, $allowedEntityTypes, $emptyEntitiesAllowed))));
             }
 
             return $searchResults;

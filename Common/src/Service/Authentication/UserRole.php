@@ -74,6 +74,8 @@
         case YearFitnessRead = "year.fitness.read";
         case YearStatisticsRead = "year.statistics.read";
         case EventEdit = "event.edit";
+        case SearchRead = "search.read";
+        case SearchEdit = "search.edit";
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";
