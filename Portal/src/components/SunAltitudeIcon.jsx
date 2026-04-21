@@ -2,7 +2,7 @@ import { Sun, Sunrise, Sunset } from "lucide-react"
 import { useMemo } from "react"
 import SunCalc from "suncalc"
 
-export default function SunAltitudeIcon({ altitude, place }) {
+export default function SunAltitudeIcon({ altitude, place, date }) {
     const isSunrise = Object.is(altitude, +0)
     const isSunset = Object.is(altitude, -0)
     const isPositiveRateAltitude = altitude > 0 || isSunrise
@@ -11,9 +11,9 @@ export default function SunAltitudeIcon({ altitude, place }) {
         if (!place) {
             return null
         }
-        
-        const today = new Date()
-        const sunTimes = SunCalc.getTimes(today, place?.latitude, place?.longitude)
+
+        const effectiveDate = date || new Date()        
+        const sunTimes = SunCalc.getTimes(effectiveDate, place?.latitude, place?.longitude)
 
         const sampled = Array.from({ length: 24 * 60 }, (_, index) => {
             const time = new Date(+(isNaN(sunTimes.sunrise) ? new Date().setHours(0, 0, 0, 0) : sunTimes.sunrise) + index * 2 * 60 * 1000)
@@ -34,7 +34,7 @@ export default function SunAltitudeIcon({ altitude, place }) {
         }
 
         return null
-    }, [place])
+    }, [date, place])
 
     return (
         <div className="flex flex-col items-center">
