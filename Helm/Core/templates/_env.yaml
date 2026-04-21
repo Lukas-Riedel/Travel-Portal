@@ -121,23 +121,6 @@
     secretKeyRef:
       name: iam-secret
       key: backend-client-secret
-- name: GRAFANA_LOKI_ENTRYPOINT
-  valueFrom:
-    secretKeyRef:
-      name: grafana-secret
-      key: grafana-entrypoint
-- name: GRAFANA_LOKI_CLIENT_NAME
-  value: "{{ .Values.core.grafana.client.name }}"
-- name: GRAFANA_LOKI_USER
-  valueFrom:
-    secretKeyRef:
-      name: grafana-secret
-      key: grafana-username
-- name: GRAFANA_LOKI_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: grafana-secret
-      key: grafana-password
 - name: ALLOWED_REQUEST_ORIGINS
   value: "{{ .Values.core.origin.whitelist }}"
 - name: COMPOSITE_INDEX_NAME

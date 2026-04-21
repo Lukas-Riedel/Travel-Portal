@@ -19,6 +19,9 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}
+        version: {{ .Values.iam.tag }}
+        client: {{ .Values.iam.grafana.client.name }}
+        logging: "true"
     spec:
       securityContext:
         runAsNonRoot: true
@@ -149,23 +152,6 @@ spec:
                   name: {{ .Release.Name }}-secret
                   key: ibm-cloud-api-key
                   # key: ibm-test-cloud-api-key
-            - name: GRAFANA_LOKI_ENTRYPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: grafana-secret
-                  key: grafana-entrypoint
-            - name: GRAFANA_LOKI_CLIENT_NAME
-              value: "{{ .Values.iam.grafana.client.name }}"
-            - name: GRAFANA_LOKI_USER
-              valueFrom:
-                secretKeyRef:
-                  name: grafana-secret
-                  key: grafana-username
-            - name: GRAFANA_LOKI_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: grafana-secret
-                  key: grafana-password
             - name: ALLOWED_REQUEST_ORIGINS
               value: "{{ .Values.iam.origins.whitelist }}"
           volumeMounts:

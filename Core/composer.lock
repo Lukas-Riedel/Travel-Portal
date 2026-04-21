@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5552cba4d7e89dc6968ac00bb2d0adf7",
+    "content-hash": "c7501e3ff17fef5ddbb959cca1168269",
     "packages": [
         {
             "name": "auroras-live/suncalc-php",
@@ -916,54 +916,6 @@
             "time": "2025-08-23T21:21:41+00:00"
         },
         {
-            "name": "itspire/monolog-loki",
-            "version": "2.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/itspire/monolog-loki.git",
-                "reference": "27dd41711857a753380c494a232482dcb5f07e54"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/itspire/monolog-loki/zipball/27dd41711857a753380c494a232482dcb5f07e54",
-                "reference": "27dd41711857a753380c494a232482dcb5f07e54",
-                "shasum": ""
-            },
-            "require": {
-                "monolog/monolog": "~3.0",
-                "php": "~8.1"
-            },
-            "require-dev": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "roave/security-advisories": "dev-master",
-                "squizlabs/php_codesniffer": "~3.x-dev",
-                "symfony/phpunit-bridge": "~6.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Itspire\\MonologLoki\\": "src/main/php"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Ryan RAJKOMAR",
-                    "email": "ryan.rajkomar@itspire.fr"
-                }
-            ],
-            "description": "Monolog handler for Grafana Loki",
-            "support": {
-                "issues": "https://github.com/itspire/monolog-loki/issues",
-                "source": "https://github.com/itspire/monolog-loki/tree/2.1.1"
-            },
-            "time": "2024-07-05T14:41:51+00:00"
-        },
-        {
             "name": "johngrogg/ics-parser",
             "version": "v3.5.1",
             "source": {
@@ -1056,16 +1008,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "3.9.0",
+            "version": "3.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "10d85740180ecba7896c87e06a166e0c95a0e3b6"
+                "reference": "b321dd6749f0bf7189444158a3ce785cc16d69b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/10d85740180ecba7896c87e06a166e0c95a0e3b6",
-                "reference": "10d85740180ecba7896c87e06a166e0c95a0e3b6",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/b321dd6749f0bf7189444158a3ce785cc16d69b0",
+                "reference": "b321dd6749f0bf7189444158a3ce785cc16d69b0",
                 "shasum": ""
             },
             "require": {
@@ -1083,7 +1035,7 @@
                 "graylog2/gelf-php": "^1.4.2 || ^2.0",
                 "guzzlehttp/guzzle": "^7.4.5",
                 "guzzlehttp/psr7": "^2.2",
-                "mongodb/mongodb": "^1.8",
+                "mongodb/mongodb": "^1.8 || ^2.0",
                 "php-amqplib/php-amqplib": "~2.4 || ^3",
                 "php-console/php-console": "^3.1.8",
                 "phpstan/phpstan": "^2",
@@ -1143,7 +1095,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/3.9.0"
+                "source": "https://github.com/Seldaek/monolog/tree/3.10.0"
             },
             "funding": [
                 {
@@ -1155,7 +1107,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-03-24T10:02:05+00:00"
+            "time": "2026-01-02T08:56:05+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",

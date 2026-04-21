@@ -9,8 +9,6 @@
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Core\Client\CloudStorage\S3CloudStorageClient;
-    use Itspire\MonologLoki\Handler\LokiHandler;
-    use Monolog\Handler\WhatFailureGroupHandler;
     use Monolog\Logger;
     use Core\Client\Database\PostgreSQLDatabaseClient;
     use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
@@ -92,7 +90,10 @@
     use Core\Service\Year\YearIndexer;
     use Core\Service\Year\YearService;
     use Core\Service\Year\YearServiceListener;
-    
+    use Monolog\Formatter\JsonFormatter;
+    use Monolog\Handler\StreamHandler;
+    use Monolog\Level;
+
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message);
     };
@@ -101,22 +102,8 @@
     // Logger.
     $loggingContext = new LoggingContext();
     $logger = new Logger(getenv("APP_NAME"));
-    $handler = new WhatFailureGroupHandler(array(
-        new LokiHandler(array(
-            "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
-            "labels" => array(
-                "service" => getenv("APP_NAME"),
-                "version_tag" => getenv("VERSION_TAG")
-            ),
-            "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
-            "auth" => array(
-                "basic" => array(
-                    getenv("GRAFANA_LOKI_USER"),
-                    getenv("GRAFANA_LOKI_PASSWORD")
-                )
-            )
-        ))
-    ));
+    $handler = new StreamHandler("php://stdout", Level::Debug);
+    $handler->setFormatter(new JsonFormatter());
     $logger->pushHandler($handler);
 
     // Clients.

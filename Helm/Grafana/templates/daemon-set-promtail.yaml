@@ -1,0 +1,68 @@
+{{- if .Values.promtail.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Release.Name }}-promtail
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-promtail
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-promtail
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: {{ .Release.Name }}-promtail-service-account
+      containers:
+        - name: promtail
+          image: "{{ .Values.promtail.image }}:{{ .Values.promtail.tag }}"
+          securityContext:
+            privileged: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: true
+          args:
+            - "-config.file=/etc/promtail/promtail.yaml"
+            - "-config.expand-env=true"
+          env:
+            - name: LOKI_URL
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-entrypoint
+            - name: LOKI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-username
+            - name: LOKI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: grafana-password
+          resources:
+            {{- toYaml .Values.promtail.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail
+            - name: logs
+              mountPath: /var/log
+            - name: pods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: run
+              mountPath: /run/promtail
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-promtail-configmap
+        - name: logs
+          hostPath:
+            path: /var/log
+        - name: pods
+          hostPath:
+            path: /var/log/pods
+        - name: run
+          emptyDir: {}
+{{- end }}
