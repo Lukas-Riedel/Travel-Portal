@@ -19,6 +19,9 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-worker
+        version: "{{ .Values.core.tag }}"
+        client: {{ .Values.core.grafana.client.name }}
+        logging: "true"
     spec:
       terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
       securityContext:
@@ -37,10 +40,10 @@ spec:
           resources:
             requests:
               cpu: 200m
-              memory: 200Mi
+              memory: 250Mi
             limits:
               cpu: 1000m
-              memory: 400Mi
+              memory: 500Mi
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false

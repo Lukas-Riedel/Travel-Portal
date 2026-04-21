@@ -35,3 +35,6 @@ portal:
       id: 1:917611440173:web:61960e323dd4e730acb0a4
     measurement:
       id: G-TQC1X1T5X2
+  grafana:
+    client:
+      name: travel-portal-service

@@ -11,8 +11,9 @@
     use Iam\Service\IbmCloud\IbmCloudService;
     use Iam\Service\Token\TokenService;
     use Iam\Service\User\UserService;
-    use Itspire\MonologLoki\Handler\LokiHandler;
-    use Monolog\Handler\WhatFailureGroupHandler;
+    use Monolog\Formatter\JsonFormatter;
+    use Monolog\Handler\StreamHandler;
+    use Monolog\Level;
     use Monolog\Logger;
 
     $onError = function($level, $message, $file, $line) {
@@ -23,22 +24,8 @@
     // Logger.
     $loggingContext = new LoggingContext();
     $logger = new Logger(getenv("APP_NAME"));
-    $handler = new WhatFailureGroupHandler(array(
-        new LokiHandler(array(
-            "entrypoint" => getenv("GRAFANA_LOKI_ENTRYPOINT"),
-            "labels" => array(
-                "service" => getenv("APP_NAME"),
-                "version_tag" => getenv("VERSION_TAG")
-            ),
-            "client_name" => getenv("GRAFANA_LOKI_CLIENT_NAME"),
-            "auth" => array(
-                "basic" => array(
-                    getenv("GRAFANA_LOKI_USER"),
-                    getenv("GRAFANA_LOKI_PASSWORD")
-                )
-            )
-        ))
-    ));
+    $handler = new StreamHandler("php://stdout", Level::Debug);
+    $handler->setFormatter(new JsonFormatter());
     $logger->pushHandler($handler);
 
     // Clients.

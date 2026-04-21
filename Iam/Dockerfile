@@ -10,6 +10,7 @@ RUN apk add --no-cache nginx bash curl
 WORKDIR /var/www/html
 COPY --from=builder /app ./
 COPY Iam/nginx.conf /etc/nginx/nginx.conf
+COPY Iam/www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN chown -R www-data:www-data /var/www/html /var/lib/nginx /var/log/nginx /var/run
 USER 82
 EXPOSE 8080

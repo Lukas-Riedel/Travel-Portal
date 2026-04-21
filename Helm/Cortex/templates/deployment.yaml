@@ -16,6 +16,9 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}
+        version: "{{ .Values.cortex.tag }}"
+        client: {{ .Values.cortex.grafana.client.name }}
+        logging: "true"
     spec:
       securityContext:
         runAsNonRoot: true
@@ -82,23 +85,6 @@ spec:
               value: "{{ .Values.cortex.iam.client.app.id }}"
             - name: IAM_BACKEND_CLIENT_ID
               value: "{{ .Values.cortex.iam.client.backend.id }}"
-            - name: GRAFANA_LOKI_ENTRYPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: grafana-secret
-                  key: grafana-entrypoint
-            - name: GRAFANA_LOKI_CLIENT_NAME
-              value: "{{ .Values.cortex.grafana.client.name }}"
-            - name: GRAFANA_LOKI_USER
-              valueFrom:
-                secretKeyRef:
-                  name: grafana-secret
-                  key: grafana-username
-            - name: GRAFANA_LOKI_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: grafana-secret
-                  key: grafana-password
             - name: SUPPORTED_LANGUAGES
               value: "{{ .Values.cortex.languages }}"
           volumeMounts:

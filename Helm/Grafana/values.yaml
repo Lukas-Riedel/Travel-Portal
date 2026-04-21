@@ -1,0 +1,11 @@
+promtail:
+  enabled: true
+  image: grafana/promtail
+  tag: 2.9.4
+  resources:
+    requests:
+      cpu: 50m
+      memory: 150Mi
+    limits:
+      cpu: 200m
+      memory: 300Mi

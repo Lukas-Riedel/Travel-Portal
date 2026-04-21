@@ -3,9 +3,8 @@ import datetime
 import json
 import logging
 import os
-from logging import Logger
+import sys
 
-import logging_loki
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -50,55 +49,26 @@ class Logger:
     def __init__(
             self,
             app_name: str,
-            version_tag: str,
-            grafana_base_url: str,
-            grafana_client_name: str,
-            grafana_user: str,
-            grafana_password: str,
     ) -> None:
         self.app_name = app_name
-        self.version_tag = version_tag
-        self.grafana_base_url = grafana_base_url
-        self.grafana_client_name = grafana_client_name
-        self.grafana_user = grafana_user
-        self.grafana_password = grafana_password
 
-    def get_logger(self) -> Logger:
+    def get_logger(self) -> logging.Logger:
         logger = logging.getLogger(self.app_name)
         logger.setLevel(logging.DEBUG)
 
         if logger.hasHandlers():
             logger.handlers.clear()
 
-        loki_url = f"{self.grafana_base_url}/loki/api/v1/push"
-        if loki_url:
-            auth_user = self.grafana_user
-            auth_pass = self.grafana_password
-
-            loki_handler = logging_loki.LokiHandler(
-                url=loki_url,
-                tags={
-                    "host": self.grafana_client_name,
-                    "service": self.app_name,
-                    "version_tag": self.version_tag,
-                },
-                auth=(auth_user, auth_pass) if auth_user else None,
-                version="1",
-            )
-            loki_handler.addFilter(TransactionFilter())
-            loki_handler.setFormatter(JsonFormatter())
-            logger.addHandler(loki_handler)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.addFilter(TransactionFilter())
+        handler.setFormatter(JsonFormatter())
+        logger.addHandler(handler)
 
         return logger
 
 
 logger_provider = Logger(
     os.getenv("APP_NAME"),
-    os.getenv("VERSION_TAG"),
-    os.getenv("GRAFANA_LOKI_ENTRYPOINT"),
-    os.getenv("GRAFANA_LOKI_CLIENT_NAME"),
-    os.getenv("GRAFANA_LOKI_USER"),
-    os.getenv("GRAFANA_LOKI_PASSWORD"),
 )
 
 logger = logger_provider.get_logger()
