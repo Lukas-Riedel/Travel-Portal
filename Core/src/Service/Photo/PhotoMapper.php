@@ -449,6 +449,7 @@
                     ROUND(EXTRACT(EPOCH FROM NOW())),
                     ROUND(EXTRACT(EPOCH FROM NOW())) + ?
                 )
+                ON CONFLICT (batch_id, batch_position) DO NOTHING
                 RETURNING id
             SQL;
 

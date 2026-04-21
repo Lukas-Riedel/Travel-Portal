@@ -35,8 +35,8 @@ spec:
               cpu: 100m
               memory: 200Mi
             limits:
-              cpu: 1000m
-              memory: 2.2G # TODO: Reduce the limit after reworking the deployment script.
+              cpu: 2000m # TODO: Reduce the limit after reworking the deployment script.
+              memory: 2200Mi # TODO: Reduce the limit after reworking the deployment script.
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false

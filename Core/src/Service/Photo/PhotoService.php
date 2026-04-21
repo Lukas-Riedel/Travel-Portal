@@ -256,21 +256,29 @@
 
         public function uploadPhoto(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : PendingPhoto {
             $uploadToken = $this->googleClient->uploadPhoto($data);
+            $embedding = $this->embeddingService->getPhotoEmbedding($data);
+            if ($embedding === null) {
+                throw new \RuntimeException("Failed to get embedding for the uploaded photo.");
+            }
+
+            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $embedding, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $batchId, $expectedBatchSize, $batchPosition, null, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
-            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken),
-                $this->embeddingService->getPhotoEmbedding($data), self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
             return $pendingPhoto;
         }
 
         public function replacePhoto(string $fileName, string $albumId, string $replacedPhotoId, string $data) : PendingPhoto {        
             $uploadToken = $this->googleClient->uploadPhoto($data);
+            $embedding = $this->embeddingService->getPhotoEmbedding($data);
+            if ($embedding === null) {
+                throw new \RuntimeException("Failed to get embedding for the uploaded photo.");
+            }
+
+            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $embedding, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
 
             $pendingPhoto = new PendingPhoto(null, $albumId, $fileName, $replacedPhotoId, 1, 1, $replacedPhotoId, $uploadToken);
             $this->photoMapper->insertPendingPhoto($pendingPhoto, self::PENDING_PHOTOS_EXPIRATION_INTERVAL);
-            $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken),
-                $this->embeddingService->getPhotoEmbedding($data), self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
             return $pendingPhoto;
         }
 
@@ -520,6 +528,7 @@
         }
 
         private function getPendingPhotoEmbeddingCacheKey(string $uploadToken) : string {
+            // TODO: Why is this not in the photo_pending table?
             return sprintf(self::PENDING_PHOTO_EMBEDDING_CACHE_KEY_FORMAT, $uploadToken);
         }
 
