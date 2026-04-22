@@ -5,7 +5,7 @@ promtail:
   resources:
     requests:
       cpu: 50m
-      memory: 150Mi
+      memory: 50Mi
     limits:
       cpu: 200m
-      memory: 300Mi
+      memory: 200Mi
