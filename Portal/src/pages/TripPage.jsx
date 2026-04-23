@@ -66,6 +66,7 @@ export default function TripPage() {
                 trip={trip}
                 places={tripPlaces}
                 tripCandidates={candidateTrips}
+                displayWarnings={hasRole(UserRole.PortalWarningRead)}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
                 onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
                 onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
@@ -88,6 +89,7 @@ export default function TripPage() {
             )}
             {hasRole(UserRole.TripNoteRead) && (
                 <NoteCardGrid
+                    rowSize={3}
                     notes={trip && (trip.notes ?? [])}
                     onNoteCreated={hasRole(UserRole.TripNoteEdit) && createTripNote}
                     onNoteContentUpdated={hasRole(UserRole.TripNoteEdit) && updateTripNoteContent}

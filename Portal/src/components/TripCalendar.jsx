@@ -1,5 +1,5 @@
 import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
-import DayCard from "./DayCard"
+import DayCard from "./DayCard.tsx"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
@@ -9,7 +9,7 @@ import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 
-export default function TripCalendar({ trip, places, tripCandidates, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
+export default function TripCalendar({ trip, places, tripCandidates, displayWarnings, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
     const { configuration } = useConfiguration()
     const { showMoveTripToast, showLoadTripToast } = usePredefinedUserInput()
 
@@ -42,6 +42,7 @@ export default function TripCalendar({ trip, places, tripCandidates, onTripMoved
                         fitness={trip.fitness && trip.fitness[index]}
                         publicHoliday={trip.getPublicHoliday(day)}
                         timezone={timezone}
+                        displayWarnings={displayWarnings}
                         onNoteAdded={onNoteAdded}
                         onNoteRemoved={onNoteRemoved}
                         onPhotosAdded={onPhotosAdded} />

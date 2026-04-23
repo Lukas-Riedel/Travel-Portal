@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, format, fromUnixTime, startOfDay } from "date-fns"
 import { getCachedCoordinates, getDateRangeString, getTimeString } from "../utils/helpers"
-import DayCard from "./DayCard"
+import DayCard from "./DayCard.tsx"
 import { Link } from "react-router-dom"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { TailSpin } from "react-loader-spinner"
@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 import { getSunAltitude } from "../utils/sunUtils.ts"
 
-export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
+export default function TripSummary({ trip, displayWarnings, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
@@ -233,6 +233,7 @@ export default function TripSummary({ trip, onNoteAdded, onNoteRemoved }) {
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
                     publicHoliday={trip?.getPublicHoliday(day)}
                     timezone={timezone}
+                    displayWarnings={displayWarnings}
                     onNoteAdded={onNoteAdded}
                     onNoteRemoved={onNoteRemoved}
                     onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />

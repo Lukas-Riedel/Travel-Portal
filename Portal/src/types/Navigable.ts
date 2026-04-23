@@ -1,5 +1,4 @@
 import type { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
-import type { Place } from "../classes/Place.ts"
-import type { Airline, Category } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Category, Place, Trip } from "./CoreSwaggerTypes.ts"
 
-export type Navigable = Airline | Category | Place | AdminNavigationTarget
+export type Navigable = Airline | Airport | Category | Place | Trip | AdminNavigationTarget

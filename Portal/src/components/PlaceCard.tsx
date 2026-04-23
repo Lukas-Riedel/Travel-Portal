@@ -9,6 +9,7 @@ import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import Card from "./Card.tsx"
 import AppLink from "./AppLink.tsx"
+import CategoryFlag from "./CategoryFlag.tsx"
 
 interface PlaceCardProps {
     place: Place | DistanceAwarePlace | null
@@ -36,12 +37,11 @@ export default function PlaceCard({ place, onPlaceRemoved }: PlaceCardProps) {
     }
 
     return (
-        <Card className="space-y-1">
+        <Card>
             <div className="flex justify-start items-center">
                 {mostSpecificCategory && (
-                    <img
-                        src={`/img/flags/${mostSpecificCategory.metadata.unicode}.svg`}
-                        alt={mostSpecificCategory.name}
+                    <CategoryFlag
+                        category={mostSpecificCategory}
                         className="w-7 h-auto flex-shrink-0" />
                 )}
                 <AppLink

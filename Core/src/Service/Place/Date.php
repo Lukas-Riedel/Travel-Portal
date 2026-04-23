@@ -26,6 +26,12 @@
                 example: 1689786000
             ),
             new OA\Property(
+                property: "layover",
+                description: "Whether the date is a layover",
+                type: "boolean",
+                example: true
+            ),
+            new OA\Property(
                 property: "weather",
                 description: "The weather forecast for the date",
                 type: "array",

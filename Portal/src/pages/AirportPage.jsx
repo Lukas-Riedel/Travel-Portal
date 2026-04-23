@@ -40,7 +40,9 @@ export default function AirportPage() {
                     flights={flights}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
             </div>
-            <FlightCardGrid flights={flights} />
+            <FlightCardGrid
+                rowSize={4}
+                flights={flights} />
         </>
     )
 }

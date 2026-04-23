@@ -73,6 +73,7 @@ export default function YearPage() {
                         events={placesWithoutTrip && new Trip({}).getCalendarEvents(day, placesWithoutTrip, timezone)}
                         fitness={year?.fitness && year.fitness[getDayOfYear(day)]}
                         timezone={timezone}
+                        displayWarnings={hasRole(UserRole.PortalWarningRead)}
                         onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
                 ))}
             </CardGrid>

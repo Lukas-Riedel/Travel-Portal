@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import LoadingTile from "./LoadingTile";
 import { getEntityPrettyName } from "../utils/formattingUtils.ts";
 
+// TODO: Use clsx as in Card.tsx
 export default function PhotoTile({ src, firstLineText, secondLineText, categories, to, onClick, className = "w-[350px] h-[233px]" }) {
     const InteractiveElement = to ? Link : "div"
     return src ? (

@@ -28,6 +28,7 @@ export default function StatisticsPage() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             </div>
             <StatisticsCardGrid
+                rowSize={2}
                 statistics={statistics}
                 years={years} />
         </>

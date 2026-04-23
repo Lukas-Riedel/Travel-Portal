@@ -48,3 +48,7 @@ export function formatTimestamp(timestamp: number, timestampFormat: string, time
 export function getDate(dateOrTimestamp: number | Date): Date {
     return typeof dateOrTimestamp === "number" ? new Date(dateOrTimestamp * 1000) : dateOrTimestamp
 }
+
+export function getDayIndex(dateOrTimestamp: number | Date): number {
+    return (typeof dateOrTimestamp === "number" ? Math.floor(dateOrTimestamp / ONE_DAY_SECONDS) : Math.floor(dateOrTimestamp.getTime() / (1000 * ONE_DAY_SECONDS))) + 2
+}

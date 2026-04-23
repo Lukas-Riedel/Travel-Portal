@@ -19,5 +19,5 @@ export interface UseFormattersResult {
     formatLatitude: (value: number) => string
     formatLongitude: (value: number) => string
     formatTimeAgo: (timestamp: number) => string
-    formatStatisticsUnit: (unit: StatisticsUnit, value: any, mainCurrency?: string) => string
+    formatStatisticsUnit: (unit: StatisticsUnit, value: number, mainCurrency?: string) => string
 }

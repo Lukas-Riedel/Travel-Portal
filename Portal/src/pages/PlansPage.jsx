@@ -26,7 +26,7 @@ export default function PlansPage() {
     const { showCreatePlaceToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
     const navigate = useAppNavigate()
-    
+
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality", maxEnd: getCurrentTimestamp() })
     const { trips, removeTrip } = useCandidateTrips()
@@ -138,6 +138,7 @@ export default function PlansPage() {
             )}
             {hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 2 && (
                 <TripCardGrid
+                    rowSize={3}
                     trips={trips}
                     onTripRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
             )}

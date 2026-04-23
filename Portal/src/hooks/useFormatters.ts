@@ -80,7 +80,7 @@ export function useFormatters(): UseFormattersResult {
         return t("general.time.ago.day", { count: days })
     }, [t])
 
-    const formatStatisticsUnit = useCallback((unit: StatisticsUnit, value: any, mainCurrency?: string) => {
+    const formatStatisticsUnit = useCallback((unit: StatisticsUnit, value: number, mainCurrency?: string) => {
         const unitFormatters: Record<StatisticsUnit, UnitFormatter> = {
             [StatisticsUnit.Kilometers]: formatKilometers,
             [StatisticsUnit.ElevationMeters]: formatElevationMeters,

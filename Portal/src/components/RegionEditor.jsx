@@ -26,6 +26,10 @@ export default function RegionEditor({ categories }) {
     const activeKeyIndex = useMemo(() => keyNames?.indexOf(activeKeyName), [keyNames, activeKeyName])
 
     const setActiveKey = useCallback(index => {
+        if (index === -1) {
+            return
+        }
+
         const newSearchParams = new URLSearchParams(searchParams)
         const newKeyName = keyNames[index]
 
@@ -59,7 +63,7 @@ export default function RegionEditor({ categories }) {
                 {selectedCategory && (
                     <EditedRegionContent
                         category={selectedCategory}
-                        onCategorySelected={category => categories.some(c => c.id === category.id) && setActiveKey(index)} />
+                        onCategorySelected={category => setActiveKey(categories.findIndex(c => c.id === category.id))} />
                 )}
                 {!selectedCategory && (
                     <div className="flex items-center justify-center text-gray-500 h-full w-full">
@@ -88,6 +92,7 @@ function EditedRegionContent({ category, onCategorySelected }) {
     return (
         <>
             <RegionCardGrid
+                rowSize={3}
                 regions={regions}
                 onCategorySelected={onCategorySelected}
                 onGeographicalRegionUpdated={createOrUpdateGeographicalRegion}

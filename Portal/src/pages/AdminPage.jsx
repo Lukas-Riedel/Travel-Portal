@@ -242,10 +242,12 @@ export default function AdminPage() {
                 <>
                     <TripSummary
                         trip={upcomingOrCurrentTrip}
+                        displayWarnings={hasRole(UserRole.PortalWarningRead)}
                         onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
                         onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
                     {hasRole(UserRole.TripNoteRead) && (
                         <NoteCardGrid
+                            rowSize={3}
                             notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
                             onNoteCreated={createTripNote}
                             onNoteContentUpdated={updateTripNoteContent}
@@ -263,7 +265,9 @@ export default function AdminPage() {
             )}
             {activeTab === 1 && hasRole(UserRole.TripFlightRead) && hasRole(UserRole.PortalFutureRead) && (
                 <>
-                    <FlightCardGrid flights={watchedFlights} />
+                    <FlightCardGrid
+                        rowSize={4}
+                        flights={watchedFlights} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleFlightCreated} />
@@ -311,6 +315,7 @@ export default function AdminPage() {
             {activeTab === 5 && hasRole(UserRole.DeviceRead) && (
                 <DeviceCardGrid
                     devices={devices}
+                    rowSize={4}
                     onFolderSynchronizationRequested={hasRole(UserRole.PlaceAlbumEdit) && handleFolderSynchronizationRequested} />
             )}
             {activeTab === 6 && hasRole(UserRole.PlaceEdit) && (
@@ -327,6 +332,7 @@ export default function AdminPage() {
             {activeTab === 7 && hasRole(UserRole.SubscriptionEdit) && (
                 <>
                     <SubscriptionCardGrid
+                        rowSize={5}
                         subscriptions={subscriptions}
                         onSubscriptionRemoved={removeSubscription} />
                     <FloatingButton
@@ -346,6 +352,7 @@ export default function AdminPage() {
             {activeTab === 9 && hasRole(UserRole.DocumentEdit) && (
                 <>
                     <DocumentCardGrid
+                        rowSize={4}
                         documents={documents}
                         onDocumentRemoved={hasRole(UserRole.DocumentEdit) && removeDocument} />
                     <FloatingButton
@@ -356,6 +363,7 @@ export default function AdminPage() {
             {activeTab === 10 && hasRole(UserRole.VoucherEdit) && (
                 <>
                     <VoucherCardGrid
+                        rowSize={4}
                         vouchers={vouchers}
                         onVoucherValueUpdated={updateVoucherValue}
                         onVoucherRemoved={removeVoucher} />

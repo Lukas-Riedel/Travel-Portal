@@ -74,6 +74,7 @@ export default function PlacePage() {
             <SunAltitudeBar place={place} />
             {hasRole(UserRole.PlaceNoteRead) && (
                 <NoteCardGrid
+                    rowSize={3}
                     notes={place && (place.notes ?? [])}
                     onNoteCreated={createPlaceNote}
                     onNoteContentUpdated={updatePlaceNoteContent}

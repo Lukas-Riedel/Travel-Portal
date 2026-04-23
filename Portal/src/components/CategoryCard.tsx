@@ -10,6 +10,7 @@ import Card from "./Card.tsx"
 import AppLink from "./AppLink.tsx"
 import { useTranslation } from "react-i18next"
 import { useFormatters } from "../hooks/useFormatters.ts"
+import CategoryFlag from "./CategoryFlag.tsx"
 
 const MAXIMUM_PLACES_COUNT = 5
 
@@ -50,9 +51,8 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
     return (
         <Card>
             <div className="flex justify-start items-center space-x-2">
-                <img
-                    src={`/img/flags/${category.metadata.unicode}.svg`}
-                    alt={category.name}
+                <CategoryFlag
+                    category={category}
                     className="w-7 h-auto flex-shrink-0" />
                 <AppLink
                     to={category}
