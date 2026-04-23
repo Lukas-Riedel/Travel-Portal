@@ -11,6 +11,8 @@
     enum PlaceSortingStrategy : string {
         case OldestAscending = "oldest";
         case OldestDescending = "-oldest";
+        case OldestWithTripAscending = "oldestWithTrip";
+        case OldestWithTripDescending = "-oldestWithTrip";
         case ScoreAsscending = "score";
         case ScoreDescending = "-score";
         case QualityAscending = "quality";
@@ -26,6 +28,8 @@
             return match ($this) {
                 self::OldestAscending => "ORDER BY pe.\"start\" ASC NULLS LAST",
                 self::OldestDescending => "ORDER BY pe.\"start\" DESC NULLS LAST",
+                self::OldestWithTripAscending => "ORDER BY (pe.trip_id IS NULL) ASC, pe.\"start\" ASC NULLS LAST",
+                self::OldestWithTripDescending => "ORDER BY (pe.trip_id IS NULL) ASC, pe.\"start\" DESC NULLS LAST",
                 self::ScoreAsscending => "ORDER BY pi.score ASC",
                 self::ScoreDescending => "ORDER BY pi.score DESC",
                 self::QualityAscending => "ORDER BY pi.quality ASC",

@@ -20,7 +20,7 @@ export default function RecentPlacesPage() {
     const [currentLimit, setCurrentLimit] = useState(limitStep)
     const isFetching = useRef(false)
 
-    const { places } = useRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, maxEnd: getCurrentOrMaximumAllowedTimestamp(), sort: "-oldest" })
+    const { places } = useRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, maxEnd: getCurrentOrMaximumAllowedTimestamp(), sort: "-oldestWithTrip" })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()
