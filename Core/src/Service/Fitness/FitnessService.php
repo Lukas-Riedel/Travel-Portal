@@ -131,7 +131,7 @@
             return $distance;
         }
 
-        private function getCorrectedDuration(int $seconds, int $steps): int {
+        private function getCorrectedDuration(int $seconds, int $steps) : int {
             if ($seconds > 0 && $steps > 0 && ($steps / ($seconds / 60.0)) < self::STEPS_PER_MINUTE_THRESHOLD) {
                 return min($seconds, round($steps * $this->fitnessMapper->selectAverageSecondsPerStep()));
             }

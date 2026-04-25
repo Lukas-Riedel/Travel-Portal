@@ -18,7 +18,7 @@
         case Visa = "visa";
         case Other = "other";
 
-        public static function values(): array {
+        public static function values() : array {
             return array_map(fn($case) => $case->value, self::cases());
         }
     }

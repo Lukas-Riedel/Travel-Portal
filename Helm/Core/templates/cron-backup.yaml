@@ -37,9 +37,7 @@ spec:
                 mkdir -p /var/tmp/cache/nginx
                 PGPASSWORD=$DB_PASSWORD pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" | gzip > "$BACKUP_LOCATION"
                 php -d max_execution_time=300 -d memory_limit=200M /var/www/html/src/backup.php
-            env:            
-              - name: BACKUP_LOCATION
-                value: "/var/tmp/db.sql.gz"
+            env:
 {{ include "core.env" . | nindent 14 }}
             volumeMounts:
 {{ include "core.volumeMounts" . | nindent 14 }}

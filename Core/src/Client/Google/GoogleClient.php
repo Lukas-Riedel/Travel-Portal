@@ -26,6 +26,8 @@
         private const CREATE_FILE_URL = "https://www.googleapis.com/drive/v3/files";
         private const UPLOAD_FILE_URL_FORMAT = "https://www.googleapis.com/upload/drive/v3/files?uploadType=%s";
         private const GET_FILES_URL_FORMAT = "https://www.googleapis.com/drive/v3/files?pageSize=%d&q=%s";
+        private const GET_ORDERED_FILES_URL_FORMAT = "https://www.googleapis.com/drive/v3/files?pageSize=%d&q=%s&orderBy=%s";
+        private const DELETE_FILE_URL_FORMAT = "https://www.googleapis.com/drive/v3/files/%s";
 
         private const CREATE_CALENDAR_EVENT_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events";
         private const GET_CALENDAR_EVENTS_URL_FORMAT = "https://www.googleapis.com/calendar/v3/calendars/%s/events";
@@ -222,7 +224,7 @@
             return $this->getFile($name, "application/vnd.google-apps.folder", $folderId);
         }
 
-        public function getFile(string $name, string $mimeType, ?string $folderId) : ?string {
+        public function getFile(?string $name, ?string $mimeType, ?string $folderId) : ?string {
             $queryTokens = array("trashed = false");
             if ($name !== null) {
                 $queryTokens[] = "name = '{$name}'";
@@ -246,6 +248,36 @@
             }
 
             return count($files) === 1 ? $files[0]["id"] : null;
+        }
+
+        public function getFiles(int $limit, ?string $mimeType, ?string $folderId) : array {
+            $queryTokens = array("trashed = false");
+            if ($mimeType !== null) {
+                $queryTokens[] = "mimeType = '{$mimeType}'";
+            }
+            if ($folderId !== null) {
+                $queryTokens[] = "'{$folderId}' in parents";
+            }
+
+            $apiResponse = $this->executeRequest(HttpMethod::GET, sprintf(self::GET_ORDERED_FILES_URL_FORMAT, $limit, rawurlencode(implode(" and ", $queryTokens)), rawurlencode("createdTime desc")));
+
+            if (isset($apiResponse["error"])) {
+                throw new \RuntimeException("Files could not be obtained. Reason: " . $apiResponse["error"]["message"]);
+            }
+
+            return $apiResponse["files"];
+        }
+
+        public function getFolders(int $limit, ?string $folderId) : array {
+            return $this->getFiles($limit, "application/vnd.google-apps.folder", $folderId);
+        }
+
+        public function deleteFile(string $fileId) : void {
+            $response = $this->executeRequest(HttpMethod::DELETE, sprintf(self::DELETE_FILE_URL_FORMAT, $fileId));
+
+            if (isset($response["error"])) {
+                throw new \RuntimeException("File could not be deleted. Reason: " . $response["error"]["message"]);
+            }
         }
 
         public function createCalendarEvent(Calendar $calendar, string $name, ?string $address, int $start, int $end,?string $startTimezone, ?string $endTimezone) : string {

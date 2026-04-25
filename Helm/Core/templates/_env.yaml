@@ -189,4 +189,8 @@
   value: "{{ .Values.core.fitness.overwrite.threshold.step }}"
 - name: UPDATE_FITNESS_THRESHOLD_DAYS
   value: "{{ .Values.core.fitness.update.threshold.days }}"
+- name: BACKUP_LOCATION
+  value: "{{ .Values.core.backup.location }}"
+- name: BACKUP_LIMIT
+  value: "{{ .Values.core.backup.limit }}"
 {{- end }}

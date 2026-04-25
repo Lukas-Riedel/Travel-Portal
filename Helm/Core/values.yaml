@@ -141,3 +141,6 @@ core:
       threshold:
         days: "7"
   timezone: Europe/Prague
+  backup:
+    location: /var/tmp/db.sql.gz
+    limit: "4"
