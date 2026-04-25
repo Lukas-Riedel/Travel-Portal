@@ -4,7 +4,7 @@ kind: CronJob
 metadata:
   name: {{ .Release.Name }}-backup-cronjob
 spec:
-  schedule: "0 0 * * 0"
+  schedule: "0 0 * * 5"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
   concurrencyPolicy: Allow
@@ -24,11 +24,11 @@ spec:
           - name: {{ .Release.Name }}-backup
             resources:
               requests:
-                cpu: 500m
-                memory: 1Gi
+                cpu: 100m
+                memory: 100Mi
               limits:
-                cpu: 3000m
-                memory: 2500Mi
+                cpu: 1000m
+                memory: 300Mi
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
             command: ["/bin/bash", "-c"]
             args:
@@ -36,10 +36,10 @@ spec:
                 set -e
                 mkdir -p /var/tmp/cache/nginx
                 PGPASSWORD=$DB_PASSWORD pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" | gzip > "$BACKUP_LOCATION"
-                php -d max_execution_time=600 -d memory_limit=2G /var/www/html/src/backup.php
+                php -d max_execution_time=300 -d memory_limit=200M /var/www/html/src/backup.php
             env:            
               - name: BACKUP_LOCATION
-                value: "/var/tmp/backup.sql.gz"
+                value: "/var/tmp/db.sql.gz"
 {{ include "core.env" . | nindent 14 }}
             volumeMounts:
 {{ include "core.volumeMounts" . | nindent 14 }}

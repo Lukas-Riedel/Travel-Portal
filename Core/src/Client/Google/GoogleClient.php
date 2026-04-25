@@ -133,7 +133,7 @@
             return $apiResponse["id"];
         }
 
-        public function createFile(string $name, ?string $folderId, string $contentType, string $content) : string {
+        public function createFileFromString(string $name, ?string $folderId, string $contentType, string $content) : string {
             $metadata = array("name" => $name);
 
             if ($folderId !== null) {
@@ -156,6 +156,49 @@
             }
 
             return $apiResponse["id"];
+        }
+
+        public function createFileFromFilePath(string $name, ?string $folderId, string $contentType, string $filePath) : string {
+            $fileSize = filesize($filePath);
+            $metadata = array("name" => $name);
+
+            if ($folderId !== null) {
+                $metadata["parents"] = array($folderId);
+            }
+
+            $headers = array(
+                "X-Upload-Content-Type" => $contentType,
+                "X-Upload-Content-Length" => $fileSize
+            );
+
+            $initResponse = $this->executeRequest(HttpMethod::POST, sprintf(self::UPLOAD_FILE_URL_FORMAT, "resumable"), $headers, $metadata, null, true);
+
+            $uploadUrl = null;
+            foreach ($initResponse["__httpHeaders"] as $name => $value) {
+                if (strtolower($name) === "location") {
+                    $uploadUrl = is_array($value) ? $value[0] : $value;
+                    break;
+                }
+            }
+
+            if (!$uploadUrl) {
+                throw new \RuntimeException("Could not obtain Resumable Upload URL. Response: " . json_encode($initResponse));
+            }
+
+            $handle = fopen($filePath, "rb");
+            try {
+                $uploadResponse = $this->executeRequest(HttpMethod::PUT, $uploadUrl, array("Content-Length" => $fileSize), $handle, $contentType);
+                if (isset($uploadResponse["error"])) {
+                    throw new \RuntimeException("Streaming upload failed. Response: " . $uploadResponse["error"]["message"]);
+                }
+
+                return $uploadResponse["id"];
+            }
+            finally {
+                if (is_resource($handle)) {
+                    fclose($handle);
+                }
+            }
         }
 
         public function getOrCreateFolderId(string $name, ?string $folderId) : string {
@@ -533,13 +576,13 @@
             return $uploadToken;
         }
 
-        private function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, ?string $contentType = null) : mixed {
+        private function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, ?string $contentType = null, bool $includeResponseHeaders = false) : mixed {
             $convertedHeaders = array(sprintf(self::HEADER_FORMAT, "Authorization", "Bearer " . $this->authenticationService->getGoogleApiAccessToken()));
             if ($payload !== null) {
                 if ($contentType !== null) {
                     $convertedHeaders[] = sprintf(self::HEADER_FORMAT, "Content-Type", $contentType);
                 }
-                else {
+                else if (!is_resource($payload)) {
                     $convertedHeaders[] = sprintf(self::HEADER_FORMAT, "Content-Type", "application/json");
                     $payload = json_encode($payload);
                 }
@@ -549,7 +592,7 @@
                 $convertedHeaders[] = sprintf(self::HEADER_FORMAT, $key, $value);
             }
 
-            return $this->httpClient->executeRequest($method, $url, $convertedHeaders, $payload);
+            return $this->httpClient->executeRequest($method, $url, $convertedHeaders, $payload, $includeResponseHeaders);
         }
 
         private function getCalendarIdentifier(Calendar $calendar) : string {    

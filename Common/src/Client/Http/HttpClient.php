@@ -30,13 +30,19 @@
         }
 
         public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) : mixed {
-            $loggedPayload = $payload !== null && is_string($payload) && strlen($payload) > self::MAX_PAYLOAD_LOG_LENGTH ? substr($payload, 0, self::MAX_PAYLOAD_LOG_LENGTH) . "... [TRUNCATED]" : $payload;
+            $loggedPayload = is_resource($payload) ? "[STREAM]" : ($payload !== null && is_string($payload) && strlen($payload) > self::MAX_PAYLOAD_LOG_LENGTH ? substr($payload, 0, self::MAX_PAYLOAD_LOG_LENGTH) . "... [TRUNCATED]" : $payload);
             $this->logger->debug("Sending the external request to '{$method->value} {$url}'...", array("headers" => $headers, "payload" => $loggedPayload));
 
             $curl = $this->prepareCurl($method, $url, $headers, $includeResponseHeaders);
     
             if ($payload !== null) {
-                curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+                if (is_resource($payload)) {
+                    curl_setopt($curl, CURLOPT_UPLOAD, true);
+                    curl_setopt($curl, CURLOPT_INFILE, $payload);
+                }
+                else {
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+                }
             }
             
             $response = curl_exec($curl);
