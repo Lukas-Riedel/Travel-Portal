@@ -57,7 +57,7 @@ spec:
             - -d
             - max_execution_time=0
             - -d
-            - memory_limit=300M
+            - memory_limit=400M
             - /var/www/html/src/worker.php
           readinessProbe:
             exec:

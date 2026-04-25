@@ -1,0 +1,48 @@
+{{- if .Values.core.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-backup-cronjob
+spec:
+  schedule: "0 0 * * 0"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: {{ .Release.Name }}
+            version: "{{ .Values.core.tag }}"
+            client: {{ .Values.core.grafana.client.name }}
+            logging: "true"
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: {{ .Release.Name }}-backup
+            resources:
+              requests:
+                cpu: 500m
+                memory: 1Gi
+              limits:
+                cpu: 3000m
+                memory: 2500Mi
+            image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+            command: ["/bin/bash", "-c"]
+            args:
+              - |
+                set -e
+                mkdir -p /var/tmp/cache/nginx
+                PGPASSWORD=$DB_PASSWORD pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" | gzip > "$BACKUP_LOCATION"
+                php -d max_execution_time=600 -d memory_limit=2G /var/www/html/src/backup.php
+            env:            
+              - name: BACKUP_LOCATION
+                value: "/var/tmp/backup.sql.gz"
+{{ include "core.env" . | nindent 14 }}
+            volumeMounts:
+{{ include "core.volumeMounts" . | nindent 14 }}
+          volumes:
+{{ include "core.volumes" . | nindent 12 }}
+{{- end }}

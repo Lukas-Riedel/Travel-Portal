@@ -1,6 +1,4 @@
 <?php
-    use Common\Client\Http\HttpMethod;
-
     require_once(__DIR__ . "/bootstrap.php");
     
     $logger->pushProcessor(function($record) use(&$loggingContext) {
@@ -84,7 +82,7 @@
                         ->execute();
                 });
             }
-            catch (Throwable $e) {
+            catch (\Throwable $e) {
                 fwrite(STDERR, $e->getMessage() . PHP_EOL);
                 exit(1);
             }
@@ -93,17 +91,5 @@
             fwrite(STDERR, "Could not apply " . $migrationScriptFileName . " migration script. It was already applied at " . $alreadyAppliedScripts[$migrationScriptFileName]["timestamp"] . ". Expected: " . $alreadyAppliedScripts[$migrationScriptFileName]["hash"] . " Actual: " . $hash . PHP_EOL);
             exit(1);
         }
-    }
-
-    // If changing this, change also in docker-entrypoint.sh.
-    $backupFilePath = "/var/tmp/backup.sql.gz";
-    
-    $rootBackupFolderId = $googleClient->getOrCreateFolderId("Travel Portal Backups", null);  
-    $backupFolderId = $googleClient->createFolder(date("Y-m-d H:i:s (#" . getenv("VERSION_TAG") . ")"), $rootBackupFolderId);
-
-    $googleClient->createFile("db.sql.gz", $backupFolderId, "application/gzip", file_get_contents($backupFilePath));
-
-    foreach ($configurationService->getConfigurationEntry("calendar") as $calendarName => $calendarUrl) {
-        $googleClient->createFile($calendarName . ".ics", $backupFolderId, "text/calendar", $httpClient->executeRequest(HttpMethod::GET, $calendarUrl));
     }
 ?>
