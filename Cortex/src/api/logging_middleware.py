@@ -27,15 +27,17 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         if request.url.query:
             path += f"?{request.url.query}"
 
-        logger.debug(f"Received the '{request.method} {path}' request...")
+        if not path.startswith("/management"):
+            logger.debug(f"Received the '{request.method} {path}' request...")
 
         try:
             response = await call_next(request)
 
-            duration = round((time.perf_counter() - start_time) * 1000)
-            logger.info(
-                f"The '{request.method} {path}' request was processed in {duration} milliseconds."
-            )
+            if not path.startswith("/management"):
+                duration = round((time.perf_counter() - start_time) * 1000)
+                logger.info(
+                    f"The '{request.method} {path}' request was processed in {duration} milliseconds."
+                )
 
             response.headers[TRANSACTION_ID_HEADER] = t_id
             return response

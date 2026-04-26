@@ -83,12 +83,12 @@
                 });
             }
             catch (\Throwable $e) {
-                fwrite(STDERR, $e->getMessage() . PHP_EOL);
+                $logger->error("Could not apply " . $migrationScriptFileName . " migration script. Reason: " . $e->getMessage());
                 exit(1);
             }
         }
         else if ($hash != $alreadyAppliedScripts[$migrationScriptFileName]["hash"]) {
-            fwrite(STDERR, "Could not apply " . $migrationScriptFileName . " migration script. It was already applied at " . $alreadyAppliedScripts[$migrationScriptFileName]["timestamp"] . ". Expected: " . $alreadyAppliedScripts[$migrationScriptFileName]["hash"] . " Actual: " . $hash . PHP_EOL);
+            $logger->error("Could not apply " . $migrationScriptFileName . " migration script. It was already applied at " . $alreadyAppliedScripts[$migrationScriptFileName]["timestamp"] . ". Expected: " . $alreadyAppliedScripts[$migrationScriptFileName]["hash"] . " Actual: " . $hash);
             exit(1);
         }
     }

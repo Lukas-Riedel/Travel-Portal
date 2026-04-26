@@ -1,6 +1,7 @@
 <?php
     namespace Common\Resource;
 
+    use Common\CommonConstants;
     use Common\Resource\AbstractResource;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -24,9 +25,9 @@
         public static function register(App $app, string $appName, string $serviceVersion, array $healthCheckables) : void {
             $resource = new self($appName, $serviceVersion, $healthCheckables);
 
-            $app->group("/management", function($group) use($resource) {
-                $group->get("/liveness", [$resource, "checkLiveness"]);
-                $group->get("/readiness", [$resource, "checkReadiness"]);
+            $app->group(CommonConstants::MANAGEMENT_RESOURCE, function($group) use($resource) {
+                $group->get(CommonConstants::LIVENESS_ENDPOINT, [$resource, "checkLiveness"]);
+                $group->get(CommonConstants::READINESS_ENDPOINT, [$resource, "checkReadiness"]);
             });
         }
 

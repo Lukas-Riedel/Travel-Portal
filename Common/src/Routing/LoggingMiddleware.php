@@ -52,9 +52,13 @@
             });       
 
             try {
-                $this->logger->debug("Received the '" . $this->formatRequest($request) . "' request...");
-                $response = $handler->handle($request);                
-                $this->logger->info("The '" . $this->formatRequest($request) . "' request was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.");
+                if (!$this->isHealthCheckRequest($request)) {
+                    $this->logger->debug("Received the '" . $this->formatRequest($request) . "' request...");                    
+                }
+                $response = $handler->handle($request);     
+                if (!$this->isHealthCheckRequest($request)) {
+                    $this->logger->info("The '" . $this->formatRequest($request) . "' request was processed in " . round((microtime(true) - $start) * 1000) . " milliseconds.");
+                }
                 return $response;
             }
             finally {
@@ -64,6 +68,11 @@
 
         private function formatRequest(ServerRequestInterface $request) : string {
             return $request->getMethod() . " " . $request->getUri()->getPath() . ($request->getUri()->getQuery() ? "?" . $request->getUri()->getQuery() : "");
+        }
+
+        private function isHealthCheckRequest(ServerRequestInterface $request) : bool {
+            return $request->getUri()->getPath() === (CommonConstants::MANAGEMENT_RESOURCE . CommonConstants::LIVENESS_ENDPOINT)
+                || $request->getUri()->getPath() === (CommonConstants::MANAGEMENT_RESOURCE . CommonConstants::READINESS_ENDPOINT);
         }
     }
 ?>

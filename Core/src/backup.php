@@ -15,6 +15,7 @@
         $googleClient->createFileFromString($calendarName . ".ics", $backupFolderId, "text/calendar", $httpClient->executeRequest(HttpMethod::GET, $calendarUrl));
     }
 
+    // TODO: Handle deletion for cases when there are more than 100 backups (though very unlikely due to the current set-up).
     $existingFolders = $googleClient->getFolders(100, $rootBackupFolderId);
     $logger->info("Deleting " . max(0, count($existingFolders) - $backupLimit) . " backups...");
     
