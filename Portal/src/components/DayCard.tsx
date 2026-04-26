@@ -37,7 +37,7 @@ interface DayCardProps {
     timezone?: string
     displayWarnings?: boolean
     noteSelector?: (prefix: string) => Note[]
-    onPhotosAdded?: (agentId: string, placeId: string, placeName: string, path: string, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
+    onPhotosAdded?: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
     onNoteRemoved?: (noteId: string) => Promise<void>
     onNoteAdded?: (content: string) => Promise<any>
 }
@@ -117,8 +117,8 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number) => {
         if (onPhotosAdded) {
             const onlineAgents = agents.filter(agent => isDeviceOnline(agent))
-            showUploadPhotosToast(onlineAgents, (path: string, agentId: string, mainPhotoPosition?: number) =>
-                onPhotosAdded(agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition))
+            showUploadPhotosToast(onlineAgents, (path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) =>
+                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition))
         }
     }
 

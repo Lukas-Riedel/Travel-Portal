@@ -4,7 +4,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.nio.file.Path;
 
-public record PhotoReplacingTriggeredEventArgs(String placeId, String placeName, String albumId, String replacedPhotoId, Path path)
+public record PhotoReplacingTriggeredEventArgs(String placeId, String placeName, String albumId, String replacedPhotoId, Path path, boolean sendNotification)
         implements EventArgs {
 
     public PhotoReplacingTriggeredEventArgs {

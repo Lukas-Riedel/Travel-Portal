@@ -58,10 +58,10 @@ export default function App() {
         processingStartedEvents.forEach(event => {
             event.markAsRead()
 
-            if (event.name === "PhotosUploadingTriggered") {
+            if (event.name === "PhotosUploadingTriggered" && event.args.sendNotification) {
                 toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo zahájeno`)
             }
-            else if (event.name === "PhotoReplacingTriggered") {
+            else if (event.name === "PhotoReplacingTriggered" && event.args.sendNotification) {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo zahájeno`)
             }
         })
@@ -72,10 +72,10 @@ export default function App() {
         processingEndedEvents.forEach(event => {
             event.markAsRead()
 
-            if (event.name === "PhotosUploadingTriggered") {
+            if (event.name === "PhotosUploadingTriggered" && event.args.sendNotification) {
                 toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo dokončeno`)
             }
-            else if (event.name === "PhotoReplacingTriggered") {
+            else if (event.name === "PhotoReplacingTriggered" && event.args.sendNotification) {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo dokončeno`)
             }
         })
@@ -86,10 +86,10 @@ export default function App() {
         processingFailedEvents.forEach(event => {
             event.markAsRead()
 
-            if (event.name === "PhotosUploadingTriggered") {
+            if (event.name === "PhotosUploadingTriggered" && event.args.sendNotification) {
                 toast.success(`Nahrávání fotek pro místo ${event.args.placeName} se nezdařilo`)
             }
-            else if (event.name === "PhotoReplacingTriggered") {
+            else if (event.name === "PhotoReplacingTriggered" && event.args.sendNotification) {
                 toast.success(`Nahrazování fotky pro místo ${event.args.placeName} se nezdařilo`)
             }
         })

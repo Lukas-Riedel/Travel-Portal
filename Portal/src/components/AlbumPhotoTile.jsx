@@ -15,7 +15,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
 
     const handlePhotoReplaced = () => {
         showReplacePhotoToast(agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000),
-            (path, agentId) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path).then(() => window.open(photo.permalink, "_blank")))
+            (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path, sendNotification).then(() => window.open(photo.permalink, "_blank")))
     }
 
     const handleMainPhotoUpdated = () => {

@@ -74,6 +74,10 @@ export const useUserInput = (): UseUserInputResult => {
                                 }
 
                                 if (inputElement instanceof HTMLInputElement) {
+                                    if (inputElement.type === "checkbox") {
+                                        return inputElement.checked
+                                    }
+
                                     return inputElement.value.trim() || undefined
                                 }
 
@@ -107,6 +111,7 @@ export const useUserInput = (): UseUserInputResult => {
                         }
 
                         const isSelectFormField = <T extends any>(field: FormField<T>): field is SelectFormField<T> => field.type === "select"
+                        const isCheckbox = <T extends any>(field: FormField<T>): boolean => field.type === "checkbox"
 
                         return (
                             <div className="w-full flex justify-center">
@@ -155,9 +160,11 @@ export const useUserInput = (): UseUserInputResult => {
                                         })()
 
                                         return (
-                                            <div key={index}>
+                                            <div
+                                                key={index}
+                                                className={isCheckbox(field) ? "flex items-center justify-between py-2" : "mb-4"}>
                                                 {field.label && (
-                                                    <label className="block mb-1 text-gray-600 text-sm">
+                                                    <label className={`text-gray-600 text-sm ${isCheckbox(field) ? "" : "block mb-1"}`}>
                                                         {field.label}
                                                         {field.required && (
                                                             <span className="text-red-600">
@@ -190,6 +197,24 @@ export const useUserInput = (): UseUserInputResult => {
                                                             </option>
                                                         ))}
                                                     </select>
+                                                ) : (isCheckbox(field) ? (
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input
+                                                            ref={element => {
+                                                                if (element) {
+                                                                    inputRefs.current[index] = element;
+                                                                }
+                                                            }}
+                                                            type="checkbox"
+                                                            className="sr-only peer"
+                                                            defaultChecked={field.defaultValue}
+                                                            disabled={field.disabled}
+                                                            autoFocus={index === 0} />
+                                                        <div className="w-8 h-4 bg-gray-200 rounded-full peer-checked:bg-black
+                                                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                                            after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all
+                                                            peer-checked:after:translate-x-4 peer-disabled:opacity-50"/>
+                                                    </label>
                                                 ) : (
                                                     <input
                                                         ref={element => {
@@ -205,7 +230,7 @@ export const useUserInput = (): UseUserInputResult => {
                                                         defaultValue={field.defaultValue}
                                                         disabled={field.disabled}
                                                         autoFocus={index === 0} />
-                                                )}
+                                                ))}
                                             </div>
                                         )
                                     })}

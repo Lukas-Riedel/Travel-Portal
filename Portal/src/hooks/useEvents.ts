@@ -19,10 +19,10 @@ export const useEvents = (eventType: EventType): UseEventsResult => {
 
     return {
         events,
-        publishPhotosUploadingTriggeredEvent: (agentId: string, placeId: string, placeName: string, path: string, albumId?: string, timestamp?: number, mainPhotoPosition?: number) =>
-            createEvent(EventType.PhotosUploadingTriggered, { agentId, placeId, placeName, path, albumId, timestamp, mainPhotoPosition }),
-        publishPhotoReplacingTriggeredEvent: (agentId: string, placeId: string, albumId: string, placeName: string, replacedPhotoId: string, path: string) =>
-            createEvent(EventType.PhotoReplacingTriggered, { agentId, placeId, placeName, albumId, replacedPhotoId, path }),
+        publishPhotosUploadingTriggeredEvent: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) =>
+            createEvent(EventType.PhotosUploadingTriggered, { agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition }),
+        publishPhotoReplacingTriggeredEvent: (agentId: string, placeId: string, albumId: string, placeName: string, replacedPhotoId: string, path: string, sendNotification: boolean) =>
+            createEvent(EventType.PhotoReplacingTriggered, { agentId, placeId, placeName, albumId, replacedPhotoId, path, sendNotification }),
         publishFolderSynchronizationRequestedEvent: (agentId: string, path: string, expiration: number) =>
             createEvent(EventType.FolderSynchronizationRequested, { agentId, path, expiration }),
         publishAllAlbumsInvalidatedEvent: () => createEvent(EventType.AllAlbumsInvalidated)

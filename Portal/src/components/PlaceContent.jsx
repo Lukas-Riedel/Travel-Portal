@@ -60,13 +60,13 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
 
     const handlePhotosAdded = () => {
         const onlineAgents = agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name }))
-        showUploadPhotosToast(onlineAgents, (date, path, mainPhotoPosition, agentId) => {
+        showUploadPhotosToast(onlineAgents, (date, path, agentId, sendNotification, mainPhotoPosition) => {
             const placeDate = place.getDate(parseISO(date))
             const timestamp = Math.floor(getTime(parseISO(date)) / 1000)
             if (!place.isPermanent() && !placeDate) {
                 return Promise.reject("Unable to upload photos for the regular place for the date that does not exist.")
             }
-            return onPhotosAdded(agentId, place.id, place.name, path, placeDate?.album?.id, timestamp, mainPhotoPosition)
+            return onPhotosAdded(agentId, place.id, place.name, path, sendNotification, placeDate?.album?.id, timestamp, mainPhotoPosition)
         })
     }
 

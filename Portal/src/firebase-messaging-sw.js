@@ -61,14 +61,14 @@ onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "ProcessingEnded") {
         const wrappedEvent = JSON.parse(payload.data.args)
 
-        if (wrappedEvent.name === "PhotosUploadingTriggered") {
+        if (wrappedEvent.name === "PhotosUploadingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotky byly nahrány", {
                 body: "Místo " + wrappedEvent.args.placeName + " má nové fotky",
                 icon: "icon-192.png",
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
-        else if (wrappedEvent.name === "PhotoReplacingTriggered") {
+        else if (wrappedEvent.name === "PhotoReplacingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotka byla nahrazena", {
                 body: "Místo " + wrappedEvent.args.placeName + " má novou fotku",
                 icon: "icon-192.png",
@@ -80,14 +80,14 @@ onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "ProcessingFailed") {
         const wrappedEvent = JSON.parse(payload.data.args)
 
-        if (wrappedEvent.name === "PhotosUploadingTriggered") {
+        if (wrappedEvent.name === "PhotosUploadingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotky nebyly nahrány", {
                 body: "Nahrávání fotek pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
                 icon: "icon-192.png",
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
-        else if (wrappedEvent.name === "PhotoReplacingTriggered") {
+        else if (wrappedEvent.name === "PhotoReplacingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotka nebyla nahrazena", {
                 body: "Nahrazování fotky pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
                 icon: "icon-192.png",

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 
 public record PhotosUploadingTriggeredEventArgs(String placeId, String placeName, @Nullable Instant timestamp, @Nullable String albumId,
-                                                @Nullable Integer mainPhotoPosition, Path path) implements EventArgs {
+                                                @Nullable Integer mainPhotoPosition, Path path, boolean sendNotification) implements EventArgs {
 
     public PhotosUploadingTriggeredEventArgs {
         Validate.notBlank(placeId, "The place identifier cannot be blank.");

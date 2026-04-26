@@ -503,7 +503,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             (geoJson: string) => createGeographicalRegions(JSON.parse(geoJson)),
         )
 
-    const showReplacePhotoToast = (agents: Device[], replacePhoto: (path: string, agentId: string) => Promise<void>) =>
+    const showReplacePhotoToast = (agents: Device[], replacePhoto: (path: string, agentId: string, sendNotification: boolean) => Promise<void>) =>
         showFormToast(
             t("photo.prompt.replace.message"),
             [
@@ -520,6 +520,12 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         id: agent.id,
                         name: agent.name
                     }))
+                },
+                {
+                    type: "checkbox",
+                    label: t("photo.prompt.upload.label.notification"),
+                    required: false,
+                    defaultValue: true
                 }
             ],
             replacePhoto,
@@ -636,8 +642,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.select.failed")
         )
 
-    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)) =>
-        uploadPhotos.length === 3
+    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>)) =>
+        uploadPhotos.length === 4
             ? showFormToast(
                 t("photo.prompt.upload.message"),
                 [
@@ -660,9 +666,15 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         label: t("photo.prompt.upload.label.position"),
                         required: false,
                         min: 1
+                    },
+                    {
+                        type: "checkbox",
+                        label: t("photo.prompt.upload.label.notification"),
+                        required: false,
+                        defaultValue: true
                     }
                 ],
-                (path, agentId, mainPhotoPosition) => (uploadPhotos as (path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)(path, agentId, mainPhotoPosition && Number(mainPhotoPosition)),
+                (path, agentId, mainPhotoPosition, sendNotification) => (uploadPhotos as (path: string, agentId: string, sendNotification?: boolean, mainPhotoPosition?: number) => Promise<void>)(String(path), String(agentId), Boolean(sendNotification), mainPhotoPosition && Number(mainPhotoPosition)),
                 t("photo.prompt.upload.confirmed"),
                 t("photo.prompt.upload.failed")
             )
@@ -693,9 +705,15 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         label: t("photo.prompt.upload.label.position"),
                         required: false,
                         min: 1
+                    },
+                    {
+                        type: "checkbox",
+                        label: t("photo.prompt.upload.label.notification"),
+                        required: false,
+                        defaultValue: true
                     }
                 ],
-                (date, path, agentId, mainPhotoPosition) => (uploadPhotos as (date: string, path: string, agentId: string, mainPhotoPosition?: number) => Promise<void>)(date, path, agentId, mainPhotoPosition && Number(mainPhotoPosition)),
+                (date, path, agentId, mainPhotoPosition, sendNotification) => (uploadPhotos as (date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>)(String(date), String(path), String(agentId), Boolean(sendNotification), mainPhotoPosition && Number(mainPhotoPosition)),
                 t("photo.prompt.upload.confirmed"),
                 t("photo.prompt.upload.failed")
             )

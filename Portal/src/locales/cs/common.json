@@ -790,7 +790,8 @@
                     "date": "Datum",
                     "path": "Cesta",
                     "position": "Pozice hlavní fotky",
-                    "agent": "Agent"
+                    "agent": "Agent",
+                    "notification": "Poslat notifikaci"
                 },
                 "confirmed": "Nahrávání fotek bude brzy zahájeno",
                 "failed": "Při nahrávání fotek došlo k chybě"

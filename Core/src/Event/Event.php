@@ -248,12 +248,12 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("event" => $event));
         }
 
-        public static function PhotosUploadingTriggered(string $agentId, string $placeId, string $placeName, string $path, ?string $albumId = null, ?int $timestamp = null, ?int $mainPhotoPosition = null) : Event {
-            return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "path" => $path, "albumId" => $albumId, "timestamp" => $timestamp, "mainPhotoPosition" => $mainPhotoPosition));
+        public static function PhotosUploadingTriggered(string $agentId, string $placeId, string $placeName, string $path, bool $sendNotification, ?string $albumId = null, ?int $timestamp = null, ?int $mainPhotoPosition = null) : Event {
+            return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "path" => $path, "sendNotification" => $sendNotification, "albumId" => $albumId, "timestamp" => $timestamp, "mainPhotoPosition" => $mainPhotoPosition));
         }
 
-        public static function PhotoReplacingTriggered(string $agentId, string $placeId, string $placeName, string $albumId, string $replacedPhotoId, string $path) : Event {
-            return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "replacedPhotoId" => $replacedPhotoId, "path" => $path));
+        public static function PhotoReplacingTriggered(string $agentId, string $placeId, string $placeName, string $albumId, string $replacedPhotoId, string $path, bool $sendNotification) : Event {
+            return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "replacedPhotoId" => $replacedPhotoId, "path" => $path, "sendNotification" => $sendNotification));
         }
 
         public static function FolderSynchronizationRequested(string $agentId, string $path, int $expiration) : Event {

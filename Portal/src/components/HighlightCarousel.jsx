@@ -94,7 +94,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
 
     const handlePhotoReplaced = () => {
         const onlineAgents = agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name }))
-        showReplacePhotoToast(onlineAgents, (path, agentId) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path))
+        showReplacePhotoToast(onlineAgents, (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path, sendNotification).then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")))
     }
 
     const handlePhotoCorrected = () => {

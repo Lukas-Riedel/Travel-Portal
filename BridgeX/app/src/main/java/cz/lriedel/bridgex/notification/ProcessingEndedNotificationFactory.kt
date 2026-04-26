@@ -12,6 +12,11 @@ class ProcessingEndedNotificationFactory(
 
         return when (name) {
             PHOTOS_UPLOADING_TRIGGERED_EVENT_NAME -> {
+                val sendNotification = innerArgs["sendNotification"] as? Boolean ?: false
+                if (!sendNotification) {
+                    return null
+                }
+
                 val placeId = innerArgs["placeId"] as? String ?: return null
                 val placeName = innerArgs["placeName"] as? String ?: return null
                 Notification(
@@ -21,6 +26,11 @@ class ProcessingEndedNotificationFactory(
                 )
             }
             PHOTO_REPLACING_TRIGGERED_EVENT_NAME -> {
+                val sendNotification = innerArgs["sendNotification"] as? Boolean ?: false
+                if (!sendNotification) {
+                    return null
+                }
+
                 val placeId = innerArgs["placeId"] as? String ?: return null
                 val placeName = innerArgs["placeName"] as? String ?: return null
                 Notification(
