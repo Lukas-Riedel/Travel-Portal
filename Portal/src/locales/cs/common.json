@@ -603,7 +603,9 @@
     "weather": {
         "expiration": "Příští aktualizace v {{datetime}}",
         "sun": {
-            "altitude": "Výška slunce {{from}}° → {{to}}°"
+            "altitude": "Výška slunce {{from}}° → {{to}}°",
+            "sunrise": "Východ",
+            "sunset": "Západ"
         },
         "clouds": {
             "total": "Mraky",

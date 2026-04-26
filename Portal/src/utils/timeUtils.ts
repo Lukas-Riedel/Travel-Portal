@@ -41,8 +41,8 @@ export function getTimezoneOrDefault(timezone?: string): string {
     return timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
 }
 
-export function formatTimestamp(timestamp: number, timestampFormat: string, timezone?: string) {
-    return format(toZonedTime(fromUnixTime(timestamp), getTimezoneOrDefault(timezone)), timestampFormat)
+export function formatTimestamp(dateOrTimestamp: number | Date, timestampFormat: string, timezone?: string) {
+    return format(toZonedTime(fromUnixTime(typeof dateOrTimestamp === "number" ? dateOrTimestamp : (dateOrTimestamp.getTime() / 1000)), getTimezoneOrDefault(timezone)), timestampFormat)
 }
 
 export function getDate(dateOrTimestamp: number | Date): Date {
