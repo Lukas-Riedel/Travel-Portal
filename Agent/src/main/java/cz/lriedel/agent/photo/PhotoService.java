@@ -21,6 +21,7 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -58,13 +59,10 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 
-import cz.lriedel.agent.model.api.PendingPhoto;
-
 @Slf4j
 @Service
 public class PhotoService implements AgentContextDataProvider {
 
-    private static final int AVAILABLE_WORKERS = 16;
     private static final Duration MIN_PHOTO_AGE = Duration.ofSeconds(10);
     private static final Duration UPLOADED_PHOTOS_RETENTION_POLICY = Duration.ofDays(365);
     private static final String JPG_SUFFIX = ".jpg";
@@ -76,14 +74,18 @@ public class PhotoService implements AgentContextDataProvider {
     private final UploadedPhotoRepository uploadedPhotoRepository;
     private final ObjectMapper objectMapper;
 
+    private final int availableWorkers;
+
     public PhotoService(CoreClient coreClient, RetryTemplate retryTemplate, PhotoFetcher photoFetcher,
-            ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository, ObjectMapper objectMapper) {
+            ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository,
+            ObjectMapper objectMapper, @Value("${agent.core.workers}") int availableWorkers) {
         this.coreClient = coreClient;
         this.retryTemplate = retryTemplate;
         this.photoFetcher = photoFetcher;
         this.configurationRepository = configurationRepository;
         this.uploadedPhotoRepository = uploadedPhotoRepository;
         this.objectMapper = objectMapper;
+        this.availableWorkers = availableWorkers;
     }
 
     @Scheduled(fixedDelayString = "${agent.photo.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
@@ -192,7 +194,7 @@ public class PhotoService implements AgentContextDataProvider {
     @Nullable
     @SneakyThrows
     private String uploadPhotos(String placeId, String albumId, Stream<Path> paths) {
-        ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_WORKERS);
+        ExecutorService executorService = Executors.newFixedThreadPool(availableWorkers);
         Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime)).collect(toCollection(LinkedList::new));
 
         int expectedBatchSize = queue.size();
@@ -216,7 +218,7 @@ public class PhotoService implements AgentContextDataProvider {
                 sum += future.get();
             }
             double averageProcessingSpeed = sum / futures.size();
-            currentParallelRequestsCount = Math.min(AVAILABLE_WORKERS, (int) Math.ceil(averageProcessingSpeed));
+            currentParallelRequestsCount = Math.min(availableWorkers, (int) Math.ceil(averageProcessingSpeed));
 
             log.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
         }
