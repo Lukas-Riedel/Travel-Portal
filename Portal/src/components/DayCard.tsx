@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { format } from "date-fns"
+import { format, isFuture, isToday } from "date-fns"
 import { Bed, Footprints, PartyPopper, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Sunrise, Sunset } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { useTranslation } from "react-i18next"
@@ -49,8 +49,6 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const { formatDuration, formatSteps, formatKilometers } = useFormatters()
     const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast } = usePredefinedUserInput()
 
-    const isToday = useMemo(() => day && new Date().toDateString() === day.toDateString(), [day])
-
     const notePrefix = useMemo(() => day ? `${format(day, t("general.format.date.year.excluded"), { locale: locale })} ` : "", [day])
     const notes = useMemo(() => noteSelector && notePrefix ? noteSelector(notePrefix) : [], [noteSelector, notePrefix])
 
@@ -59,7 +57,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const doFormatTimestamp = (timestamp: number, timestampTimezone: string) => formatTimestamp(timestamp, t("general.format.time"), timezone || timestampTimezone)
 
     const sunriseTime = useMemo(() => {
-        if (!events) {
+        if (!events || !day || !(isToday(day) || isFuture(day))) {
             return null
         }
 
@@ -76,7 +74,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }, [events, doFormatTimestamp])
 
     const sunsetTime = useMemo(() => {
-        if (!events) {
+        if (!events || !day || !(isToday(day) || isFuture(day))) {
             return null
         }
 
@@ -174,7 +172,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
 
     // TODO: Split to smaller components (like WeatherSummary)?
     return (events.length > 0 || stay) && (
-        <Card className={`h-full flex flex-col ${isToday && "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg"}`}>
+        <Card className={`h-full flex flex-col ${day && isToday(day) && "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg"}`}>
             <div className="mb-4">
                 <div className="flex justify-between items-start">
                     {dayLabel && (isExactDate && onNoteAdded ? (
