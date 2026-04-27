@@ -28,6 +28,8 @@
         private const PHOTO_EMBEDDING_CACHE_KEY_FORMAT = "PhotoService:AlbumPhotos:Embeddings:%s";
         private const PHOTO_EMBEDDING_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
+        private const GET_PHOTO_EMBEDDING_RETRY_COUNT = 3;
+
         private readonly PhotoMapper $photoMapper;
         private readonly EmbeddingService $embeddingService;
         private readonly GoogleClient $googleClient;        
@@ -256,10 +258,7 @@
 
         public function uploadPhoto(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : PendingPhoto {
             $uploadToken = $this->googleClient->uploadPhoto($data);
-            $embedding = $this->embeddingService->getPhotoEmbedding($data);
-            if ($embedding === null) {
-                throw new \RuntimeException("Failed to get embedding for the uploaded photo.");
-            }
+            $embedding = $this->fetchPhotoEmbeddingFromData($data);
 
             $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $embedding, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
 
@@ -270,10 +269,7 @@
 
         public function replacePhoto(string $fileName, string $albumId, string $replacedPhotoId, string $data) : PendingPhoto {        
             $uploadToken = $this->googleClient->uploadPhoto($data);
-            $embedding = $this->embeddingService->getPhotoEmbedding($data);
-            if ($embedding === null) {
-                throw new \RuntimeException("Failed to get embedding for the uploaded photo.");
-            }
+            $embedding = $this->fetchPhotoEmbeddingFromData($data);
 
             $this->distributedCacheClient->set($this->getPendingPhotoEmbeddingCacheKey($uploadToken), $embedding, self::PENDING_PHOTO_EMBEDDING_CACHE_TTL);
 
@@ -447,7 +443,7 @@
 
             $embedding = $this->distributedCacheClient->get($this->getPhotoEmbeddingCacheKey($externalId));
             if ($embedding === null) {
-                $embedding = is_string($baseUrlOrEmbedding) ? $this->fetchPhotoEmbedding($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
+                $embedding = is_string($baseUrlOrEmbedding) ? $this->fetchPhotoEmbeddingFromBaseUrl($baseUrlOrEmbedding) : $baseUrlOrEmbedding;
             }
 
             $this->photoMapper->insertPhotoId($externalId, $replaced, $embedding);
@@ -455,10 +451,22 @@
             return $this->photoMapper->selectPhotoId($externalId);
         }
 
-        private function fetchPhotoEmbedding(string $baseUrl) : array {
+        private function fetchPhotoEmbeddingFromBaseUrl(string $baseUrl) : array {
             $url = $baseUrl . "=w" . $this->embeddingWidth . "-h" . $this->embeddingHeight;
-            $data = $this->httpClient->executeRequest(HttpMethod::GET, $url);
-            return $this->embeddingService->getPhotoEmbedding(base64_encode($data));            
+            $data = base64_encode($this->httpClient->executeRequest(HttpMethod::GET, $url));
+            return $this->fetchPhotoEmbeddingFromData($data);            
+        }
+
+        private function fetchPhotoEmbeddingFromData(string $data) : array {
+            for ($i = 0; $i < self::GET_PHOTO_EMBEDDING_RETRY_COUNT; $i++) {
+                $embedding = $this->embeddingService->getPhotoEmbedding($data);
+
+                if ($embedding !== null) {
+                    return $embedding;
+                }                
+            }
+
+            throw new \RuntimeException("Failed to get embedding for the uploaded photo (after " . self::GET_PHOTO_EMBEDDING_RETRY_COUNT . " attempts).");
         }
 
         private function getAlbumsResponse(?string $albumId, ?string $pageToken = null) : ?array {

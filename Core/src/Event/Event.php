@@ -252,6 +252,10 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "path" => $path, "sendNotification" => $sendNotification, "albumId" => $albumId, "timestamp" => $timestamp, "mainPhotoPosition" => $mainPhotoPosition));
         }
 
+        public static function PhotoUploadingTriggered(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("fileName" => $fileName, "albumId" => $albumId, "batchId" => $batchId, "expectedBatchSize" => $expectedBatchSize, "batchPosition" => $batchPosition, "data" => $data));
+        }
+
         public static function PhotoReplacingTriggered(string $agentId, string $placeId, string $placeName, string $albumId, string $replacedPhotoId, string $path, bool $sendNotification) : Event {
             return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "albumId" => $albumId, "replacedPhotoId" => $replacedPhotoId, "path" => $path, "sendNotification" => $sendNotification));
         }

@@ -35,6 +35,10 @@
             $this->photoService->updateAlbum($message["albumId"]);
         }
 
+        public function onPhotoUploadingTriggered(mixed $message) : void {
+            $this->photoService->uploadPhoto($message["fileName"], $message["albumId"], $message["batchId"], $message["expectedBatchSize"], $message["batchPosition"], $message["data"]);
+        }
+
         public function onAlbumUpdated(mixed $message) : void {
             $album = $this->photoService->getAlbum($message["albumId"]);
             if ($album !== null) {
