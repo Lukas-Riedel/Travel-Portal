@@ -642,7 +642,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.select.failed")
         )
 
-    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>)) =>
+    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>), sendNotification?: boolean) =>
         uploadPhotos.length === 4
             ? showFormToast(
                 t("photo.prompt.upload.message"),
@@ -671,7 +671,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         type: "checkbox",
                         label: t("photo.prompt.upload.label.notification"),
                         required: false,
-                        defaultValue: true
+                        defaultValue: sendNotification !== undefined ? sendNotification : true
                     }
                 ],
                 (path, agentId, mainPhotoPosition, sendNotification) => (uploadPhotos as (path: string, agentId: string, sendNotification?: boolean, mainPhotoPosition?: number) => Promise<void>)(String(path), String(agentId), Boolean(sendNotification), mainPhotoPosition && Number(mainPhotoPosition)),
@@ -710,7 +710,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         type: "checkbox",
                         label: t("photo.prompt.upload.label.notification"),
                         required: false,
-                        defaultValue: true
+                        defaultValue: sendNotification !== undefined ? sendNotification : true
                     }
                 ],
                 (date, path, agentId, mainPhotoPosition, sendNotification) => (uploadPhotos as (date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>)(String(date), String(path), String(agentId), Boolean(sendNotification), mainPhotoPosition && Number(mainPhotoPosition)),

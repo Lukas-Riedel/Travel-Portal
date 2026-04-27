@@ -114,11 +114,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         }
     }
 
-    const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number) => {
+    const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number, sendNotification?: boolean) => {
         if (onPhotosAdded) {
             const onlineAgents = agents.filter(agent => isDeviceOnline(agent))
             showUploadPhotosToast(onlineAgents, (path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) =>
-                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition))
+                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification)
         }
     }
 
@@ -300,7 +300,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     {onPhotosAdded && (
                                         <button
                                             className={`btn-icon-hover ${getColor(event, "text-indigo-600")}`}
-                                            onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start)}>
+                                            onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start, event.trip !== undefined)}>
                                             <ImagePlus size={16} />
                                         </button>
                                     )}
