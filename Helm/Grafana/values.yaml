@@ -6,6 +6,3 @@ promtail:
     requests:
       cpu: 50m
       memory: 50Mi
-    limits:
-      cpu: 200m
-      memory: 200Mi

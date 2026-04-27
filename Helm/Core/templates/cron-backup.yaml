@@ -26,9 +26,6 @@ spec:
               requests:
                 cpu: 100m
                 memory: 100Mi
-              limits:
-                cpu: 1000m
-                memory: 300Mi
             image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
             command: ["/bin/bash", "-c"]
             args:

@@ -24,9 +24,6 @@ spec:
             requests:
               cpu: 100m
               memory: 200Mi
-            limits:
-              cpu: 1000m
-              memory: 500Mi
           image: "{{ .Values.pgadmin.image }}:{{ .Values.pgadmin.tag }}"
           ports:
             - containerPort: {{ .Values.pgadmin.service.port }}             

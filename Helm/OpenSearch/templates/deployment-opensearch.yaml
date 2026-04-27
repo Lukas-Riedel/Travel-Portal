@@ -27,9 +27,6 @@ spec:
             requests:
               cpu: 100m
               memory: 1.5Gi
-            limits:
-              cpu: 1000m
-              memory: 2Gi
           image: "{{ .Values.opensearch.image }}:{{ .Values.opensearch.tag }}"
           ports:
             - containerPort: {{ .Values.opensearch.service.port }}

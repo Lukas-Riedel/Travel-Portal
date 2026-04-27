@@ -21,9 +21,6 @@ spec:
             requests:
               cpu: 50m
               memory: 300Mi
-            limits:
-              cpu: 500m
-              memory: 600Mi
           image: "{{ .Values.postgres.image }}:{{ .Values.postgres.tag }}"
           command: ["/usr/local/bin/docker-entrypoint.sh"]
           args:

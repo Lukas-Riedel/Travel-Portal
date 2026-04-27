@@ -21,9 +21,6 @@ spec:
             requests:
               cpu: 10m
               memory: 50Mi
-            limits:
-              cpu: 100m
-              memory: 150Mi
           image: "{{ .Values.redis.image }}:{{ .Values.redis.tag }}"
           command: ["redis-server"]
           args: ["--requirepass", "$(REDIS_PASSWORD)"]

@@ -21,9 +21,6 @@ spec:
             requests:
               cpu: 50m
               memory: 400Mi
-            limits:
-              cpu: 500m
-              memory: 600Mi
           image: "{{ .Values.minio.image }}:{{ .Values.minio.tag }}"
           args:
             - server

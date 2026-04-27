@@ -21,9 +21,6 @@ spec:
             requests:
               cpu: 50m
               memory: 100Mi
-            limits:
-              cpu: 500m
-              memory: 300Mi
           image: "{{ .Values.rabbitmq.image }}:{{ .Values.rabbitmq.tag }}"
           ports:
             - name: amqp
