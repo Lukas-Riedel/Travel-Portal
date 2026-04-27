@@ -30,7 +30,6 @@ public class CoreClient {
 
     private static final String GET_CONFIGURATION_ENDPOINT_PATH = "/configuration";
     private static final String CREATE_EVENT_ENDPOINT_PATH = "/events";
-    private static final String GET_PLACE_ENDPOINT_PATH = "/places/{placeId}";
     private static final String GET_PLACES_ENDPOINT_PATH = "/places";
     private static final String CREATE_DEVICE_ENDPOINT_PATH = "/devices";
     private static final String CREATE_PLACE_ALBUM_ENDPOINT_PATH = "/places/{placeId}/albums";
@@ -60,12 +59,6 @@ public class CoreClient {
 
         return Objects.requireNonNull(
                 restTemplate.exchange(uri, HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), PLACES_LIST_TYPE_REFERENCE).getBody());
-    }
-
-    public Place getPlace(String placeId) {
-        URI uri = uriBuilderFactory.builder().path(GET_PLACE_ENDPOINT_PATH).build(placeId);
-
-        return Objects.requireNonNull(restTemplate.getForObject(uri, Place.class));
     }
 
     @SneakyThrows

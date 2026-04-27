@@ -98,6 +98,11 @@
             return $this->photoMapper->selectAlbumForPhotoId($photoId);
         }
 
+        public function getPendingPhotosCount(string $albumId, string $batchId) : int {
+            return count($this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId))
+                + count($this->photoMapper->selectPendingPhotosWithRelativePosition($albumId, $batchId));
+        }
+
         public function createAlbum(PlaceIdentifier $placeIdentifier, int $timestamp) : Album {
             $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);
             $createdAlbumExternalId = $this->googleClient->createAlbum($albumName);

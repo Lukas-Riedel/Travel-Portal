@@ -80,6 +80,9 @@
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingFailedRead = "event.processingfailed.photoreplacingtriggered.read";
+        case PhotosUploadingCompletedEventProcessingStartedRead = "event.processingstarted.photosuploadingcompleted.read";
+        case PhotosUploadingCompletedEventProcessingEndedRead = "event.processingended.photosuploadingcompleted.read";
+        case PhotosUploadingCompletedEventProcessingFailedRead = "event.processingfailed.photosuploadingcompleted.read";
         case PhotosUploadingTriggeredEventProcessingStartedRead = "event.processingstarted.photosuploadingtriggered.read";
         case PhotosUploadingTriggeredEventProcessingEndedRead = "event.processingended.photosuploadingtriggered.read";
         case PhotosUploadingTriggeredEventProcessingFailedRead = "event.processingfailed.photosuploadingtriggered.read";

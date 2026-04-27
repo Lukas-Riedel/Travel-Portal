@@ -37,6 +37,12 @@
 
         public function onPhotoUploadingTriggered(mixed $message) : void {
             $this->photoService->uploadPhoto($message["fileName"], $message["albumId"], $message["batchId"], $message["expectedBatchSize"], $message["batchPosition"], $message["data"]);
+
+            if ($this->photoService->getPendingPhotosCount($message["albumId"], $message["batchId"]) === $message["expectedBatchSize"]) {
+                $this->photoService->updateAlbum($message["albumId"], null, null, $message["albumMainPhotoPosition"], $message["batchId"]);
+                // TODO: This event is published just to end the processing in Agent. Is this really the best solution? Shouldn't we just end the processing here?
+                $this->eventPublisher->publish(Event::PhotosUploadingCompleted($message["agentId"], $message["batchId"]));
+            }
         }
 
         public function onAlbumUpdated(mixed $message) : void {

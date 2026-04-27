@@ -37,6 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +46,13 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -67,7 +71,6 @@ public class PhotoService implements AgentContextDataProvider {
     private static final Duration MIN_PHOTO_AGE = Duration.ofSeconds(10);
     private static final Duration UPLOADED_PHOTOS_RETENTION_POLICY = Duration.ofDays(365);
     private static final Duration ASYNC_UPLOADING_TIMEOUT = Duration.ofHours(1);
-    private static final Duration ASYNC_UPLOADING_POLLING_INTERVAL = Duration.ofSeconds(5);
     private static final String JPG_SUFFIX = ".jpg";
 
     private static final String PHOTO_UPLOADING_TRIGGERED_EVENT_NAME = "PhotoUploadingTriggered";
@@ -79,12 +82,15 @@ public class PhotoService implements AgentContextDataProvider {
     private final UploadedPhotoRepository uploadedPhotoRepository;
     private final ObjectMapper objectMapper;
 
+    private final String agentIdentifier;
     private final int availableWorkers;
     private final boolean asyncUploadingEnabled;
 
+    private final Map<String, CompletableFuture<Void>> pendingAsyncUploads = new ConcurrentHashMap<>();
+
     public PhotoService(CoreClient coreClient, RetryTemplate retryTemplate, PhotoFetcher photoFetcher,
             ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository,
-            ObjectMapper objectMapper, @Value("${agent.core.workers}") int availableWorkers,
+            ObjectMapper objectMapper, String agentIdentifier, @Value("${agent.core.workers}") int availableWorkers,
             @Value("${agent.photo.uploading.asynchronous}") boolean asyncUploadingEnabled) {
         this.coreClient = coreClient;
         this.retryTemplate = retryTemplate;
@@ -92,6 +98,7 @@ public class PhotoService implements AgentContextDataProvider {
         this.configurationRepository = configurationRepository;
         this.uploadedPhotoRepository = uploadedPhotoRepository;
         this.objectMapper = objectMapper;
+        this.agentIdentifier = agentIdentifier;
         this.availableWorkers = availableWorkers;
         this.asyncUploadingEnabled = asyncUploadingEnabled;
     }
@@ -119,8 +126,8 @@ public class PhotoService implements AgentContextDataProvider {
                             }
 
                             String batchId = uploadPhotos(place.getId(), album.getId(), albumFolder,
-                                    path -> !uploadedPaths.contains(path.toString()) && isPathCreated(path));
-                            if (batchId != null) {
+                                    path -> !uploadedPaths.contains(path.toString()) && isPathCreated(path), null);
+                            if (!asyncUploadingEnabled && batchId != null) {
                                 String albumId = album.getId();
                                 retryTemplate.execute(context -> {
                                     coreClient.refreshAlbum(place.getId(), albumId, null, batchId);
@@ -131,6 +138,13 @@ public class PhotoService implements AgentContextDataProvider {
                     }
                 }
             }
+        }
+    }
+
+    public void completeUpload(String batchId) {
+        CompletableFuture<Void> future = pendingAsyncUploads.remove(batchId);
+        if (future != null) {
+            future.complete(null);
         }
     }
 
@@ -166,14 +180,16 @@ public class PhotoService implements AgentContextDataProvider {
         }
 
         log.info("Starting photos uploading for album {}...", albumId);
-        String batchId = uploadPhotos(placeId, albumId, path, whatever -> true);
+        String batchId = uploadPhotos(placeId, albumId, path, whatever -> true, mainPhotoPosition);
 
-        log.info("Uploading has finished. Refreshing the album...");
-        String effectiveAlbumId = albumId;
-        retryTemplate.execute(context -> {
-            coreClient.refreshAlbum(placeId, effectiveAlbumId, mainPhotoPosition, batchId);
-            return null;
-        });
+        if (!asyncUploadingEnabled) {
+            log.info("Uploading has finished. Refreshing the album...");
+            String effectiveAlbumId = albumId;
+            retryTemplate.execute(context -> {
+                coreClient.refreshAlbum(placeId, effectiveAlbumId, mainPhotoPosition, batchId);
+                return null;
+            });
+        }
     }
 
     @SneakyThrows
@@ -190,63 +206,48 @@ public class PhotoService implements AgentContextDataProvider {
 
     @Nullable
     @SneakyThrows
-    private String uploadPhotos(String placeId, String albumId, Path path, Predicate<Path> pathFilter) {
+    private String uploadPhotos(String placeId, String albumId, Path path, Predicate<Path> pathFilter, @Nullable Integer albumMainPhotoPosition) {
         try (Stream<Path> paths = Files.list(path)) {
-            String batchId = uploadPhotos(placeId, albumId, paths.filter(pathFilter));
+            String batchId = UUID.randomUUID().toString();
+            boolean anyUploaded = uploadPhotos(placeId, albumId, batchId, paths.filter(pathFilter), albumMainPhotoPosition);
 
             if (asyncUploadingEnabled) {
-                Instant pollingStart = Instant.now();
-                while (Instant.now().isBefore(pollingStart.plus(ASYNC_UPLOADING_TIMEOUT))) {
-                    Place place = coreClient.getPlace(placeId);
-                    Album album = findAlbum(place, albumId);
+                log.info("Waiting for photos to be processed...");
 
-                    if (album != null) {
-                        float uploadingProgress = getCorrectedUploadingProgress(album);
-                        if (uploadingProgress < 100) {
-                            log.info("Waiting for all photos to be processed ({}%)...", uploadingProgress);
-                        }
-                        else {
-                            log.info("All photos have been processed.");
-                            break;
-                        }
-                    }
+                CompletableFuture<Void> future = registerUpload(batchId);
 
-                    Thread.sleep(ASYNC_UPLOADING_POLLING_INTERVAL.toMillis());
+                try {
+                    future.get(ASYNC_UPLOADING_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
+                }
+                catch (TimeoutException e) {
+                    log.warn("Timed out when waiting for uploading completion.");
+                    pendingAsyncUploads.remove(batchId);
+                }
+                catch (Exception e) {
+                    log.error("An unexpected error occurred while waiting for uploading completion.", e);
+                    pendingAsyncUploads.remove(batchId);
                 }
             }
 
-            return batchId;
+            return anyUploaded ? batchId : null;
         }
         finally {
             uploadedPhotoRepository.deleteByUploadedBefore(Instant.now().minus(UPLOADED_PHOTOS_RETENTION_POLICY));
         }
     }
 
-    @Nullable
-    private static Album findAlbum(Place place, String albumId) {
-        if (place.getDates() != null) {
-            for (cz.lriedel.agent.model.api.Date date : place.getDates()) {
-                Album album = date.getAlbum();
-                if (album != null && album.getId().equals(albumId)) {
-                    return album;
-                }
-            }
-        }
-        return null;
+    private CompletableFuture<Void> registerUpload(String batchId) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        pendingAsyncUploads.put(batchId, future);
+        return future;
     }
 
-    private static float getCorrectedUploadingProgress(Album album) {
-        return album.getUploadingProgress() == null ? 0 : album.getUploadingProgress();
-    }
-
-    @Nullable
     @SneakyThrows
-    private String uploadPhotos(String placeId, String albumId, Stream<Path> paths) {
+    private boolean uploadPhotos(String placeId, String albumId, String batchId, Stream<Path> paths, @Nullable Integer albumMainPhotoPosition) {
         ExecutorService executorService = Executors.newFixedThreadPool(availableWorkers);
         Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime)).collect(toCollection(LinkedList::new));
 
         int expectedBatchSize = queue.size();
-        String batchId = UUID.randomUUID().toString();
 
         int currentParallelRequestsCount = 1;
         int position = 1;
@@ -258,7 +259,7 @@ public class PhotoService implements AgentContextDataProvider {
                 int submittedPosition = position++;
 
                 futures.add(
-                    executorService.submit(() -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath)));
+                    executorService.submit(() -> uploadPhoto(placeId, albumId, batchId, expectedBatchSize, submittedPosition, submittedPath, albumMainPhotoPosition)));
             }
 
             double sum = 0;
@@ -274,15 +275,16 @@ public class PhotoService implements AgentContextDataProvider {
         executorService.shutdown();
         Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
 
-        return position > 1 ? batchId : null;
+        return position > 1;
     }
 
     @SneakyThrows
-    private double uploadPhoto(String placeId, String albumId, String batchId, int expectedBatchSize, int batchPosition, Path path) {
+    private double uploadPhoto(String placeId, String albumId, String batchId, int expectedBatchSize, int batchPosition,
+            Path path, @Nullable Integer albumMainPhotoPosition) {
         long start = System.currentTimeMillis();
         byte[] data = photoFetcher.fetch(path);
         retryTemplate.execute(context -> {
-            doUploadPhoto(placeId, albumId, getPhotoName(), batchId, expectedBatchSize, batchPosition, data);
+            doUploadPhoto(placeId, albumId, getPhotoName(), batchId, expectedBatchSize, batchPosition, data, albumMainPhotoPosition);
             return null;
         });
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;
@@ -291,16 +293,20 @@ public class PhotoService implements AgentContextDataProvider {
         return 8 * fileSize / uploadDuration;
     }
 
-    private void doUploadPhoto(String placeId, String albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition, byte[] data) {
+    private void doUploadPhoto(String placeId, String albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition,
+            byte[] data, @Nullable Integer albumMainPhotoPosition) {
         if (asyncUploadingEnabled) {
-            coreClient.createEvent(PHOTO_UPLOADING_TRIGGERED_EVENT_NAME, Map.of(
-                    "fileName", fileName,
-                    "albumId", albumId,
-                    "batchId", batchId,
-                    "expectedBatchSize", expectedBatchSize,
-                    "batchPosition", batchPosition,
-                    "data", Base64.getEncoder().encodeToString(data)
-            ));
+            Map<String, Object> args = new HashMap<>();
+            args.put("agentId", agentIdentifier);
+            args.put("fileName", fileName);
+            args.put("albumId", albumId);
+            args.put("batchId", batchId);
+            args.put("expectedBatchSize", expectedBatchSize);
+            args.put("batchPosition", batchPosition);
+            args.put("albumMainPhotoPosition", albumMainPhotoPosition);
+            args.put("data", Base64.getEncoder().encodeToString(data));
+
+            coreClient.createEvent(PHOTO_UPLOADING_TRIGGERED_EVENT_NAME, args);
         }
         else {
             coreClient.uploadPhoto(placeId, albumId, fileName, batchId, expectedBatchSize, batchPosition, data);

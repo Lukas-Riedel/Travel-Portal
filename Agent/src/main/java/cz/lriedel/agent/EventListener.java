@@ -2,6 +2,7 @@ package cz.lriedel.agent;
 
 import cz.lriedel.agent.model.args.FolderSynchronizationRequestedEventArgs;
 import cz.lriedel.agent.model.args.PhotoReplacingTriggeredEventArgs;
+import cz.lriedel.agent.model.args.PhotosUploadingCompletedEventArgs;
 import cz.lriedel.agent.model.args.PhotosUploadingTriggeredEventArgs;
 import cz.lriedel.agent.photo.PhotoService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,12 @@ class EventListener {
     public void onPhotosUploadingTriggered(PhotosUploadingTriggeredEventArgs args) {
         log.info("Received a request to upload photos...");
         photoService.uploadPhotos(args.placeId(), args.timestamp(), args.albumId(), args.mainPhotoPosition(), args.path());
+    }
+
+    @RabbitHandler
+    public void onPhotosUploadingCompleted(PhotosUploadingCompletedEventArgs args) {
+        log.info("Received a request to complete upload...");
+        photoService.completeUpload(args.batchId());
     }
 
     @RabbitHandler

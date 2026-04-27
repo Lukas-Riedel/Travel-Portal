@@ -248,12 +248,16 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("event" => $event));
         }
 
+        public static function PhotosUploadingCompleted(string $agentId, string $batchId) : Event {
+            return new AgentEvent(Event::getEventName(), $agentId, array("batchId" => $batchId));
+        }
+
         public static function PhotosUploadingTriggered(string $agentId, string $placeId, string $placeName, string $path, bool $sendNotification, ?string $albumId = null, ?int $timestamp = null, ?int $mainPhotoPosition = null) : Event {
             return new AgentEvent(Event::getEventName(), $agentId, array("placeId" => $placeId, "placeName" => $placeName, "path" => $path, "sendNotification" => $sendNotification, "albumId" => $albumId, "timestamp" => $timestamp, "mainPhotoPosition" => $mainPhotoPosition));
         }
 
-        public static function PhotoUploadingTriggered(string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("fileName" => $fileName, "albumId" => $albumId, "batchId" => $batchId, "expectedBatchSize" => $expectedBatchSize, "batchPosition" => $batchPosition, "data" => $data));
+        public static function PhotoUploadingTriggered(string $agentId, string $fileName, string $albumId, string $batchId, int $expectedBatchSize, int $batchPosition, string $data, ?int $albumMainPhotoPosition = null) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::High, array("agentId" => $agentId, "fileName" => $fileName, "albumId" => $albumId, "batchId" => $batchId, "expectedBatchSize" => $expectedBatchSize, "batchPosition" => $batchPosition, "data" => $data, "albumMainPhotoPosition" => $albumMainPhotoPosition));
         }
 
         public static function PhotoReplacingTriggered(string $agentId, string $placeId, string $placeName, string $albumId, string $replacedPhotoId, string $path, bool $sendNotification) : Event {
