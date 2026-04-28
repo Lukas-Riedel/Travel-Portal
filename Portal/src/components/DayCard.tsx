@@ -57,11 +57,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const doFormatTimestamp = (timestamp: number, timestampTimezone: string) => formatTimestamp(timestamp, t("general.format.time"), timezone || timestampTimezone)
 
     const sunriseTime = useMemo(() => {
-        if (!events || !day || !(isToday(day) || isFuture(day))) {
+        if (!events) {
             return null
         }
 
-        const sunrise = events.filter(event => isPlace(event)).filter(event => event.start < getCurrentTimestamp()).map(event => {
+        const sunrise = events.filter(event => isPlace(event)).filter(event => event.start > getCurrentTimestamp()).map(event => {
             const sunriseTimestamp = getSunrise(event.start, event)
             if (!sunriseTimestamp) {
                 return null
@@ -74,11 +74,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }, [events, doFormatTimestamp])
 
     const sunsetTime = useMemo(() => {
-        if (!events || !day || !(isToday(day) || isFuture(day))) {
+        if (!events) {
             return null
         }
 
-        const sunset = events.filter(event => isPlace(event)).filter(event => event.start < getCurrentTimestamp()).map(event => {
+        const sunset = events.filter(event => isPlace(event)).filter(event => event.start > getCurrentTimestamp()).map(event => {
             const sunsetTimestamp = getSunset(event.start, event)
             if (!sunsetTimestamp) {
                 return null
