@@ -35,11 +35,12 @@
                 SELECT *
                 FROM category_identifier
                 WHERE name = ?
+                    OR internal_name = ?
             SQL;
 
             $categoryIdentifierRow = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($name)
+                ->withParameters($name, $name)
                 ->getFirstRow();
 
             if ($categoryIdentifierRow === null) {
@@ -435,9 +436,11 @@
             $sql = <<<'SQL'
                 INSERT INTO category_identifier (
                     name,
+                    internal_name,
                     category
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?
                 )
@@ -447,7 +450,7 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($categoryIdentifier->getName(), $categoryIdentifier->getCategory()->value)
+                ->withParameters($categoryIdentifier->getName(), $categoryIdentifier->getName(), $categoryIdentifier->getCategory()->value)
                 ->getSingleColumn("id");
 
             if ($id === null) {
@@ -487,13 +490,17 @@
         public function updateCategoryName(string $categoryId, string $name) : bool {
             $sql = <<<'SQL'
                 UPDATE category_identifier
-                SET name = ?
+                SET name = ?,
+                    internal_name = CASE 
+                        WHEN category = ? THEN internal_name
+                        ELSE ?
+                    END
                 WHERE id = ?
             SQL;
-
+            
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($name, $categoryId)
+                ->withParameters($name, CategoryCategory::Country->value, $name, $categoryId)
                 ->execute() === 1;
         }
 
