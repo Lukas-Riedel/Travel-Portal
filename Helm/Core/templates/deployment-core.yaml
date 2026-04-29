@@ -28,6 +28,14 @@ spec:
         runAsUser: 33
         runAsGroup: 33
         fsGroup: 33
+      initContainers:
+        - name: {{ .Release.Name }}-deploy
+          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
+          command: ["php", "-d", "max_execution_time=300", "-d", "memory_limit=300M", "/var/www/html/src/deploy.php"]
+          volumeMounts:
+{{- include "core.volumeMounts" . | nindent 12 }}
+          env:
+{{- include "core.env" . | nindent 12 }}
       containers:
         - name: {{ .Release.Name }}
           resources:
