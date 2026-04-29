@@ -239,7 +239,7 @@
         new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $eventPublisher, $scheduler),
-        new PhotoServiceListener($photoService, $placeService, $eventPublisher, $scheduler),
+        new PhotoServiceListener($photoService, $placeService, $distributedCacheClient, $eventPublisher, $scheduler),
         new PlaceServiceListener($placeService, $tripService, $categoryService, $calendarClient, $eventPublisher, getenv("MIN_HIGHLIGHTS_PER_PLACE_COUNT"), getenv("MAX_HIGHLIGHTS_PER_PLACE_COUNT"), 
             getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER")),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),

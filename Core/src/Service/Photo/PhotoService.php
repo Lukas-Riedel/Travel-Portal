@@ -30,6 +30,8 @@
 
         private const GET_PHOTO_EMBEDDING_RETRY_COUNT = 3;
 
+        private const CREATE_PENDING_PHOTOS_BATCH_SIZE = 50;
+
         private readonly PhotoMapper $photoMapper;
         private readonly EmbeddingService $embeddingService;
         private readonly GoogleClient $googleClient;        
@@ -99,7 +101,7 @@
         }
 
         public function getPendingPhotosCount(string $albumId, string $batchId) : int {
-            return count($this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId))
+            return count($this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId, PHP_INT_MAX))
                 + count($this->photoMapper->selectPendingPhotosWithRelativePosition($albumId, $batchId));
         }
 
@@ -369,7 +371,7 @@
         
         private function createPendingPhotos(string $albumId, string $batchId) : void {            
             // Process pending photos with fixed position.
-            $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId);        
+            $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId, self::CREATE_PENDING_PHOTOS_BATCH_SIZE);        
             while (count($pendingPhotos) > 0) {
                 $this->transactionManager->executeAtomically(function() use(&$albumId, &$pendingPhotos) {
                     $newPhotos = array();
@@ -384,7 +386,7 @@
                     $this->createGooglePhotos($albumId, $newPhotos, null);                      
                 });
 
-                $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId);
+                $pendingPhotos = $this->photoMapper->selectPendingPhotosWithFixedPosition($albumId, $batchId, self::CREATE_PENDING_PHOTOS_BATCH_SIZE);
             }
                    
             // Process pending photos with relative position.

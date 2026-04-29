@@ -221,7 +221,7 @@
                 });
         }
 
-        public function selectPendingPhotosWithFixedPosition(string $albumId, string $batchId) : array {
+        public function selectPendingPhotosWithFixedPosition(string $albumId, string $batchId, int $limit) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM photo_pending
@@ -230,12 +230,12 @@
                     AND replaced_photo_id IS NULL
                     AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
                 ORDER BY batch_position
-                LIMIT 50
+                LIMIT ?
             SQL;
             
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($albumId, $batchId)
+                ->withParameters($albumId, $batchId, $limit)
                 ->getMappedResultSet(function($photoRow) {
                     return new PendingPhoto($photoRow["id"], $photoRow["album_id"], $photoRow["file_name"],
                         $photoRow["batch_id"], $photoRow["expected_batch_size"], $photoRow["batch_position"],
