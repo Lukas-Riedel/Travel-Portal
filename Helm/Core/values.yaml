@@ -135,8 +135,8 @@ core:
       threshold:
         step: "500"
         distance: "0.5"
-        duration: "300"
-        coefficient: "0.9"
+        duration: "-1"
+        coefficient: "0.8"
     update:
       threshold:
         days: "7"

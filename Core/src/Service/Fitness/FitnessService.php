@@ -10,6 +10,7 @@
 
     class FitnessService {
 
+        // TODO: Extract to an environment variable.
         private const STEPS_PER_MINUTE_THRESHOLD = 30;
 
         private readonly FitnessMapper $fitnessMapper;
@@ -29,9 +30,9 @@
             $this->transactionManager = $databaseClient;
             $this->logger = $logger;
             $this->allowOverwriteThresholdCoefficient = $allowOverwriteThresholdCoefficient;
-            $this->allowOverwriteStepsThreshold = $allowOverwriteStepsThreshold;
-            $this->allowOverwriteDistanceThreshold = $allowOverwriteDistanceThreshold;
-            $this->allowOverwriteDurationThreshold = $allowOverwriteDurationThreshold;
+            $this->allowOverwriteStepsThreshold = $allowOverwriteStepsThreshold < 0 ? PHP_INT_MAX : $allowOverwriteStepsThreshold;
+            $this->allowOverwriteDistanceThreshold = $allowOverwriteDistanceThreshold < 0 ? PHP_INT_MAX : $allowOverwriteDistanceThreshold;
+            $this->allowOverwriteDurationThreshold = $allowOverwriteDurationThreshold < 0 ? PHP_INT_MAX : $allowOverwriteDurationThreshold;
         }
         
         public function getConflictingFitnessRecords() : array {
