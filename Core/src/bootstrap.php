@@ -18,9 +18,9 @@
     use Core\Client\Google\GoogleClient;
     use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
     use Core\Client\GenerativeContent\CachingGenerativeClient;
+    use Core\Client\Http\FlareSolverrHttpClientDecorator;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
-    use Core\Client\Proxy\FlareSolverrProxyClient;
     use Core\Client\Search\OpenSearchClient;
     use Core\Client\Translation\CortexTranslationClient;
     use Core\Event\EventPublisher;
@@ -112,6 +112,7 @@
     $memoryCacheClient = new MemoryCacheClient();
     $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $distributedCacheClient, $logger); 
     $httpClient = new HttpClient(getenv("APP_NAME"), $loggingContext, $logger);
+    $flareSolverrHttpClientDecorator = new FlareSolverrHttpClientDecorator($httpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"), $logger);
     $googleClient = new GoogleClient($distributedCacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $cachingGenerativeContentClient = new CachingGenerativeClient($generativeContentClient, $distributedCacheClient);
@@ -119,8 +120,7 @@
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL")); 
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
-    $proxyClient = new FlareSolverrProxyClient($httpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"));
-    $flightClient = new FlightRadar24FlightClient($proxyClient);
+    $flightClient = new FlightRadar24FlightClient($flareSolverrHttpClientDecorator);
     $actualForecastClient = new OpenMeteoActualForecastClient($httpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));

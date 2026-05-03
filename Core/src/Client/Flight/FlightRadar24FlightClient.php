@@ -1,7 +1,8 @@
 <?php
     namespace Core\Client\Flight;
 
-    use Core\Client\Proxy\ProxyClient;
+    use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Common\CommonConstants;
 
     class FlightRadar24FlightClient implements FlightClient {
@@ -11,15 +12,15 @@
 
         private const GET_FLIGHT_API_ENDPOINT_FORMAT = "https://api.flightradar24.com/common/v1/flight/list.json?&fetchBy=flight&page=1&limit=20&query=%s";
 
-        private readonly ProxyClient $proxyClient;
+        private readonly HttpClient $httpClient;
 
-        public function __construct(ProxyClient $proxyClient) {
-            $this->proxyClient = $proxyClient;
+        public function __construct(HttpClient $httpClient) {
+            $this->httpClient = $httpClient;
         }
 
         public function fetchFlight(string $flight, int $scheduledDeparture) : FetchedFlight {
             date_default_timezone_set(self::UTC_TIMEZONE);
-            $rawApiResponse = $this->proxyClient->get(sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
+            $rawApiResponse = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_FLIGHT_API_ENDPOINT_FORMAT, $flight));
             $apiResponse = is_array($rawApiResponse) ? $rawApiResponse : json_decode($rawApiResponse, true);
             if ($apiResponse === null || !isset($apiResponse["result"]["response"]["data"])) {
                 throw new \RuntimeException("Unable to read data. Response: " . $rawApiResponse);
