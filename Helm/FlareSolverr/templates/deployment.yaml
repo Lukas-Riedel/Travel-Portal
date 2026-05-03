@@ -1,0 +1,32 @@
+{{- if .Values.flaresolverr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+  labels:
+    app: flaresolverr
+spec:
+  replicas: {{ .Values.flaresolverr.replicas }}
+  selector:
+    matchLabels:
+      app: flaresolverr
+  template:
+    metadata:
+      labels:
+        app: flaresolverr
+    spec:
+      containers:
+        - name: flaresolverr
+          image: "{{ .Values.flaresolverr.image }}:{{ .Values.flaresolverr.tag }}"
+          ports:
+            - containerPort: {{ .Values.flaresolverr.service.port }}
+          env:
+            - name: LOG_LEVEL
+              value: "info"
+            - name: BROWSER_TIMEOUT
+              value: "60000"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+{{- end }}

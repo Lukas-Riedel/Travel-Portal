@@ -1,0 +1,13 @@
+{{- if .Values.flaresolverr.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  type: {{ .Values.flaresolverr.service.type }}
+  ports:
+    - port: {{ .Values.flaresolverr.service.port }}
+      targetPort: {{ .Values.flaresolverr.service.port }}
+  selector:
+    app: {{ .Release.Name }}
+{{- end }}

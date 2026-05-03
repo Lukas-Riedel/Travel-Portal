@@ -20,6 +20,7 @@
     use Core\Client\GenerativeContent\CachingGenerativeClient;
     use Core\Client\Http\HttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
+    use Core\Client\Proxy\FlareSolverrProxyClient;
     use Core\Client\Search\OpenSearchClient;
     use Core\Client\Translation\CortexTranslationClient;
     use Core\Event\EventPublisher;
@@ -118,7 +119,8 @@
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL")); 
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
-    $flightClient = new FlightRadar24FlightClient($httpClient);
+    $proxyClient = new FlareSolverrProxyClient($httpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"));
+    $flightClient = new FlightRadar24FlightClient($proxyClient);
     $actualForecastClient = new OpenMeteoActualForecastClient($httpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));

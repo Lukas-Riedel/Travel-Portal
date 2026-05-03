@@ -43,6 +43,10 @@
   value: "{{ .Values.core.opensearch.hostname }}"            
 - name: OPENSEARCH_PORT
   value: "{{ .Values.core.opensearch.port }}"
+- name: FLARESOLVERR_HOST
+  value: "{{ .Values.core.flaresolverr.hostname }}"            
+- name: FLARESOLVERR_PORT
+  value: "{{ .Values.core.flaresolverr.port }}"
 - name: RMQ_INTERNAL_HOST
   value: "{{ .Values.core.rabbitmq.internal.hostname }}"            
 - name: RMQ_INTERNAL_PORT

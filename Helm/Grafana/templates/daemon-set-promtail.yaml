@@ -42,7 +42,9 @@ spec:
                   name: grafana-secret
                   key: grafana-password
           resources:
-            {{- toYaml .Values.promtail.resources | nindent 12 }}
+            requests:
+              cpu: 50m
+              memory: 50Mi
           volumeMounts:
             - name: config
               mountPath: /etc/promtail

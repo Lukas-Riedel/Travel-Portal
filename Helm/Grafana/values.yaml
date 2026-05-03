@@ -2,7 +2,3 @@ promtail:
   enabled: true
   image: grafana/promtail
   tag: 2.9.4
-  resources:
-    requests:
-      cpu: 50m
-      memory: 50Mi

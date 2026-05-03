@@ -1,0 +1,8 @@
+flaresolverr:
+  enabled: true
+  image: ghcr.io/flaresolverr/flaresolverr
+  tag: latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8191

@@ -30,6 +30,9 @@ core:
   opensearch:
     hostname: opensearch
     port: 9200
+  flaresolverr:
+    hostname: flaresolverr
+    port: 8191
   rabbitmq:
     internal:
       hostname: rabbitmq
