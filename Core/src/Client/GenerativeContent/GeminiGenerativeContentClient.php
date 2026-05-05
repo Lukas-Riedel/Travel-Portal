@@ -14,6 +14,7 @@
 
         private const GENERATE_CONTENT_GENERATION_METHOD = "generateContent";
         private const LATEST_MODEL_TAG = "latest";
+        private const GEMINI_MODEL_NAME = "gemini";
 
         private const KEY_PLACEHOLDER_FORMAT = "{%s}";
 
@@ -71,7 +72,7 @@
 
             $response = $this->httpClient->executeRequest(HttpMethod::GET, sprintf(self::GET_MODELS_URL_FORMAT, $this->googleGeminiApiKey))["models"];
             $models = array_map(fn($model) => $model["name"], array_values(array_filter($response, fn($model) => isset($model["thinking"]) && $model["thinking"]
-                && !str_contains($model["name"], self::LATEST_MODEL_TAG) && in_array(self::GENERATE_CONTENT_GENERATION_METHOD, $model["supportedGenerationMethods"]))));
+                && !str_contains($model["name"], self::LATEST_MODEL_TAG) && str_contains($model["name"], self::GEMINI_MODEL_NAME) && in_array(self::GENERATE_CONTENT_GENERATION_METHOD, $model["supportedGenerationMethods"]))));
 
             $this->distributedCacheClient->set(self::MODELS_CACHE_KEY, $models, self::MODELS_CACHE_TTL);
 
