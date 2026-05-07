@@ -103,7 +103,8 @@
                 $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["entityId"]);
                 if ($placeIdentifier !== null && $placeIdentifier->getMainHighlight() === null) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
-                    $this->placeService->refreshPlaceHighlights($message["entityId"], $this->getSuggestedHighlightsCount($message["entityId"]));
+                    // TODO: Is this desired UX or not? Remove place significance if not.
+                    // $this->placeService->refreshPlaceHighlights($message["entityId"], $this->getSuggestedHighlightsCount($message["entityId"]));
                 }
                 $this->updatePlaceScore($message["entityId"]);
             }
