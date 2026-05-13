@@ -130,7 +130,7 @@ core:
   forecast:
     actual:
       days: "10"
-      models: ecmwf_ifs025_ensemble,ncep_gefs_seamless
+      models: ecmwf_ifs025_ensemble,icon_global_eps
       refresh:
         hours: 1,7,13,19
   fitness:
