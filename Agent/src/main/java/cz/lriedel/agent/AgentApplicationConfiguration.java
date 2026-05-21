@@ -33,6 +33,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriBuilderFactory;
 
 import java.util.UUID;
+import java.time.Duration;
 
 import static cz.lriedel.agent.LoggingContext.TRANSACTION_ID_HEADER;
 import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
@@ -62,13 +63,23 @@ public class AgentApplicationConfiguration {
     @Bean
     @Qualifier(CORE_SERVICE_QUALIFIER)
     public static RestTemplate coreRestTemplate(@Value("${service.core.url}") String serviceUrl) {
-        return new RestTemplateBuilder().rootUri(serviceUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
+        return new RestTemplateBuilder()
+            .rootUri(serviceUrl)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .connectTimeout(Duration.ofSeconds(5))
+            .readTimeout(Duration.ofSeconds(30))
+            .build();
     }
 
     @Bean
     @Qualifier(IAM_SERVICE_QUALIFIER)
     public static RestTemplate iamRestTemplate(@Value("${service.iam.url}") String serviceUrl) {
-        return new RestTemplateBuilder().rootUri(serviceUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).build();
+        return new RestTemplateBuilder()
+            .rootUri(serviceUrl)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .connectTimeout(Duration.ofSeconds(5))
+            .readTimeout(Duration.ofSeconds(10))
+            .build();
     }
 
     @Bean
