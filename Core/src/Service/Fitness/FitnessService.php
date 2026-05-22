@@ -67,6 +67,10 @@
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
             $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
+
+            if ($existingFitnessRecord !== null && ($existingFitnessRecord->getSteps() === 0 || $existingFitnessRecord->getSeconds() === 0 || round($existingFitnessRecord->getDistance(), 3) === 0.0)) {
+                $forceUpdate = true;
+            }
             
             if (!$forceUpdate && $existingFitnessRecord !== null && (
                 ($existingFitnessRecord->getSteps() > $this->allowOverwriteStepsThreshold && $steps < $existingFitnessRecord->getSteps() * $this->allowOverwriteThresholdCoefficient)
