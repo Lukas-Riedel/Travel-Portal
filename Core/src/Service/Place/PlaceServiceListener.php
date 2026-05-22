@@ -10,12 +10,14 @@
     use Core\Client\Calendar\CalendarClient;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
+    use Core\Service\Photo\PhotoService;
 
     class PlaceServiceListener {
 
         private readonly PlaceService $placeService;
         private readonly TripService $tripService;
         private readonly CategoryService $categoryService;
+        private readonly PhotoService $photoService;
         private readonly CalendarClient $calendarClient;
         private readonly EventPublisher $eventPublisher;
 
@@ -25,12 +27,13 @@
         private readonly int $photoScoreMultiplier;
         private readonly int $mainHighlightQualityMultiplier;
 
-        public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService,
+        public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService, PhotoService $photoService,
             CalendarClient $calendarClient, EventPublisher $eventPublisher, int $minHighlightsPerPlaceCount, int $maxHighlightsPerPlaceCount,
             int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->categoryService = $categoryService;
+            $this->photoService = $photoService;
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
             $this->minHighlightsPerPlaceCount = $minHighlightsPerPlaceCount;
@@ -144,6 +147,21 @@
 
         public function onPlaceUpdated(mixed $message) : void {
             $this->updatePlaceQuality($message["placeId"]);
+            
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+
+            if ($place !== null) {
+                $album = $this->photoService->getAlbumForPhotoId($place->getMainHighlight()->getPhoto()->getId());
+
+                if ($album !== null) {
+                    $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place->getLatitude(), $place->getLongitude(), true);     
+                    $mainPhotoPosition = array_search($place->getMainHighlight()->getPhoto()->getId(), array_map(fn($photo) => $photo->getId(), $photos));
+
+                    if ($mainPhotoPosition !== false) {
+                        $this->photoService->updateAlbum($album->getId(), $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition + 1);
+                    }
+                }
+            }
         }
 
         private function getSuggestedHighlightsCount(string $placeId) : int {
