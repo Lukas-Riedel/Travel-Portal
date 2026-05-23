@@ -34,7 +34,7 @@
         }
         
         public function translate(string $text, string $sourceLanguage, string $targetLanguage) : string {
-            $cacheKey = sprintf(self::TRANSLATED_TEXT_CACHE_KEY_FORMAT, $sourceLanguage, $targetLanguage, $text);
+            $cacheKey = sprintf(self::TRANSLATED_TEXT_CACHE_KEY_FORMAT, $sourceLanguage, $targetLanguage, hash("sha256", $text));
             $cachedTranslation = $this->distributedCacheClient->get($cacheKey, self::TRANSLATED_TEXT_CACHE_TTL);
             if ($cachedTranslation !== null) {
                 return $cachedTranslation;

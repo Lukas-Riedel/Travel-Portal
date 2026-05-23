@@ -41,7 +41,7 @@
         }
         
         public function getTextEmbedding(string $text) : ?array {
-            $cacheKey = sprintf(self::TEXT_EMBEDDING_CACHE_KEY_FORMAT, mb_strtolower($text));
+            $cacheKey = sprintf(self::TEXT_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", mb_strtolower($text)));
             $cachedEmbedding = $this->distributedCacheClient->get($cacheKey, self::TEXT_EMBEDDING_CACHE_TTL);
             if ($cachedEmbedding !== null) {
                 return $cachedEmbedding;
