@@ -4,7 +4,7 @@
     use Common\Client\Http\HttpMethod;
     use Common\Client\Cache\CacheClient;
     use Monolog\Logger;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
 
     class GeminiGenerativeContentClient implements GenerativeContentClient {

@@ -2,7 +2,7 @@
     namespace Core\Client\Forecast;
 
     use Common\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
     use Core\Service\Forecast\Precipitation;
     use Core\Service\Forecast\Weather;

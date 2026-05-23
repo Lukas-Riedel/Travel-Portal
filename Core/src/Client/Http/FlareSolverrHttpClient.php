@@ -1,10 +1,12 @@
 <?php
     namespace Core\Client\Http;
 
+    use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
     use Monolog\Logger;
 
-    class FlareSolverrHttpClientDecorator extends HttpClient {
+    class FlareSolverrHttpClient implements HttpClient {
+
         private const SEND_REQUEST_ENDPOINT = "/v1";
         private const OPENING_HTML_TAG_PREFIX = "<html";
         private const MAX_TIMEOUT = 60000;
@@ -50,6 +52,10 @@
             
             return $rawResponse;
         }  
+
+        public function returns2xx(HttpMethod $method, string $url) : bool {
+            return $this->httpClient->returns2xx($method, $url);
+        }
 
         private function getFlareSolverrBaseUrl() : string {
             return "http://" . $this->flareSolverrHost . ":" . $this->flareSolverrPort;

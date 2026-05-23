@@ -3,8 +3,8 @@
 
     use Common\Client\Cache\RedisCacheClient;
     use Common\Service\Authentication\AuthenticationService;
-    use Common\Client\Http\HttpClient;
     use Common\Client\Encryption\EncryptionClient;
+    use Common\Client\Http\StandardHttpClient;
     use Common\LoggingContext;
     use Iam\Service\Certificate\CertificateService;
     use Iam\Service\Google\GoogleService;
@@ -30,7 +30,7 @@
 
     // Clients.
     $distributedCacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
-    $httpClient = new HttpClient(getenv("APP_NAME"), $loggingContext, $logger);
+    $httpClient = new StandardHttpClient(getenv("APP_NAME"), $loggingContext, $logger);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $healthCheckables = array(
         $distributedCacheClient

@@ -1,7 +1,7 @@
 <?php
     namespace Core\Client\ExchangeRate;
 
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
     use Monolog\Logger;
 

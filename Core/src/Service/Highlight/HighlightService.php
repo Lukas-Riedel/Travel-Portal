@@ -13,7 +13,7 @@
     use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Embedding\EmbeddingService;
     use Monolog\Logger;

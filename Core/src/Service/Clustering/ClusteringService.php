@@ -2,7 +2,7 @@
     namespace Core\Service\Clustering;
 
     use Common\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
     use Core\Service\Authentication\AuthenticationService;
 
     // TODO: Transform to ClusteringClient.

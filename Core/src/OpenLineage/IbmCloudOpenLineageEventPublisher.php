@@ -5,7 +5,7 @@
     use Core\Service\Configuration\ConfigurationService;
     use Monolog\Logger;
     use Common\Client\Http\HttpMethod;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
 
     class IbmCloudOpenLineageEventPublisher implements OpenLineageEventPublisher {
 

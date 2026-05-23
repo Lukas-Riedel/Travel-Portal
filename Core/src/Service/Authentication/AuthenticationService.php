@@ -5,7 +5,7 @@
     use Common\Client\Cache\CacheClient;
     use Common\Client\Http\HttpMethod;
     use Common\Service\Authentication\UserRole;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
 
     class AuthenticationService {
         

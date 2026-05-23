@@ -2,22 +2,22 @@
     namespace Core\Client\Http;
 
     use Core\OpenLineage\OpenLineageEventManager;
-    use Monolog\Logger;
-    use Common\Client\Http\HttpClient as CommonHttpClient;
+    use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
-    use Common\LoggingContext;
     use Core\Client\Messaging\ProgressReporter;
 
-    class HttpClient extends CommonHttpClient {
+    class ExtendedHttpClient implements HttpClient {
         
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "%s://%s";
         private const UNKNOWN_PATH = "UNKNOWN";
 
+        private readonly HttpClient $httpClient;
+
         private ?ProgressReporter $progressReporter;
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $appName, LoggingContext $loggingContext, Logger $logger) {
-            parent::__construct($appName, $loggingContext, $logger);
+        public function __construct(HttpClient $httpClient) {
+            $this->httpClient = $httpClient;
             $this->progressReporter = null;
             $this->openLineageEventManager = null;
         }
@@ -32,7 +32,7 @@
 
         public function executeRequest(HttpMethod $method, string $url, array $headers = array(), mixed $payload = null, bool $includeResponseHeaders = false) : mixed {            
             $this->progressReporter?->heartbeat();
-            $result = parent::executeRequest($method, $url, $headers, $payload, $includeResponseHeaders);            
+            $result = $this->httpClient->executeRequest($method, $url, $headers, $payload, $includeResponseHeaders);
             $this->progressReporter?->heartbeat();
 
             if ($this->openLineageEventManager !== null) {
@@ -48,6 +48,10 @@
             }
 
             return $result;
+        }
+
+        public function returns2xx(HttpMethod $method, string $url) : bool { 
+            return $this->httpClient->returns2xx($method, $url);
         }
     }
 ?>

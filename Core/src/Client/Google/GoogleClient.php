@@ -3,7 +3,7 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Client\Calendar\Calendar;
-    use Core\Client\Http\HttpClient;
+    use Common\Client\Http\HttpClient;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;

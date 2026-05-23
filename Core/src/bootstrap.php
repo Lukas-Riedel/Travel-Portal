@@ -6,6 +6,7 @@
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Common\Client\Cache\MemoryCacheClient;
     use Common\Client\Cache\RedisCacheClient;
+    use Common\Client\Http\StandardHttpClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Core\Client\CloudStorage\S3CloudStorageClient;
@@ -18,8 +19,8 @@
     use Core\Client\Google\GoogleClient;
     use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
     use Core\Client\GenerativeContent\CachingGenerativeClient;
-    use Core\Client\Http\FlareSolverrHttpClientDecorator;
-    use Core\Client\Http\HttpClient;
+    use Core\Client\Http\FlareSolverrHttpClient;
+    use Core\Client\Http\ExtendedHttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Client\Search\OpenSearchClient;
     use Core\Client\Translation\CortexTranslationClient;
@@ -111,24 +112,25 @@
     $distributedCacheClient = new RedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $memoryCacheClient = new MemoryCacheClient();
     $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $distributedCacheClient, $logger); 
-    $httpClient = new HttpClient(getenv("APP_NAME"), $loggingContext, $logger);
-    $flareSolverrHttpClientDecorator = new FlareSolverrHttpClientDecorator($httpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"), $logger);
-    $googleClient = new GoogleClient($distributedCacheClient, $httpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
-    $generativeContentClient = new GeminiGenerativeContentClient($httpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
+    $httpClient = new StandardHttpClient(getenv("APP_NAME"), $loggingContext, $logger);
+    $extendedHttpClient = new ExtendedHttpClient($httpClient);
+    $flareSolverrHttpClient = new FlareSolverrHttpClient($extendedHttpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"), $logger);
+    $googleClient = new GoogleClient($distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
+    $generativeContentClient = new GeminiGenerativeContentClient($extendedHttpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
     $cachingGenerativeContentClient = new CachingGenerativeClient($generativeContentClient, $distributedCacheClient);
-    $translationClient = new CortexTranslationClient($httpClient, $distributedCacheClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $translationClient = new CortexTranslationClient($extendedHttpClient, $distributedCacheClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL")); 
-    $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $httpClient, $loggingContext, $logger);
-    $exchangeRateClient = new ExchangeRateApiExchangeRateClient($httpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
-    $flightClient = new FlightRadar24FlightClient($flareSolverrHttpClientDecorator);
-    $actualForecastClient = new OpenMeteoActualForecastClient($httpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")));
-    $historicalForecastClient = new OpenMeteoHistoricalForecastClient($httpClient);
+    $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
+    $exchangeRateClient = new ExchangeRateApiExchangeRateClient($extendedHttpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
+    $flightClient = new FlightRadar24FlightClient($flareSolverrHttpClient);
+    $actualForecastClient = new OpenMeteoActualForecastClient($extendedHttpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")));
+    $historicalForecastClient = new OpenMeteoHistoricalForecastClient($extendedHttpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), getenv("RMQ_PREFETCH_COUNT"), $databaseClient, $loggingContext, $logger);
     $cloudStorageClient = new S3CloudStorageClient(getenv("S3_REGION"), getenv("S3_HOST"), getenv("S3_PORT"), getenv("S3_ACCESS_KEY"), getenv("S3_SECRET_KEY"), getenv("S3_BASE_URL"));
     $searchClient = new OpenSearchClient(getenv("OPENSEARCH_HOST"), getenv("OPENSEARCH_PORT"), $logger);
     $databaseClient->setProgressReporter($messagingClient);
-    $httpClient->setProgressReporter($messagingClient);
+    $extendedHttpClient->setProgressReporter($messagingClient);
     $healthCheckables = array(
         $distributedCacheClient,
         $databaseClient,
@@ -147,15 +149,15 @@
     $googleClient->setConfigurationService($configurationService);
 
     // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $httpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));
-    $authenticationService = new AuthenticationService($httpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
     $cloudMessagingClient->setAuthenticationService($authenticationService);
     $googleClient->setAuthenticationService($authenticationService);
     $translationClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $embeddingService = new EmbeddingService($authenticationService, $httpClient, $distributedCacheClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $clusteringService = new ClusteringService($authenticationService, $httpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $embeddingService = new EmbeddingService($authenticationService, $extendedHttpClient, $distributedCacheClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $clusteringService = new ClusteringService($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $indexService = new IndexService($clusteringService, $embeddingService, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
         getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"), getenv("STYLE_EMBEDDING_COEFFICIENT"), getenv("NEGATIVE_EMBEDDING_COEFFICIENT"));
     $geocodingService = new GeocodingService($distributedCacheClient, $googleClient);
@@ -164,9 +166,9 @@
     $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $httpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
+    $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $extendedHttpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
-    $highlightService = new HighlightService($databaseClient, $photoService, $embeddingService, $configurationService, $eventPublisher, $cloudStorageClient, $httpClient, $logger);
+    $highlightService = new HighlightService($databaseClient, $photoService, $embeddingService, $configurationService, $eventPublisher, $cloudStorageClient, $extendedHttpClient, $logger);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $indexService, $statisticsService, $memoryCacheClient, $cachingGenerativeContentClient, $eventPublisher, $logger);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
@@ -221,7 +223,7 @@
     $openLineageEventManager = null;
     if (OpenLineageEventManager::isOpenLineageEnabled($configurationService)) {
         $openLineageEventPublishers = array(
-            new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $httpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
+            new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $extendedHttpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
             new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
         );
         $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
@@ -229,7 +231,7 @@
         $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
         $distributedCacheClient->setOpenLineageEventManager($openLineageEventManager);
         $databaseClient->setOpenLineageEventManager($openLineageEventManager);
-        $httpClient->setOpenLineageEventManager($openLineageEventManager);      
+        $extendedHttpClient->setOpenLineageEventManager($openLineageEventManager);      
         $searchClient->setOpenLineageEventManager($openLineageEventManager);  
     }
     
