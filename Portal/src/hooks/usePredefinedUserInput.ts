@@ -4,7 +4,7 @@ import { useUserInput } from "./useUserInput.tsx"
 import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Trip, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
-import { formatTimestamp } from "../utils/timeUtils.ts"
+import { formatTimestamp, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
@@ -1253,7 +1253,16 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             }
         )
 
+    const showCopyTripItineraryToast = (copyTripItinerary: () => Promise<void>) =>
+        showConfirmToast(
+            t("trip.prompt.copy.message"),
+            copyTripItinerary,
+            t("trip.prompt.copy.confirmed"),
+            t("trip.prompt.copy.failed")
+        )
+
     return {
+        showCopyTripItineraryToast,
         showCreateSelectedRegionToast,
         showCreateCompositeRegionToast,
         showCreateGeographicalRegionToast,

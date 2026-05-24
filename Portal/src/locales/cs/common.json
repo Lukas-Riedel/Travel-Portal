@@ -1053,8 +1053,14 @@
                 "message": "Vyber výlet k načtení:",
                 "confirmed": "Výlet byl úspěšně náčten",
                 "failed": "Nepodařilo se načíst výlet"
+            },
+            "copy": {
+                "message": "Program výletu bude vložen do schránky. Přeješ si pokračovat?",
+                "confirmed": "Program výletu byl úspěšně vložen do schránky",
+                "failed": "Nepodařilo se vložit program výletu do schránky"
             }
-        }
+        },
+        "itinerary": "## Místa\n{{places}}\n\n## Lety\n{{flights}}\n\n## Ubytování\n{{stays}}"
     },
     "highlight": {
         "prompt": {

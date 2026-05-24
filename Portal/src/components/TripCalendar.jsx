@@ -2,16 +2,19 @@ import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
 import DayCard from "./DayCard.tsx"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
-import { ArrowRightLeft, Calendar, Earth, House, Upload } from "lucide-react"
+import { ArrowRightLeft, Calendar, Copy, Earth, House, Upload } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 import CardGrid from "./CardGrid.tsx"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useTranslation } from "react-i18next"
+import { formatTimestamp, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 
-export default function TripCalendar({ trip, places, tripCandidates, displayWarnings, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
+export default function TripCalendar({ trip, places, tripCandidates, displayWarnings, displayCopyItineraryButton, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
-    const { showMoveTripToast, showLoadTripToast } = usePredefinedUserInput()
+    const { showMoveTripToast, showLoadTripToast, showCopyTripItineraryToast } = usePredefinedUserInput()
 
     const [timezone, setTimezone] = useState(undefined)
 
@@ -27,6 +30,22 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
 
     const handleLoaded = () => {
         showLoadTripToast(tripCandidates ?? [], onTripLoaded)
+    }
+
+    const handleTripItineraryCopied = () => {
+        const getListAsString = (items) => items.map(item => `- ${item}`).join("\n")
+
+        const convertedPlaces = (places ?? []).flatMap(place => place.dates.map(date => ({ text: `${place.name} (${formatTimestamp(date.start, t("general.format.datetime.year.excluded"), place.timezone)} - ${formatTimestamp(date.end, t("general.format.datetime.year.excluded"), place.timezone)})`, start: date.start }))).sort((a, b) => a.start - b.start).map(item => item.text)
+        const convertedFlights = [...(trip.flights ?? []), ...(trip.watchedFlights ?? [])].map(flight => `${flight.from.shortName} - ${flight.to.shortName} (${formatTimestamp(flight.start, t("general.format.datetime.year.excluded"), flight.from.timezone)} - ${formatTimestamp(flight.end, t("general.format.datetime.year.excluded"), flight.to.timezone)})`)
+        const convertedStays = (trip.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
+
+        const itinerary = t("trip.itinerary", {
+            places: getListAsString(convertedPlaces),
+            flights: getListAsString(convertedFlights),
+            stays: getListAsString(convertedStays)
+        })
+
+        showCopyTripItineraryToast(() => navigator.clipboard.writeText(itinerary))
     }
 
     return (
@@ -49,6 +68,13 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
                 ))}
             </CardGrid>
             <div className="absolute bottom-3 right-3 flex items-center gap-2 z-50">
+                {displayCopyItineraryButton && (
+                    <button
+                        onClick={handleTripItineraryCopied}
+                        className="btn-chip-gray">
+                        <Copy size={16} />
+                    </button>
+                )}
                 {onTripMoved && (
                     <button
                         onClick={handleMoved}

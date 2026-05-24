@@ -67,6 +67,7 @@ export default function TripPage() {
                 places={tripPlaces}
                 tripCandidates={candidateTrips}
                 displayWarnings={hasRole(UserRole.PortalWarningRead)}
+                displayCopyItineraryButton={hasRole(UserRole.TripEdit)}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
                 onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
                 onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
