@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import HighlightCandidateTile from "./HighlightCandidateTile.jsx"
 import TileGrid from "./TileGrid.jsx"
 import { Expand } from "lucide-react"
@@ -11,11 +11,12 @@ export default function HighlightCandidateTileGrid({ name, description, categori
             description={description}
             categories={categories}
             group={group}
+            shouldLoadOnRender={highlightCandidates.length === 1}
             onHighlightCandidateCreated={onHighlightCandidateCreated} />
     ))
 }
 
-function HighlightCandidateTileGridGroup({ name, description, categories, group, onHighlightCandidateCreated }) {
+function HighlightCandidateTileGridGroup({ name, description, categories, group, shouldLoadOnRender, onHighlightCandidateCreated }) {
     const [photos, setPhotos] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -24,6 +25,12 @@ function HighlightCandidateTileGridGroup({ name, description, categories, group,
         setPhotos(await group.getPhotos())
         setIsLoading(false)
     }
+
+    useEffect(() => {
+        if (shouldLoadOnRender) {
+            handlePhotosLoaded()
+        }
+    }, [])
 
     return (
         <div key={group.title}>
