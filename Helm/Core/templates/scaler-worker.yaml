@@ -5,8 +5,8 @@ metadata:
   name: {{ .Release.Name }}-worker-scaler
 spec:
   scaleTargetRef:
-    name: {{ .Release.Name }}-worker
-  minReplicaCount: 1
+    name: {{ .Release.Name }}-worker-heavy
+  minReplicaCount: 0
   maxReplicaCount: {{ .Values.core.workers }}
   pollingInterval: 15
   cooldownPeriod: {{ .Values.core.scaling.cooldown }}
@@ -15,6 +15,7 @@ spec:
       metadata:
         mode: QueueLength
         value: "{{ .Values.core.scaling.items }}"
+        activationThreshold: "{{ .Values.core.scaling.items }}"
         queueName: "{{ .Values.core.rabbitmq.queue.worker }}"
       authenticationRef:
         name: {{ .Release.Name }}-worker-scaler-auth

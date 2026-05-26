@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-worker
+  name: {{ .Release.Name }}-worker-light
   labels:
-    app: {{ .Release.Name }}-worker
+    app: {{ .Release.Name }}-worker-light
 spec:
   replicas: 1
   strategy:
@@ -23,63 +23,35 @@ spec:
         client: {{ .Values.core.grafana.client.name }}
         logging: "true"
     spec:
-      terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 33
-        runAsGroup: 33
-        fsGroup: 33
-      initContainers:
-        - name: {{ .Release.Name }}-worker-cleanup
-          image: busybox
-          command: ["sh", "-c", "rm -f /tmp/timeout"]
-          volumeMounts:
-{{ include "core.volumeMounts" . | nindent 12 }}
-      containers:
-        - name: {{ .Release.Name }}-worker
-          resources:
-            requests:
-              cpu: 200m
-              memory: 200Mi
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-          image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-          command: ["/usr/bin/tini", "-g", "--"]
-          args:
-            - php
-            - -d
-            - max_execution_time=0
-            - -d
-            - memory_limit=400M
-            - /var/www/html/src/worker.php
-          readinessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "test -f /tmp/timeout"
-            initialDelaySeconds: 15
-            periodSeconds: 15
-            failureThreshold: 3
-            timeoutSeconds: 5
-          livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "test $(date +%s) -lt $(cat /tmp/timeout)"
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            failureThreshold: 3
-            timeoutSeconds: 5
-          env:
-{{ include "core.env" . | nindent 12 }}
-          volumeMounts:
-{{ include "core.volumeMounts" . | nindent 12 }}
-      volumes:
-{{- include "core.volumes" . | nindent 8 }}
+      nodeSelector:
+        type: light
+{{- include "core.podWorker" . | nindent 6 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker-heavy
+  labels:
+    app: {{ .Release.Name }}-worker-heavy
+spec:
+  replicas: 0
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-worker
+        version: "{{ .Values.core.tag }}"
+        client: {{ .Values.core.grafana.client.name }}
+        logging: "true"
+    spec:
+      nodeSelector:
+        type: heavy
+{{- include "core.podWorker" . | nindent 6 }}
 {{- end }}

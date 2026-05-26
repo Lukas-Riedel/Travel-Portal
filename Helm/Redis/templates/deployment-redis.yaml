@@ -15,6 +15,8 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      nodeSelector:
+        type: light
       containers:
         - name: {{ .Release.Name }}
           resources:

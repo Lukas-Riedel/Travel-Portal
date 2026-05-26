@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-dashboards
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -18,6 +18,8 @@ spec:
       labels:
         app: {{ .Release.Name }}-dashboards
     spec:
+      nodeSelector:
+        type: heavy
       containers:
         - name: {{ .Release.Name }}-dashboards
           resources:

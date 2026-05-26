@@ -19,6 +19,8 @@ spec:
             client: {{ .Values.core.grafana.client.name }}
             logging: "true"
         spec:
+          nodeSelector:
+            type: light
           restartPolicy: Never
           containers:
           - name: {{ .Release.Name }}-scheduler

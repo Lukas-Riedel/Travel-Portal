@@ -23,6 +23,8 @@ spec:
         client: {{ .Values.iam.grafana.client.name }}
         logging: "true"
     spec:
+      nodeSelector:
+        type: light
       securityContext:
         runAsNonRoot: true
         runAsUser: 82

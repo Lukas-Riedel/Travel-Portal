@@ -8,7 +8,7 @@ metadata:
 spec:
   replicas: {{ .Values.cortex.replicas }}
   strategy:
-    type: Recreate # Switch to RollingUpdate after upgrading the memory.
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ .Release.Name }}
@@ -20,6 +20,8 @@ spec:
         client: {{ .Values.cortex.grafana.client.name }}
         logging: "true"
     spec:
+      nodeSelector:
+        type: heavy
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -30,7 +32,7 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 2000Mi
+              memory: 3000Mi
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false

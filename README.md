@@ -7,8 +7,9 @@ A sophisticated, fully automated microservices ecosystem designed to manage trip
 This project is the culmination of a long journey that started with a simple need to visualize my travels.
 
 * **The WordPress Era:** It began on a standard **shared webhosting**. I spent over a year trying to force WordPress into this role, but it just sucked. It was bloated, inflexible, and required endless manual input. 
-* **The Hybrid Phase:** After scrapping WordPress, the first version of this project still lived on **shared hosting**. It was a "distributed-lite" setup using external cloud providers for **RabbitMQ** and **Redis**, with data stored in a shared **MySQL** instance. It worked, but it was fragmented and limited.
-* **The Kubernetes Era:** To have everything under one roof and fully under my control, I migrated the entire stack into my own **VPS running a Kubernetes cluster**. 
+* **The Hybrid Era:** After scrapping WordPress, the first version of this project still lived on **shared hosting**. It was a "distributed-lite" setup using external cloud providers for **RabbitMQ** and **Redis**, with data stored in a shared **MySQL** instance. It worked, but it was fragmented and limited.
+* **The Single-Node Kubernetes Era:** To have everything under one roof and fully under my control, I migrated the entire stack into my own **VPS running a Kubernetes cluster**. 
+* **The Multi-Node Kubernetes Era:** As the ecosystem grew, the resource limits of a single budget-friendly VPS became a bottleneck. Instead of paying for expensive cloud scale-ups, I expanded the cluster into a **hybrid multi-node topology**. Using a **Tailscale VPN mesh**, I linked the cloud instance with an **energy-efficient, local mini-PC node**. This allowed me to offload memory-hungry workloads to dedicated local hardware while keeping the idle power footprint at an absolute minimum.
 
 As a developer, I believe in automation. I'm too lazy to write everything manually, so I built a **"self-writing" portal** - a platform where I don't spend time filling out forms. Instead, the portal acts as a **high-end UI and API layer** that orchestrates data from my existing digital footprint.
 
