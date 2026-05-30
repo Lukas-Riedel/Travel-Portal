@@ -33,6 +33,9 @@ core:
   flaresolverr:
     hostname: flaresolverr
     port: 8191
+  libretranslate:
+    hostname: libretranslate
+    port: 5000
   rabbitmq:
     internal:
       hostname: rabbitmq

@@ -4,9 +4,9 @@
     use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
 
-    class CachingGenerativeClient implements GenerativeContentClient {
+    class CachingGenerativeContentClient implements GenerativeContentClient {
 
-        private const RESPONSE_CACHE_KEY_FORMAT = "CachingGenerativeClient:Response:%s";
+        private const RESPONSE_CACHE_KEY_FORMAT = "CachingGenerativeContentClient:Response:%s";
         private const RESPONSE_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
         private readonly GenerativeContentClient $client;

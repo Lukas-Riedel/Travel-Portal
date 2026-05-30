@@ -1,0 +1,10 @@
+libretranslate:
+  enabled: true
+  image: "libretranslate/libretranslate"
+  tag: v1.5.1
+  replicas: 1
+  threads: 2
+  service:
+    type: ClusterIP
+    port: 5000
+  languages: "cs,en"

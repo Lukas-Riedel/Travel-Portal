@@ -9,7 +9,6 @@ cortex:
     port: 8080
   model:
     embeddings: clip-ViT-L-14
-    translation: facebook/nllb-200-distilled-1.3B
   engine: cpu
   iam:
     host: iam

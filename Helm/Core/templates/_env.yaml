@@ -47,6 +47,10 @@
   value: "{{ .Values.core.flaresolverr.hostname }}"            
 - name: FLARESOLVERR_PORT
   value: "{{ .Values.core.flaresolverr.port }}"
+- name: LIBRE_TRANSLATE_HOST
+  value: "{{ .Values.core.libretranslate.hostname }}"            
+- name: LIBRE_TRANSLATE_PORT
+  value: "{{ .Values.core.libretranslate.port }}"
 - name: RMQ_INTERNAL_HOST
   value: "{{ .Values.core.rabbitmq.internal.hostname }}"            
 - name: RMQ_INTERNAL_PORT

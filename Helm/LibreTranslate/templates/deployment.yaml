@@ -1,0 +1,60 @@
+{{- if .Values.libretranslate.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.libretranslate.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      nodeSelector:
+        type: heavy
+      containers:
+        - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500Mi
+          image: "{{ .Values.libretranslate.image }}:{{ .Values.libretranslate.tag }}"
+          args:
+            - "--load-only"
+            - "{{ .Values.libretranslate.languages }}"
+          ports:
+            - containerPort: {{ .Values.libretranslate.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /languages
+              port: {{ .Values.libretranslate.service.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 5
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /languages
+              port: {{ .Values.libretranslate.service.port }}
+            initialDelaySeconds: 40
+            periodSeconds: 20
+            failureThreshold: 5
+            timeoutSeconds: 5
+          env:
+            - name: LT_THREADS
+              value: "{{ .Values.libretranslate.threads }}"
+            - name: LT_DISABLE_TELEMETRY
+              value: "true"
+          volumeMounts:
+            - name: {{ .Release.Name }}-local
+              mountPath: /home/libretranslate/.local
+      volumes:
+        - name: {{ .Release.Name }}-local
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+{{- end }}
