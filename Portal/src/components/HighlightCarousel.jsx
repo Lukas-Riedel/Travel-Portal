@@ -170,7 +170,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                             name="Rotace"
                             value={rotation}
                             defaultValue={defaultRotation}
-                            valueFormatter={value => (Math.round(10 * value) / 10) + "°"}
                             step={0.05}
                             minValue={-15}
                             maxValue={15}
@@ -179,7 +178,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                             name="Zoom"
                             value={zoom}
                             defaultValue={defaultZoom}
-                            valueFormatter={value => Math.round(100 * value) + "%"}
                             step={0.01}
                             minValue={1}
                             maxValue={3}
@@ -188,7 +186,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                             name="Osa X"
                             value={crop.x}
                             defaultValue={defaultXPosition}
-                            valueFormatter={value => Math.round(value)}
                             minValue={-720}
                             maxValue={720}
                             onValueChanged={x => setCrop({ x: x, y: crop.y })} />
@@ -196,7 +193,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                             name="Osa Y"
                             value={crop.y}
                             defaultValue={defaultYPosition}
-                            valueFormatter={value => Math.round(value)}
                             minValue={-480}
                             maxValue={480}
                             onValueChanged={y => setCrop({ x: crop.x, y: y })} />
