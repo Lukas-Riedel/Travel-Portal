@@ -15,4 +15,5 @@ transformers==4.44.2
 sentencepiece==0.2.0
 sacremoses==0.1.1
 syntok==1.4.4
-langcodes>=3.4.0
+llama-cpp-python>=0.3.0
+huggingface_hub>=0.23.0

@@ -1,85 +1,63 @@
-import torch
-import langcodes
+import os
+import logging
 from typing import Final
+from llama_cpp import Llama
+from huggingface_hub import hf_hub_download
 
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+logger = logging.getLogger(__name__)
 
-SHORT_PHRASE_WORDS_THRESHOLD: Final[int] = 5
+TRANSLATION_SYSTEM_PROMPT: Final[str] = (
+    "You are an expert translator specialized in travel, tourism, and geography. "
+    "Translate the user text from the source language (ISO code) to the target language (ISO code). "
+    "Preserve the exact meaning, tone, and formatting (like capitalization for place names). "
+    "For geographical names, use local names if there is no translation to the target language. "
+    "Assume that geographical names follow these rules and are in the source language. "
+    "Do not chat, do not add any explanations, notes, or quotes around the result. "
+    "Output only the final translated text."
+)
 
 
+# TODO: Move reusable parts to AiEngine and make TranslationEngine use it.
 class TranslationEngine:
-    def __init__(self, model_name: str, device: str) -> None:
-        self.device = device
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
-        self.model.eval()
+    def __init__(
+        self, model_repo: str, model_file: str, models_dir: str, n_threads: int = 4
+    ) -> None:
+        local_model_path = os.path.join(models_dir, model_file)
 
-    def translate(
-        self,
-        text: str,
-        source_language: str,
-        target_language: str,
-    ) -> str:
+        if not os.path.exists(local_model_path):
+            logger.info(
+                f"Model not found at '{local_model_path}'. Downloading from '{model_repo}'..."
+            )
+            os.makedirs(models_dir, exist_ok=True)
+
+            local_model_path = hf_hub_download(
+                repo_id=model_repo,
+                filename=model_file,
+                local_dir=models_dir,
+                local_dir_use_symlinks=False,
+            )
+
+        self.llm = Llama(
+            model_path=local_model_path, n_ctx=2048, n_threads=n_threads, verbose=False
+        )
+
+    def translate(self, text: str, source_language: str, target_language: str) -> str:
         if not text or not text.strip():
             return ""
 
         if source_language == target_language:
             return text.strip()
 
-        source_lang = self._to_nllb_language(source_language)
-        target_lang = self._to_nllb_language(target_language)
+        user_prompt = f"Source language: {source_language}\Target language: {target_language}\n\nText to translate:\n{text.strip()}"
 
-        self.tokenizer.src_lang = source_lang
-        target_lang_id = self.tokenizer.convert_tokens_to_ids(target_lang)
+        response = self.llm.create_chat_completion(
+            messages=[
+                {"role": "system", "content": TRANSLATION_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            # TODO: Make this configurable?
+            temperature=0.1,
+            max_tokens=1024,
+        )
 
-        is_short_phrase = len(text.strip().split()) <= SHORT_PHRASE_WORDS_THRESHOLD
-        return self._do_translate(text.strip(), target_lang_id, is_short_phrase)
-
-    def _to_nllb_language(self, iso_code: str) -> str:
-        try:
-            iso3 = langcodes.Language.get(iso_code).to_alpha3()
-        except Exception:
-            raise ValueError(f"The language code '{iso_code}' is invalid.")
-
-        matches = [
-            code
-            for code in self.tokenizer.additional_special_tokens
-            if code.startswith(f"{iso3}_")
-        ]
-
-        if not matches:
-            raise ValueError(
-                f"The language '{iso_code}' is not supported by the model."
-            )
-
-        return matches[0]
-
-    def _do_translate(
-        self, text: str, target_lang_id: int, is_short_phrase: bool
-    ) -> str:
-        inputs = self.tokenizer(text, return_tensors="pt").to(self.device)
-
-        with torch.no_grad():
-            if is_short_phrase:
-                translated_tokens = self.model.generate(
-                    **inputs,
-                    forced_bos_token_id=target_lang_id,
-                    max_new_tokens=64,
-                    # TODO: Make this configurable?
-                    num_beams=5,
-                    temperature=0.0,
-                    length_penalty=0.6,
-                    early_stopping=True,
-                )
-            else:
-                translated_tokens = self.model.generate(
-                    **inputs,
-                    forced_bos_token_id=target_lang_id,
-                    max_new_tokens=1024,
-                    num_beams=1,
-                    do_sample=False,
-                )
-
-        return self.tokenizer.decode(
-            translated_tokens[0], skip_special_tokens=True
-        ).strip()
+        return response["choices"][0]["message"]["content"].strip()

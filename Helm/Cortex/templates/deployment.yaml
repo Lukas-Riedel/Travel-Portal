@@ -71,11 +71,13 @@ spec:
             - name: WORKERS_COUNT
               value: "{{ .Values.cortex.workers }}"
             - name: EMBEDDINGS_MODEL_NAME
-              value: "{{ .Values.cortex.model.embeddings }}"
-            - name: TRANSLATION_MODEL_NAME
-              value: "{{ .Values.cortex.model.translation }}"
-            - name: ENGINE_DEVICE
-              value: "{{ .Values.cortex.engine }}"
+              value: "{{ .Values.cortex.embedding.model }}"
+            - name: EMBEDDINGS_ENGINE_DEVICE
+              value: "{{ .Values.cortex.embedding.engine }}"
+            - name: LLM_MODEL_REPO
+              value: "{{ .Values.cortex.llm.model.repo }}"
+            - name: LLM_MODEL_FILE
+              value: "{{ .Values.cortex.llm.model.file }}"
             - name: IAM_HOST
               value: "{{ .Values.cortex.iam.host }}"
             - name: IAM_PORT
@@ -87,12 +89,12 @@ spec:
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp
-            - name: {{ .Release.Name }}-home-appuser-cache-huggingface
-              mountPath: /home/appuser/.cache/huggingface
+            - name: {{ .Release.Name }}-home-appuser-cache
+              mountPath: /home/appuser/.cache
       volumes:
         - name: {{ .Release.Name }}-tmp
           emptyDir: {}
-        - name: {{ .Release.Name }}-home-appuser-cache-huggingface
+        - name: {{ .Release.Name }}-home-appuser-cache
           persistentVolumeClaim:
               claimName: {{ .Release.Name }}-pvc
 {{- end }}

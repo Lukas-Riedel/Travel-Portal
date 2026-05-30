@@ -7,10 +7,13 @@ cortex:
   service:
     type: ClusterIP
     port: 8080
-  model:
-    embeddings: clip-ViT-L-14
-    translation: facebook/nllb-200-distilled-1.3B
-  engine: cpu
+  embedding:
+    model: clip-ViT-L-14
+    engine: cpu
+  llm:
+    model:
+      repo: "bartowski/Qwen2.5-1.5B-Instruct-GGUF"
+      file: "Qwen2.5-1.5B-Instruct-Q4_K_M.gguf"
   iam:
     host: iam
     port: 8080

@@ -25,15 +25,18 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.ai_engine = AiEngine(
-        os.getenv("EMBEDDINGS_MODEL_NAME"), os.getenv("ENGINE_DEVICE")
+        os.getenv("EMBEDDINGS_MODEL_NAME"),
+        os.getenv("EMBEDDINGS_ENGINE_DEVICE"),
     )
     app.state.clustering_engine = ClusteringEngine()
     app.state.translation_engine = TranslationEngine(
-        os.getenv("TRANSLATION_MODEL_NAME"), os.getenv("ENGINE_DEVICE"),
+        os.getenv("LLM_MODEL_REPO"),
+        os.getenv("LLM_MODEL_FILE"),
+        "/home/appuser/.cache/models",
     )
     app.state.authentication_service = AuthenticationService(
         os.getenv("IAM_HOST"),
-        int(os.getenv("IAM_PORT", 8080)),
+        int(os.getenv("IAM_PORT")),
         os.getenv("IAM_APP_CLIENT_ID"),
     )
     yield
