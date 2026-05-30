@@ -917,6 +917,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "text",
                     label: t("tracker.prompt.create.positive.overtime.label.description"),
+                    defaultValue: t("tracker.placeholder.overtime.positive"),
                     required: true
                 },
                 {

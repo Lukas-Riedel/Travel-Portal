@@ -489,6 +489,11 @@
                     "failed": "Nepodařilo se vložit text události do schránky"
                 }
             }
+        },
+        "placeholder": {
+            "overtime": {
+                "positive": "Extended development session"
+            }
         }
     },
     "airport": {
