@@ -24,16 +24,12 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.ai_engine = AiEngine(os.getenv("EMBEDDINGS_MODEL_NAME"), os.getenv("ENGINE_DEVICE"))
+    app.state.ai_engine = AiEngine(
+        os.getenv("EMBEDDINGS_MODEL_NAME"), os.getenv("ENGINE_DEVICE")
+    )
     app.state.clustering_engine = ClusteringEngine()
     app.state.translation_engine = TranslationEngine(
-        model_name_format=os.getenv("TRANSLATION_MODEL_NAME_FORMAT"),
-        supported_languages={
-            lang.strip()
-            for lang in os.getenv("SUPPORTED_LANGUAGES", "").split(",")
-            if lang.strip()
-        },
-        device=os.getenv("ENGINE_DEVICE"),
+        os.getenv("TRANSLATION_MODEL_NAME"), os.getenv("ENGINE_DEVICE"),
     )
     app.state.authentication_service = AuthenticationService(
         os.getenv("IAM_HOST"),

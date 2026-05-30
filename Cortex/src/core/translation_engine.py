@@ -1,82 +1,85 @@
 import torch
-from transformers import MarianMTModel, MarianTokenizer
-import syntok.segmenter as segmenter
-from syntok.tokenizer import Tokenizer
-from typing import Set, Dict
+import langcodes
+from typing import Final
+
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
+SHORT_PHRASE_WORDS_THRESHOLD: Final[int] = 5
 
 
 class TranslationEngine:
-    def __init__(
-        self, model_name_format: str, supported_languages: Set[str], device: str
-    ) -> None:
-        self.model_name_format = model_name_format
-        self.supported_languages = supported_languages
+    def __init__(self, model_name: str, device: str) -> None:
         self.device = device
-        self.models: Dict[str, MarianMTModel] = {}
-        self.tokenizers: Dict[str, MarianTokenizer] = {}
-        self._initialize_models()
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
+        self.model.eval()
 
-    def _initialize_models(self) -> None:
-        for source in self.supported_languages:
-            for target in self.supported_languages:
-                if source == target:
-                    continue
-
-                model_name = self.model_name_format.format(source=source, target=target)
-                tokenizer = MarianTokenizer.from_pretrained(model_name)
-                model = MarianMTModel.from_pretrained(model_name)
-
-                model.to(self.device)
-                model.eval()
-
-                pair_key = f"{source}-{target}"
-                self.tokenizers[pair_key] = tokenizer
-                self.models[pair_key] = model
-
-    def translate(self, text: str, source_language: str, target_language: str) -> str:
+    def translate(
+        self,
+        text: str,
+        source_language: str,
+        target_language: str,
+    ) -> str:
         if not text or not text.strip():
             return ""
 
         if source_language == target_language:
-            return self._post_process_text(text)
+            return text.strip()
 
-        pair_key = f"{source_language}-{target_language}"
-        if pair_key not in self.models:
-            return self._post_process_text(text)
+        source_lang = self._to_nllb_language(source_language)
+        target_lang = self._to_nllb_language(target_language)
 
-        translated_text = self._do_translate(
-            text, self.tokenizers[pair_key], self.models[pair_key]
-        )
+        self.tokenizer.src_lang = source_lang
+        target_lang_id = self.tokenizer.convert_tokens_to_ids(target_lang)
 
-        return self._post_process_text(translated_text)
+        is_short_phrase = len(text.strip().split()) <= SHORT_PHRASE_WORDS_THRESHOLD
+        return self._do_translate(text.strip(), target_lang_id, is_short_phrase)
 
-    def _do_translate(self, text: str, tokenizer, model) -> str:
-        sentence_tokens = segmenter.analyze(text)
-        translated_parts = []
+    def _to_nllb_language(self, iso_code: str) -> str:
+        try:
+            iso3 = langcodes.Language.get(iso_code).to_alpha3()
+        except Exception:
+            raise ValueError(f"The language code '{iso_code}' is invalid.")
 
-        for paragraph in sentence_tokens:
-            for sentence in paragraph:
-                raw_sentence = "".join(
-                    token.spacing + token.value for token in sentence
-                ).strip()
+        matches = [
+            code
+            for code in self.tokenizer.additional_special_tokens
+            if code.startswith(f"{iso3}_")
+        ]
 
-                if not raw_sentence:
-                    continue
+        if not matches:
+            raise ValueError(
+                f"The language '{iso_code}' is not supported by the model."
+            )
 
-                inputs = tokenizer(
-                    raw_sentence, return_tensors="pt", padding=True, truncation=True
-                ).to(self.device)
+        return matches[0]
 
-                with torch.no_grad():
-                    translated_tokens = model.generate(**inputs, max_new_tokens=512)
+    def _do_translate(
+        self, text: str, target_lang_id: int, is_short_phrase: bool
+    ) -> str:
+        inputs = self.tokenizer(text, return_tensors="pt").to(self.device)
 
-                decoded = tokenizer.decode(
-                    translated_tokens[0], skip_special_tokens=True
+        with torch.no_grad():
+            if is_short_phrase:
+                translated_tokens = self.model.generate(
+                    **inputs,
+                    forced_bos_token_id=target_lang_id,
+                    max_new_tokens=64,
+                    # TODO: Make this configurable?
+                    num_beams=5,
+                    temperature=0.0,
+                    length_penalty=0.6,
+                    early_stopping=True,
                 )
-                translated_parts.append(decoded)
+            else:
+                translated_tokens = self.model.generate(
+                    **inputs,
+                    forced_bos_token_id=target_lang_id,
+                    max_new_tokens=1024,
+                    num_beams=1,
+                    do_sample=False,
+                )
 
-        return " ".join(translated_parts)
-
-    @staticmethod
-    def _post_process_text(text: str) -> str:
-        return text.strip()
+        return self.tokenizer.decode(
+            translated_tokens[0], skip_special_tokens=True
+        ).strip()

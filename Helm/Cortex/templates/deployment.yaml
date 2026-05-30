@@ -72,7 +72,7 @@ spec:
               value: "{{ .Values.cortex.workers }}"
             - name: EMBEDDINGS_MODEL_NAME
               value: "{{ .Values.cortex.model.embeddings }}"
-            - name: TRANSLATION_MODEL_NAME_FORMAT
+            - name: TRANSLATION_MODEL_NAME
               value: "{{ .Values.cortex.model.translation }}"
             - name: ENGINE_DEVICE
               value: "{{ .Values.cortex.engine }}"
@@ -84,16 +84,15 @@ spec:
               value: "{{ .Values.cortex.iam.client.app.id }}"
             - name: IAM_BACKEND_CLIENT_ID
               value: "{{ .Values.cortex.iam.client.backend.id }}"
-            - name: SUPPORTED_LANGUAGES
-              value: "{{ .Values.cortex.languages }}"
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp
-            - name: {{ .Release.Name }}-home-appuser
-              mountPath: /home/appuser
+            - name: {{ .Release.Name }}-home-appuser-cache-huggingface
+              mountPath: /home/appuser/.cache/huggingface
       volumes:
         - name: {{ .Release.Name }}-tmp
           emptyDir: {}
-        - name: {{ .Release.Name }}-home-appuser
-          emptyDir: {}
+        - name: {{ .Release.Name }}-home-appuser-cache-huggingface
+          persistentVolumeClaim:
+              claimName: {{ .Release.Name }}-pvc
 {{- end }}

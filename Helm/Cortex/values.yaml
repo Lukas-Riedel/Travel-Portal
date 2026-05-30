@@ -9,7 +9,7 @@ cortex:
     port: 8080
   model:
     embeddings: clip-ViT-L-14
-    translation: Helsinki-NLP/opus-mt-{source}-{target}
+    translation: facebook/nllb-200-distilled-1.3B
   engine: cpu
   iam:
     host: iam
@@ -22,4 +22,3 @@ cortex:
   grafana:
     client:
       name: travel-portal-service
-  languages: cs,en
