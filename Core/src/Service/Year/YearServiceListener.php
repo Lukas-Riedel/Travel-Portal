@@ -57,7 +57,7 @@
                     }
                 
                     if (count($year->getHighlights()) !== $this->maxHighlightsPerYearCount) {
-                        $this->logger->debug("There are " . count($year->getHighlights()) . "/" . $this->maxHighlightsPerYearCount . " highlights for the '" . $message["entityId"] . "' category. Refreshing the highlights...");
+                        $this->logger->debug("There are " . count($year->getHighlights()) . "/" . $this->maxHighlightsPerYearCount . " highlights for the '" . $message["entityId"] . "' year. Refreshing the highlights...");
                         $this->yearService->refreshYearHighlights($message["entityId"], $this->maxHighlightsPerYearCount);
                     }
                 }

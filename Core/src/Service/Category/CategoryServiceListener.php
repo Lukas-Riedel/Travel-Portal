@@ -51,10 +51,10 @@
                     if ($category->getMainHighlight() === null) {
                         $this->categoryService->updateCategoryMainHighlight($message["entityId"], $message["highlightId"]);
                     }
-                }
-
-                if (count($category->getHighlights()) !== $this->maxHighlightsPerCategoryCount) {
-                    $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);                        
+                    
+                    if (count($category->getHighlights()) !== $this->maxHighlightsPerCategoryCount) {
+                        $this->categoryService->refreshCategoryHighlights($message["entityId"], $this->maxHighlightsPerCategoryCount);                        
+                    }
                 }
             }
         }

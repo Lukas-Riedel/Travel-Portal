@@ -31,9 +31,6 @@
         private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
 
-        private const PLACE_SIGNIFICANCE_CACHE_KEY_FORMAT = "PlaceService:PlaceSignificance:%s";
-        private const PLACE_SIGNIFICANCE_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
-
         private readonly PlaceMapper $placeMapper;
         private readonly GenerativeContentClient $generativeContentClient;
         private readonly GenerativeContentClient $cachingGenerativeContentClient;        
@@ -94,22 +91,6 @@
                     $this->highlightService->createPlaceHighlight($placeId, $photoId);
                 }
             }
-        }
-
-        public function getPlaceSignificance(string $placeId) : int {
-            $cacheKey = sprintf(self::PLACE_SIGNIFICANCE_CACHE_KEY_FORMAT, $placeId);
-            $placeSignificance = $this->distributedCacheClient->get($cacheKey);
-            if ($placeSignificance !== null) {
-                return intval($placeSignificance);
-            }
-            
-            $placeIdentifier = $this->getPlaceIdentifierById($placeId);
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeSignificance"];
-            $placeSignificance = intval($this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $placeIdentifier->getName(), "country" => $placeIdentifier->getCountry() ?? "")));
-
-            $this->distributedCacheClient->set($cacheKey, $placeSignificance, self::PLACE_SIGNIFICANCE_CACHE_TTL);
-
-            return $placeSignificance;
         }
 
         public function getDatesForTripAndCountry(string $tripId, string $countryCategoryId) : array {

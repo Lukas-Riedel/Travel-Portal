@@ -106,8 +106,6 @@
                 $placeIdentifier = $this->placeService->getPlaceIdentifierById($message["entityId"]);
                 if ($placeIdentifier !== null && $placeIdentifier->getMainHighlight() === null) {
                     $this->placeService->updatePlaceMainHighlight($message["entityId"], $message["highlightId"]);
-                    // TODO: Is this desired UX or not? Remove place significance if not.
-                    // $this->placeService->refreshPlaceHighlights($message["entityId"], $this->getSuggestedHighlightsCount($message["entityId"]));
                 }
                 $this->updatePlaceScore($message["entityId"]);
             }
@@ -164,12 +162,6 @@
             }
         }
 
-        private function getSuggestedHighlightsCount(string $placeId) : int {
-            $v = max(0.0, min(1.0, $this->placeService->getPlaceSignificance($placeId) / 100.0));
-            $range = $this->maxHighlightsPerPlaceCount - $this->minHighlightsPerPlaceCount;
-            return (int) round($this->minHighlightsPerPlaceCount + $range * pow($v, 1.4));
-        }
-
         private function updatePlaceQuality(string $placeId) : void {
             $place = $this->placeService->getRegularPlace($placeId);
 
@@ -209,6 +201,7 @@
                             : $date->getTrip()->getId();
             
                         $buckets[$tripId] ??= 0;
+                        // TODO: Extract the constant to the deployment configuration.
                         $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
                             ? $album->getImagesCount() // This is an indoor-only location.
                             : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
