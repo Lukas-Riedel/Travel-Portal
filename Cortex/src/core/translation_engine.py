@@ -1,10 +1,8 @@
 import torch
+import re
 import langcodes
-from typing import Final
 
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
-SHORT_PHRASE_WORDS_THRESHOLD: Final[int] = 5
 
 
 class TranslationEngine:
@@ -32,8 +30,7 @@ class TranslationEngine:
         self.tokenizer.src_lang = source_lang
         target_lang_id = self.tokenizer.convert_tokens_to_ids(target_lang)
 
-        is_short_phrase = len(text.strip().split()) <= SHORT_PHRASE_WORDS_THRESHOLD
-        return self._do_translate(text.strip(), target_lang_id, is_short_phrase)
+        return self._do_translate(text.strip(), target_lang_id)
 
     def _to_nllb_language(self, iso_code: str) -> str:
         try:
@@ -54,32 +51,29 @@ class TranslationEngine:
 
         return matches[0]
 
-    def _do_translate(
-        self, text: str, target_lang_id: int, is_short_phrase: bool
-    ) -> str:
-        inputs = self.tokenizer(text, return_tensors="pt").to(self.device)
+    def _do_translate(self, text: str, target_lang_id: int) -> str:
+        sentences = [
+            s.strip() for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s.strip()
+        ]
+        if not sentences:
+            return ""
+
+        inputs = self.tokenizer(sentences, return_tensors="pt", padding=True).to(
+            self.device
+        )
 
         with torch.no_grad():
-            if is_short_phrase:
-                translated_tokens = self.model.generate(
-                    **inputs,
-                    forced_bos_token_id=target_lang_id,
-                    max_new_tokens=64,
-                    # TODO: Make this configurable?
-                    num_beams=5,
-                    temperature=0.0,
-                    length_penalty=0.6,
-                    early_stopping=True,
-                )
-            else:
-                translated_tokens = self.model.generate(
-                    **inputs,
-                    forced_bos_token_id=target_lang_id,
-                    max_new_tokens=1024,
-                    num_beams=1,
-                    do_sample=False,
-                )
+            translated_tokens = self.model.generate(
+                **inputs,
+                forced_bos_token_id=target_lang_id,
+                max_new_tokens=256,
+                num_beams=1,
+                do_sample=False,
+            )
 
-        return self.tokenizer.decode(
-            translated_tokens[0], skip_special_tokens=True
-        ).strip()
+        translated_sentences = [
+            self.tokenizer.decode(tokens, skip_special_tokens=True).strip()
+            for tokens in translated_tokens
+        ]
+
+        return " ".join(translated_sentences)
