@@ -38,11 +38,13 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
         const convertedPlaces = (places ?? []).flatMap(place => place.dates.map(date => ({ text: `${place.name} (${formatTimestamp(date.start, t("general.format.datetime.year.excluded"), place.timezone)} - ${formatTimestamp(date.end, t("general.format.datetime.year.excluded"), place.timezone)})`, start: date.start }))).sort((a, b) => a.start - b.start).map(item => item.text)
         const convertedFlights = [...(trip.flights ?? []), ...(trip.watchedFlights ?? [])].map(flight => `${flight.from.shortName} - ${flight.to.shortName} (${formatTimestamp(flight.start, t("general.format.datetime.year.excluded"), flight.from.timezone)} - ${formatTimestamp(flight.end, t("general.format.datetime.year.excluded"), flight.to.timezone)})`)
         const convertedStays = (trip.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
+        const convertedNotes = (trip.notes ?? []).map(note => note.content)
 
         const itinerary = t("trip.itinerary", {
             places: getListAsString(convertedPlaces),
             flights: getListAsString(convertedFlights),
-            stays: getListAsString(convertedStays)
+            stays: getListAsString(convertedStays),
+            notes: getListAsString(convertedNotes)
         })
 
         showCopyTripItineraryToast(() => navigator.clipboard.writeText(itinerary))
