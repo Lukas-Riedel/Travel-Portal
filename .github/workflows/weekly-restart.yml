@@ -25,7 +25,7 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
           kubectl rollout restart deployment core
-          kubectl rollout restart deployment core-worker-light
+          kubectl rollout restart deployment core-worker
       - name: Rollout IAM Restart
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
