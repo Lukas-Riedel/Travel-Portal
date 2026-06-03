@@ -98,7 +98,7 @@
 
                 if ($place !== null && count($photos) > 0) {
                     if ($place->getMainHighlight() === null) {
-                        // TODO: Why is this here? Should ine in PlaceServiceListener.
+                        // TODO: Why is this here? Should be in PlaceServiceListener.
                         $this->highlightService->createPlaceHighlight($place->getId(), $album->getMainPhoto()?->getId() ?? $photos[0]->getId());
                     }
 
@@ -120,6 +120,11 @@
                     }
                 }
             }
+        }
+
+        public function onDayItinerarySharingRequested(mixed $message) : void {
+            $dayItinerary = $this->tripService->getDayItinerary($message["context"], $message["events"], $message["stay"] ?? null, $message["publicHoliday"] ?? null);
+            $this->eventPublisher->publish(Event::DayItineraryShared($message["tripId"], $dayItinerary));
         }
 
         public function onSchedulerTriggered(mixed $message) : void {   

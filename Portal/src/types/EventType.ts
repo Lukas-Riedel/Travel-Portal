@@ -3,6 +3,7 @@ export enum EventType {
     PhotoReplacingTriggered = "PhotoReplacingTriggered",
     AllAlbumsInvalidated = "AllAlbumsInvalidated",
     FolderSynchronizationRequested = "FolderSynchronizationRequested",
+    DayItinerarySharingRequested = "DayItinerarySharingRequested",
     ProcessingStarted = "ProcessingStarted",
     ProcessingEnded = "ProcessingEnded",
     ProcessingFailed = "ProcessingFailed"

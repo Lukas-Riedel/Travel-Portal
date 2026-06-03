@@ -23,7 +23,7 @@ import { getSunAltitude } from "../utils/sunUtils.ts"
 export default function TripSummary({ trip, displayWarnings, onNoteAdded, onNoteRemoved }) {
     const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
-    const { publishPhotosUploadingTriggeredEvent } = useEvents()
+    const { publishPhotosUploadingTriggeredEvent, publishDayItinerarySharingRequestedEvent } = useEvents()
     const { t } = useTranslation()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
@@ -236,7 +236,9 @@ export default function TripSummary({ trip, displayWarnings, onNoteAdded, onNote
                     displayWarnings={displayWarnings}
                     onNoteAdded={onNoteAdded}
                     onNoteRemoved={onNoteRemoved}
-                    onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
+                    // TODO: Propagate these two to the component arguments.
+                    onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent}
+                    onItineraryShared={hasRole(UserRole.TripEdit) && (context => publishDayItinerarySharingRequestedEvent(trip.id, context, trip.getCalendarEvents(day, places, timezone), trip.getStay(day, configuration?.homeLocation?.timezone), trip.getPublicHoliday(day)))} />
             ))?.filter(Boolean)?.slice(0, count)}
             <button
                 onClick={() => setTimezone(prev => prev ? undefined : configuration?.homeLocation?.timezone)}

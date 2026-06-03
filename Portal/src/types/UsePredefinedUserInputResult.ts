@@ -75,4 +75,5 @@ export interface UsePredefinedUserInputResult {
     showCreateCompositeRegionToast: (createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geoJson: object) => object, extractGeoJsonFeatures: (geoJson: object) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: object, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCopyTripItineraryToast: (copyTripItinerary: () => Promise<void>) => Promise<boolean>
+    showShareDayItineraryToast: (shareDayItinerary: (context: string) => Promise<void>) => Promise<boolean>
 }

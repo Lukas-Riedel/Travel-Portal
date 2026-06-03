@@ -76,6 +76,7 @@
         case EventEdit = "event.edit";
         case SearchRead = "search.read";
         case SearchEdit = "search.edit";
+        case EventDayItineraryShared = "event.dayitineraryshared.read";
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";

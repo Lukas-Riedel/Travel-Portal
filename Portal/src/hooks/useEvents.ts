@@ -3,6 +3,7 @@ import { useNotifications } from "../contexts/NotificationContext.jsx"
 import { createEvent } from "../clients/coreClient.ts"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
+import type { Flight, Place, Date, PublicHoliday, Stay } from "../types/CoreSwaggerTypes.ts"
 
 export const useEvents = (eventType: EventType): UseEventsResult => {
     const { messages } = useNotifications()
@@ -25,6 +26,8 @@ export const useEvents = (eventType: EventType): UseEventsResult => {
             createEvent(EventType.PhotoReplacingTriggered, { agentId, placeId, placeName, albumId, replacedPhotoId, path, sendNotification }),
         publishFolderSynchronizationRequestedEvent: (agentId: string, path: string, expiration: number) =>
             createEvent(EventType.FolderSynchronizationRequested, { agentId, path, expiration }),
-        publishAllAlbumsInvalidatedEvent: () => createEvent(EventType.AllAlbumsInvalidated)
+        publishAllAlbumsInvalidatedEvent: () => createEvent(EventType.AllAlbumsInvalidated),
+        publishDayItinerarySharingRequestedEvent: (tripId: string, context: string, events: (Flight | (Place & Date))[], stay?: Stay, publicHoliday?: PublicHoliday) =>
+            createEvent(EventType.DayItinerarySharingRequested, { tripId, context, events, stay, publicHoliday })
     }
 }

@@ -1262,7 +1262,16 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("trip.prompt.copy.failed")
         )
 
+    const showShareDayItineraryToast = (shareDayItinerary: (context: string) => Promise<void>) =>
+        showInputToast(
+            t("day.prompt.share.message"),
+            shareDayItinerary,
+            t("day.prompt.share.confirmed"),
+            t("day.prompt.share.failed")
+        )
+
     return {
+        showShareDayItineraryToast,
         showCopyTripItineraryToast,
         showCreateSelectedRegionToast,
         showCreateCompositeRegionToast,
