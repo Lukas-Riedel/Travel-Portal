@@ -41,16 +41,6 @@ onBackgroundMessage(messaging, payload => {
             data: "/admin"
         })
     }
-    
-    if (payload.data.event === "DayItineraryShared") {
-        const args = JSON.parse(payload.data.args)
-
-        self.registration.showNotification("Denní program", {
-            body: args.text,
-            icon: "icon-192.png",
-            data: "/trip/" + args.tripId
-        })
-    }
 
     if (payload.data.event === "FlightLogged") {
         const args = JSON.parse(payload.data.args)

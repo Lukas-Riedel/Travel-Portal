@@ -268,14 +268,6 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function DayItinerarySharingRequested(string $tripId, string $context, array $events, mixed $stay = null, mixed $publicHoliday = null) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("tripId" => $tripId, "context" => $context, "events" => $events, "stay" => $stay, "publicHoliday" => $publicHoliday));
-        }
-
-        public static function DayItineraryShared(string $tripId, string $text) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDayItineraryShared), array(DeviceType::Portal, DeviceType::BridgeX), array("tripId" => $tripId, "text" => $text));
-        }
-
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventNewDataConsistencyIssueDetectedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
         }

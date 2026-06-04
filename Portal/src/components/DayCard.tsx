@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { format, isFuture, isToday } from "date-fns"
-import { Bed, Footprints, PartyPopper, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Sunrise, Sunset, Share2 } from "lucide-react"
+import { Bed, Footprints, PartyPopper, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Sunrise, Sunset } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { useTranslation } from "react-i18next"
 import Tooltip from "./Tooltip.jsx"
@@ -39,16 +39,15 @@ interface DayCardProps {
     noteSelector?: (prefix: string) => Note[]
     onPhotosAdded?: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
     onNoteRemoved?: (noteId: string) => Promise<void>
-    onNoteAdded?: (content: string) => Promise<Note>
-    onItineraryShared?: (context: string) => Promise<void>
+    onNoteAdded?: (content: string) => Promise<any>
 }
 
-export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, displayWarnings, noteSelector, onPhotosAdded, onNoteRemoved, onNoteAdded, onItineraryShared }: DayCardProps) {
+export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, displayWarnings, noteSelector, onPhotosAdded, onNoteRemoved, onNoteAdded }: DayCardProps) {
     const { t } = useTranslation()
     const locale = useLocale()
     const agents = useDevices({ type: DeviceType.Agent })
     const { formatDuration, formatSteps, formatKilometers } = useFormatters()
-    const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast, showShareDayItineraryToast } = usePredefinedUserInput()
+    const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast } = usePredefinedUserInput()
 
     const notePrefix = useMemo(() => day ? `${format(day, t("general.format.date.year.excluded"), { locale: locale })} ` : "", [day])
     const notes = useMemo(() => noteSelector && notePrefix ? noteSelector(notePrefix) : [], [noteSelector, notePrefix])
@@ -101,8 +100,6 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             : `${t("general.label.day")} ${getDayIndex(day)}`
     }, [day, t, locale, isExactDate])
 
-    const shouldShowButtons = useMemo(() => isExactDate && (onNoteAdded || onItineraryShared), [isExactDate, onNoteAdded, onItineraryShared])
-
     const handleNoteRemoved = (note: Note) => {
         if (onNoteRemoved) {
             showRemoveNoteToast(() => onNoteRemoved(note.id))
@@ -112,12 +109,6 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const handleNoteCreated = () => {
         if (onNoteAdded) {
             showCreateNoteToast((content: string) => onNoteAdded(notePrefix + content))
-        }
-    }
-
-    const handleItineraryShared = () => {
-        if (onItineraryShared) {
-            showShareDayItineraryToast(onItineraryShared)
         }
     }
 
@@ -184,31 +175,17 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         <Card className={`h-full flex flex-col ${day && isToday(day) && "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg"}`}>
             <div className="mb-4">
                 <div className="flex justify-between items-start">
-                    <div className="group relative inline-flex items-center shrink-0">
-                        {dayLabel && (
-                            <span className={`font-bold whitespace-nowrap leading-none transition-opacity duration-200 text-gray-900 ${shouldShowButtons && "group-hover:opacity-0"}`}>
-                                {dayLabel}
-                            </span>
-                        )}
-                        {shouldShowButtons && (
-                            <div className="absolute inset-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
-                                {onNoteAdded && (
-                                    <button
-                                        onClick={handleNoteCreated}
-                                        className="p-1 btn-icon-hover" >
-                                        <NotebookPen size={15} />
-                                    </button>
-                                )}
-                                {onItineraryShared && (
-                                    <button
-                                        onClick={handleItineraryShared}
-                                        className="p-1 btn-icon-hover" >
-                                        <Share2 size={15} />
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                    {dayLabel && (isExactDate && onNoteAdded ? (
+                        <span
+                            className="font-bold whitespace-nowrap leading-none hover:underline hover:text-gray-600 hover:cursor-pointer transition-colors duration-200"
+                            onClick={handleNoteCreated}>
+                            {dayLabel}
+                        </span>
+                    ) : (
+                        <span className="font-bold whitespace-nowrap leading-none">
+                            {dayLabel}
+                        </span>
+                    ))}
                     {stay && (
                         <div className="flex flex-col items-end min-w-0 ml-4">
                             {stay.address ? (

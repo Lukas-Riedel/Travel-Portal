@@ -33,7 +33,6 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             FitnessActivityDetectedNotificationFactory(this),
             DeviceLogOnRequestedNotificationFactory(this),
             NewDataConsistencyIssuesDetectedNotificationFactory(this),
-            DayItinerarySharedNotificationFactory(this),
             FlightLoggedNotificationFactory(this)
         ).associateBy { factory ->
             factory.javaClass.simpleName.replace(NotificationFactory::class.java.simpleName, "")
@@ -90,7 +89,6 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(notification.title)
             .setContentText(notification.body)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(notification.body))
             .setContentIntent(pendingIntent)
             .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)

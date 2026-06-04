@@ -1067,15 +1067,6 @@
         },
         "itinerary": "## Místa\n{{places}}\n\n## Lety\n{{flights}}\n\n## Ubytování\n{{stays}}\n\n## Poznámky\n{{notes}}"
     },
-    "day": {
-        "prompt": {
-            "share": {
-                "message": "Zadej kontext pro sdílení programu dne:",
-                "confirmed": "Program dne byl úspěšně sdílen",
-                "failed": "Nepodařilo se sdílet program dne"
-            }
-        }
-    },
     "highlight": {
         "prompt": {
             "select": {

@@ -43,15 +43,6 @@ export default function App() {
             toast.success(`Hlášeno ${formatNewProblems(event.count)}`)
         })
     }, [newDataConsistencyIssuesDetectedEvents])
-    
-    const { events: dayItinerarySharedEvents } = useEvents("DayItineraryShared")
-    useEffect(() => {
-        dayItinerarySharedEvents.forEach(event => {
-            event.markAsRead()
-
-            toast.success(event.text)
-        })
-    }, [dayItinerarySharedEvents])
 
     const { events: flightLoggedEvents } = useEvents("FlightLogged")
     useEffect(() => {

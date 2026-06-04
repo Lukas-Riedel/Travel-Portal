@@ -10,15 +10,11 @@ import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useTranslation } from "react-i18next"
 import { formatTimestamp, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
-import { useEvents } from "../hooks/useEvents"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function TripCalendar({ trip, places, tripCandidates, displayWarnings, displayCopyItineraryButton, onTripMoved, onTripLoaded, onPhotosAdded, onNoteAdded, onNoteRemoved }) {
-    const { hasRole } = useAuth()
     const { t } = useTranslation()
     const { configuration } = useConfiguration()
     const { showMoveTripToast, showLoadTripToast, showCopyTripItineraryToast } = usePredefinedUserInput()
-    const { publishDayItinerarySharingRequestedEvent } = useEvents()
 
     const [timezone, setTimezone] = useState(undefined)
 
@@ -44,7 +40,6 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
         const convertedStays = (trip.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
         const convertedNotes = (trip.notes ?? []).map(note => note.content)
 
-        // TODO: Do not include individual sections if the array is empty. Do not provide the format in the i18n file.
         const itinerary = t("trip.itinerary", {
             places: getListAsString(convertedPlaces),
             flights: getListAsString(convertedFlights),
@@ -71,9 +66,7 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
                         displayWarnings={displayWarnings}
                         onNoteAdded={onNoteAdded}
                         onNoteRemoved={onNoteRemoved}
-                        onPhotosAdded={onPhotosAdded}
-                        // TODO: Propagate this to the component arguments.
-                        onItineraryShared={hasRole(UserRole.TripEdit) && (context => publishDayItinerarySharingRequestedEvent(trip.id, context, trip.getCalendarEvents(day, places, timezone), trip.getStay(day, configuration?.homeLocation?.timezone), trip.getPublicHoliday(day)))} />
+                        onPhotosAdded={onPhotosAdded} />
                 ))}
             </CardGrid>
             <div className="absolute bottom-3 right-3 flex items-center gap-2 z-50">

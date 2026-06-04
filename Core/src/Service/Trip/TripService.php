@@ -251,20 +251,6 @@
             $this->tripMapper->deleteStaleTripIdentifiers();
         }
 
-        // TODO: I don't like this method here at all. This should be in DayService or TimelineService.
-        // TODO: Require strongly typed parameters. Extract strings to constants.
-        public function getDayItinerary(string $context, array $events, mixed $stay, mixed $publicHoliday) : string {
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["dayItinerary"];
-            $convertedEvents = implode(", ", array_map(function($event) {
-                $timezone = new \DateTimeZone($event["timezone"] ?? $event["from"]["timezone"] ?? "UTC");
-                $time = (new \DateTime("@" . $event["start"]))->setTimezone($timezone)->format("H:i") . "-" . (new \DateTime("@" . $event["end"]))->setTimezone($timezone)->format("H:i");
-                $name = $event["name"] ?? $event["flight"] ?? "Event";
-                return $time . ": " . (isset($event["from"]["shortName"]) ? "Flight from " . $event["from"]["shortName"] . " Airport to " . $event["to"]["shortName"] . " Airport" : $name);
-            }, $events));
-            return $this->cachingGenerativeContentClient->getResponse($prompt, array("context" => $context, "events" => $convertedEvents,
-                "stay" => $stay["name"] ?? "N/A", "publicHoliday" => $publicHoliday["name"] ?? "N/A")) ?? "";
-        }
-
         private function doGetRegularTrips(?string $tripId, ?int $year, ?int $start, ?int $end, array $includedEntities, TripSortingStrategy $tripSortingStrategy) : array {
             return $this->tripMapper->selectRegularTrips($tripId, $year, $start, $end, $includedEntities, $tripSortingStrategy);
         }
