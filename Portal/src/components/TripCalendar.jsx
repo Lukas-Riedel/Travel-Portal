@@ -40,6 +40,7 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
         const convertedStays = (trip.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
         const convertedNotes = (trip.notes ?? []).map(note => note.content)
 
+        // TODO: Do not include individual sections if the array is empty. Do not provide the format in the i18n file.
         const itinerary = t("trip.itinerary", {
             places: getListAsString(convertedPlaces),
             flights: getListAsString(convertedFlights),

@@ -21,6 +21,9 @@ public class SynchronizedFile {
     @Column(name = "path")
     private String path;
 
+    @Column(name = "size")
+    private Long size;
+
     @Column(name = "uploaded")
     private Instant uploaded;
 }

@@ -4,6 +4,7 @@ import cz.lriedel.agent.NotificationProvider;
 import cz.lriedel.agent.persistance.SynchronizedFile;
 import cz.lriedel.agent.persistance.SynchronizedFileRepository;
 import lombok.extern.slf4j.Slf4j;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -51,15 +52,16 @@ public class BackupService {
         this.notificationProvider = notificationProvider;
     }
 
+    @SneakyThrows
     @Scheduled(fixedDelayString = "${agent.backup.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
     public void synchronizeFiles() {
-        Set<Path> synchronizedFiles = synchronizedFileRepository.findAll().stream().map(SynchronizedFile::getPath).map(Path::of).map(Path::normalize)
-                .collect(toSet());
+        Set<String> synchronizedFiles = synchronizedFileRepository.findAll().stream().map(BackupService::getHash).collect(toSet());
 
         try (Stream<Path> allFiles = Files.walk(sourceFolder)) {
             Set<Path> nonSynchronizedFiles = allFiles.filter(Files::isRegularFile).map(Path::normalize)
                     .filter(path -> supportedExtensions.stream().anyMatch(ext -> path.toString().toLowerCase().endsWith(ext.toLowerCase())))
-                    .filter(not(synchronizedFiles::contains)).collect(toSet());
+                    .filter(path -> !synchronizedFiles.contains(getHash(path)))
+                    .collect(toSet());
 
             if (!nonSynchronizedFiles.isEmpty()) {
                 Path folder = Files.createDirectories(
@@ -68,7 +70,7 @@ public class BackupService {
                 log.info("Copying {} files to '{}'...", nonSynchronizedFiles.size(), folder);
                 for (Path nonSynchronizedFile : nonSynchronizedFiles) {
                     Files.copy(nonSynchronizedFile, folder.resolve(nonSynchronizedFile.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-                    synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString(), Instant.now()));
+                    synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString(), Files.size(nonSynchronizedFile), Instant.now()));
                 }
                 log.info("Copied {} files to '{}'.", nonSynchronizedFiles.size(), folder);
                 notificationProvider.sendSystemNotification("Files back-up finished",
@@ -81,5 +83,18 @@ public class BackupService {
         finally {
             synchronizedFileRepository.deleteByUploadedBefore(Instant.now().minus(SYNCHRONIZED_FILES_RETENTION_POLICY));
         }
+    }
+
+    private static String getHash(SynchronizedFile synchronizedFile) {
+        return getHash(synchronizedFile.getPath(), synchronizedFile.getSize());
+    }
+
+    @SneakyThrows
+    private static String getHash(Path path) {
+        return getHash(path.toString(), Files.size(path));
+    }
+    
+    private static String getHash(String path, Long size) {
+        return path + "_" + (size != null ? size : "null");
     }
 }
