@@ -16,7 +16,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       nodeSelector:
-        type: light
+        type: heavy
       initContainers:
         - name: set-vm-max-map-count
           image: busybox
@@ -60,7 +60,7 @@ spec:
             - name: bootstrap.memory_lock
               value: "false"
             - name: OPENSEARCH_JAVA_OPTS
-              value: "-Xms1g -Xmx1g"
+              value: "-Xms2g -Xmx2g"
           volumeMounts:
             - name: {{ .Release.Name }}-data
               mountPath: /usr/share/opensearch/data

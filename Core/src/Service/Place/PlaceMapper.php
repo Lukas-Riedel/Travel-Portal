@@ -1012,12 +1012,13 @@
                 LIMIT ?
             SQL;
 
-            return $this->databaseClient
+            return array_filter($this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $longitude, $latitude, $limit)
                 ->getMappedResultSet(function($placeIdentifierRow) {
-                    return $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, null, PlaceIncludedEntity::values())[0];
-                });
+                    $places = $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, null, PlaceIncludedEntity::values());
+                    return $places[0] ?? null;
+                }));
         }
 
         private function getCountryName(?string $countryCategoryId) : ?string {

@@ -17,7 +17,7 @@
     use Monolog\Logger;
 
     $onError = function($level, $message, $file, $line) {
-        throw new \ErrorException($message);
+        throw new \ErrorException($message, 0, $level, $file, $line);
     };
     set_error_handler($onError);
 
