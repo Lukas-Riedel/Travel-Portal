@@ -134,7 +134,7 @@
             if ($this->openLineageEventManager !== null) {
                 $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port, $this->vhost);
                 $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $queueName, $event->getName());
-                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());
+                $this->openLineageEventManager?->getCurrentEvent()?->addOutput($namespace, $name, $this->getHierarchy($queueName, $event), $event->getArgs());
             }
 
             $this->logger->debug("Publishing the '" . $event->getName() . "' event to RabbitMQ...", json_decode($json, true));
@@ -146,6 +146,13 @@
             $this->init();
             
             return $this->consumerChannel;
+        }
+
+        private function getHierarchy(string $queueName, Event $event) : array {
+            return array(
+                array("type" => "Queue", "name" => $queueName),
+                array("type" => "Event", "name" => $event->getName())
+            );
         }
 
         private function init() : void {

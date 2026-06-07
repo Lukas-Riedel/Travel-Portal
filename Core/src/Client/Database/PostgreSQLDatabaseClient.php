@@ -198,13 +198,13 @@
             foreach ($inputTables as $table) {
                 $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, self::DEFAULT_SCHEMA_NAME, $table);
                 $columns = $this->fetchTableColumns($table);
-                $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, array_fill_keys($columns, null));
+                $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $this->getHierarchy($table), array_fill_keys($columns, null));
             }
 
             foreach ($outputTables as $table) {
                 $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $this->database, self::DEFAULT_SCHEMA_NAME, $table);
                 $columns = $this->fetchTableColumns($table);
-                $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, array_fill_keys($columns, null));
+                $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $this->getHierarchy($table), array_fill_keys($columns, null));
             }
         }
 
@@ -234,6 +234,14 @@
 
         private function getTableColumnsCacheKey(string $table) : string {
             return sprintf(self::TABLE_COLUMNS_CACHE_KEY_FORMAT, $table);
+        }
+
+        private function getHierarchy(string $table) : array {
+            return array(
+                array("type" => "Database", "name" => $this->database),
+                array("type" => "Schema", "name" => self::DEFAULT_SCHEMA_NAME),
+                array("type" => "Table", "name" => $table)
+            );
         }
     }
 ?>

@@ -38,12 +38,13 @@
             if ($this->openLineageEventManager !== null) {
                 $parsedUrl = parse_url($url);
                 $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $parsedUrl["scheme"], $parsedUrl["host"]);
-                $name = str_replace(".", "", isset($parsedUrl["path"]) ? ltrim($parsedUrl["path"], "/") : self::UNKNOWN_PATH);
+                $path = isset($parsedUrl["path"]) ? ltrim($parsedUrl["path"], "/") : self::UNKNOWN_PATH;
+                $name = str_replace(".", "", $path);
                 if ($method === HttpMethod::GET) {
-                    $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $result);
+                    $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $this->getHierarchy($path), $result);
                 }
                 else {
-                    $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $payload);
+                    $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $this->getHierarchy($path), $payload);
                 }
             }
 
@@ -52,6 +53,17 @@
 
         public function returns2xx(HttpMethod $method, string $url) : bool { 
             return $this->httpClient->returns2xx($method, $url);
+        }
+
+        private function getHierarchy(string $path) : array {
+            $hierarchy = array();
+            foreach (explode("/", $path) as &$keyToken) {
+                $hierarchy[] = array("type" => "Resource", "name" => $keyToken);
+            }
+            if ($hierarchy) {
+                $hierarchy[array_key_last($hierarchy)]["type"] = "Endpoint";
+            }
+            return $hierarchy;
         }
     }
 ?>

@@ -175,19 +175,29 @@
         }
 
         private function addOpenLineageInputDataset(string $index, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $columns), $index, $value);
+            $this->addOpenLineageDataset(fn($namespace, $name, $hierarchy, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $hierarchy, $columns), $index, $value);
         }
 
         private function addOpenLineageOutputDataset(string $index, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $columns), $index, $value);
+            $this->addOpenLineageDataset(fn($namespace, $name, $hierarchy, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $hierarchy, $columns), $index, $value);
         }
 
-        private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
+        private function addOpenLineageDataset(callable $callable, string $index, mixed $value) : void {
             if ($this->openLineageEventManager !== null) {
                 $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port);
-                $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
-                $callable($namespace, $name, $value);
+                $callable($namespace, $index, $this->getHierarchy($index), $value);
             }
+        }
+
+        private function getHierarchy(string $index) : array {
+            $hierarchy = array();
+            foreach (explode(":", $index) as &$indexToken) {
+                $hierarchy[] = array("type" => "Namespace", "name" => $indexToken);
+            }
+            if ($hierarchy) {
+                $hierarchy[array_key_last($hierarchy)]["type"] = "Index";
+            }
+            return $hierarchy;
         }
 
         private function getUniqueArrays(array $arrays) : array {

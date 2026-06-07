@@ -10,6 +10,7 @@
     use Common\Client\Http\HttpClient;
     use Common\CommonConstants;
     use Common\LoggingContext;
+    use Core\Service\Device\DeviceType;
 
     class FirebaseCloudMessagingClient implements CloudMessagingClient {
 
@@ -67,11 +68,8 @@
                     if ($event instanceof CloudMessagingEvent) {
                         foreach ($event->getSupportedDeviceTypes() as &$deviceType) {
                             $name = sprintf(self::OPENLINEAGE_DATASET_NAME_FORMAT, $deviceType->name, $event->getName());
-                            $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $event->getArgs());                        
+                            $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $this->getHierarchy($deviceType, $event), $event->getArgs());                        
                         }
-                    }
-                    else {
-                        $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $event->getName(), $event->getArgs());   
                     }
                 }
                 
@@ -80,6 +78,13 @@
                 $this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::FCM_SEND_URL_FORMAT, $this->projectId),
                     array("Authorization: Bearer " . $this->authenticationService->getGoogleFcmAccessToken(), "Content-Type: application/json"), json_encode($payload));
             }
+        }
+
+        private function getHierarchy(DeviceType $deviceType, Event $event) : array {
+            return array(
+                array("type" => "Device", "name" => $deviceType),
+                array("type" => "Event", "name" => $event->getName())
+            );
         }
     }
 ?>

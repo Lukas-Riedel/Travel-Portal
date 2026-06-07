@@ -2,6 +2,7 @@
     namespace Common\Client\Cache;
 
     use Common\Client\HealthCheckable;
+    // TODO: This is wrong, no types from Core can be referenced in Common.
     use Core\OpenLineage\OpenLineageEventManager;
     use Predis\Client;
     use Ramsey\Uuid\Uuid;
@@ -169,19 +170,29 @@
         }
 
         private function addOpenLineageInputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $columns), $key, $value);
+            $this->addOpenLineageDataset(fn($namespace, $name, $hierarchy, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $hierarchy, $columns), $key, $value);
         }
 
         private function addOpenLineageOutputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $columns), $key, $value);
+            $this->addOpenLineageDataset(fn($namespace, $name, $hierarchy, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $hierarchy, $columns), $key, $value);
         }
 
         private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
             if ($this->openLineageEventManager !== null) {
                 $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port);
-                $name = str_replace(":", "/", str_replace(".", "", str_replace("/", "-", $key)));
-                $callable($namespace, $name, $value);
+                $callable($namespace, $key, $this->getHierarchy($key), $value);
             }
+        }
+
+        private function getHierarchy(string $key) : array {
+            $hierarchy = array();
+            foreach (explode(":", $key) as &$keyToken) {
+                $hierarchy[] = array("type" => "Namespace", "name" => $keyToken);
+            }
+            if ($hierarchy) {
+                $hierarchy[array_key_last($hierarchy)]["type"] = "Key";
+            }
+            return $hierarchy;
         }
     }
 ?>
