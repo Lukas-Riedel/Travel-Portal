@@ -177,6 +177,7 @@
                 INNER JOIN category_identifier ci
                     ON rg.category_id = ci.id
                 WHERE :CONDITIONS
+                ORDER BY ci.name ASC
             SQL;
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
@@ -215,11 +216,12 @@
 
         public function selectCompositeRegions(?string $name) : array {            
             $sql = <<<'SQL'
-                SELECT DISTINCT rc.category_id
+                SELECT DISTINCT ci.name, rc.category_id
                 FROM region_composite rc
                 INNER JOIN category_identifier ci
                     ON rc.category_id = ci.id
                 WHERE :CONDITIONS
+                ORDER BY ci.name ASC
             SQL;
             
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();

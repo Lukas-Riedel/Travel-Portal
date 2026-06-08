@@ -2,7 +2,7 @@ import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import LoadingCard from "./LoadingCard.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import type { Category } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, type Category } from "../types/CoreSwaggerTypes.ts"
 import type { Place } from "../classes/Place.ts"
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
@@ -11,6 +11,7 @@ import AppLink from "./AppLink.tsx"
 import { useTranslation } from "react-i18next"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import CategoryFlag from "./CategoryFlag.tsx"
+import { getOnlyElement } from "../utils/helpers.js"
 
 const MAXIMUM_PLACES_COUNT = 5
 
@@ -52,7 +53,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
         <Card>
             <div className="flex justify-start items-center space-x-2">
                 <CategoryFlag
-                    category={category}
+                    category={category.metadata?.unicode ? category : getOnlyElement(places.map((place: Place) => place.getCategory(CategoryCategory.Country)).filter((category, index, self) => category && self.findIndex(other => other.id === category.id) === index))}
                     className="w-7 h-auto flex-shrink-0" />
                 <AppLink
                     to={category}

@@ -99,7 +99,7 @@ function EditedRegionContent({ category, onCategorySelected }) {
                 onCompositeRegionUpdated={createOrUpdateCompositeRegion}
                 onRegionVisualized={setActiveRegion} />
             {activeRegion && (
-                <RegionMap region={activeRegion} />
+                <RegionMap regions={[activeRegion]} />
             )}
         </>
     )

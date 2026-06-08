@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { useCategories } from "../hooks/useCategories"
 import PlaceMap from "../components/PlaceMap"
@@ -11,12 +11,14 @@ import FloatingButton from "../components/FloatingButton"
 import { Plus } from "lucide-react"
 import TabMenu from "../components/TabMenu"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { useAppNavigate } from "../hooks/useAppNavigate.ts"
+import RegionMap from "../components/RegionMap.jsx"
+import { useRegions } from "../hooks/useRegions.ts"
+import { useNavigate } from "react-router-dom"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
@@ -26,11 +28,13 @@ export default function PlansPage() {
     const { showCreatePlaceToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
     const navigate = useAppNavigate()
+    const simpleNavigate = useNavigate()
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
-    const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ sort: "quality", maxEnd: getCurrentTimestamp() })
+    const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "quality", maxEnd: getCurrentTimestamp() })
     const { trips, removeTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: ["country"] })
+    const { regions } = useRegions()
 
     const [maxDistance, setMaxDistance] = useState(defaultMaxDistance)
     const [maxQuality, setMaxQuality] = useState(defaultMaxQuality)
@@ -39,6 +43,47 @@ export default function PlansPage() {
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
     }, [countryCategories])
+
+    const resolveColor = useCallback(region => {
+        const containsRegion = place => place.categories?.some(c => c.id === region.category.id)
+
+        const candidatePlacesInRegion = candidatePlaces?.filter(containsRegion) || []
+        const visitedPlacesInRegion = visitedPlaces?.filter(containsRegion) || []
+
+        const qualities = visitedPlacesInRegion.filter(place => place.quality).map(p => p.quality)
+        const minimumQuality = Math.min(...qualities)
+        const averageQuality = qualities.reduce((a, b) => a + b, 0) / qualities.length
+
+        if (averageQuality > 0 && averageQuality < 50) {
+            return "#FF0000"
+        }
+
+        if ((averageQuality >= 50 && averageQuality < 70) || minimumQuality < 70) {
+            return "#FFFF00"
+        }
+
+        if (candidatePlacesInRegion.length > 0) {
+            return "#9ACD32"
+        }
+
+        return "#008000"
+    }, [candidatePlaces, visitedPlaces])
+
+    const regionGeojsonsWithMetadata = useMemo(() => {
+        // TODO: Add the filter to the API endpoint.
+        return regions?.filter(region => region.geoJson && region.geoJson.geometry?.type !== "Point" && region.category.category === "administrative" && (visitedPlaces ?? []).some(place => place.categories?.some(c => c.id === region.category.id)))
+            ?.map(region => ({
+                ...region,
+                geoJson: {
+                    ...region.geoJson,
+                    properties: {
+                        ...region.geoJson.properties,
+                        id: region.category.id,
+                        color: resolveColor(region)
+                    }
+                }
+            }))
+    }, [regions, resolveColor])
 
     const filteredCandidatePlaces = useMemo(() => candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance), [candidatePlaces, maxDistance])
     const furthestPlace = useMemo(() => candidatePlaces?.filter(place => place.distance)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined), [candidatePlaces])
@@ -62,19 +107,37 @@ export default function PlansPage() {
         return acc
     }, {}), [filteredVisitedPlaces])
 
+    const regionsVisitedPlaces = useMemo(() => visitedPlaces?.reduce((acc, place) => {
+        const administrativeCategory = place.getCategory("administrative")
+        if (!administrativeCategory) {
+            return acc
+        }
+
+        if (!acc[administrativeCategory.name]) {
+            acc[administrativeCategory.name] = []
+        }
+        acc[administrativeCategory.name].push(place)
+        return acc
+    }, {}), [filteredVisitedPlaces])
+
     const labels = [
         {
-            tab: "considered",
+            tab: "consideredPlaces",
             name: "Zvažovaná místa",
             enabled: hasRole(UserRole.PlaceRead)
         },
         {
-            tab: "visited",
+            tab: "visitedPlaces",
             name: "Navštívená místa",
             enabled: hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            tab: "trips",
+            tab: "visitedRegions",
+            name: "Navštívené regiony",
+            enabled: hasRole(UserRole.RegionRead) && hasRole(UserRole.PortalFutureRead)
+        },
+        {
+            tab: "consideredTrips",
             name: "Návrhy výletů",
             enabled: hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         }
@@ -136,7 +199,20 @@ export default function PlansPage() {
                         categoriesPlaces={countriesVisitedPlaces} />
                 </>
             )}
-            {hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 2 && (
+            {hasRole(UserRole.RegionRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 2 && (
+                <>
+                    <div className="h-[400px] md:h-[700px] my-4">
+                        <RegionMap
+                            regions={regionGeojsonsWithMetadata}
+                            onClick={categoryId => simpleNavigate("/category/" + categoryId)} />
+                    </div>
+                    <CategoryCardGrid
+                        rowSize={5}
+                        categories={regionGeojsonsWithMetadata?.map(region => region.category)}
+                        categoriesPlaces={regionsVisitedPlaces} />
+                </>
+            )}
+            {hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 3 && (
                 <TripCardGrid
                     rowSize={3}
                     trips={trips}

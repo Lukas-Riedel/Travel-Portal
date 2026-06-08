@@ -93,14 +93,8 @@ const mapStyles = [
         ]
     }
 ]
-const geoJsonPolygonStyle = {
-    fillColor: "#4285F4",
-    fillOpacity: 0.3,
-    strokeColor: "#4285F4",
-    strokeWeight: 1
-}
 
-export default function Map({ points, lines, geoJson, onRightClick }) {
+export default function Map({ points, lines, geoJsons, onClick, onRightClick }) {
     const markersRef = useRef([])
     const mapRef = useRef(null)
 
@@ -139,11 +133,32 @@ export default function Map({ points, lines, geoJson, onRightClick }) {
     const initMap = map => {
         map.data.forEach(f => map.data.remove(f))
 
-        if (geoJson) {
-            map.data.addGeoJson(geoJson)
-            map.data.setStyle(geoJsonPolygonStyle)
-
+        if (geoJsons && geoJsons.length > 0) {
             const bounds = new google.maps.LatLngBounds()
+
+            geoJsons.forEach(geoJson => {
+                map.data.addGeoJson(geoJson)
+            })
+
+            if (onClick) {
+                map.data.addListener("click", event => {
+                    onClick(event.feature.getProperty("id"))
+                })
+            }
+
+            map.data.setStyle(feature => {
+                const color = feature.getProperty("color") || "#4285F4"
+                const fillOpacity = feature.getProperty("fillOpacity") || 0.3
+                const strokeWeight = feature.getProperty("strokeWeight") || 1
+
+                return {
+                    fillColor: color,
+                    fillOpacity: fillOpacity,
+                    strokeColor: color,
+                    strokeWeight: strokeWeight
+                }
+            })
+
             map.data.forEach(feature => {
                 feature.getGeometry().forEachLatLng(latlng => bounds.extend(latlng))
             })
@@ -170,7 +185,7 @@ export default function Map({ points, lines, geoJson, onRightClick }) {
         if (mapRef.current) {
             initMap(mapRef.current)
         }
-    }, [points?.length, lines?.length, geoJson])
+    }, [points?.length, lines?.length, geoJsons?.length])
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: window.env?.VITE_FRONTEND_GOOGLE_MAPS_API_KEY || import.meta.env.VITE_FRONTEND_GOOGLE_MAPS_API_KEY,
@@ -178,7 +193,7 @@ export default function Map({ points, lines, geoJson, onRightClick }) {
         region: "CZ"
     })
 
-    return (points || geoJson) ? (
+    return (points || geoJsons) ? (
         <>
             {isLoaded && (
                 <div className="w-full h-full overflow-hidden rounded-lg shadow">

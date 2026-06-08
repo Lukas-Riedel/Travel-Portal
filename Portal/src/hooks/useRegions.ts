@@ -11,8 +11,7 @@ export const useRegions = ({ name }: UseRegionsProps = {}): UseRegionsResult => 
     const { response, refetchResponse } = useQuery({
         queryKey: ["listRegions", name],
         queryFn: () => listRegions({ name }),
-        staleTime: ONE_DAY_SECONDS * 1000,
-        enabled: !!name
+        staleTime: ONE_DAY_SECONDS * 1000
     })
 
     return {
