@@ -6,6 +6,7 @@ metadata:
 data:
   custom.ini: |
     date.timezone={{ .Values.core.timezone }}
+    memory_limit=512M
     opcache.enable=1
     opcache.enable_cli=1
     opcache.memory_consumption=128

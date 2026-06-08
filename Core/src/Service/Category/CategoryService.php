@@ -16,7 +16,7 @@
     use Monolog\Logger;
 
     class CategoryService {
-
+        
         private const CATEGORY_IDENTIFIER_CACHE_KEY_FORMAT = "CategoryService:CategoryIdentifier:%s";
         private const CATEGORY_IDENTIFIER_CACHE_TTL = 60;
 
@@ -37,7 +37,7 @@
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
             StatisticsService $statisticsService, CacheClient $memoryCacheClient, GenerativeContentClient $cachingGenerativeContentClient, EventPublisher $eventPublisher, Logger $logger) {
-            $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService);
+            $this->categoryMapper = new CategoryMapper($databaseClient, $highlightService, $statisticsService, $memoryCacheClient);
             $this->eventPublisher = $eventPublisher;
             $this->memoryCacheClient = $memoryCacheClient;
             $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;

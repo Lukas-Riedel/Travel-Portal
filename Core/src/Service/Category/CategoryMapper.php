@@ -1,22 +1,27 @@
 <?php
     namespace Core\Service\Category;
 
+    use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Statistics\StatisticsService;
 
     class CategoryMapper {
+        
+        private const CATEGORY_IDENTIFIER_CACHE_KEY_FORMAT = "CategoryMapper:CategoryIdentifier:%s";
+        private const CATEGORY_IDENTIFIER_CACHE_TTL = 60;
 
         private readonly DatabaseClient $databaseClient;
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
+        private readonly CacheClient $memoryCacheClient;
 
         public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService,
-            StatisticsService $statisticsService) {
+            StatisticsService $statisticsService, CacheClient $memoryCacheClient) {
             $this->databaseClient = $databaseClient;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
+            $this->memoryCacheClient = $memoryCacheClient;
         }
 
         public function selectAllCategoryNames() : array {            
@@ -84,6 +89,12 @@
         }
 
         public function selectCategoryIdentifierById(string $categoryId) : ?CategoryIdentifier {
+            $cacheKey = sprintf(self::CATEGORY_IDENTIFIER_CACHE_KEY_FORMAT, $categoryId);
+            $cachedCategoryIdentifier = $this->memoryCacheClient->get($cacheKey);
+            if ($cachedCategoryIdentifier !== null) {
+                return $cachedCategoryIdentifier;
+            }
+
             $sql = <<<'SQL'
                 SELECT *
                 FROM category_identifier
@@ -101,8 +112,10 @@
 
             $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
                 ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
-            return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
-                $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
+            $categoryIdentifier = new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
+                $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));                
+            $this->memoryCacheClient->set($cacheKey, $categoryIdentifier, self::CATEGORY_IDENTIFIER_CACHE_TTL);
+            return $categoryIdentifier;
         }
 
         public function selectCategories(?string $categoryId, ?string $countryCategoryId, array $categoryCategories, array $includedEntities) : array {
