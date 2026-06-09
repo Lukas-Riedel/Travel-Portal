@@ -6,7 +6,7 @@ metadata:
   labels:
     app: {{ .Release.Name }}-worker
 spec:
-  replicas: 1
+  replicas: {{ .Values.core.workers }}
   strategy:
     type: RollingUpdate
     rollingUpdate:

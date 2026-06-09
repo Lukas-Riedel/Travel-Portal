@@ -13,7 +13,7 @@ This project is the culmination of a long journey that started with a simple nee
 
 As a developer, I believe in automation. I'm too lazy to write everything manually, so I built a **"self-writing" portal** - a platform where I don't spend time filling out forms. Instead, the portal acts as a **high-end UI and API layer** that orchestrates data from my existing digital footprint.
 
-I’ve always wanted a map of all the places I’ve visited, but as a **child of the digital age**, a paper map on the wall wasn't enough. I wanted it live, interactive, and accessible on the web.
+I’ve always wanted a map of all the places I’ve visited, but as a child of the digital age, a paper map on the wall wasn't enough. I wanted it live, interactive, and accessible on the web.
 
 🚀 **Live Version:** [https://lriedel.cz](https://lriedel.cz)
 
@@ -62,14 +62,11 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 
 ## 🛠 DevOps, CI/CD & Reliability
 
-### 📈 Elastic Scaling
-To ensure efficiency, the system implements **horizontal autoscaling**. The **Core Worker** is automatically scaled within the Kubernetes cluster based on the **RabbitMQ queue size**, ensuring that spikes in data processing are handled without manual intervention.
-
 ### 🛡️ Resilience & Self-Healing
-Every microservice is configured with **Liveness and Readiness probes**. This ensures that the Kubernetes orchestrator can automatically restart failing containers and direct traffic only to instances that are fully initialized and healthy.
+Every microservice is configured with **Startup, Liveness and Readiness probes**. This ensures that the Kubernetes orchestrator can automatically restart failing containers and direct traffic only to instances that are fully initialized and healthy.
 
 ### 🔄 Automated Backups
-Data integrity is critical. During **every deployment**, a GitHub Action triggers an automated backup process:
+Data integrity is critical. A scheduled **cronjob** runs periodically to handle automated backups:
 1.  **PostgreSQL** database is dumped.
 2.  **Google Calendar** data is exported.
 3.  The resulting backups are automatically uploaded to a secure **Google Drive** folder.

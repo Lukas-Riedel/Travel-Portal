@@ -4,10 +4,6 @@ core:
   tag: latest
   replicas: 1
   workers: 8
-  scaling:
-    items: "10"
-    cooldown: 180
-    grace: 60
   service:
     type: ClusterIP
     port: 8080
