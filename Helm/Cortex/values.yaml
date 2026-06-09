@@ -3,7 +3,7 @@ cortex:
   image: ghcr.io/lukas-riedel/cortex
   tag: latest
   replicas: 1
-  workers: 1
+  workers: 4
   service:
     type: ClusterIP
     port: 8080

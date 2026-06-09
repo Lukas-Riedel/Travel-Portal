@@ -25,7 +25,6 @@ spec:
     spec:
       nodeSelector:
         type: light
-      terminationGracePeriodSeconds: {{ .Values.core.scaling.grace }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 33
