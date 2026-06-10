@@ -1,0 +1,106 @@
+name: Cluster Infrastructure Deployment
+on:
+  workflow_dispatch:
+jobs:
+  deploy-cluster-infrastructure:
+    name: Deploy Cluster Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set Up Kubectl
+      uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
+    - name: Apply Traefik Configuration
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl apply -f ./Helm/Common/traefik-config.yaml
+    - name: Set Up Helm
+      uses: azure/setup-helm@v3
+    - name: Deploy FlareSolverr with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade flaresolverr ./Helm/FlareSolverr \
+          -f ./Helm/FlareSolverr/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy Grafana with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade grafana ./Helm/Grafana \
+          -f ./Helm/Grafana/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy LibreTranslate with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade libretranslate ./Helm/LibreTranslate \
+          -f ./Helm/LibreTranslate/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy MinIO with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade minio ./Helm/MinIO \
+          -f ./Helm/MinIO/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy OpenSearch with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade opensearch ./Helm/OpenSearch \
+          -f ./Helm/OpenSearch/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy PostgreSQL with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade postgres ./Helm/PostgreSQL \
+          -f ./Helm/PostgreSQL/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy RabbitMQ with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade rabbitmq ./Helm/RabbitMQ \
+          -f ./Helm/RabbitMQ/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
+    - name: Deploy Redis with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade redis ./Helm/Redis \
+          -f ./Helm/Redis/values.yaml \
+          --install \
+          --wait \
+          --timeout 1m \
+          --atomic
