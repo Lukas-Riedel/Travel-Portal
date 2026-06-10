@@ -13,6 +13,7 @@ import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
+import axiosRetry from "axios-retry"
 
 export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
     coreClient.post<Highlight[]>(createQueryPath(`places/${placeId}/highlights/refresh`,
@@ -906,3 +907,19 @@ const createQueryPath = (path: string, params: Record<string, string | number | 
 }
 
 const extractData = <T>(response: AxiosResponse<T>): T => response.data
+
+const axiosGridRetryCondition = (error: any) => {
+    if (!error.response) {
+        return true
+    }
+    if (error.response.status >= 500 && error.response.status <= 599) {
+        return true
+    }
+    return false
+}
+
+axiosRetry(coreClient, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: axiosGridRetryCondition
+})
