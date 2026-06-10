@@ -39,7 +39,7 @@ interface DayCardProps {
     noteSelector?: (prefix: string) => Note[]
     onPhotosAdded?: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
     onNoteRemoved?: (noteId: string) => Promise<void>
-    onNoteAdded?: (content: string) => Promise<any>
+    onNoteAdded?: (content: string) => Promise<Note>
 }
 
 export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, displayWarnings, noteSelector, onPhotosAdded, onNoteRemoved, onNoteAdded }: DayCardProps) {
@@ -99,6 +99,8 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             ? format(day, t("general.format.day.year.excluded"), { locale: locale })
             : `${t("general.label.day")} ${getDayIndex(day)}`
     }, [day, t, locale, isExactDate])
+
+    const shouldShowButtons = useMemo(() => isExactDate && onNoteAdded, [isExactDate, onNoteAdded])
 
     const handleNoteRemoved = (note: Note) => {
         if (onNoteRemoved) {
@@ -175,17 +177,24 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         <Card className={`h-full flex flex-col ${day && isToday(day) && "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg"}`}>
             <div className="mb-4">
                 <div className="flex justify-between items-start">
-                    {dayLabel && (isExactDate && onNoteAdded ? (
-                        <span
-                            className="font-bold whitespace-nowrap leading-none hover:underline hover:text-gray-600 hover:cursor-pointer transition-colors duration-200"
-                            onClick={handleNoteCreated}>
-                            {dayLabel}
-                        </span>
-                    ) : (
-                        <span className="font-bold whitespace-nowrap leading-none">
-                            {dayLabel}
-                        </span>
-                    ))}
+                    <div className="group relative inline-flex items-center shrink-0">
+                        {dayLabel && (
+                            <span className={`font-bold whitespace-nowrap leading-none transition-opacity duration-200 text-gray-900 ${shouldShowButtons && "group-hover:opacity-0"}`}>
+                                {dayLabel}
+                            </span>
+                        )}
+                        {shouldShowButtons && (
+                            <div className="absolute inset-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
+                                {onNoteAdded && (
+                                    <button
+                                        onClick={handleNoteCreated}
+                                        className="p-1 btn-icon-hover" >
+                                        <NotebookPen size={15} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
                     {stay && (
                         <div className="flex flex-col items-end min-w-0 ml-4">
                             {stay.address ? (
