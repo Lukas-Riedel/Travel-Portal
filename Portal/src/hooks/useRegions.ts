@@ -5,13 +5,15 @@ import { useQuery } from "./useQuery.ts"
 
 interface UseRegionsProps {
     name?: string
+    enabled?: boolean
 }
 
-export const useRegions = ({ name }: UseRegionsProps = {}): UseRegionsResult => {
+export const useRegions = ({ name, enabled }: UseRegionsProps = {}): UseRegionsResult => {
     const { response, refetchResponse } = useQuery({
         queryKey: ["listRegions", name],
         queryFn: () => listRegions({ name }),
-        staleTime: ONE_DAY_SECONDS * 1000
+        staleTime: ONE_DAY_SECONDS * 1000,
+        enabled: enabled || !!name
     })
 
     return {

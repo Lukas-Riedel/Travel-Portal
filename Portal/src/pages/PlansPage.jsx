@@ -34,7 +34,7 @@ export default function PlansPage() {
     const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "quality", maxEnd: getCurrentTimestamp() })
     const { trips, removeTrip } = useCandidateTrips()
     const countryCategories = useCategories({ categories: ["country"] })
-    const { regions } = useRegions()
+    const { regions } = useRegions({ enabled: true })
 
     const [maxDistance, setMaxDistance] = useState(defaultMaxDistance)
     const [maxQuality, setMaxQuality] = useState(defaultMaxQuality)
