@@ -315,6 +315,76 @@
                 ->statementBuilder($sql)
                 ->withParameters($atmosphere, $highlightId)
                 ->execute() === 1;
+        }        
+
+        public function updateHighlightsComposition(int $oldComposition, ?int $newComposition) : array {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET composition = ?
+                WHERE composition = ?
+                RETURNING id
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($newComposition, $oldComposition)
+                ->getResultSetForColumn("id");
+        }
+
+        public function updateHighlightsSky(int $oldSky, ?int $newSky) : array {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET sky = ?
+                WHERE sky = ?
+                RETURNING id
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($newSky, $oldSky)
+                ->getResultSetForColumn("id");
+        }
+
+        public function updateHighlightsShadows(int $oldShadows, ?int $newShadows) : array {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET shadows = ?
+                WHERE shadows = ?
+                RETURNING id
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($newShadows, $oldShadows)
+                ->getResultSetForColumn("id");
+        }
+
+        public function updateHighlightsCircumstances(int $oldCircumstances, ?int $newCircumstances) : array {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET circumstances = ?
+                WHERE circumstances = ?
+                RETURNING id
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($newCircumstances, $oldCircumstances)
+                ->getResultSetForColumn("id");
+        }
+
+        public function updateHighlightsAtmosphere(int $oldAtmosphere, ?int $newAtmosphere) : array {
+            $sql = <<<'SQL'
+                UPDATE highlight_identifier
+                SET atmosphere = ?
+                WHERE atmosphere = ?
+                RETURNING id
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($newAtmosphere, $oldAtmosphere)
+                ->getResultSetForColumn("id");
         }
 
         public function deleteHighlight(HighlightType $highlightType, string $entityId, string $highlightId) : int {

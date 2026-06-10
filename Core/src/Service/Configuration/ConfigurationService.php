@@ -52,9 +52,10 @@
         public function updateConfigurationEntry(string $key, mixed $value) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$key, &$value) {
+                $oldEntry = $this->configurationMapper->selectConfigurationEntry($key);
                 $wasUpdated &= $this->configurationMapper->updateConfigurationEntry($key, $value);
                 if ($wasUpdated) {
-                    $this->eventPublisher->publish(Event::ConfigurationEntryUpdated($key));
+                    $this->eventPublisher->publish(Event::ConfigurationEntryUpdated($key, $oldEntry));
                 }                
             });
             return $wasUpdated;

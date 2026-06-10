@@ -13,7 +13,7 @@
         
         private const UPDATE_DYNAMIC_LABELS_ACTION_NAME = "UPDATE_DYNAMIC_LABELS";
         private const UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL = CommonConstants::ONE_HOUR_SECONDS;
-
+        
         private readonly LabelService $labelService;
         private readonly PlaceService $placeService;
         private readonly ConfigurationService $configurationService;
@@ -37,6 +37,12 @@
                 foreach ($labeledPlaces as &$labeledPlace) {
                     $this->labelService->createLabel($labeledPlace->getId(), $dynamicLabel["name"]);
                 }
+            }
+        }
+
+        public function onConfigurationEntryUpdated(mixed $message) : void {
+            if ($message["key"] === "dynamicLabels") {
+                $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());
             }
         }
 

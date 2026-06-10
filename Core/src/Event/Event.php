@@ -160,8 +160,8 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("placeId" => $placeId));
         }
 
-        public static function ConfigurationEntryUpdated(string $key) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("key" => $key));
+        public static function ConfigurationEntryUpdated(string $key, mixed $oldEntry) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("key" => $key, "oldEntry" => $oldEntry));
         }
 
         public static function FlightEventCreated(string $tripId) : Event {

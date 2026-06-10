@@ -321,6 +321,61 @@
             });
             return $wasUpdated;
         }
+        
+        public function updateHighlightsComposition(int $oldComposition, ?int $newComposition) : array {
+            $highlightIds = array();
+            $this->transactionManager->executeAtomically(function() use(&$oldComposition, &$newComposition, &$highlightIds) {
+                $highlightIds = $this->highlightMapper->updateHighlightsComposition($oldComposition, $newComposition);
+                    foreach ($highlightIds as $highlightId) {
+                        $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $highlightIds;
+        }
+
+        public function updateHighlightsSky(int $oldSky, ?int $newSky) : array {
+            $highlightIds = array();
+            $this->transactionManager->executeAtomically(function() use(&$oldSky, &$newSky, &$highlightIds) {
+                $highlightIds = $this->highlightMapper->updateHighlightsSky($oldSky, $newSky);
+                foreach ($highlightIds as $highlightId) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $highlightIds;
+        }
+
+        public function updateHighlightsShadows(int $oldShadows, ?int $newShadows) : array {
+            $highlightIds = array();
+            $this->transactionManager->executeAtomically(function() use(&$oldShadows, &$newShadows, &$highlightIds) {
+                $highlightIds = $this->highlightMapper->updateHighlightsShadows($oldShadows, $newShadows);
+                foreach ($highlightIds as $highlightId) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $highlightIds;
+        }
+
+        public function updateHighlightsCircumstances(int $oldCircumstances, ?int $newCircumstances) : array {
+            $highlightIds = array();
+            $this->transactionManager->executeAtomically(function() use(&$oldCircumstances, &$newCircumstances, &$highlightIds) {
+                $highlightIds = $this->highlightMapper->updateHighlightsCircumstances($oldCircumstances, $newCircumstances);
+                foreach ($highlightIds as $highlightId) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $highlightIds;
+        }
+
+        public function updateHighlightsAtmosphere(int $oldAtmosphere, ?int $newAtmosphere) : array {
+            $highlightIds = array();
+            $this->transactionManager->executeAtomically(function() use(&$oldAtmosphere, &$newAtmosphere, &$highlightIds) {
+                $highlightIds = $this->highlightMapper->updateHighlightsAtmosphere($oldAtmosphere, $newAtmosphere);
+                foreach ($highlightIds as $highlightId) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $highlightIds;
+        }
 
         public function deleteStaleHighlightIdentifiers() : void {
             $this->highlightMapper->deleteStaleHighlightIdentifiers();
