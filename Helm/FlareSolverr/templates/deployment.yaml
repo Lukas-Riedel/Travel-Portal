@@ -16,7 +16,7 @@ spec:
         app: flaresolverr
     spec:
       nodeSelector:
-        type: light
+        type: cloud
       containers:
         - name: flaresolverr
           image: "{{ .Values.flaresolverr.image }}:{{ .Values.flaresolverr.tag }}"

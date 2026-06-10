@@ -6,7 +6,7 @@ metadata:
 spec:
   valuesContent: |-
     nodeSelector:
-      type: light
+      type: cloud
     ports:
       web:
         expose:

@@ -16,7 +16,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       nodeSelector:
-        type: heavy
+        type: local
       containers:
         - name: {{ .Release.Name }}
           resources:

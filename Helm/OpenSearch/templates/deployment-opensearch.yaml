@@ -16,7 +16,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       nodeSelector:
-        type: heavy
+        type: local
       initContainers:
         - name: set-vm-max-map-count
           image: busybox

@@ -19,7 +19,7 @@ spec:
         app: {{ .Release.Name }}-rediscommander
     spec:
       nodeSelector:
-        type: heavy
+        type: local
       containers:
         - name: {{ .Release.Name }}-rediscommander
           resources:

@@ -32,7 +32,7 @@ jobs:
           -f ./Helm/FlareSolverr/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy Grafana with Helm
       run: |
@@ -42,7 +42,7 @@ jobs:
           -f ./Helm/Grafana/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy LibreTranslate with Helm
       run: |
@@ -52,7 +52,7 @@ jobs:
           -f ./Helm/LibreTranslate/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy MinIO with Helm
       run: |
@@ -62,7 +62,7 @@ jobs:
           -f ./Helm/MinIO/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy OpenSearch with Helm
       run: |
@@ -72,7 +72,7 @@ jobs:
           -f ./Helm/OpenSearch/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy PostgreSQL with Helm
       run: |
@@ -82,7 +82,7 @@ jobs:
           -f ./Helm/PostgreSQL/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy RabbitMQ with Helm
       run: |
@@ -92,7 +92,7 @@ jobs:
           -f ./Helm/RabbitMQ/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic
     - name: Deploy Redis with Helm
       run: |
@@ -102,5 +102,5 @@ jobs:
           -f ./Helm/Redis/values.yaml \
           --install \
           --wait \
-          --timeout 1m \
+          --timeout 5m \
           --atomic

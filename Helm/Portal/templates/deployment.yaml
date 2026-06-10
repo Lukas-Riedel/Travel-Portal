@@ -24,7 +24,7 @@ spec:
         logging: "true"
     spec:
       nodeSelector:
-        type: light
+        type: cloud
       securityContext:
         runAsNonRoot: true
         runAsUser: 101

@@ -19,7 +19,7 @@ spec:
         app: {{ .Release.Name }}-dashboards
     spec:
       nodeSelector:
-        type: heavy
+        type: local
       containers:
         - name: {{ .Release.Name }}-dashboards
           resources:

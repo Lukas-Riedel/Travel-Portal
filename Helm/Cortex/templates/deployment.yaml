@@ -21,7 +21,7 @@ spec:
         logging: "true"
     spec:
       nodeSelector:
-        type: heavy
+        type: local
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

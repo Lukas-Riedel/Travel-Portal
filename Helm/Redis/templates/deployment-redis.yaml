@@ -16,7 +16,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       nodeSelector:
-        type: light
+        type: cloud
       containers:
         - name: {{ .Release.Name }}
           resources:
