@@ -2,8 +2,8 @@ cortex:
   enabled: true
   image: ghcr.io/lukas-riedel/cortex
   tag: latest
-  replicas: 1
-  workers: 4
+  replicas: 2
+  workers: 2
   service:
     type: ClusterIP
     port: 8080
