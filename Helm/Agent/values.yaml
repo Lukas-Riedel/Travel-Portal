@@ -1,0 +1,20 @@
+agent:
+  enabled: true
+  image: ghcr.io/lukas-riedel/agent
+  tag: latest
+  replicas: 1
+  iam:
+    host: iam
+    port: 8080
+    client:
+      agent:
+        id: travel-portal-agent
+  core:
+    host: core
+    port: 8080
+  grafana:
+    client:
+      name: travel-portal-service
+  nas:
+    host: 192.168.1.241
+    path: /mnt/HD/HD_a2/Fotky

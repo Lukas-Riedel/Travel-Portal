@@ -42,6 +42,8 @@ jobs:
             - 'Helm/Common/**'
           agent:
             - 'Agent/**'
+            - 'Helm/Agent/**'
+            - 'Helm/Common/**'
           bridgex:
             - 'BridgeX/**'
   deploy-iam:
@@ -200,6 +202,61 @@ jobs:
           --wait \
           --timeout 5m \
           --atomic
+  deploy-agent:
+    name: Deploy Agent
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.agent == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set Lowercase Owner Name
+      id: owner-lowercasing
+      run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Prepare application.properties
+      run: |
+        echo "service.core.url=${{ vars.CORE_BASE_URL }}" > ./Agent/src/main/resources/application.properties
+    - name: Build Agent Image
+      run: |
+        docker build \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/agent:${{ github.run_number }} \
+          -t ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/agent:latest \
+          -f Agent/Dockerfile .
+    - name: Push Agent Image
+      run: |
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/agent:${{ github.run_number }}
+        docker push ghcr.io/${{ steps.owner-lowercasing.outputs.owner }}/agent:latest
+    - name: Set Up Kubectl
+      uses: azure/setup-kubectl@v3
+    - name: Open SSH Tunnel
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.SSH_HOSTNAME }} >> ~/.ssh/known_hosts
+        ssh -L 6443:localhost:6443 ${{ vars.SSH_USER }}@${{ vars.SSH_HOSTNAME }} -N -f
+    - name: Set Up Helm
+      uses: azure/setup-helm@v3
+    - name: Deploy Agent with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade agent ./Helm/Agent \
+          -f ./Helm/Agent/values.yaml \
+          --set agent.tag=${{ github.run_number }} \
+          --install \
+          --wait \
+          --timeout 5m \
+          --atomic
   deploy-portal:
     name: Deploy Portal
     needs: detect-changes
@@ -269,21 +326,6 @@ jobs:
           --wait \
           --timeout 3m \
           --atomic
-  verify-agent:
-    name: Verify Agent
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.agent == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-    - name: Verify
-      run: mvn verify -f Agent/pom.xml -Dservice.core.url=${{ vars.CORE_BASE_URL }}
   release-bridgex:
     name: Release BridgeX
     needs: detect-changes

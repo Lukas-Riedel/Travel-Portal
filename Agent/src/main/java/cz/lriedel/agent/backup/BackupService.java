@@ -3,8 +3,8 @@ package cz.lriedel.agent.backup;
 import cz.lriedel.agent.NotificationProvider;
 import cz.lriedel.agent.persistance.SynchronizedFile;
 import cz.lriedel.agent.persistance.SynchronizedFileRepository;
-import lombok.extern.slf4j.Slf4j;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
@@ -70,7 +69,7 @@ public class BackupService {
                 log.info("Copying {} files to '{}'...", nonSynchronizedFiles.size(), folder);
                 for (Path nonSynchronizedFile : nonSynchronizedFiles) {
                     Files.copy(nonSynchronizedFile, folder.resolve(nonSynchronizedFile.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-                    synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString(), Files.size(nonSynchronizedFile), Instant.now()));
+                    synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString().toLowerCase(), Files.size(nonSynchronizedFile), Instant.now()));
                 }
                 log.info("Copied {} files to '{}'.", nonSynchronizedFiles.size(), folder);
                 notificationProvider.sendSystemNotification("Files back-up finished",
@@ -95,6 +94,6 @@ public class BackupService {
     }
     
     private static String getHash(String path, Long size) {
-        return path + "_" + (size != null ? size : "null");
+        return path.toLowerCase() + "_" + (size != null ? size : "null");
     }
 }

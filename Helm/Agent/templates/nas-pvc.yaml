@@ -1,0 +1,14 @@
+{{- if .Values.agent.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-nas-pvc
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 4000Gi
+  storageClassName: ""
+  volumeName: {{ .Release.Name }}-nas-pv
+{{- end }}

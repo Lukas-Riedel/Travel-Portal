@@ -24,6 +24,8 @@ public record DevicePrototype(String id, @Nullable Object data) {
     @JsonProperty
     @SneakyThrows
     public String name() {
-        return InetAddress.getLocalHost().getHostName();
+        // TODO: Propagate from the caller. Make the name configurable.
+        String hostname = System.getenv("APP_HOSTNAME");
+        return hostname != null ? hostname : InetAddress.getLocalHost().getHostName();
     }
 }

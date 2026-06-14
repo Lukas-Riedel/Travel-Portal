@@ -1,0 +1,115 @@
+{{- if .Values.agent.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.agent.replicas }}
+  strategy:
+    type: Recreate # Rolling update is not possible because of the H2 file lock.
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        version: "{{ .Values.agent.tag }}"
+        client: {{ .Values.agent.grafana.client.name }}
+        logging: "true"
+    spec:
+      nodeSelector:
+        type: local
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          image: "{{ .Values.agent.image }}:{{ .Values.agent.tag }}"
+          args:
+            - "--username=$(AGENT_USER)"
+            - "--password=$(AGENT_PASSWORD)"
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /home/agentuser/.agent/timeout"
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(date +%s) -lt $(cat /home/agentuser/.agent/timeout)"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 5
+          env:
+            - name: VERSION_TAG
+              value: "{{ .Values.agent.tag }}"
+            - name: APP_NAME
+              value: "{{ .Release.Name }}"              
+            - name: SERVICE_CORE_URL
+              value: {{ printf "http://%s:%d" .Values.agent.core.host (int .Values.agent.core.port) | quote }}              
+            - name: SERVICE_IAM_URL
+              value: {{ printf "http://%s:%d" .Values.agent.iam.host (int .Values.agent.iam.port) | quote }}
+            - name: SERVICE_IAM_CLIENT_ID
+              value: "{{ .Values.agent.iam.client.agent.id }}"
+            - name: SERVICE_IAM_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: iam-secret
+                  key: agent-client-secret
+            - name: AGENT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: agent-secret
+                  key: user
+            - name: AGENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agent-secret
+                  key: password
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Duser.home=/home/agentuser"
+            - name: APP_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
+            - name: {{ .Release.Name }}-home-agentuser-agent
+              mountPath: /home/agentuser/.agent
+            - name: {{ .Release.Name }}-photos
+              mountPath: /mnt/photos
+              readOnly: true
+      volumes:
+        - name: {{ .Release.Name }}-tmp
+          emptyDir: {}
+        - name: {{ .Release.Name }}-home-agentuser-agent
+          persistentVolumeClaim:
+              claimName: {{ .Release.Name }}-pvc
+        - name: {{ .Release.Name }}-photos
+          persistentVolumeClaim:
+              claimName: {{ .Release.Name }}-nas-pvc
+{{- end }}

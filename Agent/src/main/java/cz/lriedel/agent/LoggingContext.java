@@ -1,8 +1,8 @@
 package cz.lriedel.agent;
 
+import cz.lriedel.agent.model.api.DeviceType;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import cz.lriedel.agent.model.api.DeviceType;
 
 @Component
 public class LoggingContext {

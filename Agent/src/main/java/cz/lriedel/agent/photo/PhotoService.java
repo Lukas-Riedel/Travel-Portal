@@ -5,7 +5,6 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.lriedel.agent.AgentContextDataProvider;
 import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.model.api.Album;
@@ -19,15 +18,13 @@ import cz.lriedel.agent.photo.fetcher.PhotoFetcher;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.nio.channels.FileChannel;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -48,8 +45,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -57,9 +54,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
-
 import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
@@ -81,6 +76,7 @@ public class PhotoService implements AgentContextDataProvider {
     private final ConfigurationRepository configurationRepository;
     private final UploadedPhotoRepository uploadedPhotoRepository;
     private final ObjectMapper objectMapper;
+    private final ExecutorService executorService;
 
     private final String agentIdentifier;
     private final int availableWorkers;
@@ -90,7 +86,8 @@ public class PhotoService implements AgentContextDataProvider {
 
     public PhotoService(CoreClient coreClient, RetryTemplate retryTemplate, PhotoFetcher photoFetcher,
             ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository,
-            ObjectMapper objectMapper, String agentIdentifier, @Value("${agent.core.workers}") int availableWorkers,
+            ObjectMapper objectMapper, ExecutorService executorService, String agentIdentifier,
+            @Value("${agent.core.workers}") int availableWorkers,
             @Value("${agent.photo.uploading.asynchronous}") boolean asyncUploadingEnabled) {
         this.coreClient = coreClient;
         this.retryTemplate = retryTemplate;
@@ -98,6 +95,7 @@ public class PhotoService implements AgentContextDataProvider {
         this.configurationRepository = configurationRepository;
         this.uploadedPhotoRepository = uploadedPhotoRepository;
         this.objectMapper = objectMapper;
+        this.executorService = executorService;
         this.agentIdentifier = agentIdentifier;
         this.availableWorkers = availableWorkers;
         this.asyncUploadingEnabled = asyncUploadingEnabled;
@@ -126,7 +124,7 @@ public class PhotoService implements AgentContextDataProvider {
                             }
 
                             String batchId = uploadPhotos(place.getId(), album.getId(), albumFolder,
-                                    path -> !uploadedPaths.contains(path.toString()) && isPathCreated(path), null);
+                                    path -> !uploadedPaths.contains(path.toString().toLowerCase()) && isPathCreated(path), null);
                             if (!asyncUploadingEnabled && batchId != null) {
                                 String albumId = album.getId();
                                 retryTemplate.execute(context -> {
@@ -194,10 +192,13 @@ public class PhotoService implements AgentContextDataProvider {
 
     @SneakyThrows
     private static Date getPhotoCreationTime(Path path) {
-        Metadata metadata = ImageMetadataReader.readMetadata(path.toFile());
-        for (Directory directory : metadata.getDirectories()) {
-            if (directory.containsTag(TAG_DATETIME_ORIGINAL)) {
-                return directory.getDate(TAG_DATETIME_ORIGINAL);
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
+
+            for (Directory directory : metadata.getDirectories()) {
+                if (directory.containsTag(TAG_DATETIME_ORIGINAL)) {
+                    return directory.getDate(TAG_DATETIME_ORIGINAL);
+                }
             }
         }
 
@@ -244,7 +245,6 @@ public class PhotoService implements AgentContextDataProvider {
 
     @SneakyThrows
     private boolean uploadPhotos(String placeId, String albumId, String batchId, Stream<Path> paths, @Nullable Integer albumMainPhotoPosition) {
-        ExecutorService executorService = Executors.newFixedThreadPool(availableWorkers);
         Queue<Path> queue = paths.sorted(comparing(PhotoService::getPhotoCreationTime)).collect(toCollection(LinkedList::new));
 
         int expectedBatchSize = queue.size();
@@ -264,16 +264,19 @@ public class PhotoService implements AgentContextDataProvider {
 
             double sum = 0;
             for (Future<Double> future : futures) {
-                sum += future.get();
+                try {
+                    sum += future.get();
+                }
+                catch (ExecutionException e) {
+                    log.error("An exception occurred in the worker thread.", e.getCause());
+                    throw e;
+                }
             }
             double averageProcessingSpeed = sum / futures.size();
             currentParallelRequestsCount = Math.min(availableWorkers, (int) Math.ceil(averageProcessingSpeed));
 
             log.info("Totally {}/{} photos were uploaded.", position - 1, position - 1 + queue.size());
         }
-
-        executorService.shutdown();
-        Validate.isTrue(executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS));
 
         return position > 1;
     }
@@ -288,9 +291,9 @@ public class PhotoService implements AgentContextDataProvider {
             return null;
         });
         long uploadDuration = (System.currentTimeMillis() - start) / 1000;
-        double fileSize = FileChannel.open(path).size() / (1024.0 * 1024.0);
-        uploadedPhotoRepository.save(new UploadedPhoto(path.toString(), Instant.now()));
-        return 8 * fileSize / uploadDuration;
+        double fileSize = data.length / (1024.0 * 1024.0);
+        uploadedPhotoRepository.save(new UploadedPhoto(path.toString().toLowerCase(), Instant.now()));
+        return uploadDuration == 0 ? 0 : 8 * fileSize / uploadDuration;
     }
 
     private void doUploadPhoto(String placeId, String albumId, String fileName, String batchId, int expectedBatchSize, int batchPosition,

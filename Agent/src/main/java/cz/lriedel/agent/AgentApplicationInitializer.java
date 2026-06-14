@@ -5,15 +5,18 @@ import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.client.UserTokenSupplier;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,8 @@ class AgentApplicationInitializer implements ApplicationRunner {
     private static final String USERNAME_ARGUMENT_NAME = "username";
     private static final String PASSWORD_ARGUMENT_NAME = "password";
 
+    private static final String SEND_HEARTBEAT_FILE_NAME = "timeout";
+
     private final ConfigurationRepository configurationRepository;
     private final UserTokenSupplier userTokenSupplier;
     private final CoreClient coreClient;
@@ -36,16 +41,22 @@ class AgentApplicationInitializer implements ApplicationRunner {
     private final List<AgentContextDataProvider> agentContextDataProviders;
 
     private final String agentQueueName;
+    private final Path dataDirectory;
+    private final int applicationTimeoutSeconds;
 
     AgentApplicationInitializer(ConfigurationRepository configurationRepository,
             CoreClient coreClient, UserTokenSupplier userTokenSupplier, RetryTemplate retryTemplate,
-            List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName) {
+            List<AgentContextDataProvider> agentContextDataProviders, String agentQueueName,
+            @Value("${agent.core.data.directory}") Path dataDirectory,
+            @Value("${agent.core.registration.interval}") int registrationIntervalSeconds) {
         this.configurationRepository = configurationRepository;
         this.coreClient = coreClient;
         this.userTokenSupplier = userTokenSupplier;
         this.retryTemplate = retryTemplate;
         this.agentContextDataProviders = agentContextDataProviders;
         this.agentQueueName = agentQueueName;
+        this.dataDirectory = dataDirectory;
+        this.applicationTimeoutSeconds = 2 * registrationIntervalSeconds;
     }
 
     @Scheduled(fixedDelayString = "${agent.core.registration.interval}", timeUnit = TimeUnit.SECONDS)
@@ -53,6 +64,7 @@ class AgentApplicationInitializer implements ApplicationRunner {
         configurationRepository.findById(DEVICE_ID_CONFIGURATION_KEY).map(Configuration::getValue).ifPresent(this::registerDevice);
     }
 
+    @SneakyThrows
     private void registerDevice(String agentId) {
         Map<String, Object> data = new HashMap<>();
         data.put(QUEUE_NAME_CONFIGURATION_KEY, agentQueueName);
@@ -64,6 +76,9 @@ class AgentApplicationInitializer implements ApplicationRunner {
             coreClient.registerDevice(agentId, data);
             return null;
         });
+
+        long timeout = Instant.now().plusSeconds(applicationTimeoutSeconds).getEpochSecond();
+        Files.write(dataDirectory.resolve(SEND_HEARTBEAT_FILE_NAME), String.valueOf(timeout).getBytes());
     }
 
     @Override

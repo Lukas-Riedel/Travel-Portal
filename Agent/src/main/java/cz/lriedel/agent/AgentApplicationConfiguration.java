@@ -32,8 +32,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriBuilderFactory;
 
-import java.util.UUID;
 import java.time.Duration;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static cz.lriedel.agent.LoggingContext.TRANSACTION_ID_HEADER;
 import static cz.lriedel.agent.persistance.ConfigurationRepository.DEVICE_ID_CONFIGURATION_KEY;
@@ -48,6 +50,11 @@ public class AgentApplicationConfiguration {
 
     public static final String CORE_SERVICE_QUALIFIER = "core";
     public static final String IAM_SERVICE_QUALIFIER = "iam";
+
+    @Bean
+    public static ExecutorService executorService(@Value("${agent.core.workers}") int availableWorkers) {
+        return Executors.newFixedThreadPool(availableWorkers);
+    }
 
     @Bean
     public static ObjectMapper objectMapper() {

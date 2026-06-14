@@ -1,0 +1,15 @@
+{{- if .Values.agent.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-nas-pv
+spec:
+  capacity:
+    storage: 4000Gi
+  accessModes:
+    - ReadOnlyMany
+  nfs:
+    server: "{{ .Values.agent.nas.host }}"
+    path: "{{ .Values.agent.nas.path }}"
+  storageClassName: ""
+{{- end }}

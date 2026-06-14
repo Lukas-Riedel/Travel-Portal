@@ -3,6 +3,7 @@ package cz.lriedel.agent;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,8 @@ import java.util.zip.ZipInputStream;
 @Service
 public class MozJpegService {
 
-    private static final String MOZJPEG_URL = "https://mozjpeg.codelove.de/bin/mozjpeg_4.1.1_x64.zip";
+    private static final String MOZJPEG_WINDOWS_EXE_FILE_NAME = "mozjpeg_4.1.1_x64";
+    private static final String MOZJPEG_WINDOWS_DOWNLOAD_URL = "https://mozjpeg.codelove.de/bin/" + MOZJPEG_WINDOWS_EXE_FILE_NAME + ".zip";
 
     private static final String MOJZPEG_DIRECTORY_NAME = "mozjpeg";
 
@@ -36,58 +38,102 @@ public class MozJpegService {
     @SneakyThrows
     @PostConstruct
     public void installMozJpeg() {
-        if (getCJpegExeFilePath().toFile().exists()) {
-            log.info("MozJPEG is already installed, skipping the installation...");
-            return;
-        }
-
-        Files.createDirectories(mozJpegDirectory);
-        Path tempZip = Files.createTempFile(UUID.randomUUID().toString(), ZIP_FILE_EXTENSION);
-
-        try (InputStream in = new URL(MOZJPEG_URL).openStream()) {
-            Files.copy(in, tempZip, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(tempZip))) {
-            ZipEntry entry;
-            while ((entry = zip.getNextEntry()) != null) {
-                Path outPath = mozJpegDirectory.resolve(entry.getName());
-                if (entry.isDirectory()) {
-                    Files.createDirectories(outPath);
-                }
-                else {
-                    Files.createDirectories(outPath.getParent());
-                    Files.copy(zip, outPath, StandardCopyOption.REPLACE_EXISTING);
-                }
-                zip.closeEntry();
+        if (SystemUtils.IS_OS_WINDOWS) {
+            if (getCJpegExeFilePath().toFile().exists()) {
+                log.info("MozJPEG is already installed, skipping the installation...");
+                return;
             }
+
+            Files.createDirectories(mozJpegDirectory);
+            Path tempZip = Files.createTempFile(UUID.randomUUID().toString(), ZIP_FILE_EXTENSION);
+
+            try (InputStream in = new URL(MOZJPEG_WINDOWS_DOWNLOAD_URL).openStream()) {
+                Files.copy(in, tempZip, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(tempZip))) {
+                ZipEntry entry;
+                while ((entry = zip.getNextEntry()) != null) {
+                    Path outPath = mozJpegDirectory.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(outPath);
+                    }
+                    else {
+                        Files.createDirectories(outPath.getParent());
+                        Files.copy(zip, outPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    zip.closeEntry();
+                }
+            }
+
+            Files.delete(tempZip);
+
+            Validate.isTrue(getCJpegExeFilePath().toFile().exists(), "Installation failed. Unable to locate '" + getCJpegExeFilePath() + "'.");
+            log.info("MozJPEG has been successfully installed...");
         }
-
-        Files.delete(tempZip);
-
-        Validate.isTrue(getCJpegExeFilePath().toFile().exists(), "Installation failed. Unable to locate '" + getCJpegExeFilePath() + "'.");
-        log.info("MozJPEG has been successfully installed...");
+        else {
+            Validate.isTrue(isCJpegCommandAvailable(), "The 'cjpeg' command is not available.");
+        }
     }
 
     @SneakyThrows
     public void compress(Path input, Path output, int quality) {
-        ProcessBuilder pb = new ProcessBuilder(getCJpegExeFilePath().toAbsolutePath().toString(), "-quality", String.valueOf(quality), "-progressive",
-                "-optimize", "-outfile", output.toAbsolutePath().toString());
-        pb.redirectErrorStream(true);
+        Process cjpeg = startCJpeg(output, quality);
 
-        Process process = pb.start();
-
-        try (OutputStream stdin = process.getOutputStream(); InputStream fis = Files.newInputStream(input)) {
-            fis.transferTo(stdin);
+        Process djpeg = null;
+        if (!SystemUtils.IS_OS_WINDOWS) {
+            djpeg = startDJpeg(input);
         }
+
+        try (InputStream in = djpeg != null ? djpeg.getInputStream() : Files.newInputStream(input);
+             OutputStream out = cjpeg.getOutputStream()) {
+            in.transferTo(out);
+        }
+
+        if (djpeg != null) {
+            waitForSuccess(djpeg, "djpeg");
+        }
+
+        waitForSuccess(cjpeg, "cjpeg");
+    }
+
+    @SneakyThrows
+    private Process startDJpeg(Path input) {
+        return new ProcessBuilder("djpeg", input.toAbsolutePath().toString()).start();
+    }
+
+    @SneakyThrows
+    private Process startCJpeg(Path output, int quality) {
+        return new ProcessBuilder(SystemUtils.IS_OS_WINDOWS
+                        ? getCJpegExeFilePath().toAbsolutePath().toString() : "cjpeg",
+                "-quality", String.valueOf(quality),
+                "-outfile", output.toAbsolutePath().toString(),
+                "-progressive",
+                "-optimize"
+        ).start();
+    }
+
+    @SneakyThrows
+    private void waitForSuccess(Process process, String processName) {
+        String error = new String(process.getErrorStream().readAllBytes());
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            throw new IllegalStateException("MozJPEG failed with exit code " + exitCode + ".");
+            throw new IllegalStateException(processName + " failed with exit code " + exitCode + ". Reason: " + error);
         }
     }
 
     private Path getCJpegExeFilePath() {
-        return mozJpegDirectory.resolve("mozjpeg_4.1.1_x64").resolve("shared").resolve("tools").resolve("cjpeg.exe");
+        return mozJpegDirectory.resolve(MOZJPEG_WINDOWS_EXE_FILE_NAME).resolve("shared").resolve("tools").resolve("cjpeg.exe");
+    }
+
+    private boolean isCJpegCommandAvailable() {
+        try {
+            Process process = new ProcessBuilder("cjpeg", "-version").start();
+            return process.waitFor() == 0;
+        }
+        catch (Exception e) {
+            return false;
+        }
     }
 }
