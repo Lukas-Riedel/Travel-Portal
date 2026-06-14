@@ -5,6 +5,7 @@ import cz.lriedel.agent.model.args.EventArgs;
 import lombok.SneakyThrows;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -49,7 +50,12 @@ class EventMessageConverter extends Jackson2JsonMessageConverter {
     public Object fromMessage(Message message) {
         Map<String, Object> map = objectMapper.readValue(message.getBody(), Map.class);
 
-        return objectMapper.readValue(objectMapper.writeValueAsBytes(map.get(EVENT_ARGS_PROPERTY_KEY)),
-                supportedEvents.getOrDefault(map.get(EVENT_NAME_PROPERTY_KEY), Map.class));
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsBytes(map.get(EVENT_ARGS_PROPERTY_KEY)),
+                    supportedEvents.getOrDefault(map.get(EVENT_NAME_PROPERTY_KEY), Map.class));
+        }
+        catch (Exception e) {
+            throw new MessageConversionException("Unable to convert the message.", e);
+        }
     }
 }
