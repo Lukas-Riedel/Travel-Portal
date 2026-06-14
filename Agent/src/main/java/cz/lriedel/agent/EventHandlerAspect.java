@@ -26,14 +26,18 @@ class EventHandlerAspect {
     private static final String EVENT_ARGS_PROPERTY_KEY = "args";
 
     private final CoreClient coreClient;
+    private final LoggingContext loggingContext;
 
-    EventHandlerAspect(CoreClient coreClient) {
+    EventHandlerAspect(CoreClient coreClient, LoggingContext loggingContext) {
         this.coreClient = coreClient;
+        this.loggingContext = loggingContext;
     }
 
     @Nullable
     @Around("@annotation(org.springframework.amqp.rabbit.annotation.RabbitHandler) && execution(* *(..))")
     public Object aroundRabbitHandler(ProceedingJoinPoint pjp) throws Throwable {
+        loggingContext.init();
+
         Object eventArgs = pjp.getArgs()[0];
         String eventName = eventArgs.getClass().getSimpleName().replace(EventArgs.class.getSimpleName(), EMPTY);
         Map<String, Object> event = Map.of(EVENT_NAME_PROPERTY_KEY, eventName, EVENT_ARGS_PROPERTY_KEY, eventArgs);
@@ -53,6 +57,7 @@ class EventHandlerAspect {
             return null;
         }
         finally {
+            loggingContext.clear();
             log.info("Processing of '{} ({})' ended in {} milliseconds.", eventName, eventArgs, System.currentTimeMillis() - start);
         }
     }

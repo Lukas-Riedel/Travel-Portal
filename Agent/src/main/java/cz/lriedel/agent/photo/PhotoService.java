@@ -212,6 +212,7 @@ public class PhotoService implements AgentContextDataProvider {
             String batchId = UUID.randomUUID().toString();
             boolean anyUploaded = uploadPhotos(placeId, albumId, batchId, paths.filter(pathFilter), albumMainPhotoPosition);
 
+            // TODO: When no photos are uploaded, the future always times out.
             if (asyncUploadingEnabled) {
                 log.info("Waiting for photos to be processed...");
 
