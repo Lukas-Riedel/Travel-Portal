@@ -1,0 +1,2 @@
+alter table highlight_category 
+drop constraint pk_highlight_category;
