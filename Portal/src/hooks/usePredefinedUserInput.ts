@@ -642,7 +642,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.select.failed")
         )
 
-    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>), sendNotification?: boolean) =>
+    const showUploadPhotosToast = (agents: Device[], uploadPhotos: ((path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>), sendNotification?: boolean, defaultPath?: string) =>
         uploadPhotos.length === 4
             ? showFormToast(
                 t("photo.prompt.upload.message"),
@@ -650,7 +650,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     {
                         type: "text",
                         label: t("photo.prompt.upload.label.path"),
-                        required: true
+                        required: true,
+                        defaultValue: defaultPath
                     },
                     {
                         type: "select",

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import Tooltip from "./Tooltip.jsx"
 import { useDevices } from "../hooks/useDevices.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { type Stay, type Fitness, type PublicHoliday, type Note, type Flight, type Place, type Date as PlaceDate, DeviceType, type Album } from "../types/CoreSwaggerTypes.ts"
+import { type Stay, type Fitness, type PublicHoliday, type Note, type Flight, type Place, type Date as PlaceDate, DeviceType, type Album, type TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import WeatherSummary from "./WeatherSummary.tsx"
@@ -22,6 +22,7 @@ import Card from "./Card.tsx"
 const SUN_ALTITUDE_THRESHOLD = 20
 const PRECIPITATION_PROBABILITY_THRESHOLD = 50
 const PRECIPITATION_TOTAL_THRESHOLD = 0.1
+const DEFAULT_PATH_PREFIX = "/mnt/photos"
 
 type DayEvent = Flight | (Place & PlaceDate)
 
@@ -114,11 +115,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         }
     }
 
-    const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number, sendNotification?: boolean) => {
+    const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number, sendNotification?: boolean, trip?: TripIdentifier) => {
         if (onPhotosAdded) {
             const onlineAgents = agents.filter(agent => isDeviceOnline(agent))
             showUploadPhotosToast(onlineAgents, (path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) =>
-                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification)
+                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification, trip && timestamp && `${DEFAULT_PATH_PREFIX}/${trip.year}/${trip.name} ${trip.year}/${placeName} ${formatTimestamp(timestamp, t("general.format.date.year.included"))}`)
         }
     }
 
@@ -307,7 +308,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     {onPhotosAdded && (
                                         <button
                                             className={`btn-icon-hover ${getColor(event, "text-indigo-600")}`}
-                                            onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start, event.trip !== undefined)}>
+                                            onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start, event.trip !== undefined, event.trip)}>
                                             <ImagePlus size={16} />
                                         </button>
                                     )}
