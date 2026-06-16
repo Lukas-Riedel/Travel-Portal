@@ -89,6 +89,9 @@
         case FolderSynchronizationRequestedEventProcessingStartedRead = "event.processingstarted.foldersynchronizationrequested.read";
         case FolderSynchronizationRequestedEventProcessingEndedRead = "event.processingended.foldersynchronizationrequested.read";
         case FolderSynchronizationRequestedEventProcessingFailedRead = "event.processingfailed.foldersynchronizationrequested.read";
+        case AgentShutdownRequestedEventProcessingStartedRead = "event.processingstarted.agentshutdownrequested.read";
+        case AgentShutdownRequestedEventProcessingEndedRead = "event.processingended.agentshutdownrequested.read";
+        case AgentShutdownRequestedEventProcessingFailedRead = "event.processingfailed.agentshutdownrequested.read";
         case EventFitnessActivityDetectedRead = "event.fitnessactivitydetected.read";
         case EventDeviceLogOnRequestedRead = "event.devicelogonrequested.read";
         case EventFlightLoggedRead = "event.flightlogged.read";

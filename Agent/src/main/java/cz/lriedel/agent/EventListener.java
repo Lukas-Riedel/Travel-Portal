@@ -1,5 +1,6 @@
 package cz.lriedel.agent;
 
+import cz.lriedel.agent.model.args.AgentShutdownRequestedEventArgs;
 import cz.lriedel.agent.model.args.FolderSynchronizationRequestedEventArgs;
 import cz.lriedel.agent.model.args.PhotoReplacingTriggeredEventArgs;
 import cz.lriedel.agent.model.args.PhotosUploadingCompletedEventArgs;
@@ -43,5 +44,12 @@ class EventListener {
     public void onFolderSynchronizationRequested(FolderSynchronizationRequestedEventArgs args) {
         log.info("Received a request to synchronize a folder...");
         photoService.requestFolderSynchronization(args.path(), args.expiration());
+    }
+
+    @RabbitHandler
+    public void onAgentShutdownRequested(AgentShutdownRequestedEventArgs args) {
+        log.info("Received a request to shutdown the agent...");
+        // TODO: Kill the application only if there is no other event being processed.
+        System.exit(0);
     }
 }

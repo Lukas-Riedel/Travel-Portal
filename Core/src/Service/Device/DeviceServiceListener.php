@@ -31,6 +31,14 @@
         public function onInactiveDevicesInvalidated(mixed $message) : void {
             $this->deviceService->unregisterInactiveDevices();
         }
+        
+        public function onConfigurationEntryUpdated(mixed $message) : void {
+            if ($message["key"] === "agent") {
+                foreach ($this->deviceService->getDevices(DeviceType::Agent, null) as &$agent) {
+                    $this->eventPublisher->publish(Event::AgentShutdownRequested($agent->getId()));
+                }
+            }
+        }
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UNREGISTER_INACTIVE_DEVICES_ACTION_NAME, self::UNREGISTER_INACTIVE_DEVICES_ACTION_INTERVAL)) {

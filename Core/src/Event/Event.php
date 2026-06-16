@@ -248,6 +248,10 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("event" => $event));
         }
 
+        public static function AgentShutdownRequested(string $agentId) : Event {
+            return new AgentEvent(Event::getEventName(), $agentId, array());
+        }
+
         public static function PhotosUploadingCompleted(string $agentId, string $batchId) : Event {
             return new AgentEvent(Event::getEventName(), $agentId, array("batchId" => $batchId));
         }
@@ -303,7 +307,11 @@
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return get_object_vars($this);
+            $data = get_object_vars($this);
+            if (empty($data["args"])) {
+                $data["args"] = (object)$data["args"];
+            }
+            return $data;
         }
     }
 ?>
