@@ -12,6 +12,7 @@
     use Core\Service\Stay\StayService;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Task\TaskService;
 
     class TripMapper {
 
@@ -25,10 +26,11 @@
         private readonly NoteService $noteService;
         private readonly HighlightService $highlightService;
         private readonly StatisticsService $statisticsService;
+        private readonly TaskService $taskService;
 
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient,
             PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
-            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService) {
+            NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, TaskService $taskService) {
             $this->databaseClient = $databaseClient;
             $this->calendarClient = $calendarClient;
             $this->placeService = $placeService;
@@ -39,6 +41,7 @@
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
             $this->statisticsService = $statisticsService;
+            $this->taskService = $taskService;
         }
 
         public function selectTripEventId(string $tripId) : ?string {
@@ -153,7 +156,7 @@
         
                     return new Trip($tripIdentifierRow["id"], $tripIdentifierRow["name"], null, null, 
                         null, null, array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories),
-                        array(), array(), array(), array(), array(), $notes, array(), array(), $publicHolidays);
+                        array(), array(), array(), array(), array(), $notes, array(), array(), array(), $publicHolidays);
                 });
         }
 
@@ -296,9 +299,14 @@
                     }, $countryCategories);                               
                 }
 
+                $tasks = array();
+                if (in_array(TripIncludedEntity::Tasks->value, $includedEntities)) {
+                    $tasks = $this->taskService->getTasks($tripRow["id"]);
+                }
+
                 $trips[] = new Trip($tripRow["id"], $tripRow["name"], $tripRow["year"], $mainHighlights[$tripRow["main_highlight_id"]] ?? null, $tripRow["start"],
                     $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $flights, $watchedFlights,
-                    $fitness, $notes, $highlights, $statistics, $publicHolidays);
+                    $fitness, $notes, $highlights, $statistics, $tasks, $publicHolidays);
             }
 
             return $trips;

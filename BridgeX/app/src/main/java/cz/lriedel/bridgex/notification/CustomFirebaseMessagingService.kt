@@ -33,6 +33,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             FitnessActivityDetectedNotificationFactory(this),
             DeviceLogOnRequestedNotificationFactory(this),
             NewDataConsistencyIssuesDetectedNotificationFactory(this),
+            TaskDeadlineReachedNotificationFactory(this),
             FlightLoggedNotificationFactory(this)
         ).associateBy { factory ->
             factory.javaClass.simpleName.replace(NotificationFactory::class.java.simpleName, "")

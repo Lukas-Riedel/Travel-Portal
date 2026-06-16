@@ -82,6 +82,8 @@
     use Core\Service\Stay\StayService;
     use Core\Service\Stay\StayServiceListener;
     use Core\Service\Stay\StayStatisticsProvider;
+    use Core\Service\Task\TaskService;
+    use Core\Service\Task\TaskServiceListener;
     use Core\Service\TimeTracking\TimeTrackingService;
     use Core\Service\TimeTracking\TimeTrackingServiceListener;
     use Core\Service\Trip\TripDataConsistencyMonitor;
@@ -178,8 +180,9 @@
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $distributedCacheClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
+    $taskService = new TaskService($databaseClient);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
-        $noteService, $highlightService, $statisticsService, $yearService, $indexService, $eventPublisher);
+        $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
 
@@ -253,6 +256,7 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        new TaskServiceListener($taskService, $eventPublisher, $scheduler),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

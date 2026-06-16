@@ -61,6 +61,8 @@
         case TripHighlightRead = "trip.highlight.read";
         case TripHighlightEdit = "trip.highlight.edit";
         case TripStatisticsRead = "trip.statistics.read";
+        case TripTaskRead = "trip.task.read";
+        case TripTaskEdit = "trip.task.edit";
         case TripStayRead = "trip.stay.read";
         case TripFlightRead = "trip.flight.read";
         case TripFitnessRead = "trip.fitness.read";
@@ -77,6 +79,7 @@
         case SearchRead = "search.read";
         case SearchEdit = "search.edit";
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
+        case EventTaskDeadlineReachedRead = "event.taskdeadlinereached.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingFailedRead = "event.processingfailed.photoreplacingtriggered.read";

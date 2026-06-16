@@ -17,6 +17,7 @@
         case Notes = "notes";
         case Highlights = "highlights";
         case Statistics = "statistics";
+        case Tasks = "tasks";
         case PublicHolidays = "publicHolidays";
 
         public static function values() : array {

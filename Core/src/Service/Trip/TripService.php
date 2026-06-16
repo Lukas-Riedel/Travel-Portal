@@ -22,6 +22,7 @@
     use Core\Service\Index\IndexService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Service\Task\TaskService;
 
     class TripService {
 
@@ -45,10 +46,10 @@
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $cachingGenerativeContentClient,
             ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,
             FitnessService $fitnessService, NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService,
-            IndexService $indexService, EventPublisher $eventPublisher) {
+            IndexService $indexService, TaskService $taskService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
                 $stayService, $flightService, $expenseService, $fitnessService, $noteService,
-                $highlightService, $statisticsService);
+                $highlightService, $statisticsService, $taskService);
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
             $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;
@@ -221,7 +222,7 @@
                 foreach ($tripEvents as &$tripEvent) {
                     $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
                     $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
-                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
+                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
                     $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
                     

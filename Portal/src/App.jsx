@@ -43,6 +43,15 @@ export default function App() {
             toast.success(`Hlášeno ${formatNewProblems(event.count)}`)
         })
     }, [newDataConsistencyIssuesDetectedEvents])
+    
+    const { events: taskDeadlineReachedEvents } = useEvents("TaskDeadlineReached")
+    useEffect(() => {
+        taskDeadlineReachedEvents.forEach(event => {
+            event.markAsRead()
+
+            toast.success(event.task)
+        })
+    }, [taskDeadlineReachedEvents])
 
     const { events: flightLoggedEvents } = useEvents("FlightLogged")
     useEffect(() => {

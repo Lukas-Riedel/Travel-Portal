@@ -271,6 +271,10 @@
         public static function FolderSynchronizationRequested(string $agentId, string $path, int $expiration) : Event {
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
+        
+        public static function TaskDeadlineReached(string $task) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("task" => $task));
+        }
 
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventNewDataConsistencyIssueDetectedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));

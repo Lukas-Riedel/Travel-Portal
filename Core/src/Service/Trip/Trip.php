@@ -103,6 +103,12 @@
                 items: new OA\Items(ref: "#/components/schemas/Statistics")
             ),
             new OA\Property(
+                property: "tasks",
+                description: "The tasks of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Task")
+            ),
+            new OA\Property(
                 property: "publicHolidays",
                 description: "The public holidays of the trip",
                 type: "array",
@@ -130,11 +136,12 @@
         private array $notes;
         private array $highlights;
         private array $statistics;
+        private array $tasks;
         private array $publicHolidays;
 
         public function __construct(string $id, string $name, ?int $year, ?Highlight $mainHighlight, ?int $start, ?int $end,
             array $countries, array $expenses, array $stays, array $flights, array $watchedFlights, array $fitness, array $notes,
-            array $highlights, array $statistics, array $publicHolidays) {
+            array $highlights, array $statistics, array $tasks, array $publicHolidays) {
             $this->id = $id;
             $this->name = $name;
             $this->year = $year;
@@ -150,6 +157,7 @@
             $this->notes = $notes;
             $this->highlights = $highlights;
             $this->statistics = $statistics;
+            $this->tasks = $tasks;
             $this->publicHolidays = $publicHolidays;
         }
 
@@ -267,10 +275,14 @@
             $this->publicHolidays = array();
         }
 
+        public function getTasks() : array {
+            return $this->tasks;
+        }
+
         public function withOffset(int $offset) : Trip {
             return new Trip($this->id, $this->name, date(self::YEAR_FORMAT, $this->start + $offset), $this->mainHighlight,
                 $this->start + $offset, $this->end + $offset, $this->countries, $this->expenses, $this->stays, $this->flights,
-                $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->publicHolidays);
+                $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->tasks, $this->publicHolidays);
         }
 
         public function isCurrent() : bool {

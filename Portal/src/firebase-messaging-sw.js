@@ -42,6 +42,16 @@ onBackgroundMessage(messaging, payload => {
         })
     }
 
+    if (payload.data.event === "TaskDeadlineReached") {
+        const args = JSON.parse(payload.data.args)
+
+        self.registration.showNotification("Blíží se termín úkolu", {
+            body: args.task,
+            icon: "icon-192.png",
+            data: "/admin"
+        })
+    }
+
     if (payload.data.event === "FlightLogged") {
         const args = JSON.parse(payload.data.args)
         const formattedActualArrival = new Intl.DateTimeFormat(undefined, {

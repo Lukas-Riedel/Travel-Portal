@@ -13,6 +13,8 @@
     use Core\Service\Expense\ExpenseType;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Note\NoteService;
+    use Core\Service\Task\TaskService;
+    use Core\Service\Task\TaskPriority;
     use Core\Service\Trip\Trip;
     use Core\Service\Trip\TripIncludedEntity;
     use Core\Service\Trip\TripService;
@@ -27,18 +29,20 @@
         private readonly ExpenseService $expenseService;
         private readonly NoteService $noteService;
         private readonly HighlightService $highlightService;
+        private readonly TaskService $taskService;
         private readonly Logger $logger;
 
-        public function __construct(TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService, Logger $logger) {
+        public function __construct(TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService, TaskService $taskService, Logger $logger) {
             $this->tripService = $tripService;
             $this->expenseService = $expenseService;
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
+            $this->taskService = $taskService;
             $this->logger = $logger;
         }
 
-        public static function register(App $app, TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService, Logger $logger) : void {
-            $resource = new self($tripService, $expenseService, $noteService, $highlightService, $logger);
+        public static function register(App $app, TripService $tripService, ExpenseService $expenseService, NoteService $noteService, HighlightService $highlightService, TaskService $taskService, Logger $logger) : void {
+            $resource = new self($tripService, $expenseService, $noteService, $highlightService, $taskService, $logger);
 
             $app->group("/trips", function($group) use($resource) {
                 $group->get("", [$resource, "listTrips"]);
@@ -52,6 +56,9 @@
                 $group->post("/{tripId}/notes", [$resource, "createTripNote"]);
                 $group->patch("/{tripId}/notes/{noteId}", [$resource, "updateTripNote"]);
                 $group->delete("/{tripId}/notes/{noteId}", [$resource, "removeTripNote"]);
+                $group->post("/{tripId}/tasks", [$resource, "createTripTask"]);
+                $group->patch("/{tripId}/tasks/{taskId}", [$resource, "updateTripTask"]);
+                $group->delete("/{tripId}/tasks/{taskId}", [$resource, "removeTripTask"]);
                 $group->post("/{tripId}/highlights", [$resource, "createTripHighlight"]);
                 $group->post("/{tripId}/highlights/refresh", [$resource, "refreshTripHighlights"]);
                 $group->delete("/{tripId}/highlights/{highlightId}", [$resource, "removeTripHighlight"]);
@@ -157,6 +164,7 @@
                     TripIncludedEntity::WatchedFlights => UserRole::TripFlightRead,
                     TripIncludedEntity::Highlights => UserRole::TripHighlightRead,
                     TripIncludedEntity::Notes => UserRole::TripNoteRead,
+                    TripIncludedEntity::Tasks => UserRole::TripTaskRead,
                     TripIncludedEntity::Statistics => UserRole::TripStatisticsRead,
                     TripIncludedEntity::Stays => UserRole::TripStayRead,
                     TripIncludedEntity::PublicHolidays => UserRole::TripPublicHolidayRead,
@@ -1135,7 +1143,7 @@
                 new OA\Response(
                     response: 200,
                     description: "Success. Updated a note for a trip with the specified identifier.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/Trip")
+                    content: new OA\JsonContent(ref: "#/components/schemas/Note")
                 ),
                 new OA\Response(
                     response: 400,
@@ -1609,6 +1617,346 @@
             $wasRemoved = $this->highlightService->removeTripHighlight($tripId, $highlightId);
             if (!$wasRemoved) {
                 throw new NotFoundException($highlightId);                
+            }
+
+            return null;
+        }
+
+        
+        #[OA\Post(
+            path: "/trips/{tripId}/tasks",
+            summary: "Create a task for a trip with the specified identifier",
+            operationId: "createTripTask",
+            tags: ["Trips"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    required: ["content"],
+                    properties: [
+                        new OA\Property(
+                            property: "description",
+                            description: "The description of the task",
+                            type: "string",
+                            example: "Complete the project documentation"
+                        ),
+                        new OA\Property(
+                            property: "priority",
+                            description: "The priority of the task",
+                            ref: "#/components/schemas/TaskPriority"
+                        ),
+                        new OA\Property(
+                            property: "deadline",
+                            description: "The deadline for the task in epoch seconds",
+                            type: "integer",
+                            format: "int64",
+                            example: 1689786000
+                        )
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "tripId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the trip",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 201,
+                    description: "Success. Created a task for a trip with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Task")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function createTripTask(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::TripTaskEdit);
+
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $description = $this->requireJsonBodyField($request, "description");
+            $priority = $this->requireJsonBodyField($request, "priority");
+            $deadline = $this->getJsonBodyField($request, "deadline");
+
+            return $this->taskService->createTask($description, TaskPriority::from($priority), $deadline, $tripId);
+        }
+
+        #[OA\Patch(
+            path: "/trips/{tripId}/tasks/{taskId}",
+            summary: "Update a task for a trip with the specified identifier",
+            operationId: "updateTripTask",
+            tags: ["Trips"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "description",
+                            description: "The description of the task",
+                            type: "string",
+                            example: "Complete the project documentation"
+                        ),
+                        new OA\Property(
+                            property: "priority",
+                            description: "The priority of the task",
+                            ref: "#/components/schemas/TaskPriority"
+                        ),
+                    ]
+                )
+            ),
+            parameters: [
+                new OA\Parameter(
+                    name: "tripId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the trip",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                ),
+                new OA\Parameter(
+                    name: "taskId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the task",
+                    schema: new OA\Schema(type: "string"),
+                    example: "6846808f-b8d8-409c-bc78-97878b3a4446",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. Updated a task for a trip with the specified identifier.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Task")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function updateTripTask(Request $request, Response $response, array $routeArguments) : mixed {           
+            $this->requireRole($request, UserRole::TripTaskEdit);
+
+            $wasUpdated = false;
+
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $taskId = $this->requirePathArgument($routeArguments, "taskId");
+
+            $newDescription = $this->getJsonBodyField($request, "description");
+            if ($newDescription !== null) {
+                $wasUpdated |= $this->taskService->updateTaskDescription($taskId, $newDescription);
+            }
+
+            $newPriority = $this->getJsonBodyField($request, "priority");
+            if ($newPriority !== null) {
+                $wasUpdated |= $this->taskService->updateTaskPriority($taskId, TaskPriority::from($newPriority));
+            }
+            
+            if (!$wasUpdated) {
+                $this->logger->warning("The task with the identifier '{$taskId}' was not updated.");
+            }
+
+            return $this->taskService->getTask($taskId, $tripId);
+        }
+
+        #[OA\Delete(
+            path: "/trips/{tripId}/tasks/{taskId}",
+            summary: "Remove a task for a trip with the specified identifier",
+            operationId: "removeTripTask",
+            tags: ["Trips"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "tripId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the trip",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                ),
+                new OA\Parameter(
+                    name: "taskId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the task",
+                    schema: new OA\Schema(type: "string"),
+                    example: "6846808f-b8d8-409c-bc78-97878b3a4446",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 204,
+                    description: "Success. Removed a task for a trip with the specified identifier."
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function removeTripTask(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::TripTaskEdit);
+
+            $tripId = $this->requirePathArgument($routeArguments, "tripId");
+            $taskId = $this->requirePathArgument($routeArguments, "taskId");
+
+            $wasRemoved = $this->taskService->removeTask($taskId, $tripId);
+            if (!$wasRemoved) {
+                throw new NotFoundException($taskId);                
             }
 
             return null;

@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
         loadWebViewUrl(savedInstanceState, intent.getStringExtra("flight"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"),
-            intent.getStringExtra("year"), intent.getStringExtra("issues")?.toIntOrNull() ?: intent.getIntExtra("issues", 0))
+            intent.getStringExtra("year"), intent.getStringExtra("task"), intent.getStringExtra("issues")?.toIntOrNull() ?: intent.getIntExtra("issues", 0))
         CoroutineScope(Dispatchers.IO).launch {
             deviceInitializer.initialize()
         }
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadWebViewUrl(savedInstanceState: Bundle?, flight: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, issues: Int) {
+    private fun loadWebViewUrl(savedInstanceState: Bundle?, flight: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, task: String?, issues: Int) {
         val url = when {
             flight != null -> "https://www.flightradar24.com/data/flights/$flight"
             placeId != null -> "${BuildConfig.PORTAL_BASE_URL}place/$placeId"
@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity() {
             categoryId != null -> "${BuildConfig.PORTAL_BASE_URL}category/$categoryId"
             year != null -> "${BuildConfig.PORTAL_BASE_URL}year/$year"
             issues > 0 -> "${BuildConfig.PORTAL_BASE_URL}admin?tab=issues"
+            task != null -> "${BuildConfig.PORTAL_BASE_URL}admin?tab=tasks"
             else -> BuildConfig.PORTAL_BASE_URL
         }
         
