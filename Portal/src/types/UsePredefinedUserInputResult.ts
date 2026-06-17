@@ -1,6 +1,6 @@
 import type { Place } from "../classes/Place.ts"
 import type { Trip } from "../classes/Trip.ts"
-import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Subscription, TimeBasedFitness, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Subscription, Task, TaskPriority, TimeBasedFitness, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 
 export interface UsePredefinedUserInputResult {
@@ -75,4 +75,8 @@ export interface UsePredefinedUserInputResult {
     showCreateCompositeRegionToast: (createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geoJson: object) => object, extractGeoJsonFeatures: (geoJson: object) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: object, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCopyTripItineraryToast: (copyTripItinerary: () => Promise<void>) => Promise<boolean>
+    showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: Date) => Promise<Task>) => Promise<boolean>
+    showRemoveTaskToast: (removeTask: () => Promise<void>) => Promise<boolean>
+    showUpdateTaskPriorityToast: (updateTaskPriority: (priority: TaskPriority) => Promise<Task>) => Promise<boolean>
+    showUpdateTaskDescriptionToast: (description: string, updateTaskDescription: (description: string) => Promise<Task>) => Promise<boolean>
 }

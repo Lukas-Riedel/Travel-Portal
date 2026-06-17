@@ -2,13 +2,16 @@ import {
     getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, createTripHighlight, removeTripHighlight,
     updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
     updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote,
-    updateTripNoteContent,
-    refreshTripHighlights
+    updateTripNoteContent, refreshTripHighlights,
+    createTripTask,
+    updateTripTaskDescription,
+    updateTripTaskPriority,
+    removeTripTask
 } from "../clients/coreClient.ts"
 import { Trip } from "../classes/Trip.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
-import type { ExpenseType } from "../types/CoreSwaggerTypes.ts"
+import type { ExpenseType, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import type { UseTripResult } from "../types/UseTripResult.ts"
 
 export const useTrip = (tripId?: string): UseTripResult => {
@@ -34,6 +37,10 @@ export const useTrip = (tripId?: string): UseTripResult => {
         removeTripExpense: (expenseId: string) => removeTripExpense(tripId, expenseId).then(refetchResponse),
         updateTripExpenseDescription: (expenseId: string, description: string) => updateTripExpenseDescription(tripId, expenseId, description).then(refetchResponse),
         updateTripExpenseValue: (expenseId: string, value: number, currency: string) => updateTripExpenseValue(tripId, expenseId, value, currency).then(refetchResponse),
+        createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: number) => createTripTask(tripId, description, priority, deadline).then(refetchResponse),
+        updateTripTaskDescription: (tripId: string, taskId: string, description: string) => updateTripTaskDescription(tripId, taskId, description).then(refetchResponse),
+        updateTripTaskPriority: (tripId: string, taskId: string, priority: TaskPriority) => updateTripTaskPriority(tripId, taskId, priority).then(refetchResponse),
+        removeTripTask: (tripId: string, taskId: string) => removeTripTask(tripId, taskId).then(refetchResponse),
         createTripNote: (name: string) => createTripNote(tripId, name).then(refetchResponse),
         updateTripNoteContent: (noteId: string, content: string) => updateTripNoteContent(tripId, noteId, content).then(refetchResponse),
         removeTripNote: (noteId: string) => removeTripNote(tripId, noteId).then(refetchResponse),

@@ -14,7 +14,7 @@ export default function YearsPage() {
 
     const years = useYears()
     const { places } = useTimeFilteredRegularPlaces({ sort: "-score" })
-    const trips = useRegularTrips()
+    const { trips } = useRegularTrips()
     const countryCategories = useCategories({ categories: ["country"] })
 
     const countryCategoriesMap = useMemo(() => {

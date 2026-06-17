@@ -14,7 +14,7 @@ export default function AirportPage() {
     const { airportId } = useParams()
     const { hasRole } = useAuth()
 
-    const trips = useRegularTrips({ include: ["flights"] })
+    const { trips } = useRegularTrips({ include: ["flights"] })
     const countryCategories = useCategories({ categories: ["country"] })
     const { airport, updateAirportLongName } = useAirport(airportId)
 

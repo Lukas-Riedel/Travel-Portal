@@ -4,9 +4,10 @@ import LoadingCard from "./LoadingCard.tsx"
 interface CardGridProps {
     rowSize: number
     children?: React.ReactNode
+    className?: string
 }
 
-export default function CardGrid({ rowSize, children }: CardGridProps) {
+export default function CardGrid({ rowSize, children, className = "my-6" }: CardGridProps) {
     // TODO: Rewrite to CSS.
     const getRealRowSize = useCallback((width: number) => {
         if (width < 640) {
@@ -21,7 +22,7 @@ export default function CardGrid({ rowSize, children }: CardGridProps) {
         return rowSize
     }, [rowSize])
 
-    const [gridtemplatecolumns, setGridTemplateColumns] = useState(() => getRealRowSize(window.innerWidth))
+    const [gridTemplatecolumns, setGridTemplateColumns] = useState(() => getRealRowSize(window.innerWidth))
 
     useEffect(() => {
         const handleResize = () => setGridTemplateColumns(getRealRowSize(window.innerWidth))
@@ -31,9 +32,9 @@ export default function CardGrid({ rowSize, children }: CardGridProps) {
 
     return (
         <div
-            className="grid gap-4 text-sm w-full my-6"
-            style={{ gridTemplateColumns: `repeat(${gridtemplatecolumns}, minmax(0, 1fr))` }}>
-            {children || Array.from({ length: gridtemplatecolumns }, (_, index) => (
+            className={`grid gap-4 text-sm w-full ${className}`}
+            style={{ gridTemplateColumns: `repeat(${gridTemplatecolumns}, minmax(0, 1fr))` }}>
+            {children || Array.from({ length: gridTemplatecolumns }, (_, index) => (
                 <LoadingCard key={index} />
             ))}
         </div>

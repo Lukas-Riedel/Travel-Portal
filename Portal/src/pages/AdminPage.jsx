@@ -21,7 +21,7 @@ import AirlineCardGrid from "../components/AirlineCardGrid"
 import { useAirports } from "../hooks/useAirports"
 import {
     createScheduledFlight, createWatchedFlight, getCoordinates, refreshPlaceAlbum, updateCategoryMetadata,
-    listRegularPlaces, createGeographicalExtensionRegion, removeCandidatePlace, logFlight, replaceFitness, updatePlaceCountry
+    listRegularPlaces, createGeographicalExtensionRegion, removeCandidatePlace, logFlight, replaceFitness, updatePlaceCountry,
 } from "../clients/coreClient.ts"
 import PlaceCardGrid from "../components/PlaceCardGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
@@ -41,6 +41,8 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useTranslation } from "react-i18next"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
+import TaskCardBoard from "../components/TaskCardBoard.tsx"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 // TODO: Duplicated in ExpenseSummary.
 // TODO: Eventually define in PHP and include in the Swagger schema (similarly to StatisticsName).
@@ -63,13 +65,13 @@ export default function AdminPage() {
     const { t } = useTranslation()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
-    const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast } = usePredefinedUserInput()
+    const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast, showCreateTripTaskToast } = usePredefinedUserInput()
 
     const dataConsistencyIssues = useDataConsistencyIssues()
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
     const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: "agent" })
-    const trips = useRegularTrips({ include: ["watchedFlights"] })
+    const { trips, createTripTask, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } = useRegularTrips({ include: ["watchedFlights", "tasks"] })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense, updateTripNoteContent,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: ["categories"], minStart: 0, maxEnd: 0 })
@@ -88,9 +90,11 @@ export default function AdminPage() {
     const [activeTab, setActiveTab] = useState(0)
 
     const watchedFlights = useMemo(() => {
-        const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? []);
+        const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
         return filteredFlights && [...filteredFlights].sort((a, b) => a.start - b.start)
     }, [trips])
+
+    const tasksWithTrips = useMemo(() => trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip }))), [trips])
 
     const labels = [
         {
@@ -147,6 +151,11 @@ export default function AdminPage() {
             tab: AdminMenuTabName.Vouchers,
             name: t("menu.tab.label.vouchers"),
             enabled: hasRole(UserRole.VoucherEdit)
+        },
+        {
+            tab: AdminMenuTabName.Tasks,
+            name: t("menu.tab.label.tasks"),
+            enabled: hasRole(UserRole.TripTaskEdit)
         }
     ]
 
@@ -203,6 +212,10 @@ export default function AdminPage() {
 
             return createVoucher(code, issuer, value, currency, convertedExpiration)
         })
+    }
+
+    const handleTaskCreated = () => {
+        showCreateTripTaskToast(trips?.filter(trip => trip.end > getCurrentTimestamp()), (tripId, description, priority, deadline) => createTripTask(tripId, description, priority, deadline && (deadline.getTime() / 1000)))
     }
 
     const handlePermanentPlaceCreated = () => {
@@ -370,6 +383,19 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handleVoucherCreated} />
+                </>
+            )}
+            {activeTab === 11 && hasRole(UserRole.TripTaskEdit) && (
+                <>
+                    <TaskCardBoard
+                        rowSize={4}
+                        tasksWithTrips={tasksWithTrips}
+                        onTaskDescriptionUpdated={updateTripTaskDescription}
+                        onTaskPriorityUpdated={updateTripTaskPriority}
+                        onTaskRemoved={removeTripTask} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleTaskCreated} />
                 </>
             )}
         </>

@@ -10,7 +10,7 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts";
 export default function TrackerPage() {
     const { hasRole } = useAuth()
 
-    const trips = useRegularTrips({ include: ["flights"] })
+    const { trips } = useRegularTrips({ include: ["flights"] })
     const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["overtime", "vacation", "selfcare", "tenure", "plannedWork"])
     const { isFreeDay } = usePublicHolidays(trips?.at(-1)?.year)
 

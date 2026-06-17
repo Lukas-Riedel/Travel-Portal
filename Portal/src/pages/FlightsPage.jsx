@@ -10,7 +10,7 @@ import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 export default function FlightsPage() {
     const { hasRole } = useAuth()
 
-    const trips = useRegularTrips({ include: ["flights"] })
+    const { trips } = useRegularTrips({ include: ["flights"] })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const flights = useMemo(() => {

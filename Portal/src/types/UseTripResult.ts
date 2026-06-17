@@ -1,5 +1,5 @@
 import type { Trip } from "../classes/Trip.ts"
-import type { Expense, ExpenseType, Highlight, Note } from "./CoreSwaggerTypes.ts"
+import type { Expense, ExpenseType, Highlight, Note, TaskPriority, Task } from "./CoreSwaggerTypes.ts"
 
 export interface UseTripResult {
     trip?: Trip,
@@ -15,6 +15,10 @@ export interface UseTripResult {
     removeTripExpense: (expenseId: string) => Promise<void>
     updateTripExpenseDescription: (expenseId: string, description: string) => Promise<Expense>
     updateTripExpenseValue: (expenseId: string, value: number, currency: string) => Promise<Expense>
+    createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: number) => Promise<Task>
+    updateTripTaskDescription: (tripId: string, taskId: string, description: string) => Promise<Task>
+    updateTripTaskPriority: (tripId: string, taskId: string, priority: TaskPriority) => Promise<Task>
+    removeTripTask: (tripId: string, taskId: string) => Promise<void>
     createTripNote: (name: string) => Promise<Note>
     updateTripNoteContent: (noteId: string, content: string) => Promise<Note>
     removeTripNote: (noteId: string) => Promise<void>

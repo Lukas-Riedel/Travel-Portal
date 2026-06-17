@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { useUserInput } from "./useUserInput.tsx"
-import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Trip, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType, type Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
-import { formatTimestamp, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
+import type { Trip } from "../classes/Trip.ts"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
@@ -1263,7 +1264,91 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("trip.prompt.copy.failed")
         )
 
+    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: Date) => Promise<Task>) =>
+        showFormToast(
+            t("task.prompt.create.message"),
+            [
+                {
+                    type: "select",
+                    label: t("task.label.trip"),
+                    required: true,
+                    options: trips.map(trip => ({
+                        id: trip.id,
+                        name: trip.getFullName()
+                    }))
+                },
+                {
+                    type: "text",
+                    label: t("task.label.description"),
+                    required: true
+                },
+                {
+                    type: "select",
+                    label: t("task.label.priority"),
+                    required: true,
+                    options: Object.values(TaskPriority).map(priority => ({
+                        id: priority,
+                        name: t(`task.priority.${priority}`)
+                    }))
+                },
+                {
+                    type: "datetime-local",
+                    label: t("task.label.deadline"),
+                    required: false
+                }
+            ],
+            (tripId, description, priority, deadline) => createTripTask(tripId, description, priority as TaskPriority, deadline && new Date(deadline)),
+            t("task.prompt.create.confirmed"),
+            t("task.prompt.create.failed")
+        )
+
+    const showRemoveTaskToast = (removeTask: () => Promise<void>) =>
+        showConfirmToast(
+            t("task.prompt.remove.message"),
+            removeTask,
+            t("task.prompt.remove.confirmed"),
+            t("task.prompt.remove.failed")
+        )
+
+    const showUpdateTaskPriorityToast = (updateTaskPriority: (priority: TaskPriority) => Promise<Task>) =>
+        showFormToast(
+            t("task.prompt.update.priority.message"),
+            [
+                {
+                    type: "select",
+                    required: true,
+                    options: Object.values(TaskPriority).map(priority => ({
+                        id: priority,
+                        name: t(`task.priority.${priority}`)
+                    }))
+                }
+            ],
+            updateTaskPriority,
+            t("task.prompt.update.priority.confirmed"),
+            t("task.prompt.update.priority.failed")
+        )
+        
+
+    const showUpdateTaskDescriptionToast = (description: string, updateTaskDescription: (description: string) => Promise<Task>) =>
+        showFormToast(
+            t("task.prompt.update.description.message"),
+            [
+                {
+                    type: "text",
+                    required: true,
+                    defaultValue: description
+                }
+            ],
+            updateTaskDescription,
+            t("task.prompt.update.description.confirmed"),
+            t("task.prompt.update.description.failed")
+        )
+
     return {
+        showUpdateTaskDescriptionToast,
+        showUpdateTaskPriorityToast,
+        showRemoveTaskToast,
+        showCreateTripTaskToast,
         showCopyTripItineraryToast,
         showCreateSelectedRegionToast,
         showCreateCompositeRegionToast,

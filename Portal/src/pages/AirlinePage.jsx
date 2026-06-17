@@ -14,7 +14,7 @@ export default function AirlinePage() {
     const { airlineId } = useParams()
     const { hasRole } = useAuth()
 
-    const trips = useRegularTrips({ include: ["flights"] })
+    const { trips } = useRegularTrips({ include: ["flights"] })
     const countryCategories = useCategories({ categories: ["country"] })
     const { airline, updateAirlineName, removeAirline } = useAirline(airlineId)
 

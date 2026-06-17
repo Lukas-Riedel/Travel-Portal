@@ -7,7 +7,7 @@ import type {
     Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category, IndexableEntityType,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
     DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
-    Location, SearchResult
+    Location, SearchResult, TaskPriority, Task
 } from "../types/CoreSwaggerTypes.ts"
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
@@ -741,6 +741,32 @@ export const updatePlaceNoteContent = async (placeId: string, noteId: string, co
 
 export const removePlaceNote = async (placeId: string, noteId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}/notes/${noteId}`)
+
+export const createTripTask = async (tripId: string, description: string, priority: TaskPriority, deadline?: number): Promise<Task> =>
+    coreClient.post<Task>(`trips/${tripId}/tasks`,
+        {
+            description,
+            priority,
+            deadline
+        }
+    ).then(extractData)
+
+export const updateTripTaskDescription = async (tripId: string, taskId: string, description: string): Promise<Task> =>
+    coreClient.patch<Task>(`trips/${tripId}/tasks/${taskId}`,
+        {
+            description
+        }
+    ).then(extractData)
+
+export const updateTripTaskPriority = async (tripId: string, taskId: string, priority: TaskPriority): Promise<Task> =>
+    coreClient.patch<Task>(`trips/${tripId}/tasks/${taskId}`,
+        {
+            priority
+        }
+    ).then(extractData)
+
+export const removeTripTask = async (tripId: string, taskId: string): Promise<void> =>
+    coreClient.delete(`trips/${tripId}/tasks/${taskId}`)
 
 export const createTripNote = async (tripId: string, content: string): Promise<Note> =>
     coreClient.post<Note>(`trips/${tripId}/notes`,

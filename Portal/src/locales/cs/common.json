@@ -431,7 +431,8 @@
                 "subscriptions": "Aktivní předplatné",
                 "regions": "Regiony",
                 "documents": "Dokumenty",
-                "vouchers": "Poukazy"
+                "vouchers": "Poukazy",
+                "tasks": "Úkoly"
             }
         }
     },
@@ -578,6 +579,45 @@
                 "confirmed": "Let byl úspěšně přidán",
                 "failed": "Nepodařilo se přidat let"
             }
+        }
+    },
+    "task": {
+        "label": {
+            "description": "Popis",
+            "trip": "Výlet",
+            "priority": "Priorita",
+            "deadline": "Termín"
+        },
+        "prompt": {
+            "create": {
+                "message": "Zadej údaje o úkolu k přidání:",
+                "confirmed": "Úkol byl úspěšně přidán",
+                "failed": "Nepodařilo se přidat úkol"
+            },
+            "update": {
+                "priority": {
+                    "message": "Zadej novou prioritu úkolu:",
+                    "confirmed": "Priorita byla úspěšně aktualizována",
+                    "failed": "Nepodařilo se aktualizovat prioritu"
+                },
+                "description": {
+                    "message": "Zadej nový popis úkolu:",
+                    "confirmed": "Popis byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat popis"
+                }
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit tento úkol?",
+                "confirmed": "Úkol byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit úkol"
+            }
+        },
+        "priority": {
+            "lowest": "Nejnižší",
+            "low": "Nízká",
+            "medium": "Střední",
+            "high": "Vysoká",
+            "highest": "Nejvyšší"
         }
     },
     "note": {
