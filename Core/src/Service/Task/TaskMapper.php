@@ -15,6 +15,19 @@
             $this->databaseClient = $databaseClient;
         }
 
+        public function selectTripIdForTask(string $taskId) : ?string {
+            $sql = <<<'SQL'
+                SELECT trip_id
+                FROM task
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($taskId)
+                ->getSingleColumn("trip_id");
+        }
+
         public function selectTask(string $taskId, string $tripId) : ?Task {
             $sql = <<<'SQL'
                 SELECT *

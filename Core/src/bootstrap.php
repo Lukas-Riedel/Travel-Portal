@@ -256,7 +256,7 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
-        new TaskServiceListener($taskService, $eventPublisher, $scheduler),
+        new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

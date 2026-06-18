@@ -20,6 +20,10 @@
             return $task;
         }
 
+        public function getTripIdForTask(string $taskId) : ?string {
+            return $this->taskMapper->selectTripIdForTask($taskId);
+        }
+
         public function getTask(string $taskId, string $tripId) : ?Task {
             return $this->taskMapper->selectTask($taskId, $tripId);
         }
