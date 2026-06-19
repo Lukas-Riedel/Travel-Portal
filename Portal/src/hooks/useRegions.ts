@@ -13,7 +13,7 @@ export const useRegions = ({ name, enabled }: UseRegionsProps = {}): UseRegionsR
         queryKey: ["listRegions", name],
         queryFn: () => listRegions({ name }),
         staleTime: ONE_DAY_SECONDS * 1000,
-        enabled: enabled || !!name
+        enabled
     })
 
     return {

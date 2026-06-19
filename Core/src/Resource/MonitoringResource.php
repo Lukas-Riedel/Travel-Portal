@@ -35,7 +35,7 @@
             responses: [
                 new OA\Response(
                     response: 200,
-                    description: "Success. Retrieved a collection of airlines.",
+                    description: "Success. Retrieved a collection of data consistency issues.",
                     content: new OA\JsonContent(
                         type: "array",
                         items: new OA\Items(ref: "#/components/schemas/DataConsistencyIssue")

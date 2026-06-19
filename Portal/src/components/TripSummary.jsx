@@ -26,7 +26,7 @@ export default function TripSummary({ trip, displayWarnings, onNoteAdded, onNote
     const { publishPhotosUploadingTriggeredEvent } = useEvents()
     const { t } = useTranslation()
 
-    const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"] })
+    const { places } = useRegularPlaces({ tripId: trip?.id, include: ["categories", "dates"], enabled: !!trip?.id })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
         ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, type: KnownAddressType.Stay })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: "Letiště " + flight.from.shortName, address: "Letiště " + flight.from.shortName, type: KnownAddressType.Airport })) ?? []),

@@ -79,7 +79,7 @@ export default function AdminPage() {
     const { documents, createDocument, removeDocument } = useDocuments()
     const { vouchers, createVoucher, updateVoucherValue, removeVoucher } = useVouchers()
     const categories = useCategories()
-    const { createGeographicalRegion, createCompositeRegion } = useRegions()
+    const { createGeographicalRegion, createCompositeRegion } = useRegions({ enabled: false })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const categoriesWithRegions = useMemo(() => categories?.filter(category => category.category !== "country"), [categories])
