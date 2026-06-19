@@ -139,7 +139,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }
 
     return shuffledHighlights.length > 0 ? (
-        <div className="relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg my-4">
+        <div className={`relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg my-4 ${showEditor && "ring-8 ring-red-600"}`}>
             {showEditor ? (
                 <Cropper
                     image={currentHighlightReferencePhotoUrl}
