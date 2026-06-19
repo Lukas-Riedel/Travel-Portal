@@ -3,11 +3,12 @@ import type { UseDataConsistencyIssuesResult } from "../types/UseDataConsistency
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
 
-export const useDataConsistencyIssues = (): UseDataConsistencyIssuesResult => {
+export const useDataConsistencyIssues = (enabled?: boolean): UseDataConsistencyIssuesResult => {
     const { response } = useQuery({
         queryKey: ["listDataConsistencyIssues"],
         queryFn: listDataConsistencyIssues,
-        staleTime: ONE_HOUR_SECONDS * 1000
+        staleTime: ONE_HOUR_SECONDS * 1000,
+        enabled
     })
 
     return response

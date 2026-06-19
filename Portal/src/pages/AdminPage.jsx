@@ -67,7 +67,10 @@ export default function AdminPage() {
     const { configuration, updateConfigurationEntry } = useConfiguration()
     const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast, showCreateTripTaskToast } = usePredefinedUserInput()
 
-    const dataConsistencyIssues = useDataConsistencyIssues()
+    const [activeTab, setActiveTab] = useState(0)
+
+    // TODO: This is temporary to stop fetching data consistency issues every time since there are too many of them right now. The assumption is that there will always be a very little of them otherwise.
+    const dataConsistencyIssues = useDataConsistencyIssues(activeTab === 3)
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
     const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: "agent" })
@@ -86,8 +89,6 @@ export default function AdminPage() {
 
     const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
     const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
-
-    const [activeTab, setActiveTab] = useState(0)
 
     const watchedFlights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
@@ -115,7 +116,7 @@ export default function AdminPage() {
         {
             tab: AdminMenuTabName.DataConsistencyIssues,
             name: t("menu.tab.label.issues"),
-            enabled: dataConsistencyIssues && dataConsistencyIssues.length > 0 && hasRole(UserRole.MonitoringRead)
+            enabled: hasRole(UserRole.MonitoringRead)
         },
         {
             tab: AdminMenuTabName.Configuration,
