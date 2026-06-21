@@ -284,7 +284,7 @@
             $countryCategory = $this->getJsonBodyField($request, "countryCategory");
             $country = is_array($countryCategory) ? ($countryCategory["name"] ?? null) : null;
 
-            $radius = $this->requireJsonBodyField($request, "radius");
+            $radius = $this->getJsonBodyField($request, "radius") ?? 0;
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
             return $this->categoryService->createGeographicalRegion($name, $country, $category->value, $radius, $geoJson, $overwrite);
@@ -294,7 +294,7 @@
             $countryCategory = $this->getJsonBodyField($request, "countryCategory");
             $country = is_array($countryCategory) ? ($countryCategory["name"] ?? null) : null;
 
-            $radius = $this->requireJsonBodyField($request, "radius");
+            $radius = $this->getJsonBodyField($request, "radius") ?? 0;
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
             return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $radius, $geoJson);
