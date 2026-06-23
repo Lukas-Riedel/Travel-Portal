@@ -159,10 +159,7 @@ public class PhotoService implements AgentContextDataProvider {
         log.info("Uploading a replacement for the photo {}...", replacedPhotoId);
         byte[] data = photoFetcher.fetch(path);
 
-        PendingPhoto pendingPhoto = retryTemplate.execute(context -> {
-            coreClient.uploadPhoto(placeId, albumId, getPhotoName(), replacedPhotoId, data);
-            return null;
-        });
+        PendingPhoto pendingPhoto = coreClient.uploadPhoto(placeId, albumId, getPhotoName(), replacedPhotoId, data);
 
         log.info("Uploading of the replacement has finished. Refreshing the album...");
         retryTemplate.execute(context -> {
