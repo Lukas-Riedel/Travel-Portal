@@ -40,14 +40,15 @@ export default function CategoryPage() {
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
-    const totalScore = useMemo(() => places?.map(place => place.score).filter(Boolean)
-        .reduce((acc, score) => acc + score, 0), [places])
-    const totalQuality = useMemo(() => places?.map(place => place.quality).filter(Boolean)
-        .reduce((acc, quality) => acc + quality, 0), [places])
+    const totalScore = useMemo(() => places?.map(place => place.score)?.filter(Boolean)
+        ?.reduce((acc, score) => acc + score, 0), [places])
+    const totalQuality = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)
+        ?.reduce((acc, quality) => acc + quality, 0), [places])
+    const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)?.length, [places])    
 
     const attributes = {
         "Kategorie": categoryCategories[category?.category] ?? category?.category,
-        "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / places.length)}%`,
+        "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / placesWithQualityCount)}%`,
         "Celkové skóre": totalScore,
         "Počet highlightů": category?.highlights?.length
     }
