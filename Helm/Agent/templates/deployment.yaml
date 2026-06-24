@@ -74,6 +74,8 @@ spec:
               value: {{ printf "http://%s:%d" .Values.agent.iam.host (int .Values.agent.iam.port) | quote }}
             - name: SERVICE_IAM_CLIENT_ID
               value: "{{ .Values.agent.iam.client.agent.id }}"
+            - name: AGENT_PHOTO_FOLDER_DEFAULT
+              value: "{{ .Values.agent.photo.folder }}"
             - name: SERVICE_IAM_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -101,7 +103,7 @@ spec:
             - name: {{ .Release.Name }}-home-agentuser-agent
               mountPath: /home/agentuser/.agent
             - name: {{ .Release.Name }}-photos
-              mountPath: /mnt/photos
+              mountPath: {{ .Values.agent.photo.folder }}
               readOnly: true
       volumes:
         - name: {{ .Release.Name }}-tmp

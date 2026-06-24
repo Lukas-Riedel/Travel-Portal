@@ -183,7 +183,12 @@ export const useUserInput = (): UseUserInputResult => {
                                                         className="border rounded px-2 py-1 w-full text-sm"
                                                         defaultValue={roundedDefaultValue}
                                                         multiple={field.multiple}
-                                                        disabled={field.disabled}>
+                                                        disabled={field.disabled}
+                                                        onChange={e => {
+                                                            if (field.onChange) {
+                                                                field.onChange(e.target.value, inputRefs.current);
+                                                            }
+                                                        }}>
                                                         {!field.required && (
                                                             <option key="empty" value="">
                                                                 {""}
@@ -209,6 +214,11 @@ export const useUserInput = (): UseUserInputResult => {
                                                             className="sr-only peer"
                                                             defaultChecked={field.defaultValue}
                                                             disabled={field.disabled}
+                                                            onChange={e => {
+                                                                if (field.onChange) {
+                                                                    field.onChange(e.target.checked, inputRefs.current);
+                                                                }
+                                                            }}
                                                             autoFocus={index === 0} />
                                                         <div className="w-8 h-4 bg-gray-200 rounded-full peer-checked:bg-black
                                                             after:content-[''] after:absolute after:top-[2px] after:left-[2px]
@@ -229,6 +239,11 @@ export const useUserInput = (): UseUserInputResult => {
                                                         placeholder={field.placeholder}
                                                         defaultValue={field.defaultValue}
                                                         disabled={field.disabled}
+                                                        onChange={e => {
+                                                            if (field.onChange) {
+                                                                field.onChange(e.target.value, inputRefs.current);
+                                                            }
+                                                        }}
                                                         autoFocus={index === 0} />
                                                 ))}
                                             </div>

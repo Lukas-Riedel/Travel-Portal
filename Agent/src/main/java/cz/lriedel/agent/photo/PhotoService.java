@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_DATETIME_ORIGINAL;
 import static cz.lriedel.agent.persistance.ConfigurationRepository.SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY;
+import static cz.lriedel.agent.persistance.ConfigurationRepository.DEFAULT_PHOTO_FOLDER_CONFIGURATION_KEY;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
@@ -81,6 +82,7 @@ public class PhotoService implements AgentContextDataProvider {
     private final String agentIdentifier;
     private final int availableWorkers;
     private final boolean asyncUploadingEnabled;
+    private final Path defaultPhotoFolder;
 
     private final Map<String, CompletableFuture<Void>> pendingAsyncUploads = new ConcurrentHashMap<>();
 
@@ -88,7 +90,8 @@ public class PhotoService implements AgentContextDataProvider {
             ConfigurationRepository configurationRepository, UploadedPhotoRepository uploadedPhotoRepository,
             ObjectMapper objectMapper, ExecutorService executorService, String agentIdentifier,
             @Value("${agent.core.workers}") int availableWorkers,
-            @Value("${agent.photo.uploading.asynchronous}") boolean asyncUploadingEnabled) {
+            @Value("${agent.photo.uploading.asynchronous}") boolean asyncUploadingEnabled,
+            @Value("${agent.photo.folder.default:}") Path defaultPhotoFolder) {
         this.coreClient = coreClient;
         this.retryTemplate = retryTemplate;
         this.photoFetcher = photoFetcher;
@@ -99,6 +102,7 @@ public class PhotoService implements AgentContextDataProvider {
         this.agentIdentifier = agentIdentifier;
         this.availableWorkers = availableWorkers;
         this.asyncUploadingEnabled = asyncUploadingEnabled;
+        this.defaultPhotoFolder = defaultPhotoFolder;
     }
 
     @Scheduled(fixedDelayString = "${agent.photo.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
@@ -363,6 +367,7 @@ public class PhotoService implements AgentContextDataProvider {
 
     @Override
     public Map<String, Object> getContextData() {
-        return Map.of(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders());
+        return Map.of(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders(),
+            DEFAULT_PHOTO_FOLDER_CONFIGURATION_KEY, defaultPhotoFolder.normalize().toAbsolutePath().toString().replace('\\', '/'));
     }
 }

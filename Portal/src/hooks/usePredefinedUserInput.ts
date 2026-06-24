@@ -652,7 +652,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         type: "text",
                         label: t("photo.prompt.upload.label.path"),
                         required: true,
-                        defaultValue: defaultPath
+                        defaultValue: agents?.[0]?.data?.defaultPhotoFolder && `${agents?.[0]?.data?.defaultPhotoFolder}/${defaultPath}`
                     },
                     {
                         type: "select",
@@ -661,7 +661,13 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         options: agents.map(agent => ({
                             id: agent.id,
                             name: agent.name
-                        }))
+                        })),
+                        onChange: (value, refs) => {
+                            const agentCandidate = agents?.find(agent => agent.id === value)
+                            if (agentCandidate?.data?.defaultPhotoFolder && refs[0]) {
+                                refs[0].value = `${agentCandidate?.data?.defaultPhotoFolder}/${defaultPath}`
+                            }
+                        }
                     },
                     {
                         type: "number",
@@ -691,7 +697,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     {
                         type: "text",
                         label: t("photo.prompt.upload.label.path"),
-                        required: true
+                        required: true,
+                        defaultValue: agents?.[0]?.data?.defaultPhotoFolder && `${agents?.[0]?.data?.defaultPhotoFolder}/${defaultPath}`
                     },
                     {
                         type: "select",
@@ -700,7 +707,13 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         options: agents.map(agent => ({
                             id: agent.id,
                             name: agent.name
-                        }))
+                        })),
+                        onChange: (value, refs) => {
+                            const agentCandidate = agents?.find(agent => agent.id === value)
+                            if (agentCandidate?.data?.defaultPhotoFolder && refs[1]) {
+                                refs[1].value = `${agentCandidate?.data?.defaultPhotoFolder}/${defaultPath}`
+                            }
+                        }
                     },
                     {
                         type: "number",

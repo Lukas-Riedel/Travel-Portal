@@ -18,3 +18,5 @@ agent:
   nas:
     host: 192.168.1.241
     path: /mnt/HD/HD_a2/Fotky
+  photo:
+    folder: /mnt/photos

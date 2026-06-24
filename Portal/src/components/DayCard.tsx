@@ -22,7 +22,6 @@ import Card from "./Card.tsx"
 const SUN_ALTITUDE_THRESHOLD = 20
 const PRECIPITATION_PROBABILITY_THRESHOLD = 50
 const PRECIPITATION_TOTAL_THRESHOLD = 0.1
-const DEFAULT_PATH_PREFIX = "/mnt/photos"
 
 type DayEvent = Flight | (Place & PlaceDate)
 
@@ -119,7 +118,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         if (onPhotosAdded) {
             const onlineAgents = agents.filter(agent => isDeviceOnline(agent))
             showUploadPhotosToast(onlineAgents, (path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) =>
-                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification, trip && timestamp && `${DEFAULT_PATH_PREFIX}/${trip.year}/${trip.name} ${trip.year}/${placeName} ${formatTimestamp(timestamp, t("general.format.date.year.included"))}`)
+                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification, trip && timestamp && `${trip.year}/${trip.name} ${trip.year}/${placeName} ${formatTimestamp(timestamp, t("general.format.date.year.included"))}`)
         }
     }
 
