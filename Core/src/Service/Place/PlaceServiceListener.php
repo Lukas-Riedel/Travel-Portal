@@ -21,23 +21,18 @@
         private readonly CalendarClient $calendarClient;
         private readonly EventPublisher $eventPublisher;
 
-        private readonly int $minHighlightsPerPlaceCount;
-        private readonly int $maxHighlightsPerPlaceCount;
         private readonly int $highlightScoreMultiplier;
         private readonly int $photoScoreMultiplier;
         private readonly int $mainHighlightQualityMultiplier;
 
         public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService, PhotoService $photoService,
-            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $minHighlightsPerPlaceCount, int $maxHighlightsPerPlaceCount,
-            int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier) {
+            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->categoryService = $categoryService;
             $this->photoService = $photoService;
             $this->calendarClient = $calendarClient;
             $this->eventPublisher = $eventPublisher;
-            $this->minHighlightsPerPlaceCount = $minHighlightsPerPlaceCount;
-            $this->maxHighlightsPerPlaceCount = $maxHighlightsPerPlaceCount;
             $this->highlightScoreMultiplier = $highlightScoreMultiplier;
             $this->photoScoreMultiplier = $photoScoreMultiplier;
             $this->mainHighlightQualityMultiplier = $mainHighlightQualityMultiplier;

@@ -89,9 +89,6 @@ core:
         max: "30"
       category:
         max: "30"
-      place:
-        min: "3"
-        max: "15"
       candidate:
         coefficient: "20"
       cluster:
