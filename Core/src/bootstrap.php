@@ -242,7 +242,7 @@
         new IndexServiceListener($indexService, $photoService, $highlightService, $placeService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
-        new FlightServiceListener($flightService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
+        new FlightServiceListener($flightService, $tripService, $configurationService, $calendarClient, $distributedCacheClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $placeService, $distributedCacheClient, $eventPublisher, $scheduler),

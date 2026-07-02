@@ -68,6 +68,16 @@ onBackgroundMessage(messaging, payload => {
         })
     }
 
+    if (payload.data.event === "FlightReminderReceived") {
+        const args = JSON.parse(payload.data.args)
+
+        self.registration.showNotification(args.title, {
+            body: args.text,
+            icon: "icon-192.png",
+            data: "https://www.flightradar24.com/data/flights/" + args.flight
+        })
+    }
+
     if (payload.data.event === "ProcessingEnded") {
         const wrappedEvent = JSON.parse(payload.data.args)
 

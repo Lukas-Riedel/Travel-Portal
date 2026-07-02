@@ -62,6 +62,15 @@ export default function App() {
         })
     }, [flightLoggedEvents])
 
+    const { events: flightReminderReceivedEvents } = useEvents("FlightReminderReceived")
+    useEffect(() => {
+        flightReminderReceivedEvents.forEach(event => {
+            event.markAsRead()
+
+            toast.success(event.text)
+        })
+    }, [flightReminderReceivedEvents])
+
     const { events: processingStartedEvents } = useEvents("ProcessingStarted")
     useEffect(() => {
         processingStartedEvents.forEach(event => {

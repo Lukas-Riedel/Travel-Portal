@@ -479,8 +479,8 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($flightRow) {
-                    $from = new Airport(null, $flightRow["from"], null, null, null, null, null, null);
-                    $to = new Airport(null, $flightRow["to"], null, null, null, null, null, null);
+                    $from = new Airport(null, $flightRow["from"], null, null, null, null, null, $this->geocodingService->getLocation($flightRow["from"])->getTimezone());
+                    $to = new Airport(null, $flightRow["to"], null, null, null, null, null, $this->geocodingService->getLocation($flightRow["to"])->getTimezone());
                     return new Flight($flightRow["flight"], null, null, null, null, $from, $to, $flightRow["start"], $flightRow["end"], null);
                 });
         }

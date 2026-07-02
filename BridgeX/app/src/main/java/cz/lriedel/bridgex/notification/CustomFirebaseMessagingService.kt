@@ -34,7 +34,8 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             DeviceLogOnRequestedNotificationFactory(this),
             NewDataConsistencyIssuesDetectedNotificationFactory(this),
             TaskDeadlineReachedNotificationFactory(this),
-            FlightLoggedNotificationFactory(this)
+            FlightLoggedNotificationFactory(this),
+            FlightReminderReceivedNotificationFactory(this)
         ).associateBy { factory ->
             factory.javaClass.simpleName.replace(NotificationFactory::class.java.simpleName, "")
         }
