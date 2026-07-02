@@ -1,5 +1,7 @@
 package cz.lriedel.bridgex
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
@@ -71,8 +73,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadWebViewUrl(savedInstanceState: Bundle?, flight: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, task: String?, issues: Int) {
+        if (flight != null) {
+            val flightUrl = "https://www.flightradar24.com/data/flights/$flight"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(flightUrl)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) 
+            }
+            webView.context.startActivity(intent)
+
+            return
+        }
+    
         val url = when {
-            flight != null -> "https://www.flightradar24.com/data/flights/$flight"
             placeId != null -> "${BuildConfig.PORTAL_BASE_URL}place/$placeId"
             tripId != null -> "${BuildConfig.PORTAL_BASE_URL}trip/$tripId"
             categoryId != null -> "${BuildConfig.PORTAL_BASE_URL}category/$categoryId"
