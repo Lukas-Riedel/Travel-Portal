@@ -563,7 +563,15 @@
         },
         "prompt": {
             "log": {
-                "message": "Opravdu chceš zalogovat tento let?",
+                "message": "Zadej údaje o letu k zalogování (ponech prázdné pro automatické vyplnění):",
+                "label": {
+                    "from": "Kód letiště odletu",
+                    "departure": "Čas odletu (v časové zóně místa odletu)",
+                    "to": "Kód letiště příletu",
+                    "arrival": "Čas příletu (v časové zóně místa příletu)",
+                    "aircraft": "Typ letadla",
+                    "registration": "Registrace letadla"
+                },
                 "confirmed": "Let byl úspěšně zalogován",
                 "failed": "Nepodařilo se zalogovat let"
             },

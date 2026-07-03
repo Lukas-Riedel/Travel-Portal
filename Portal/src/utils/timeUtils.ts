@@ -1,5 +1,6 @@
 import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
+import { getCoordinates } from "../clients/coreClient.ts"
 
 export const ONE_MINUTE_SECONDS = 60
 export const ONE_HOUR_SECONDS = 60 * ONE_MINUTE_SECONDS
@@ -51,4 +52,12 @@ export function getDate(dateOrTimestamp: number | Date): Date {
 
 export function getDayIndex(dateOrTimestamp: number | Date): number {
     return (typeof dateOrTimestamp === "number" ? Math.floor(dateOrTimestamp / ONE_DAY_SECONDS) : Math.floor(dateOrTimestamp.getTime() / (1000 * ONE_DAY_SECONDS))) + 2
+}
+
+export async function getAirportTimezone(airportName: string): Promise<string> {
+    return (await getCoordinates(airportName))?.timezone
+}
+
+export async function getAirportLocalTime(airportName: string, datetime: Date): Promise<number> {
+    return Math.round(fromZonedTime(datetime, await getAirportTimezone(airportName))?.getTime() / 1000)
 }

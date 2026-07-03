@@ -42,7 +42,7 @@ import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useTranslation } from "react-i18next"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import TaskCardBoard from "../components/TaskCardBoard.tsx"
-import { getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { getCurrentTimestamp, getAirportLocalTime } from "../utils/timeUtils.ts"
 
 // TODO: Duplicated in ExpenseSummary.
 // TODO: Eventually define in PHP and include in the Swagger schema (similarly to StatisticsName).
@@ -87,8 +87,7 @@ export default function AdminPage() {
 
     const categoriesWithRegions = useMemo(() => categories?.filter(category => category.category !== "country"), [categories])
 
-    const getAirportTimezone = async (airportName) => (await getCoordinates("Letiště " + airportName))?.timezone
-    const getAirportLocalTime = async (airportName, time) => Math.round(fromZonedTime(time, await getAirportTimezone(airportName))?.getTime() / 1000)
+    const doGetAirportLocalTime = async (airportName, time) => getAirportLocalTime(t("airport.format", { name: airportName }), time)
 
     const watchedFlights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
@@ -163,10 +162,10 @@ export default function AdminPage() {
     const handleFlightCreated = () => {
         showCreateFlightToast(async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
             if (type === "scheduled" || type === "logged") {
-                return createScheduledFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
+                return createScheduledFlight(flight, from, to, await doGetAirportLocalTime(from, scheduledDeparture), await doGetAirportLocalTime(to, scheduledArrival))
             }
             else if (type === "watched") {
-                return createWatchedFlight(flight, from, to, await getAirportLocalTime(from, scheduledDeparture), await getAirportLocalTime(to, scheduledArrival))
+                return createWatchedFlight(flight, from, to, await doGetAirportLocalTime(from, scheduledDeparture), await doGetAirportLocalTime(to, scheduledArrival))
             }
             else {
                 return Promise.reject(`Unknown flight type '${type}'.`)

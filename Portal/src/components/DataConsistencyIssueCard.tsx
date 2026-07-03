@@ -12,7 +12,7 @@ import { useAppNavigate } from "../hooks/useAppNavigate.ts"
 import { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import type { Trip } from "../classes/Trip.ts"
-import { formatTimestamp } from "../utils/timeUtils.ts"
+import { formatTimestamp, getAirportLocalTime } from "../utils/timeUtils.ts"
 import Card from "./Card.tsx"
 import { useMemo } from "react"
 
@@ -27,7 +27,7 @@ interface DataConsistencyIssueCardProps {
     onPhotoInvalidated?: (photoId: string) => Promise<void>
     onGeographicalExtensionCategoryAdded?: (name: string, country: string, category: string, latitude: number, longitude: number) => Promise<GeographicalRegion>
     onPlaceRemoved?: (placeId: string) => Promise<void>
-    onFlightLogged?: (flight: string, from: string, to: string, scheduledDeparture: number) => Promise<Flight>
+    onFlightLogged?: (flight: string, from: string, to: string, scheduledDeparture: number, scheduledArrival?: number, actualDeparture?: number, actualArrival?: number, fromCode?: string, toCode?: string, aircraft?: string, registration?: string) => Promise<Flight>
     onCategoryMetadataChanged?: (categoryId: string, metadata: CategoryMetadata) => Promise<Category>
     onAirportCountryChanged?: (airportId: string, country: string) => Promise<Airport>
     onPlaceCountryChanged?: (placeId: string, country: string) => Promise<Place>
@@ -125,7 +125,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
     const handleFlightLogged = (flight: Flight) => {
         if (onFlightLogged) {
-            showLogFlightToast(() => onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start))
+            showLogFlightToast(async (actualDeparture?: Date, actualArrival?: Date, fromCode?: string, toCode?: string, aircraft?: string, registration?: string) => 
+                onFlightLogged(flight.flight, flight.from.shortName, flight.to.shortName, flight.start, flight.end,
+                    actualDeparture && await getAirportLocalTime(t("airport.format", { name: flight.from.shortName }), actualDeparture), actualArrival && await getAirportLocalTime(t("airport.format", { name: flight.to.shortName }), actualArrival), 
+                    fromCode, toCode, aircraft, registration))
         }
     }
 

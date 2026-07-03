@@ -48,7 +48,7 @@ export interface UsePredefinedUserInputResult {
     showUpdateAirlineToast: (airline: Airline, updateAirlineName: (name: string) => Promise<Airline>, updateAirlineLogo: (logo: string) => Promise<Airline>, removeAirlineCode: (code: string) => Promise<void>) => Promise<boolean>
     showRemoveAirlineToast: (removeAirline: () => Promise<void>) => Promise<boolean>
     showRemovePhotoToast: (removePhoto: () => Promise<void>) => Promise<boolean>
-    showLogFlightToast: (logFlight: () => Promise<Flight>) => Promise<boolean>
+    showLogFlightToast: (logFlight: (actualDeparture?: Date, actualArrival?: Date, fromCode?: string, toCode?: string, aircraft?: string, registration?: string) => Promise<Flight>) => Promise<boolean>
     showCreateHighlightToast: (createHighlight: () => Promise<Highlight>) => Promise<boolean>
     showUpdateMainHighlightToast: <T extends Highlightable> (updateMainHighlight: () => Promise<T>) => Promise<boolean>
     showUpdateHighlightToast: (updateHighlight: () => Promise<Highlight>) => Promise<boolean>

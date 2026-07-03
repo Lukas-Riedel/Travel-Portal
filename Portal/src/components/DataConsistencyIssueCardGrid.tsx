@@ -15,7 +15,7 @@ interface DataConsistencyIssueCardGridProps {
     onPhotoInvalidated?: (photoId: string) => Promise<void>
     onGeographicalExtensionCategoryAdded?: (name: string, country: string, category: string, latitude: number, longitude: number) => Promise<GeographicalRegion>
     onPlaceRemoved?: (placeId: string) => Promise<void>
-    onFlightLogged?: (flight: string, from: string, to: string, scheduledDeparture: number) => Promise<Flight>
+    onFlightLogged?: (flight: string, from: string, to: string, scheduledDeparture: number, scheduledArrival?: number, actualDeparture?: number, actualArrival?: number, fromCode?: string, toCode?: string, aircraft?: string, registration?: string) => Promise<Flight>
     onCategoryMetadataChanged?: (categoryId: string, metadata: CategoryMetadata) => Promise<Category>
     onAirportCountryChanged?: (airportId: string, country: string) => Promise<Airport>
     onPlaceCountryChanged?: (placeId: string, country: string) => Promise<Place>

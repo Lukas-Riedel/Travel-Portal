@@ -343,10 +343,46 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("photo.prompt.remove.failed")
         )
 
-    const showLogFlightToast = (logFlight: () => Promise<Flight>) =>
-        showConfirmToast(
+    const showLogFlightToast = (logFlight: (actualDeparture?: Date, actualArrival?: Date, fromCode?: string, toCode?: string, aircraft?: string, registration?: string) => Promise<Flight>) =>
+        showFormToast(
             t("flight.prompt.log.message"),
-            logFlight,
+            [
+                {
+                    type: "text",
+                    label: t("flight.prompt.log.label.aircraft"),
+                    required: false,
+                    placeholder: "A388"
+                },
+                {
+                    type: "text",
+                    label: t("flight.prompt.log.label.registration"),
+                    required: false,
+                    placeholder: "A6-ABC"
+                },
+                {
+                    type: "text",
+                    label: t("flight.prompt.log.label.from"),
+                    required: false,
+                    placeholder: "PRG"
+                },
+                {
+                    type: "datetime-local",
+                    label: t("flight.prompt.log.label.departure"),
+                    required: false
+                },
+                {
+                    type: "text",
+                    label: t("flight.prompt.log.label.to"),
+                    required: false,
+                    placeholder: "DXB"
+                },
+                {
+                    type: "datetime-local",
+                    label: t("flight.prompt.log.label.arrival"),
+                    required: false
+                }
+            ] as const,
+            async (aircraft?: string, registration?: string, fromCode?: string, actualDeparture?: Date, toCode?: string, actualArrival?: Date) => logFlight(actualDeparture, actualArrival, fromCode, toCode, aircraft, registration),
             t("flight.prompt.log.confirmed"),
             t("flight.prompt.log.failed")
         )
@@ -1340,7 +1376,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("task.prompt.update.priority.confirmed"),
             t("task.prompt.update.priority.failed")
         )
-        
+
 
     const showUpdateTaskDescriptionToast = (description: string, updateTaskDescription: (description: string) => Promise<Task>) =>
         showFormToast(

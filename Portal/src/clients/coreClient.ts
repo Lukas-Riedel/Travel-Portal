@@ -646,22 +646,8 @@ export const updateTripExpenseValue = async (tripId: string, expenseId: string, 
 export const removeTripExpense = async (tripId: string, expenseId: string): Promise<void> =>
     coreClient.delete(`trips/${tripId}/expenses/${expenseId}`)
 
-export const logFlight = async (flight: string, from: string, to: string, scheduledDeparture: number): Promise<Flight> =>
-    coreClient.post<Flight>("flights?type=" + FlightType.Logged,
-        {
-            flight,
-            from: {
-                name: from
-            },
-            to: {
-                name: to
-            },
-            scheduledDeparture
-        }
-    ).then(extractData)
-
-export const logFlightManually = async (flight: string, aircraft: string, registration: string, from: string,
-    fromCode: string, to: string, toCode: string, scheduledDeparture: number, actualDeparture: number, scheduledArrival: number, actualArrival: number): Promise<Flight> =>
+export const logFlight = async (flight: string, from: string, to: string, scheduledDeparture: number,
+    scheduledArrival?: number, actualDeparture?: number, actualArrival?: number, fromCode?: string, toCode?: string, aircraft?: string, registration?: string): Promise<Flight> =>
     coreClient.post<Flight>("flights?type=" + FlightType.Logged,
         {
             flight,
