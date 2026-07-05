@@ -3,8 +3,11 @@ import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
 import { TailSpin } from "react-loader-spinner"
 import { GoogleMapsOverlay } from "@deck.gl/google-maps"
 import { IconLayer, LineLayer } from "@deck.gl/layers"
-import type { Coordinates } from "../types/Coordinates.ts"
 import type { Layer } from "@deck.gl/core"
+import type { MapPoint } from "../types/MapPoint.ts"
+import type { MapLine } from "../types/MapLine.ts"
+import type { GeoJSON } from "geojson"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 const DEFAULT_MAP_ZOOM = 8
 const DEFAULT_GEOJSON_COLOR = "#4285F4"
@@ -21,25 +24,12 @@ const MAP_STYLES = [
     { "featureType": "water", "elementType": "all", "stylers": [{ "color": "#dde6e8" }, { "visibility": "on" }] }
 ]
 
-interface MapPointProps {
-    name: string
-    latitude: number
-    longitude: number
-    color: string
-    unicode: string
-    onClick?: () => Promise<void>
-}
-
-interface MapLineProps {
-    from: Coordinates
-    to: Coordinates
-    color: string
-}
+const markerSvgCache = new globalThis.Map<string, string>()
 
 interface MapProps {
-    points?: MapPointProps[]
-    lines?: MapLineProps[]
-    geoJsons?: any[]
+    points?: MapPoint[]
+    lines?: MapLine[]
+    geoJsons?: GeoJSON[]
     onClick?: (featureId?: string) => Promise<void>
     onRightClick?: (latitude: number, longitude: number) => Promise<void>
 }
@@ -47,9 +37,11 @@ interface MapProps {
 export default function Map({ points, lines, geoJsons, onClick, onRightClick }: MapProps) {
     const mapRef = useRef<google.maps.Map>(null)
     const overlayRef = useRef<GoogleMapsOverlay>(null)
-    const [hoveredMarkerData, setHoveredMarkerData] = useState<{ name: string, unicode: string, x: number, y: number } | null>(null)
     const layersRef = useRef<Layer[]>([])
+
+    const [hoveredMarkerData, setHoveredMarkerData] = useState<{ name: string, unicode: string, x: number, y: number } | null>(null)
     const [isOverlayReady, setIsOverlayReady] = useState(false)
+    const [zoom, setZoom] = useState(DEFAULT_MAP_ZOOM)
 
     const computeMarkerScale = (zoom: number) => Math.min(Math.max(0.1 + zoom * 0.1, 0.5), 0.9)
     const hexToRgba = (hex: string, alpha: number = 255): [number, number, number, number] => {
@@ -62,20 +54,31 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
         ]
     }
 
-    const getMarkerSvg = (color: string) => `
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="60"
-            height="60"
-            viewBox="-2 -2 61 61">
-            <path
-                d="M 21.7691 46.7696 H 15.923 V 0 h 5.8461 V 46.7696 z M 45.1542 11.6925 L 56.8465 0 H 24.6924 v 23.3848 h 32.1542 L 45.1542 11.6925 z"
-                fill="${color}"
-                stroke="black"
-                stroke-width="0.1"
-                stroke-linejoin="round" />
-        </svg>`
+    const getMarkerSvg = (color: string): string => {
+        if (markerSvgCache.has(color)) {
+            return markerSvgCache.get(color)!
+        }
 
+        const svgData = `
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="60"
+                height="60"
+                viewBox="-2 -2 61 61">
+                <path
+                    d="M 21.7691 46.7696 H 15.923 V 0 h 5.8461 V 46.7696 z M 45.1542 11.6925 L 56.8465 0 H 24.6924 v 23.3848 h 32.1542 L 45.1542 11.6925 z"
+                    fill="${color}"
+                    stroke="black"
+                    stroke-width="0.1"
+                    stroke-linejoin="round" />
+            </svg>
+            `
+
+        const svgDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgData)}`
+        markerSvgCache.set(color, svgDataUrl)
+
+        return svgDataUrl
+    }
     useEffect(() => {
         if (!overlayRef.current || !(points || lines) || !isOverlayReady) {
             return
@@ -98,7 +101,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
         }
 
         if (points && points.length > 0) {
-            const scale = computeMarkerScale(mapRef.current ? mapRef.current.getZoom() : DEFAULT_MAP_ZOOM)
+            const scale = computeMarkerScale(zoom)
             activeLayers.push(
                 new IconLayer({
                     id: "deckgl-markers",
@@ -106,7 +109,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
                     pickable: true,
                     getIcon: point => {
                         return {
-                            url: `data:image/svg+xml;utf8,${encodeURIComponent(getMarkerSvg(point.color))}`,
+                            url: getMarkerSvg(point.color),
                             width: 60,
                             height: 60,
                             anchorX: 21,
@@ -132,32 +135,23 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
                         else {
                             setHoveredMarkerData(null)
                         }
-                    }
+                    },
+                    updateTriggers: {
+                        getSize: [scale]
+                    },
                 }))
         }
 
         layersRef.current = activeLayers
         overlayRef.current.setProps({ layers: activeLayers })
-    }, [points, lines, setHoveredMarkerData, isOverlayReady])
+    }, [points, lines, setHoveredMarkerData, isOverlayReady, zoom])
 
     const onMapZoomChanged = () => {
         if (!mapRef.current || !overlayRef.current) {
             return
         }
 
-        const scale = computeMarkerScale(mapRef.current.getZoom())
-        const updatedLayers = layersRef.current.map(layer => {
-            if (layer instanceof IconLayer && layer.id === "deckgl-markers") {
-                return layer.clone({
-                    getSize: () => MARKER_SIZE_MULTIPLIER * scale,
-                    updateTriggers: { getSize: [scale] }
-                })
-            }
-            return layer
-        })
-
-        layersRef.current = updatedLayers
-        overlayRef.current.setProps({ layers: updatedLayers })
+        setZoom(mapRef.current.getZoom())
     }
 
     const initMap = (map: google.maps.Map) => {
@@ -169,6 +163,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
         const bounds = new window.google.maps.LatLngBounds()
         let hasDataForBounds = false
 
+        // TODO: Rewrite to deck.gl.
         if (geoJsons && geoJsons.length > 0) {
             geoJsons.forEach(geoJson => {
                 map.data.addGeoJson(geoJson)
@@ -262,31 +257,29 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
                         onRightClick={e => onRightClick && onRightClick(e.latLng.lat(), e.latLng.lng())}
                         options={{ styles: MAP_STYLES, disableDefaultUI: true, fullscreenControl: true }} />
                     {hoveredMarkerData && (
-                        <div
-                            style={{
-                                position: "absolute",
-                                left: hoveredMarkerData.x + 15,
-                                top: hoveredMarkerData.y - 30,
-                                pointerEvents: "none",
-                                zIndex: 9999,
-                                backgroundColor: "white",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                                fontSize: "14px",
-                                fontWeight: "500",
-                                border: "1px solid #ccc",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px"
-                            }}
-                        >
+                        <div style={{
+                            position: "absolute",
+                            left: hoveredMarkerData.x + 15,
+                            top: hoveredMarkerData.y - 30,
+                            pointerEvents: "none",
+                            zIndex: 9999,
+                            backgroundColor: "white",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            border: "1px solid #ccc",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px"
+                        }}>
                             <img
                                 className="w-5 h-5 rounded-sm object-cover"
-                                src={`/img/flags/${hoveredMarkerData.unicode}.svg`}
-                                alt="flag"
-                            />
-                            <span className="whitespace-nowrap">{hoveredMarkerData.name}</span>
+                                src={`/img/flags/${hoveredMarkerData.unicode}.svg`} />
+                            <span className="whitespace-nowrap">
+                                {getEntityPrettyName(hoveredMarkerData.name)}
+                            </span>
                         </div>
                     )}
                 </div>

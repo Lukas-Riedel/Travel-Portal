@@ -13,6 +13,7 @@ import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
+import type { GeoJSON } from "geojson"
 
 export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
     coreClient.post<Highlight[]>(createQueryPath(`places/${placeId}/highlights/refresh`,
@@ -167,7 +168,7 @@ export const updateHighlightQualityAttributes = async (highlightId: string, comp
         }
     ).then(extractData)
 
-export const createGeographicalRegion = async (name: string, country: string, category: string, radius: number, geoJson: any, overwrite: boolean = false): Promise<GeographicalRegion> =>
+export const createGeographicalRegion = async (name: string, country: string, category: string, radius: number, geoJson: GeoJSON, overwrite: boolean = false): Promise<GeographicalRegion> =>
     coreClient.post<GeographicalRegion>(createQueryPath("regions",
         {
             type: RegionType.Geographical,

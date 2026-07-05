@@ -1,4 +1,5 @@
 import type { Coordinates } from "../types/Coordinates.ts"
+import type { GeoJSON, Feature, Geometry } from "geojson"
 
 export const EARTH_RADIUS_KILOMETERS = 6371.0
 
@@ -22,4 +23,35 @@ export function toRadians(degrees: number): number {
 
 export function toDegrees(radians: number): number {
     return radians * 180 / Math.PI
+}
+
+
+export function getGeoFeatures(geoJson: GeoJSON): Feature[] {
+    if (geoJson.type === "FeatureCollection") {
+        return geoJson.features
+    }
+
+    if (geoJson.type === "Feature") {
+        return [geoJson]
+    }
+
+    if (geoJson.type === "GeometryCollection" && geoJson.geometries.length === 1) {
+        return [
+            {
+                type: "Feature",
+                properties: {},
+                geometry: geoJson.geometries[0]
+            }
+        ]
+    }
+
+    return []
+}
+
+export function getGeoJson(geometry: Geometry): GeoJSON {
+    return {
+        type: "Feature",
+        properties: {},
+        geometry
+    }
 }

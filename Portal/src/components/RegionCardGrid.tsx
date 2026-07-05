@@ -1,12 +1,13 @@
 import type { Region } from "../types/Region.ts"
 import CardGrid from "./CardGrid.tsx"
 import RegionCard from "./RegionCard.tsx"
+import type { GeoJSON } from "geojson"
 
 interface RegionCardGridProps {
     regions: Region[] | null
     rowSize: number
     onCategorySelected?: (category: any) => void
-    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: any) => Promise<any>
+    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<any>
     onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<any>
     onRegionVisualized?: (region: Region) => void
 }

@@ -2,24 +2,36 @@ import { useMemo } from "react"
 import { Copy, Map, Wrench } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import LoadingCard from "./LoadingCard.tsx"
-import { getGeoJson, getGeoFeatures } from "../utils/helpers.js"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import type { GeographicalRegion, CompositeRegion, CategoryIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { Region } from "../types/Region.ts"
 import PropertyCardContent from "./PropertyCardContent.tsx"
 import Card from "./Card.tsx"
+import type { GeoJSON } from "geojson"
+import { getGeoFeatures, getGeoJson } from "../utils/geocodingUtils.ts"
 
 interface RegionCardProps {
     region: Region | null
     onCategorySelected?: (category: any) => void
-    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: any) => Promise<any>
+    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<any>
     onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<any>
     onRegionVisualized?: (region: Region) => void
 }
 
 const isGeographicalRegion = (region: Region): region is GeographicalRegion => "geoJson" in region
-const isGeopgraphicalExtension = (region: Region): boolean => isGeographicalRegion(region) && (region.geoJson as any).geometry?.type === "Point"
+const isGeopgraphicalExtension = (region: Region): boolean => {
+    if (!isGeographicalRegion(region)) {
+        return false
+    }
+
+    const geo = region.geoJson as GeoJSON
+    if (geo.type === "Feature") {
+        return geo.geometry?.type === "Point"
+    }
+
+    return geo.type === "Point"
+}
 const isCompositeRegion = (region: Region): region is CompositeRegion => "includedCategories" in region
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }: RegionCardProps) {

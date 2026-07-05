@@ -60,32 +60,6 @@ export function getOnlyElement(arr) {
     return arr?.length === 1 ? arr[0] : undefined
 }
 
-export function getGeoFeatures(geoJson) {
-    if (geoJson.type === "FeatureCollection") {
-        return geoJson.features
-    }
-    if (geoJson.type === "Feature") {
-        return [geoJson]
-    }
-    if (geoJson.type === "GeometryCollection" && geoJson.geometries.length === 1) {
-        return [
-            {
-                type: "Feature",
-                properties: {},
-                geometry: geoJson.geometries[0]
-            }
-        ]
-    }
-    return []
-}
-
-export function getGeoJson(geometry) {
-    return {
-        type: "Feature",
-        geometry
-    }
-}
-
 // TODO: What to do with this?
 export async function getCachedCoordinates(address, getCoordinates) {
     const cachedCoordinates = localStorage.getItem(address)

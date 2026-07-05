@@ -29,7 +29,6 @@ import { useSubscriptions } from "../hooks/useSubscriptions"
 import { useCategories } from "../hooks/useCategories"
 import SubscriptionCardGrid from "../components/SubscriptionCardGrid"
 import RegionEditor from "../components/RegionEditor"
-import { getGeoFeatures, getGeoJson } from "../utils/helpers"
 import { useDocuments } from "../hooks/useDocuments"
 import DocumentCardGrid from "../components/DocumentCardGrid"
 import { useVouchers } from "../hooks/useVouchers"
@@ -43,6 +42,7 @@ import { useTranslation } from "react-i18next"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import TaskCardBoard from "../components/TaskCardBoard.tsx"
 import { getCurrentTimestamp, getAirportLocalTime } from "../utils/timeUtils.ts"
+import { getGeoFeatures, getGeoJson } from "../utils/geocodingUtils.ts"
 
 // TODO: Duplicated in ExpenseSummary.
 // TODO: Eventually define in PHP and include in the Swagger schema (similarly to StatisticsName).

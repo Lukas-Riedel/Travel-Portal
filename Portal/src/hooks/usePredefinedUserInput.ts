@@ -7,6 +7,7 @@ import type { Highlightable } from "../types/Highlightable.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { Trip } from "../classes/Trip.ts"
+import type { GeoJSON } from "geojson"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
@@ -534,7 +535,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("voucher.prompt.remove.failed")
         )
 
-    const showCreateMultipleGeographicalRegionsToast = (createGeographicalRegions: (geoJson: object) => Promise<void>) =>
+    const showCreateMultipleGeographicalRegionsToast = (createGeographicalRegions: (geoJson: GeoJSON) => Promise<void>) =>
         showInputToast(
             t("region.prompt.create.multiple.message"),
             (geoJson: string) => createGeographicalRegions(JSON.parse(geoJson)),
@@ -849,7 +850,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.update.attribute.failed")
         )
 
-    const showOverwriteGeographicalRegionToast = (region: GeographicalRegion, overwriteGeographicalRegion: (radius: number, geoJson: object) => Promise<GeographicalRegion>) =>
+    const showOverwriteGeographicalRegionToast = (region: GeographicalRegion, overwriteGeographicalRegion: (radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>) =>
         showFormToast(
             t("region.prompt.overwrite.geographical.message"),
             [
@@ -1182,7 +1183,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("photo.prompt.synchronize.failed")
         )
 
-    const showCreateGeographicalRegionToast = (countryCategories: Category[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: object, country?: string, radius?: number) => Promise<GeographicalRegion>, templateRegion?: GeographicalRegion) =>
+    const showCreateGeographicalRegionToast = (countryCategories: Category[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, templateRegion?: GeographicalRegion) =>
         showFormToast(
             t("region.prompt.create.geographical.message"),
             [
@@ -1265,7 +1266,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("region.prompt.create.composite.failed")
         )
 
-    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geoJson: object) => object, extractGeoJsonFeatures: (geoJson: object) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: object, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
+    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
         showBranchingToast(
             t("region.prompt.create.selected.message"),
             {
