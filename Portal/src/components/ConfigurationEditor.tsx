@@ -1,21 +1,42 @@
 import { useState } from "react"
 import ReactJson from "react-json-view"
 import { TailSpin } from "react-loader-spinner"
-import { useAuth } from "../contexts/AuthContext"
+import { useAuth } from "../contexts/AuthContext.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useTranslation } from "react-i18next"
 
-export default function ConfigurationEditor({ configuration, onConfigurationUpdated }) {
+interface ConfigurationEditorProps {
+    configuration: Record<string, any> | null
+    onConfigurationUpdated?: (key: string, value: any) => Promise<Record<string, any>>
+}
+
+export default function ConfigurationEditor({ configuration, onConfigurationUpdated }: ConfigurationEditorProps) {
     const { accessToken } = useAuth()
-    const [selectedKey, setSelectedKey] = useState(null)
+    const { t } = useTranslation()
     const { showUpdateConfigurationEntryToast } = usePredefinedUserInput()
 
-    const formatConfigurationKeyName = key => key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase()).trim()
+    const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
-    const handleConfigurationUpdated = value => {
-        showUpdateConfigurationEntryToast(() => onConfigurationUpdated(selectedKey, value))
+    const formatConfigurationKeyName = (key: string) => key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase()).trim()
+
+    const handleConfigurationUpdated = (value: any) => {
+        if (selectedKey && onConfigurationUpdated) {
+            showUpdateConfigurationEntryToast(() => onConfigurationUpdated(selectedKey, value))
+        }
     }
 
-    return configuration ? (
+    if (!configuration) {
+        return (
+            <div className="flex justify-center items-center min-h-[400px]">
+                <TailSpin
+                    color="black"
+                    height={80}
+                    width={80} />
+            </div>
+        )
+    }
+
+    return (
         <div className="flex h-[600px] border rounded-xl overflow-hidden">
             <div className="w-1/4 border-r p-3 overflow-y-auto bg-gray-100">
                 {Object.keys(configuration).map(key => (
@@ -49,8 +70,16 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                         src={{ [selectedKey]: configuration[selectedKey] }}
                         onEdit={edit => {
                             const newConfig = { ...configuration }
-                            newConfig[selectedKey] = (typeof edit.updated_src[selectedKey] === "string" && !isNaN(edit.updated_src[selectedKey])
-                                && edit.updated_src[selectedKey].trim() !== "") ? Number(edit.updated_src[selectedKey]) : edit.updated_src[selectedKey]
+                            const rawValue = edit.updated_src[selectedKey]
+
+                            if (typeof rawValue === "string" && rawValue.trim() !== "") {
+                                const parsedNumber = Number(rawValue)
+                                newConfig[selectedKey] = !Number.isNaN(parsedNumber) ? parsedNumber : rawValue
+                            }
+                            else {
+                                newConfig[selectedKey] = rawValue
+                            }
+
                             handleConfigurationUpdated(newConfig[selectedKey])
                             return true
                         }}
@@ -58,24 +87,16 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
                         displayDataTypes={false}
                         displayObjectSize={false}
                         quotesOnKeys={false}
-                        displayArrayKey={false}
                         indentWidth={4}
                         iconStyle={"square"}
                     />
                 )}
                 {!selectedKey && (
                     <div className="flex items-center justify-center text-gray-500 h-full w-full">
-                        Vyber konfigurační klíč k editaci
+                        {t("configuration.select")}
                     </div>
                 )}
             </div>
-        </div>
-    ) : (
-        <div className="flex justify-center items-center min-h-[400px]">
-            <TailSpin
-                color="black"
-                height={80}
-                width={80} />
         </div>
     )
 }

@@ -27,15 +27,19 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
     const [overlayType, setOverlayType] = useState(0)
 
     const handlePhotoReplaced = () => {
-        showReplacePhotoToast(agents.filter(agent => isDeviceOnline(agent)),
-            (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path, sendNotification)
-                .then(() => {
-                    window.open(photo.permalink, "_blank")
-                }))
+        if (agents && place && album && photo && onPhotoReplaced) {
+            showReplacePhotoToast(agents.filter(agent => isDeviceOnline(agent)),
+                (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path, sendNotification)
+                    .then(() => {
+                        window.open(photo.permalink, "_blank")
+                    }))
+        }
     }
 
     const handleMainPhotoUpdated = () => {
-        showUpdateAlbumMainPhotoToast(() => onMainPhotoUpdated(album.id, photoPosition))
+        if (onMainPhotoUpdated && photoPosition) {
+            showUpdateAlbumMainPhotoToast(() => onMainPhotoUpdated(album.id, photoPosition))
+        }
     }
 
     return (
