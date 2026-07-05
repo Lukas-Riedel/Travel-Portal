@@ -9,6 +9,7 @@ export default function PlaceMap({ places, placeMainCategorySelector, onRightCli
                     latitude: place?.latitude,
                     longitude: place?.longitude,
                     color: placeMainCategorySelector(place)?.metadata?.color,
+                    unicode: placeMainCategorySelector(place)?.metadata?.unicode,
                     onClick: () => window.location.href = (window.location.pathname.startsWith("/plan") ? "/plan/place/" : "/place/") + place?.id
                 }
             })}

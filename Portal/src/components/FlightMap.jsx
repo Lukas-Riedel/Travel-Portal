@@ -64,6 +64,7 @@ export default function FlightMap({ flights, airportMainCategorySelector }) {
                     latitude: airport.latitude,
                     longitude: airport.longitude,
                     color: airportMainCategorySelector(airport)?.metadata?.color,
+                    unicode: airportMainCategorySelector(airport)?.metadata?.unicode,
                     onClick: () => window.location.href = "/airport/" + airport.id
                 }
             })}
