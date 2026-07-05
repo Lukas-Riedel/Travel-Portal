@@ -1,6 +1,14 @@
+import type { Place } from "../classes/Place.ts"
+import type { Album, Date } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
-import DateTile from "./DateTile"
-import TileGrid from "./TileGrid"
+import DateTile from "./DateTile.tsx"
+import TileGrid from "./TileGrid.tsx"
+
+interface DateTileGridProps {
+    place: Place | null
+    date: Date | null
+    onAlbumRefreshed?: (albumId: string) => Promise<Album>
+}
 
 export default function DateTileGrid({ place, onAlbumRefreshed }) {
     return (!place?.dates || place.dates.length > 0) && (

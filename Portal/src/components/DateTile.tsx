@@ -1,38 +1,49 @@
 import { useEffect, useState } from "react"
-import Lightbox from "yet-another-react-lightbox"
+import Lightbox, { type SlideImage } from "yet-another-react-lightbox"
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen"
 import Counter from "yet-another-react-lightbox/plugins/counter"
 import "yet-another-react-lightbox/styles.css"
 import "yet-another-react-lightbox/plugins/counter.css"
-import PhotoTile from "./PhotoTile"
+import PhotoTile from "./PhotoTile.tsx"
 import { TailSpin } from "react-loader-spinner"
-import { getDateString } from "../utils/helpers"
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
 import { Link } from "react-router-dom"
-import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos"
+import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Place } from "../classes/Place.ts"
+import type { Album, Date, Photo } from "../types/CoreSwaggerTypes.ts"
+import { useTranslation } from "react-i18next"
+import { formatTimestamp } from "../utils/timeUtils.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import AppLink from "./AppLink.tsx"
 
-export default function DateTile({ place, date, onAlbumRefreshed }) {
+interface DateTileProps {
+    place: Place | null
+    date: Date | null
+    onAlbumRefreshed?: (albumId: string) => Promise<Album>
+}
+
+export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProps) {
+    const { t } = useTranslation()
     const { showRefreshAlbumToast } = usePredefinedUserInput()
-
     const photos = usePlaceAlbumPhotos(place?.id, date?.album?.id)
 
     const [isLoading, setIsLoading] = useState(false)
-    const [galleryOpen, setGalleryOpen] = useState(false)
-    const [images, setImages] = useState([])
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false)
+    const [images, setImages] = useState<SlideImage[]>([])
 
     useEffect(() => {
         if (isLoading && photos?.length > 0) {
             setImages(photos.map(photo => ({ src: photo.url + "=d" })))
             setIsLoading(false)
-            setGalleryOpen(true)
+            setIsGalleryOpen(true)
         }
     }, [photos, isLoading])
 
     const openGallery = () => {
         if (photos?.length > 0) {
             setImages(photos.map(photo => ({ src: photo.url + "=d" })))
-            setGalleryOpen(true)
+            setIsGalleryOpen(true)
         }
         else {
             setIsLoading(true)
@@ -40,7 +51,9 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
     }
 
     const handleAlbumRefreshed = () => {
-        showRefreshAlbumToast(() => onAlbumRefreshed(date.album.id))
+        if (date?.album && onAlbumRefreshed) {
+            showRefreshAlbumToast(() => onAlbumRefreshed(date.album.id))
+        }
     }
 
     return (
@@ -48,8 +61,8 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
             <PhotoTile
                 src={date?.album?.mainImageUrl}
                 firstLineText={place?.name}
-                secondLineText={getDateString(date?.start)}
-                categories={place && [place.getCategory("mostSpecificWithMetadata")]}
+                secondLineText={date && formatTimestamp(date.start, t("general.format.date.year.included"))}
+                categories={place && [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)]}
                 onClick={openGallery} />
             {onAlbumRefreshed && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">
@@ -60,11 +73,11 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                         rel="noopener noreferrer">
                         <ExternalLink size={16} />
                     </a>
-                    <Link
-                        to={`/place/${place?.id}/album/${date.album.id}`}
+                    <AppLink
+                        to={{ place, album: date.album }}
                         className="btn-large-gray">
                         <Images size={16} />
-                    </Link>
+                    </AppLink>
                     {onAlbumRefreshed && (
                         <button
                             onClick={handleAlbumRefreshed}
@@ -94,8 +107,8 @@ export default function DateTile({ place, date, onAlbumRefreshed }) {
                 </div>
             )}
             <Lightbox
-                open={galleryOpen}
-                close={() => setGalleryOpen(false)}
+                open={isGalleryOpen}
+                close={() => setIsGalleryOpen(false)}
                 slides={images}
                 plugins={[Counter, Fullscreen]} />
         </div>

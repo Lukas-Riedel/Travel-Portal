@@ -4,6 +4,7 @@ import type { Airline, Airport, Category, Flight, Place, Trip } from "../types/C
 import type { Navigable } from "../types/Navigable.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import { formatTimestamp } from "./timeUtils.ts"
+import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
 
 const PLAN_PAGE_PREFIX = "/plan"
 const AIRLINE_PAGE_PREFIX = "/airline"
@@ -11,6 +12,7 @@ const AIRPORT_PAGE_PREFIX = "/airport"
 const CATEGORY_PAGE_PREFIX = "/category"
 const PLACE_PAGE_PREFIX = "/place"
 const TRIP_PAGE_PREFIX = "/trip"
+const ALBUM_PAGE_PREFIX = "/album"
 const ADMIN_PAGE_PREFIX = "/admin"
 
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
@@ -19,6 +21,7 @@ const isCategory = (to: Navigable): to is Category => (to as Category).category 
 const isPlace = (to: Navigable): to is Place => (to as Place).score !== undefined
 // TODO: Countries are optional, there is no way how to decide whether the entity is a trip at this point.
 const isTrip = (to: Navigable): to is Trip => (to as Trip).countries !== undefined
+const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).place !== undefined && (to as PlaceAlbum).album !== undefined
 const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => (to as AdminNavigationTarget).tab !== undefined
 
 export function getPath(to: Navigable, currentPath?: string): string {
@@ -41,6 +44,9 @@ export function getPath(to: Navigable, currentPath?: string): string {
     }
     else if (isTrip(to)) {
         path += TRIP_PAGE_PREFIX + "/" + to.id
+    }
+    else if (isPlaceAlbum(to)) {
+        path += PLACE_PAGE_PREFIX + "/" + to.place.id + ALBUM_PAGE_PREFIX + "/" + to.album.id
     }
     else if (isAdminNavigationTarget(to)) {
         path += ADMIN_PAGE_PREFIX + "?" + to.getURLSearchParams()
