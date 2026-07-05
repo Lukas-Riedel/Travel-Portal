@@ -23,7 +23,7 @@ export default function CardGrid({ rowSize, children, className = "my-6" }: Card
         return rowSize
     }, [rowSize])
 
-    const [gridTemplatecolumns, setGridTemplateColumns] = useState(() => getRealRowSize(window.innerWidth))
+    const [gridTemplateColumns, setGridTemplateColumns] = useState(() => getRealRowSize(window.innerWidth))
 
     useEffect(() => {
         const handleResize = () => setGridTemplateColumns(getRealRowSize(window.innerWidth))
@@ -34,8 +34,8 @@ export default function CardGrid({ rowSize, children, className = "my-6" }: Card
     return (
         <div
             className={cn("grid gap-4 text-sm w-full", className)}
-            style={{ gridTemplateColumns: `repeat(${gridTemplatecolumns}, minmax(0, 1fr))` }}>
-            {children || Array.from({ length: gridTemplatecolumns }, (_, index) => (
+            style={{ gridTemplateColumns: `repeat(${gridTemplateColumns}, minmax(0, 1fr))` }}>
+            {children || Array.from({ length: gridTemplateColumns }, (_, index) => (
                 <LoadingCard key={index} />
             ))}
         </div>
