@@ -1,10 +1,5 @@
 import React from "react"
-import { twMerge } from "tailwind-merge"
-import { clsx, type ClassValue } from "clsx"
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+import { cn } from "../utils/formattingUtils.ts"
 
 interface CardProps {
     children: React.ReactNode

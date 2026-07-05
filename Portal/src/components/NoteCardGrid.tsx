@@ -20,7 +20,9 @@ export default function NoteCardGrid({ notes, rowSize, onNoteCreated, onNoteCont
                     onNoteContentUpdated={onNoteContentUpdated}
                     onNoteRemoved={onNoteRemoved} />
             ))?.concat(
-                <NoteCard onNoteCreated={onNoteCreated} />
+                <NoteCard
+                    key={"new"}
+                    onNoteCreated={onNoteCreated} />
             )}
         </CardGrid>
     )

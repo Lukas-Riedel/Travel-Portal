@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import LoadingCard from "./LoadingCard.tsx"
+import { cn } from "../utils/formattingUtils.ts"
 
 interface CardGridProps {
     rowSize: number
@@ -32,7 +33,7 @@ export default function CardGrid({ rowSize, children, className = "my-6" }: Card
 
     return (
         <div
-            className={`grid gap-4 text-sm w-full ${className}`}
+            className={cn("grid gap-4 text-sm w-full", className)}
             style={{ gridTemplateColumns: `repeat(${gridTemplatecolumns}, minmax(0, 1fr))` }}>
             {children || Array.from({ length: gridTemplatecolumns }, (_, index) => (
                 <LoadingCard key={index} />
