@@ -1,11 +1,16 @@
-import PhotoTile from "./PhotoTile"
+import type { Category } from "../types/CoreSwaggerTypes.ts"
+import PhotoTile from "./PhotoTile.tsx"
 
-export default function CategoryTile({ category }) {
+interface CategoryTileProps {
+    category: Category | null
+}
+
+export default function CategoryTile({ category }: CategoryTileProps) {
     return (!category || category.mainHighlight) && (
         <PhotoTile
             src={category?.mainHighlight?.url?.thumbnail ?? category?.mainHighlight?.url?.full}
             firstLineText={category?.name}
             categories={category ? [category] : []}
-            to={category ? "/category/" + category?.id : "#"} />
+            to={category} />
     )
 }

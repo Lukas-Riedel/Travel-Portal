@@ -10,7 +10,7 @@ interface PhotoTileProps {
     firstLineText?: string
     secondLineText?: string
     categories?: Category[]
-    to?: string
+    to?: string | Navigable
     onClick?: () => void
     className?: string
 }
@@ -48,6 +48,7 @@ export default function PhotoTile({ src, firstLineText, secondLineText, categori
                         </li>
                         {firstLineText && (
                             <li className="break-words max-w-[300px] text-center">
+                                {/** TODO: Move formatting to the callers. */}
                                 {getEntityPrettyName(firstLineText)}
                             </li>
                         )}
