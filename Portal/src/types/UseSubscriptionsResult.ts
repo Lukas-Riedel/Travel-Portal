@@ -1,7 +1,7 @@
-import type { Subscription } from "./CoreSwaggerTypes.ts";
+import type { ExpenseCurrency, Subscription } from "./CoreSwaggerTypes.ts";
 
 export interface UseSubscriptionsResult {
     subscriptions?: Subscription[]
-    createSubscription: (description: string, value: number, currency: string, expiration: number) => Promise<Subscription>
+    createSubscription: (description: string, value: number, currency: ExpenseCurrency, expiration: number) => Promise<Subscription>
     removeSubscription: (subscriptionId: string) => Promise<void>
 }

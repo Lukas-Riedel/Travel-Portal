@@ -1,104 +1,103 @@
 import { useState, useMemo, useEffect } from "react"
-import {
-    Edit2, Trash2, Plus, Plane, TrainFront, Bed, Fuel, FerrisWheel, BusFront, Users, CarFront, Landmark, SquareParking,
-    CarTaxiFront, DollarSign, List, PieChart, Building2
-} from "lucide-react"
+import { Edit2, Trash2, Plus, Plane, TrainFront, Bed, FerrisWheel, Users, CarFront, Landmark, DollarSign, List, PieChart, Building2 } from "lucide-react"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { TailSpin } from "react-loader-spinner"
 import { getDateString } from "../utils/helpers"
 import { useVouchers } from "../hooks/useVouchers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { ExpenseCurrency, ExpenseType, UserRole, type Expense } from "../types/CoreSwaggerTypes.ts"
+import { useTranslation } from "react-i18next"
+import { format, fromUnixTime } from "date-fns"
+import type { ExpenseCandidate } from "../types/ExpenseCandidate.ts"
 
-const expenseTypes = {
+const EXPENSE_TYPES = {
     attraction: {
         icon: FerrisWheel,
-        label: "Atrakce",
         color: "text-yellow-600"
     },
     flight: {
         icon: Plane,
-        label: "Letenky",
         color: "text-sky-600"
     },
     hotel: {
         icon: Bed,
-        label: "Ubytování",
         color: "text-amber-800"
     },
     transport: {
         icon: TrainFront,
-        label: "Doprava",
         color: "text-indigo-700"
     },
     organizedTour: {
         icon: Users,
-        label: "Organizované zájezdy",
         color: "text-rose-700"
     },
     car: {
         icon: CarFront,
-        label: "Provoz auta",
         color: "text-emerald-700"
     },
     visa: {
         icon: Landmark,
-        label: "Víza, vstupní a výstupní poplatky",
         color: "text-green-700"
     },
     other: {
         icon: DollarSign,
-        label: "Ostatní",
         color: "text-neutral-700"
     }
 }
 
-// TODO: Eventually define in PHP and include in the Swagger schema (similarly to StatisticsName).
-const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
+const LOADING_ROWS_COUNT = 5
 
-const loadingRowsCount = 5
+interface ExpenseSummaryProps {
+    expenses: Expense[] | null
+    expenseCandidates?: Expense[]
+    onExpenseCreated?: (type: ExpenseType, description: string, value: number, currency: ExpenseCurrency, subscriptionId?: string) => Promise<Expense>
+    onExpenseDescriptionUpdated?: (expenseId: string, description: string) => Promise<Expense>
+    onExpenseValueUpdated?: (expenseId: string, value: number, currency: ExpenseCurrency) => Promise<Expense>
+    onExpenseRemoved?: (expenseId: string) => Promise<void>
+}
 
 export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseCreated,
-    onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }) {
+    onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }: ExpenseSummaryProps) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
     const { hasRole } = useAuth()
 
     const [detailedView, setDetailedView] = useState(!!onExpenseCreated)
-    const [duplicatedExpense, setDuplicatedExpense] = useState({})
-    const totalCost = useMemo(() => expenses?.reduce((sum, e) => sum + (e.mainCurrencyValue || 0), 0) ?? 0, [expenses])
+    const [duplicatedExpense, setDuplicatedExpense] = useState<ExpenseCandidate>({})
+
+    const totalCost = useMemo(() => (expenses ?? []).reduce((sum, expense) => sum + (expense.mainCurrencyValue || 0), 0), [expenses])
 
     const detailedRows = useMemo(() => (expenses ?? [])
         .map(expense => (
             <DetailedExpenseRow
                 key={expense.id}
                 expense={expense}
-                onExpenseDescriptionUpdated={onExpenseDescriptionUpdated}
-                onExpenseValueUpdated={onExpenseValueUpdated}
-                onExpenseDuplicated={onExpenseCreated && setDuplicatedExpense}
-                onExpenseRemoved={onExpenseRemoved} />
-        )), [expenses, configuration, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved])
+                onExpenseDescriptionUpdated={onExpenseDescriptionUpdated && (description => onExpenseDescriptionUpdated(expense.id, description))}
+                onExpenseValueUpdated={onExpenseValueUpdated && ((value, currency) => onExpenseValueUpdated(expense.id, value, currency))}
+                onExpenseDuplicated={onExpenseCreated && (() => setDuplicatedExpense(expense))}
+                onExpenseRemoved={onExpenseRemoved && (() => onExpenseRemoved(expense.id))} />
+        )), [expenses, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseCreated, setDuplicatedExpense])
 
     const aggregatedRows = useMemo(() => Object.entries((expenses ?? [])
-        .reduce((acc, e) => ((acc[e?.type] = (acc[e?.type] || 0) + (e?.mainCurrencyValue || 0)), acc), {}))
+        .reduce((acc: Record<string, number>, expense) => ((acc[expense.type] = (acc[expense.type] || 0) + (expense.mainCurrencyValue || 0)), acc), {}))
         .filter(([, cost]) => cost > 0)
         .sort((a, b) => b[1] - a[1])
         .map(([type, cost]) => (
             <AggregatedExpenseRow
                 key={type}
-                type={type}
+                type={type as ExpenseType}
                 cost={cost}
                 totalCost={totalCost} />
-        )), [expenses, configuration, totalCost])
+        )), [expenses, totalCost])
 
-    const loadingRows = Array.from({ length: loadingRowsCount })
+    const loadingRows = useMemo(() => Array.from({ length: LOADING_ROWS_COUNT })
         .map((_, index) => (
             <LoadingExpenseRow
                 key={index}
                 detailedView={detailedView} />
-        ))
+        )), [detailedView])
 
     const filteredExpenseCandidates = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
         expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), duplicatedExpense],
@@ -110,7 +109,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
             lastAddedExpense={expenses?.at(-1)}
             expenseCandidate={expenseCandidate}
             onExpenseCreated={onExpenseCreated} />
-    )), [filteredExpenseCandidates, expenses, duplicatedExpense])
+    )), [filteredExpenseCandidates, expenses, duplicatedExpense, onExpenseCreated])
 
     const actualRows = useMemo(() => {
         if (!expenses) {
@@ -168,17 +167,17 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                         <th
                             key="description"
                             className="p-3 text-center">
-                            Položka
+                            {t("expense.label.item")}
                         </th>
                         <th
                             key="value"
                             className="w-36 p-3 text-center">
-                            Cena
+                            {t("expense.label.price")}
                         </th>
                         <th
                             key="currency"
                             className="w-36 p-3 text-center hidden sm:table-cell">
-                            {detailedView ? "Přepočet" : "Podíl"}
+                            {detailedView ? t("expense.label.sum") : t("expense.label.share")}
                         </th>
                         {detailedView && onExpenseRemoved && (
                             <th
@@ -214,72 +213,91 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
     )
 }
 
-function AggregatedExpenseRow({ type, cost, totalCost }) {
+interface AggregatedExpenseRowProps {
+    type: ExpenseType
+    cost: number
+    totalCost: number
+}
+
+function AggregatedExpenseRow({ type, cost, totalCost }: AggregatedExpenseRowProps) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
 
-    const Icon = expenseTypes[type]?.icon || expenseTypes.other.icon
+    const Icon = EXPENSE_TYPES[type]?.icon || EXPENSE_TYPES.other.icon
     return (
         <tr
             key={type}
             className="hover:bg-gray-100">
-            <td className={`align-middle text-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
+            <td className={`align-middle text-center ${EXPENSE_TYPES[type]?.color || EXPENSE_TYPES.other.color}`}>
                 <Icon className="inline-block w-5 h-5" />
             </td>
-            <td className={`p-3 text-center truncate ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
-                {expenseTypes[type]?.label || expenseTypes.other.label}
+            <td className={`p-3 text-center truncate ${EXPENSE_TYPES[type]?.color || EXPENSE_TYPES.other.color}`}>
+                {t(`expense.name.${type}`)}
             </td>
-            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.other.color}`}>
+            <td className={`p-3 text-center ${EXPENSE_TYPES[type]?.color || EXPENSE_TYPES.other.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span>
                         {`${cost.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
                     </span>
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[type]?.color || expenseTypes.other.color} hidden sm:table-cell`}>
+            <td className={`p-3 text-center ${EXPENSE_TYPES[type]?.color || EXPENSE_TYPES.other.color} hidden sm:table-cell`}>
                 {totalCost > 0 ? ((100 * cost / totalCost).toFixed(1)) : "0.0"} %
             </td>
         </tr>
     )
 }
 
-function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }) {
+interface DetailedExpenseRowProps {
+    expense: Expense
+    onExpenseDescriptionUpdated?: (description: string) => Promise<Expense>
+    onExpenseValueUpdated?: (value: number, currency: ExpenseCurrency) => Promise<Expense>
+    onExpenseRemoved?: () => Promise<void>
+    onExpenseDuplicated?: () => void
+}
+
+function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseDuplicated }: DetailedExpenseRowProps) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
     const { showRemoveExpenseToast, showUpdateExpenseDescriptionToast, showUpdateExpenseValueToast } = usePredefinedUserInput()
 
     const handleRemove = () => {
-        // TODO: Remove expense.id, provide in the caller.
-        showRemoveExpenseToast(() => onExpenseRemoved(expense.id))
+        if (onExpenseRemoved) {
+            showRemoveExpenseToast(onExpenseRemoved)
+        }
     }
 
     const handleEditDescription = () => {
-        // TODO: Remove expense.id, provide in the caller.
-        showUpdateExpenseDescriptionToast(expense, description => onExpenseDescriptionUpdated(expense.id, description))
+        if (onExpenseDescriptionUpdated) {
+            showUpdateExpenseDescriptionToast(expense, onExpenseDescriptionUpdated)
+        }
     }
 
     const handleEditValue = () => {
-        // TODO: Remove expense.id, provide in the caller.
-        showUpdateExpenseValueToast(expense, currencies, (value, currency) => onExpenseValueUpdated(expense.id, value, currency))
+        if (onExpenseValueUpdated) {
+            showUpdateExpenseValueToast(expense, onExpenseValueUpdated)
+        }
     }
 
-    const Icon = expenseTypes[expense.type]?.icon || expenseTypes.other.icon
+    const Icon = EXPENSE_TYPES[expense.type]?.icon || EXPENSE_TYPES.other.icon
     return (
         <tr
             key={expense.id}
             className="hover:bg-gray-100">
-            <td className={`align-middle text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+            <td className={`align-middle text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color}`}>
                 {onExpenseDuplicated ? (
-                    <button onClick={() => onExpenseDuplicated(expense)}>
+                    <button onClick={onExpenseDuplicated}>
                         <Icon className="w-5 h-5" />
                     </button>
                 ) : (
                     <Icon className="inline-block w-5 h-5" />
                 )}
             </td>
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+            <td className={`p-3 text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span className="truncate">
                         {expense.description}
-                        {expense.subscription && ` (${expense.subscription.description} do ${getDateString(expense.subscription.expiration)})`}
+                        {expense.subscription && ` (${t("subscription.format", { description: expense.subscription.description, expiration: format(fromUnixTime(expense.subscription.expiration), t("general.format.date.year.included")) })})`}
                     </span>
                     {onExpenseDescriptionUpdated && (
                         <button
@@ -290,10 +308,10 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     )}
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+            <td className={`p-3 text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color}`}>
                 <div className="flex justify-center items-center space-x-1">
                     <span>
-                        {`${expense?.value} ${expense?.currency}`}
+                        {`${expense.value} ${expense.currency}`}
                     </span>
                     {onExpenseValueUpdated && (
                         <button
@@ -304,11 +322,11 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     )}
                 </div>
             </td>
-            <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color} hidden sm:table-cell`}>
-                {`${expense?.mainCurrencyValue?.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
+            <td className={`p-3 text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color} hidden sm:table-cell`}>
+                {`${expense.mainCurrencyValue.toFixed(0)} ${configuration?.expensify?.mainCurrency ?? ""}`}
             </td>
             {onExpenseRemoved && (
-                <td className={`p-3 text-center ${expenseTypes[expense.type]?.color || expenseTypes.other.color}`}>
+                <td className={`p-3 text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color}`}>
                     <button
                         className="p-1 btn-icon-hover"
                         onClick={handleRemove}>
@@ -320,7 +338,14 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
     )
 }
 
-function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }) {
+interface ExpenseCandidateRowProps {
+    expenseCandidate: ExpenseCandidate
+    lastAddedExpense?: Expense
+    onExpenseCreated?: (type: ExpenseType, description: string, value: number, currency: ExpenseCurrency, subscriptionId?: string) => Promise<Expense>
+}
+
+function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }: ExpenseCandidateRowProps) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
     const { showCreateExpenseToast } = usePredefinedUserInput()
 
@@ -328,25 +353,26 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const { vouchers, updateVoucherValue, removeVoucher } = useVouchers()
 
     const [wasEdited, setWasEdited] = useState(false)
-
-    const [newType, setNewType] = useState(Object.keys(expenseTypes)[0])
+    const [newType, setNewType] = useState(Object.values(ExpenseType)[0])
     const [newDescription, setNewDescription] = useState("")
     const [newValue, setNewValue] = useState(0)
-    const [newCurrency, setNewCurrency] = useState(undefined)
+    const [newCurrency, setNewCurrency] = useState(Object.values(ExpenseCurrency)[0])
 
     useEffect(() => {
         if (!wasEdited) {
-            setNewType(expenseCandidate?.type || Object.keys(expenseTypes)[0])
+            setNewType(expenseCandidate?.type || Object.values(ExpenseType)[0])
             setNewDescription(expenseCandidate?.description || "")
             setNewValue(expenseCandidate?.value || 0)
-            setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || "")
+            setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || Object.values(ExpenseCurrency)[0])
         }
     }, [expenseCandidate])
 
     const handleExpenseCreated = () => {
-        showCreateExpenseToast(subscriptions, vouchers.filter(voucher => voucher.currency === newCurrency),
-            (subscriptionId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId),
-            (voucherId, value) => updateVoucherValue(voucherId, value), (voucherId) => removeVoucher(voucherId))
+        if (onExpenseCreated) {
+            showCreateExpenseToast(subscriptions ?? [], (vouchers ?? []).filter(voucher => voucher.currency === newCurrency),
+                (subscriptionId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId),
+                (voucherId, value) => updateVoucherValue(voucherId, value), (voucherId) => removeVoucher(voucherId))
+        }
     }
 
     return (
@@ -357,15 +383,15 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     value={newType}
                     onChange={e => {
                         setWasEdited(true)
-                        setNewType(e.target.value)
+                        setNewType(e.target.value as ExpenseType)
                     }}
-                    disabled={expenseCandidate?.description}>
-                    {Object.keys(expenseTypes).map(typeName => (
+                    disabled={!!expenseCandidate?.description}>
+                    {Object.values(ExpenseType).map(expenseType => (
                         <option
                             className="text-center"
-                            key={typeName}
-                            value={typeName}>
-                            {expenseTypes[typeName].label}
+                            key={expenseType}
+                            value={expenseType}>
+                            {t(`expense.name.${expenseType}`)}
                         </option>
                     ))}
                 </select>
@@ -379,8 +405,8 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                         setWasEdited(true)
                         setNewDescription(e.target.value)
                     }}
-                    placeholder="Popis"
-                    disabled={expenseCandidate?.description} />
+                    placeholder={t("expense.label.description")}
+                    disabled={!!expenseCandidate?.description} />
             </td>
             <td className="flex flex-col md:flex-row p-3 text-center md:space-x-0.5 space-y-0.5">
                 <input
@@ -390,17 +416,17 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     value={newValue}
                     onChange={e => {
                         setWasEdited(true)
-                        setNewValue(e.target.value)
+                        setNewValue(Number(e.target.value))
                     }}
-                    placeholder="Cena" />
+                    placeholder={t("expense.label.price")} />
                 <select
                     className="border rounded p-1 flex-1 shrink"
                     value={newCurrency}
                     onChange={e => {
                         setWasEdited(true)
-                        setNewCurrency(e.target.value)
+                        setNewCurrency(e.target.value as ExpenseCurrency)
                     }}>
-                    {currencies.map(currency => (
+                    {Object.values(ExpenseCurrency).map(currency => (
                         <option
                             className="text-center"
                             key={currency}
@@ -422,17 +448,25 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     )
 }
 
-function LoadingExpenseRow({ detailedView }) {
+interface LoadingExpenseRowProps {
+    detailedView: boolean
+}
+
+function LoadingExpenseRow({ detailedView }: LoadingExpenseRowProps) {
     const { hasRole } = useAuth()
 
     return (
         <tr>
-            <td className="p-3 sm:hidden" colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 4 : 3}>
+            <td
+                className="p-3 sm:hidden"
+                colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 4 : 3}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>
             </td>
-            <td className="p-3 hidden sm:table-cell" colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 5 : 4}>
+            <td
+                className="p-3 hidden sm:table-cell"
+                colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 5 : 4}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>

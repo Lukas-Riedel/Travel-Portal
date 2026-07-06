@@ -11,7 +11,7 @@ import {
 import { Trip } from "../classes/Trip.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
-import type { ExpenseType, TaskPriority } from "../types/CoreSwaggerTypes.ts"
+import type { ExpenseCurrency, ExpenseType, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import type { UseTripResult } from "../types/UseTripResult.ts"
 
 export const useTrip = (tripId?: string): UseTripResult => {
@@ -33,10 +33,10 @@ export const useTrip = (tripId?: string): UseTripResult => {
         updateTripMainHighlight: (highlightId: string) => updateTripMainHighlight(tripId, highlightId).then(setResponse),
         updateTripHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
-        createTripExpense: (type: ExpenseType, description: string, value: number, currency: string, subscriptionId?: string) => createTripExpense(tripId, type, description, value, currency, subscriptionId).then(refetchResponse),
+        createTripExpense: (type: ExpenseType, description: string, value: number, currency: ExpenseCurrency, subscriptionId?: string) => createTripExpense(tripId, type, description, value, currency, subscriptionId).then(refetchResponse),
         removeTripExpense: (expenseId: string) => removeTripExpense(tripId, expenseId).then(refetchResponse),
         updateTripExpenseDescription: (expenseId: string, description: string) => updateTripExpenseDescription(tripId, expenseId, description).then(refetchResponse),
-        updateTripExpenseValue: (expenseId: string, value: number, currency: string) => updateTripExpenseValue(tripId, expenseId, value, currency).then(refetchResponse),
+        updateTripExpenseValue: (expenseId: string, value: number, currency: ExpenseCurrency) => updateTripExpenseValue(tripId, expenseId, value, currency).then(refetchResponse),
         createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: number) => createTripTask(tripId, description, priority, deadline).then(refetchResponse),
         updateTripTaskDescription: (tripId: string, taskId: string, description: string) => updateTripTaskDescription(tripId, taskId, description).then(refetchResponse),
         updateTripTaskPriority: (tripId: string, taskId: string, priority: TaskPriority) => updateTripTaskPriority(tripId, taskId, priority).then(refetchResponse),

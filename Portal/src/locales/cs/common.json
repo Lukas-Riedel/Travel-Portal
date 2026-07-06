@@ -729,6 +729,23 @@
         }
     },
     "expense": {
+        "label": {
+            "item": "Položka",
+            "price": "Cena",
+            "sum": "Přepočet",
+            "share": "Podíl",
+            "description": "Popis"
+        },
+        "name": {
+            "attraction": "Atrakce",
+            "flight": "Letenky",
+            "hotel": "Ubytování",
+            "transport": "Doprava",
+            "organizedTour": "Organizované zájezdy",
+            "car": "Provoz auta",
+            "visa": "Víza, vstupní a výstupní poplatky",
+            "other": "Ostatní"
+        },
         "prompt": {
             "create": {
                 "message": "Opravdu chceš vytvořit nový výdaj?",

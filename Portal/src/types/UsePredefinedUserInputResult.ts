@@ -1,6 +1,6 @@
 import type { Place } from "../classes/Place.ts"
 import type { Trip } from "../classes/Trip.ts"
-import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Subscription, Task, TaskPriority, TimeBasedFitness, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Subscription, Task, TaskPriority, TimeBasedFitness, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 import type { GeoJSON } from "geojson"
 
@@ -40,7 +40,7 @@ export interface UsePredefinedUserInputResult {
     showRemoveAlbumToast: (removeAlbum: () => Promise<void>) => Promise<boolean>
     showUpdateAlbumMainPhotoToast: (updateAlbumMainPhoto: () => Promise<Album>) => Promise<boolean>
     showCreateExpenseToast: (subscriptions: Subscription[], vouchers: Voucher[], createExpense: (subscriptionId?: string) => Promise<Expense>, updateVoucherValue: (voucherId: string, value: number) => Promise<Voucher>, removeVoucher: (voucherId: string) => Promise<void>) => Promise<boolean>
-    showUpdateExpenseValueToast: (expense: Expense, currencies: string[], updateExpenseValue: (value: number, currency: string) => Promise<Expense>) => Promise<boolean>
+    showUpdateExpenseValueToast: (expense: Expense, updateExpenseValue: (value: number, currency: ExpenseCurrency) => Promise<Expense>) => Promise<boolean>
     showUpdateExpenseDescriptionToast: (expense: Expense, updateExpenseDescription: (description: string) => Promise<Expense>) => Promise<boolean>
     showRemoveExpenseToast: (removeExpense: () => Promise<void>) => Promise<boolean>
     showCreateNoteToast: (createNote: (() => Promise<Note>) | ((content: string) => Promise<Note>)) => Promise<boolean>
@@ -68,9 +68,9 @@ export interface UsePredefinedUserInputResult {
     showCreatePlannedWorkToast: (defaultPlannedWorkHours: number, createPlannedWork: (hours: number) => Promise<TimeTrackingEvent>) => Promise<boolean>
     showCreateNegativeTimeTrackingEventToast: (type: TimeTrackingEventType, defaultHours: number, createNegativeTimeTrackingEvent: (hours: number) => Promise<TimeTrackingEvent>) => Promise<boolean>
     showCreateFlightToast: (createFlight: (flight: string, from: string, scheduledDeparture: Date, to: string, scheduledArrival: Date, type: FlightType) => Promise<Flight>) => Promise<boolean>
-    showCreateSubscriptionToast: (currencies: string[], createSubscription: (description: string, value: number, currency: string, expiration: Date) => Promise<Subscription>) => Promise<boolean>
+    showCreateSubscriptionToast: (createSubscription: (description: string, value: number, currency: ExpenseCurrency, expiration: Date) => Promise<Subscription>) => Promise<boolean>
     showCreateDocumentToast: (createDocument: (name: string, identifier: string, issuer: string, expiration?: Date) => Promise<Document>) => Promise<boolean>
-    showCreateVoucherToast: (currencies: string[], createVoucher: (identifier: string, issuer: string, value: number, currency: string, expiration?: Date) => Promise<Voucher>) => Promise<boolean>
+    showCreateVoucherToast: (createVoucher: (identifier: string, issuer: string, value: number, currency: ExpenseCurrency, expiration?: Date) => Promise<Voucher>) => Promise<boolean>
     showSynchronizePhotosToast: (synchronizePhotos: (path: string, expiration: Date) => Promise<void>) => Promise<boolean>
     showCreateGeographicalRegionToast: (countryCategories: Category[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, templateRegion?: GeographicalRegion) => Promise<boolean>
     showCreateCompositeRegionToast: (createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>

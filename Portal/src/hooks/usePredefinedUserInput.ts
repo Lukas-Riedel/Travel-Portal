@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { useUserInput } from "./useUserInput.tsx"
-import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType, type Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType, type Task, TaskPriority, ExpenseCurrency } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
 import type { Highlightable } from "../types/Highlightable.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
@@ -209,7 +209,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("expense.prompt.create.failed")
         )
 
-    const showUpdateExpenseValueToast = (expense: Expense, currencies: string[], updateExpenseValue: (value: number, currency: string) => Promise<Expense>) =>
+    const showUpdateExpenseValueToast = (expense: Expense, updateExpenseValue: (value: number, currency: ExpenseCurrency) => Promise<Expense>) =>
         showFormToast(
             t("expense.prompt.update.value.message"),
             [
@@ -225,7 +225,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true,
                     label: t("expense.prompt.update.value.label.currency"),
                     defaultValue: expense.currency,
-                    options: currencies.map(currency => ({
+                    options: Object.values(ExpenseCurrency).map(currency => ({
                         id: currency,
                         name: currency
                     }))
@@ -1058,7 +1058,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("flight.prompt.create.failed")
         )
 
-    const showCreateSubscriptionToast = (currencies: string[], createSubscription: (description: string, value: number, currency: string, expiration: Date) => Promise<Subscription>) =>
+    const showCreateSubscriptionToast = (createSubscription: (description: string, value: number, currency: ExpenseCurrency, expiration: Date) => Promise<Subscription>) =>
         showFormToast(
             t("subscription.prompt.create.message"),
             [
@@ -1077,7 +1077,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     type: "select",
                     label: t("subscription.prompt.create.label.currency"),
                     required: true,
-                    options: currencies.map(currency => ({
+                    options: Object.values(ExpenseCurrency).map(currency => ({
                         id: currency,
                         name: currency
                     }))
@@ -1088,7 +1088,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true
                 }
             ] as const,
-            (description: string, value: number, currency: string, expiration: string) => createSubscription(description, value, currency, new Date(expiration)),
+            (description: string, value: number, currency: ExpenseCurrency, expiration: string) => createSubscription(description, value, currency, new Date(expiration)),
             t("subscription.prompt.create.confirmed"),
             t("subscription.prompt.create.failed")
         )
@@ -1123,7 +1123,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("document.prompt.create.failed")
         )
 
-    const showCreateVoucherToast = (currencies: string[], createVoucher: (identifier: string, issuer: string, value: number, currency: string, expiration?: Date) => Promise<Voucher>) =>
+    const showCreateVoucherToast = (createVoucher: (identifier: string, issuer: string, value: number, currency: ExpenseCurrency, expiration?: Date) => Promise<Voucher>) =>
         showFormToast(
             t("voucher.prompt.create.message"),
             [
@@ -1147,7 +1147,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     type: "select",
                     label: t("voucher.prompt.create.label.currency"),
                     required: true,
-                    options: currencies.map(currency => ({
+                    options: Object.values(ExpenseCurrency).map(currency => ({
                         id: currency,
                         name: currency
                     }))
@@ -1158,7 +1158,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ] as const,
-            (code: string, issuer: string, value: number, currency: string, expiration: string) => createVoucher(code, issuer, value, currency, expiration && new Date(expiration)),
+            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration && new Date(expiration)),
             t("voucher.prompt.create.confirmed"),
             t("voucher.prompt.create.failed")
         )

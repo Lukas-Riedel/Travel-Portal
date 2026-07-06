@@ -7,7 +7,8 @@ import type {
     Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category, IndexableEntityType,
     GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
     DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
-    Location, SearchResult, TaskPriority, Task
+    Location, SearchResult, TaskPriority, Task,
+    ExpenseCurrency
 } from "../types/CoreSwaggerTypes.ts"
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
@@ -48,7 +49,7 @@ export const search = async (query: string, { include, limit }: { include?: Inde
         }
     ), config).then(extractData)
 
-export const createVoucher = async (code: string, issuer: string, value: number, currency: string, expiration?: number): Promise<Voucher> =>
+export const createVoucher = async (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration?: number): Promise<Voucher> =>
     coreClient.post<Voucher>("vouchers",
         {
             code,
@@ -514,7 +515,7 @@ export const listStatistics = async (): Promise<Statistics[]> =>
     coreClient.get<Statistics[]>("statistics")
         .then(extractData)
 
-export const createSubscription = async (description: string, value: number, currency: string, expiration: number): Promise<Subscription> =>
+export const createSubscription = async (description: string, value: number, currency: ExpenseCurrency, expiration: number): Promise<Subscription> =>
     coreClient.post<Subscription>("subscriptions",
         {
             description,
@@ -616,7 +617,7 @@ export const replaceTrip = async (tripId: string, candidateTripId: string): Prom
 export const removeTrip = async (tripId: string): Promise<void> =>
     coreClient.delete(`trips/${tripId}`)
 
-export const createTripExpense = async (tripId: string, type: ExpenseType, description: string, value: number, currency: string, subscriptionId?: string): Promise<Expense> =>
+export const createTripExpense = async (tripId: string, type: ExpenseType, description: string, value: number, currency: ExpenseCurrency, subscriptionId?: string): Promise<Expense> =>
     coreClient.post<Expense>(`trips/${tripId}/expenses`,
         {
             type,
@@ -636,7 +637,7 @@ export const updateTripExpenseDescription = async (tripId: string, expenseId: st
         }
     ).then(extractData)
 
-export const updateTripExpenseValue = async (tripId: string, expenseId: string, value: number, currency: string): Promise<Expense> =>
+export const updateTripExpenseValue = async (tripId: string, expenseId: string, value: number, currency: ExpenseCurrency): Promise<Expense> =>
     coreClient.patch<Expense>(`trips/${tripId}/expenses/${expenseId}`,
         {
             value,

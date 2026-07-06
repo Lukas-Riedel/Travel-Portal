@@ -37,16 +37,12 @@ import { useRegions } from "../hooks/useRegions.ts"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { ExpenseCurrency, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useTranslation } from "react-i18next"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import TaskCardBoard from "../components/TaskCardBoard.tsx"
 import { getCurrentTimestamp, getAirportLocalTime } from "../utils/timeUtils.ts"
 import { getGeoFeatures, getGeoJson } from "../utils/geocodingUtils.ts"
-
-// TODO: Duplicated in ExpenseSummary.
-// TODO: Eventually define in PHP and include in the Swagger schema (similarly to StatisticsName).
-const currencies = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS", "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWL"]
 
 // TODO: Duplicated in CategoryPage. Replace by t(`category.category.${categoryCategory}`).
 const categoryCategories = {
@@ -178,7 +174,7 @@ export default function AdminPage() {
     }
 
     const handleSubscriptionCreated = () => {
-        showCreateSubscriptionToast(currencies, async (description, value, currency, expiration) => {
+        showCreateSubscriptionToast(async (description, value, currency, expiration) => {
             const convertedExpiration = Math.round(expiration.getTime() / 1000)
             if (convertedExpiration < Date.now() / 1000) {
                 return Promise.reject("Expiration must be in the future.")
@@ -204,7 +200,7 @@ export default function AdminPage() {
     }
 
     const handleVoucherCreated = () => {
-        showCreateVoucherToast(currencies, (code, issuer, value, currency, expiration) => {
+        showCreateVoucherToast((code, issuer, value, currency, expiration) => {
             const convertedExpiration = Math.round(new Date(expiration).getTime() / 1000)
             if (convertedExpiration < Date.now() / 1000) {
                 return Promise.reject("Expiration must be in the future.")

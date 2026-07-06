@@ -1,4 +1,5 @@
 import { createSubscription, listSubscriptions, removeSubscription } from "../clients/coreClient.ts"
+import type { ExpenseCurrency } from "../types/CoreSwaggerTypes.ts"
 import type { UseSubscriptionsResult } from "../types/UseSubscriptionsResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
@@ -12,7 +13,7 @@ export const useSubscriptions = (): UseSubscriptionsResult => {
 
     return {
         subscriptions: response,
-        createSubscription: (description: string, value: number, currency: string, expiration: number) =>
+        createSubscription: (description: string, value: number, currency: ExpenseCurrency, expiration: number) =>
             createSubscription(description, value, currency, expiration).then(refetchResponse),
         removeSubscription: (subscriptionId: string) => removeSubscription(subscriptionId).then(refetchResponse)
     }
