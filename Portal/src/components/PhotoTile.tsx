@@ -6,7 +6,7 @@ import type { Navigable } from "../types/Navigable.ts"
 import AppLink from "./AppLink.tsx"
 
 interface PhotoTileProps {
-    src: string
+    src: string | null
     firstLineText?: string
     secondLineText?: string
     categories?: Category[]
