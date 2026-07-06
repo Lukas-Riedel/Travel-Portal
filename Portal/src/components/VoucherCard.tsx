@@ -34,7 +34,7 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
     const properties = useMemo(() => voucher && ({
         [t("voucher.label.code")]: voucher.code,
         [t("voucher.label.value")]: `${voucher.value} ${voucher.currency}`,
-        [t("voucher.label.expiration")]: formatTimestamp(voucher.expiration, t("general.format.date.year.included"))
+        [t("voucher.label.expiration")]: voucher.expiration && formatTimestamp(voucher.expiration, t("general.format.date.year.included"))
     }), [voucher, t])
 
     if (!voucher) {

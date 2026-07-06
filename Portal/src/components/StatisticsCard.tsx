@@ -29,7 +29,7 @@ interface TooltipProps {
     unit: StatisticsUnit
 }
 
-const chartTypes: Partial<Record<StatisticsName, React.ComponentType<ChartProps>>> = {
+const CHART_TYPES: Partial<Record<StatisticsName, React.ComponentType<ChartProps>>> = {
     [StatisticsName.VISITED_PLACES_PER_CATEGORY]: StandingStatisticsPieChart,
     [StatisticsName.VISITED_PLACES_PER_COUNTRY]: StandingStatisticsPieChart,
     [StatisticsName.VISITED_PLACES_PER_CONTINENT]: StandingStatisticsPieChart,
@@ -48,7 +48,7 @@ export default function StatisticsCard({ statistics, years }: StatisticsCardProp
     const { configuration } = useConfiguration()
     const { formatStatisticsUnit } = useFormatters()
 
-    const StandingStatisticsChart = useMemo(() => statistics ? (chartTypes[statistics.name] || StandingStatisticsBarChart) : StandingStatisticsBarChart, [statistics?.name])
+    const StandingStatisticsChart = useMemo(() => statistics ? (CHART_TYPES[statistics.name] || StandingStatisticsBarChart) : StandingStatisticsBarChart, [statistics?.name])
 
     if (!statistics) {
         return (

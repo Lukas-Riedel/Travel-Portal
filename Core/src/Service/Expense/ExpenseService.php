@@ -34,12 +34,11 @@
             $this->transactionManager = $databaseClient;
         }
 
-        // TODO: Replace string $type by ExpenseType $type.
-        public function createExpense(string $tripId, float $value, string $currency, string $type, string $description, ?string $subscriptionId) : Expense {                      
+        public function createExpense(string $tripId, float $value, ExpenseCurrency $currency, ExpenseType $type, string $description, ?string $subscriptionId) : Expense {                      
             $exchangeRate = $this->getExchangeRate($currency);
 
             // TODO: This is inacurrate, the subscription share is not included in the main currency value.
-            $expense = new Expense(null, $description, $value, $currency, $exchangeRate, ExpenseType::from($type), $exchangeRate * $value, 
+            $expense = new Expense(null, $description, $value, $currency, $exchangeRate, $type, $exchangeRate * $value, 
                 $subscriptionId === null ? null : $this->expenseMapper->selectSubscription($subscriptionId));
             $this->transactionManager->executeAtomically(function() use(&$expense, &$tripId, &$subscriptionId) {
                 $this->expenseMapper->insertExpense($expense, $tripId, $subscriptionId);
@@ -50,14 +49,14 @@
             return $expense;
         }
 
-        public function createVoucher(string $code, string $issuer, float $value, string $currency, ?int $expiration) : Voucher {
+        public function createVoucher(string $code, string $issuer, float $value, ExpenseCurrency $currency, ?int $expiration) : Voucher {
             $voucher = new Voucher(null, $code, $issuer, $value, $currency, $expiration);
             $this->expenseMapper->insertVoucher($voucher);
 
             return $voucher;
         }
 
-        public function createSubscription(float $value, string $currency, string $description, int $expiration) : Subscription {                        
+        public function createSubscription(float $value, ExpenseCurrency $currency, string $description, int $expiration) : Subscription {                        
             $exchangeRate = $this->getExchangeRate($currency);
 
             $subscription = new Subscription(null, $description, $value, $currency, $exchangeRate, $expiration, 0);
@@ -122,7 +121,7 @@
             return $wasUpdated;
         }
 
-        public function updateExpenseCurrency(string $expenseId, string $currency, string $tripId) : bool {
+        public function updateExpenseCurrency(string $expenseId, ExpenseCurrency $currency, string $tripId) : bool {
             $exchangeRate = $this->getExchangeRate($currency);
 
             $wasUpdated = true; 
@@ -154,21 +153,21 @@
             return $this->expenseMapper->deleteActiveSubscription($subscriptionId) > 0;
         }
 
-        private function getExchangeRate(string $currency) : float {       
+        private function getExchangeRate(ExpenseCurrency $currency) : float {       
             $mainCurrency = $this->configurationService->getConfigurationEntry("expensify")["mainCurrency"];
-            if ($currency === $mainCurrency) {
+            if ($currency->value === $mainCurrency) {
                 return 1;
             }
 
             $cachedExchangeRates = $this->distributedCacheClient->get(self::EXCHANGE_RATE_CACHE_KEY);
             if ($cachedExchangeRates !== null) {
-                return $cachedExchangeRates[$currency] ?? 0;
+                return $cachedExchangeRates[$currency->value] ?? 0;
             }        
 
             $exchangeRates = $this->exchangeRateClient->getExchangeRates($mainCurrency);
             $this->distributedCacheClient->set(self::EXCHANGE_RATE_CACHE_KEY, $exchangeRates, self::EXCHANGE_RATE_CACHE_TTL);
 
-            return $exchangeRates[$currency] ?? 0;
+            return $exchangeRates[$currency->value] ?? 0;
         }
     }
 ?>

@@ -4,6 +4,7 @@
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\Expense\ExpenseCurrency;
     use Core\Service\Expense\ExpenseService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -125,7 +126,9 @@
             $currency = $this->requireJsonBodyField($request, "currency");
             $expiration = $this->requireJsonBodyField($request, "expiration");
 
-            return $this->expenseService->createSubscription($value, $currency, $description, $expiration);
+            $mappedCurrency = ExpenseCurrency::from($currency);
+
+            return $this->expenseService->createSubscription($value, $mappedCurrency, $description, $expiration);
         }
 
         #[OA\Get(

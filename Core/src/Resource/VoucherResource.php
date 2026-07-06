@@ -4,6 +4,7 @@
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\Expense\ExpenseCurrency;
     use Core\Service\Expense\ExpenseService;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -133,7 +134,9 @@
             $currency = $this->requireJsonBodyField($request, "currency");
             $expiration = $this->getJsonBodyField($request, "expiration");
 
-            return $this->expenseService->createVoucher($code, $issuer, $value, $currency, $expiration);
+            $mappedCurrency = ExpenseCurrency::from($currency);
+
+            return $this->expenseService->createVoucher($code, $issuer, $value, $mappedCurrency, $expiration);
         }
 
         #[OA\Get(

@@ -24,7 +24,7 @@ const MAP_STYLES = [
     { "featureType": "water", "elementType": "all", "stylers": [{ "color": "#dde6e8" }, { "visibility": "on" }] }
 ]
 
-const markerSvgCache = new globalThis.Map<string, string>()
+const MARKER_SVG_CACHE = new globalThis.Map<string, string>()
 
 interface MapProps {
     points?: MapPoint[]
@@ -55,8 +55,8 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
     }
 
     const getMarkerSvg = (color: string): string => {
-        if (markerSvgCache.has(color)) {
-            return markerSvgCache.get(color)!
+        if (MARKER_SVG_CACHE.has(color)) {
+            return MARKER_SVG_CACHE.get(color)!
         }
 
         const svgData = `
@@ -75,7 +75,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
             `
 
         const svgDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgData)}`
-        markerSvgCache.set(color, svgDataUrl)
+        MARKER_SVG_CACHE.set(color, svgDataUrl)
 
         return svgDataUrl
     }

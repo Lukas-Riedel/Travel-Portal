@@ -30,9 +30,8 @@
             ),
             new OA\Property(
                 property: "currency",
-                type: "string",
                 description: "The currency of the subscription",
-                example: "EUR"
+                ref: "#/components/schemas/ExpenseCurrency"
             ),
             new OA\Property(
                 property: "exchangeRate",
@@ -67,12 +66,12 @@
         private ?string $id;
         private readonly string $description;
         private readonly float $value;
-        private readonly string $currency;
+        private readonly ExpenseCurrency $currency;
         private readonly float $exchangeRate;
         private readonly int $expiration;
         private readonly int $occurrences;
 
-        public function __construct(?string $id, string $description, float $value, string $currency, float $exchangeRate, int $expiration, int $occurrences) {
+        public function __construct(?string $id, string $description, float $value, ExpenseCurrency $currency, float $exchangeRate, int $expiration, int $occurrences) {
             $this->id = $id;
             $this->description = $description;
             $this->value = $value;
@@ -98,7 +97,7 @@
             return $this->value;
         }
 
-        public function getCurrency() : string {
+        public function getCurrency() : ExpenseCurrency {
             return $this->currency;
         }
 

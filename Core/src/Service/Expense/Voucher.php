@@ -36,9 +36,8 @@
             ),
             new OA\Property(
                 property: "currency",
-                type: "string",
                 description: "The currency of the voucher",
-                example: "EUR"
+                ref: "#/components/schemas/ExpenseCurrency"
             ),
             new OA\Property(
                 property: "expiration",
@@ -54,10 +53,10 @@
         private readonly string $code;
         private readonly string $issuer;
         private readonly float $value;
-        private readonly string $currency;
+        private readonly ExpenseCurrency $currency;
         private readonly ?int $expiration;
 
-        public function __construct(?string $id, string $code, string $issuer, float $value, string $currency, ?int $expiration) {
+        public function __construct(?string $id, string $code, string $issuer, float $value, ExpenseCurrency $currency, ?int $expiration) {
             $this->id = $id;
             $this->code = $code;
             $this->issuer = $issuer;
@@ -86,7 +85,7 @@
             return $this->value;
         }
 
-        public function getCurrency() : string {
+        public function getCurrency() : ExpenseCurrency {
             return $this->currency;
         }
 

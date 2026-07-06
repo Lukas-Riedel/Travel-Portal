@@ -26,7 +26,7 @@
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($voucherRow) {
                     return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
-                        $voucherRow["value"], $voucherRow["currency"], $voucherRow["expiration"]);
+                        $voucherRow["value"], ExpenseCurrency::from($voucherRow["currency"]), $voucherRow["expiration"]);
                 });
         }
 
@@ -47,7 +47,7 @@
             }
 
             return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
-                $voucherRow["value"], $voucherRow["currency"], $voucherRow["expiration"]);
+                $voucherRow["value"], ExpenseCurrency::from($voucherRow["currency"]), $voucherRow["expiration"]);
         }
 
         public function selectExpensesForTrip(string $tripId) : array { 
@@ -67,7 +67,7 @@
                         $mainCurrencyValue += $this->selectSubscriptionMainCurrencyValue($expenseRow["subscription_id"]) / $this->selectSubscriptionOccurrencesCount($expenseRow["subscription_id"]);
                     }
                     
-                    return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], $expenseRow["currency"],
+                    return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"], ExpenseCurrency::from($expenseRow["currency"]),
                         $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]), $mainCurrencyValue,
                         $expenseRow["subscription_id"] === null ? null : $this->selectSubscription($expenseRow["subscription_id"]));
                 });
@@ -95,7 +95,7 @@
             }
 
             return new Expense($expenseRow["id"], $expenseRow["description"], $expenseRow["value"],
-                $expenseRow["currency"], $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]),
+                ExpenseCurrency::from($expenseRow["currency"]), $expenseRow["exchange_rate"], ExpenseType::from($expenseRow["type"]),
                 $mainCurrencyValue, $expenseRow["subscription_id"] === null ? null : $this->selectSubscription($expenseRow["subscription_id"]));
         }
 
@@ -121,7 +121,8 @@
             }
 
             return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
-                    $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
+                    ExpenseCurrency::from($subscriptionRow["currency"]), $subscriptionRow["exchange_rate"],
+                    $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
         }
 
         public function selectActiveSubscriptions() : array {
@@ -140,7 +141,8 @@
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($subscriptionRow) {
                     return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
-                        $subscriptionRow["currency"], $subscriptionRow["exchange_rate"], $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
+                        ExpenseCurrency::from($subscriptionRow["currency"]), $subscriptionRow["exchange_rate"],
+                        $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
                 });
         }
 
@@ -171,7 +173,7 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $expense->getValue(), $expense->getCurrency(), $expense->getExchangeRate(), $expense->getType()->value,
+                ->withParameters($tripId, $expense->getValue(), $expense->getCurrency()->value, $expense->getExchangeRate(), $expense->getType()->value,
                     $expense->getDescription(), $subscriptionId)
                 ->getSingleColumn("id");
 
@@ -204,7 +206,7 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($subscription->getValue(), $subscription->getCurrency(), $subscription->getExchangeRate(),
+                ->withParameters($subscription->getValue(), $subscription->getCurrency()->value, $subscription->getExchangeRate(),
                     $subscription->getDescription(), $subscription->getExpiration())
                 ->getSingleColumn("id");
 
@@ -238,7 +240,7 @@
             $id = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($this->encryptionClient->encrypt($voucher->getCode()), $voucher->getIssuer(),
-                    $voucher->getValue(), $voucher->getCurrency(), $voucher->getExpiration())
+                    $voucher->getValue(), $voucher->getCurrency()->value, $voucher->getExpiration())
                 ->getSingleColumn("id");
 
             if ($id === null) {
@@ -275,7 +277,7 @@
                 ->execute() === 1;
         }
 
-        public function updateExpenseCurrency(string $expenseId, string $currency, float $exchangeRate) : bool {
+        public function updateExpenseCurrency(string $expenseId, ExpenseCurrency $currency, float $exchangeRate) : bool {
             $sql = <<<'SQL'
                 UPDATE expense
                 SET currency = ?,
@@ -285,7 +287,7 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($currency, $exchangeRate, $expenseId)
+                ->withParameters($currency->value, $exchangeRate, $expenseId)
                 ->execute() === 1;
         }
 

@@ -9,6 +9,7 @@
     use Common\Routing\NotFoundException;
     use Common\Routing\NotUpdatedException;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\Expense\ExpenseCurrency;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseType;
     use Core\Service\Highlight\HighlightService;
@@ -753,9 +754,9 @@
             }
 
             $mappedType = ExpenseType::from($type);
+            $mappedCurrency = ExpenseCurrency::from($currency);
 
-            // TODO: Do not use the backing value, refactor the service code first.
-            return $this->expenseService->createExpense($tripId, $value, $currency, $mappedType->value, $description, $subscriptionId);
+            return $this->expenseService->createExpense($tripId, $value, $mappedCurrency, $mappedType, $description, $subscriptionId);
         }       
 
         #[OA\Patch(
@@ -889,7 +890,8 @@
             
             $newCurrency = $this->getJsonBodyField($request, "currency");
             if ($newCurrency !== null) {
-                $wasUpdated |= $this->expenseService->updateExpenseCurrency($expenseId, $newCurrency, $tripId);
+                $mappedNewCurrency = ExpenseCurrency::from($newCurrency);
+                $wasUpdated |= $this->expenseService->updateExpenseCurrency($expenseId, $mappedNewCurrency, $tripId);
             }
 
             if (!$wasUpdated) {
