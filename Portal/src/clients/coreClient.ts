@@ -156,7 +156,7 @@ export const getHighlight = async (highlightId: string): Promise<Highlight> =>
     coreClient.get<Highlight>(`highlights/${highlightId}`)
         .then(extractData)
 
-export const updateHighlightQualityAttributes = async (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null): Promise<Highlight> =>
+export const updateHighlightQualityAttributes = async (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null): Promise<Highlight> =>
     coreClient.patch<Highlight>(`highlights/${highlightId}`,
         {
             attributes: {
@@ -164,7 +164,8 @@ export const updateHighlightQualityAttributes = async (highlightId: string, comp
                 sky,
                 shadows,
                 circumstances,
-                atmosphere
+                atmosphere,
+                impression
             }
         }
     ).then(extractData)

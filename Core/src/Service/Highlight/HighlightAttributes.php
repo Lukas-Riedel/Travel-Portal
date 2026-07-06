@@ -42,6 +42,13 @@
                 type: "integer",
                 format: "int32",
                 example: 90
+            ),
+            new OA\Property(
+                property: "impression",
+                description: "The impression score of the highlight",
+                type: "integer",
+                format: "int32",
+                example: 90
             )
         ]
     )]
@@ -52,13 +59,15 @@
         private readonly ?int $shadows;
         private readonly ?int $circumstances;
         private readonly ?int $atmosphere;
+        private readonly ?int $impression;
 
-        public function __construct(?int $composition, ?int $sky, ?int $shadows, ?int $circumstances, ?int $atmosphere) {
+        public function __construct(?int $composition, ?int $sky, ?int $shadows, ?int $circumstances, ?int $atmosphere, ?int $impression) {
             $this->composition = $composition;
             $this->sky = $sky;
             $this->shadows = $shadows;
             $this->circumstances = $circumstances;
             $this->atmosphere = $atmosphere;
+            $this->impression = $impression;
         }
 
         public function getComposition() : ?int {
@@ -81,8 +90,12 @@
             return $this->atmosphere;
         }
 
+        public function getImpression() : ?int {
+            return $this->impression;
+        }
+
         public function getQuality() : float {
-            $values = array_filter(array($this->composition, $this->sky, $this->shadows, $this->circumstances, $this->atmosphere), fn($value) => !is_null($value));
+            $values = array_filter(array($this->composition, $this->sky, $this->shadows, $this->circumstances, $this->atmosphere, $this->impression), fn($value) => !is_null($value));
             return in_array(0, $values, true) ? 0.0 : count($values) / array_sum(array_map(fn($value) => 1 / $value, $values));
         }
 

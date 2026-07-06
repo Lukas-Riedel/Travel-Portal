@@ -321,6 +321,17 @@
             });
             return $wasUpdated;
         }
+
+        public function updateHighlightImpression(string $highlightId, ?int $impression) : bool {
+            $wasUpdated = true;
+            $this->transactionManager->executeAtomically(function() use(&$highlightId, &$impression, &$wasUpdated) {
+                $wasUpdated &= $this->highlightMapper->updateHighlightImpression($highlightId, $impression);
+                if ($wasUpdated) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $wasUpdated;
+        }
         
         public function updateHighlightsComposition(int $oldComposition, ?int $newComposition) : array {
             $highlightIds = array();
@@ -370,6 +381,17 @@
             $highlightIds = array();
             $this->transactionManager->executeAtomically(function() use(&$oldAtmosphere, &$newAtmosphere, &$highlightIds) {
                 $highlightIds = $this->highlightMapper->updateHighlightsAtmosphere($oldAtmosphere, $newAtmosphere);
+                foreach ($highlightIds as $highlightId) {
+                    $this->publishHighlightUpdatedEvents($highlightId);
+                }
+            });
+            return $highlightIds;
+        }
+
+        public function updateHighlightsImpression(int $oldImpression, ?int $newImpression) : array {
+            $highlightIds = array();
+            $this->transactionManager->executeAtomically(function() use(&$oldImpression, &$newImpression, &$highlightIds) {
+                $highlightIds = $this->highlightMapper->updateHighlightsImpression($oldImpression, $newImpression);
                 foreach ($highlightIds as $highlightId) {
                     $this->publishHighlightUpdatedEvents($highlightId);
                 }
@@ -434,7 +456,7 @@
             $photoEmbedding = $this->photoService->getPhotoEmbedding($photoId);
             if ($photoEmbedding === null) {
                 $this->logger->error("The embedding for the photo '$photoId' does not exist. Unable to compute highlight attributes.");
-                return new HighlightAttributes(0, 0, 0, 0, 0);
+                return new HighlightAttributes(0, 0, 0, 0, 0, 0);
             }
             
             $computedAttributes = array();
@@ -443,6 +465,10 @@
                 $maxSimilarity = -1.0;
 
                 foreach ($key->getOptions($this->configurationService) as &$option) {
+                    if (!isset($option["text"])) {
+                        continue;
+                    }
+
                     $optionEmbedding = $this->embeddingService->getTextEmbedding($option["text"]);
                     $optionSimilarity = $this->embeddingService->getEmbeddingSimilarity($photoEmbedding->getEmbedding(), $optionEmbedding);
 
@@ -452,7 +478,9 @@
                     }
                 }
 
-                $computedAttributes[$key->name] = $bestOption["value"];
+                if ($bestOption !== null) {
+                    $computedAttributes[$key->name] = $bestOption["value"];
+                }
             }
             
             $this->logger->debug("Setting the '$photoId' photo attributes to '" . json_encode($computedAttributes) . "'...");

@@ -39,8 +39,8 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         createPlaceHighlight: (photoId: string) => createPlaceHighlight(placeId, photoId).then(refetchResponse),
         removePlaceHighlight: (highlightId: string) => removePlaceHighlight(placeId, highlightId).then(refetchResponse),
         updatePlaceMainHighlight: (highlightId: string) => updatePlaceMainHighlight(placeId, highlightId).then(setResponse),
-        updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) =>
-            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere).then(refetchResponse),
+        updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) =>
+            updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere, impression).then(refetchResponse),
         createPlaceLabel: (name: string) => createPlaceLabel(placeId, name).then(refetchResponse),
         removePlaceLabel: (labelId: string) => removePlaceLabel(placeId, labelId).then(refetchResponse),
         updatePlaceExcerpt: (excerpt: string) => updatePlaceExcerpt(placeId, excerpt).then(setResponse),

@@ -1164,6 +1164,7 @@
                         "shadows": "Stíny",
                         "circumstances": "Okolnosti",
                         "atmosphere": "Atmosféra",
+                        "impression": "Osobní dojem",
                         "datetime": "Čas pořízení",
                         "sun": "Výška slunce"
                     },
@@ -1197,6 +1198,11 @@
                             "bad": "Mírný opar (snížená čirost, ale přijatelná)",
                             "good": "Čistý vzduch (dobrá viditelnost, přirozené barvy)",
                             "great": "Křišťálově čistý vzduch (výjimečně fotogenické podmínky)"
+                        },
+                        "impression": {
+                            "bad": "Nepatří do portfolia (je tu jen z nouze, protože jiná není)",
+                            "average": "Patří do portfolia, ale má své rezervy (šlo by to lépe)",
+                            "good": "Výkladní skříň portfolia, maximum možného"
                         }
                     },
                     "confirmed": "Atributy highlightu byly úspěšně aktualizovány",

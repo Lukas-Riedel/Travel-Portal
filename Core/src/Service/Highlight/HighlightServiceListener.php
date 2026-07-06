@@ -63,6 +63,9 @@
                                 case "atmosphere":
                                     $this->highlightService->updateHighlightsAtmosphere($oldAttributeConfigurationEntry["value"], $newAttributeConfigurationEntry["value"]);
                                     break;
+                                case "impression":
+                                    $this->highlightService->updateHighlightsImpression($oldAttributeConfigurationEntry["value"], $newAttributeConfigurationEntry["value"]);
+                                    break;
                             }
                         }
                     }

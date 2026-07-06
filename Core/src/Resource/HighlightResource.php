@@ -170,6 +170,13 @@
                                     type: "integer",
                                     format: "int32",
                                     example: 90
+                                ),
+                                new OA\Property(
+                                    property: "impression",
+                                    description: "The impression score of the highlight",
+                                    type: "integer",
+                                    format: "int32",
+                                    example: 100
                                 )
                             ]
                         )
@@ -273,6 +280,10 @@
 
                 if (array_key_exists("atmosphere", $newAttributes)) {
                     $wasUpdated |= $this->highlightService->updateHighlightAtmosphere($highlightId, $newAttributes["atmosphere"]);
+                }
+
+                if (array_key_exists("impression", $newAttributes)) {
+                    $wasUpdated |= $this->highlightService->updateHighlightImpression($highlightId, $newAttributes["impression"]);
                 }
             }
 

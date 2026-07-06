@@ -770,7 +770,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 t("photo.prompt.upload.failed")
             )
 
-    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) =>
+    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) =>
         showFormToast(
             t("highlight.prompt.update.attribute.message"),
             [
@@ -824,6 +824,16 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         name: t(`highlight.prompt.update.attribute.option.atmosphere.${id}`)
                     }))
                 },
+                {
+                    type: "select",
+                    label: t("highlight.prompt.update.attribute.label.impression"),
+                    defaultValue: highlightAttributes?.impression,
+                    required: true,
+                    options: configuration?.highlight?.attribute?.impression?.map(({ id, value }) => ({
+                        id: value,
+                        name: t(`highlight.prompt.update.attribute.option.impression.${id}`)
+                    }))
+                },
                 timestamp && {
                     type: "text",
                     label: t("highlight.prompt.update.attribute.label.datetime"),
@@ -839,12 +849,13 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: `${sunAltitude.toFixed(1)}°`,
                 }
             ],
-            (composition, sky, shadows, circumstantes, atmosphere) => updateHighlightAttributes(
+            (composition, sky, shadows, circumstantes, atmosphere, impression) => updateHighlightAttributes(
                 composition !== "" ? Number(composition) : null,
                 sky !== "" ? Number(sky) : null,
                 shadows !== "" ? Number(shadows) : null,
                 circumstantes !== "" ? Number(circumstantes) : null,
-                atmosphere !== "" ? Number(atmosphere) : null
+                atmosphere !== "" ? Number(atmosphere) : null,
+                impression !== "" ? Number(impression) : null
             ),
             t("highlight.prompt.update.attribute.confirmed"),
             t("highlight.prompt.update.attribute.failed")
