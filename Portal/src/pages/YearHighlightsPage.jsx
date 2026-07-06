@@ -63,7 +63,7 @@ export default function YearHighlightsPage() {
                     onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) && (async highlightId => setCurrentHighlights(currentHighlights.splice(highlightId, 1)))} />
             )}
             <HighlightCandidateTileGrid
-                highlightCandidates={highlightCandidates}
+                highlightCandidatesGroups={highlightCandidates}
                 onHighlightCandidateCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

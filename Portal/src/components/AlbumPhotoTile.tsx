@@ -46,11 +46,13 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
         <div>
             {overlayType === 0 && (
                 <PhotoTile
+                    // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + "=w350-h233"}
                     to={photo.permalink} />
             )}
             {overlayType === 1 && (
                 <PhotoTile
+                    // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + "=w350-h233"}
                     to={photo.permalink}
                     categories={[place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)]}

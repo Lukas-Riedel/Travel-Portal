@@ -43,7 +43,7 @@ export default function CategoryHighlightsPage() {
             <HighlightCandidateTileGrid
                 name={category?.name}
                 categories={category && [category]}
-                highlightCandidates={highlightCandidates}
+                highlightCandidatesGroups={highlightCandidates}
                 onHighlightCandidateCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

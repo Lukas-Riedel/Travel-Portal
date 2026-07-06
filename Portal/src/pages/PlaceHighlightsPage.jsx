@@ -51,7 +51,7 @@ export default function PlaceHighlightsPage() {
                 name={place?.name}
                 description={getDateString(Date.now() / 1000)}
                 categories={place && [place.getCategory("mostSpecificWithMetadata")]}
-                highlightCandidates={highlightCandidates}
+                highlightCandidatesGroups={highlightCandidates}
                 onHighlightCandidateCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

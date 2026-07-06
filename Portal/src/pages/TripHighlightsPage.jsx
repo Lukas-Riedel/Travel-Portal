@@ -73,7 +73,7 @@ export default function TripHighlightsPage() {
                 name={trip?.getFullName()}
                 description={getDateRangeString(trip?.start, trip?.end)}
                 categories={places?.map(p => p.getCategory("mostSpecificWithMetadata")).filter(Boolean).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
-                highlightCandidates={highlightCandidates}
+                highlightCandidatesGroups={highlightCandidates}
                 onHighlightCandidateCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

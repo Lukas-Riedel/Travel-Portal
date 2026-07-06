@@ -1,22 +1,30 @@
 import { ImageUp, SendToBack } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
 import PhotoTile from "./PhotoTile"
 import { useState } from "react"
+import type { Category, Photo } from "../types/CoreSwaggerTypes"
 
-export default function HighlightCandidateTile({ name, description, categories, photo, onHighlightCandidateCreated }) {
+interface HighlightCandidateTileProps {
+    name: string | null
+    description: string | null
+    photo: Photo
+    categories?: Category[]
+    onHighlightCandidateCreated?: () => Promise<void>
+}
+
+export default function HighlightCandidateTile({ name, description, categories, photo, onHighlightCandidateCreated }: HighlightCandidateTileProps) {
     const [overlayType, setOverlayType] = useState(0)
 
     return (
         <div>
             {overlayType === 0 && (
                 <PhotoTile
-                    // TODO: Provide correct url in the caller.
+                    // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + (photo.url.endsWith(".jpg") ? "" : "=w350-h233")}
                     to={photo.permalink} />
             )}
             {overlayType === 1 && (
                 <PhotoTile
-                    // TODO: Provide correct url in the caller.
+                    // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + (photo.url.endsWith(".jpg") ? "" : "=w350-h233")}
                     to={photo.permalink}
                     categories={categories}
@@ -24,7 +32,7 @@ export default function HighlightCandidateTile({ name, description, categories, 
             )}
             {overlayType === 2 && (
                 <PhotoTile
-                    // TODO: Provide correct url in the caller.
+                    // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + (photo.url.endsWith(".jpg") ? "" : "=w350-h233")}
                     to={photo.permalink}
                     categories={categories}
@@ -35,7 +43,7 @@ export default function HighlightCandidateTile({ name, description, categories, 
                 <div className="flex justify-center gap-2 mt-2">
                     {onHighlightCandidateCreated && (
                         <button
-                            onClick={() => onHighlightCandidateCreated(photo)}
+                            onClick={onHighlightCandidateCreated}
                             className="btn-large-gray">
                             <ImageUp size={16} />
                         </button>
