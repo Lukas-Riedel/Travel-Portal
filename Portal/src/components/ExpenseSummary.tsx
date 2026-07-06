@@ -62,7 +62,6 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
     onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved }: ExpenseSummaryProps) {
     const { t } = useTranslation()
     const { configuration } = useConfiguration()
-    const { hasRole } = useAuth()
 
     const [detailedView, setDetailedView] = useState(!!onExpenseCreated)
     const [duplicatedExpense, setDuplicatedExpense] = useState<ExpenseCandidate>({})
@@ -96,7 +95,8 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
         .map((_, index) => (
             <LoadingExpenseRow
                 key={index}
-                detailedView={detailedView} />
+                detailedView={detailedView}
+                hasRemoveButton={!!onExpenseRemoved} />
         )), [detailedView])
 
     const filteredExpenseCandidates = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
@@ -125,23 +125,14 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
         <div className="w-full rounded-xl my-4">
             <table className="w-full table-fixed divide-y divide-gray-200">
                 <colgroup>
-                    {hasRole(UserRole.TripExpenseEdit) ? (
-                        onExpenseRemoved ? (
-                            <>
-                                <col className="w-[14%]" />
-                                <col className="w-[46%]" />
-                                <col className="w-[16%]" />
-                                <col className="min-w-[16%] hidden sm:table-column" />
-                                {detailedView && <col className="w-[8%]" />}
-                            </>
-                        ) : (
-                            <>
-                                <col className="w-[16%]" />
-                                <col className="w-[50%]" />
-                                <col className="min-w-[18%]" />
-                                <col className="w-[16%] hidden sm:table-column" />
-                            </>
-                        )
+                    {onExpenseRemoved ? (
+                        <>
+                            <col className="w-[14%]" />
+                            <col className="w-[46%]" />
+                            <col className="w-[16%]" />
+                            <col className="min-w-[16%] hidden sm:table-column" />
+                            {detailedView && <col className="w-[8%]" />}
+                        </>
                     ) : (
                         <>
                             <col className="w-[11%]" />
@@ -450,23 +441,22 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
 
 interface LoadingExpenseRowProps {
     detailedView: boolean
+    hasRemoveButton: boolean
 }
 
-function LoadingExpenseRow({ detailedView }: LoadingExpenseRowProps) {
-    const { hasRole } = useAuth()
-
+function LoadingExpenseRow({ detailedView, hasRemoveButton }: LoadingExpenseRowProps) {
     return (
         <tr>
             <td
                 className="p-3 sm:hidden"
-                colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 4 : 3}>
+                colSpan={hasRemoveButton && detailedView ? 4 : 3}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>
             </td>
             <td
                 className="p-3 hidden sm:table-cell"
-                colSpan={hasRole(UserRole.TripExpenseEdit) && detailedView ? 5 : 4}>
+                colSpan={hasRemoveButton && detailedView ? 5 : 4}>
                 <div className="flex justify-center items-center w-full">
                     <TailSpin color="black" height={24} width={24} />
                 </div>
