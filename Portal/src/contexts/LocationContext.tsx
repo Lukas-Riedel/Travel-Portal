@@ -5,7 +5,11 @@ import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 
 const LocationContext = createContext<UseLocationResult | undefined>(undefined)
 
-export function LocationProvider({ children }: { children: ReactNode }) {
+interface LocationProviderProps {
+    children: ReactNode
+}
+
+export function LocationProvider({ children }: LocationProviderProps) {
     const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null)
 
     useEffect(() => {

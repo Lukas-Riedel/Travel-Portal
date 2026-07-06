@@ -449,7 +449,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     )
 }
 
-function RemainingUploadTime({ album }: { album: Album }) {
+interface RemainingUploadTimeProps {
+    album: Album
+}
+
+function RemainingUploadTime({ album }: RemainingUploadTimeProps) {
     const { t } = useTranslation()
     const { formatDuration } = useFormatters()
 

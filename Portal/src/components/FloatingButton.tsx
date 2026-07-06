@@ -1,4 +1,11 @@
-export default function FloatingButton({ icon: Icon, onClick }) {
+import type { LucideIcon } from "lucide-react"
+
+interface FloatingButtonProps {
+    icon: LucideIcon
+    onClick: () => void
+}
+
+export default function FloatingButton({ icon: Icon, onClick }: FloatingButtonProps) {
     return (
         <button
             onClick={onClick}

@@ -74,11 +74,11 @@ export default function FlightCard({ flight }: FlightCardProps) {
                 <FlightAirport
                     airport={flight.from}
                     timestamp={flight.start}
-                    Icon={PlaneTakeoff} />
+                    icon={PlaneTakeoff} />
                 <FlightAirport
                     airport={flight.to}
                     timestamp={flight.end}
-                    Icon={PlaneLanding} />
+                    icon={PlaneLanding} />
                 <div className="mt-auto">
                     {flight.aircraft && flight.registration && (
                         <div className="text-gray-800 text-sm whitespace-nowrap my-1">
@@ -118,7 +118,13 @@ export default function FlightCard({ flight }: FlightCardProps) {
     )
 }
 
-function FlightAirport({ airport, timestamp, Icon }: { airport: Airport, timestamp: number, Icon: LucideIcon }) {
+interface FlightAirportProps {
+    airport: Airport
+    timestamp: number
+    icon: LucideIcon
+}
+
+function FlightAirport({ airport, timestamp, icon: Icon }: FlightAirportProps) {
     const { t } = useTranslation()
 
     return (

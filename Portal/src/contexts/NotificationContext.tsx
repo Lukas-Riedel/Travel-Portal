@@ -9,7 +9,11 @@ import type { Message } from "../types/Message.ts"
 
 const NotificationContext = createContext<UseNotificationsResult | undefined>(undefined)
 
-export const NotificationProvider = ({ children }: { children: ReactNode }) => {
+interface NotificationProviderProps {
+    children: ReactNode
+}
+
+export const NotificationProvider = ({ children }: NotificationProviderProps) => {
     const { accessToken } = useAuth()
     const { deviceId } = useConfiguration()
 

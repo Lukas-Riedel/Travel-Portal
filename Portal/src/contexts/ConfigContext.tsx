@@ -19,7 +19,11 @@ const deviceId = (() => {
     return id
 })()
 
-export function ConfigurationProvider({ children }: { children: ReactNode }) {
+interface ConfigProviderProps {
+    children: ReactNode
+}
+
+export function ConfigurationProvider({ children }: ConfigProviderProps) {
     const { response, refetchResponse } = useQuery({
         queryKey: ["listConfigurationEntries"],
         queryFn: listConfigurationEntries,

@@ -104,7 +104,11 @@ export default function StatisticsCard({ statistics, years }: StatisticsCardProp
     )
 }
 
-function StatisticsContainer({ children }: { children: React.ReactNode }) {
+interface StatisticsContainerProps {
+    children: React.ReactNode
+}
+
+function StatisticsContainer({ children }: StatisticsContainerProps) {
     return (
         <div className="w-full h-[300px] p-4">
             <ResponsiveContainer

@@ -9,7 +9,11 @@ import type { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 const AuthContext = createContext<UseAuthResult | undefined>(undefined)
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+interface AuthProviderProps {
+    children: ReactNode
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { accessToken, setIamResponse } = useAuthStore()
 
     const login = useCallback(async ({ username, password }: Credentials) => {
