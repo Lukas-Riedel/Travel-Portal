@@ -46,6 +46,30 @@ export function formatTimestamp(dateOrTimestamp: number | Date, timestampFormat:
     return format(toZonedTime(fromUnixTime(typeof dateOrTimestamp === "number" ? dateOrTimestamp : (dateOrTimestamp.getTime() / 1000)), getTimezoneOrDefault(timezone)), timestampFormat)
 }
 
+export function formatDateRange(startDateOrTimestamp: number | Date, endDateOrTimestamp: number | Date, timestampFormat: string): string {
+    const startFormatted = formatTimestamp(startDateOrTimestamp, timestampFormat)
+    const endFormatted = formatTimestamp(endDateOrTimestamp, timestampFormat)
+
+    if (startFormatted === endFormatted) {
+        return startFormatted
+    }
+
+    const delimiter = startFormatted.match(/[^a-zA-Z0-9]/)?.[0]
+    if (!delimiter) {
+        return `${startFormatted} - ${endFormatted}`
+    }
+
+    const startParts = startFormatted.split(delimiter)
+    const endParts = endFormatted.split(delimiter)
+
+    while (startParts.length > 1 && startParts[startParts.length - 1] === endParts[startParts.length - 1]) {
+        startParts.pop()
+    }
+
+    const shortStart = startParts.join(delimiter) + delimiter
+    return `${shortStart} - ${endFormatted}`
+}
+
 export function getDate(dateOrTimestamp: number | Date): Date {
     return typeof dateOrTimestamp === "number" ? new Date(dateOrTimestamp * 1000) : dateOrTimestamp
 }

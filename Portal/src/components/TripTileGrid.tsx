@@ -1,7 +1,12 @@
-import TileGrid from "./TileGrid.jsx"
-import TripTile from "./TripTile.jsx"
+import type { Trip } from "../classes/Trip"
+import TileGrid from "./TileGrid"
+import TripTile from "./TripTile"
 
-export default function TripTileGrid({ trips }) {
+interface TripTileGridProps {
+    trips: Trip[] | null
+}
+
+export default function TripTileGrid({ trips }: TripTileGridProps) {
     return (
         <TileGrid>
             {trips?.filter(trip => trip?.mainHighlight)?.map(trip => (
