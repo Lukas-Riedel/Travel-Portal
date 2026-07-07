@@ -230,7 +230,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
         if (mapRef.current) {
             initMap(mapRef.current)
         }
-    }, [points, lines, geoJsons])
+    }, [points?.length, lines?.length, geoJsons?.length])
 
     useEffect(() => {
         return () => {
