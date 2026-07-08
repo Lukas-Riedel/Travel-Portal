@@ -165,30 +165,30 @@
                                         )
                                     ),
                                     array(
-                                        "match" => array(
-                                            "entity_name.folded" => array(
-                                                "query" => $query,
-                                                "boost" => 50,
-                                                "operator" => "and"
-                                            )
-                                        )
-                                    ),
-                                    array(
-                                        "match" => array(
-                                            "entity_name" => array(
-                                                "query" => $query,
-                                                "boost" => 20,
-                                                "operator" => "and",
-                                                "fuzziness" => "AUTO",
-                                                "prefix_length" => 2
-                                            )
+                                        "multi_match" => array(
+                                            "query" => $query,
+                                            "fields" => array("entity_name^10", "search_text^1"),
+                                            "type" => "best_fields",
+                                            "operator" => "and",
+                                            "fuzziness" => "AUTO",
+                                            "prefix_length" => 2
                                         )
                                     ),
                                     array(
                                         "match" => array(
                                             "search_text.ngram" => array(
                                                 "query" => $query,
-                                                "boost" => 2
+                                                "boost" => 0.2
+                                            )
+                                        )
+                                    ),
+                                    array(
+                                        "match" => array(
+                                            "search_text" => array(
+                                                "query" => $query,
+                                                "fuzziness" => "AUTO",
+                                                "prefix_length" => 2,
+                                                "boost" => 0.5
                                             )
                                         )
                                     )
@@ -231,8 +231,8 @@
                             ),
                             "my_ngram_filter" => array(
                                 "type" => "edge_ngram",
-                                "min_gram" => 2,
-                                "max_gram" => 20
+                                "min_gram" => 3,
+                                "max_gram" => 10
                             )
                         ),
                         "analyzer" => array(
@@ -240,17 +240,9 @@
                                 "tokenizer" => "standard",
                                 "filter" => array("lowercase", "asciifolding", "czech_stop", "czech_stemmer")
                             ),
-                            "standard_folded" => array(
-                                "tokenizer" => "standard",
-                                "filter" => array("lowercase", "asciifolding")
-                            ),
-                            "ngram_index_analyzer" => array(
+                            "ngram_analyzer" => array(
                                 "tokenizer" => "standard",
                                 "filter" => array("lowercase", "asciifolding", "my_ngram_filter")
-                            ),
-                            "ngram_search_analyzer" => array(
-                                "tokenizer" => "standard",
-                                "filter" => array("lowercase", "asciifolding")
                             )
                         )
                     )
@@ -265,11 +257,7 @@
                             "analyzer" => "custom_analyzer",
                             "similarity" => "no_length_norm",
                             "fields" => array(
-                                "raw" => array("type" => "keyword"),
-                                "folded" => array(
-                                    "type" => "text", 
-                                    "analyzer" => "standard_folded"
-                                )
+                                "raw" => array("type" => "keyword")
                             )
                         ),
                         "is_empty" => array("type" => "boolean"),
@@ -280,8 +268,7 @@
                             "fields" => array(
                                 "ngram" => array(
                                     "type" => "text",
-                                    "analyzer" => "ngram_index_analyzer",
-                                    "search_analyzer" => "ngram_search_analyzer"
+                                    "analyzer" => "ngram_analyzer"
                                 )
                             )
                         )
