@@ -689,7 +689,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         type: "text",
                         label: t("photo.prompt.upload.label.path"),
                         required: true,
-                        defaultValue: agents?.[0]?.data?.defaultPhotoFolder && `${agents?.[0]?.data?.defaultPhotoFolder}/${defaultPath}`
+                        defaultValue: agents?.[0]?.data?.defaultPhotoFolder && `${agents?.[0]?.data?.defaultPhotoFolder}/${defaultPath ?? ""}`
                     },
                     {
                         type: "select",
@@ -702,7 +702,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         onChange: (value, refs) => {
                             const agentCandidate = agents?.find(agent => agent.id === value)
                             if (agentCandidate?.data?.defaultPhotoFolder && refs[0]) {
-                                refs[0].value = `${agentCandidate?.data?.defaultPhotoFolder}/${defaultPath}`
+                                refs[0].value = `${agentCandidate?.data?.defaultPhotoFolder}/${defaultPath ?? ""}`
                             }
                         }
                     },
