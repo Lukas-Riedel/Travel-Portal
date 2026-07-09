@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { format, isFuture, isToday } from "date-fns"
-import { Bed, Footprints, PartyPopper, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Sunrise, Sunset } from "lucide-react"
+import { Bed, Footprints, PartyPopper, PlaneTakeoff, MapPin, ImagePlus, Plane, Upload, OctagonAlert, NotebookPen, Trash2, Ship, Sunrise, Sunset, Copy } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { useTranslation } from "react-i18next"
 import Tooltip from "./Tooltip.jsx"
@@ -47,7 +47,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const locale = useLocale()
     const agents = useDevices({ type: DeviceType.Agent })
     const { formatDuration, formatSteps, formatKilometers } = useFormatters()
-    const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast } = usePredefinedUserInput()
+    const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast, showCopyDayItineraryToast } = usePredefinedUserInput()
 
     const notePrefix = useMemo(() => day ? `${format(day, t("general.format.date.year.excluded"), { locale: locale })} ` : "", [day])
     const notes = useMemo(() => noteSelector && notePrefix ? noteSelector(notePrefix) : [], [noteSelector, notePrefix])
@@ -100,8 +100,6 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             : `${t("general.label.day")} ${getDayIndex(day)}`
     }, [day, t, locale, isExactDate])
 
-    const shouldShowButtons = useMemo(() => isExactDate && onNoteAdded, [isExactDate, onNoteAdded])
-
     const handleNoteRemoved = (note: Note) => {
         if (onNoteRemoved) {
             showRemoveNoteToast(() => onNoteRemoved(note.id))
@@ -112,6 +110,20 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         if (onNoteAdded) {
             showCreateNoteToast((content: string) => onNoteAdded(notePrefix + content))
         }
+    }
+
+    const handleDayItineraryCopied = () => {
+        const formatDayEvent = (dayEvent: DayEvent): string | null => {
+            if (isPlace(dayEvent)) {
+                return `${dayEvent.name} (${formatTimestamp(dayEvent.start, t("general.format.datetime.year.excluded"), timezone || dayEvent.timezone)} - ${formatTimestamp(dayEvent.end, t("general.format.datetime.year.excluded"), timezone || dayEvent.timezone)})`
+            }
+            if (isFlight(dayEvent)) {
+                return `${dayEvent.from.shortName} - ${dayEvent.to.shortName} (${formatTimestamp(dayEvent.start, t("general.format.datetime.year.excluded"), timezone || dayEvent.from.timezone)} - ${formatTimestamp(dayEvent.end, t("general.format.datetime.year.excluded"), timezone || dayEvent.to.timezone)})`
+            }
+            return null
+        }
+
+        showCopyDayItineraryToast(() => navigator.clipboard.writeText(events.map(formatDayEvent).filter(Boolean).join("\n")))
     }
 
     const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number, sendNotification?: boolean, trip?: TripIdentifier) => {
@@ -179,11 +191,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                 <div className="flex justify-between items-start">
                     <div className="group relative inline-flex items-center shrink-0">
                         {dayLabel && (
-                            <span className={`font-bold whitespace-nowrap leading-none transition-opacity duration-200 text-gray-900 ${shouldShowButtons && "group-hover:opacity-0"}`}>
+                            <span className={`font-bold whitespace-nowrap leading-none transition-opacity duration-200 text-gray-900 ${isExactDate && "group-hover:opacity-0"}`}>
                                 {dayLabel}
                             </span>
                         )}
-                        {shouldShowButtons && (
+                        {isExactDate && (
                             <div className="absolute inset-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
                                 {onNoteAdded && (
                                     <button
@@ -192,6 +204,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                         <NotebookPen size={15} />
                                     </button>
                                 )}
+                                <button
+                                    onClick={handleDayItineraryCopied}
+                                    className="p-1 btn-icon-hover" >
+                                    <Copy size={15} />
+                                </button>
                             </div>
                         )}
                     </div>

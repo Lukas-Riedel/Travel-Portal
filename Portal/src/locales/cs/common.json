@@ -1133,6 +1133,15 @@
         },
         "itinerary": "## Místa\n{{places}}\n\n## Lety\n{{flights}}\n\n## Ubytování\n{{stays}}\n\n## Poznámky\n{{notes}}"
     },
+    "day": {
+        "prompt": {
+            "copy": {
+                "message": "Program dne bude vložen do schránky. Přeješ si pokračovat?",
+                "confirmed": "Program dne byl úspěšně vložen do schránky",
+                "failed": "Nepodařilo se vložit program dne do schránky"
+            }
+        }
+    },
     "highlight": {
         "prompt": {
             "select": {

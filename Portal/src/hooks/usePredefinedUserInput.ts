@@ -1325,6 +1325,14 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("trip.prompt.copy.failed")
         )
 
+    const showCopyDayItineraryToast = (copyDayItinerary: () => Promise<void>) =>
+        showConfirmToast(
+            t("day.prompt.copy.message"),
+            copyDayItinerary,
+            t("day.prompt.copy.confirmed"),
+            t("day.prompt.copy.failed")
+        )
+
     const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: Date) => Promise<Task>) =>
         showFormToast(
             t("task.prompt.create.message"),
@@ -1411,6 +1419,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showRemoveTaskToast,
         showCreateTripTaskToast,
         showCopyTripItineraryToast,
+        showCopyDayItineraryToast,
         showCreateSelectedRegionToast,
         showCreateCompositeRegionToast,
         showCreateGeographicalRegionToast,
