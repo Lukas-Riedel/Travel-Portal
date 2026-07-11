@@ -47,21 +47,36 @@
             
             $response = curl_exec($curl);
 
-            $isJsonResponse = explode(";", curl_getinfo($curl, CURLINFO_CONTENT_TYPE))[0] === "application/json";
+            $contentTypeHeader = curl_getinfo($curl, CURLINFO_CONTENT_TYPE) ?: "";
+            $isJsonResponse = str_starts_with(strtolower($contentTypeHeader), "application/json");
 
-            curl_close($curl);
+            if ($includeResponseHeaders) {
+                $headerSize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+                $header = substr($response, 0, $headerSize);
+                $body = substr($response, $headerSize);
+                
+                $trimmedBody = trim($body);
 
-            $result = $response;
-            if ($isJsonResponse) {
-                if ($includeResponseHeaders) {
-                    list($header, $body) = explode("\r\n\r\n", $response, 2);  
-                    $result = json_decode($body, true);
-                    $result["__httpHeaders"] = $this->parseHeaders($header);
+                if ($isJsonResponse && !empty($trimmedBody)) {
+                    $result = json_decode($trimmedBody, true) ?? array();
                 }
                 else {
-                    $result = json_decode($response, true);
+                    $result = array("body" => $body);
+                }
+                
+                $result["__httpHeaders"] = $this->parseHeaders($header);
+            }
+            else {
+                $trimmedResponse = trim($response);
+                if ($isJsonResponse && !empty($trimmedResponse)) {
+                    $result = json_decode($trimmedResponse, true);
+                }
+                else {
+                    $result = $response;
                 }
             }
+            
+            curl_close($curl);
 
             return $result;
         }

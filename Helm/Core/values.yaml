@@ -142,4 +142,4 @@ core:
   timezone: Europe/Prague
   backup:
     location: /var/tmp/db.sql.gz
-    limit: "4"
+    limit: "8"
