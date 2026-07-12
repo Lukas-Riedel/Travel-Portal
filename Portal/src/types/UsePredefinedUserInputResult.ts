@@ -5,7 +5,7 @@ import type { Highlightable } from "./Highlightable.ts"
 import type { GeoJSON } from "geojson"
 
 export interface UsePredefinedUserInputResult {
-    showSelectHighlightsToast: (selectHighlights: (count: number) => Promise<void>) => Promise<boolean>
+    showSelectHighlightsToast: (selectHighlights: (count: number) => Promise<Highlight[]>) => Promise<boolean>
     showAssignCategoryToast: (categories: Category[], assignCategory: (categoryName: string) => Promise<GeographicalRegion>) => Promise<boolean>
     showAssignAirlineCodeToast: (airlines: Airline[], assignAirlineCode: (airlineId: string) => Promise<Airline>) => Promise<boolean>
     showUpdateCategoryToast: (category: Category, updateMetadata: (metadata: CategoryMetadata) => Promise<Category>, updateCategory?: (category: CategoryCategory) => Promise<Category>) => Promise<boolean>

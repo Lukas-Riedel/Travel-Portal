@@ -3,37 +3,59 @@ import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import type { Category, Highlight } from "../types/CoreSwaggerTypes.ts"
+import AppLink from "./AppLink.tsx"
+import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
+import CategoryFlag from "./CategoryFlag.tsx"
 
-export default function PageHeader({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }) {
+const MOBILE_WIDTH_THRESHOLD = 768
+
+interface PageHeaderProps<T> {
+    name: string
+    categories?: Category[]
+    internalAttributes?: string[]
+    onNameChanged?: (name: string) => Promise<T>
+    onRemoved?: () => Promise<void>
+    onHighlightsRefreshed?: () => Promise<Highlight[]>
+}
+
+export default function PageHeader<T,>({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }: PageHeaderProps<T>) {
     const { showRemoveEntityToast, showUpdateEntityNameToast, showSelectHighlightsToast } = usePredefinedUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
 
     useEffect(() => {
-        const onResize = () => setIsMobile(window.innerWidth < 768)
+        const onResize = () => setIsMobile(window.innerWidth < MOBILE_WIDTH_THRESHOLD)
+
         onResize()
         window.addEventListener("resize", onResize)
         return () => window.removeEventListener("resize", onResize)
     }, [])
 
     const handleNameChanged = () => {
-        showUpdateEntityNameToast(name, onNameChanged)
+        if (onNameChanged) {
+            showUpdateEntityNameToast(name, onNameChanged)
+        }
     }
 
     const handleHighlightsRefreshed = () => {
-        showSelectHighlightsToast(onHighlightsRefreshed)
+        if (onHighlightsRefreshed) {
+            showSelectHighlightsToast(onHighlightsRefreshed)
+        }
     }
 
     const handleRemoved = () => {
-        showRemoveEntityToast(onRemoved)
+        if (onRemoved) {
+            showRemoveEntityToast(onRemoved)
+        }
     }
 
-    const handleShared = async () => {
+    const handleShared = () => {
         if (typeof Android !== "undefined" && Android.share) {
             Android.share(name, location.href)
         }
-        else {
-            await navigator.share({
+        else if (navigator.share) {
+            navigator.share({
                 title: name,
                 url: location.href
             })
@@ -51,11 +73,11 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
             )}
             {onHighlightsRefreshed && (
                 <>
-                    <Link
-                        to={`${location.pathname}/highlight`}
+                    <AppLink
+                        to={StaticNavigationTarget.Highlights}
                         className="btn-chip-gray">
                         <Images size={16} />
-                    </Link>
+                    </AppLink>
                     <button
                         onClick={handleHighlightsRefreshed}
                         className="btn-chip-gray">
@@ -110,12 +132,9 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
             </div>
             <div className="flex">
                 {categories?.map(category => (
-                    <img
-                        key={category.id}
-                        className="w-14 object-cover mx-2 flex-shrink-0"
-                        src={`/img/flags/${category?.metadata?.unicode}.svg`}
-                        alt={category?.name}
-                    />
+                    <CategoryFlag
+                        category={category}
+                        className="w-14 object-cover mx-2 flex-shrink-0" />
                 ))}
             </div>
         </div>
@@ -136,10 +155,8 @@ export default function PageHeader({ name, categories, internalAttributes, onNam
             </div>
             <div className="flex flex-wrap justify-center gap-3">
                 {categories?.map(category => (
-                    <img
-                        key={category.id}
-                        src={`/img/flags/${category?.metadata?.unicode}.svg`}
-                        alt={category?.name}
+                    <CategoryFlag
+                        category={category}
                         className="w-10 h-auto flex-shrink-0" />
                 ))}
             </div>

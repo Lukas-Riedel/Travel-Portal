@@ -32,5 +32,6 @@ declare global {
 
     const Android: {
         login?: (username: string, password: string) => void
+        share?: (title: string, url: string) => void
     } | undefined
 }

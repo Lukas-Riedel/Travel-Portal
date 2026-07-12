@@ -5,6 +5,7 @@ import type { Navigable } from "../types/Navigable.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import { formatTimestamp } from "./timeUtils.ts"
 import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
+import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
 
 const PLAN_PAGE_PREFIX = "/plan"
 const AIRLINE_PAGE_PREFIX = "/airline"
@@ -15,6 +16,7 @@ const TRIP_PAGE_PREFIX = "/trip"
 const ALBUM_PAGE_PREFIX = "/album"
 const LABEL_PAGE_PREFIX = "/label"
 const ADMIN_PAGE_PREFIX = "/admin"
+const HIGHLIGHT_PAGE_PREFIX = "/highlight"
 
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
 const isAirport = (to: Navigable): to is Airport => (to as Airport).shortName !== undefined
@@ -25,6 +27,7 @@ const isTrip = (to: Navigable): to is Trip => (to as Trip).countries !== undefin
 const isLabel = (to: Navigable): to is Label => (to as Label).name !== undefined && !isAirline(to) && !isCategory(to) && !isPlace(to) && !isTrip(to)
 const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).place !== undefined && (to as PlaceAlbum).album !== undefined
 const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => (to as AdminNavigationTarget).tab !== undefined
+const isStaticNavigationTarget = (to: Navigable): to is StaticNavigationTarget => StaticNavigationTarget[to as any] !== undefined
 
 export function getPath(to: Navigable, currentPath?: string): string {
     let path = ""
@@ -55,6 +58,11 @@ export function getPath(to: Navigable, currentPath?: string): string {
     }
     else if (isAdminNavigationTarget(to)) {
         path += ADMIN_PAGE_PREFIX + "?" + to.getURLSearchParams()
+    }
+    else if (isStaticNavigationTarget(to)) {
+        if (to === StaticNavigationTarget.Highlights) {
+            path += currentPath + "/" + HIGHLIGHT_PAGE_PREFIX
+        }
     }
 
     return path;

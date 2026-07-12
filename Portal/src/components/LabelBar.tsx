@@ -29,15 +29,21 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
         [allKnownLabels, configuration, labels])
 
     const handleKnownLabelAdded = (label: Label) => {
-        showAssignLabelToast(() => onLabelAdded(label.name))
+        if (onLabelAdded) {
+            showAssignLabelToast(() => onLabelAdded(label.name))
+        }
     }
 
     const handleUnknownLabelAdded = () => {
-        showCreateLabelToast(onLabelAdded)
+        if (onLabelAdded) {
+            showCreateLabelToast(onLabelAdded)
+        }
     }
 
     const handleLabelRemoved = (label: Label) => {
-        showUnassignLabelToast(() => onLabelRemoved(label.id))
+        if (onLabelRemoved) {
+            showUnassignLabelToast(() => onLabelRemoved(label.id))
+        }
     }
 
     return (!labels || labels.length > 0 || onLabelAdded) && (

@@ -618,7 +618,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     options: Object.values(CategoryCategory).map(categoryCategory => ({
                         id: categoryCategory,
                         name: t(`category.category.${categoryCategory}`)
-                    }))
+                    })),
+                    defaultValue: category.category
                 },
             ],
             (color, unicode, publicHolidaysCalendar, category) => {
@@ -665,7 +666,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("place.prompt.assign.category.failed")
         )
 
-    const showSelectHighlightsToast = (selectHighlights: (count: number) => Promise<void>) =>
+    const showSelectHighlightsToast = (selectHighlights: (count: number) => Promise<Highlight[]>) =>
         showFormToast(
             t("highlight.prompt.select.message"),
             [
