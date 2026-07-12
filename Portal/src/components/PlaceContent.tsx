@@ -10,6 +10,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Place } from "../classes/Place.ts"
 import { isDeviceOnline } from "../utils/deviceUtils.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 
 interface PlaceContentProps {
     place: Place | null
@@ -114,8 +115,8 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
             </div>
             <PlaceMap
                 places={[place]}
-                placeMainCategorySelector={place => place?.getCategory("mostSpecificWithMetadata")}
-                onRightClick={onLocationChanged && handleLocationUpdated} />
+                placeMainCategorySelector={place => place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)}
+                onRightClick={onLocationChanged && ((latitude, longitude) => Promise.resolve(handleLocationUpdated(latitude, longitude)))} />
         </div>
     )
 }

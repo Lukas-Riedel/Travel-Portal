@@ -134,11 +134,11 @@ function FlightAirport({ airport, timestamp, icon: Icon }: FlightAirportProps) {
                     size={16}
                     className="text-sky-600 flex-shrink-0" />
                 {airport.id ? (
-                    <Link
-                        to={`/airport/${airport.id}`}
+                    <AppLink
+                        to={airport}
                         className="hover:underline text-sky-600 font-medium">
                         {airport.longName ?? `${airport.shortName} (${airport.code})`}
-                    </Link>
+                    </AppLink>
                 ) : (
                     <span className="text-sky-600 font-medium">
                         {airport.shortName}
