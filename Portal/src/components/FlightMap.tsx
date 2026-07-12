@@ -57,16 +57,14 @@ export default function FlightMap({ flights, airportMainCategorySelector }: Flig
 
     return (
         <Map
-            points={airports.map(airport => {
-                return {
-                    name: airport.longName ?? airport.code,
-                    latitude: airport.latitude,
-                    longitude: airport.longitude,
-                    color: airportMainCategorySelector(airport)?.metadata?.color,
-                    unicode: airportMainCategorySelector(airport)?.metadata?.unicode,
-                    onClick: () => Promise.resolve(navigate(airport))
-                }
-            })}
+            points={airports.map(airport => ({
+                name: airport.longName ?? airport.code,
+                latitude: airport.latitude,
+                longitude: airport.longitude,
+                color: airportMainCategorySelector(airport)?.metadata?.color,
+                unicode: airportMainCategorySelector(airport)?.metadata?.unicode,
+                onClick: () => Promise.resolve(navigate(airport))
+            }))}
             lines={flightPaths.map(fp => ({
                 from: {
                     latitude: fp.from.latitude,

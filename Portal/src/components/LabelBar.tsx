@@ -3,23 +3,32 @@ import clsx from "clsx"
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
-import { useLabels } from "../hooks/useLabels"
-import { useConfiguration } from "../contexts/ConfigContext"
+import { useLabels } from "../hooks/useLabels.ts"
+import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Label } from "../types/CoreSwaggerTypes.ts"
+import AppLink from "./AppLink.tsx"
 
-const loadingLabelsCount = 3
+const LOADING_LABELS_COUNT = 3
 
-export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
+interface LabelBarProps {
+    labels: Label[] | null
+    onLabelAdded: (label: string) => Promise<Label>
+    onLabelRemoved: (labelId: string) => Promise<void>
+}
+
+type DynamicLabel = { name: string }
+
+export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: LabelBarProps) {
     const { showCreateLabelToast, showAssignLabelToast, showUnassignLabelToast } = usePredefinedUserInput()
+    const { configuration } = useConfiguration()
 
-    const { configuration } = useConfiguration();
+    const allKnownLabels = useLabels()
+    const unassignedLabels = useMemo(() => allKnownLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id)
+        && !configuration?.dynamicLabels?.some((dynamicLabel: DynamicLabel) => dynamicLabel.name == label.name)),
+        [allKnownLabels, configuration, labels])
 
-    const allLabels = useLabels()
-
-    const unassignedLabels = useMemo(() => allLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id)
-        && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name), [allLabels, configuration, labels]))
-
-    const handleKnownLabelAdded = label => {
+    const handleKnownLabelAdded = (label: Label) => {
         showAssignLabelToast(() => onLabelAdded(label.name))
     }
 
@@ -27,7 +36,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
         showCreateLabelToast(onLabelAdded)
     }
 
-    const handleLabelRemoved = label => {
+    const handleLabelRemoved = (label: Label) => {
         showUnassignLabelToast(() => onLabelRemoved(label.id))
     }
 
@@ -39,15 +48,15 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                         <div
                             key={label.id}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center hover:bg-gray-100 transition">
-                            <Link
-                                to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/label/${label.id}`}
+                            <AppLink
+                                to={label}
                                 className={clsx(
                                     "text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full",
                                     onLabelAdded ? "lg:pr-5" : "lg:pr-0"
                                 )}>
                                 {label.name}
-                            </Link>
-                            {onLabelRemoved && !configuration?.dynamicLabels?.some(dynamicLabel => dynamicLabel.name == label.name) && (
+                            </AppLink>
+                            {onLabelRemoved && !configuration?.dynamicLabels?.some((dynamicLabel: DynamicLabel) => dynamicLabel.name == label.name) && (
                                 <button
                                     onClick={() => handleLabelRemoved(label)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
@@ -60,11 +69,11 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                         <div
                             key={label.id}
                             className="relative w-full lg:w-auto bg-white rounded-lg shadow px-4 py-2 flex items-center hover:bg-gray-100 transition">
-                            <Link
-                                to={`${window.location.pathname.startsWith("/plan") ? "/plan" : ""}/label/${label.id}`}
+                            <AppLink
+                                to={label}
                                 className="text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full lg:pr-5">
                                 {label.name}
-                            </Link>
+                            </AppLink>
                             <button
                                 onClick={() => handleKnownLabelAdded(label)}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
@@ -80,7 +89,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }) {
                         </button>
                     )}
                 </>
-            ) : Array.from({ length: loadingLabelsCount }).map((_, index) => (
+            ) : Array.from({ length: LOADING_LABELS_COUNT }).map((_, index) => (
                 <div
                     key={index}
                     className="flex w-full lg:w-auto text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition">
