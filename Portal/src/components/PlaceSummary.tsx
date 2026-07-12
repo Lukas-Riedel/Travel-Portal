@@ -1,48 +1,57 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
-import { getDateString } from "../utils/helpers"
+import { getDateString } from "../utils/helpers.js"
 import { TailSpin } from "react-loader-spinner"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import type { Place } from "../classes/Place.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import AppLink from "./AppLink.tsx"
+import CategoryFlag from "./CategoryFlag.tsx"
+import { useTranslation } from "react-i18next"
 
-export default function PlaceSummary({ place }) {
-    const category = useMemo(() => place && place.getCategory("mostSpecificWithMetadata"), [place])
+interface PlaceSummaryProps {
+    place: Place | null
+}
+
+export default function PlaceSummary({ place }: PlaceSummaryProps) {
+    const { t } = useTranslation()
+
+    const category = useMemo(() => place && place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata), [place])
 
     return (
         <div className="w-full max-w-5xl mx-auto bg-white shadow-md overflow-hidden my-10 rounded-xl">
             {place ? (
                 <>
                     {place.mainHighlight?.url?.full && (
-                        <Link
-                            to={`/place/${place.id}`}>
+                        <AppLink
+                            to={place}>
                             <img
                                 src={place.mainHighlight.url.full}
-                                alt={place.name}
                                 className="w-full aspect-[16/9] object-cover brightness-100 hover:brightness-50 transition duration-700 ease-in-out" />
-                        </Link>
+                        </AppLink>
                     )}
                     <div className="p-4 flex flex-col items-center text-center">
                         {category && (
-                            <img
-                                src={`/img/flags/${category?.metadata?.unicode}.svg`}
-                                alt={category?.name}
+                            <CategoryFlag
+                                category={category}
                                 className="w-10 h-auto mb-3" />
                         )}
-                        <Link
-                            to={`/place/${place.id}`}
+                        <AppLink
+                            to={place}
                             className="text-3xl mb-2 uppercase hover:text-blue-700 transition">
                             {getEntityPrettyName(place.name)}
-                        </Link>
+                        </AppLink>
                         <span className="text-gray-600 mb-4">
                             {getDateString(Math.max(...place.dates.map(date => date.start)))}
                         </span>
                         <p className="text-gray-600 mb-6">
                             {place.excerpt}
                         </p>
-                        <Link
-                            to={`/place/${place.id}`}
+                        <AppLink
+                            to={place}
                             className="px-4 py-2 bg-black text-white rounded-xl shadow hover:bg-blue-700 transition">
-                            Zobrazit více
-                        </Link>
+                            {t("place.expand")}
+                        </AppLink>
                     </div>
                 </>
             ) : (
