@@ -3,4 +3,4 @@ import type { Airline, Airport, Category, Label, Place, Trip } from "./CoreSwagg
 import type { PlaceAlbum } from "./PlaceAlbum.ts"
 import type { StaticNavigationTarget } from "./StaticNavigationTarget.ts"
 
-export type Navigable = Airline | Airport | Category | Place | Trip | Label | PlaceAlbum | AdminNavigationTarget | StaticNavigationTarget
+export type Navigable = number | Airline | Airport | Category | Place | Trip | Label | PlaceAlbum | AdminNavigationTarget | StaticNavigationTarget

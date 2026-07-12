@@ -8,6 +8,7 @@ import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
 
 const PLAN_PAGE_PREFIX = "/plan"
+const YEAR_PAGE_PREFIX = "/year"
 const AIRLINE_PAGE_PREFIX = "/airline"
 const AIRPORT_PAGE_PREFIX = "/airport"
 const CATEGORY_PAGE_PREFIX = "/category"
@@ -18,6 +19,7 @@ const LABEL_PAGE_PREFIX = "/label"
 const ADMIN_PAGE_PREFIX = "/admin"
 const HIGHLIGHT_PAGE_PREFIX = "/highlight"
 
+const isYear = (to: Navigable): to is number => typeof to === "number"
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
 const isAirport = (to: Navigable): to is Airport => (to as Airport).shortName !== undefined
 const isCategory = (to: Navigable): to is Category => (to as Category).category !== undefined
@@ -35,7 +37,10 @@ export function getPath(to: Navigable, currentPath?: string): string {
         path += PLAN_PAGE_PREFIX
     }
 
-    if (isAirline(to)) {
+    if (isYear(to)) {
+        path += YEAR_PAGE_PREFIX + "/" + to
+    }
+    else if (isAirline(to)) {
         path += AIRLINE_PAGE_PREFIX + "/" + to.id
     }
     else if (isAirport(to)) {
