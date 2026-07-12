@@ -749,7 +749,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         onChange: (value, refs) => {
                             const agentCandidate = agents?.find(agent => agent.id === value)
                             if (agentCandidate?.data?.defaultPhotoFolder && refs[1]) {
-                                refs[1].value = `${agentCandidate?.data?.defaultPhotoFolder}/${defaultPath}`
+                                refs[1].value = `${agentCandidate?.data?.defaultPhotoFolder}/${defaultPath ?? ""}`
                             }
                         }
                     },

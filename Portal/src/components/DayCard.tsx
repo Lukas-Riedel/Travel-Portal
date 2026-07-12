@@ -18,6 +18,7 @@ import LoadingCard from "./LoadingCard.tsx"
 import { getFlightLink, getMapLink, getSatelliteLink } from "../utils/navigationUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
+import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 
 const SUN_ALTITUDE_THRESHOLD = 20
 const PRECIPITATION_PROBABILITY_THRESHOLD = 50
@@ -45,7 +46,7 @@ interface DayCardProps {
 export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, displayWarnings, noteSelector, onPhotosAdded, onNoteRemoved, onNoteAdded }: DayCardProps) {
     const { t } = useTranslation()
     const locale = useLocale()
-    const agents = useDevices({ type: DeviceType.Agent })
+    const onlineAgents = useOnlineAgents()
     const { formatDuration, formatSteps, formatKilometers } = useFormatters()
     const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast, showCopyDayItineraryToast } = usePredefinedUserInput()
 
@@ -128,7 +129,6 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
 
     const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number, sendNotification?: boolean, trip?: TripIdentifier) => {
         if (onPhotosAdded) {
-            const onlineAgents = agents.filter(agent => isDeviceOnline(agent))
             showUploadPhotosToast(onlineAgents, (path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) =>
                 onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification, trip && timestamp && `${trip.year}/${trip.name} ${trip.year}/${placeName} ${formatTimestamp(timestamp, t("general.format.date.year.included"))}`)
         }

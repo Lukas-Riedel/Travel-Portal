@@ -9,6 +9,7 @@ import { DeviceType, type Album, type Photo } from "../types/CoreSwaggerTypes.ts
 import { useTranslation } from "react-i18next"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 
 interface AlbumPhotoTileProps {
     place: Place | null
@@ -21,14 +22,14 @@ interface AlbumPhotoTileProps {
 
 export default function AlbumPhotoTile({ place, album, photo, photoPosition, onPhotoReplaced, onMainPhotoUpdated }: AlbumPhotoTileProps) {
     const { t } = useTranslation()
-    const agents = useDevices({ type: DeviceType.Agent })
+    const onlineAgents = useOnlineAgents()
     const { showUpdateAlbumMainPhotoToast, showReplacePhotoToast } = usePredefinedUserInput()
 
     const [overlayType, setOverlayType] = useState(0)
 
     const handlePhotoReplaced = () => {
-        if (agents && place && album && photo && onPhotoReplaced) {
-            showReplacePhotoToast(agents.filter(agent => isDeviceOnline(agent)),
+        if (onlineAgents && place && album && photo && onPhotoReplaced) {
+            showReplacePhotoToast(onlineAgents,
                 (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, album.id, place.name, photo.id, path, sendNotification)
                     .then(() => {
                         window.open(photo.permalink, "_blank")
