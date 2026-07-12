@@ -3,6 +3,6 @@ export interface MapPoint {
     latitude: number
     longitude: number
     color: string
-    unicode: string
+    unicode?: string
     onClick?: () => Promise<void>
 }

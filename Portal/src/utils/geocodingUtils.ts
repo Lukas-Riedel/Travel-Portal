@@ -25,6 +25,19 @@ export function toDegrees(radians: number): number {
     return radians * 180 / Math.PI
 }
 
+export function tryExtractPointCoordinates(geoJson: GeoJSON): Coordinates | null {
+    if (geoJson.type === "Feature") {
+        return geoJson.geometry?.type !== "Point" ? null : {
+            latitude: geoJson.geometry.coordinates[1],
+            longitude: geoJson.geometry.coordinates[0]
+        }
+    }
+
+    return geoJson.type !== "Point" ? null : {
+        latitude: geoJson.coordinates[1],
+        longitude: geoJson.coordinates[0]
+    }
+}
 
 export function getGeoFeatures(geoJson: GeoJSON): Feature[] {
     if (geoJson.type === "FeatureCollection") {

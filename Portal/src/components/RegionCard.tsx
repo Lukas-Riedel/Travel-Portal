@@ -9,7 +9,7 @@ import type { Region } from "../types/Region.ts"
 import PropertyCardContent from "./PropertyCardContent.tsx"
 import Card from "./Card.tsx"
 import type { GeoJSON } from "geojson"
-import { getGeoFeatures, getGeoJson } from "../utils/geocodingUtils.ts"
+import { getGeoFeatures, getGeoJson, tryExtractPointCoordinates } from "../utils/geocodingUtils.ts"
 
 interface RegionCardProps {
     region: Region | null
@@ -20,18 +20,7 @@ interface RegionCardProps {
 }
 
 const isGeographicalRegion = (region: Region): region is GeographicalRegion => "geoJson" in region
-const isGeopgraphicalExtension = (region: Region): boolean => {
-    if (!isGeographicalRegion(region)) {
-        return false
-    }
-
-    const geo = region.geoJson as GeoJSON
-    if (geo.type === "Feature") {
-        return geo.geometry?.type === "Point"
-    }
-
-    return geo.type === "Point"
-}
+const isGeopgraphicalExtension = (region: Region): boolean => isGeographicalRegion(region) && tryExtractPointCoordinates(region.geoJson as GeoJSON) !== null
 const isCompositeRegion = (region: Region): region is CompositeRegion => "includedCategories" in region
 
 export default function RegionCard({ region, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }: RegionCardProps) {

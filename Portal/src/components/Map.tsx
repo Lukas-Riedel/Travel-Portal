@@ -39,7 +39,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
     const overlayRef = useRef<GoogleMapsOverlay>(null)
     const layersRef = useRef<Layer[]>([])
 
-    const [hoveredMarkerData, setHoveredMarkerData] = useState<{ name: string, unicode: string, x: number, y: number } | null>(null)
+    const [hoveredMarkerData, setHoveredMarkerData] = useState<{ name: string, x: number, y: number, unicode?: string } | null>(null)
     const [isOverlayReady, setIsOverlayReady] = useState(false)
     const [zoom, setZoom] = useState(DEFAULT_MAP_ZOOM)
 
@@ -274,9 +274,11 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
                             alignItems: "center",
                             gap: "8px"
                         }}>
-                            <img
-                                className="w-5 h-5 rounded-sm object-cover"
-                                src={`/img/flags/${hoveredMarkerData.unicode}.svg`} />
+                            {hoveredMarkerData.unicode && (
+                                <img
+                                    className="w-5 h-5 rounded-sm object-cover"
+                                    src={`/img/flags/${hoveredMarkerData.unicode}.svg`} />
+                            )}
                             <span className="whitespace-nowrap">
                                 {getEntityPrettyName(hoveredMarkerData.name)}
                             </span>
@@ -287,7 +289,10 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
         </>
     ) : (
         <div className="flex items-center justify-center w-full [aspect-ratio:3/2]">
-            <TailSpin color="black" height={80} width={80} />
+            <TailSpin
+                color="black"
+                height={80}
+                width={80} />
         </div>
     )
 }
