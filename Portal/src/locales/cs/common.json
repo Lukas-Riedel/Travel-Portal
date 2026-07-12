@@ -983,6 +983,19 @@
             "more_few": "Zobrazit další {{count}} místa",
             "more_other": "Zobrazit dalších {{count}} míst"
         },
+        "review": {
+            "alert": "Nutná revize",
+            "item": {
+                "location": "Zkontrolovat polohu",
+                "excerpt": "Zkontrolovat výňatek",
+                "mainHighlight": "Nastavit hlavní highlight",
+                "categories": "Zkontrolovat kategories",
+                "labels": "Nastavit štítky",
+                "highlights": "Nastavit highlighty",
+                "highlightAttributes": "Nastavit atributy highlightů",
+                "albumMainPhotos": "Nastavit úvodní fotky alb"
+            }
+        },
         "prompt": {
             "create": {
                 "message": "Zadej údaje o místě k přidání:",

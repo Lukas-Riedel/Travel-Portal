@@ -17,6 +17,7 @@ import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
+import PlaceReviewAlertBar from "../components/PlaceReviewAlertBar.tsx"
 
 const nearbyPlacesCount = 3
 
@@ -37,6 +38,9 @@ export default function PlacePage() {
 
     return hasRole(UserRole.PlaceRead) && (
         <>
+            <PlaceReviewAlertBar
+                place={place}
+                onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && hasRole(UserRole.PortalWarningRead) && updatePlaceAlbumsReviewed} />
             <PageHeader
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
@@ -62,8 +66,7 @@ export default function PlacePage() {
                 onExcerptChanged={hasRole(UserRole.PlaceEdit) && updatePlaceExcerpt}
                 onExcerptRefreshed={hasRole(UserRole.PlaceEdit) && refreshPlaceExcerpt}
                 onAddressChanged={hasRole(UserRole.PlaceEdit) && updatePlaceAddress}
-                onLocationChanged={hasRole(UserRole.PlaceEdit) && updatePlaceLocation}
-                onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && updatePlaceAlbumsReviewed} />
+                onLocationChanged={hasRole(UserRole.PlaceEdit) && updatePlaceLocation} />
             <DateTileGrid
                 place={place}
                 onAlbumRefreshed={hasRole(UserRole.PlaceAlbumEdit) && refreshPlaceAlbum} />
