@@ -230,7 +230,7 @@
                     $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimezone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
-                    $whereClauseBuilder->withClause("pi.name = ? AND pe.\"start\" >= ? AND pe.\"start\" < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
+                    $whereClauseBuilder->withClause("pi.name = ? AND (pe.permanent OR (pe.\"start\" >= ? AND pe.\"start\" < ?))", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
@@ -242,7 +242,7 @@
                     $albumDate = \DateTime::createFromFormat(CommonConstants::DMY_DATE_FORMAT, $album->getPlaceDateString(), new \DateTimeZone($homeTimezone));
                     $albumDate->setTime(0, 0);
                     $albumTimestamp = $albumDate->getTimestamp();
-                    $whereClauseBuilder->withClause("pi.name = ? AND pe.\"start\" >= ? AND pe.\"start\" < ?", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
+                    $whereClauseBuilder->withClause("pi.name = ? AND (pe.permanent OR (pe.\"start\" >= ? AND pe.\"start\" < ?))", $album->getPlaceName(), $albumTimestamp, $albumTimestamp + CommonConstants::ONE_DAY_SECONDS);
                 }
                 else {
                     $whereClauseBuilder->withClause("false");
