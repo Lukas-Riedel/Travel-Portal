@@ -35,7 +35,7 @@ export class Place implements IPlace {
 
     public isPermanent(): boolean {
         // TODO: This is not 100% true, the first part evaluates to true also for candidates, the other part evaluates to true for day trip places
-        return this.dates.length === 0 || this.dates.every(date => !date.trip)
+        return !this.dates || this.dates.every(date => !date.trip)
     }
 
     public getCategory(categoryCategory: ExtendedCategoryCategory): Category | undefined {

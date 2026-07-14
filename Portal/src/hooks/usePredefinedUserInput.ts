@@ -736,7 +736,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         type: "text",
                         label: t("photo.prompt.upload.label.path"),
                         required: true,
-                        defaultValue: agents?.[0]?.data?.defaultPhotoFolder && `${agents?.[0]?.data?.defaultPhotoFolder}/${defaultPath}`
+                        defaultValue: agents?.[0]?.data?.defaultPhotoFolder && `${agents?.[0]?.data?.defaultPhotoFolder}/${defaultPath ?? ""}`
                     },
                     {
                         type: "select",

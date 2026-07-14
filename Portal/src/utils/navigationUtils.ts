@@ -19,7 +19,7 @@ const LABEL_PAGE_PREFIX = "/label"
 const ADMIN_PAGE_PREFIX = "/admin"
 const HIGHLIGHT_PAGE_PREFIX = "/highlight"
 
-const isYear = (to: Navigable): to is number => typeof to === "number"
+const isYear = (to: Navigable): to is number => typeof to === "number" && (to as number) >= 2000
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
 const isAirport = (to: Navigable): to is Airport => (to as Airport).shortName !== undefined
 const isCategory = (to: Navigable): to is Category => (to as Category).category !== undefined
@@ -29,7 +29,7 @@ const isTrip = (to: Navigable): to is Trip => (to as Trip).countries !== undefin
 const isLabel = (to: Navigable): to is Label => (to as Label).name !== undefined && !isAirline(to) && !isCategory(to) && !isPlace(to) && !isTrip(to)
 const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).place !== undefined && (to as PlaceAlbum).album !== undefined
 const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => (to as AdminNavigationTarget).tab !== undefined
-const isStaticNavigationTarget = (to: Navigable): to is StaticNavigationTarget => StaticNavigationTarget[to as any] !== undefined
+const isStaticNavigationTarget = (to: Navigable): to is StaticNavigationTarget => StaticNavigationTarget[to as number] !== undefined
 
 export function getPath(to: Navigable, currentPath?: string): string {
     let path = ""
