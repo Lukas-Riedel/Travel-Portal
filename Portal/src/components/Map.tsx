@@ -242,6 +242,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: window.env?.VITE_FRONTEND_GOOGLE_MAPS_API_KEY || import.meta.env.VITE_FRONTEND_GOOGLE_MAPS_API_KEY,
+        // TODO: Use i18n from useTranslation?
         language: "cs",
         region: "CZ"
     })

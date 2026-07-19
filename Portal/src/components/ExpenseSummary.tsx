@@ -336,24 +336,26 @@ interface ExpenseCandidateRowProps {
 }
 
 function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCreated }: ExpenseCandidateRowProps) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { configuration } = useConfiguration()
     const { showCreateExpenseToast } = usePredefinedUserInput()
 
     const { subscriptions } = useSubscriptions()
     const { vouchers, updateVoucherValue, removeVoucher } = useVouchers()
 
+    const getSortedExpenseTypes = () => Object.values(ExpenseType).sort((a, b) => t(`expense.name.${a}`).localeCompare(t(`expense.name.${b}`), i18n.language))
+
     const [wasEdited, setWasEdited] = useState(false)
-    const [newType, setNewType] = useState(Object.values(ExpenseType)[0])
+    const [newType, setNewType] = useState(getSortedExpenseTypes()[0])
     const [newDescription, setNewDescription] = useState("")
-    const [newValue, setNewValue] = useState(0)
+    const [newValue, setNewValue] = useState<number | null>(0)
     const [newCurrency, setNewCurrency] = useState(Object.values(ExpenseCurrency)[0])
 
     useEffect(() => {
         if (!wasEdited) {
-            setNewType(expenseCandidate?.type || Object.values(ExpenseType)[0])
+            setNewType(expenseCandidate?.type || getSortedExpenseTypes()[0])
             setNewDescription(expenseCandidate?.description || "")
-            setNewValue(expenseCandidate?.value || 0)
+            setNewValue(expenseCandidate?.value !== undefined ? expenseCandidate.value : null)
             setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || Object.values(ExpenseCurrency)[0])
         }
     }, [expenseCandidate])
@@ -377,7 +379,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                         setNewType(e.target.value as ExpenseType)
                     }}
                     disabled={!!expenseCandidate?.description}>
-                    {Object.values(ExpenseType).map(expenseType => (
+                    {getSortedExpenseTypes().map(expenseType => (
                         <option
                             className="text-center"
                             key={expenseType}
@@ -404,10 +406,21 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
                     className="border rounded p-1 min-w-8 text-center shrink"
                     type="number"
                     min={0}
-                    value={newValue}
+                    step="any"
+                    value={newValue === null ? "" : newValue}
                     onChange={e => {
                         setWasEdited(true)
-                        setNewValue(Number(e.target.value))
+
+                        const value = e.target.value
+                        if (value === "") {
+                            setNewValue(null)
+                        }
+                        else {
+                            const parsed = Number(value)
+                            if (!isNaN(parsed)) {
+                                setNewValue(parsed)
+                            }
+                        }
                     }}
                     placeholder={t("expense.label.price")} />
                 <select
