@@ -1269,7 +1269,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 },
                 {
                     type: "text",
-                    label: t("region.prompt.create.composite.label.included"),
+                    label: t("region.prompt.create.composite.label.excluded"), 
                     required: false
                 }
             ],
