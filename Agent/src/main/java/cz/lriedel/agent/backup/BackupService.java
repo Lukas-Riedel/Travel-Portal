@@ -54,7 +54,7 @@ public class BackupService {
     @SneakyThrows
     @Scheduled(fixedDelayString = "${agent.backup.synchronization.interval}", timeUnit = TimeUnit.SECONDS)
     public void synchronizeFiles() {
-        Set<String> synchronizedFiles = synchronizedFileRepository.findAll().stream().map(BackupService::getHash).collect(toSet());
+        Set<String> synchronizedFiles = synchronizedFileRepository.findAll().stream().map(SynchronizedFile::getHash).collect(toSet());
 
         try (Stream<Path> allFiles = Files.walk(sourceFolder)) {
             Set<Path> nonSynchronizedFiles = allFiles.filter(Files::isRegularFile).map(Path::normalize)
@@ -69,7 +69,7 @@ public class BackupService {
                 log.info("Copying {} files to '{}'...", nonSynchronizedFiles.size(), folder);
                 for (Path nonSynchronizedFile : nonSynchronizedFiles) {
                     Files.copy(nonSynchronizedFile, folder.resolve(nonSynchronizedFile.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-                    synchronizedFileRepository.save(new SynchronizedFile(nonSynchronizedFile.toString().toLowerCase(), Files.size(nonSynchronizedFile), Instant.now()));
+                    synchronizedFileRepository.save(new SynchronizedFile(getHash(nonSynchronizedFile), Instant.now()));
                 }
                 log.info("Copied {} files to '{}'.", nonSynchronizedFiles.size(), folder);
                 notificationProvider.sendSystemNotification("Files back-up finished",
@@ -84,16 +84,8 @@ public class BackupService {
         }
     }
 
-    private static String getHash(SynchronizedFile synchronizedFile) {
-        return getHash(synchronizedFile.getPath(), synchronizedFile.getSize());
-    }
-
     @SneakyThrows
     private static String getHash(Path path) {
-        return getHash(path.toString(), Files.size(path));
-    }
-    
-    private static String getHash(String path, Long size) {
-        return path.toLowerCase() + "_" + (size != null ? size : "null");
+        return path.toString().toLowerCase() + "_" + Files.size(path);
     }
 }

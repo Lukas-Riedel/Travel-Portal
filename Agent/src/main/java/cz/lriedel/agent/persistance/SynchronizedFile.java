@@ -18,11 +18,8 @@ import java.time.Instant;
 public class SynchronizedFile {
 
     @Id
-    @Column(name = "path")
-    private String path;
-
-    @Column(name = "size")
-    private Long size;
+    @Column(name = "hash")
+    private String hash;
 
     @Column(name = "uploaded")
     private Instant uploaded;
