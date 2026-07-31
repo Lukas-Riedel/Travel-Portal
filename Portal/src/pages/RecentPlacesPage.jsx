@@ -9,6 +9,7 @@ import TripSummary from "../components/TripSummary.jsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 
 const limitStep = 10
 const maxDistance = 2000
@@ -21,6 +22,7 @@ export default function RecentPlacesPage() {
     const isFetching = useRef(false)
 
     const { places } = useRegularPlaces({ include: ["categories", "dates", "excerpt"], limit: currentLimit, maxEnd: getCurrentOrMaximumAllowedTimestamp(), sort: "-oldestWithTrip" })
+    const { places: allPlaces } = useTimeFilteredRegularPlaces({ sort: "-score" })
     const countryCategories = useCategories({ categories: ["country"] })
 
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote } = useUpcomingOrCurrentTrip()
@@ -68,7 +70,7 @@ export default function RecentPlacesPage() {
         <>
             <div className="h-[400px] md:h-[700px] my-4">
                 <PlaceMap
-                    places={displayedPlaces}
+                    places={allPlaces}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
