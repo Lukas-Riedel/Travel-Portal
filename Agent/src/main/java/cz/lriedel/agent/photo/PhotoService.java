@@ -3,6 +3,7 @@ package cz.lriedel.agent.photo;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.lriedel.agent.AgentContextDataProvider;
@@ -196,9 +197,26 @@ public class PhotoService implements AgentContextDataProvider {
         try (InputStream inputStream = Files.newInputStream(path)) {
             Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
 
+            // 1. Zjištění modelu fotoaparátu z EXIFu
+            String cameraModel = "";
+            ExifIFD0Directory ifd0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (ifd0Directory != null && ifd0Directory.containsTag(ExifIFD0Directory.TAG_MODEL)) {
+                cameraModel = ifd0Directory.getString(ExifIFD0Directory.TAG_MODEL);
+            }
+
+            boolean isSonyA6300 = cameraModel != null && cameraModel.contains("6300");
+
+            // 2. Najití původního data vytvoření
             for (Directory directory : metadata.getDirectories()) {
                 if (directory.containsTag(TAG_DATETIME_ORIGINAL)) {
-                    return directory.getDate(TAG_DATETIME_ORIGINAL);
+                    Date creationDate = directory.getDate(TAG_DATETIME_ORIGINAL);
+
+                    if (creationDate != null && isSonyA6300) {
+                        // Odečtení 1 hodiny
+                        return Date.from(creationDate.toInstant().minus(1, java.time.temporal.ChronoUnit.HOURS));
+                    }
+
+                    return creationDate;
                 }
             }
         }

@@ -10,6 +10,7 @@ import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.imaging.formats.tiff.constants.TiffDirectoryType;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
 import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
@@ -74,6 +75,14 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
             return data;
         }
 
+        String cameraModel = "";
+        var modelItem = sourceMetadata.findExifValue(TiffTagConstants.TIFF_TAG_MODEL);
+        if (modelItem != null) {
+            cameraModel = modelItem.getStringValue();
+        }
+
+        boolean isSonyA6300 = cameraModel != null && cameraModel.contains("6300");
+
         TiffOutputSet outputSet = imageMetadata.getOutputSet();
         TiffOutputDirectory exifDir = outputSet.getOrCreateExifDirectory();
 
@@ -87,6 +96,13 @@ public class MetadataAlteringPhotoFetcherDecorator implements PhotoFetcher {
 
             DateTimeFormatter exifFormatter = DateTimeFormatter.ofPattern(EXIF_DATE_TIME_FORMAT);
             LocalDateTime localDateTime = LocalDateTime.parse(rawDateTime.trim().replaceAll("\u0000", ""), exifFormatter);
+            
+            if (isSonyA6300) {
+                localDateTime = localDateTime.minusHours(1);
+                exifDir.removeField(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+                exifDir.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, localDateTime.format(exifFormatter));
+            }
+
             String offset = getTimezone().getRules().getOffset(localDateTime).getId();
 
             TagInfoAscii offsetTagInfo = new TagInfoAscii(TAG_OFFSET_TIME_ORIGINAL_NAME, TAG_OFFSET_TIME_ORIGINAL, -1,
