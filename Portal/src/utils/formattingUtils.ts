@@ -13,3 +13,10 @@ export function getEntityPrettyName(name: string | number) {
 export function formatDeviceType(type: string): string {
     return type.toLowerCase().replace(/^./, c => c.toUpperCase())
 }
+
+export function getMinMaxRange(items: number[]): string {
+    const min = Math.min(...items)
+    const max = Math.max(...items)
+
+    return min === max ? `${min}` : `${min}-${max}`
+}
