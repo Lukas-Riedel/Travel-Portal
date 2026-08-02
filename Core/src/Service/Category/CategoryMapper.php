@@ -332,7 +332,7 @@
                 FROM category c
                 LEFT JOIN region_area ra
                     ON c.category_id = ra.category_id
-                ORDER BY ra.area DESC
+                ORDER BY ra.area DESC NULLS LAST
             SQL;
 
             $categoryRows = $this->databaseClient
