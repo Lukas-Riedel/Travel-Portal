@@ -1869,6 +1869,7 @@
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
             $albumId = $this->requirePathArgument($routeArguments, "albumId");
             $mainPhotoPosition = $this->getQueryParameter($request, "mainPhotoPosition");
+            $mainPhotoId = $this->getQueryParameter($request, "mainPhotoId");
             $batchId = $this->getQueryParameter($request, "batchId");
 
             $place = $this->doGetPlace($placeId);
@@ -1878,7 +1879,7 @@
                 throw new NotFoundException($albumId);
             }
 
-            $this->photoService->updateAlbum($albumId, $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition, $batchId);
+            $this->photoService->updateAlbum($albumId, $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition ?? $mainPhotoId, $batchId);
             
             $place = $this->doGetPlace($placeId);
             return $place->findAlbum($albumId);

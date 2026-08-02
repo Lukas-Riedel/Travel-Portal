@@ -146,13 +146,8 @@
             if ($place !== null) {
                 $album = $this->photoService->getAlbumForPhotoId($place->getMainHighlight()->getPhoto()->getId());
 
-                if ($album !== null) {
-                    $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place->getLatitude(), $place->getLongitude(), true);     
-                    $mainPhotoPosition = array_search($place->getMainHighlight()->getPhoto()->getId(), array_map(fn($photo) => $photo->getId(), $photos));
-
-                    if ($mainPhotoPosition !== false && $album->getMainPhoto()->getId() !== $place->getMainHighlight()->getPhoto()->getId()) {
-                        $this->photoService->updateAlbum($album->getId(), $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition + 1);
-                    }
+                if ($album !== null && $album->getMainPhoto()->getId() !== $place->getMainHighlight()->getPhoto()->getId()) {
+                    $this->photoService->updateAlbum($album->getId(), $place->getLatitude(), $place->getLongitude(), $place->getMainHighlight()->getPhoto()->getId());
                 }
             }
         }

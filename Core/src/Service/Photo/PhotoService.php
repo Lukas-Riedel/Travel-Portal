@@ -118,31 +118,39 @@
             $this->pruneUnusedObjects($objectKeys);
         }
 
-        public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, ?int $mainPhotoPosition = null, ?string $batchId = null) : void {            
+        public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, string | int | null $mainPhotoIdOrPosition = null, ?string $batchId = null) : void {            
             if ($batchId !== null) {
                 $this->createPendingPhotos($albumId, $batchId);
             }
 
-            if ($mainPhotoPosition !== null) {
+            if ($mainPhotoIdOrPosition !== null) {
                 if ($latitude === null || $longitude === null) {
                     throw new \InvalidArgumentException("Latitude and longitude must be provided when setting main photo.");
-                }
-
-                $photos = $this->getPhotosForAlbum($albumId, $latitude, $longitude, true);
-
-                $mainPhotoPosition = $mainPhotoPosition - 1;
-                if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
-                    throw new \InvalidArgumentException("Cannot set main photo because there are only " . count($photos) . " photos in the album.");
                 }
 
                 $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);       
                 if ($externalAlbumId === null) {
                     throw new \InvalidArgumentException("An album with the identifier '$albumId' does not exist.");
                 }
-    
-                $externalPhotoId = $this->photoMapper->selectPhotoExternalId($photos[$mainPhotoPosition]->getId());
+
+                $mainPhotoId = null;
+                if (is_int($mainPhotoIdOrPosition) || ctype_digit((string) $mainPhotoIdOrPosition)) {
+                    $photos = $this->getPhotosForAlbum($albumId, $latitude, $longitude, true);
+
+                    $mainPhotoPosition = $mainPhotoIdOrPosition - 1;
+                    if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
+                        throw new \InvalidArgumentException("Cannot set main photo because there are only " . count($photos) . " photos in the album.");
+                    }
+
+                    $mainPhotoId = $photos[$mainPhotoPosition]->getId();
+                }
+                else {
+                    $mainPhotoId = $mainPhotoIdOrPosition;
+                }
+        
+                $externalPhotoId = $this->photoMapper->selectPhotoExternalId($mainPhotoId);
                 if ($externalPhotoId === null) {
-                    throw new \InvalidArgumentException("A photo with the identifier '" . $photos[$mainPhotoPosition]->getId() . "' does not exist.");
+                    throw new \InvalidArgumentException("A photo with the identifier '" . $mainPhotoId . "' does not exist.");
                 }
     
                 try {
