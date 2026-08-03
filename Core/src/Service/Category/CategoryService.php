@@ -405,11 +405,11 @@
             return $this->getOrCreateCategoryIdentifier($country, CategoryCategory::Country->value);
         }
 
-        public function removeCategory(string $categoryId) : void {
+        public function removeCategory(string $categoryId) : bool {
             $this->categoryMapper->deleteGeographicalRegion($categoryId);
             $this->categoryMapper->deleteCompositeRegion($categoryId);
             $this->categoryMapper->deleteCompositeRegionReferences($categoryId);
-            $this->categoryMapper->deleteCategoryIdentifier($categoryId);
+            return $this->categoryMapper->deleteCategoryIdentifier($categoryId) > 0;
         }
 
         private function getWktPointsOnCircle(float $latitude, float $longitude, int $radiusInKms, int $pointsCount) : array {    

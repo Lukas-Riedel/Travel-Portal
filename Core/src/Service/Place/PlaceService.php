@@ -403,7 +403,7 @@
         private function removeSpecialPlace(SpecialPlaceType $specialPlaceType, string $placeId) : bool {
             $wasRemoved = true;
             $this->transactionManager->executeAtomically(function() use(&$specialPlaceType, &$placeId, &$wasRemoved) {
-                $wasRemoved &= $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId);
+                $wasRemoved &= $this->placeMapper->deleteSpecialPlace($specialPlaceType, $placeId) > 0;
 
                 if ($wasRemoved) {
                     $this->eventPublisher->publish(Event::PlaceRemoved($placeId));
