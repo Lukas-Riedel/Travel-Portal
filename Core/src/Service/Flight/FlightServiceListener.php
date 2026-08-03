@@ -2,6 +2,7 @@
     namespace Core\Service\Flight;
 
     use Common\Client\Cache\CacheClient;
+    use Common\Service\Authentication\UserRole;
     use Core\Common\CommonConstants;
     use Monolog\Logger;
     use Core\Service\Trip\TripService;
@@ -10,6 +11,8 @@
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Device\DeviceService;
+    use Core\Service\Device\DeviceType;
 
     class FlightServiceListener {
         
@@ -23,6 +26,7 @@
         private const ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS = 5 * 60;
 
         private readonly FlightService $flightService;
+        private readonly DeviceService $deviceService;
         private readonly TripService $tripService;
         private readonly ConfigurationService $configurationService;
         private readonly CalendarClient $calendarClient;
@@ -31,9 +35,10 @@
         private readonly Scheduler $scheduler;
         private readonly Logger $logger;
 
-        public function __construct(FlightService $flightService, TripService $tripService, ConfigurationService $configurationService, CalendarClient $calendarClient,
+        public function __construct(FlightService $flightService, DeviceService $deviceService, TripService $tripService, ConfigurationService $configurationService, CalendarClient $calendarClient,
             CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
             $this->flightService = $flightService;
+            $this->deviceService = $deviceService;
             $this->tripService = $tripService;
             $this->configurationService = $configurationService;
             $this->calendarClient = $calendarClient;
@@ -77,18 +82,42 @@
                 return;
             }
 
-            $intervalSelector = function($lastTriggered) use(&$firstNonLoggedFlight) {
-                if ($firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() > $lastTriggered) {
-                    return $firstNonLoggedFlight->getEnd() + $this->flightService->getAverageFlightDelay() - $lastTriggered;
+            $relevantDevices = $this->deviceService->getDevices(DeviceType::BridgeX, UserRole::FlightEdit);
+
+            $intervalSelector = function($lastTriggered) use(&$firstNonLoggedFlight, &$relevantDevices) {
+                $scheduledArrival = $firstNonLoggedFlight->getEnd();
+                $expectedArrival = $scheduledArrival + $this->flightService->getAverageFlightDelay();
+
+                $flightMidpoint = ($firstNonLoggedFlight->getStart() + $scheduledArrival) / 2;
+                $attemptAlreadyMadeInSecondHalf = $lastTriggered > $flightMidpoint;
+                $hasNewDeviceActivityInSecondHalf = false;
+
+                if (!$attemptAlreadyMadeInSecondHalf) {
+                    foreach ($relevantDevices as &$device) {
+                        if ($device->getLastSeen() > $flightMidpoint) {
+                            $hasNewDeviceActivityInSecondHalf = true;
+                            break;
+                        }
+                    }
                 }
 
-                // There was already an attempt to log the flight, but the flight has not landed yet.
+                // Attempt to log the flight if the device activity occurred after the flight midpoint.
+                if ($hasNewDeviceActivityInSecondHalf) {
+                    return 0;
+                }
+
+                // If there was already an attempt to log the flight, we have the estimated arrival time -> use it for the next trigger.
                 $estimatedArrival = $this->flightService->getEstimatedArrivalTime($firstNonLoggedFlight->getFlight());
                 if ($estimatedArrival !== null && $estimatedArrival + self::ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS > $lastTriggered) {
                     return $estimatedArrival + self::ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS - $lastTriggered;
                 }
 
-                // Estimated arrival time of the flight is unknown.
+                // If we don't have the estimated arrival time, we can use the expected arrival time of the flight to determine when to trigger the next attempt.
+                if ($expectedArrival > $lastTriggered) {
+                    return $expectedArrival - $lastTriggered;
+                }
+
+                // It's already past the expected arrival time, and the estimated arrival time of the flight is unknown.
                 return self::LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL;
             };
 
