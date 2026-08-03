@@ -46,6 +46,11 @@
             android:exported="false"
             android:foregroundServiceType="location"/>
 
+        <receiver
+            android:name=".device.PassiveLocationReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

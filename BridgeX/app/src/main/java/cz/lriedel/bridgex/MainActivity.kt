@@ -1,5 +1,7 @@
 package cz.lriedel.bridgex
 
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,8 +11,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
+import cz.lriedel.bridgex.device.PassiveLocationReceiver
 import cz.lriedel.bridgex.ui.CustomWebChromeClient
 import cz.lriedel.bridgex.ui.CustomWebViewClient
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +38,8 @@ class MainActivity : AppCompatActivity() {
         
         permissionManager.requestAllPermissions()
 
+        registerPassiveLocationTrigger(this)
+
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
         loadWebViewUrl(savedInstanceState, intent.getStringExtra("flight"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"),
@@ -44,12 +52,30 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 if (webView.canGoBack()) {
                     webView.goBack()
-                } else {
+                }
+                else {
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
                 }
             }
         })
+    }
+
+    private fun registerPassiveLocationTrigger(context: Context) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_PASSIVE, 1000)
+            .setMinUpdateIntervalMillis(0)
+            .build()
+
+        val intent = Intent(context, PassiveLocationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+
+        try {
+            fusedLocationClient.requestLocationUpdates(locationRequest, pendingIntent)
+        }
+        catch (e: SecurityException) {
+            // Do nothing.
+        }
     }
 
     private fun setupWebView() {
