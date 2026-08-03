@@ -15,7 +15,7 @@
     class FitnessServiceListener {
 
         private const FETCH_FITNESS_ACTION_NAME = "FETCH_FITNESS";
-        private const FETCH_FITNESS_ACTION_INTERVAL = CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
+        private const FETCH_FITNESS_ACTION_INTERVAL = 4 * CommonConstants::FITNESS_RECORD_DURATION_SECONDS;
 
         // Only around 100 intervals fit into the size limit of 4kB for an FCM message.
         private const INTERVALS_LIMIT = 100;
