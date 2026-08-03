@@ -367,7 +367,11 @@ public class PhotoService implements AgentContextDataProvider {
 
     @Override
     public Map<String, Object> getContextData() {
-        return Map.of(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders(),
-            DEFAULT_PHOTO_FOLDER_CONFIGURATION_KEY, defaultPhotoFolder.normalize().toAbsolutePath().toString().replace('\\', '/'));
+        Map<String, Object> contextData = new HashMap<>();
+        contextData.put(SYNCHRONIZED_FOLDERS_CONFIGURATION_KEY, getAndUpdateNonExpiredSynchronizedFolders());
+        if (defaultPhotoFolder != null) {
+            contextData.put(DEFAULT_PHOTO_FOLDER_CONFIGURATION_KEY, defaultPhotoFolder.normalize().toAbsolutePath().toString().replace('\\', '/'));
+        }
+        return contextData;
     }
 }
